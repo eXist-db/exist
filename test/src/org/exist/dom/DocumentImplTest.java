@@ -1,14 +1,17 @@
 package org.exist.dom;
 
+import org.exist.security.Group;
+import org.exist.security.internal.RealmImpl;
+import org.exist.security.Subject;
+import org.exist.storage.BrokerPool;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
+import static org.easymock.classextension.EasyMock.expect;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -22,29 +25,32 @@ public class DocumentImplTest {
     @Test
     public void copyOf_calls_getMetadata() {
 
+        BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         PermissionFactory.sm = mockSecurityManager;
-
-        //constructor logic expectations
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
 
         //test values
         final DocumentMetadata otherMetadata = new DocumentMetadata();
 
-        replay(mockSecurityManager);
+        //expectations
+        expect(mockBrokerPool.getSubject()).andReturn(mockCurrentSubject).times(2);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
+
+        replay(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        TestableDocumentImpl doc = new TestableDocumentImpl();
-        DocumentImpl other = new DocumentImpl(null);
+        TestableDocumentImpl doc = new TestableDocumentImpl(mockBrokerPool);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool);
         other.setMetadata(otherMetadata);
 
         //actions
         doc.copyOf(other);
 
-        verify(mockSecurityManager);
+        verify(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //assertions
         assertEquals(1, doc.getMetadata_invCount());
@@ -52,31 +58,34 @@ public class DocumentImplTest {
 
     @Test
     public void copyOf_calls_metadata_copyOf() {
+        BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         PermissionFactory.sm = mockSecurityManager;
-
-        //constructor logic expectations
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
 
         //test values
         final TestableDocumentMetadata docMetadata = new TestableDocumentMetadata();
         final DocumentMetadata otherMetadata = new DocumentMetadata();
 
-        replay(mockSecurityManager);
+        //expectations
+        expect(mockBrokerPool.getSubject()).andReturn(mockCurrentSubject).times(2);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
+
+        replay(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        DocumentImpl doc = new DocumentImpl(null);
+        DocumentImpl doc = new DocumentImpl(mockBrokerPool);
         doc.setMetadata(docMetadata);
-        DocumentImpl other = new DocumentImpl(null);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool);
         other.setMetadata(otherMetadata);
 
         //actions
         doc.copyOf(other);
 
-        verify(mockSecurityManager);
+        verify(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //assertions
         assertEquals(1, docMetadata.getCopyOf_invCount());
@@ -84,14 +93,11 @@ public class DocumentImplTest {
 
     @Test
     public void copyOf_updates_metadata_created_and_lastModified() {
+        BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
+        Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
+        Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
         PermissionFactory.sm = mockSecurityManager;
-
-        //constructor logic expectations
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
-        expect(mockSecurityManager.getSystemSubject()).andReturn(null);
-        expect(mockSecurityManager.getDBAGroup()).andReturn(null);
 
         //test values
         final DocumentMetadata docMetadata = new TestableDocumentMetadata();
@@ -99,18 +105,24 @@ public class DocumentImplTest {
         final long otherCreated = System.currentTimeMillis() - 2000;
         final long otherLastModified = System.currentTimeMillis() - 1000;
 
-        replay(mockSecurityManager);
+        //expectations
+        expect(mockBrokerPool.getSubject()).andReturn(mockCurrentSubject).times(2);
+        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
+        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
+        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
+
+        replay(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        DocumentImpl doc = new DocumentImpl(null);
+        DocumentImpl doc = new DocumentImpl(mockBrokerPool);
         doc.setMetadata(docMetadata);
-        DocumentImpl other = new DocumentImpl(null);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool);
         other.setMetadata(otherMetadata);
 
         //actions
         doc.copyOf(other);
 
-        verify(mockSecurityManager);
+        verify(mockBrokerPool, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //assertions
         assertThat(otherCreated, new LessThan(docMetadata.getCreated()));
@@ -122,8 +134,8 @@ public class DocumentImplTest {
         private int getMetadata_invCount = 0;
         private DocumentMetadata meta = new DocumentMetadata();
 
-        public TestableDocumentImpl() {
-            super(null);
+        public TestableDocumentImpl(BrokerPool pool) {
+            super(pool);
         }
 
         public int getMetadata_invCount() {

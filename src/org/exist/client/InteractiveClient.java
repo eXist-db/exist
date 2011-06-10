@@ -82,6 +82,7 @@ import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
 import org.exist.SystemProperties;
 import org.exist.dom.XMLUtil;
+import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
@@ -373,7 +374,8 @@ public class InteractiveClient {
                         XmldbURI.create(childCollections[i]),
                         perm.getOwner().getName(),
                         perm.getGroup().getName(),
-                        perm.toString(), created ) );
+                        (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
+                        created ) );
             }
             completitions.add(childCollections[i]);
         }
@@ -398,7 +400,7 @@ public class InteractiveClient {
                         XmldbURI.create(childResources[j]),
                         perm.getOwner().getName(),
                         perm.getGroup().getName(),
-                        perm.toString(),
+                        (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
                         lastModificationTime ) );
             }
             completitions.add(childResources[j]);

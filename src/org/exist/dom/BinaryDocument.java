@@ -93,7 +93,7 @@ public class BinaryDocument extends DocumentImpl {
         ostream.writeUTF(getFileURI().toString());
         ostream.writeLong(pageNr);
 
-        permissions.write(ostream);
+        getPermissions().write(ostream);
 
         ostream.writeLong(realSize);
         getMetadata().write(getBrokerPool(), ostream);
@@ -105,7 +105,7 @@ public class BinaryDocument extends DocumentImpl {
         setFileURI(XmldbURI.create(istream.readUTF()));
         pageNr = istream.readLong();
         
-        permissions.read(istream);
+        getPermissions().read(istream);
 
         realSize = istream.readLong();
         DocumentMetadata metadata = new DocumentMetadata();

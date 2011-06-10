@@ -367,7 +367,7 @@ public class ValidationFunctions_DTD_Test {
 
             is.close();
             os.close();
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
             logger.error(ex);

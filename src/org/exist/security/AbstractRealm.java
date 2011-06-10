@@ -84,7 +84,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     @Override
 	public void startUp(DBBroker broker) throws EXistException {
 
-		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLETION_URI.append(getId());
+		XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
 		
 		BrokerPool pool = broker.getBrokerPool();
 		TransactionManager transact = pool.getTransactionManager();

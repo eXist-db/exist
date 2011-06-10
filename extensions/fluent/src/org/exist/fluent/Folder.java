@@ -645,7 +645,7 @@ public class Folder extends NamedResource implements Cloneable {
 	}
 
 	@Override public MetadataFacet metadata() {
-		if (metadata == null) metadata = new MetadataFacet(getQuickHandle().getPermissionsNoLock()) {
+		if (metadata == null) metadata = new MetadataFacet(getQuickHandle().getPermissionsNoLock(), db) {
 			@Override public Date creationDate() {
 				return new Date(getQuickHandle().getCreationTime());
 			}

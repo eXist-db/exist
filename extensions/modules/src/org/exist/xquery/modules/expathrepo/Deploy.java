@@ -406,19 +406,25 @@ public class Deploy extends BasicFunction {
 	 * @param mime
 	 * @param permission
 	 */
-	private void setPermissions(MimeType mime, Permission permission) {
-		if (user != null)
-			permission.setOwner(user);
-		if (group != null)
-			permission.setGroup(group);
-		int mode;
-		if (perms > -1)
-			mode = perms;
-		else
-			mode = permission.getMode();
-		if (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))
-			mode = mode | 0111;
-		permission.setMode(mode);
+	private void setPermissions(MimeType mime, Permission permission) throws PermissionDeniedException {
+            if (user != null){
+                permission.setOwner(user);
+            }
+            if (group != null){
+                permission.setGroup(group);
+            }
+
+            int mode;
+            if (perms > -1) {
+                mode = perms;
+            } else {
+                mode = permission.getMode();
+            }
+            
+            if (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName())){
+                mode = mode | 0111;
+            }
+            permission.setMode(mode);
 	}
 	
 	private ElementImpl findElement(NodeImpl root, QName qname) throws XPathException {

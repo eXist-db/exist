@@ -39,6 +39,11 @@
         <pathelement path="${top.dir}/start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     <path id="classpath.test-libs">
          <fileset dir="${top.dir}/${lib.test}">
             <include name="*.jar"/>
@@ -134,6 +139,7 @@
 
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.aspectj"/>
                 <path refid="classpath.jar"/>
                 <path refid="classpath.test"/>
                 <path refid="classpath.test-libs"/>

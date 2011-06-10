@@ -1,9 +1,11 @@
 package org.exist.xmldb;
 
+import java.util.List;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.exist.security.User;
+import org.exist.security.internal.aider.ACEAider;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
@@ -41,6 +43,8 @@ public interface UserManagementService extends Service {
 	 * @throws XMLDBException
 	 */
 	public void setPermissions(Collection child, Permission perm) throws XMLDBException;
+        
+        public void setPermissions(Collection child, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException;
 	
 	/**
 	 * Set permissions for the specified resource.
@@ -50,6 +54,12 @@ public interface UserManagementService extends Service {
 	 * @throws XMLDBException
 	 */
 	public void setPermissions(Resource resource, Permission perm) throws XMLDBException;
+        
+        public void setPermissions(Resource resource, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException;
+
+        //public void setPermissions(Collection collection, String owner, String group, int mode) throws XMLDBException;
+
+        //public void setPermissions(Resource resource, String owner, String group, int mode) throws XMLDBException;
 	
     /**
      *  Change owner and group of the current collection.

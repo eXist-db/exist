@@ -49,13 +49,22 @@ import org.exist.xmldb.XmldbURI;
  */
 public class RealmImpl extends AbstractRealm {
 	
-	public static String ID = "exist"; //TODO: final "eXist-db";
+    public static String ID = "exist"; //TODO: final "eXist-db";
 
-	private final static Logger LOG = Logger.getLogger(Realm.class);
+    private final static Logger LOG = Logger.getLogger(Realm.class);
 
-	static public void setPasswordRealm(String value) {
-		ID = value;
-	}
+    static public void setPasswordRealm(String value) {
+            ID = value;
+    }
+
+    public final static int SYSTEM_ACCOUNT_ID = 1048575;
+    public final static int ADMIN_ACCOUNT_ID = 1048574;
+    public final static int GUEST_ACCOUNT_ID = 1048573;
+    public final static int UNKNOWN_ACCOUNT_ID = 1048572;
+
+    public final static int DBA_GROUP_ID = 1048575;
+    public final static int GUEST_GROUP_ID = 1048574;
+    public final static int UNKNOWN_GROUP_ID = 1048573;
 
     protected final AccountImpl ACCOUNT_SYSTEM;
     protected final AccountImpl ACCOUNT_GUEST;
@@ -73,38 +82,38 @@ public class RealmImpl extends AbstractRealm {
     	super(sm, config);
 
         //Build-in accounts
-        GROUP_UNKNOWN = new GroupImpl(this, -1, "");
-    	ACCOUNT_UNKNOWN = new AccountImpl(this, -1, "", (String)null, GROUP_UNKNOWN);
+        GROUP_UNKNOWN = new GroupImpl(this, UNKNOWN_GROUP_ID, "");
+    	ACCOUNT_UNKNOWN = new AccountImpl(this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
 
     	//DBA group & account
-    	GROUP_DBA = new GroupImpl(this, 1, SecurityManager.DBA_GROUP);
+    	GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
     	sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
 
     	//System account
-    	ACCOUNT_SYSTEM = new AccountImpl(this, 0, "SYSTEM", "", GROUP_DBA, true);
+    	ACCOUNT_SYSTEM = new AccountImpl(this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
 
     	//Administrator account
-    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, 1, SecurityManager.DBA_USER, "", GROUP_DBA, true);
+    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
     	sm.usersById.put(ACCOUNT_ADMIN.getId(), ACCOUNT_ADMIN);
     	usersByName.put(ACCOUNT_ADMIN.getName(), ACCOUNT_ADMIN);
 
     	//Guest group & account
-    	GROUP_GUEST = new GroupImpl(this, 2, SecurityManager.GUEST_GROUP);
+    	GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
     	sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
 
-    	ACCOUNT_GUEST = new AccountImpl(this, 2, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
+    	ACCOUNT_GUEST = new AccountImpl(this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
     	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
     	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
     	
-		//XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
+        //XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
     	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);
 
-    	sm.lastUserId = 3;
-    	sm.lastGroupId = 3;
+    	sm.lastUserId = 10;
+    	sm.lastGroupId = 10;
     }
 
 	@Override

@@ -149,6 +149,11 @@ public class UserAider implements Account {
 		return roles.keySet().toArray(new String[0]);
 	}
 
+        @Override
+	public int[] getGroupIds() {
+            return new int[0];
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.security.User#hasDbaRole()
 	 */

@@ -59,6 +59,8 @@ public interface User extends Principal {
 	 *@return    The groups value
 	 */
 	public String[] getGroups();
+        
+	public int[] getGroupIds();
 
 	public boolean hasDbaRole();
 

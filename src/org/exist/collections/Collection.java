@@ -105,9 +105,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     // the path of this collection
     private XmldbURI path;
     
-    // the permissions assigned to this collection
-    private Permission permissions = PermissionFactory.getPermission(0775);
-    
     // stores child-collections with their storage address
     private ObjectHashSet<XmldbURI> subcollections = new ObjectHashSet<XmldbURI>(19);
     
@@ -134,11 +131,18 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     /** is this a temporary collection? */
     private boolean isTempCollection = false;
 
-    public Collection(){
+    public Collection(DBBroker broker){
         //Nothing to do
+
+        // the permissions assigned to this collection
+        Subject currentSubject = broker.getSubject();
+        permissions = PermissionFactory.getPermission(currentSubject.getId(), currentSubject.getDefaultGroup().getId());
     }
 
-    public Collection(XmldbURI path) {
+    private Permission permissions;
+
+    public Collection(DBBroker broker, XmldbURI path) {
+        this(broker);
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
     }
@@ -163,9 +167,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (!subcollections.contains(childName))
             subcollections.add(childName);
         if (isNew) {
-            Account user = broker.getSubject();
+            //Account user = broker.getSubject();
             child.setCreationTime(System.currentTimeMillis());
-            child.permissions.setOwner(broker.getSubject(), user);
+            /* child.permissions.setOwner(broker.getSubject(), user);
             CollectionConfiguration config = getConfiguration(broker);
             String group = user.getPrimaryGroup();
             if (config != null){
@@ -173,6 +177,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 child.permissions.setMode(config.getDefCollPermissions());
             }
             child.permissions.setGroup(broker.getSubject(), group);
+             */
         }
     }
 
@@ -1289,10 +1294,14 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             metadata.setLastModified(System.currentTimeMillis());
             document.setPermissions(oldDoc.getPermissions());
         } else {
-        	Account user = broker.getSubject();
-            metadata.setCreated(System.currentTimeMillis());
-            document.getPermissions().setOwner(broker.getSubject(), user);
-            String group; 
+        	//Account user = broker.getSubject();
+                metadata.setCreated(System.currentTimeMillis());
+
+                /*
+            if(!document.getPermissions().getOwner().equals(user)) {
+                document.getPermissions().setOwner(broker.getSubject(), user);
+            }
+
             CollectionConfiguration config = getConfiguration(broker);
             if (config != null) {
                 document.getPermissions().setMode(config.getDefResPermissions());
@@ -1300,7 +1309,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             } else {
                 group = user.getPrimaryGroup();
             }
-            document.getPermissions().setGroup(broker.getSubject(), group);
+
+            if(!document.getPermissions().getGroup().equals(group)) {
+                document.getPermissions().setGroup(broker.getSubject(), group);
+            }*/
         }
         document.setMetadata(metadata);
     }
@@ -1464,7 +1476,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         this.collectionId = id;
     }
 
-    public void setPermissions(int mode) throws LockException {
+    public void setPermissions(int mode) throws LockException, PermissionDeniedException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setMode(mode);
@@ -1473,7 +1485,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
-    public void setPermissions(String mode) throws SyntaxException, LockException {
+    public void setPermissions(String mode) throws SyntaxException, LockException, PermissionDeniedException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setMode(mode);

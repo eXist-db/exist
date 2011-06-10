@@ -74,7 +74,11 @@ import org.exist.xmldb.XmldbURI;
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
 public class SecurityManagerImpl implements SecurityManager {
-	
+
+
+        public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
+        public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
+
 	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
 	public static final String COLLECTION_ATTRIBUTE = "collection";
 	public static final String RESOURCE_ATTRIBUTE = "resource";
@@ -164,10 +168,10 @@ public class SecurityManagerImpl implements SecurityManager {
 		}
 
         try {
-	        collection = broker.getCollection(SECURITY_COLLETION_URI);
+	        collection = broker.getCollection(SECURITY_COLLECTION_URI);
 			if (collection == null) {
 				txn = transaction.beginTransaction();
-				collection = broker.getOrCreateCollection(txn, SECURITY_COLLETION_URI);
+				collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
 				if (collection == null) return;
 					//if db corrupted it can lead to unrunnable issue
 					//throw new ConfigurationException("Collection '/db/system/security' can't be created.");
@@ -419,14 +423,20 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 	
     @Override
-	public synchronized int getNextGroupId() {
-		return ++lastGroupId; 
-	}
+    public synchronized int getNextGroupId() {
+        if(lastGroupId + 1 == MAX_GROUP_ID) {
+            throw new RuntimeException("System has no more group-ids available");
+        }
+        return ++lastGroupId;
+    }
 
     @Override
-	public synchronized int getNextAccountId() {
-		return ++lastUserId; 
-	}
+    public synchronized int getNextAccountId() {
+        if(lastUserId +1 == MAX_USER_ID) {
+            throw new RuntimeException("System has no more user-ids available");
+        }
+        return ++lastUserId;
+    }
 
     @Override
     public List<Account> getGroupMembers(String groupName) {

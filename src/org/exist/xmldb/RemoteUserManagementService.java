@@ -6,7 +6,6 @@ import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.exist.security.User;
 import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.internal.aider.UnixStylePermission;
 import org.exist.security.internal.aider.UserAider;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -14,8 +13,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.exist.security.ACLPermission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.security.internal.aider.PermissionAiderFactory;
 
 
 /*************************************************
@@ -62,40 +66,103 @@ public class RemoteUserManagementService implements UserManagementService {
 		}
     }
 
-	/**
-	 * Change permissions for a resource.
-	 */
-	public void setPermissions(Resource res, Permission perms) throws XMLDBException {
-        //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
-		try {
-            List<Object> params = new ArrayList<Object>(1);
-			params.add(path);
-			params.add(perms.getOwner().getName());
-			params.add(perms.getGroup().getName());
-			params.add(new Integer(perms.getMode()));
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    private List<ACEAider> getACEs(Permission perm) {
+        final List<ACEAider> aces = new ArrayList<ACEAider>();
+        final ACLPermission aclPermission = (ACLPermission)perm;
+        for(int i = 0; i < aclPermission.getACECount(); i++) {
+            aces.add(new ACEAider(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i)));
+        }
+        return aces;
     }
 
-	/**
-	 * Change permissions for a resource.
-	 */
-	public void setPermissions(Collection child, Permission perms) throws XMLDBException {
-		String path = ((RemoteCollection) child).getPath();
-		try {
-            List<Object> params = new ArrayList<Object>(4);
-			params.add(path);
-			params.add(perms.getOwner().getName());
-			params.add(perms.getGroup().getName());
-			params.add(new Integer(perms.getMode()));
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    /**
+     * Change permissions for a resource.
+     */
+    @Override
+    public void setPermissions(Resource res, Permission perm) throws XMLDBException {
+        //TODO : use dedicated function in XmldbURI
+        String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
+        try {
+            List<Object> params = new ArrayList<Object>(5);
+            params.add(path);
+            params.add(perm.getOwner().getName());
+            params.add(perm.getGroup().getName());
+            params.add(new Integer(perm.getMode()));
+            if(perm instanceof ACLPermission) {
+                params.add(getACEs(perm));
+            }
+
+            parent.getClient().execute("setPermissions", params);
+            
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
+
+    /**
+     * Change permissions for a resource.
+     */
+    @Override
+    public void setPermissions(Collection child, Permission perm) throws XMLDBException {
+        String path = ((RemoteCollection)child).getPath();
+        try {
+            List<Object> params = new ArrayList<Object>(5);
+            params.add(path);
+            params.add(perm.getOwner().getName());
+            params.add(perm.getGroup().getName());
+            params.add(new Integer(perm.getMode()));
+            if(perm instanceof ACLPermission) {
+                params.add(getACEs(perm));
+            }
+
+            parent.getClient().execute("setPermissions", params);
+
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void setPermissions(Collection child, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
+        String path = ((RemoteCollection)child).getPath();
+        try {
+            List<Object> params = new ArrayList<Object>(5);
+            params.add(path);
+            params.add(owner);
+            params.add(group);
+            params.add(new Integer(mode));
+            if(aces != null) {
+                params.add(aces);
+            }
+
+            parent.getClient().execute("setPermissions", params);
+
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public void setPermissions(Resource res, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
+        String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
+        try {
+            List<Object> params = new ArrayList<Object>(5);
+            params.add(path);
+            params.add(owner);
+            params.add(group);
+            params.add(new Integer(mode));
+            if(aces != null) {
+                params.add(aces);
+            }
+
+            parent.getClient().execute("setPermissions", params);
+
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    
 
 	/**
 	 *  Change access mode of a resource
@@ -139,29 +206,33 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  mode                Access mode
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void chmod(String mode) throws XMLDBException {
-		try {
+    @Override
+    public void chmod(String mode) throws XMLDBException {
+        try {
             List<Object> params = new ArrayList<Object>(2);
-			params.add(parent.getPath());
-			params.add(mode);
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(parent.getPath());
+            params.add(mode);
+            
+            parent.getClient().execute("setPermissions", params);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
 	/**
 	 * @see org.exist.xmldb.UserManagementService#chmod(int)
 	 */
-	public void chmod(int mode) throws XMLDBException {
-		try {
+    @Override
+    public void chmod(int mode) throws XMLDBException {
+        try {
             List<Object> params = new ArrayList<Object>(2);
-			params.add(parent.getPath());
-			params.add(new Integer(mode));
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(parent.getPath());
+            params.add(new Integer(mode));
+
+            parent.getClient().execute("setPermissions", params);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
 	/* (non-Javadoc)
@@ -218,40 +289,42 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  group               Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void chown(Account u, String group) throws XMLDBException {
-		try {
+    @Override
+    public void chown(Account u, String group) throws XMLDBException {
+        try {
             List<Object> params = new ArrayList<Object>(4);
-			params.add(parent.getPath());
-			params.add(u.getName());
-			params.add(group);
-			params.add("");
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(parent.getPath());
+            params.add(u.getName());
+            params.add(group);
+
+            parent.getClient().execute("setPermissions", params);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
-	/**
-	 *  Change the owner of a resource
-	 *
-	 *@param  res                 Resource
-	 *@param  u                   The new owner of the resource
-	 *@param  group               The owner group
-	 *@exception  XMLDBException  Description of the Exception
-	 */
-	public void chown(Resource res, Account u, String group) throws XMLDBException {
+    /**
+     *  Change the owner of a resource
+     *
+     *@param  res                 Resource
+     *@param  u                   The new owner of the resource
+     *@param  group               The owner group
+     *@exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public void chown(Resource res, Account u, String group) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
-		try {
+        String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+        try {
             List<Object> params = new ArrayList<Object>(4);
-			params.add(path);
-			params.add(u.getName());
-			params.add(group);
-			params.add("");
-			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(path);
+            params.add(u.getName());
+            params.add(group);
+
+            parent.getClient().execute("setPermissions", params);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
 	/**
@@ -263,102 +336,156 @@ public class RemoteUserManagementService implements UserManagementService {
 		return "UserManagementService";
 	}
 
-	/**
-	 *  Get current permissions for a collection
-	 *
-	 *@param  coll                Collection
-	 *@return                     The permissions value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
-	public Permission getPermissions(Collection coll) throws XMLDBException {
-		if (coll == null)
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
-		Permission perm = ((RemoteCollection)coll).getPermissions();
-		if(perm != null)
-			return perm;
-		try {
-            List<Object> params = new ArrayList<Object>(1);
-			params.add(((RemoteCollection) coll).getPath());
-			HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
-			perm =
-				new UnixStylePermission((String) result.get("owner"), (String) result.get("group"),
-						((Integer) result.get("permissions")).intValue());
-			return perm;
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    /**
+     *  Get current permissions for a collection
+     *
+     *@param  coll                Collection
+     *@return                     The permissions value
+     *@exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public Permission getPermissions(Collection coll) throws XMLDBException {
+        if(coll == null) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+        }
+
+        Permission perm = ((RemoteCollection)coll).getPermissions();
+
+        if(perm == null) {
+            try {
+                List<Object> params = new ArrayList<Object>(1);
+                params.add(((RemoteCollection) coll).getPath());
+
+                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
+
+                final String owner = (String)result.get("owner");
+                final String group = (String)result.get("group");
+                final int mode = ((Integer)result.get("permissions")).intValue();
+                final Object[] acl = (Object[])result.get("acl");
+                final List aces = Arrays.asList(acl);
+
+                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+                
+            } catch(XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            } catch(PermissionDeniedException pde) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+            }
+        }
+
+        return perm;
     }
 
-	/**
-	 *  Get current permissions for a resource
-	 *
-	 *@param  res                 Description of the Parameter
-	 *@return                     The permissions value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
-	public Permission getPermissions(Resource res) throws XMLDBException {
-		if (res == null)
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource is null");
-		if(((EXistResource)res).getPermissions() != null)
-			return ((EXistResource)res).getPermissions();
-        //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
-		System.out.println("Retrieving permissions for " + path);
-		try {
-            List<Object> params = new ArrayList<Object>(1);
-			params.add(path);
-			HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
-			Permission perm =
-				new UnixStylePermission((String) result.get("owner"), (String) result.get("group"),
-						((Integer) result.get("permissions")).intValue());
-			return perm;
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    private Permission getPermission(String owner, String group, int mode, List<ACEAider> aces) throws PermissionDeniedException {
+        Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
+        if(perm instanceof ACLPermission && aces != null && !aces.isEmpty()) {
+            ACLPermission aclPermission = (ACLPermission)perm;
+            for(ACEAider ace : aces) {
+                aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+            }
+        }
+        return perm;
     }
 
-	public Permission[] listResourcePermissions() throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(1);
-			params.add(parent.getPath());
-			HashMap<?,?> result =
-                    (HashMap<?,?>) parent.getClient().execute("listDocumentPermissions", params);
-			Permission perm[] = new Permission[result.size()];
-			String[] resources = parent.listResources();
-			Object[] t;
-			for (int i = 0; i < resources.length; i++) {
-				t = (Object[]) result.get(resources[i]);
-				perm[i] = new UnixStylePermission();
-				perm[i].setOwner((String) t[0]);
-				perm[i].setGroup((String) t[1]);
-				perm[i].setMode(((Integer) t[2]).intValue());
-			}
-			return perm;
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    /**
+     *  Get current permissions for a resource
+     *
+     *@param  res                 Description of the Parameter
+     *@return                     The permissions value
+     *@exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public Permission getPermissions(Resource res) throws XMLDBException {
+        if(res == null) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource is null");
+        }
+
+        Permission perm = ((EXistResource)res).getPermissions();
+
+        if(perm == null) {
+            //TODO : use dedicated function in XmldbURI
+            String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+            try {
+                List<Object> params = new ArrayList<Object>(1);
+                params.add(path);
+
+                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
+
+                final String owner = (String)result.get("owner");
+                final String group = (String)result.get("group");
+                final int mode = ((Integer)result.get("permissions")).intValue();
+                final Object[] acl = (Object[])result.get("acl");
+                final List aces = Arrays.asList(acl);
+
+                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+                
+            } catch (XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            } catch(PermissionDeniedException pde) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+            }
+        }
+
+        return perm;
     }
 
-	public Permission[] listCollectionPermissions() throws XMLDBException {
-		try {
+    @Override
+    public Permission[] listResourcePermissions() throws XMLDBException {
+        try {
             List<Object> params = new ArrayList<Object>(1);
-			params.add(parent.getPath());
-			HashMap<?,?> result =
-                    (HashMap<?,?>) parent.getClient().execute("listCollectionPermissions", params);
-			Permission perm[] = new Permission[result.size()];
-			String collections[] = parent.listChildCollections();
-			Object[] t;
-			for (int i = 0; i < collections.length; i++) {
-				t = (Object[]) result.get(collections[i]);
-				perm[i] = new UnixStylePermission();
-				perm[i].setOwner((String) t[0]);
-				perm[i].setGroup((String) t[1]);
-				perm[i].setMode(((Integer) t[2]).intValue());
-			}
-			return perm;
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(parent.getPath());
+            HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listDocumentPermissions", params);
+            Permission perm[] = new Permission[result.size()];
+            String[] resources = parent.listResources();
+            Object[] t;
+            for(int i = 0; i < resources.length; i++) {
+                t = (Object[]) result.get(resources[i]);
+
+                final String owner = (String)t[0];
+                final String group = (String)t[1];
+                final int mode = ((Integer)t[2]).intValue();
+                List aces = null;
+                if(t.length == 4) {
+                    aces = Arrays.asList(t[3]);
+                }
+                perm[i] = getPermission(owner, group, mode, (List<ACEAider>)aces);
+            }
+            return perm;
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+        }
+    }
+
+    @Override
+    public Permission[] listCollectionPermissions() throws XMLDBException {
+        try {
+            List<Object> params = new ArrayList<Object>(1);
+            params.add(parent.getPath());
+            HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listCollectionPermissions", params);
+            Permission perm[] = new Permission[result.size()];
+            String collections[] = parent.listChildCollections();
+            Object[] t;
+            for (int i = 0; i < collections.length; i++) {
+                t = (Object[]) result.get(collections[i]);
+
+                final String owner = (String)t[0];
+                final String group = (String)t[1];
+                final int mode = ((Integer)t[2]).intValue();
+                List aces = null;
+                if(t.length == 4) {
+                    aces = Arrays.asList(t[3]);
+                }
+                
+                perm[i] = getPermission(owner, group, mode, (List<ACEAider>)aces);
+            }
+            return perm;
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+        }
     }
 
 	/**

@@ -97,6 +97,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
             
@@ -162,6 +163,7 @@
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -189,6 +191,7 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -207,6 +210,7 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -256,6 +260,7 @@
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -281,6 +286,7 @@
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -299,6 +305,7 @@
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
@@ -416,9 +423,10 @@
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.aspectj"/>
                 <path refid="classpath.junit"/>
-	            <path refid="classpath.test-libs"/>
-	            <path refid="classpath.xslts"/>
+                <path refid="classpath.test-libs"/>
+                <path refid="classpath.xslts"/>
             </classpath>
         </javac>
         <echo>JUnit tests generated.</echo>
@@ -440,6 +448,7 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>
@@ -462,6 +471,7 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="512m">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.ant_launcher"/>
             <classpath refid="classpath.junit"/>

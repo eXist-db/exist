@@ -88,7 +88,7 @@ public class BFile extends BTree {
 
     protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
 
-    public final static short FILE_FORMAT_VERSION_ID = 11;
+    public final static short FILE_FORMAT_VERSION_ID = 13;
     
     public final static long UNKNOWN_ADDRESS = -1;
 

@@ -25,7 +25,7 @@ package org.exist.xmldb;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.util.Compressor;
 import org.exist.util.EXistInputSource;
 
@@ -44,12 +44,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.exist.security.ACLPermission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.security.internal.aider.PermissionAiderFactory;
 
 /**
  * A remote implementation of the Collection interface. This
@@ -319,95 +324,132 @@ public class RemoteCollection implements CollectionImpl {
 		return listResources();
 	}
 
-	public Resource getResource(String name) throws XMLDBException {
-        List<String> params = new ArrayList<String>(1);
-		XmldbURI docUri;
-		try {
-			docUri = XmldbURI.xmldbUriFor(name);
-		} catch(URISyntaxException e) {
-			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-		}
-		params.add(getPathURI().append(docUri).toString());
-		HashMap<?,?> hash;
-		try {
-			hash = (HashMap<?,?>) rpcClient.execute("describeResource", params);
-		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		}
-        String docName = (String) hash.get("name");
-		if(docName == null)
-			return null;	// resource does not exist!
+    private Permission getPermission(String owner, String group, int mode, List<ACEAider> aces) throws PermissionDeniedException {
+        Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
+        if(perm instanceof ACLPermission && aces != null && !aces.isEmpty()) {
+            ACLPermission aclPermission = (ACLPermission)perm;
+            for(ACEAider ace : aces) {
+                aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+            }
+        }
+        return perm;
+    }
+
+    @Override
+    public Resource getResource(String name) throws XMLDBException {
+        final List<String> params = new ArrayList<String>(1);
+        XmldbURI docUri;
+        try {
+            docUri = XmldbURI.xmldbUriFor(name);
+        } catch(URISyntaxException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+        }
+        params.add(getPathURI().append(docUri).toString());
+        final HashMap<?,?> hash;
+        try {
+            hash = (HashMap<?,?>)rpcClient.execute("describeResource", params);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
+        final String docName = (String)hash.get("name");
+        if(docName == null) {
+            return null;	// resource does not exist!
+        }
 		
-		try {
-			docUri = XmldbURI.xmldbUriFor(docName).lastSegment();
-		} catch(URISyntaxException e) {
-			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-		}
-		Permission perm = new UnixStylePermission(
-				(String) hash.get("owner"),
-				(String) hash.get("group"),
-				((Integer) hash.get("permissions")).intValue());
-		String type = (String)hash.get("type");
-		long contentLen = 0;
-		if(hash.containsKey("content-length-64bit")) {
-			Object o = hash.get("content-length-64bit");
-			if(o instanceof Long) {
-				contentLen = ((Long)o).longValue();
-			} else {
-				contentLen = Long.parseLong((String)o);
-			}
-		} else if(hash.containsKey("content-length"))
-			contentLen = ((Integer)hash.get("content-length")).intValue();
+        try {
+            docUri = XmldbURI.xmldbUriFor(docName).lastSegment();
+        } catch(URISyntaxException e) {
+                throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+        }
+
+        final String owner = (String)hash.get("owner");
+        final String group = (String)hash.get("group");
+        final int mode = ((Integer)hash.get("permissions")).intValue();
+        final Object[] acl = (Object[])hash.get("acl");
+        final List aces = Arrays.asList(acl);
+
+        final Permission perm;
+        try {
+            perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for resource '" + name + "': " + pde.getMessage(), pde);
+        }
+
+        String type = (String)hash.get("type");
+        long contentLen = 0;
+        if(hash.containsKey("content-length-64bit")) {
+            Object o = hash.get("content-length-64bit");
+            if(o instanceof Long) {
+                contentLen = ((Long)o).longValue();
+            } else {
+                contentLen = Long.parseLong((String)o);
+            }
+        } else if(hash.containsKey("content-length"))
+            contentLen = ((Integer)hash.get("content-length")).intValue();
 		
-		if(type == null || type.equals("XMLResource")) {
-			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docUri, null);
-			r.setPermissions(perm);
-			r.setContentLength(contentLen);
-            r.setDateCreated((Date) hash.get("created"));
-            r.setDateModified((Date) hash.get("modified"));
-            if (hash.containsKey("mime-type"))
-                r.setMimeType((String) hash.get("mime-type"));
-			return r;
-		} else {
-			RemoteBinaryResource r = new RemoteBinaryResource(this, docUri);
-			r.setContentLength(contentLen);
-			r.setPermissions(perm);
-            r.setDateCreated((Date) hash.get("created"));
-            r.setDateModified((Date) hash.get("modified"));
-            if (hash.containsKey("mime-type"))
-                r.setMimeType((String) hash.get("mime-type"));
-			return r;
-		}
+            if(type == null || type.equals("XMLResource")) {
+                RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docUri, null);
+                r.setPermissions(perm);
+                r.setContentLength(contentLen);
+                r.setDateCreated((Date) hash.get("created"));
+                r.setDateModified((Date) hash.get("modified"));
+                if(hash.containsKey("mime-type")) {
+                    r.setMimeType((String) hash.get("mime-type"));
+                }
+                return r;
+            } else {
+                RemoteBinaryResource r = new RemoteBinaryResource(this, docUri);
+                r.setContentLength(contentLen);
+                r.setPermissions(perm);
+                r.setDateCreated((Date) hash.get("created"));
+                r.setDateModified((Date) hash.get("modified"));
+                if (hash.containsKey("mime-type")) {
+                    r.setMimeType((String) hash.get("mime-type"));
+                }
+                return r;
+            }
 	}
 
-	private void readCollection() throws XMLDBException {
-		childCollections = new HashMap<XmldbURI, Collection>();
+    private void readCollection() throws XMLDBException {
+        childCollections = new HashMap<XmldbURI, Collection>();
         List<String> params = new ArrayList<String>(1);
         params.add(getPath());
 
-		HashMap<?,?> collection;
-		try {
-			collection = (HashMap<?,?>) rpcClient.execute("describeCollection", params);
-		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-		}
+        final HashMap<?,?> collection;
+        try {
+            collection = (HashMap<?,?>) rpcClient.execute("describeCollection", params);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
+        
         Object[] collections = (Object[]) collection.get("collections");
-		permissions = new UnixStylePermission(
-				(String) collection.get("owner"),
-				(String) collection.get("group"),
-				((Integer) collection.get("permissions")).intValue());
-		String childName;
-		for (int i = 0; i < collections.length; i++) {
-			childName = (String) collections[i];
-			try {
+
+
+        final String owner = (String)collection.get("owner");
+        final String group = (String)collection.get("group");
+        final int mode = ((Integer)collection.get("permissions")).intValue();
+        final Object[] acl = (Object[])collection.get("acl");
+        final List aces = Arrays.asList(acl);
+
+        final Permission perm;
+        try {
+            perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for collection '" + getPath() + "': " + pde.getMessage(), pde);
+        }
+
+        String childName;
+        for(int i = 0; i < collections.length; i++) {
+            childName = (String) collections[i];
+            try {
                 //TODO: Should this use the checked version instead?
-				RemoteCollection child =
-					new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
-				addChildCollection(child);
-			} catch (XMLDBException e) {
-			}
-		}
-	}
+                RemoteCollection child = new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
+                addChildCollection(child);
+            } catch (XMLDBException e) {
+                //TODO log?
+            }
+        }
+    }
 
 	public void registerService(Service serv) throws XMLDBException {
 		throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);

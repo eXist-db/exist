@@ -39,6 +39,12 @@
         <pathelement path="${java.class.path}"/>
     </path>
 
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
     <path id="classpath.junit">
     	<pathelement path="${top.dir}/test/classes"/>
     	<pathelement path="${test.classes}"/>

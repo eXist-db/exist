@@ -21,17 +21,25 @@
  */
 package org.exist.config;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.exist.EXistException;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
+import org.exist.security.ACLPermission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.utils.ConverterFrom1_0;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -41,7 +49,6 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
 	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-		;
 	}
 
 	@Override
@@ -106,7 +113,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 		checkForUpdates(broker, document.getURI(), document);
 		
 		XmldbURI uri = document.getCollection().getURI();
-		if (uri.startsWith(SecurityManager.SECURITY_COLLETION_URI))
+		if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI))
 			try {
 				broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
 			} catch (ConfigurationException e) {
@@ -153,4 +160,60 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 			; //XXX: inform object that configuration was deleted
 		}
 	}
+
+        /**
+         * Mappings from User ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
+         */
+        final static Map<Integer, Integer> userIdMappings = new HashMap<Integer, Integer>();
+        static {
+            userIdMappings.put(-1, RealmImpl.UNKNOWN_ACCOUNT_ID);
+            userIdMappings.put(0, RealmImpl.SYSTEM_ACCOUNT_ID);
+            userIdMappings.put(1, RealmImpl.ADMIN_ACCOUNT_ID);
+            userIdMappings.put(2, RealmImpl.GUEST_ACCOUNT_ID);
+        }
+
+        /**
+         * Mappings from group ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
+         */
+        final static Map<Integer, Integer> groupIdMappings = new HashMap<Integer, Integer>();
+        static {
+            groupIdMappings.put(-1, RealmImpl.UNKNOWN_GROUP_ID);
+            groupIdMappings.put(1, RealmImpl.DBA_GROUP_ID);
+            groupIdMappings.put(2, RealmImpl.GUEST_GROUP_ID);
+        }
+        
+        @Override
+        public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
+            
+            final boolean aclPermissionInUse = PermissionFactory.getPermission() instanceof ACLPermission;
+
+            //map unix style user and group ids to acl style
+            if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("account")) {
+                Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
+                super.startElement(namespaceURI, localName, qname, newAttrs);
+            } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("group")) {
+                Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
+                super.startElement(namespaceURI, localName, qname, newAttrs);
+            } else {
+                super.startElement(namespaceURI, localName, qname, attributes);
+            }
+        }
+        
+        private Attributes modifyUserGroupIdAttribute(final Attributes attrs, final Map<Integer, Integer> idMappings) {
+            String strId = attrs.getValue("id");
+            if(strId != null) {
+                Integer id = Integer.parseInt(strId);
+                Integer newId = idMappings.get(id);
+                if(newId == null) {
+                    newId = id;
+                }
+                AttributesImpl newAttrs = new AttributesImpl(attrs);
+                int idIndex = newAttrs.getIndex("id");
+                newAttrs.setAttribute(idIndex, newAttrs.getURI(idIndex), "id", newAttrs.getQName(idIndex), newAttrs.getType(idIndex), newId.toString());
+                return newAttrs;
+            }
+            
+            return attrs;
+        }
+        
 }

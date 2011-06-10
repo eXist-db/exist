@@ -47,6 +47,11 @@
         <pathelement path="${top.dir}/exist.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+    <path id="classpath.aspectj">
+        <fileset dir="../../${tools.aspectj}/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     <path id="classpath.jar">
         <pathelement path="${top.dir}/exist-fluent.jar"/>
     </path>
@@ -142,6 +147,7 @@
 
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.aspectj"/>
                 <path refid="classpath.jar"/>
                 <path refid="classpath.test"/>
                 <path refid="classpath.test-libs"/>

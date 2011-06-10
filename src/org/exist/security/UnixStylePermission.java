@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -22,57 +22,49 @@
 package org.exist.security;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
+import static org.exist.security.PermissionRequired.IS_DBA;
+import static org.exist.security.PermissionRequired.IS_OWNER;
+import static org.exist.security.PermissionRequired.IS_MEMBER;
 
-import org.apache.log4j.Logger;
+import org.exist.security.internal.RealmImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
-import org.exist.util.SyntaxException;
-
 /**
- *  Manages the permissions assigned to a resource. This includes
- *  the user who owns the resource, the owner group and the permissions
- *  for user, group and others. Permissions are encoded in a single byte
- *  according to common unix conventions.
+ * Manages the permissions assigned to a resource. This includes
+ * the user who owns the resource, the owner group and the permissions
+ * for owner, group and others.
  *
- * @author     Wolfgang Meier <wolfgang@exist-db.org>
+ * Permissions are encoded into a 52 bit vector with the following convention -
+ *
+ * [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
+ * @see UnixStylePermission.encodeAsBitVector(int, int, int) for more details
+ *
+ * @author Adam Retter <adam@exist-db.org>
  */
+public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
 
-public class UnixStylePermission implements Permission {
+    protected SecurityManager sm;
 
-	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
-
-	//owner, default to DBA
-    protected Account owner;
-    protected Group ownerGroup;
-
-    //permissions
-    private int permissions = DEFAULT_PERM;
-    
-    private SecurityManager sm;
+    protected long vector = encodeAsBitVector(RealmImpl.SYSTEM_ACCOUNT_ID, RealmImpl.DBA_GROUP_ID, DEFAULT_PERM);
 
     public UnixStylePermission(SecurityManager sm) {
-    	if (sm == null)
-    		throw new IllegalArgumentException("Security manager can't be null");
-    	
+    	if(sm == null) {
+            throw new IllegalArgumentException("Security manager can't be null");
+        }
     	this.sm = sm;
-    	owner = sm.getSystemSubject();
-    	ownerGroup = sm.getDBAGroup();
     }
-
 
     /**
      * Construct a Permission with given permissions 
      *
-     * @param  sm           Description of the Parameter
-     * @param  permissions  Description of the Parameter
+     * @param  sm    Description of the Parameter
+     * @param  mode  Description of the Parameter
      */
-    public UnixStylePermission(SecurityManager sm, int permissions) {
-    	this(sm);
-        this.permissions = permissions;
+    public UnixStylePermission(SecurityManager sm, int mode) {
+        this(sm);
+        setMode(mode);
     }
-
     
     /**
      * Construct a permission with given user, group and permissions
@@ -81,28 +73,12 @@ public class UnixStylePermission implements Permission {
      * @param  sm           Description of the Parameter
      * @param  user         Description of the Parameter
      * @param  group        Description of the Parameter
-     * @param  permissions  Description of the Parameter
+     * @param  mode  Description of the Parameter
      */
-    public UnixStylePermission(Subject invokingUser, SecurityManager sm, String user, String group, int permissions) {
-    	this(sm, permissions);
-        owner = sm.getAccount(invokingUser, user);
-        ownerGroup = sm.getGroup(invokingUser, group);
-        
-        check(user, group);
+    public UnixStylePermission(SecurityManager sm, int ownerId, int groupId, int mode) {
+        this(sm);
+        vector = encodeAsBitVector(ownerId, groupId, mode);
     }
-    
-
-
-    /**
-     *  Get the active permissions for group
-     *
-     *@return    The groupPermissions value
-     */
-    @Override
-    public int getGroupMode() {
-        return ( permissions & 0x38 ) >> 3;
-    }
-
 
     /**
      *  Gets the user who owns this resource
@@ -111,79 +87,12 @@ public class UnixStylePermission implements Permission {
      */
     @Override
     public Account getOwner() {
-        return owner;
+        return sm.getAccount(getOwnerId());
     }
 
-
-    /**
-     *  Gets the group 
-     *
-     *@return    The ownerGroup value
-     */
-    @Override
-    public Group getGroup() {
-        return ownerGroup;
+    private int getOwnerId() {
+        return (int)(vector >>> 32);
     }
-
-
-    /**
-     *  Get the permissions
-     *
-     *@return    The permissions value
-     */
-    @Override
-    public int getMode() {
-        return permissions;
-    }
-
-
-    /**
-     *  Get the active permissions for others
-     *
-     *@return    The publicPermissions value
-     */
-    @Override
-    public int getOtherMode() {
-        return permissions & 0x7;
-    }
-
-
-    /**
-     *  Get the active permissions for the owner
-     *
-     *@return    The userPermissions value
-     */
-    @Override
-    public int getOwnerMode() {
-        return ( permissions & 0x1c0 ) >> 6;
-    }
-    
-	/**
-     *  Set the owner group
-     *
-     *@param  groupName  The new group value
-     */
-    @Override
-    public void setGroup(Subject invokingUser, String groupName ) {
-        Group group = sm.getGroup(invokingUser, groupName);
-        if (group != null) ownerGroup = group;
-    }
-
-    @Override
-    public void setGroup(Subject invokingUser, Group group ) {
-    	if (group != null) setGroup(invokingUser, group.getName());
-    }
-
-    /**
-     *  Sets permissions for group
-     *
-     *@param  perm  The new groupPermissions value
-     */
-    @Override
-    public void setGroupMode( int perm ) {
-        permissions = permissions | ( perm << 3 );
-    }
-
 
     /**
      *  Set the owner passed as User object
@@ -191,14 +100,22 @@ public class UnixStylePermission implements Permission {
      *@param  account  The new owner value
      */
     @Override
-    public void setOwner(Subject invokingUser, Account account ) {
-    	//assume SYSTEM identity if user gets lost due to a database corruption
+    public void setOwner(Subject invokingUser, Account account) {
+    	//assume SYSTEM identity if user gets lost due to a database corruption - WTF???
     	if(account == null) {
-    		this.owner = sm.getSystemSubject();
-    	} else
-    		setOwner(invokingUser, account.getName());
+            account = sm.getSystemSubject();
+    	}
+        setOwnerId(account.getId());
     }
 
+    @Override
+    public void setOwner(Subject invokingUser, int id) {
+        Account account = sm.getAccount(id);
+        if(account == null) {
+            account = sm.getSystemSubject();
+        }
+        setOwnerId(id);
+    }
 
     /**
      *  Set the owner
@@ -208,228 +125,9 @@ public class UnixStylePermission implements Permission {
     @Override
     public void setOwner(Subject invokingUser, String name) {
     	Account account = sm.getAccount(invokingUser, name);
-    	if (account != null) owner = account; 
-    }
-
-    /**
-     *  Set permissions using a string. The string has the
-     * following syntax:
-     * 
-     * [user|group|other]=[+|-][read|write|update]
-     * 
-     * For example, to set read and write permissions for the group, but
-     * not for others:
-     * 
-     * group=+read,+write,other=-read,-write
-     * 
-     * The new settings are or'ed with the existing settings.
-     * 
-     *@param  str                  The new permissions
-     *@exception  SyntaxException  Description of the Exception
-     */
-    @Override
-    public void setMode( String str ) throws SyntaxException {
-        StringTokenizer tokenizer = new StringTokenizer( str, ",= " );
-        String token;
-        int shift = -1;
-        while ( tokenizer.hasMoreTokens() ) {
-            token = tokenizer.nextToken();
-            if ( token.equalsIgnoreCase( USER_STRING ) )
-                shift = 6;
-            else if ( token.equalsIgnoreCase( GROUP_STRING ) )
-                shift = 3;
-            else if ( token.equalsIgnoreCase( OTHER_STRING ) )
-                shift = 0;
-            else {
-                char modifier = token.charAt( 0 );
-                if ( !( modifier == '+' || modifier == '-' ) )
-                    throw new SyntaxException( "expected modifier +|-" );
-                else
-                    token = token.substring( 1 );
-                if ( token.length() == 0 )
-                    throw new SyntaxException( "'read', 'write' or 'update' " +
-                        "expected in permission string" );
-                int perm;
-                if ( token.equalsIgnoreCase( "read" ) )
-                    perm = READ;
-                else if ( token.equalsIgnoreCase( "write" ) )
-                    perm = WRITE;
-                else
-                    perm = UPDATE;
-                switch ( modifier ) {
-                    case '+':
-                        permissions = permissions | ( perm << shift );
-                        break;
-                    default:
-                        permissions = permissions & ( ~( perm << shift ) );
-                        break;
-                }
-            }
+    	if (account != null){
+            setOwnerId(account.getId());
         }
-    }
-
-
-    /**
-     *  Set permissions
-     *
-     *@param  perm  The new permissions value
-     */
-    @Override
-    public void setMode( int perm ) {
-        this.permissions = perm;
-    }
-
-
-    /**
-     *  Set permissions for others
-     *
-     *@param  perm  The new publicPermissions value
-     */
-    @Override
-    public void setOtherMode( int perm ) {
-        permissions = permissions | perm;
-    }
-
-
-    /**
-     *  Set permissions for the owner
-     *
-     *@param  perm  The new userPermissions value
-     */
-    @Override
-    public void setOwnerMode( int perm ) {
-        permissions = permissions | ( perm << 6 );
-    }
-
-
-    /**
-     *  Format permissions 
-     *
-     *@return    Description of the Return Value
-     */
-    @Override
-    public String toString() {
-    	final char[] ch;
-    	if (permissions <= 511) {
-    		ch = new char[] {
-                    ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
-                    ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
-                    ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
-                    ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r',
-                    ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w',
-                    ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u',
-                    ( permissions & READ ) == 0 ? '-' : 'r',
-                    ( permissions & WRITE ) == 0 ? '-' : 'w',
-                    ( permissions & UPDATE ) == 0 ? '-' : 'u'
-        		};
-    	} else {
-    		ch = new char[] {
-                ( permissions & ( READ << 9 ) ) == 0 ? '-' : 'a',
-                ( permissions & ( WRITE << 9 ) ) == 0 ? '-' : 'g',
-                ( permissions & ( UPDATE << 9 ) ) == 0 ? '-' : 's',
-                ( permissions & ( READ << 6 ) ) == 0 ? '-' : 'r',
-                ( permissions & ( WRITE << 6 ) ) == 0 ? '-' : 'w',
-                ( permissions & ( UPDATE << 6 ) ) == 0 ? '-' : 'u',
-                ( permissions & ( READ << 3 ) ) == 0 ? '-' : 'r',
-                ( permissions & ( WRITE << 3 ) ) == 0 ? '-' : 'w',
-                ( permissions & ( UPDATE << 3 ) ) == 0 ? '-' : 'u',
-                ( permissions & READ ) == 0 ? '-' : 'r',
-                ( permissions & WRITE ) == 0 ? '-' : 'w',
-                ( permissions & UPDATE ) == 0 ? '-' : 'u'
-    		};
-    	}
-        return new String(ch);
-    }
-
-
-    /**
-     *  Check  if user has the requested permissions for this resource.
-     *
-     *@param  user  The user
-     *@param  perm  The requested permissions
-     *@return       true if user has the requested permissions
-     */
-    @Override
-    public boolean validate( Subject user, int perm ) {
-        // group dba has full access
-        if ( user.hasDbaRole() )
-            return true;
-        // check if the user owns this resource
-        if ( user.equals( owner ) )
-            return validateUser( perm );
-
-        // check groups
-        if (ownerGroup != null) {
-        	if (user.hasGroup(ownerGroup.getName()))
-                return validateGroup( perm );
-        }
-
-        // finally, check public access rights
-        return validatePublic( perm );
-    }
-
-    private boolean validateGroup( int perm ) {
-        perm = perm << 3;
-        return ( permissions & perm ) == perm;
-    }
-
-    private boolean validatePublic( int perm ) {
-        return ( permissions & perm ) == perm;
-    }
-
-    private boolean validateUser( int perm ) {
-        perm = perm << 6;
-        return ( permissions & perm ) == perm;
-    }
-
-    private void check(String user, String group) {
-        if (owner == null) {
-        	String s = "";
-        	if (user != null) s = " ["+user+"]";
-        		
-        	throw new IllegalArgumentException("User was not found."+s);
-        }
-        if (ownerGroup == null) {
-        	String s = "";
-        	if (group != null) s = " ["+group+"]";
-        		
-        	throw new IllegalArgumentException("Group was not found."+s);
-        }
-	}
-
-
-	@Override
-	public void setGroup(Subject invokingUser, int id) {
-		Group group = sm.getGroup(id);
-		if (group == null)
-			group = sm.getDBAGroup();
-		
-		ownerGroup = group;
-	}
-
-
-	@Override
-	public void setOwner(Subject invokingUser, int id) {
-		Account account = sm.getAccount(id);
-		if (account == null)
-			account = sm.getSystemSubject();
-		
-		owner = account;
-	}
-
-    @Override
-    public void setGroup(int id) {
-        setGroup(null, id);
-    }
-
-    @Override
-    public void setGroup(Group group) {
-        setGroup(null, group);
-    }
-
-    @Override
-    public void setGroup(String name) {
-        setGroup(null, name);
     }
 
     @Override
@@ -447,28 +145,369 @@ public class UnixStylePermission implements Permission {
         setOwner(null, user);
     }
 
+    @PermissionRequired(user = IS_DBA)
+    private void setOwnerId(int ownerId) {
+        this.vector =
+            ((long)ownerId << 32) | //left shift new ownerId into position
+            (vector & 4294967295L);   //extract everything from current permission except ownerId
+    }
+
+    /**
+     *  Gets the group 
+     *
+     *@return    The group value
+     */
     @Override
-    public void write(VariableByteOutputStream ostream) {
-        ostream.writeInt(getOwner().getId());
-        ostream.writeInt(getGroup().getId());
-        ostream.writeInt(getMode());
+    public Group getGroup() {
+        return sm.getGroup(getGroupId());
+    }
+
+    private int getGroupId() {
+        return (int)((vector >>> 8) & 1048575);
+    }
+    
+    /**
+     *  Set the owner group
+     *
+     *@param  groupName  The new group value
+     */
+    @Override
+    public void setGroup(Subject invokingUser, String groupName) {
+        Group group = sm.getGroup(invokingUser, groupName);
+        if(group != null) {
+            setGroupId(group.getId());
+        }
+    }
+
+    @Override
+    public void setGroup(Subject invokingUser, Group group) {
+    	if(group != null){
+            setGroupId(group.getId());
+        }
+    }
+    
+    @Override
+    public void setGroup(Subject invokingUser, int id) {
+        Group group = sm.getGroup(id);
+        if(group == null){
+            group = sm.getDBAGroup(); //TODO is this needed?
+        }
+        setGroupId(group.getId());
+    }
+        
+    @Override
+    public void setGroup(int id) {
+        setGroup(null, id);
+    }
+
+    @Override
+    public void setGroup(Group group) {
+        setGroup(null, group);
+    }
+
+    @Override
+    public void setGroup(String name) {
+        setGroup(null, name);
+    }
+
+    @PermissionRequired(user = IS_DBA | IS_OWNER, group = IS_MEMBER)
+    private void setGroupId(int groupId) {
+        this.vector =
+            ((vector >>> 28) << 28) | //current ownerId and ownerMode, mask rest
+            (groupId << 8) |          //left shift new groupId into positon
+            (vector & 255);            //current groupMode and otherMode
+    }
+
+    /**
+     *  Get the mode
+     *
+     *@return    The mode
+     */
+    @Override
+    public int getMode() {
+        return (int) ((((vector >>> 31) & 1) << 11) | (((vector >>> 7) & 1) << 10) | (((vector >>> 3) & 1) << 9) | //setUid | setGid | sticky
+                ((((vector >>> 28) & 7) << 6) | (((vector >>> 4) & 7) << 3) | (vector & 7))); //userPerm | groupPerm | otherPerm
+    }
+
+    /**
+     *  Set the mode
+     *
+     *@param  mode  The new mode value
+     */
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    final public void setMode(int mode) { 
+        this.vector =
+            ((vector >>> 32) << 32) |               //left shift current ownerId into position
+            ((long)((mode >>> 11) & 1) << 31) |     //left shift setuid into position
+            ((((mode >>> 6) & 7)) << 28) |          //left shift new ownerMode into position
+            (((vector >>> 8) & 1048575) << 8) |     //left shift current groupId into position
+            (((mode >>> 10) & 1) << 7) |            //left shift setgid into position
+            (((mode >>> 3) & 7) << 4) |             //left shift new groupMode into position
+            (((mode >>> 9) & 1) << 3) |             //left shift sticky into position
+            (mode & 7);                             //new otherMode
+    }
+
+    @Override
+    public boolean isSetUid() {
+        return ((vector >>> 31) & 1) == 1;
+    }
+
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setSetUid(boolean setUid) {
+        this.vector = ((vector >>> 32) << 32) | (setUid ? 1 : 0) | (vector & 2147483647);
+    }
+
+    @Override
+    public boolean isSetGid() {
+        return ((vector >>> 7) & 1) == 1;
+    }
+
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setSetGid(boolean setGid) {
+        this.vector = ((vector >>> 8) << 8) | (setGid ? 1 : 0) | (vector & 127);
+    }
+
+    @Override
+    public boolean isSticky() {
+        return ((vector >>> 3) & 1) == 1;
+    }
+
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setSticky(boolean sticky) {
+        this.vector = ((vector >>> 4) << 4) | (sticky ? 1 : 0) | (vector & 7);
+    }
+    
+    /**
+     *  Get the active mode for the owner
+     *
+     *@return    The mode value
+     */
+    @Override
+    public int getOwnerMode() {
+        return (int) ((vector >>> 28) & 7);
+    }
+
+    /**
+     *  Set mode for the owner
+     *
+     *@param  mode  The new owner mode value
+     */
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setOwnerMode(int mode) {
+        mode = mode & 7; //ensure its only 3 bits
+
+        this.vector =
+            ((vector >>> 31) << 31) |  //left shift current ownerId and setuid into position
+            (mode << 28) |             //left shift new ownerMode into position
+            (vector & 268435455);      //extract everything else from current permission except ownerId and ownerMode
+    }
+
+    /**
+     *  Get the mode for group
+     *
+     *@return    The mode value
+     */
+    @Override
+    public int getGroupMode() {
+        return (int)((vector >>> 4) & 7);
+    }
+
+    /**
+     *  Sets mode for group
+     *
+     *@param  mode  The new mode value
+     */
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setGroupMode(int mode) {
+        mode = mode & 7; //ensure its only 3 bits
+
+        this.vector =
+            ((vector >>> 7) << 7) | //left shift current ownerId, setuid, ownerMode, groupId and setgid into position
+            (mode << 4) |           //left shift new groupMode into position
+            (vector & 15);          //current sticky and otherMode
+    }
+
+    /**
+     *  Get the mode for others
+     *
+     *@return    The mode value
+     */
+    @Override
+    public int getOtherMode() {
+        return (int)(vector & 7);
+    }
+
+    /**
+     *  Set mode for others
+     *
+     *@param  mode  The new other mode value
+     */
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setOtherMode(int mode) {
+        mode = mode & 7; //ensure its only 3 bits
+
+        this.vector =
+            ((vector >>> 3) << 3) |    //left shift current ownerId, ownerMode, groupId and groupMode into position
+            mode;                      //new otherMode
+    }
+
+    /**
+     *  Format mode
+     *
+     *@return the mode formatted as a string e.g. 'rwurwurwu'
+     */
+    @Override
+    public String toString() {
+        final char ch[] = new char[] {
+            (vector & (READ << 28)) == 0 ? UNSET_CHAR : READ_CHAR,
+            (vector & (WRITE << 28)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (vector & (1L << 31)) == 0 ? ((vector & (UPDATE << 28)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETUID_CHAR,
+            
+            (vector & (READ << 4)) == 0 ? UNSET_CHAR : READ_CHAR,
+            (vector & (WRITE << 4)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (vector & (1 << 7)) == 0 ? ((vector & (UPDATE << 4)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETGID_CHAR,
+
+            (vector & READ) == 0 ? UNSET_CHAR : READ_CHAR,
+            (vector & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (vector & (1 << 3)) == 0 ? ((vector & UPDATE) == 0 ? UNSET_CHAR : UPDATE_CHAR) : STICKY_CHAR
+        };
+        return String.valueOf(ch);
+    }
+
+    /**
+     *  Check  if user has the requested mode for this resource.
+     *
+     *@param  user  The user
+     *@param  mode  The requested mode
+     *@return       true if user has the requested mode
+     */
+    @Override
+    public boolean validate(Subject user, int mode) {
+
+        //group dba has full access
+        if(user.hasDbaRole()) {
+            return true;
+        }
+
+        //check owner
+        if(user.getId() == (vector >>> 32)) {                   //check owner
+            return (mode & ((vector >>> 28) & 7)) == mode;      //check owner mode
+        }
+
+        //check group
+        int userGroupIds[] = user.getGroupIds();
+        int groupId = (int)((vector >>> 8) & 1048575);
+        for(int userGroupId : userGroupIds) {
+            if(userGroupId == groupId) {
+                return (mode & ((vector >>> 4) & 7)) == mode;
+            }
+        }
+
+        //check other
+        if((mode & (vector & 7)) == mode) {
+            return true;
+        }
+
+        return false;
+
+        /*
+        if((permissionCheck & vector) == permissionCheck) { //check user and user mode
+            return true;    //matched both the username and the mode
+        } else if(((permissionCheck >>> 29) & (vector >>> 29)) == permissionCheck >>> 29) {
+            ///prevents fall-through, i.e. if the username matches and the mode didnt then stop comparrisons
+            return false;
+        }
+
+        //check group
+        int userGroupIds[] = user.getGroupIds();
+        for(int userGroupId : userGroupIds) {
+            permissionCheck = encodeAsBitVector(0, userGroupId, mode << 3);
+            if((permissionCheck & vector) == permissionCheck) { //check group and group mode
+                return true;
+            } else if((((permissionCheck >> 6) & 1048575) & ((vector >> 6) & 1048575)) == ((permissionCheck >> 6) & 1048575)) {
+                ///prevents fall-through, i.e. if the grouname matches and the mode didnt then stop comparrisons
+                return false;
+            }
+        }
+        
+        //check other
+        permissionCheck = encodeAsBitVector(0, 0, mode); //check other mode
+        if((permissionCheck & vector) == permissionCheck) {
+            return true;
+        }
+        
+        return false;*/
     }
 
     @Override
     public void read(VariableByteInput istream) throws IOException {
-    	int id = istream.readInt();
-        owner = sm.getAccount(id);
-        if (owner == null) {
-        	LOG.error("Account id = "+id+" do not found, set to SYSTEM.");
-        	owner = sm.getSystemSubject();
+        this.vector = istream.readLong();
+    }
+
+    @Override
+    public void write(VariableByteOutputStream ostream) {
+        ostream.writeLong(vector);
+    }
+
+    protected final long getVector() {
+        return vector;
+    }
+
+    /**
+     * should return max of 52 bits - e.g. The maximum numeric value - 4503599627370495
+     * exact encoding is [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
+     */
+    protected final long encodeAsBitVector(int userId, int groupId, int mode) {
+
+        //makes sure mode is only 12 bits max - TODO maybe error if not 10 bits
+        mode = mode & 4095;
+
+        //makes sure userId is only 20 bits max - TODO maybe error if not 20 bits
+        userId = userId & 1048575;
+
+        //makes sure groupId is only 20 bits max - TODO maybe error if not 20 bits
+        groupId = groupId & 1048575;
+
+        int setUid = (mode >>> 11) & 1;
+        int setGid = (mode >>> 10) & 1;
+        int sticky = (mode >>> 9) & 1;
+
+        int userPerm = (mode >>> 6) & 7;
+        int groupPerm = (mode >>> 3) & 7;
+        int otherPerm = mode & 7;
+
+        return ((long)userId << 32) | ((long)setUid << 31) | (userPerm << 28) | (groupId << 8) | (setGid << 7) | (groupPerm << 4) | (sticky << 3) | otherPerm;
+    }
+
+    protected Subject getCurrentSubject() {
+        return sm.getDatabase().getSubject();
+    }
+
+    @Override
+    public boolean isCurrentSubjectDBA() {
+        return getCurrentSubject().hasDbaRole();
+    }
+
+    @Override
+    public boolean isCurrentSubjectOwner() {
+        return getCurrentSubject().getId() == getOwnerId();
+    }
+
+    @Override
+    public boolean isCurrentSubjectInGroup() {
+        final int groupId = getGroupId();
+        for(int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
+            if(groupId == currentSubjectGroupId) {
+                return true;
+            }
         }
-    	
-        id = istream.readInt();
-        ownerGroup = sm.getGroup(id);
-        if (ownerGroup == null) {
-        	LOG.error("Group id = "+id+" do not found, set to DBA.");
-        	ownerGroup = sm.getDBAGroup();
-        }
-        this.permissions = istream.readInt();
+        return false;
     }
 }

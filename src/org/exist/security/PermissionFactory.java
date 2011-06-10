@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,59 +21,129 @@
  */
 package org.exist.security;
 
+import java.io.IOException;
 import org.apache.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 
 /**
- * Instatiates an appropriate Permission class based on the current configuration
+ * Instantiates an appropriate Permission class based on the current configuration
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  */
-public class PermissionFactory
-{
-	private final static Logger LOG = Logger.getLogger(PermissionFactory.class);
-	
-	public static SecurityManager sm = null;
-	
-	public static Permission getPermission()
-	{
-		try
-		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(sm);
-		}
-		catch(Throwable ex)
-		{
-	          LOG.warn("Exception while instantiating security permission class.", ex);
-	    }
-		return null;
-	}
-	
-	public static Permission getPermission(int perm)
-	{
-		try
-		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(sm, perm);
-		}
-		catch(Throwable ex)
-		{
-	          LOG.warn("Exception while instantiating security permission class.", ex);
-	    }
-		return null;
-	}
-	
-	public static Permission getPermission(Subject invokingUser, String user, String group, int permissions)
-	{
-		try
-		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
-	        return (Permission)new UnixStylePermission(invokingUser, sm, user, group, permissions);
-		}
-		catch(Throwable ex)
-		{
-	          LOG.warn("Exception while instantiating security permission class.", ex);
-	    }
-		return null;
-	}
-	
+public class PermissionFactory {
+
+    private final static Logger LOG = Logger.getLogger(PermissionFactory.class);
+
+    public static SecurityManager sm = null;        //TODO The way this gets set is nasty AR
+
+    public static Permission getPermission() {
+        Permission permission = null;
+        try {
+            permission = new SimpleACLPermission(sm);
+        } catch(Throwable ex) {
+          LOG.error("Exception while instantiating security permission class.", ex);
+        }
+        return permission;
+    }
+
+    public static Permission getPermission(int mode) {
+        Permission permission = null;
+        try {
+            permission = new SimpleACLPermission(sm, mode);
+        } catch(Throwable ex) {
+          LOG.error("Exception while instantiating security permission class.", ex);
+        }
+        return permission;
+    }
+
+    public static Permission getPermission(int ownerId, int groupId) {
+        //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
+        return new SimpleACLPermission(sm, ownerId, groupId, Permission.DEFAULT_PERM);
+    }
+
+    public static Permission getPermission(Subject invokingUser, String userName, String groupName, int mode) {
+        Permission permission = null;
+        try {
+            Account owner = sm.getAccount(invokingUser, userName);
+            if(owner == null) {
+                throw new IllegalArgumentException("User was not found '" + (userName == null ? "" : userName) + "'");
+            }
+
+            Group group = sm.getGroup(invokingUser, groupName);
+            if(group == null) {
+        	throw new IllegalArgumentException("Group was not found '" + (userName == null ? "" : groupName) + "'");
+            }
+
+            permission = new SimpleACLPermission(sm, owner.getId(), group.getId(), mode);
+	} catch(Throwable ex) {
+          LOG.error("Exception while instantiating security permission class.", ex);
+        }
+        return permission;
+    }
+
+    public interface PermissionModifier {
+        public void modify(Permission permission) throws PermissionDeniedException;
+    }
+
+    public static void updatePermissions(DBBroker broker, XmldbURI pathUri, PermissionModifier permissionModifier) throws PermissionDeniedException {
+        Collection collection = null;
+        DocumentImpl doc = null;
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {
+            collection = broker.openCollection(pathUri, Lock.WRITE_LOCK);
+            if (collection == null) {
+                doc = broker.getXMLResource(pathUri, Lock.WRITE_LOCK);
+                if(doc == null) {
+                    transact.abort(transaction);
+                    throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
+                }
+
+                Permission permissions = doc.getPermissions();
+                permissionModifier.modify(permissions);
+
+                broker.storeXMLResource(transaction, doc);
+                transact.commit(transaction);
+                broker.flush();
+            } else {
+                // keep the write lock in the transaction
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+
+                Permission permissions = collection.getPermissions();
+                permissionModifier.modify(permissions);
+
+                broker.saveCollection(transaction, collection);
+                transact.commit(transaction);
+                broker.flush();
+            }
+        } catch(XPathException xpe) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + xpe.getMessage(), xpe);
+        } catch (PermissionDeniedException pde) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
+        } catch (IOException ioe) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + ioe.getMessage(), ioe);
+        } catch (TriggerException te) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
+        } catch(TransactionException te) {
+            transact.abort(transaction);
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
+        } finally {
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
+        }
+    }
 }

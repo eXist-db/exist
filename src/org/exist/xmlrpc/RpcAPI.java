@@ -29,6 +29,7 @@ import java.util.Vector;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -761,6 +762,20 @@ public interface RpcAPI {
 		String ownerGroup,
 		int permissions)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
+
+        boolean setPermissions(
+                final String resource,
+                final String owner,
+                final String ownerGroup,
+                final int mode,
+                final List<ACEAider> aces)
+                throws EXistException, PermissionDeniedException, URISyntaxException;
+
+        public boolean setPermissions(
+                final String resource,
+                final String owner,
+                final String ownerGroup)
+                throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	public boolean lockResource(String path, String userName)
 	throws EXistException, PermissionDeniedException, URISyntaxException;

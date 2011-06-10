@@ -937,7 +937,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                collection.setPermissions(permissions);
             } catch (NumberFormatException e) {
                try {
-                  collection.setPermissions(mode);
+                  collection.getPermissions().setMode(mode);
                } catch (SyntaxException e1) {
                   throw new PermissionDeniedException("syntax error for mode attribute in exist:permissions element");
                }

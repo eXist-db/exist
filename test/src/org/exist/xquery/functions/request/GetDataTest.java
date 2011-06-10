@@ -1,5 +1,9 @@
 package org.exist.xquery.functions.request;
 
+import org.exist.security.internal.aider.ACEAider;
+import java.util.ArrayList;
+import org.exist.security.Permission;
+import org.exist.xmldb.UserManagementService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +48,8 @@ public class GetDataTest extends RESTTest {
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
         root.storeResource(res);
+        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        ums.chmod(res, 0777);
     }
 
     @AfterClass

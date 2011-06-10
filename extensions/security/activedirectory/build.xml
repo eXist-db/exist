@@ -46,6 +46,12 @@
         <pathelement path="${top.dir}/start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     
     <target name="prepare">
         <mkdir dir="${classes}"/>
@@ -103,6 +109,7 @@
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.aspectj"/>
     
             <formatter type="plain"/>
             <formatter type="xml"/>

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist team
+ *  Copyright (C) 2001-2011 The eXist-db project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -61,6 +61,7 @@ import java.util.Properties;
 import javax.swing.*;
 
 import javax.xml.transform.OutputKeys;
+import org.exist.security.ACLPermission;
 
 
 public class Backup
@@ -258,6 +259,7 @@ public class Backup
         Permission[]            perms        = mgtService.listResourcePermissions();
         Permission              currentPerms = mgtService.getPermissions( current );
 
+
         if( dialog != null ) {
             dialog.setCollection( current.getName() );
             dialog.setResourceCount( resources.length );
@@ -277,12 +279,15 @@ public class Backup
 
         //The name should have come from an XmldbURI.toString() call
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", currentPerms.getOwner().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getGroup().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( currentPerms.getMode() ) );
+        writeUnixStylePermissionAttributes(attr, currentPerms);
         attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue( cur.getCreationTime() ) );
         attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
+        
         serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
+
+        if(currentPerms instanceof ACLPermission) {
+            writeACLPermission(serializer, (ACLPermission)currentPerms);
+        }
 
         // scan through resources
         Resource       resource;
@@ -347,9 +352,7 @@ public class Backup
                 attr.clear();
                 attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType() );
                 attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
-                attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner().getName() );
-                attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getGroup().getName() );
-                attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( perms[i].getMode() ) );
+                writeUnixStylePermissionAttributes(attr, perms[i]);
                 Date date = ris.getCreationTime();
 
                 if( date != null ) {
@@ -382,6 +385,9 @@ public class Backup
                     }
                 }
                 serializer.startElement( Namespaces.EXIST_NS, "resource", "resource", attr );
+                if(currentPerms instanceof ACLPermission) {
+                    writeACLPermission(serializer, (ACLPermission)perms[i]);
+                }
                 serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
             }
             catch( XMLDBException e ) {
@@ -441,6 +447,34 @@ public class Backup
         catch( Exception e ) {
             e.printStackTrace();
         }
+    }
+
+    private void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
+        attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
+        attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
+        attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode())); 
+    }
+
+    private void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
+        AttributesImpl attr = new AttributesImpl();
+        attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
+        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));
+
+        serializer.startElement(Namespaces.EXIST_NS, "acl", "acl", attr );
+
+        for(int i = 0; i < acl.getACECount(); i++) {
+            attr.clear();
+            attr.addAttribute(Namespaces.EXIST_NS, "index", "index", "CDATA", Integer.toString(i));
+            attr.addAttribute(Namespaces.EXIST_NS, "target", "target", "CDATA",  acl.getACETarget(i).name());
+            attr.addAttribute(Namespaces.EXIST_NS, "who", "who", "CDATA", acl.getACEWho(i));
+            attr.addAttribute(Namespaces.EXIST_NS, "access_type", "access_type", "CDATA", acl.getACEAccessType(i).name());
+            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(acl.getACEMode(i)));
+
+            serializer.startElement(Namespaces.EXIST_NS, "ace", "ace", attr);
+            serializer.endElement(Namespaces.EXIST_NS, "ace", "ace");
+        }
+
+        serializer.endElement(Namespaces.EXIST_NS, "acl", "acl");
     }
 
     class BackupThread extends Thread

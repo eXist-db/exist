@@ -54,6 +54,11 @@
     	<pathelement path="${top.dir}/start.jar"/>
 		<pathelement path="${java.class.path}"/>
     </path>
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     <path id="classpath.junit">
     	<pathelement path="${top.dir}/test/classes"/>
     	<pathelement path="${test.classes}"/>
@@ -126,6 +131,7 @@
         <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
 
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
 

@@ -38,7 +38,6 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.xacml.AccessContext;
@@ -77,6 +76,8 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
+import org.exist.security.PermissionFactory.PermissionModifier;
+import org.exist.security.internal.aider.ACEAider;
 
 /**
  * This class implements the actual methods defined by
@@ -663,6 +664,10 @@ public class RpcConnection implements RpcAPI {
             hash.put("owner", perms.getOwner().getName());
             hash.put("group", perms.getGroup().getName());
             hash.put("permissions", new Integer(perms.getMode()));
+            if(perms instanceof ACLPermission) {
+                hash.put("acl", getACEs(perms));
+            }
+
             hash.put("type",
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
@@ -727,6 +732,9 @@ public class RpcConnection implements RpcAPI {
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
             desc.put("permissions", Integer.valueOf(perms.getMode()));
+            if(perms instanceof ACLPermission) {
+                desc.put("acl", getACEs(perms));
+            }
             return desc;
         } finally {
             if(collection != null)
@@ -1429,6 +1437,98 @@ public class RpcConnection implements RpcAPI {
     }
     
     /**
+     * The method <code>getHits</code>
+     *
+     * @param resultId an <code>int</code> value
+     * @return an <code>int</code> value
+     * @exception EXistException if an error occurs
+     */
+    @Override
+    public int getHits(int resultId) throws EXistException {
+        QueryResult qr = factory.resultSets.getResult(resultId);
+        if (qr == null)
+            throw new EXistException("result set unknown or timed out");
+        qr.touch();
+        if (qr.result == null)
+            return 0;
+        return qr.result.getItemCount();
+    }
+    
+    /**
+     * The method <code>getMode</code>
+     *
+     * @param name a <code>String</code> value
+     * @return a <code>HashMap</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
+    @Override
+    public HashMap<String, Object> getPermissions(String name)
+    throws EXistException, PermissionDeniedException, URISyntaxException {
+    	return getPermissions(XmldbURI.xmldbUriFor(name));
+    }
+
+    /**
+     * The method <code>getMode</code>
+     *
+     * @param uri a <code>XmldbURI</code> value
+     * @return a <code>HashMap</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
+    private HashMap<String, Object> getPermissions(XmldbURI uri) throws EXistException, PermissionDeniedException {
+        DBBroker broker = null;
+        Collection collection = null;
+
+        try {
+            broker = factory.getBrokerPool().get(user);
+            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            Permission perm = null;
+            if(collection == null) {
+                DocumentImpl doc = null;
+                try {
+                    doc = broker.getXMLResource(uri, Lock.READ_LOCK);
+                    if(doc == null) {
+                        throw new EXistException("document or collection " + uri + " not found");
+                    }
+                    perm = doc.getPermissions();
+                } finally {
+                    if(doc != null) {
+                        doc.getUpdateLock().release(Lock.READ_LOCK);
+                    }
+                }
+            } else {
+                perm = collection.getPermissions();
+            }
+
+            HashMap<String, Object> result = new HashMap<String, Object>();
+            result.put("owner", perm.getOwner().getName());
+            result.put("group", perm.getGroup().getName());
+            result.put("permissions", Integer.valueOf(perm.getMode()));
+
+            if(perm instanceof ACLPermission) {
+                result.put("acl", getACEs(perm));
+            }
+            return result;
+        } finally {
+            if(collection != null){
+                collection.release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
+        }
+    }
+    
+    private List<ACEAider> getACEs(Permission perm) {
+        final List<ACEAider> aces = new ArrayList<ACEAider>();
+        final ACLPermission aclPermission = (ACLPermission)perm;
+        for(int i = 0; i < aclPermission.getACECount(); i++) {
+            aces.add(new ACEAider(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i)));
+        }
+        return aces;
+    }
+
+    /**
      * The method <code>listDocumentPermissions</code>
      *
      * @return a <code>HashMap</code> value
@@ -1450,8 +1550,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap<String, List<Object>> listDocumentPermissions(XmldbURI collUri)
-    throws EXistException, PermissionDeniedException {
+    private HashMap<String, List<Object>> listDocumentPermissions(XmldbURI collUri) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
         try {
@@ -1463,13 +1562,19 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + collUri);
             HashMap<String, List<Object>> result = new HashMap<String, List<Object>>(collection.getDocumentCount());
+
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             	DocumentImpl doc = i.next();
-            	Permission perm = doc.getPermissions();
-            	List<Object> tmp = new ArrayList<Object>(3);
+
+                Permission perm = doc.getPermissions();
+
+                List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
                 tmp.add(perm.getGroup().getName());
                 tmp.add(Integer.valueOf(perm.getMode()));
+                if(perm instanceof ACLPermission) {
+                    tmp.add(getACEs(perm));
+                }
                 result.put(doc.getFileURI().toString(), tmp);
             }
             return result;
@@ -1479,7 +1584,7 @@ public class RpcConnection implements RpcAPI {
             factory.getBrokerPool().release(broker);
         }
     }
-    
+
     /**
      * The method <code>listCollectionPermissions</code>
      *
@@ -1524,6 +1629,9 @@ public class RpcConnection implements RpcAPI {
                 tmp.add(perm.getOwner().getName());
                 tmp.add(perm.getGroup().getName());
                 tmp.add(Integer.valueOf(perm.getMode()));
+                if(perm instanceof ACLPermission) {
+                    tmp.add(getACEs(perm));
+                }
                 result.put(child, tmp);
             }
             return result;
@@ -1531,81 +1639,6 @@ public class RpcConnection implements RpcAPI {
             if(collection != null)
                 collection.release(Lock.READ_LOCK);
             factory.getBrokerPool().release(broker);
-        }
-    }
-    
-    /**
-     * The method <code>getHits</code>
-     *
-     * @param resultId an <code>int</code> value
-     * @return an <code>int</code> value
-     * @exception EXistException if an error occurs
-     */
-    @Override
-    public int getHits(int resultId) throws EXistException {
-        QueryResult qr = factory.resultSets.getResult(resultId);
-        if (qr == null)
-            throw new EXistException("result set unknown or timed out");
-        qr.touch();
-        if (qr.result == null)
-            return 0;
-        return qr.result.getItemCount();
-    }
-    
-    /**
-     * The method <code>getMode</code>
-     *
-     * @param name a <code>String</code> value
-     * @return a <code>HashMap</code> value
-     * @exception EXistException if an error occurs
-     * @exception PermissionDeniedException if an error occurs
-     * @exception URISyntaxException if an error occurs
-     */
-    @Override
-    public HashMap<String, Object> getPermissions(String name)
-    throws EXistException, PermissionDeniedException, URISyntaxException {
-    	return getPermissions(XmldbURI.xmldbUriFor(name));
-    }
-
-    /**
-     * The method <code>getMode</code>
-     *
-     * @param uri a <code>XmldbURI</code> value
-     * @return a <code>HashMap</code> value
-     * @exception EXistException if an error occurs
-     * @exception PermissionDeniedException if an error occurs
-     */
-    private HashMap<String, Object> getPermissions(XmldbURI uri)
-    throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
-        Collection collection = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
-            collection = broker.openCollection(uri, Lock.READ_LOCK);
-            Permission perm = null;
-            if (collection == null) {
-                DocumentImpl doc = null;
-                try {
-                	doc = broker.getXMLResource(uri, Lock.READ_LOCK);
-	                if (doc == null)
-	                    throw new EXistException("document or collection " + uri + " not found");
-	                perm = doc.getPermissions();
-                } finally {
-                	if (doc != null)
-                		doc.getUpdateLock().release(Lock.READ_LOCK);
-                }
-            } else {
-                perm = collection.getPermissions();
-            }
-            HashMap<String, Object> result = new HashMap<String, Object>();
-            result.put("owner", perm.getOwner().getName());
-            result.put("group", perm.getGroup().getName());
-            result.put("permissions", Integer.valueOf(perm.getMode()));
-            return result;
-        } finally {
-        	if (collection != null)
-                collection.release(Lock.READ_LOCK);
-        	factory.getBrokerPool().release(broker);
         }
     }
     
@@ -3378,6 +3411,80 @@ public class RpcConnection implements RpcAPI {
     	}
     }
 
+    private interface BrokerOperation {
+        public void withBroker(DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException;
+    }
+
+    private void executeWithBroker(BrokerOperation brokerOperation) throws EXistException, URISyntaxException, PermissionDeniedException {
+        DBBroker broker = null;
+        try {
+            broker = factory.getBrokerPool().get(user);
+            brokerOperation.withBroker(broker);
+        } finally {
+            if(broker != null) {
+                factory.getBrokerPool().release(broker);
+            }
+        }
+    }
+
+    @Override
+    public boolean setPermissions(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
+        executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setOwner(owner);
+                        permission.setGroup(ownerGroup);
+                    }
+                });
+            }
+        });
+        
+        return true;
+    }
+
+
+
+    @Override
+    public boolean setPermissions(final String resource, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+        executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setMode(permissions);
+                    }
+                });
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean setPermissions(final String resource, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+         executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        try {
+                            permission.setMode(permissions);
+                        } catch(SyntaxException se) {
+                            throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
+                        }
+                    }
+                });
+            }
+         });
+
+        return true;
+    }
+
     /**
      * The method <code>setMode</code>
      *
@@ -3391,109 +3498,26 @@ public class RpcConnection implements RpcAPI {
      * @exception URISyntaxException if an error occurs
      */
     @Override
-    public boolean setPermissions(String resource, String owner,
-            String ownerGroup, String permissions) throws EXistException,
-            PermissionDeniedException, URISyntaxException {
-    	return setPermissions(XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
-    }    
-
-    /**
-     * The method <code>setMode</code>
-     *
-     * @param uri a <code>XmldbURI</code> value
-     * @param owner a <code>String</code> value
-     * @param ownerGroup a <code>String</code> value
-     * @param permissions a <code>String</code> value
-     * @return a <code>boolean</code> value
-     * @exception EXistException if an error occurs
-     * @exception PermissionDeniedException if an error occurs
-     */
-    private boolean setPermissions(XmldbURI uri, String owner,
-            String ownerGroup, String permissions) throws EXistException,
-            PermissionDeniedException {
-        DBBroker broker = null;
-        Collection collection = null;
-        DocumentImpl doc = null;
-        TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
-            SecurityManager manager = factory.getBrokerPool()
-                    .getSecurityManager();
-            collection = broker.openCollection(uri, Lock.WRITE_LOCK);
-            if (collection == null) {
-                doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
-                if (doc == null) {
-                	transact.abort(transaction);
-                	throw new EXistException("document or collection " + uri + " not found");
-                }
-                //TODO : register the lock within the transaction ?
-                LOG.debug("changing permissions on document " + uri);
-                Permission perm = doc.getPermissions();
-                if (perm.validate(user, Permission.WRITE)
-                || manager.hasAdminPrivileges(user)) {
-                    if (owner != null) {
-                        if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
-                            throw new PermissionDeniedException("not allowed to change permissions");
-                        perm.setOwner(owner);
-                        if (!manager.hasGroup(ownerGroup))
-                            manager.addGroup(ownerGroup);
-                        perm.setGroup(ownerGroup);
+    public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+         executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setOwner(owner);
+                        permission.setGroup(ownerGroup);
+                        try {
+                            permission.setMode(permissions);
+                        } catch(SyntaxException se) {
+                            throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
+                        }
                     }
-                    if (permissions != null && permissions.length() > 0)
-                        perm.setMode(permissions);
-                    broker.storeXMLResource(transaction, doc);
-                    transact.commit(transaction);
-                    broker.flush();
-                    return true;
-                }
-                transact.abort(transaction);
-                throw new PermissionDeniedException("not allowed to change permissions");
-            } else {
-                // keep the write lock in the transaction
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
-                LOG.debug("changing permissions on collection " + uri);
-                Permission perm = collection.getPermissions();
-                if (perm.validate(user, Permission.WRITE)
-                || manager.hasAdminPrivileges(user)) {
-                    if (permissions != null)
-                        perm.setMode(permissions);
-                    if (owner != null) {
-                        if (!(perm.getOwner().getName().equals(user.getName()) || manager.hasAdminPrivileges(user)))
-                            throw new PermissionDeniedException("not allowed to change permissions");
-                        perm.setOwner(owner);
-                        if (!manager.hasGroup(ownerGroup))
-                            manager.addGroup(ownerGroup);
-                        perm.setGroup(ownerGroup);
-                    }
-                    broker.saveCollection(transaction, collection);
-                    transact.commit(transaction);
-                    broker.flush();
-                    return true;
-                }
-                throw new PermissionDeniedException("not allowed to change permissions");
-            }
-        } catch (SyntaxException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
+                });
+             }
+        });
 
-        } catch (PermissionDeniedException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-
-        } catch (IOException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-            
-        } catch (TriggerException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-            
-		} finally {
-            if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
-            factory.getBrokerPool().release(broker);
-        }
+        return true;
     }
     
     /**
@@ -3509,100 +3533,50 @@ public class RpcConnection implements RpcAPI {
      * @exception URISyntaxException if an error occurs
      */
     @Override
-    public boolean setPermissions(String resource, String owner,
-            String ownerGroup, int permissions) throws EXistException,
-            PermissionDeniedException, URISyntaxException {
-    	return setPermissions(XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
-    }    
+    public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
+         executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setOwner(owner);
+                        permission.setGroup(ownerGroup);
+                        permission.setMode(permissions);
 
-    /**
-     * The method <code>setMode</code>
-     *
-     * @param uri a <code>XmldbURI</code> value
-     * @param owner a <code>String</code> value
-     * @param ownerGroup a <code>String</code> value
-     * @param permissions an <code>int</code> value
-     * @return a <code>boolean</code> value
-     * @exception EXistException if an error occurs
-     * @exception PermissionDeniedException if an error occurs
-     */
-    private boolean setPermissions(XmldbURI uri, String owner,
-            String ownerGroup, int permissions) throws EXistException,
-            PermissionDeniedException {
-        DBBroker broker = null;
-        Collection collection = null;
-        DocumentImpl doc = null;
-        TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
-            SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-            collection = broker.openCollection(uri, Lock.WRITE_LOCK);
-            if (collection == null) {
-                doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
-                if (doc == null) {
-                	transact.abort(transaction);
-                	throw new EXistException("document or collection " + uri + " not found");
-                }
-                //TODO : register the lock within the transaction ?
-                LOG.debug("changing permissions on document " + uri);
-                Permission perm = doc.getPermissions();
-                if (perm.validate(user, Permission.WRITE) || manager.hasAdminPrivileges(user)) {
-                    if (owner != null) {
-                        if (!( user.equals(perm.getOwner()) || manager.hasAdminPrivileges(user)))
-                            throw new PermissionDeniedException("not allowed to change permissions");
-                        perm.setOwner(owner);
-                        if (!manager.hasGroup(ownerGroup))
-                            manager.addGroup(ownerGroup);
-                        perm.setGroup(ownerGroup);
                     }
-                    perm.setMode(permissions);
-                    broker.storeXMLResource(transaction, doc);
-                    transact.commit(transaction);
-                    broker.flush();
-                    return true;
-                }
-                transact.abort(transaction);
-                throw new PermissionDeniedException("not allowed to change permissions");
+                });
             }
-            //keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
-            LOG.debug("changing permissions on collection " + uri);
-            Permission perm = collection.getPermissions();
-            if (perm.validate(user, Permission.WRITE) || manager.hasAdminPrivileges(user)) {
-                perm.setMode(permissions);
-                if (owner != null) {
-                    if (!(user.equals(perm.getOwner()) || manager.hasAdminPrivileges(user)))
-                        throw new PermissionDeniedException("not allowed to change permissions");
-                    perm.setOwner(owner);
-                    if (!manager.hasGroup(ownerGroup))
-                        manager.addGroup(ownerGroup);
-                    perm.setGroup(ownerGroup);
-                }                
-                broker.saveCollection(transaction, collection);
-                transact.commit(transaction);
-                broker.flush();
-                return true;
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean setPermissions(final String resource, final String owner, final String group, final int mode, final List<ACEAider> aces) throws EXistException, PermissionDeniedException, URISyntaxException {
+         executeWithBroker(new BrokerOperation() {
+            @Override
+            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setOwner(owner);
+                        permission.setGroup(group);
+                        permission.setMode(mode);
+
+                        if(permission instanceof ACLPermission) {
+                            ACLPermission aclPermission = ((ACLPermission)permission);
+                            aclPermission.clear();
+                            for(ACEAider ace : aces) {
+                                aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+                            }
+                        }
+                    }
+                });
             }
-            throw new PermissionDeniedException("not allowed to change permissions");
+         });
 
-        } catch (PermissionDeniedException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-
-        } catch (IOException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-            
-        } catch (TriggerException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-
-        } finally {
-            if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
-            factory.getBrokerPool().release(broker);
-        }
+        return true;
     }
     
     /**
@@ -4866,16 +4840,6 @@ public class RpcConnection implements RpcAPI {
     @Override
     public int xupdateResource(String resource, byte[] xupdate) throws PermissionDeniedException, EXistException, SAXException {
         return xupdateResource(resource, xupdate, DEFAULT_ENCODING);
-    }
-
-    @Override
-    public boolean setPermissions(String resource, int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return setPermissions(resource, null, null, permissions);
-    }
-
-    @Override
-    public boolean setPermissions(String resource, String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        return setPermissions(resource, null, null, permissions);
     }
     
     @Override

@@ -67,6 +67,9 @@ public interface Account extends Principal, User {
     @Override
 	public String[] getGroups();
 
+        @Override
+	public int[] getGroupIds();
+
     @Override
 	public boolean hasDbaRole();
 

@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
+import org.exist.storage.NativeClusterBroker;
 
 
 /**
@@ -56,12 +57,10 @@ public final class ClusterCollection extends Collection {
         return collection;
     }
 
-    public ClusterCollection(Collection collection) {
+    public ClusterCollection(NativeClusterBroker broker, Collection collection) {
+        super(broker);
         this.collection = getWrappedCollection(collection);
     }
-
-
-
 
     public void store(Txn txn, DBBroker broker, IndexInfo info, String data, boolean privileged)
             throws EXistException, PermissionDeniedException, TriggerException,
@@ -360,11 +359,11 @@ public final class ClusterCollection extends Collection {
         collection.setId(id);
     }
 
-    public void setPermissions(int mode) throws LockException {
+    public void setPermissions(int mode) throws LockException, PermissionDeniedException {
         collection.setPermissions(mode);
     }
 
-    public void setPermissions(String mode) throws SyntaxException, LockException {
+    public void setPermissions(String mode) throws SyntaxException, LockException, PermissionDeniedException {
         collection.setPermissions(mode);
     }
 

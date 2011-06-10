@@ -15,7 +15,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
@@ -31,6 +30,7 @@ import javax.swing.border.EtchedBorder;
 
 import org.exist.security.Permission;
 import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
@@ -321,6 +321,7 @@ public class ResourcePropertyDialog extends JDialog {
 	}
 
 	private void applyAction() {
+            try{
 		permissions.setOwner(null, (String) owners.getSelectedItem());
 		permissions.setGroup(null, (String) groups.getSelectedItem());
 		int perms =
@@ -330,5 +331,9 @@ public class ResourcePropertyDialog extends JDialog {
 		permissions.setMode(perms);
 		this.setVisible(false);
 		result = APPLY_OPTION;
+            } catch(PermissionDeniedException pde) {
+              ClientFrame.showErrorMessage(Messages.getString("ClientFrame.222") + pde.getMessage(), pde); //$NON-NLS-1$
+              pde.printStackTrace();
+           }
 	}
 }
