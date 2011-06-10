@@ -695,8 +695,10 @@
             <!-- 
                 EXPath Modules 
             -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" />
-            <module uri="http://www.expath.org/mod/http-client" src="resource:org/expath/www/mod/http-client/http-client.xqm" />
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
+            <!-- old implementation of (an old draft of) the HTTP Client module -->
+            <!--module uri="http://www.expath.org/mod/http-client"
+                       src="resource:org/expath/www/mod/http-client/http-client.xqm"/-->
 
             <!-- Native EXPath HTTPClient Module -->
             <module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
