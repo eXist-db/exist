@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Deadlock detection for resource and collection locks. The static methods in this class
@@ -55,11 +56,15 @@ import java.util.Map;
  */
 public class DeadlockDetection {
 
-    private final static Object latch = new Object();
+    private final static ReentrantLock lock = new ReentrantLock();
 
     private final static Map waitForResource = new HashMap();
     private final static Map waitForCollection = new HashMap();
 
+    public static ReentrantLock getLock() {
+    	return lock;
+    }
+    
     /**
      * Register a thread as waiting for a resource lock.
      *
@@ -67,9 +72,12 @@ public class DeadlockDetection {
      * @param waiter the WaitingThread object which wraps around the thread
      */
     public static void addResourceWaiter(Thread thread, WaitingThread waiter) {
-        synchronized (latch) {
-            waitForResource.put(thread, waiter);
-        }
+    	lock.lock();
+        try {
+			waitForResource.put(thread, waiter);
+		} finally {
+			lock.unlock();
+		}
     }
 
     /**
@@ -79,17 +87,23 @@ public class DeadlockDetection {
      * @return lock
      */
     public static Lock clearResourceWaiter(Thread thread) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             WaitingThread waiter = (WaitingThread) waitForResource.remove(thread);
             if (waiter != null)
                 return waiter.getLock();
             return null;
+        } finally {
+        	lock.unlock();
         }
     }
 
     public static WaitingThread getResourceWaiter(Thread thread) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             return (WaitingThread) waitForResource.get(thread);
+        } finally {
+        	lock.unlock();
         }
     }
     
@@ -105,7 +119,8 @@ public class DeadlockDetection {
      * @return waiting thread
      */
     public static WaitingThread deadlockCheckResource(Thread threadA, Thread threadB) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             // check if threadB is waiting for a resource lock
             WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
             // if lock != null, check if thread B waits for a resource lock currently held by thread A
@@ -114,6 +129,8 @@ public class DeadlockDetection {
                 return waitingThread.getLock().hasLock(threadA) ? waitingThread : null;
             }
             return null;
+        } finally {
+        	lock.unlock();
         }
     }
 
@@ -126,7 +143,8 @@ public class DeadlockDetection {
      * @return true if threadB is currently blocked by a lock held by threadA
      */
     public static boolean isBlockedBy(Thread threadA, Thread threadB) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             // check if threadB is waiting for a resource lock
             WaitingThread waitingThread = (WaitingThread) waitForResource.get(threadB);
             // if lock != null, check if thread B waits for a resource lock currently held by thread A
@@ -134,11 +152,14 @@ public class DeadlockDetection {
                 return waitingThread.getLock().hasLock(threadA);
             }
             return false;
+        } finally {
+        	lock.unlock();
         }
     }
 
     public static boolean wouldDeadlock(Thread waiter, Thread owner, List waiters) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             WaitingThread wt = (WaitingThread) waitForResource.get(owner);
             if (wt != null) {
                 if (waiters.contains(wt)) {
@@ -180,6 +201,8 @@ public class DeadlockDetection {
                 }
             }
             return false;
+        } finally {
+        	lock.unlock();
         }
     }
 
@@ -189,21 +212,30 @@ public class DeadlockDetection {
      * @param waiter the thread
      * @param lock the lock object
      */
-    public static void addCollectionWaiter(Thread waiter, Lock lock) {
-        synchronized (latch) {
-            waitForCollection.put(waiter, lock);
+    public static void addCollectionWaiter(Thread waiter, Lock collectionLock) {
+    	lock.lock();
+        try {
+            waitForCollection.put(waiter, collectionLock);
+        } finally {
+        	lock.unlock();
         }
     }
 
     public static Lock clearCollectionWaiter(Thread waiter) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             return (Lock) waitForCollection.remove(waiter);
+        } finally {
+        	lock.unlock();
         }
     }
 
     public static Lock isWaitingFor(Thread waiter) {
-        synchronized (latch) {
+    	lock.lock();
+        try {
             return (Lock) waitForCollection.get(waiter);
+        } finally {
+        	lock.unlock();
         }
     }
 

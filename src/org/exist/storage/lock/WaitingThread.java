@@ -21,6 +21,9 @@
  */
 package org.exist.storage.lock;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+
 import org.apache.log4j.Logger;
 import org.exist.util.LockException;
 import org.exist.util.DeadlockException;
@@ -33,7 +36,7 @@ public class WaitingThread implements LockListener {
 
     private final static Logger LOG = Logger.getLogger(WaitingThread.class);
     
-    private Object monitor;
+    private Condition monitor;
     private MultiReadReentrantLock lock;
 
     private int lockType;
@@ -44,7 +47,7 @@ public class WaitingThread implements LockListener {
 
     private boolean deadlocked = false;
 
-    public WaitingThread(Thread thread, Object monitor, MultiReadReentrantLock lock, int lockType) {
+    public WaitingThread(Thread thread, Condition monitor, MultiReadReentrantLock lock, int lockType) {
         this.monitor = monitor;
         this.lock = lock;
         this.thread = thread;
@@ -59,13 +62,11 @@ public class WaitingThread implements LockListener {
      */
     public void doWait() throws LockException {
         do {
-            synchronized (monitor) {
-                try {
-                    monitor.wait(500);
-                } catch (InterruptedException e) {
-                    throw new LockException("Interrupted while waiting for read lock");
-                }
-            }
+        	try {
+        		monitor.await(500, TimeUnit.MILLISECONDS);
+        	} catch (InterruptedException e) {
+        		throw new LockException("Interrupted while waiting for read lock");
+        	}
             if (deadlocked) {
                 LOG.warn("Deadlock detected: cancelling wait...");
                 throw new DeadlockException();
@@ -75,9 +76,7 @@ public class WaitingThread implements LockListener {
 
     public void signalDeadlock() {
         deadlocked = true;
-        synchronized (monitor) {
-            monitor.notify();
-        }
+        monitor.signal();
     }
 
     /**
@@ -94,9 +93,7 @@ public class WaitingThread implements LockListener {
     public void lockReleased() {
 //        LOG.debug("Reactivate suspended lock: " + thread.getName());
         suspended = false;
-        synchronized (monitor) {
-            monitor.notify();
-        }
+        monitor.signal();
     }
 
     public boolean isSuspended() {
