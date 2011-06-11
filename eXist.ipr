@@ -114,6 +114,10 @@
   </component>
   <component name="FacetAutodetectingManager">
     <autodetection-disabled>
+      <facet-type id="android" />
+      <facet-type id="JRailsFacetType" />
+      <facet-type id="JRUBY" />
+      <facet-type id="RailsFacetType" />
       <facet-type id="web">
         <modules>
           <module name="eXist">
@@ -292,7 +296,7 @@
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -355,19 +359,20 @@
     </option>
   </component>
   <component name="libraryTable">
-    <library name="tools">
+    <library name="ant">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
-        <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
-        <root url="file://$PROJECT_DIR$/tools/ant/lib" />
-        <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
-        <root url="file://$PROJECT_DIR$/tools/jetty/lib" />
+        <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/tools/jetty/lib" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
+    </library>
+    <library name="cocoon">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/lib/cocoon" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
     </library>
     <library name="core">
       <CLASSES>
@@ -376,22 +381,6 @@
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/lib/core" recursive="false" />
-    </library>
-    <library name="optional">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/lib/optional" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/optional" recursive="false" />
-    </library>
-    <library name="user">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/lib/user" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/user" recursive="false" />
     </library>
     <library name="endorsed">
       <CLASSES>
@@ -402,28 +391,6 @@
         <root url="file://$PROJECT_DIR$/../../Applications/xerces-2_9_1/src" />
       </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
-    </library>
-    <library name="cocoon">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/lib/cocoon" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
-    </library>
-    <library name="ant">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="test">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/test/classes" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
     </library>
     <library name="extensions">
       <CLASSES>
@@ -448,6 +415,45 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES />
+    </library>
+    <library name="optional">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/lib/optional" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/optional" recursive="false" />
+    </library>
+    <library name="test">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/test/classes" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="tools">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
+        <root url="file://$PROJECT_DIR$/tools/ant/lib" />
+        <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />
+        <root url="file://$PROJECT_DIR$/tools/jetty/lib" />
+        <root url="file://$PROJECT_DIR$/tools/aspectj/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/ant/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/aspectj/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/jetty/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/wrapper/lib" recursive="false" />
+    </library>
+    <library name="user">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/lib/user" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/lib/user" recursive="false" />
     </library>
   </component>
 </project>
