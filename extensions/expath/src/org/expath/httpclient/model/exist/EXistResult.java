@@ -22,6 +22,7 @@
 package org.expath.httpclient.model.exist;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import javax.xml.transform.Source;
 import org.exist.memtree.DocumentImpl;
 import org.exist.xquery.XPathException;
@@ -76,6 +77,8 @@ public class EXistResult implements Result {
             result.add(nodeValue);
         } catch(SAXException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);
+        } catch(IOException ioe) {
+            throw new HttpClientException("Unable to add Source to result:" + ioe.getMessage(), ioe);
         } catch(XPathException xpe) {
             throw new HttpClientException("Unable to add Source to result:" + xpe.getMessage(), xpe);
         }
