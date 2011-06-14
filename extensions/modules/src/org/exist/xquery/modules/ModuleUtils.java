@@ -149,7 +149,7 @@ public class ModuleUtils {
                 // return (NodeValue)doc.getDocumentElement();
                 return((NodeValue)doc);
             } catch(IOException e) {
-                throw(new XPathException(e.getMessage()));
+                throw(new XPathException(e.getMessage(), e));
             }  finally {
                 context.popDocumentContext();
 
