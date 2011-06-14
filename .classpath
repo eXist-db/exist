@@ -142,5 +142,6 @@
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.6.11.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.11.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.11.jar"/>
+	<classpathentry kind="lib" path="lib/user/exificient-0.7.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
