@@ -36,7 +36,6 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.SAXAdapter;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
@@ -68,16 +67,12 @@ public class ModuleUtils {
 	 * 
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue stringToXML(XQueryContext context, String str) throws XPathException, SAXException {
+	public static NodeValue stringToXML(XQueryContext context, String str) throws SAXException, IOException {
             Reader reader = new StringReader(str);
             try {
                 return inputSourceToXML(context, new InputSource(reader));
             } finally {
-                try { 
-                    reader.close();
-                } catch(IOException ioe) {
-                    LOG.warn("Unable to close reader: " + ioe.getMessage(), ioe);
-                }
+                reader.close();
             }
 	}
 	
@@ -93,7 +88,7 @@ public class ModuleUtils {
 	 * 
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue streamToXML(XQueryContext context, InputStream is) throws XPathException, SAXException {
+	public static NodeValue streamToXML(XQueryContext context, InputStream is) throws SAXException, IOException {
             return inputSourceToXML(context, new InputSource(is));
 	}
         
@@ -108,11 +103,11 @@ public class ModuleUtils {
 	 * 
 	 * @return The NodeValue of XML
 	 */
-        public static NodeValue sourceToXML(XQueryContext context, Source src)  throws XPathException, SAXException {
+        public static NodeValue sourceToXML(XQueryContext context, Source src) throws SAXException, IOException {
             InputSource inputSource = SAXSource.sourceToInputSource(src);
         
             if(inputSource == null){
-                throw new XPathException(src.getClass().getName() + " is unsupported.");
+                throw new IOException(src.getClass().getName() + " is unsupported.");
             }
             
             return inputSourceToXML(context, inputSource);
@@ -130,7 +125,7 @@ public class ModuleUtils {
 	 * 
 	 * @return The NodeValue of XML
 	 */
-	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource) throws XPathException, SAXException  {
+	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource) throws SAXException, IOException  {
             context.pushDocumentContext();
 
             XMLReader reader = null;
@@ -148,8 +143,6 @@ public class ModuleUtils {
                 Document doc = receiver.getDocument();
                 // return (NodeValue)doc.getDocumentElement();
                 return((NodeValue)doc);
-            } catch(IOException e) {
-                throw(new XPathException(e.getMessage(), e));
             }  finally {
                 context.popDocumentContext();
 
@@ -174,12 +167,12 @@ public class ModuleUtils {
 	 * 
 	 * @return An in-memory Document representing the XML'ised HTML
 	 */
-	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, Source srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, Source srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws IOException, SAXException {
 		
             InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
         
             if(inputSource == null){
-                throw new XPathException(srcHtml.getClass().getName() + " is unsupported.");
+                throw new IOException(srcHtml.getClass().getName() + " is unsupported.");
             }
             
             return htmlToXHtml(context, url, inputSource, parserFeatures, parserProperties);
@@ -200,7 +193,7 @@ public class ModuleUtils {
 	 * 
 	 * @return An in-memory Document representing the XML'ised HTML
 	 */
-	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws XPathException, SAXException {
+	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws IOException, SAXException {
             // we use eXist's in-memory DOM implementation
             org.exist.memtree.DocumentImpl memtreeDoc = null;
 
@@ -232,17 +225,12 @@ public class ModuleUtils {
                                     + "nekohtml.jar into directory 'lib/user'.";
                     LOG.error(errorMsg, e);
 
-                    throw new XPathException(errorMsg, e);
+                    throw new IOException(errorMsg, e);
             }
 
             SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
-            try {
-                reader.parse(srcHtml);
-            } catch (IOException e) {
-                    throw new XPathException(e.getMessage(), e);
-            }
-            
+            reader.parse(srcHtml);
             Document doc = adapter.getDocument();
             memtreeDoc = (DocumentImpl) doc;
             memtreeDoc.setContext(context);
@@ -259,10 +247,8 @@ public class ModuleUtils {
 	 * @return a set of name value properties for representing the XML
 	 *         parameters
 	 */
-	public static Properties parseParameters(Node nParameters)
-			throws XPathException {
-
-		return parseProperties(nParameters, "param");
+	public static Properties parseParameters(Node nParameters){
+            return parseProperties(nParameters, "param");
 	}
 
 	/**
@@ -274,10 +260,8 @@ public class ModuleUtils {
 	 * @return a set of name value properties for representing the XML
 	 *         properties
 	 */
-	public static Properties parseProperties(Node nProperties)
-			throws XPathException {
-
-		return parseProperties(nProperties, "property");
+	public static Properties parseProperties(Node nProperties) {
+            return parseProperties(nProperties, "property");
 	}
 
 	/**
@@ -291,29 +275,24 @@ public class ModuleUtils {
 	 * @return a set of name value properties for representing the XML
 	 *         properties
 	 */
-	private final static Properties parseProperties(Node container,
-			String elementName) throws XPathException {
-		Properties properties = new Properties();
+	private static Properties parseProperties(Node container, String elementName) {
+            Properties properties = new Properties();
 
-		if (container != null && container.getNodeType() == Node.ELEMENT_NODE) {
-			NodeList params = ((Element) container)
-					.getElementsByTagName(elementName);
+            if(container != null && container.getNodeType() == Node.ELEMENT_NODE) {
+                NodeList params = ((Element) container).getElementsByTagName(elementName);
+                for(int i = 0; i < params.getLength(); i++) {
+                    Element param = ((Element) params.item(i));
 
-			for (int i = 0; i < params.getLength(); i++) {
-				Element param = ((Element) params.item(i));
+                    String name = param.getAttribute("name");
+                    String value = param.getAttribute("value");
 
-				String name = param.getAttribute("name");
-				String value = param.getAttribute("value");
-
-				if (name != null && value != null) {
-					properties.setProperty(name, value);
-				} else {
-					LOG.warn("Name or value attribute missing for "
-							+ elementName);
-				}
-			}
-		}
-
-		return properties;
+                    if(name != null && value != null) {
+                        properties.setProperty(name, value);
+                    } else {
+                        LOG.warn("Name or value attribute missing for " + elementName);
+                    }
+                }
+            }
+            return properties;
 	}
 }

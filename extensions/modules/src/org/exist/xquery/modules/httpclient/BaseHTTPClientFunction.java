@@ -347,10 +347,13 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                 responseNode = ( NodeImpl )ModuleUtils.streamToXML( context, new ByteArrayInputStream( body ) );
                 builder.addAttribute( new QName( "type", null, null ), "xml" );
                 responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );
-            }
-            catch( SAXException se ) {
+            } catch(SAXException se) {
                 //could not parse to xml
-                logger.debug("Could not parse http response content as XML: " + se.getMessage(), se);
+                logger.info("Request for URI '" + method.getURI().toString() + "' Could not parse http response content as XML: " + se.getMessage(), se);
+            } catch(IOException ioe) {
+                String msg = "Request for URI '" + method.getURI().toString() + "' Could not parse http response content as XML: " + ioe.getMessage();
+                logger.error(msg, ioe);
+                throw new XPathException(msg, ioe);
             }
 
             if( responseNode == null ) {

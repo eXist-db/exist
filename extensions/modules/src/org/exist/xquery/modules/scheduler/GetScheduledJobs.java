@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.scheduler;
 
+import java.io.IOException;
 import org.xml.sax.SAXException;
 
 import org.exist.dom.QName;
@@ -188,10 +189,11 @@ public class GetScheduledJobs extends BasicFunction
         xmlBuf.append( "</" + SchedulerModule.PREFIX + ":jobs>" );
 
         try {
-            return( ModuleUtils.stringToXML( context, xmlBuf.toString() ) );
-        }
-        catch( SAXException se ) {
-            throw( new XPathException( this, se.getMessage(), se ) );
+            return ModuleUtils.stringToXML( context, xmlBuf.toString());
+        } catch(SAXException se) {
+            throw new XPathException(this, se.getMessage(), se);
+        } catch(IOException ioe) {
+            throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }
 }

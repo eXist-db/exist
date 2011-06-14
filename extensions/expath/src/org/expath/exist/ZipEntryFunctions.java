@@ -200,6 +200,8 @@ public class ZipEntryFunctions extends BasicFunction {
             return ModuleUtils.htmlToXHtml(context, zipEntry.getName(), new StreamSource(zis), null, null);
         } catch(SAXException saxe) {
             throw new XPathException(saxe.getMessage(), saxe);
+        } catch(IOException ioe) {
+            throw new XPathException(ioe.getMessage(), ioe);
         }
     }
 
@@ -208,6 +210,8 @@ public class ZipEntryFunctions extends BasicFunction {
             return ModuleUtils.streamToXML(context, zis);
         } catch(SAXException saxe) {
             throw new XPathException(saxe.getMessage(), saxe);
+        } catch(IOException ioe) {
+            throw new XPathException(ioe.getMessage(), ioe);
         }
     }
 
