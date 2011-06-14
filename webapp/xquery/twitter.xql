@@ -13,7 +13,7 @@ declare namespace html="http://www.w3.org/1999/xhtml";
 
 import module namespace httpclient="http://exist-db.org/xquery/httpclient"
     at "java:org.exist.xquery.modules.httpclient.HTTPClientModule";
-import module namespace xdb="http://exist-db.org/xquery/xmldb";
+import module namespace cache="http://exist-db.org/xquery/cache" at "java:org.exist.xquery.modules.cache.CacheModule";
 
 (: To access more than just the tweets posted by a single user (e.g. its friends timeline), 
    you need to authenticate with a valid twitter account. Enter the username/password pair
@@ -50,25 +50,21 @@ declare function tc:get-timeline($credentials as xs:string*, $userId as xs:strin
             concat("Twitter reported an error. Code: ", $response/@statusCode)
 };
 
-(: Retrieve the timeline and store it into the db :)
+(: Retrieve the timeline and store it into the db cache :)
 declare function tc:update-timeline($credentials as xs:string*, $userId as xs:string, $view as xs:string) {
-    let $null := xdb:create-collection("/db", "twitter")
-    let $feed := tc:get-timeline($credentials, $userId, $view)
+    let $tl := tc:get-timeline($credentials, $userId, $view)
+    let $cache := cache:cache("twitter")
+    let $cached := cache:put($cache, $userId, $tl)
     return
-        if (empty($feed) or $feed instance of xs:string) then
-            $feed
-        else
-            let $docPath := xdb:store("/db/twitter", concat($userId, "_", $view, ".xml"), $feed)
-            return
-                doc($docPath)/atom:feed
+        $tl
 };
 
 (: Main function: returns the timeline in atom format. The data is cached within the database
    and will be renewed every few minutes. :)
 declare function tc:timeline($credentials as xs:string*, $userId as xs:string, $view as xs:string) {
-    let $feed := doc(concat("/db/twitter/", $userId, "_", $view, ".xml"))/atom:feed
+    let $feed := cache:get("twitter", $userId)
     return
-        if (exists($feed) and 
+        if (exists($feed) and
             (xs:dateTime($feed/atom:updated) + $tc:update-frequency) > current-dateTime()) then
             $feed
         else
@@ -78,7 +74,7 @@ declare function tc:timeline($credentials as xs:string*, $userId as xs:string, $
 (: This script will just retrieve the feed, then forward it to
    twitter-view.xql, using a request attribute. The forwarding is done
    through controller.xql :)
-let $user := request:get-parameter("user", ())
+let $user := request:get-parameter("user", "existdb")
 let $view := request:get-parameter("view", "user")
 let $feed :=
     if ($user) then
