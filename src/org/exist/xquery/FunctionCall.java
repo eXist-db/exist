@@ -306,7 +306,8 @@ public class FunctionCall extends Function {
 	 */
     public void resetState(boolean postOptimization) {
          super.resetState(postOptimization);
-         expression.resetState(postOptimization);
+         if (expression.needsReset() || postOptimization)
+        	 expression.resetState(postOptimization);
 	}
 
     /* (non-Javadoc)

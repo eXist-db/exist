@@ -188,6 +188,13 @@ public interface Expression {
     public void resetState(boolean postOptimization);
 
     /**
+     * Returns true if the expression object has not yet been reset, so
+     * {@link #resetState(boolean)} should be called.
+     * @return
+     */
+    public boolean needsReset();
+    
+    /**
      * Start traversing the expression tree using the specified {@link ExpressionVisitor}.
      * @param visitor
      */

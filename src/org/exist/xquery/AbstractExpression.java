@@ -90,6 +90,11 @@ public abstract class AbstractExpression implements Expression {
         contextDocSet = null;
     }
 
+    public boolean needsReset() {
+    	// always return true unless a subclass overwrites this
+    	return true;
+    }
+    
     /**
      * The default cardinality is {@link Cardinality#EXACTLY_ONE}.
      */
