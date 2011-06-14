@@ -200,6 +200,10 @@ public class UserDefinedFunction extends Function implements Cloneable {
         }
     }
 
+	public boolean needsReset() {
+		return currentArguments != null;
+	}
+	
     public void accept(ExpressionVisitor visitor) {
         visitor.visitUserFunction(this);
     }

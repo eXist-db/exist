@@ -87,6 +87,10 @@ public class DebuggableExpression implements Expression {
         expression.resetState(postOptimization);
     }
 
+    public boolean needsReset() {
+    	return true;
+    }
+    
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
     }
