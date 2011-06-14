@@ -87,6 +87,10 @@
             <lib dir="extensions/betterform/src/main/lib">
                 <include name="*.jar"/>
             </lib>
+            <!-- Include the AspectJ runtime jar -->
+            <lib dir="${tools.aspectj}/lib">
+                <include name="aspectjrt-*.jar"/>
+            </lib>
 
 
             <!-- Add configuration files to WEB-INF -->
