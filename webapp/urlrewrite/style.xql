@@ -1,5 +1,7 @@
 xquery version "1.0";
 
+(: $Id$ :)
+
 declare namespace style="http://exist-db.org/xquery/style";
 declare namespace nav="http://exist-db.org/NS/sidebar";
 
@@ -46,7 +48,7 @@ declare function style:sidebar($node) {
                         if (matches($link/@href, "^\w+://")) then
                             $link/@href/string()
                         else
-                            concat($node/@base, "/", ($link/@href)[0])
+                            concat($node/@base, "/", ($link/@href)[1])
                     return
                         <li><a href="{$href}">{$link/string()}</a></li>
                 }
