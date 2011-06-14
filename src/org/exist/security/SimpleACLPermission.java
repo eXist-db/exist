@@ -50,10 +50,6 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         super(sm, ownerId, groupId, mode);
     }
 
-    public SimpleACLPermission(SecurityManager sm, int mode) {
-        super(sm, mode);
-    }
-
     public SimpleACLPermission(SecurityManager sm) {
         super(sm);
     }

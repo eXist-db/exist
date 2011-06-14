@@ -40,6 +40,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 
 /**
  * @author wolf
@@ -88,8 +90,10 @@ public class XMLDBPermissionsToString extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         if(isCalledAs("permissions-to-string")) {
-            int value = ((IntegerValue)args[0].itemAt(0)).getInt();
-            Permission perm = PermissionFactory.getPermission(value);
+            int mode = ((IntegerValue)args[0].itemAt(0)).getInt();
+            SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
+            Subject currentSubject = sm.getDatabase().getSubject();
+            Permission perm = PermissionFactory.getPermission(currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
             return new StringValue(perm.toString());
         } else {
             String permissionsString = args[0].itemAt(0).getStringValue();

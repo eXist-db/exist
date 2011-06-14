@@ -55,19 +55,13 @@ public class PermissionFactory {
         return permission;
     }
 
-    public static Permission getPermission(int mode) {
-        Permission permission = null;
-        try {
-            permission = new SimpleACLPermission(sm, mode);
-        } catch(Throwable ex) {
-          LOG.error("Exception while instantiating security permission class.", ex);
-        }
-        return permission;
-    }
-
     public static Permission getPermission(int ownerId, int groupId) {
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
         return new SimpleACLPermission(sm, ownerId, groupId, Permission.DEFAULT_PERM);
+    }
+    
+    public static Permission getPermission(int ownerId, int groupId, int mode) {
+        return new SimpleACLPermission(sm, ownerId, groupId, mode);
     }
 
     public static Permission getPermission(Subject invokingUser, String userName, String groupName, int mode) {

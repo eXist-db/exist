@@ -54,17 +54,6 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
     	this.sm = sm;
     }
-
-    /**
-     * Construct a Permission with given permissions 
-     *
-     * @param  sm    Description of the Parameter
-     * @param  mode  Description of the Parameter
-     */
-    public UnixStylePermission(SecurityManager sm, int mode) {
-        this(sm);
-        setMode(mode);
-    }
     
     /**
      * Construct a permission with given user, group and permissions
@@ -247,7 +236,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
             (((mode >>> 9) & 1) << 3) |             //left shift sticky into position
             (mode & 7);                             //new otherMode
     }
-
+    
     @Override
     public boolean isSetUid() {
         return ((vector >>> 31) & 1) == 1;
