@@ -153,9 +153,12 @@ public class SerializeToFile extends BasicFunction
 		outputProperties.setProperty( OutputKeys.INDENT, "yes" );
 		outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
 		
-		while( siSerializeParams.hasNext() ) {
-			String opt[] = Option.parseKeyValuePair( siSerializeParams.nextItem().getStringValue() );
-			outputProperties.setProperty( opt[0], opt[1] );
+		while(siSerializeParams.hasNext()) {
+                    String serializeParam = siSerializeParams.nextItem().getStringValue();
+                    String opt[] = Option.parseKeyValuePair(serializeParam);
+                    if(opt != null && opt.length == 2) {
+                        outputProperties.setProperty( opt[0], opt[1] );
+                    }
 		}
 		
 		return( outputProperties );
