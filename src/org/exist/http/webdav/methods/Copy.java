@@ -201,7 +201,11 @@ public class Copy extends AbstractWebDAVMethod {
             transact.abort(transaction);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             
-        } finally {
+        } catch (EXistException e) {
+			transact.abort(transaction);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+			
+		} finally {
             if(destCollection != null)
                 destCollection.release(Lock.WRITE_LOCK);
         }
@@ -259,6 +263,9 @@ public class Copy extends AbstractWebDAVMethod {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (TriggerException e) {
             transact.abort(transaction);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		} catch (EXistException e) {
+			transact.abort(transaction);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} finally {
             if(destCollection != null)

@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
@@ -130,7 +131,9 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
    	  	catch(LockException exception)
    	  	{
    	  		throw new TriggerException(exception);
-   	  	}
+   	  	} catch (EXistException exception) {
+   	  		throw new TriggerException(exception);
+		}
     }
     
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)

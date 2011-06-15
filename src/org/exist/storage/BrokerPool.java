@@ -140,6 +140,10 @@ public class BrokerPool extends Observable implements Database {
     public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
     public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
 
+    public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
+    
+	public static final String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
+
     //TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
     // They can register their own shutdown hooks any time.
@@ -798,9 +802,8 @@ public class BrokerPool extends Observable implements Database {
 		DBBroker broker = get(securityManager.getSystemSubject());
 		try {
        
-        if (broker.isReadOnly()) {
+        if (isReadOnly()) {
             transactionManager.setEnabled(false);
-            isReadOnly = true;
         }
         
 		//Run the recovery process
@@ -1162,6 +1165,10 @@ public class BrokerPool extends Observable implements Database {
         return isReadOnly;
     }
 
+    public void setReadOnly() {
+    	isReadOnly = true;
+    }
+    
     public boolean isInServiceMode() {
         return inServiceMode;
     }

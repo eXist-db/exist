@@ -411,8 +411,9 @@ public abstract class DBBroker extends Observable {
 
     /**
      * Get a new document id that does not yet exist within the collection.
+     * @throws EXistException 
      */
-    public abstract int getNextResourceId(Txn transaction, Collection collection);
+    public abstract int getNextResourceId(Txn transaction, Collection collection) throws EXistException;
 
     /**
      * Get the string value of the specified node.
@@ -664,10 +665,11 @@ public abstract class DBBroker extends Observable {
 	 * @throws LockException
 	 * @throws IOException
 	 * @throws TriggerException 
+	 * @throws EXistException 
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException, IOException, TriggerException;
+			throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
 	/**
 	 * Copy a resource to the destination collection and rename it.
@@ -681,10 +683,11 @@ public abstract class DBBroker extends Observable {
 	 *            collection
 	 * @throws PermissionDeniedException
 	 * @throws LockException
+	 * @throws EXistException 
 	 */
 	public abstract void copyResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException;
+			throws PermissionDeniedException, LockException, EXistException;
 
 	/**
 	 * Defragment pages of this document. This will minimize the number of split
