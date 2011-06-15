@@ -194,7 +194,8 @@ public class ErrorCodes {
      */
     public static ErrorCode EXXQDY0001 = new EXistErrorCode("EXXQDY0001", "Index cannot be applied to the given expression.");
     public static ErrorCode EXISTD0001 = new ErrorCode("EXISTD0001", "");
-
+    public static ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
+    
     public static class ErrorCode {
 
         private final QName errorQName;
