@@ -221,7 +221,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
-            doc.setDocId(broker.getNextResourceId(transaction, this));
+			try {
+				doc.setDocId(broker.getNextResourceId(transaction, this));
+			} catch (EXistException e) {
+				// abort
+				return;
+			}
         documents.put(doc.getFileURI().getRawCollectionPath(), doc);
     }
 
@@ -1164,7 +1169,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             SAXException, LockException, IOException {
         //Make the necessary operations if we process a collection configuration document
         checkConfigurationDocument(transaction, broker, docUri);
-        if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
+        if (broker.getBrokerPool().isReadOnly()) throw new PermissionDeniedException("Database is read-only");
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
@@ -1406,7 +1411,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
             XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified)
             throws PermissionDeniedException, LockException, TriggerException,IOException {
-        if (broker.isReadOnly())
+        if (broker.getBrokerPool().isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
         
         BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);

@@ -924,6 +924,11 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        String docIds = con.getAttribute(BrokerPool.DOC_ID_MODE_ATTRIBUTE);
+        if (docIds != null) {
+        	config.put(BrokerPool.DOC_ID_MODE_PROPERTY, docIds);
+        }
+        
         //Unused !
         String buffers = getConfigAttributeValue( con, "buffers" );
 

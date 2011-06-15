@@ -192,8 +192,6 @@ public class NativeBroker extends DBBroker {
 
     protected Serializer xmlSerializer;
 
-    protected boolean readOnly = false;
-
     /** used to count the nodes inserted after the last memory check */
     protected int nodesCount = 0;
 
@@ -214,6 +212,8 @@ public class NativeBroker extends DBBroker {
 
     protected Journal logManager;
 
+    protected boolean incrementalDocIds = false;
+    
     /** initialize database; read configuration, etc. */
     public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
         super(pool, config);
@@ -254,11 +254,15 @@ public class NativeBroker extends DBBroker {
         if (defaultIndexDepth < 0)
             defaultIndexDepth = DEFAULT_INDEX_DEPTH;
 
+		String docIdProp = (String) config.getProperty(BrokerPool.DOC_ID_MODE_PROPERTY);
+		if (docIdProp != null) {
+			incrementalDocIds = docIdProp.equalsIgnoreCase("incremental");
+		}
+		
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
         setUser(pool.getSecurityManager().getSystemSubject());
 
-        readOnly = pool.isReadOnly();
         try {
             //TODO : refactor so that we can,
             //1) customize the different properties (file names, cache settings...)
@@ -269,14 +273,20 @@ public class NativeBroker extends DBBroker {
             domDb = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
             if (domDb == null)
                 domDb =	new DOMFile(pool, DOM_DBX_ID, dataDir, config);
-            readOnly = readOnly || domDb.isReadOnly();
+            if (domDb.isReadOnly()) {
+                LOG.warn(domDb.getFile().getName() + " is read-only!");
+                pool.setReadOnly();
+            }
             //Initialize collections storage
             collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
             if (collectionsDb == null)
                 collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);
-            readOnly = readOnly || collectionsDb.isReadOnly();
+            if (collectionsDb.isReadOnly()) {
+                LOG.warn(collectionsDb.getFile().getName() + " is read-only!");
+                pool.setReadOnly();
+            }
             valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-            if (readOnly)
+            if (pool.isReadOnly())
                 LOG.info("Database runs in read-only mode");
         } catch (DBException e) {
             LOG.debug(e.getMessage(), e);
@@ -462,7 +472,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public boolean isReadOnly() {
-        return readOnly;
+        return pool.isReadOnly();
     }
 
     public DOMFile getDOMFile() {
@@ -656,7 +666,7 @@ public class NativeBroker extends DBBroker {
                         if (current == null)
                             LOG.debug("Collection '" + path + "' not found!");
                     } else {
-                        if (readOnly)
+                        if (pool.isReadOnly())
                             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
                         if (!current.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
                             LOG.error("Permission denied to create collection '" + path + "'");
@@ -790,8 +800,8 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newUri)
-            throws PermissionDeniedException, LockException, IOException, TriggerException {
-        if (readOnly)
+            throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         //TODO : resolve URIs !!!
         if (newUri != null && newUri.numSegments() !=1) {
@@ -945,7 +955,7 @@ public class NativeBroker extends DBBroker {
 
     private void moveCollectionRecursive(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
             throws PermissionDeniedException, IOException, LockException, TriggerException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if(newName!=null && newName.numSegments()!=1) {
             throw new PermissionDeniedException("New collection name must have one segment!");
@@ -1050,7 +1060,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public boolean removeCollection(final Txn transaction, Collection collection) 
             throws PermissionDeniedException, IOException, TriggerException {
-        if(readOnly)
+        if(pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
     	XmldbURI parentName = collection.getParentURI();
@@ -1264,7 +1274,7 @@ public class NativeBroker extends DBBroker {
             LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
             return;
         }
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
         if (!pool.isInitializing())
@@ -1402,7 +1412,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void reindexCollection(XmldbURI collectionName) throws PermissionDeniedException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         collectionName = prepend(collectionName.toCollectionPathURI());
         Collection collection = getCollection(collectionName);
@@ -1453,7 +1463,7 @@ public class NativeBroker extends DBBroker {
     }
 
     public void dropCollectionIndex(final Txn transaction, Collection collection) throws PermissionDeniedException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if (!collection.getPermissions().validate(getSubject(), Permission.WRITE))
             throw new PermissionDeniedException("insufficient privileges on collection " + 
@@ -1985,8 +1995,8 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName) 
-            throws PermissionDeniedException, LockException {
-        if (readOnly)
+            throws PermissionDeniedException, LockException, EXistException {
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         Collection collection = doc.getCollection();
         if (!collection.getPermissions().validate(getSubject(), Permission.READ))
@@ -2076,7 +2086,7 @@ public class NativeBroker extends DBBroker {
             throws PermissionDeniedException, LockException, IOException, TriggerException {
         /* Copy reference to original document */
         File originalDocument = getCollectionFile(fsDir,doc.getURI(),true);
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         //TODO : somewhat inconsistent (READ is enough for original doc whereas WRITE is mandatory for destination) -pb
         Collection collection = doc.getCollection();
@@ -2176,7 +2186,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void removeXMLResource(final Txn transaction, final DocumentImpl document, boolean freeDocId)
             throws PermissionDeniedException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         try {
             if (LOG.isInfoEnabled()) {
@@ -2239,7 +2249,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
             throws PermissionDeniedException,IOException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if (LOG.isDebugEnabled())
             LOG.debug("removing binary resource " + blob.getDocId() + "...");
@@ -2300,6 +2310,8 @@ public class NativeBroker extends DBBroker {
      * @throws PermissionDeniedException
      */
     protected void freeResourceId(Txn transaction, int id) throws PermissionDeniedException {		
+    	if (incrementalDocIds)
+    		return;
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -2363,9 +2375,10 @@ public class NativeBroker extends DBBroker {
         return freeDocId;
     }
 
-    /** get next Free Doc Id */
+    /** get next Free Doc Id 
+     * @throws EXistException If there's no free document id */
     @Override
-    public int getNextResourceId(Txn transaction, Collection collection) {
+    public int getNextResourceId(Txn transaction, Collection collection) throws EXistException {
         int nextDocId;
         try {
             nextDocId = getFreeResourceId(transaction);
@@ -2384,6 +2397,12 @@ public class NativeBroker extends DBBroker {
             if (data != null) {
                 nextDocId = ByteConversion.byteToInt(data.getData(), 0);
                 ++nextDocId;
+                if (nextDocId == 0x7FFFFFFF) {
+					pool.setReadOnly();
+					throw new EXistException("Max. number of document ids reached. Database is set to " +
+							"read-only state. Please do a complete backup/restore to compact the db and " +
+							"free document ids.");
+				}
             }
             byte[] d = new byte[4];
             ByteConversion.intToByte(nextDocId, d, 0);
@@ -3052,7 +3071,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void repair() throws PermissionDeniedException {
-        if (readOnly)
+        if (pool.isReadOnly())
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         LOG.info("Removing index files ..."); 
         notifyCloseAndRemove();

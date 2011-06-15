@@ -894,6 +894,8 @@ public class Folder extends NamedResource implements Cloneable {
 				throw new DatabaseException(e);
 			} catch (TriggerException e) {
 				throw new DatabaseException(e);
+			} catch (EXistException e) {
+				throw new DatabaseException(e);
 			} finally {
 				destination.release();
 			}
@@ -1088,6 +1090,8 @@ public class Folder extends NamedResource implements Cloneable {
 		} catch (IOException e) {
 			throw new DatabaseException(e);
 		} catch (TriggerException e) {
+			throw new DatabaseException(e);
+		} catch (EXistException e) {
 			throw new DatabaseException(e);
 		} finally {
 			release();
