@@ -59,8 +59,9 @@ public class Parse extends BasicFunction {
             new QName( "parse", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Parses the passed string value into an XML fragment. The string has to be " +
             "well-formed XML. An empty sequence is returned if the argument is an " +
-            "empty string or sequence. If the XML is not well-formed, the function returns an " +
-            "XML fragment to describe the error. The fragment has the form: <report><status>invalid</status><message>...",
+            "empty string or sequence. If the XML is not well-formed, the function throws an " +
+            "error (EXXQDY0002). An XML-formatted description of the error is contained in the error value and " +
+            "can be accessed using XQuery 3.0 try-catch statement.",
             new SequenceType[] { TO_BE_PARSED_PARAMETER },
             RESULT_TYPE
         ),
@@ -119,11 +120,11 @@ public class Parse extends BasicFunction {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
         } catch (ParserConfigurationException e) {
-            throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: " + e.getMessage());
         } catch (SAXException e) {
             logger.debug("Error while parsing XML: " + e.getMessage(), e);
         } catch (IOException e) {
-            throw new XPathException(this, "Error while parsing XML: " + e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage());
         }
         
         if (report.isValid())
@@ -131,7 +132,7 @@ public class Parse extends BasicFunction {
         else {
         	MemTreeBuilder builder = context.getDocumentBuilder();
             NodeImpl result = Shared.writeReport(report, builder);
-            return result;
+    		throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);
         }
     }
 }
