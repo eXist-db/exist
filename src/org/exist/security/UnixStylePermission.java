@@ -101,7 +101,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     public void setOwner(Subject invokingUser, int id) {
         Account account = sm.getAccount(id);
         if(account == null) {
-            account = sm.getSystemSubject();
+            account = sm.getSystemSubject(); // assigned value is never used?
         }
         setOwnerId(id);
     }
