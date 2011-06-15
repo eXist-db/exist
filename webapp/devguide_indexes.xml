@@ -412,7 +412,7 @@
 	the situation will unquestionably improve in the future, making current workarounds redundant.</para>
 	<para>The <classname>Index</classname> has been tested with only one file which is available from the
 	<ulink url="http://www.ordnancesurvey.co.uk/oswebsite/">Ordnance Survey of Great-Britain</ulink>, a topography layer of Port-Talbot, which
-	is available as <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.
+		is available as <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/try-now/sample-data.html">sample data</ulink>.
 	Shall we mention that obtaining <emphasis>valid</emphasis> and sizeable GML data is still extremely difficult?
 	</para>
       </section>
@@ -2929,7 +2929,7 @@
       ]]></programlisting>
       <para>This concludes the prerequisites for running the test.</para>
       <para>Our demonstration file is taken from the <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/">Ordnance Survey of Great-Britain's WWW site</ulink>          	
-      which offers <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.</para>
+      	which offers <ulink url=" http://www.ordnancesurvey.co.uk/oswebsite/products/try-now/sample-data.html">sample data</ulink>.</para>
       <para>The chosen topography layer is of Port-Talbot, which is available as <ulink url="http://www.ordnancesurvey.co.uk/products/osmastermap/layers/topography/sampledata/2182-SS7886-2c1.gz">2182-SS7886-2c1.gz</ulink>.
       Download this file, gunzip it, and give to the resulting file a <filename>.gml</filename> extension (<filename>port-talbot.gml</filename>) this will
       allow eXist to reckognize it as an XML file.</para>
