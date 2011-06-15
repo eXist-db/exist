@@ -152,6 +152,20 @@
             shrinking. This is a measure for the "load" of the cache. Caches
             with high load will never be shrinked. A negative value means that
             shrinkage will not be performed.
+
+		 - doc-ids:
+            how document ids are managed by eXist. Takes the values
+            "default" or "incremental".
+            
+            eXist assigns a unique, 32bit integer document id to every 
+            document. When a document is deleted, its id will be freed 
+            and reused for the next document stored. The disadvantage 
+            of this approach is that document ids
+            are not stable, i.e. one cannot be sure that the same document
+            id will always identify the same document.
+
+            If you need stable, incremental ids, set the option doc-ids to
+            "incremental".
     
         =====================================================================
         
@@ -163,7 +177,8 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="48M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
-        files="@dataDir@" pageSize="4096" nodesBuffer="-1" cacheShrinkThreshold="10000">
+        files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+		doc-ids="default">
 
         <!--
             Specifies the default permissions for all resources and collections
