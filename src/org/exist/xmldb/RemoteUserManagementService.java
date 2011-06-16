@@ -376,12 +376,15 @@ public class RemoteUserManagementService implements UserManagementService {
         return perm;
     }
 
-    private Permission getPermission(String owner, String group, int mode, List<ACEAider> aces) throws PermissionDeniedException {
+    private Permission getPermission(String owner, String group, int mode, List listOfAces) throws PermissionDeniedException {
         Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
-        if(perm instanceof ACLPermission && aces != null && !aces.isEmpty()) {
+        if(perm instanceof ACLPermission && listOfAces != null && !listOfAces.isEmpty()) {
             ACLPermission aclPermission = (ACLPermission)perm;
-            for(ACEAider ace : aces) {
-                aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+            for(Object listOfAcesItem : listOfAces) {
+                if(listOfAcesItem instanceof ACEAider) {
+                    ACEAider ace = (ACEAider)listOfAcesItem;
+                    aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+                }
             }
         }
         return perm;
