@@ -39,7 +39,7 @@ import org.exist.util.SyntaxException;
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
-public class UnixStylePermissionAider extends AbstractUnixStylePermission implements Permission {
+public class UnixStylePermissionAider extends AbstractUnixStylePermission implements PermissionAider {
 
     //owner, default to DBA
     private Account owner;

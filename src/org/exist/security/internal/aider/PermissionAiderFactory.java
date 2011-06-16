@@ -22,7 +22,6 @@
 package org.exist.security.internal.aider;
 
 import org.apache.log4j.Logger;
-import org.exist.security.Permission;
 
 /**
  * Instantiates an appropriate Permission class based on the current configuration
@@ -33,8 +32,8 @@ public class PermissionAiderFactory {
 
     private final static Logger LOG = Logger.getLogger(PermissionAiderFactory.class);
 
-    public static Permission getPermission() {
-        Permission permission = null;
+    public static PermissionAider getPermission() {
+        PermissionAider permission = null;
         try {
             permission = new SimpleACLPermissionAider();
         } catch(Throwable ex) {
@@ -43,8 +42,8 @@ public class PermissionAiderFactory {
         return permission;
     }
 
-    public static Permission getPermission(int mode) {
-        Permission permission = null;
+    public static PermissionAider getPermission(int mode) {
+        PermissionAider permission = null;
         try {
             permission = new SimpleACLPermissionAider(mode);
         } catch(Throwable ex) {
@@ -53,8 +52,8 @@ public class PermissionAiderFactory {
         return permission;
     }
 
-    public static Permission getPermission(String ownerName, String groupName, int mode) {
-        Permission permission = null;
+    public static PermissionAider getPermission(String ownerName, String groupName, int mode) {
+        PermissionAider permission = null;
         try {
             permission = new SimpleACLPermissionAider(ownerName, groupName, mode);
 	} catch(Throwable ex) {
