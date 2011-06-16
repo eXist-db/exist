@@ -2,10 +2,19 @@ xquery version "1.0";
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
-    
+  
+
+(: Note - Disabled the TODO application because the controller.xql is NOT the place to do your application installation!
+    Also with the new tighter permissions in eXist-db, the guest user cannot just create /db/todo collection
+    There should be a seperate setup button, whereby the user has to enter dba credentials, or better still
+    this should be packages as an EXPath pkg.
+    -- Adam.
+:)
+
 (:~
     Initialize the todo application
 :)
+(:
 declare function local:setup() {
     if (not(collection("/db/todo"))) then
         let $coll := xdb:create-collection("/db", "todo")
@@ -31,9 +40,13 @@ declare function local:setup() {
     	)
     else ()
 };
+:)
 
+(:
 let $dummy := local:setup()
 return
+:)
+
     if ($exist:path eq '/') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			<redirect url="examples.xml"/>
