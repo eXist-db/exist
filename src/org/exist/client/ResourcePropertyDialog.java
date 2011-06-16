@@ -31,6 +31,7 @@ import javax.swing.border.EtchedBorder;
 import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.PermissionAider;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
@@ -44,7 +45,7 @@ public class ResourcePropertyDialog extends JDialog {
     public final static int APPLY_OPTION = 0;
 	public final static int CANCEL_OPTION = 1;
 
-	Permission permissions;
+	PermissionAider permissions;
 	XmldbURI resource;
 	UserManagementService service;
 	Date creationDate;
@@ -71,7 +72,7 @@ public class ResourcePropertyDialog extends JDialog {
 		Frame owner,
 		UserManagementService mgt,
 		XmldbURI res,
-		Permission perm,
+		PermissionAider perm,
 		Date created,
 		Date modified,
         String mimeType)
@@ -321,9 +322,10 @@ public class ResourcePropertyDialog extends JDialog {
 	}
 
 	private void applyAction() {
+            
             try{
-		permissions.setOwner(null, (String) owners.getSelectedItem());
-		permissions.setGroup(null, (String) groups.getSelectedItem());
+		permissions.setOwner((String) owners.getSelectedItem());
+		permissions.setGroup((String) groups.getSelectedItem());
 		int perms =
 			(checkPermissions(userPerms) << 6)
 				| (checkPermissions(groupPerms) << 3)

@@ -97,8 +97,12 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.client.xacml.XACMLEditor;
+import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
@@ -251,7 +255,11 @@ public class ClientFrame extends JFrame
         button.setToolTipText(Messages.getString("ClientFrame.15")); //$NON-NLS-1$
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setPermAction(e);
+                try {
+                    setPermAction(e);
+                } catch(PermissionDeniedException pde) {
+                    showErrorMessage(pde.getMessage(), pde);
+                }
             }
         });
         toolbar.add(button);
@@ -469,7 +477,11 @@ public class ClientFrame extends JFrame
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setPermAction(e);
+                try {
+                    setPermAction(e);
+                } catch(PermissionDeniedException pde) {
+                    showErrorMessage(pde.getMessage(), pde);
+                }
             }
         });
         fileMenu.add(item);
@@ -1353,23 +1365,25 @@ public class ClientFrame extends JFrame
         dialog.setVisible(true);
     }
     
-    private void setPermAction(ActionEvent ev) {
+    private void setPermAction(ActionEvent ev) throws PermissionDeniedException {
         if (fileman.getSelectedRowCount() == 0)
             return;
         try {
             Collection collection = client.getCollection();
             UserManagementService service = (UserManagementService) collection
                     .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-            Permission perm = null;
+            PermissionAider permAider = null;
             XmldbURI name;
             Date created = new Date();
             Date modified = null;
             String mimeType = null;
+            
             if (fileman.getSelectedRowCount() == 1) {
                 int row = fileman.getSelectedRow();
                 ResourceDescriptor desc = resources.getRow(row);
                 name = desc.getName();
                 
+                Permission perm = null;
                 if (desc.isCollection()) {
                     Collection coll = collection.getChildCollection(name.toString());
                     created = ((CollectionImpl) coll).getCreationTime();
@@ -1381,24 +1395,51 @@ public class ClientFrame extends JFrame
                     mimeType = ((EXistResource) res).getMimeType();
                     perm = service.getPermissions(res);
                 }
+                
+                //this is a local instance, we cannot use disconnected local instance in the ResourcePropertyDialog
+                if(perm instanceof org.exist.security.Permission) {
+                    permAider = PermissionAiderFactory.getPermission(perm.getOwner().getName(), perm.getGroup().getName(), perm.getMode());
+                    //copy acl
+                    if(perm instanceof ACLPermission && permAider instanceof ACLPermission) {
+                        ACLPermission aclPermission = (ACLPermission)perm;
+                        for(int i = 0; i < aclPermission.getACECount(); i++) {
+                            ((ACLPermission)permAider).addACE(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i));
+                        }
+                    }
+                }
+                
+                
             } else {
                 name = XmldbURI.create(".."); //$NON-NLS-1$
-                perm = PermissionAiderFactory.getPermission("", "", Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
+                permAider = PermissionAiderFactory.getPermission("", "", Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
+            
             ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
-                    service, name, perm, created, modified, mimeType);
+                    service, name, permAider, created, modified, mimeType);
+            
+            
             dialog.setVisible(true);
             if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
+                
+                Permission dlgPerm = dialog.permissions;
+                List<ACEAider> dlgAces = new ArrayList<ACEAider>();
+                if(dlgPerm instanceof ACLPermission) {
+                    ACLPermission dlgAclPerm = (ACLPermission)dialog.permissions;
+                    for(int j = 0; j < dlgAclPerm.getACECount(); j++) {
+                        dlgAces.add(new ACEAider(dlgAclPerm.getACEAccessType(j), dlgAclPerm.getACETarget(j), dlgAclPerm.getACEWho(j), dlgAclPerm.getACEMode(j)));
+                    }
+                }
+                
                 int rows[] = fileman.getSelectedRows();
                 for (int i = 0; i < rows.length; i++) {
                     ResourceDescriptor desc = resources.getRow(rows[i]);
+                    
                     if (desc.isCollection()) {
-                        Collection coll = collection.getChildCollection(desc
-                                .getName().toString());
-                        service.setPermissions(coll, dialog.permissions);
+                        Collection coll = collection.getChildCollection(desc.getName().toString());
+                        service.setPermissions(coll, dlgPerm.getOwner().getName(), dlgPerm.getGroup().getName(), dlgPerm.getMode(), dlgAces);
                     } else {
                         Resource res = collection.getResource(desc.getName().toString());
-                        service.setPermissions(res, dialog.permissions);
+                        service.setPermissions(res, dlgPerm.getOwner().getName(), dlgPerm.getGroup().getName(), dlgPerm.getMode(), dlgAces);
                     }
                 }
                 client.reloadCollection();
