@@ -106,9 +106,12 @@ public class JSONObject extends JSONNode {
 	}
 	
 	public void serializeContent(Writer writer) throws IOException {
-		if (firstChild == null)
-			// an empty node gets a null value
-			writer.write("null");
+		if (firstChild == null) {
+                    // an empty node gets a null value, unless its a specified array
+                    if(getSerializationType() != SerializationType.AS_ARRAY) {
+                        writer.write("null");
+                    }
+                }
 		else if (firstChild.getNext() == null && 
 					(
 						firstChild.getType() == Type.VALUE_TYPE ||
