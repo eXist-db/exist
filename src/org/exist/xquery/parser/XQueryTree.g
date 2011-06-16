@@ -823,6 +823,26 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	// sequence constructor:
 	#(
+	 seq:SEQUENCE
+	 {
+	   SequenceConstructor sc = new SequenceConstructor(context);
+	   sc.setASTNode(seq);
+	 }
+	 (
+	   { PathExpr seqPath = new PathExpr(context); }
+	   step = expr [seqPath]
+	   { 
+	     sc.addPath(seqPath);
+	   }
+	 )*
+	 {
+	   path.addPath(sc); 
+	   step = sc;
+   }
+	)
+	|
+	// sequence constructor:
+	#(
 		c:COMMA
 		{
 			PathExpr left= new PathExpr(context);
