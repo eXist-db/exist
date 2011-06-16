@@ -132,6 +132,8 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
                 case UPDATE_CHAR:
                     mode |= UPDATE;
                     break;
+                case UNSET_CHAR:
+                    break;
                 default:
                     throw new PermissionDeniedException("Unknown char '" + c + "' in mode string '" + modeStr + "'");
             }
