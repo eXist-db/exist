@@ -90,20 +90,27 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public void setOwner(Subject invokingUser, Account account) {
-    	//assume SYSTEM identity if user gets lost due to a database corruption - WTF???
+    	
+        //assume SYSTEM identity if user gets lost due to a database corruption - WTF???
+        //TODO this should eventually be replaced with a PermissionDeniedException
     	if(account == null) {
             account = sm.getSystemSubject();
     	}
+        
         setOwnerId(account.getId());
     }
 
     @Override
     public void setOwner(Subject invokingUser, int id) {
         Account account = sm.getAccount(id);
+        
+        //assume SYSTEM identity if user gets lost due to a database corruption - WTF???
+        //TODO this should eventually be replaced with a PermissionDeniedException
         if(account == null) {
-            account = sm.getSystemSubject(); // assigned value is never used?
+            account = sm.getSystemSubject();
         }
-        setOwnerId(id);
+        
+        setOwnerId(account.getId());
     }
 
     /**
@@ -138,7 +145,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     private void setOwnerId(int ownerId) {
         this.vector =
             ((long)ownerId << 32) | //left shift new ownerId into position
-            (vector & 4294967295L);   //extract everything from current permission except ownerId
+            (vector & 4294967295L); //extract everything from current permission except ownerId
     }
 
     /**
