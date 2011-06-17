@@ -29,23 +29,37 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-/*************************************************
- * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-**************************************/
+/**
+ * Local Implementation (i.e. embedded) of an eXist-specific service
+ * which provides methods to manage users and
+ * permissions.
+ *
+ * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ * @author Adam Retter <adam@exist-db.org>
+ */
 public class LocalUserManagementService implements UserManagementService {
-	private LocalCollection collection;
+    
+    private LocalCollection collection;
 
-	private BrokerPool pool;
-	private Subject user;
+    private final BrokerPool pool;
+    private final Subject user;
 
-	public LocalUserManagementService(
-		Subject user,
-		BrokerPool pool,
-		LocalCollection collection) {
-		this.pool = pool;
-		this.collection = collection;
-		this.user = user;
-	}
+    public LocalUserManagementService(Subject user, BrokerPool pool, LocalCollection collection) {
+        this.pool = pool;
+        this.collection = collection;
+        this.user = user;
+    }
+    
+    @Override
+    public String getName() {
+        return "UserManagementService";
+    }
+    
+    @Override
+    public String getVersion() {
+        return "1.0";
+    }
 
     @Override
     public void addAccount(final Account u) throws XMLDBException {
@@ -342,107 +356,111 @@ public class LocalUserManagementService implements UserManagementService {
 	 * @see org.exist.xmldb.UserManagementService#hasUserLock(org.xmldb.api.base.Resource)
 	 */
     @Override
-    public String hasUserLock(Resource res) throws XMLDBException {
-
-            DocumentImpl doc = null;
-            DBBroker broker = null;
-            try {
-                broker = pool.get(user);
-                doc = ((AbstractEXistResource) res).openDocument(broker, Lock.READ_LOCK);
-                    Account lockOwner = doc.getUserLock();
-                    return lockOwner == null ? null : lockOwner.getName();
-            } catch (EXistException e) {
-                throw new XMLDBException(
-                                    ErrorCodes.VENDOR_ERROR,
-                                    e.getMessage(),
-                                    e);
-    } finally {
-            ((AbstractEXistResource) res).closeDocument(doc, Lock.READ_LOCK);
-                pool.release(broker);
-            }
+    public String hasUserLock(final Resource res) throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<String>(){
+                @Override
+                public String withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    return readResource(broker, res, new DatabaseItemReader<DocumentImpl, String>(){
+                        @Override
+                        public String read(DocumentImpl document) {
+                            Account lockOwner = document.getUserLock();
+                            return lockOwner == null ? null : lockOwner.getName();
+                        }
+                    });
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 	
     @Override
-	public void lockResource(Resource res, Account u) throws XMLDBException {
-		DocumentImpl doc = null;
-		DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			doc = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-						"User is not allowed to lock resource " + res.getId());
-			org.exist.security.SecurityManager manager = pool.getSecurityManager();
-			if(!(user.equals(u) || manager.hasAdminPrivileges(user))) {
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"User " + user.getName() + " is not allowed to lock resource for " +
-						"user " + u.getName());
-			}
-			Account lockOwner = doc.getUserLock();
-			if(lockOwner != null) {
-				if(lockOwner.equals(u))
-					return;
-				else if(!manager.hasAdminPrivileges(user))
-					throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-							"Resource is already locked by user " + lockOwner.getName());
-			}
-			doc.setUserLock(u);
-            broker.storeXMLResource(transaction, doc);
-            transact.commit(transaction);
-		} catch (EXistException e) {
-            transact.abort(transaction);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					e.getMessage(), e);
-		} finally {
-			((AbstractEXistResource) res).closeDocument(doc, Lock.WRITE_LOCK);
-			pool.release(broker);
-		}
-	}
+    public void lockResource(final Resource resource, final Account u) throws XMLDBException {
+        
+        final String resourceId = resource.getId();
+        
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    return modifyResource(broker, resource, new DatabaseItemModifier<DocumentImpl, Void>(){
+                        @Override
+                        public Void modify(DocumentImpl document) throws PermissionDeniedException, SyntaxException, LockException {
+                            if(!document.getPermissions().validate(user, Permission.UPDATE)) {
+                                throw new PermissionDeniedException("User is not allowed to lock resource " + resourceId);
+                            }
+
+                            SecurityManager manager = broker.getBrokerPool().getSecurityManager();
+                            if(!(user.equals(u) || manager.hasAdminPrivileges(user))) {
+                                throw new PermissionDeniedException("User " + user.getName() + " is not allowed to lock resource '" + resourceId + "' for user " + u.getName());
+                            }
+
+                            Account lockOwner = document.getUserLock();
+
+                            if(lockOwner != null) {
+                                if(lockOwner.equals(u)) {
+                                    return null;
+                                } else if(!manager.hasAdminPrivileges(user)) {
+                                    throw new PermissionDeniedException("Resource '" + resourceId + "' is already locked by user " + lockOwner.getName());
+                                }
+                            }
+
+                            document.setUserLock(u);
+
+                            return null;
+                        }
+                    });
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to lock resource '" + resourceId + "': " + e.getMessage(), e);
+        }
+    }
 	
     @Override
-	public void unlockResource(Resource res) throws XMLDBException {
-		DocumentImpl doc = null;
-		DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
-			doc = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
-			if (!doc.getPermissions().validate(user, Permission.UPDATE))
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-						"User is not allowed to lock resource " + res.getId());
-			org.exist.security.SecurityManager manager = pool.getSecurityManager();
-			Account lockOwner = doc.getUserLock();
-			if(lockOwner != null && !(lockOwner.equals(user) || manager.hasAdminPrivileges(user))) {
-				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-						"Resource is already locked by user " + lockOwner.getName());
-			}
-			doc.setUserLock(null);
-            broker.storeXMLResource(transaction, doc);
-            transact.commit(transaction);
-		} catch (EXistException e) {
-            transact.abort(transaction);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					e.getMessage(), e);
-		} finally {
-			((AbstractEXistResource) res).closeDocument(doc, Lock.WRITE_LOCK);
-			pool.release(broker);
-		}
-	}
-	
-    @Override
-	public String getName() {
-		return "UserManagementService";
-	}
+    public void unlockResource(final Resource resource) throws XMLDBException {
+        
+        final String resourceId = resource.getId();
+        
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    return modifyResource(broker, resource, new DatabaseItemModifier<DocumentImpl, Void>(){
+                        @Override
+                        public Void modify(DocumentImpl document) throws PermissionDeniedException, SyntaxException, LockException {
+                            if(!document.getPermissions().validate(user, Permission.UPDATE)) {
+				throw new PermissionDeniedException("User is not allowed to lock resource '" + resourceId + "'");
+                            }
+			
+                            
+                            Account lockOwner = document.getUserLock();
+			
+                            SecurityManager manager = broker.getBrokerPool().getSecurityManager();
+                            if(lockOwner != null && !(lockOwner.equals(user) || manager.hasAdminPrivileges(user))) {
+                                throw new PermissionDeniedException("Resource '" + resourceId + "' is already locked by user " + lockOwner.getName());
+                            }
+                            
+                            document.setUserLock(null);
+                            
+                            return null;
+                        }
+                    });
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to unlock resource '" + resourceId + "': " + e.getMessage(), e);
+        }    
+    }
 
     @Override
-	public Permission getPermissions(Collection coll) throws XMLDBException {
-		if (coll instanceof LocalCollection)
-			return ((LocalCollection) coll).getCollection().getPermissions();
-		return null;
-	}
+    public Permission getPermissions(Collection coll) throws XMLDBException {
+        if(coll instanceof LocalCollection) {
+            return ((LocalCollection) coll).getCollection().getPermissions();
+        }
+        return null;
+    }
 
     @Override
     public Permission getPermissions(final Resource resource) throws XMLDBException {
@@ -465,302 +483,271 @@ public class LocalUserManagementService implements UserManagementService {
     }
 
     @Override
-	public Permission[] listResourcePermissions() throws XMLDBException {
-		DBBroker broker = null;
-		org.exist.collections.Collection c = null;
-		try {
-			broker = pool.get(user);
-			c = broker.openCollection(collection.getPathURI(), Lock.READ_LOCK);
-			if (!c	.getPermissions().validate(user, Permission.READ))
+    public Permission[] listResourcePermissions() throws XMLDBException {
+        
+        final XmldbURI collectionUri = collection.getPathURI();
+        try {
+            return executeWithBroker(new BrokerOperation<Permission[]>() {
+                @Override
+                public Permission[] withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
+                        @Override
+                        public Permission[] read(org.exist.collections.Collection collection) {
+                            if(!collection.getPermissions().validate(user, Permission.READ)) {
+                                    return new Permission[0];
+                            }
+                            
+                            Permission perms[] = new Permission[collection.getDocumentCount()];                            
+                            Iterator<DocumentImpl> itDocument = collection.iterator(broker);
+                            int i = 0;
+                            while(itDocument.hasNext()) {
+                                DocumentImpl document = itDocument.next();
+                                perms[i++] = document.getPermissions();
+                            }
+
+                            return perms;
+                        }
+                    });
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }   
+    }
+
+    @Override
+    public Permission[] listCollectionPermissions() throws XMLDBException {
+        
+        final XmldbURI collectionUri = collection.getPathURI();
+        try {
+            return executeWithBroker(new BrokerOperation<Permission[]>() {
+                @Override
+                public Permission[] withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
+                        @Override
+                        public Permission[] read(org.exist.collections.Collection collection) throws XMLDBException {
+                            if(!collection.getPermissions().validate(user, Permission.READ)) {
 				return new Permission[0];
-			Permission perms[] =
-				new Permission[c.getDocumentCount()];
-			int j = 0;
-			DocumentImpl doc;
-			for (Iterator<DocumentImpl> i = c.iterator(broker); i.hasNext(); j++) {
-				doc = i.next();
-				perms[j] = doc.getPermissions();
-			}
+                            }
+                            
+                            Permission perms[] = new Permission[collection.getChildCollectionCount()];
+                            Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator();
+                            int i = 0;
+                            while(itChildCollectionUri.hasNext()) {
+                                XmldbURI childCollectionUri = collectionUri.append(itChildCollectionUri.next());
+                                Permission childPermission = readCollection(broker, childCollectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission>(){
+                                    @Override
+                                    public Permission read(org.exist.collections.Collection childCollection) {
+                                        return childCollection.getPermissions();
+                                    }
+                                });
+                                perms[i++] = childPermission;
+                            }
+                            
 			return perms;
-		} catch (EXistException e) {
-		    throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
-        } finally {
-        	if(c != null)
-        		c.release(Lock.READ_LOCK);
-		    pool.release(broker);
-		}
-	}
+                        }
+                    });
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }   	
+    }
 
     @Override
-	public Permission[] listCollectionPermissions() throws XMLDBException {
-		DBBroker broker = null;
-		org.exist.collections.Collection c = null;
-		try {
-			broker = pool.get(user);
-			c = broker.openCollection(collection.getPathURI(), Lock.READ_LOCK);
-			if (!c.getPermissions().validate(user, Permission.READ))
-				return new Permission[0];
-			Permission perms[] =
-				new Permission[c.getChildCollectionCount()];
-			XmldbURI child;
-			org.exist.collections.Collection childColl;
-			int j = 0;
-			for (Iterator<XmldbURI> i = c.collectionIterator(); i.hasNext(); j++) {
-				child = i.next();
- 				childColl =
-					broker.openCollection(collection.getPathURI().append(child), Lock.READ_LOCK);
-				if(childColl != null) {
-					try {
-						perms[j] = childColl.getPermissions();
-					} finally {
-						childColl.release(Lock.READ_LOCK);
-					}
-				}
-			}
-			return perms;
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			if(c != null)
-				c.release(Lock.READ_LOCK);
-			pool.release(broker);
-		}
-	}
+    public Account getAccount(final String name) throws XMLDBException {
+        
+        try {
+            return executeWithBroker(new BrokerOperation<Account>(){
+
+                @Override
+                public Account withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    return sm.getAccount(user, name);
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
-	public String getProperty(String property) throws XMLDBException {
-		return null;
-	}
+    public Account[] getAccounts() throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<Account[]>(){
+
+                @Override
+                public Account[] withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    java.util.Collection<Account> users = sm.getUsers();
+                    return users.toArray(new Account[users.size()]);
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
-	public Account getAccount(String name) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
+    public Group getGroup(final String name) throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<Group>(){
 
-	        return manager.getAccount(user, name);
-
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			pool.release(broker);
-		}
-	}
+                @Override
+                public Group withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    return sm.getGroup(user, name);
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
-	public Account[] getAccounts() throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+    public String[] getGroups() throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<String[]>(){
 
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
+                @Override
+                public String[] withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    java.util.Collection<Group> groups = sm.getGroups();
+                    String[] groupNames = new String[groups.size()];
+                    int i = 0;
+                    for (Group group : groups) {
+                        groupNames[i++] = group.getName();
+                    }
+                    return groupNames;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void removeAccount(final Account u) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+
+                @Override
+                public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    if(!sm.hasAdminPrivileges(user)) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove users");
+                    }
 	        
-	        java.util.Collection<Account> users = manager.getUsers();
-	        return users.toArray(new Account[users.size()]);
+                    sm.deleteAccount(user, u);
+                    
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void removeGroup(final Group group) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+
+                @Override
+                public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    if(!sm.hasAdminPrivileges(user)) {
+			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove groups");
+                    }
 	        
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			pool.release(broker);
-		}
-	}
+                    sm.deleteGroup(user, group.getName());
+                    
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 
     @Override
-	public Group getGroup(String name) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
+    public void setCollection(Collection collection) throws XMLDBException {
+        this.collection = (LocalCollection) collection;
+    }
 
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
+    
+
+    @Override
+    public void updateAccount(final Account u) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+
+                @Override
+                public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 	        
-	        return manager.getGroup(user, name);
-
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-    @Override
-	public String[] getGroups() throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
-	        
-			java.util.Collection<Group> roles = manager.getGroups();
-			String[] res = new String[roles.size()];
-			int i = 0;
-			for (Group role : roles) {
-				res[i] = role.getName();
-				i++;
-			}
-			return res;
-
-		} catch (EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				e.getMessage(),
-				e);
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-    @Override
-	public String getVersion() {
-		return "1.0";
-	}
-
-    @Override
-	public void removeAccount(Account u) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!manager.hasAdminPrivileges(user))
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"you are not allowed to remove users");
-
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
-	        
-			manager.deleteAccount(user, u);
-		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"unable to remove user " + u.getName(),
-				e);
-		} catch (Exception e) {
-			throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-    @Override
-	public void removeGroup(Group role) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		if (!manager.hasAdminPrivileges(user))
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"you are not allowed to remove users");
-
-		DBBroker broker = null;
-		try {
-	        broker = pool.get(user);
-	        
-			manager.deleteGroup(user, role.getName());
-		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				"unable to remove role " + role.getName(),
-				e);
-		} catch (EXistException e) {
-			throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					e.getMessage(),
-					e);
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-    @Override
-	public void setCollection(Collection collection) throws XMLDBException {
-		this.collection = (LocalCollection) collection;
-	}
-
-    @Override
-	public void setProperty(String property, String value)
-		throws XMLDBException {
-	}
-
-    @Override
-	public void updateAccount(Account u) throws XMLDBException {
-		org.exist.security.SecurityManager manager = pool.getSecurityManager();
-		
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-		
-			manager.updateAccount(user, u);
-		} catch (PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
-		} catch (Exception e) {
-			new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
-		} finally {
-			pool.release(broker);
-		}
-	}
+                    sm.updateAccount(user, u);
+                    
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 	
     @Override
-	public void addUserGroup(Account user) throws XMLDBException {
-		
-	}
+    public void addUserGroup(Account user) throws XMLDBException {	
+    }
 	
     @Override
-	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
-		
-	}
+    public void removeGroup(Account user, String rmgroup) throws XMLDBException {	
+    }
 
-	@Override
-	public void addUser(User user) throws XMLDBException {
-		Account account = new UserAider(user.getName());
-		addAccount(account);
-	}
+    @Override
+    public void addUser(User user) throws XMLDBException {
+        Account account = new UserAider(user.getName());
+        addAccount(account);
+    }
 
-	@Override
-	public void updateUser(User user) throws XMLDBException {
-		Account account = new UserAider(user.getName());
-		account.setPassword(user.getPassword());
-		//TODO: groups
-		updateAccount(account);
-	}
+    @Override
+    public void updateUser(User user) throws XMLDBException {
+        Account account = new UserAider(user.getName());
+        account.setPassword(user.getPassword());
+        //TODO: groups
+        updateAccount(account);
+    }
 
-	@Override
-	public User getUser(String name) throws XMLDBException {
-		return getAccount(name);
-	}
+    @Override
+    public User getUser(String name) throws XMLDBException {
+        return getAccount(name);
+    }
 
-	@Override
-	public User[] getUsers() throws XMLDBException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public User[] getUsers() throws XMLDBException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public void removeUser(User user) throws XMLDBException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void removeUser(User user) throws XMLDBException {
+        // TODO Auto-generated method stub	
+    }
 
-	@Override
-	public void lockResource(Resource res, User u) throws XMLDBException {
-		Account account = new UserAider(u.getName());
-		lockResource(res, account);
-	}
+    @Override
+    public void lockResource(Resource res, User u) throws XMLDBException {
+        Account account = new UserAider(u.getName());
+        lockResource(res, account);
+    }
+        
+    @Override
+    public String getProperty(String property) throws XMLDBException {
+        return null;
+    }
+    
+    @Override
+    public void setProperty(String property, String value) throws XMLDBException {
+    }
 
     private interface BrokerOperation<R> {
         public R withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException;
@@ -791,6 +778,24 @@ public class LocalUserManagementService implements UserManagementService {
         } finally {
             if(document != null) {
                 ((AbstractEXistResource) resource).closeDocument(document, Lock.READ_LOCK);
+            }
+        }
+    }
+    
+    private <R> R readCollection(DBBroker broker, XmldbURI collectionURI, DatabaseItemReader<org.exist.collections.Collection, R> reader) throws XMLDBException {
+        org.exist.collections.Collection coll = null;
+        
+        try {
+            coll = broker.openCollection(collectionURI, Lock.READ_LOCK);
+            if(coll == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collectionURI.toString() + " not found");
+            }
+            
+            return reader.read(coll);
+            
+        } finally {
+            if(coll != null) {
+                coll.release(Lock.READ_LOCK);
             }
         }
     }
@@ -889,6 +894,6 @@ public class LocalUserManagementService implements UserManagementService {
     }
     
     private interface DatabaseItemReader<T, R> {
-        public R read(T databaseItem);
+        public R read(T databaseItem) throws XMLDBException;
     }
 }
