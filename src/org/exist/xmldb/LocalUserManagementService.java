@@ -64,7 +64,8 @@ public class LocalUserManagementService implements UserManagementService {
             executeWithBroker(new BrokerOperation<Void>(){
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException {
-                    return manager.addAccount(u);
+                    manager.addAccount(u);
+                    return null;
                 }
             });
         } catch(Exception e) {
@@ -88,7 +89,8 @@ public class LocalUserManagementService implements UserManagementService {
             executeWithBroker(new BrokerOperation<Void>(){
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException {
-                    return manager.addGroup(group);
+                    manager.addGroup(group);
+                    return null;
                 }
             });
         } catch(Exception e) {
