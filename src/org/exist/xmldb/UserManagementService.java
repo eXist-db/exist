@@ -15,8 +15,9 @@ import org.xmldb.api.base.XMLDBException;
  * An eXist-specific service which provides methods to manage users and
  * permissions.
  *
- * @author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ * @author Adam Retter <adam@exist-db.org>
  */
 public interface UserManagementService extends Service {
 
@@ -25,6 +26,7 @@ public interface UserManagementService extends Service {
      *
      *@return    The name
      */
+    @Override
     public String getName();
 
 
@@ -33,6 +35,7 @@ public interface UserManagementService extends Service {
      *
      *@return    The version value
      */
+    @Override
     public String getVersion();
 
 	/**
@@ -215,6 +218,7 @@ public interface UserManagementService extends Service {
      * @return                     The property value
      * @exception  XMLDBException  Description of the Exception
      */
+    @Override
     public String getProperty( String property ) throws XMLDBException;
 
     /**
@@ -224,6 +228,7 @@ public interface UserManagementService extends Service {
      * @param  value               The new property value
      * @exception  XMLDBException  Description of the Exception
      */
+    @Override
     public void setProperty( String property, String value ) throws XMLDBException;
 
     /**
@@ -232,6 +237,7 @@ public interface UserManagementService extends Service {
      *@param  collection          The new collection value
      *@exception  XMLDBException  Description of the Exception
      */
+    @Override
     public void setCollection( Collection collection ) throws XMLDBException;
 
 
