@@ -173,9 +173,9 @@ public class LocalUserManagementService implements UserManagementService {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
+			coll = broker.openCollection(XmldbURI.create(child.getName()), Lock.WRITE_LOCK);
 			if(coll == null)
-				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
+				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + child.getName() + 
 						" not found");
 			if (!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                 transact.abort(transaction);
@@ -229,9 +229,9 @@ public class LocalUserManagementService implements UserManagementService {
             Txn transaction = transact.beginTransaction();
             try {
                     broker = pool.get(user);
-                    coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
+                    coll = broker.openCollection(XmldbURI.create(child.getName()), Lock.WRITE_LOCK);
                     if(coll == null) {
-                            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + " not found");
+                            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + child.getName() + " not found");
                     }
                     if(!coll.getPermissions().validate(user, Permission.WRITE) && !manager.hasAdminPrivileges(user)) {
                         transact.abort(transaction);
