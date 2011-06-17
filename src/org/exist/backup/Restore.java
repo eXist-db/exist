@@ -642,8 +642,14 @@ public class Restore extends DefaultHandler
         public void apply() {
             try {
 
-                UserManagementService service = (UserManagementService)getTarget().getParentCollection().getService("UserManagementService", "1.0");
-                Permission permissions = service.getPermissions(getTarget());
+                UserManagementService service;
+                if(getTarget().getName().equals(XmldbURI.ROOT_COLLECTION)) {
+                    service = (UserManagementService)getTarget().getService("UserManagementService", "1.0");
+                } else {
+                    Collection parent = getTarget().getParentCollection();
+                    service = (UserManagementService)parent.getService("UserManagementService", "1.0");
+                }
+                
                 service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
             } catch (XMLDBException xe) {
                 xe.printStackTrace();
