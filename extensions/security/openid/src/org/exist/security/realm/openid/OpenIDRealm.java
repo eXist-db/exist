@@ -75,6 +75,12 @@ public class OpenIDRealm extends AbstractRealm {
 		// TODO Auto-generated method stub
 		return null;
 	}
+        
+        @Override
+	public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
         @Override
         public List<String> findAllGroupNames(Subject invokingUser) {

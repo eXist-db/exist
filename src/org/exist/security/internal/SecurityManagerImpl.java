@@ -698,6 +698,15 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         return userNames;
     }
+    
+    @Override
+    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+        List<String> groupNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            groupNames.addAll(realm.findGroupnamesWhereGroupnameStarts(invokingUser, startsWith));
+        }
+        return groupNames;
+    }
 
     @Override
     public List<String> findAllGroupNames(Subject invokingUser) {

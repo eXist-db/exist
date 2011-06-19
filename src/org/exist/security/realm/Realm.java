@@ -63,5 +63,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm,
 
     public SecurityManager getSecurityManager();
 
+    public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith);
+
 
 }
