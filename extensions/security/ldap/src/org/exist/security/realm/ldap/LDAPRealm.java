@@ -475,6 +475,41 @@ public class LDAPRealm extends AbstractRealm {
 
         return usernames;
     }
+    
+    @Override
+    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+
+        List<String> groupnames = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+            SearchResult searchResult = null;
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                groupnames.add((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+            }
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return groupnames;
+    }
 
     @Override
     public List<String> findAllGroupNames(Subject invokingUser) {

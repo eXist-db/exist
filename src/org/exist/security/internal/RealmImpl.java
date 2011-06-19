@@ -266,6 +266,20 @@ public class RealmImpl extends AbstractRealm {
 
         return userNames;
     }
+    
+    @Override
+    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+
+        List<String> groupNames = new ArrayList<String>();
+
+        for(String groupName : groupsByName.keySet()) {
+            if(groupName.startsWith(startsWith)) {
+                groupNames.add(groupName);
+            }
+        }
+
+        return groupNames;
+    }
 
     @Override
     public List<String> findAllGroupNames(Subject invokingUser) {

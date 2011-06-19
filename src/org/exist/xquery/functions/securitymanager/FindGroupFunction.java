@@ -47,6 +47,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FindGroupFunction extends BasicFunction {
 
+    private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-group-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
@@ -55,7 +56,15 @@ public class FindGroupFunction extends BasicFunction {
             "Gets all groups",
             null,
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
-        )
+        ),
+        new FunctionSignature(
+            qnFindGroupsByGroupname,
+            "Finds groups whoose group name starts with a matching string",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match group names")
+            },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
+        ),
     };
 
 
@@ -78,6 +87,9 @@ public class FindGroupFunction extends BasicFunction {
         List<String> groupNames;
         if(isCalledAs(qnGetGroups.getLocalName())) {
             groupNames = securityManager.findAllGroupNames(currentUser);
+        } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
+            final String startsWith = args[0].getStringValue();
+            groupNames = securityManager.findGroupnamesWhereGroupnameStarts(currentUser, startsWith);
         } else {
             throw new XPathException("Unknown function");
         }

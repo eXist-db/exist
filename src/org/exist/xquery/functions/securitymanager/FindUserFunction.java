@@ -57,7 +57,7 @@ public class FindUserFunction extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match usernames")
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matcing usernames")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
         ),
         new FunctionSignature(
             qnFindUsersByName,
@@ -65,7 +65,7 @@ public class FindUserFunction extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a personal name")
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matcing usernames")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
         )
     };
 

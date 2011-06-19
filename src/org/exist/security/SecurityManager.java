@@ -145,6 +145,11 @@ public interface SecurityManager extends Configurable {
    public List<String> findAllGroupNames(Subject invokingUser);
 
    /**
+    * Find groups by their group name
+    */
+   public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith);
+   
+   /**
     * Find all members of a group
     */
    public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
