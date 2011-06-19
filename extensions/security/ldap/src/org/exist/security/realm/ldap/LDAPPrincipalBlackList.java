@@ -9,10 +9,11 @@ import org.exist.config.annotation.ConfigurationClass;
  *
  * @author aretter
  */
-@ConfigurationClass("account")
-public class LDAPSearchAccount extends AbstractLDAPSearchPrincipal implements Configurable {
+
+@ConfigurationClass("blacklist")
+public class LDAPPrincipalBlackList extends AbstractLDAPPrincipalRestrictionList implements Configurable {
     
-    public LDAPSearchAccount(Configuration config) {
+    public LDAPPrincipalBlackList(Configuration config) {
         super(config);
 
         //it require, because class's fields initializing after super constructor

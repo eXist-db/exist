@@ -303,8 +303,51 @@ public class LDAPRealm extends AbstractRealm {
         return userName;
     }
 
+    private boolean checkAccountRestrictionList(String accountname) {
+        LDAPSearchContext search = ensureContextFactory().getSearch();
+        return checkPrincipalRestrictionList(accountname, search.getSearchAccount());
+    }
+    
+    private boolean checkGroupRestrictionList(String groupname) {
+        LDAPSearchContext search = ensureContextFactory().getSearch();
+        return checkPrincipalRestrictionList(groupname, search.getSearchGroup());
+    }
+    
+    private boolean checkPrincipalRestrictionList(String principalName, AbstractLDAPSearchPrincipal searchPrinciple) {
+        
+        if(principalName.indexOf('@') > -1) {
+            principalName = principalName.substring(0, principalName.indexOf('@'));
+        }
+        
+        List<String> blackList = searchPrinciple.getBlackList().getRestrictionList();
+        List<String> whiteList = searchPrinciple.getWhiteList().getRestrictionList();
+        
+        if(blackList != null) {
+            for(String blackEntry : blackList) {
+                if(blackEntry.equals(principalName)) {
+                    return false;
+                }
+            }
+        }
+        
+        if(whiteList != null && whiteList.size() > 0) {
+            for(String whiteEntry : whiteList) {
+                if(whiteEntry.equals(principalName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        return true;
+    }
+    
     private SearchResult findAccountByAccountName(DirContext ctx, String accountName) throws NamingException {
 
+        if(!checkAccountRestrictionList(accountName)) {
+            return null;
+        }
+        
         String userName = removeDomainPostfix(accountName);
 
         LDAPSearchContext search = ensureContextFactory().getSearch();
@@ -330,6 +373,10 @@ public class LDAPRealm extends AbstractRealm {
 
     private SearchResult findGroupByGroupName(DirContext ctx, String groupName) throws NamingException {
 
+        if(!checkGroupRestrictionList(groupName)) {
+            return null;
+        }
+        
         LDAPSearchContext search = ensureContextFactory().getSearch();
         String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), groupName);
 
@@ -428,7 +475,10 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                usernames.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+                String username = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                if(checkAccountRestrictionList(username)) {
+                    usernames.add(username);
+                }
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
@@ -463,7 +513,11 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                usernames.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+                String username = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                
+                if(checkAccountRestrictionList(username)) {
+                    usernames.add(username);
+                }
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
@@ -498,7 +552,10 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                groupnames.add((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+                String groupname = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                if(checkGroupRestrictionList(groupname)) {
+                    groupnames.add(groupname);
+                }
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
@@ -513,7 +570,7 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public List<String> findAllGroupNames(Subject invokingUser) {
-        List<String> groupNames = new ArrayList<String>();
+        List<String> groupnames = new ArrayList<String>();
 
         LdapContext ctx = null;
         try {
@@ -531,7 +588,10 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                groupNames.add((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+                String groupname = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                if(checkGroupRestrictionList(groupname)) {
+                    groupnames.add(groupname);
+                }
             }
         } catch(NamingException ne) {
             LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
@@ -541,12 +601,17 @@ public class LDAPRealm extends AbstractRealm {
             }
         }
 
-        return groupNames;
+        return groupnames;
     }
 
     @Override
     public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+
         List<String> groupMembers = new ArrayList<String>();
+        
+        if(!checkGroupRestrictionList(groupName)) {
+            return groupMembers;
+        }
 
         LdapContext ctx = null;
         try {
@@ -567,7 +632,10 @@ public class LDAPRealm extends AbstractRealm {
 
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                groupMembers.add((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain());
+                String member = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                if(checkAccountRestrictionList(member)) {
+                    groupMembers.add(member);
+                }
             }
 
         } catch(NamingException ne) {

@@ -1,0 +1,40 @@
+package org.exist.security.realm.ldap;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.exist.config.Configurable;
+import org.exist.config.Configuration;
+import org.exist.config.Configurator;
+import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationFieldAsElement;
+
+/**
+ *
+ * @author aretter
+ */
+@ConfigurationClass("")
+public abstract class AbstractLDAPPrincipalRestrictionList implements Configurable {
+    
+    @ConfigurationFieldAsElement("principal")
+    private List<String> restrictionList = new ArrayList<String>();
+
+    protected Configuration configuration;
+
+    public AbstractLDAPPrincipalRestrictionList(Configuration config) {
+        this.configuration = Configurator.configure(this, config);
+    }
+    
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return (configuration != null);
+    }
+    
+    public List<String> getRestrictionList() {
+        return restrictionList;
+    }
+}
