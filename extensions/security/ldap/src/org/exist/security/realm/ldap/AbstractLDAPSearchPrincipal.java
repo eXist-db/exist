@@ -26,6 +26,12 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
 
     @ConfigurationFieldAsElement("metadata-search-attribute")
     protected Map<String, String> metadataSearchAttributes = new HashMap<String, String>();
+    
+    @ConfigurationFieldAsElement("whitelist")
+    protected LDAPPrincipalWhiteList whiteList = null;
+    
+    @ConfigurationFieldAsElement("blacklist")
+    protected LDAPPrincipalBlackList blackList = null;
 
     protected Configuration configuration;
 
@@ -64,6 +70,14 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
         return configuration;
     }
 
+    public LDAPPrincipalBlackList getBlackList() {
+        return blackList;
+    }
+
+    public LDAPPrincipalWhiteList getWhiteList() {
+        return whiteList;
+    }
+    
     public enum LDAPSearchAttributeKey {
         NAME("name"),
         DN("dn"),

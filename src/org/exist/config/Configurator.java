@@ -286,6 +286,10 @@ public class Configurator {
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchPrincipalMetadata", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPTransformationContext")) {
                     value = instantiateObject("org.exist.security.realm.ldap.LDAPTransformationContext", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPPrincipalBlackList")) {
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPPrincipalBlackList", configuration);
+                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPPrincipalWhiteList")) {
+                    value = instantiateObject("org.exist.security.realm.ldap.LDAPPrincipalWhiteList", configuration);
                 } else {
                 	value = configuration.getProperty(property);
                     //LOG.warn("skip unsupported configuration value type "+field.getType());

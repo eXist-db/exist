@@ -47,7 +47,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FindGroupFunction extends BasicFunction {
 
-    private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-group-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {

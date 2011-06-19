@@ -63,6 +63,8 @@ public class PermissionsFunctions extends BasicFunction {
     private final static QName qnChMod = new QName("chmod", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnChOwn = new QName("chown", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnChGrp = new QName("chgrp", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    
+    private final static QName qnHasAccess = new QName("has-access", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -174,6 +176,15 @@ public class PermissionsFunctions extends BasicFunction {
             },
             new SequenceType(Type.EMPTY, Cardinality.ZERO)
         ),
+        new FunctionSignature(
+            qnHasAccess,
+            "Checks whether the current user has access to the resource or collection.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose acess of which you wish to check"),
+                new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to check against the resource or collection e.g. 'rwx'")
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+         )
     };
 
     final static char OWNER_GROUP_SEPARATOR = ':';
