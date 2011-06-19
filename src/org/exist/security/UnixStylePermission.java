@@ -97,7 +97,10 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
             account = sm.getSystemSubject();
     	}
         
-        setOwnerId(account.getId());
+        int accountId = account.getId();
+        if(accountId != getOwnerId()) {
+            setOwnerId(accountId);
+        }
     }
 
     @Override
@@ -109,8 +112,11 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         if(account == null) {
             account = sm.getSystemSubject();
         }
-        
-        setOwnerId(account.getId());
+        int accountId = account.getId();
+     
+        if(accountId != getOwnerId()) {
+            setOwnerId(accountId);
+        }
     }
 
     /**
@@ -122,7 +128,10 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     public void setOwner(Subject invokingUser, String name) {
     	Account account = sm.getAccount(invokingUser, name);
     	if (account != null){
-            setOwnerId(account.getId());
+            int accountId = account.getId();
+            if(accountId != getOwnerId()) {
+                setOwnerId(accountId);
+            }
         }
     }
 
