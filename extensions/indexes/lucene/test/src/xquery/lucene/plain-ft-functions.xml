@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>nonXML data indexing tests</testName>
+    <description>
+        <p>nonXML tests</p>
+        <author>Dannes Wessels</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <store collection="/db/system/config/db" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Disable the standard full text index -->
+                    <fulltext default="none" attributes="false">
+                    </fulltext>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="binary"/>
+        <store collection="/db/binary" name="data1.txt" type="text/plain">AAAAAA</store>
+        <store collection="/db/binary" name="data2.txt" type="text/plain">BBBBBB</store>
+        <store collection="/db/binary" name="data3.txt" type="text/plain">CCCCCC</store>
+        <store collection="/db/binary" name="data4.txt" type="text/plain">DDDDDD</store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/binary"/>
+        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
+    </tearDown>
+    <test output="xml" > <!-- trace="yes" -->
+        <task>Create Index for stored documents</task>
+        <code><![CDATA[
+        ft:index( "/db/binary/data1.txt", 
+        <doc>
+            <field name="title">text</field>
+            <field name="para">some text</field>
+        </doc> ), 
+        ft:index( "/db/binary/data2.txt", 
+        <doc>
+            <field name="title">more text</field>
+            <field name="para">even more text</field>
+        </doc> ),
+        ft:index( "/db/binary/data3.txt", 
+        <doc>
+            <field name="title">foobar title</field>
+            <field name="para">even more foobar</field>
+        </doc> ),
+        ft:index( "/db/binary/data4.txt", 
+        <doc>
+            <field name="title">another foobar title</field>
+            <field name="para">foobaar even more foobar</field>
+        </doc> )
+        ]]>
+        </code>
+
+        <expected></expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 1 - search title</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/binary/", "title:text")//@uri )
+        ]]></code>
+        <expected>/db/binary/data1.txt /db/binary/data2.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 1a - search on different level</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/", "title:text")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data1.txt /db/binary/data2.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 2 - search title</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/binary/", "title:foobar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data3.txt /db/binary/data4.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 2a - search title</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/binary/data3.txt", "title:foobar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data3.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 2b - search title</task>
+        <code><![CDATA[ 
+        data( ft:search(("/db/binary/data3.txt","/db/binary/data4.txt"), "title:foobar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data3.txt /db/binary/data4.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 3 - search paragraph</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/binary/", "para:foobaar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data4.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 3a - search paragraph</task>
+        <code><![CDATA[ 
+        data( ft:search("/db/binarya/", "para:foobaar")//@uri  )
+        ]]></code>
+        <expected></expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 3b - one existing one non existing collection</task>
+        <code><![CDATA[ 
+        data( ft:search(("/db/binarya/","/db/binary/"), "para:foobaar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data4.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 3c - two times the same collection</task>
+        <code><![CDATA[ 
+        data( ft:search(("/db/binary/","/db/binary/"), "para:foobaar")//@uri  )
+        ]]></code>
+        <expected>/db/binary/data4.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Test Index 4 - expect one result</task>
+        <code><![CDATA[ 
+        data( ft:search(("/db/binary/","/db/binary/data4.txt"), "para:foobaar")//@uri )
+        ]]></code>
+        <expected>/db/binary/data4.txt</expected>
+    </test>
+</TestSet>

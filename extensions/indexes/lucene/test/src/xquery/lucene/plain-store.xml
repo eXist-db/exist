@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>nonXML data indexing tests</testName>
+    
+    <description>
+        <p>nonXML tests</p>
+        <author>Dannes Wessels</author>
+    </description>
+    
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <store collection="/db/system/config/db" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <!-- Disable the standard full text index -->
+                    <fulltext default="none" attributes="false"></fulltext>
+                    <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                    <analyzer id="nl" class="org.apache.lucene.analysis.nl.DutchAnalyzer"/>
+                    
+                    <fieldType id="author" analyzer="nl"/>
+                    <fieldType id="para" analyzer="nl" store="yes"/>
+            
+                    <fieldType id="title" store="yes"/>
+                    <fieldType id="speech" store="yes"/>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="morebinary"/>
+        <store collection="/db/morebinary" name="index1.txt" type="text/plain">AAAAAA</store>
+        <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
+        <store collection="/db/morebinary" name="index3.txt" type="text/plain">CCCCCC</store>
+        <create-collection parent="/db/morebinary" name="shakespeare"/>
+        <store-files collection="/db/morebinary/shakespeare" dir="samples/shakespeare" pattern="*.xml"/>
+    </setup>
+    
+    <tearDown>
+        <!--remove-collection collection="/db/morebinary"/-->
+        <remove-document collection="/db/system/config/db" name="collection.xconf"/>
+    </tearDown>
+
+    <test output="xml" > <!-- trace="yes" -->
+        <task>Store index document 1</task>
+        <code><![CDATA[
+        ft:index( "/db/morebinary/index1.txt", 
+        <doc>
+            <field name="author" store="yes">Dannes Wessels</field>
+            <field name="para">Some text for a paragraph</field>
+        </doc> )
+        ]]>
+        </code>
+    </test>     
+    
+    <test output="xml" > <!-- trace="yes" -->
+        <task>Store index document 2</task>
+        <code><![CDATA[
+        ft:index( "/db/morebinary/index2.txt", 
+        <doc>
+            <field name="author">Adam Retter</field>
+            <field name="para">Some text for a paragraph Some text for a paragraph Some text for a paragraph.</field>
+        </doc> )
+        ]]>
+        </code>
+    </test> 
+    
+    <test output="xml" > <!-- trace="yes" -->
+        <task>Store index document 3</task>
+        <code><![CDATA[
+        ft:index( "/db/morebinary/index3.txt", 
+        <doc>
+            <field name="author">Harry Potter</field>
+            <field name="para">Some blah for a paragraph Some blah for a paragraph Some blah for a paragraph paragraph paragraph.</field>
+        </doc> )
+        ]]>
+        </code>
+    </test> 
+
+    <!--
+    
+    Query for "text" in para. only 2 documents should provide a hit
+    
+    -->
+    <test output="text" > 
+        <task>Query for text in para</task>
+        <code><![CDATA[ 
+        for $uri in ft:search("/db/morebinary/", "para:text")//@uri order by $uri return $uri 
+        ]]></code>
+        <expected>/db/morebinary/index1.txt /db/morebinary/index2.txt</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Query for text in non-stored field</task>
+        <code><![CDATA[ 
+        ft:search("/db/morebinary/", "author:potter") 
+        ]]></code>
+        <xpath>//search[@uri = "/db/morebinary/index3.txt"]</xpath>
+    </test>
+    
+    <test output="text" > 
+        <task>Query for text in stored field: only some entries are stored</task>
+        <code><![CDATA[ 
+        ft:search("/db/morebinary/", "author:dannes") 
+        ]]></code>
+        <xpath>//search/field</xpath>
+    </test>
+    
+    <!--
+    
+    In the following test the result structure is like 
+    
+        <results>
+            <search uri="/db/morebinary/index1.txt" score="0.70273256"/>
+            <search uri="/db/morebinary/index2.txt" score="0.76073027"/>
+            <search uri="/db/morebinary/index3.txt" score="0.7856789"/>
+        </results>
+        
+    The tests checks if score1<score2<score3
+    -->
+    
+    <test output="text" > 
+        <task>Validate scores</task>
+        <code><![CDATA[ 
+        let $results := ft:search("/db/morebinary/", "para:paragraph")
+        let $score := for $s in $results//@score return xs:double($s)
+        return
+            ( $score[1]>$score[2] , $score[2]>$score[3] , $score[1] > $score[3] )
+        ]]></code>
+        <expected>true true true</expected>
+    </test>
+    
+    <test output="xml" > <!-- to be updated, shocase only now -->
+        <task>Get content of stored field</task>
+        <code><![CDATA[ 
+        let $results := ft:search("/db/morebinary/", "para:blah")
+        return
+            $results//field
+        ]]></code>
+        <expected>
+            <field name="para">Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph paragraph paragraph.</field>
+        </expected>
+    </test>
+    
+    <test output="xml" >
+        <task>Add additional index to XML document</task>
+        <code><![CDATA[ 
+xquery version "1.0";
+
+declare function local:index-data($scene) {
+    <doc>
+        <field name="title">{$scene/TITLE/text()}</field>
+    {
+        for $speech in $scene//SPEECH
+        return (
+            <field name="speech">{string-join($speech/*/text(), ' ')}</field>
+        )
+    }
+    </doc>
+};
+
+let $path := "/db/morebinary/shakespeare/macbeth.xml"
+let $doc := doc($path)
+let $index := 
+    for $scene in $doc//SCENE return ft:index($path, local:index-data($scene))
+return
+    ft:search($path, 'speech:"boil bake"')//field
+        ]]></code>
+        <expected>
+            <field name="speech">Second Witch Fillet of a fenny snake, In the cauldron <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">boil and bake</exist:match>; Eye of newt and toe of frog, Wool of bat and tongue of dog, Adder's fork and blind-worm's sting, Lizard's leg and owlet's wing, For a charm of powerful trouble, Like a hell-broth boil and bubble.</field>
+        </expected>
+    </test>
+    
+    <test output="text" ignore="true">
+        <task>Query on parent collection should include subcollections</task>
+        <code><![CDATA[
+            count(ft:search("/db/morebinary/shakespeare", 'speech:"boil bake"')//field)
+            ]]></code>
+        <expected>1</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Remove single document</task>
+        <code><![CDATA[
+            xmldb:remove("/db/morebinary/shakespeare", "macbeth.xml"),
+            count(ft:search("/db/morebinary/shakespeare", 'speech:"boil bake"')//field)
+        ]]></code>
+        <expected>0</expected>
+    </test>
+    
+    <test output="text" > 
+        <task>Remove collection</task>
+        <code><![CDATA[
+            xmldb:remove("/db/morebinary"),
+            for $uri in ft:search("/db/morebinary", "para:text")//@uri order by $uri return $uri 
+        ]]></code>
+        <expected/>
+    </test>
+</TestSet>

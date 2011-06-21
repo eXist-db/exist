@@ -1,9 +1,31 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2011 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.indexing.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +36,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
@@ -36,8 +60,12 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.util.BitVector;
 import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.OpenBitSet;
+import org.apache.lucene.util.Version;
+
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CharacterDataImpl;
@@ -58,6 +86,11 @@ import org.exist.indexing.MatchListener;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
+import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
+import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -70,10 +103,19 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.NodeValue;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ *   Class for handling all Lucene operations.
+ *
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Dannes Wessels (dannes@exist-db.org)
+ */
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public static final String OPTION_DEFAULT_OPERATOR = "default-operator";
@@ -82,11 +124,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String OPTION_FILTER_REWRITE = "filter-rewrite";
     public static final String DEFAULT_OPERATOR_OR = "or";
     
-    private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
-
+    static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
+    
     private static final FieldSelector NODE_FIELD_SELECTOR = new NodeFieldSelector();
-
+    
     private LuceneIndex index;
+    
     @SuppressWarnings("unused")
 	private IndexController controller;
 
@@ -103,13 +146,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Stack<TextExtractor> contentStack = null;
     private Set<NodeId> nodesToRemove = null;
     private List<PendingDoc> nodesToWrite = null;
+    private Document pendingDoc = null;
+    
     private int cachedNodesSize = 0;
 
     private int maxCachedNodesSize = 4096 * 1024;
+    
     private Analyzer analyzer;
 
     public static final String FIELD_NODE_ID = "nodeId";
     public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_DOC_URI = "docUri";
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
@@ -533,6 +580,252 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
+    /**
+     * Add SOLR formatted data to lucene index.
+     * 
+     * <pre>
+     * {@code
+     * <doc>
+     *   <field name="name1" boost="value1">data1</field>
+     *  <field name="name2">data2</field>
+     * </doc>
+     * }
+     * </pre>
+     * 
+     * @param descriptor SOLR styled data 
+     */
+    public void indexNonXML(NodeValue descriptor) {
+        // Verify input
+        if (!descriptor.getNode().getLocalName().contentEquals("doc")) {
+            // throw exception
+            LOG.error("Expected <doc> got <" + descriptor.getNode().getLocalName() + ">");
+            return;
+        }
+
+        // Setup parser for SOLR syntax and parse
+        PlainTextIndexConfig solrconfParser = new PlainTextIndexConfig();
+        solrconfParser.parse(descriptor);
+        
+        // Get <doc> information
+        PlainTextDoc solrDoc = solrconfParser.getDoc();
+        
+        if (pendingDoc == null) {
+        	// create Lucene document
+        	pendingDoc = new Document();
+        	
+        	// Set DocId
+            NumericField fDocId = new NumericField(FIELD_DOC_ID, Field.Store.YES, true);
+            fDocId.setIntValue(currentDoc.getDocId());             
+            pendingDoc.add(fDocId);
+            
+            // For binary documents the doc path needs to be stored
+            String uri = currentDoc.getURI().toString();  
+            Field fDocUri = new Field(FIELD_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
+            pendingDoc.add(fDocUri);
+        }
+        
+        // Iterate over all found fields and write the data.
+        for (PlainTextField field : solrconfParser.getFields()) {
+            
+            // Get field type configuration
+            FieldType fieldType = config == null ? null : config.getFieldType(field.getName());
+            
+            Field.Store store = null;
+            if (fieldType != null)
+            	store = fieldType.getStore();
+            if (store == null)
+            	store = field.getStore();
+            
+            // Get name from SOLR field
+            String contentFieldName = field.getName();
+            
+            Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
+               
+            // Extract (document) Boost factor
+            if (field.getBoost() > 0) {
+                pendingDoc.setBoost(field.getBoost());
+            } 
+            
+            // Actual field content ; Store flag can be set in solrField
+            Field contentField = new Field(contentFieldName, field.getData().toString(), 
+                    store, Field.Index.ANALYZED, Field.TermVector.YES);
+            
+            // Set boost value from SOLR config
+            contentField.setBoost(field.getBoost());
+            
+            pendingDoc.add(contentField);
+        }
+    }
+    
+    public void writeNonXML() {
+    	IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+            
+            // by default, Lucene only indexes the first 10,000 terms in a field
+            writer.setMaxFieldLength(Integer.MAX_VALUE);
+            
+            writer.addDocument(pendingDoc);
+        } catch (IOException e) {
+            LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+
+        } finally {
+            index.releaseWriter(writer);
+            pendingDoc = null;
+            cachedNodesSize = 0;
+        }
+    }
+    
+    /**
+     *  SOLR
+     * @param context
+     * @param toBeMatchedURIs
+     * @param queryText
+     * @return search report
+     */
+    public NodeImpl search(XQueryContext context, List<String> toBeMatchedURIs, String queryText) throws XPathException {
+        
+        NodeImpl report = null;
+        
+        IndexSearcher searcher = null;
+        try {
+            // Get index searcher
+            searcher = index.getSearcher();
+            
+            // Get analyzer : to be retrieved from configuration
+            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+
+            // Setup query Version, default field, analyzer
+            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
+            Query query = parser.parse(queryText);
+                       
+            // extract all used fields from query
+            String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+
+            // Setup collector for results
+            LuceneHitCollector collector = new LuceneHitCollector();
+            
+            // Perform actual search
+            searcher.search(query, collector);
+
+            // Retrieve all documents that match the query
+            List<ScoreDoc> results = collector.getDocsByScore();
+            
+            // reusable attributes
+            AttributesImpl attribs = null;
+            
+            PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
+            
+            MemTreeBuilder builder = new MemTreeBuilder();
+            builder.startDocument();
+            
+            // start root element
+            int nodeNr = builder.startElement("", "results", "results", null);
+            
+            BitVector processed = new BitVector(searcher.maxDoc());
+            // Process result documents
+            for (ScoreDoc scoreDoc : results) {
+                if (processed.get(scoreDoc.doc))
+                	continue;
+                processed.set(scoreDoc.doc);
+                
+                Document doc = searcher.doc(scoreDoc.doc);
+                
+                // Get URI field of document                
+                String fDocUri = doc.get(FIELD_DOC_URI);
+                
+                // Get score
+                float score = scoreDoc.score;
+                
+                // Check if document URI has a full match or if a
+                // document is in a collection
+                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+                    
+                    // setup attributes
+                    attribs = new AttributesImpl();
+                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+                    attribs.addAttribute("", "score", "score", "CDATA", ""+score);
+
+                    // write element and attributes
+                    builder.startElement("", "search", "search", attribs);
+                    for (String field : fields) {
+                    	String[] fieldContent = doc.getValues(field);
+                    	attribs.clear();
+                    	attribs.addAttribute("", "name", "name", "CDATA", field);
+                    	for (String content : fieldContent) {
+                    		List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                    		if (offsets != null) {
+                    			builder.startElement("", "field", "field", attribs);
+                    			highlighter.highlight(content, offsets, builder);
+                    			builder.endElement();
+                    		}
+                    	}
+                    }
+                    builder.endElement();
+
+                    // clean attributes
+                    attribs.clear();
+                }           
+            }
+            
+            // finish root element
+            builder.endElement();
+            
+            //System.out.println(builder.getDocument().toString());
+            
+            // TODO check
+            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
+
+
+        } catch (Exception ex){
+            ex.printStackTrace();
+            LOG.error(ex);
+            throw new XPathException(ex);
+        
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        
+        
+        return report;
+    }
+    
+    /**
+     *  Check if Lucene found document matches specified documents or collections.
+     * Collections should end with "/".
+     * 
+     * @param docUri    The uri of the document found by lucene
+     * @param toBeMatchedUris     List of document and collection URIs
+     * @return TRUE if documenturi is matched or is in collection.
+     */
+    private boolean isDocumentMatch(String docUri, List<String> toBeMatchedUris){
+        
+        if(docUri==null){
+            LOG.error("docUri is null.");
+            return false;
+        }
+        
+        if(toBeMatchedUris==null){
+            LOG.error("match is null.");
+            return false;
+        }
+        
+        for(String doc : toBeMatchedUris){
+            if(doc.endsWith("/")){
+                // When collection matches, return true, else continue
+                if( docUri.startsWith(doc) ){
+                    return true;
+                }
+            } else {
+                // When document matches, return true, else continue
+                if( docUri.equals(doc) ){
+                    return true;
+                }
+            }       
+        }
+        return false;
+    }
+
     private static class LuceneHitCollector extends Collector {
 
         private List<ScoreDoc> docs = new ArrayList<ScoreDoc>();
@@ -557,6 +850,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return docs;
         }
         
+        /**
+         * Get matching lucene documents by descending score
+         * @return
+         */
+        public List<ScoreDoc> getDocsByScore() {
+        	Collections.sort(docs, new Comparator<ScoreDoc>() {
+
+                public int compare(ScoreDoc scoreDoc, ScoreDoc scoreDoc1) {
+                    if (scoreDoc.score == scoreDoc1.score)
+                    	return 0;
+                    else if (scoreDoc.score < scoreDoc1.score)
+                    	return 1;
+                    return -1;
+                }
+            });
+            return docs;
+        }
+
         @Override
         public void setScorer(Scorer scorer) throws IOException {
             this.scorer = scorer;
@@ -1171,10 +1482,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private static final long serialVersionUID = -4899170629980829109L;
 
         public FieldSelectorResult accept(String fieldName) {
-            if (FIELD_DOC_ID.equals(fieldName))
+            if (FIELD_DOC_ID.equals(fieldName)) {
                 return FieldSelectorResult.LOAD;
-            if (FIELD_NODE_ID.equals(fieldName))
+            }
+            if (FIELD_NODE_ID.equals(fieldName)) {
                 return FieldSelectorResult.LOAD_AND_BREAK;
+            }
+            if (FIELD_DOC_URI.equals(fieldName)) {
+                return FieldSelectorResult.LOAD; 
+            }
             return FieldSelectorResult.NO_LOAD;
         }
     }
