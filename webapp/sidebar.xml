@@ -75,13 +75,13 @@
         	<link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
         </item>
         <item>
-            <link href="api/index.html">Javadocs</link>
+            <link href="api/index.html">Javadoc</link>
+        </item>
+        <item>
+            <link href="http://sourceforge.net/svn/?group_id=17691">Source code</link>
         </item>
         <item>
             <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
-        </item>
-        <item>
-            <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
         </item>
     </group>
     <group name="Administration">
