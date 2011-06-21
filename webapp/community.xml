@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>eXist-db community</title>
+        <date>June 2011</date>
+        <author>
+            <firstname>Dannes</firstname>
+            <surname>Wessels</surname>
+            <affiliation>
+                <address format="linespecific"><email>dannes at exist-db.org</email></address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
+    <chapter>
+        <title>eXist-db community</title>
+        <para>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eu metus dui. Fusce enim arcu, molestie nec
+            laoreet a, tempus eu magna. Sed pharetra leo vitae tellus porttitor hendrerit. Fusce commodo nisi vel purus
+            faucibus sit amet scelerisque mi ultricies. Phasellus massa ligula, tristique non dignissim ac, semper nec
+            erat. Mauris accumsan cursus accumsan. Quisque molestie velit eu nibh fringilla viverra mattis quam
+            faucibus. Aenean et ultricies lectus. Ut eu felis purus. Etiam mi magna, vestibulum nec commodo sed, varius
+            vitae lacus.</para>
+
+        <section>
+            <title>General</title>
+
+                <table class="general">
+                    <tgroup cols="2">
+                        <tbody>
+                            <tr>
+                                <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
+                                <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for
+                                    databases running in embedded mode that takes advantage of Java 5.0 features.</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db  contrib</ulink></td>
+                                <td>eXist-db contrib is a collection tools, module, functions, extension etc for
+                                    eXist-db, hosted by google code.</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="https://github.com/fsteeg/sinist">Sinist</ulink></td>
+                                <td>A simple (and very early) Scala wrapper to access eXist DB</td>
+                            </tr>
+                            <tr>
+                                <td class="doclink"><ulink url="https://github.com/knipknap/pyexist">PYexist</ulink></td>
+                                <td>A simple Python library for communicating with an eXist XML database
+                                    via its REST API</td>
+                            </tr>
+                        </tbody>
+                    </tgroup>
+                </table>
+            
+        </section>
+
+        <section>
+            <title>Using and used by eXist-db</title>
+            
+            <table class="based">
+                <tgroup cols="2">
+                    <tbody>
+                        <tr>
+                            <td class="doclink"><ulink url="http://wiki.orbeon.com/forms/doc/developer-guide/processors-xml-databases">Orbeon</ulink></td>
+                            <td>By default, Orbeon Forms ships with an embedded eXist database</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="https://www.betterform.de/trac/wiki/XRX">betterForm</ulink></td>
+                            <td>eXist-db is shipped by betterForm, betterForm is shipped with eXist-db</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://en.wikibooks.org/wiki/XRX/XSLTForms_and_eXist">Xslt Forms</ulink></td>
+                            <td>A version of XSLTforms is available as part of eXist-db.</td>
+                        </tr>
+                        
+                    </tbody>
+                </tgroup>
+            </table>
+            
+        </section>
+        
+
+    </chapter>
+</book>
