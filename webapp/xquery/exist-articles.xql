@@ -7,6 +7,8 @@ declare namespace fo="http://www.w3.org/1999/XSL/Format";
 
 declare option exist:serialize "media-type=text/xml";
 
+declare variable $mods:MODS_COLLECTION := "/db/mods/eXist";
+
 declare function mods:add-part($part, $sep as xs:string) {
     if (empty($part) or string-length($part[1]) eq 0) then
         ()
@@ -131,7 +133,7 @@ declare function mods:process($entry as element(mods:mods)) {
 };
 
 declare function mods:list-articles() {
-    for $entry in /mods:modsCollection/mods:mods
+    for $entry in collection($mods:MODS_COLLECTION)//mods:mods
     let $date := ($entry/mods:originInfo/mods:dateIssued/string(), $entry/mods:part/mods:date/string(),
             $entry/mods:originInfo/mods:dateCreated/string())[1]
     order by $date descending
@@ -155,7 +157,7 @@ declare function mods:list-articles() {
         <title>Articles on eXist</title>
         
         {
-            if (empty(/mods:mods)) then
+            if (empty(collection($mods:MODS_COLLECTION)//mods:mods)) then
                 <para>Article references are contained in a MODS document which will be installed
                     with the other sample documents. Please go to the 
                     <ulink url="admin/admin.xql">admin interface</ulink> and launch
