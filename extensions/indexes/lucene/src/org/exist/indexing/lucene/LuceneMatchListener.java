@@ -52,7 +52,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private Match match;
 
-    private Map<String, Query> termMap;
+    private Map<Object, Query> termMap;
 
     private Map<NodeId, Offset> nodesWithMatch;
 
@@ -299,7 +299,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
      */
     private void getTerms() {
         Set<Query> queries = new HashSet<Query>();
-        termMap = new TreeMap<String, Query>();
+        termMap = new TreeMap<Object, Query>();
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (nextMatch.getIndexId() == LuceneIndex.ID) {
@@ -309,7 +309,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     IndexReader reader = null;
                     try {
                         reader = index.getReader();
-                        LuceneUtil.extractTerms(query, termMap, reader);
+                        LuceneUtil.extractTerms(query, termMap, reader, false);
                     } catch (IOException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
                     } finally {

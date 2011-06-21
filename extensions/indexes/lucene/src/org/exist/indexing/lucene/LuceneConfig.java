@@ -1,6 +1,13 @@
 package org.exist.indexing.lucene;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -150,6 +157,10 @@ public class LuceneConfig {
 
     public float getBoost() {
         return boost;
+    }
+    
+    public FieldType getFieldType(String name){
+        return fieldTypes.get(name);
     }
 
     /**
