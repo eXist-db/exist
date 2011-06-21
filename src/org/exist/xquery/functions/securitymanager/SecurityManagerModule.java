@@ -67,7 +67,8 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(PermissionsFunctions.signatures[7], PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.signatures[8], PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.signatures[9], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[10], PermissionsFunctions.class)
+        new FunctionDef(PermissionsFunctions.signatures[10], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.signatures[11], PermissionsFunctions.class)
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {

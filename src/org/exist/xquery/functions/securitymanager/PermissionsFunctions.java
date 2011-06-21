@@ -29,8 +29,10 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.security.Account;
 import org.exist.security.PermissionFactory;
 import org.exist.security.PermissionFactory.PermissionModifier;
+import org.exist.security.Subject;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -39,6 +41,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -181,10 +184,10 @@ public class PermissionsFunctions extends BasicFunction {
             "Checks whether the current user has access to the resource or collection.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whoose acess of which you wish to check"),
-                new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to check against the resource or collection e.g. 'rwx'")
+                new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The partial mode to check against the resource or collection e.g. 'rwx'")
             },
             new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-         )
+         ),
     };
 
     final static char OWNER_GROUP_SEPARATOR = ':';
@@ -236,6 +239,9 @@ public class PermissionsFunctions extends BasicFunction {
             }  else if(isCalledAs(qnChGrp.getLocalName())) {
                 String groupname = args[1].itemAt(0).getStringValue();
                 result = functionChGrp(pathUri, groupname);
+            } else if(isCalledAs(qnHasAccess.getLocalName())) {
+                String mode = args[1].itemAt(0).getStringValue();
+                result = functionHasAccess(pathUri, mode);
             }
         } catch(PermissionDeniedException pde) {
           throw new XPathException(pde.getMessage(), pde);
@@ -367,7 +373,29 @@ public class PermissionsFunctions extends BasicFunction {
         });
         return Sequence.EMPTY_SEQUENCE;
     }
-
+    
+    private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException, XPathException {
+        if(modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+            throw new XPathException("Mode string must be partial i.e. rwx not rwxrwxrwx");
+        }
+        
+        int mode = 0;
+        if(modeStr.indexOf(Permission.READ_CHAR) > -1) {
+            mode |= Permission.READ;
+        }
+        if(modeStr.indexOf(Permission.WRITE_CHAR) > -1) {
+            mode |= Permission.WRITE;
+        }
+        if(modeStr.indexOf(Permission.UPDATE_CHAR) > -1) {
+            mode |= Permission.UPDATE;
+        }
+        
+        Subject currentSubject = context.getBroker().getSubject();
+        boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
+        
+        return BooleanValue.valueOf(hasAccess);
+    }
+    
     private Permission getPermissions(XmldbURI pathUri) throws XPathException {
         Permission permissions;
         try {
