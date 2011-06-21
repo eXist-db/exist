@@ -191,6 +191,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             case StreamListener.REMOVE_SOME_NODES:
                 removeNodes();
                 break;
+            case StreamListener.REMOVE_BINARY:
+            	removePlainTextIndexes();
+            	break;
         }
     }
 
@@ -310,6 +313,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
+    protected void removePlainTextIndexes() {
+    	IndexReader reader = null;
+        try {
+            reader = index.getWritingReader();
+            String uri = currentDoc.getURI().toString();
+            Term dt = new Term(FIELD_DOC_URI, uri);
+            reader.deleteDocuments(dt);
+            reader.flush();
+        } catch (IOException e) {
+            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+        } finally {
+            index.releaseWritingReader(reader);
+            mode = StreamListener.STORE;
+        }
+    }
+    
     public void removeCollection(Collection collection, DBBroker broker) {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection " + collection.getURI());
