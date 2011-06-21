@@ -80,6 +80,47 @@
             
         </section>
         
-
+        <section>
+            <title>Social Media</title>
+            
+            <table class="based">
+                <tgroup cols="2">
+                    <tbody>
+                        <tr>
+                            <td class="doclink"><ulink url="http://stackoverflow.com/questions/tagged/exist">Stack overflow</ulink></td>
+                            <td>Stackoverflow has a tag for eXist-db. Note that this is not the recommended way of getting
+                            support, please consult the exist-open mailinglist.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="https://lists.sourceforge.net/lists/listinfo/exist-open">exist-open</ulink></td>
+                            <td>The primary medium for asking questions and getting help is the exist-open mailing list. 
+                                The mailing list's archives can be searched using <ulink url="http://exist-open.markmail.org/search/?q=">markmail.org</ulink></td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="https://twitter.com/#!/existdb">Twitter</ulink></td>
+                            <td>The official eXist-db "Open Source Native XML Database" micro-blog</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://www.delicious.com/tag/existdb">Del.icio.us</ulink></td>
+                            <td>Recent existdb Bookmarks</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://www.linkedin.com/groups?mostPopular=&amp;gid=35624">linked-in</ulink></td>
+                            <td>eXist-db professionals network</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://atomic.exist-db.org/blogs/eXist/">exist-db WiKi</ulink></td>
+                            <td>eXist-db official atom based weblog</td>
+                        </tr>
+                        
+                        
+                    </tbody>
+                </tgroup>
+            </table>
+            
+        </section>
+        
+        
+        
     </chapter>
 </book>
