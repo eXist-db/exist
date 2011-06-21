@@ -2278,6 +2278,9 @@ public class NativeBroker extends DBBroker {
             }
         }
         removeResourceMetadata(transaction, blob);
+        
+        getIndexController().setDocument(blob, StreamListener.REMOVE_BINARY);
+        getIndexController().flush();
     }
 
     /**

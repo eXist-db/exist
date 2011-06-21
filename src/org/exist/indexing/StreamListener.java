@@ -53,6 +53,8 @@ public interface StreamListener {
      */
     public final static int REMOVE_SOME_NODES = 2;
     
+    public final static int REMOVE_BINARY = 3;
+    
     /**
      * Retunrs the IndexWorker that owns this listener.
      * 
