@@ -5,7 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Using WebDAV to Access the Database</title>
-        <date>September 2009</date>
+        <date>March 2011</date>
         <author>
             <firstname>Dannes</firstname>
             <surname>Wessels</surname>
@@ -22,208 +22,244 @@
 
         <section id="webdav">
             <title>Introducing WebDAV</title>
-            <para>Beginning with version 1.0b2, eXist has its own WebDAV implementation. WebDAV
-                makes it possible to manage database collections in eXist just like directories in a
-                file system. You may copy, remove, view or edit files with any application
-                supporting the WebDAV protocol, including, for example, Windows Explorer, <ulink
-                    url="http://www.webdav.org/cadaver">cadaver</ulink>, <ulink
-                    url="http://www.konqueror.org/">KDE Konqueror</ulink>, <ulink
-                    url="http://www.oxygenxml.com/">OxygenXML</ulink>, <ulink
-                    url="http://www.altova.com/">XML Spy</ulink> and many others.</para>
+            <para>eXist ships with a <ulink
+                    url="http://en.wikipedia.org/wiki/WebDAV">WebDAV</ulink> interface.  WebDAV makes it possible to manage database
+                collections and documents just like directories and files in a file system.  You can copy,
+                move, delete, view or edit files with any application supporting the WebDAV protocol, including Windows
+                Explorer, Mac OS X Finder, <ulink url="http://www.webdav.org/cadaver">cadaver</ulink>, <ulink
+                    url="http://www.konqueror.org/">KDE Konqueror</ulink>, <ulink url="http://www.oxygenxml.com/"
+                    >oXygen XML Editor</ulink>, <ulink url="http://www.altova.com/">XML Spy</ulink>, <ulink
+                    url="http://www.openoffice.org/">OpenOffice.org</ulink> and many others (see "Compatibility" below).</para>
 
-            <para>In the default installation, the WebDAV server listens on <ulink
-                    url="http://localhost:8080/exist/webdav/db"
-                    >http://localhost:8080/exist/webdav/db</ulink>. The implementation is almost
-                complete, however the PROPSET method is missing. MSOffice is reported to have
-                LOCKing issues but most WebDAV clients should work well.</para>
-
-            <note>
-                <para>By default, the WebDAV server tries to use HTTP Digest Authentication as
-                    required by the standard. However, some Windows clients refuse to accept this,
-                    so the server has a fallback option and uses Basic Authentication if the client
-                    insists on it.</para>
-            </note>
-        </section>
-
-        <section>
-            <title>Windows Webfolder</title>
-
-            <note>
-                <para>Be aware that there are multiple versions of webdav Microsoft libraries (and
-                    different flavours of bugs). To avoid some frustration if the steps below don't
-                    work for you, <ulink url="http://support.microsoft.com/?kbid=892211">update
-                        windows XP for web folders</ulink>, or take more information about <ulink
-                        url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web Folder
-                        Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
-            </note>
-
-						<note>
-                <para>Windows Vista and Windows 7 both restrict access to webdav servers that
-								use Basic HTTP authentication on non-SSL connections. This restriction can
-								be solved by changing a registry key. Read more on <ulink 
-								url="http://support.microsoft.com/kb/841215">MSDN</ulink> and
-								<ulink url="http://greenbytes.de/tech/webdav/webdav-redirector-list.html">greenbytes.de</ulink>.
-								</para>
-            </note>
-
-            <para>Perform the following steps in Internet Explorer: <itemizedlist>
-                    <listitem>
-                        <para>Select <command>File -&gt; Open</command>.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Fill in URL like
-                                <command>http://localhost:8080/exist/webdav/db/</command> or
-                                <command>https://localhost:8443/exist/webdav/db/</command>.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Check "Open as Web Folder".</para>
-                    </listitem>
-                    <listitem>
-                        <para>Click OK.</para>
-                    </listitem>
-                </itemizedlist>
-                <screenshot>
-                    <graphic fileref="resources/webdav_xp_webfolders.png"/>
-                </screenshot>
-            </para>
-
-        </section>
-
-        <section>
-            <title>WinXP My Network Places</title>
-
-            <para>This enables you to access eXist from almost any windowsXP application that
-                supports 'Network Places' in the standard File dialog:
-                <screenshot><graphic fileref="resources/webdav_xp_mnp0.png"/>
-                </screenshot>
-            </para>
-            <para>First, go to "My Network Places", click "Add.."
-                <screenshot>
-                    <graphic fileref="resources/webdav_xp_mnp1.png"/>
-                </screenshot>
-            </para>
-            <para>Then select the service provider.
-                <screenshot>
-                    <graphic fileref="resources/webdav_xp_mnp2.png"/>
-                </screenshot>
-            </para>
-            <para>Then fill the URL of exist e.g. http://localhost:8080/exist/webdav/db/.
-                <screenshot>
-                    <graphic fileref="resources/webdav_xp_mnp3.png"/>
-                </screenshot>
-            </para>
-            <para>Finally click on icon to access eXist.
-                <screenshot>
-                    <graphic fileref="resources/webdav_xp_mnp4.png"/>
-                </screenshot>
-            </para>
-
-        </section>
-
-        <section>
-            <title>MacOsX Finder</title>
-            <para>The eXist database can be accessed easily with the MacOsX Finder. First select in
-                the Finder "Go" and "Connect to Server..."
-                <screenshot><graphic fileref="resources/webdav_macosx_1.png"/>
-                </screenshot>
-            </para>
-            <para>Fill in the webdav url http://localhost:8080/exist/webdav/db/
-                <screenshot><graphic fileref="resources/webdav_macosx_2.png"/>
-                </screenshot>
-            </para>
-            <para>Enter username and password...
-                <screenshot><graphic fileref="resources/webdav_macosx_3.png"/>
-                </screenshot>
-            </para>
-            <para>And the database is accessible!
-                <screenshot><graphic fileref="resources/webdav_macosx_4.png"/>
-                </screenshot>
+            <para>While eXist has had WebDAV support since version 1.0b2, the new WebDAV implementation in 
+                version 1.4.1 brings improved WebDAV compatibility, thanks to its use of the excellent open-source <ulink
+                    url="http://milton.ettrema.com/">Milton</ulink> WebDAV API for Java. </para>
+            
+            <para>In the default configuration
+                the WebDAV server can be accessed via the URLs <ulink url="http://localhost:8080/exist/webdav/db/"
+                    >http://localhost:8080/exist/webdav/db/</ulink> and <ulink
+                    url="https://localhost:8443/exist/webdav/db/">https://localhost:8443/exist/webdav/db/</ulink>.
             </para>
         </section>
 
+        <section id="compatibility">
+            <title>Compatibility</title>
+            <para>The <ulink url="http://milton.ettrema.com/">Milton</ulink> project maintains a detailed WebDAV client
+                    <ulink url="http://milton.ettrema.com/compat/">compatibility list</ulink> that describes a "Recipe
+                for broad client compatibility."  In case of any problems please read this document.  However, some preliminary points
+                specific to eXist should be kept in mind:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>eXist's Milton interface does not currently support HTTP Digest Authentication, in contrast to the original pre-Milton
+                         implementation.</para>
+                </listitem>
+                <listitem>
+                    <para>The size of an XML document is presented as a multiple of 4096 bytes, which is eXist's
+                        internal pagesize (see <ulink url="configuration.xml#conf.xml">conf.xml</ulink>).  The actual
+                        size on an XML document stored in the database can not be determined because the size depends on many factors, e.g. the applied
+                        serialization parameters.</para>
+                </listitem>
+                <listitem>
+                    <para>It turns out that some WebDAV clients can not handle estimated sizes, cutting off the transfer prematurely.  A 
+                        <ulink url="http://exist.svn.sourceforge.net/viewvc/exist/trunk/eXist/extensions/webdav/src/org/exist/webdav/MiltonDocument.java?r1=12791&amp;r2=12825&amp;pathrev=12825">workaround</ulink> has
+                        been implemented to help some clients, but in some cases this doesn't seem to be sufficient.  
+                        You may need to find a different WebDAV client or contact your WebDAV client's developer.
+                    </para>
+                </listitem>
+            </itemizedlist>
 
-        <section>
-            <title>OxygenXML</title>
-
-            <para>
-                <itemizedlist>
-                    <listitem>
-                        <para>Select <command>File -&gt; Open URL</command>.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Fill <command>User</command> and <command>Password</command>.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Enter <command>Server Url</command>
-                            http://localhost:8080/exist/webdav/db/.</para>
-                    </listitem>
-                    <listitem>
-                        <para>Click <command>Browse</command>.</para>
-                    </listitem>
-                </itemizedlist>
-                <screenshot>
-                    <graphic fileref="resources/webdav_oxygen.png"/>
-                </screenshot>
-            </para>
-            <note>
-                <para>Note on SSL; Probably you'll get the message: Error:
-                    sun.security.validator.ValidatorException: PKIX path building failed:
-                    sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid
-                    certification path to requested target.</para>
-                <para>You'll need to add the Server certificate to your trusted certificates
-                    keystore (<ulink
-                        url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores"
-                        >more info</ulink>).</para>
-            </note>
-
-            <note>
-                <para>Warning: when saving a document to the WebDAV server via Oxygen, remember to
-                    double check if the document path in the File URL field at the top of the dialog
-                    does really contain the URL to which you want to save the document. It happens
-                    very easily that you click on another folder or resource by mistake and thus
-                    overwrite the wrong resource. </para>
-            </note>
-
-
+            <para>The Milton-based WebDAV interface has been successfully tested with: Windows Web Folders (Windows XP/7), <ulink
+                    url="http://www.jscape.com/products/file-transfer-clients/anyclient/">AnyClient</ulink> (cross-platform), Mac OS X
+                Finder, <ulink url="http://www.panic.com/transmit/">Transmit</ulink> (Mac OS X), davfs version 1.4.5 (Linux),
+                OxygenXML and OpenOffice.org.</para>
+            <para>The following clients are reported to have issues: <ulink url="http://en.wikipedia.org/wiki/GVFS"
+                    >GVFS</ulink> (Nautilus) and <ulink url="http://www.netdrive.net/">NetDrive</ulink>.</para>
         </section>
 
-        <section>
-            <title>XMLspy</title>
+        <section id="clients">
+            <title>Clients</title>
+            <section>
+                <title>Windows Web Folders</title> 
+                <para>Out of the box, Windows (XP, 7) has <emphasis role="italic">some</emphasis> native support for
+                    the WebDAV protocol, but there are some well-known issues.  Please consult the
+                    following articles in case of any problem.</para>
+                <note>
+                    <para>Be aware that there are multiple versions of WebDAV Microsoft libraries
+                        (and different flavors of bugs). To avoid some frustration if the steps
+                        below don't work for you, <ulink
+                            url="http://support.microsoft.com/?kbid=892211">Update Windows XP for
+                            Web Folders</ulink>, or take more information about <ulink
+                            url="http://greenbytes.de/tech/webdav/webfolder-client-list.html">Web
+                            Folder Client (MSDAIPP.DLL) Versions and Issues</ulink>.</para>
+                </note>
+                <note>
+                    <para>Windows Vista and Windows 7 both restrict access to WebDAV servers that
+                        use Basic HTTP authentication on non-SSL connections. This restriction can
+                        be solved by changing a registry key. Read more on <ulink
+                            url="http://support.microsoft.com/kb/841215">MSDN</ulink> and <ulink
+                            url="http://greenbytes.de/tech/webdav/webdav-redirector-list.html"
+                            >greenbytes.de</ulink>.  However, SSL connections do bring improved
+                        security.</para>
+                </note>
+                <para>Perform the following steps in Internet Explorer: <itemizedlist>
+                        <listitem>
+                            <para>Select <command>File -&gt; Open</command>.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Fill in URL like
+                                    <command>http://localhost:8080/exist/webdav/db/</command> or
+                                    <command>https://localhost:8443/exist/webdav/db/</command>.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Check "Open as Web Folder".</para>
+                        </listitem>
+                        <listitem>
+                            <para>Click OK.</para>
+                        </listitem>
+                    </itemizedlist>
+                    <screenshot>
+                        <graphic fileref="resources/webdav_xp_webfolders.png"/>
+                    </screenshot>
+                </para>
+            </section>
 
-            <para>
-                <itemizedlist>
-                    <listitem>
-                        <para>Select <command>File -&gt; Open URL</command></para>
-                    </listitem>
-                    <listitem>
-                        <para>Enter <command>Username, Password</command>
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>Enter <command>Server URL</command> without a slash on the end
-                            (otherwise you'll see 2x 'db')</para>
-                    </listitem>
-                </itemizedlist>
-                <screenshot>
-                    <graphic fileref="resources/webdav_xmlspy.png"/>
-                </screenshot>
-            </para>
+            <section>
+                <title>Windows XP's My Network Places</title>
+
+                <para>This enables you to access eXist from almost any Windows XP application that supports 'Network
+                    Places' in the standard File dialog: <screenshot>
+                        <graphic fileref="resources/webdav_xp_mnp0.png"/>
+                    </screenshot>
+                </para>
+                <para>First, go to "My Network Places", click "Add..." <screenshot>
+                        <graphic fileref="resources/webdav_xp_mnp1.png"/>
+                    </screenshot>
+                </para>
+                <para>Then select the service provider. <screenshot>
+                        <graphic fileref="resources/webdav_xp_mnp2.png"/>
+                    </screenshot>
+                </para>
+                <para>Then enter the eXist WebDAV URL, e.g. http://localhost:8080/exist/webdav/db/. <screenshot>
+                        <graphic fileref="resources/webdav_xp_mnp3.png"/>
+                    </screenshot>
+                </para>
+                <para>Finally click on the icon to access eXist. <screenshot>
+                        <graphic fileref="resources/webdav_xp_mnp4.png"/>
+                    </screenshot>
+                </para>
+
+            </section>
+
+            <section>
+                <title>Mac OS X Finder</title>
+                <para>The eXist database can be accessed easily with the Mac OS X Finder. First select in the Finder "Go"
+                    and "Connect to Server..." <screenshot>
+                        <graphic fileref="resources/webdav_macosx_1.png"/>
+                    </screenshot>
+                </para>
+                <para>Fill in the eXist WebDAV URL http://localhost:8080/exist/webdav/db/ <screenshot>
+                        <graphic fileref="resources/webdav_macosx_2.png"/>
+                    </screenshot>
+                </para>
+                <para>Enter a username and password... <screenshot>
+                        <graphic fileref="resources/webdav_macosx_3.png"/>
+                    </screenshot>
+                </para>
+                <para>And the database is accessible! <screenshot>
+                        <graphic fileref="resources/webdav_macosx_4.png"/>
+                    </screenshot>
+                </para>
+            </section>
 
 
+            <section>
+                <title>oXygen XML Editor</title>
+
+                <para>
+                    <itemizedlist>
+                        <listitem>
+                            <para>Select <command>File -&gt; Open URL</command>.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Fill <command>User</command> and <command>Password</command>.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Enter <command>Server URL</command> http://localhost:8080/exist/webdav/db/.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Click <command>Browse</command>.</para>
+                        </listitem>
+                    </itemizedlist>
+                    <screenshot>
+                        <graphic fileref="resources/webdav_oxygen.png"/>
+                    </screenshot>
+                </para>
+                <note>
+                    <para>Note on SSL connections in oXygen: You may encounter an error: "Error:
+                        sun.security.validator.ValidatorException: PKIX path building failed:
+                        sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification
+                        path to requested target."</para>
+                    <para>In order to avoid this error, you'll need to add the Server certificate to your trusted certificates keystore (<ulink
+                            url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jsse/JSSERefGuide.html#CustomizingStores"
+                            >more info</ulink>).</para>
+                </note>
+
+                <note>
+                    <para>Warning: When saving a document to the WebDAV server via oXygen, remember to double check that
+                        the document path in the File URL field at the top of the dialog does really contain the URL to
+                        which you want to save the document.  It happens very easily that you click on another folder or
+                        resource by mistake and thus overwrite the wrong resource. </para>
+                </note>
 
 
+            </section>
+
+            <section>
+                <title>XML Spy</title>
+
+                <para>
+                    <itemizedlist>
+                        <listitem>
+                            <para>Select <command>File -&gt; Open URL</command></para>
+                        </listitem>
+                        <listitem>
+                            <para>Enter <command>Username, Password</command>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>Enter <command>Server URL</command> without a slash on the end (otherwise you'll see
+                                2x 'db')</para>
+                        </listitem>
+                    </itemizedlist>
+                    <screenshot>
+                        <graphic fileref="resources/webdav_xmlspy.png"/>
+                    </screenshot>
+                </para>
+
+            </section>
+
+            <section>
+                <title>KDE Konqueror</title>
+
+                <para>Enter an URL like <command>webdav://localhost:8080/exist/webdav/db</command>. Use
+                        <command>webdavs://</command> for WebDAV over SSL. <screenshot>
+                        <graphic fileref="resources/webdav_konqueror.png"/>
+                    </screenshot>
+                </para>
+
+            </section>
         </section>
 
-        <section>
-            <title>KDE Konqueror</title>
-
-            <para>Enter an URL like <command>webdav://localhost:8080/exist/webdav/db</command>. Use
-                    <command>webdavs://</command> for webDAV over SSL.
-                <screenshot>
-                    <graphic fileref="resources/webdav_konqueror.png"/>
-                </screenshot>
+        <section id="revert">
+            <title>Reverting to the old WebDAV implementation</title>
+            <para>Before eXist version 1.4.1 a custom implementation was used.  This implementation has been
+                deprecated because it was not stable enough and many WebDAV clients could not connect to the
+                server.  Although not recommended, it is possible to switch back to the old implementation by
+                modifying the WebDAV configuration entry in the file <command>WEB-INF/controller-config.xml</command>.
+                Modify the line
+                <synopsis format="linespecific">&lt;forward pattern="/webdav/" servlet="milton"/></synopsis> into
+                <synopsis format="linespecific">&lt;forward pattern="/webdav/" servlet="WebDAVServlet"/></synopsis>.
             </para>
-
         </section>
 
     </chapter>
