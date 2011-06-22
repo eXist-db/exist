@@ -124,7 +124,7 @@ public class Optimize extends Pragma {
                 	ancestors = selection;
                 else if (contextStep == null || current > 0) {
                     ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
-                        true, contextId, false);
+                        true, contextId, true);
                 } else {
 //                    NodeSelector selector;
                     long start = System.currentTimeMillis();
