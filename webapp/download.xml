@@ -67,17 +67,17 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10433.jar/download"
-                                >eXist-setup-1.4.0-rev10433.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.jar/download"
+                                >eXist-setup-1.4.0-rev10440.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.0-rev10433.jar</code></td>
+                                eXist-1.4.0-rev10440.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10433.exe/download"
-                                >eXist-setup-1.4.0-rev10433.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.exe/download"
+                                >eXist-setup-1.4.0-rev10440.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
