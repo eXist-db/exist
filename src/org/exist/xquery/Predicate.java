@@ -287,6 +287,8 @@ public class Predicate extends PathExpr {
 		if (inner == null)
 			result = Sequence.EMPTY_SEQUENCE;
 		else {
+			if (executionMode == UNKNOWN)
+				executionMode = BOOLEAN;
 			int recomputedExecutionMode = executionMode;
 
 			Sequence innerSeq = null;
