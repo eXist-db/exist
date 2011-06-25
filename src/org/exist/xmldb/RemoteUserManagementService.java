@@ -362,7 +362,9 @@ public class RemoteUserManagementService implements UserManagementService {
                 final String group = (String)result.get("group");
                 final int mode = ((Integer)result.get("permissions")).intValue();
                 final Object[] acl = (Object[])result.get("acl");
-                final List aces = Arrays.asList(acl);
+                List aces = null;
+                if (acl != null)
+                	aces = Arrays.asList(acl);
 
                 perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
                 
@@ -418,7 +420,9 @@ public class RemoteUserManagementService implements UserManagementService {
                 final String group = (String)result.get("group");
                 final int mode = ((Integer)result.get("permissions")).intValue();
                 final Object[] acl = (Object[])result.get("acl");
-                final List aces = Arrays.asList(acl);
+                List aces = null;
+                if (acl != null)
+                	aces = Arrays.asList(acl);
 
                 perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
                 

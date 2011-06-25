@@ -366,7 +366,9 @@ public class RemoteCollection implements CollectionImpl {
         final String group = (String)hash.get("group");
         final int mode = ((Integer)hash.get("permissions")).intValue();
         final Object[] acl = (Object[])hash.get("acl");
-        final List aces = Arrays.asList(acl);
+        List aces = null;
+        if (acl != null)
+        	aces = Arrays.asList(acl);
 
         final Permission perm;
         try {
@@ -429,7 +431,9 @@ public class RemoteCollection implements CollectionImpl {
         final String group = (String)collection.get("group");
         final int mode = ((Integer)collection.get("permissions")).intValue();
         final Object[] acl = (Object[])collection.get("acl");
-        final List aces = Arrays.asList(acl);
+        List aces = null; 
+        if (acl != null)
+        	aces = Arrays.asList(acl);
 
         final Permission perm;
         try {
