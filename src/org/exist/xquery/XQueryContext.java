@@ -312,6 +312,7 @@ public class XQueryContext implements BinaryValueManager, Context
     
     protected Database db;
 
+    private boolean analyzed = false;
 
     // TODO: expath repo manageer, may change
     private static ExistRepository _repo = null;
@@ -1433,6 +1434,8 @@ public class XQueryContext implements BinaryValueManager, Context
         clearUpdateListeners();
 
         profiler.reset();
+        
+        analyzed = false;
     }
 
     /**
@@ -1611,11 +1614,15 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    public void analyzeAndOptimizeIfModulesChanged( PathExpr expr ) throws XPathException
+    public void analyzeAndOptimizeIfModulesChanged( Expression expr ) throws XPathException
     {
+    	if (analyzed)
+    		return;
+    	analyzed = true;
     	for (Module module : expr.getContext().modules.values()) {
             if( !module.isInternalModule() ) {
-            	((ExternalModule)module).getRootExpression().analyze( new AnalyzeContextInfo() );
+            	Expression root = ((ExternalModule)module).getRootExpression();
+            	((ExternalModule)module).getContext().analyzeAndOptimizeIfModulesChanged(root);
             }
     	}
         expr.analyze( new AnalyzeContextInfo() );
