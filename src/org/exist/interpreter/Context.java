@@ -393,7 +393,7 @@ public interface Context {
 	 */
 	public boolean checkModulesValid();
 
-	public void analyzeAndOptimizeIfModulesChanged(PathExpr expr) throws XPathException;
+	public void analyzeAndOptimizeIfModulesChanged(Expression expr) throws XPathException;
 
 	/**
 	 * Load a built-in module from the given class name and assign it to the namespace URI. The specified class should be a subclass of {@link
