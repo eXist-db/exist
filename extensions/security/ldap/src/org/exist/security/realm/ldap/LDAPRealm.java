@@ -21,7 +21,13 @@
  */
 package org.exist.security.realm.ldap;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -119,8 +125,10 @@ public class LDAPRealm extends AbstractRealm {
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private Account createAccountInDatabase(Subject invokingUser, String username, SearchResult ldapUser) throws AuthenticationException {
+    private Account createAccountInDatabase(Subject invokingUser, String username, SearchResult ldapUser, String primaryGroupName) throws AuthenticationException {
 
+        LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
+        
         DBBroker broker = null;
 
         try {
@@ -129,11 +137,18 @@ public class LDAPRealm extends AbstractRealm {
             //elevate to system privs
             broker.setUser(getSecurityManager().getSystemSubject());
 
+            //get (or create) the primary group if it doesnt exist
+            if(primaryGroupName != null) { //TODO remove this check as the primary group should never be null
+                Group primaryGroup = getGroup(invokingUser, primaryGroupName);
+            }
             
+            //create member groups
+            Object members = ldapUser.getAttributes().get(searchAccount.getSearchAttribute(LDAPSearchAttributeKey.MEMBER_OF)).get(); 
+            
+            //create the user account
             UserAider userAider = new UserAider(ID, username);
 
             //store any requested metadata
-            LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
             for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
                 String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
                 Attributes userAttributes = ldapUser.getAttributes();
@@ -241,7 +256,9 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a user from ldap so cache them and return
                     try {
-                        return createAccountInDatabase(invokingUser, name, ldapUser);
+                        LDAPSearchContext search = ensureContextFactory().getSearch();
+                        String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
+                        return createAccountInDatabase(invokingUser, name, ldapUser, primaryGroup);
                         //registerAccount(acct); //TODO do we need this
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -258,6 +275,160 @@ public class LDAPRealm extends AbstractRealm {
             }
         }
     }
+    
+    /*
+    private byte[] longToBytes(long l) throws IOException {
+        DataOutputStream dos = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+            dos = new DataOutputStream(baos);
+            dos.writeLong(l);
+            dos.flush();
+            return baos.toByteArray();
+        } finally {
+            dos.close();
+        }
+    }*/
+    
+    /*
+    private long bytesToLong(byte b[]) throws IOException {
+       long val = 0;
+       int startOffset = (b.length >= 8 ? 7 : b.length - 1); //restrict size to long i.e. 8 bytes
+       for(int i = startOffset; i > -1; i--) {
+           val |= (((long)b[i]) << ((startOffset - i) * 8));
+       }
+       return val;
+    }*/
+    
+    /**
+     *
+     * byte[0] - revision level
+     * byte[1-7] - 48 bit authority
+     * byte[8]- count of sub authorities
+     * and then count x 32 bit sub authorities
+     * 
+     * S-Revision-Authority-SubAuths....
+     */
+    /*
+    private String decodeSID(byte[] sid) {
+        
+        try {
+            StringBuilder decodedSid = new StringBuilder("S-");
+
+            //revision level
+            decodedSid.append(Integer.toString(sid[0]));
+
+            decodedSid.append("-");
+
+            //authority
+            byte[] authority = Arrays.copyOfRange(sid, 1, 7);
+            decodedSid.append(Long.toHexString(bytesToLong(authority)));
+
+            //get the count of sub authorities
+            int countSubAuths = sid[7];
+
+            int offset = 8;
+
+            for(int i = 0; i < countSubAuths; i++) {
+                byte subAuth[] = Arrays.copyOfRange(sid, offset, offset+4);
+                decodedSid.append("-");
+                decodedSid.append(Long.toHexString(bytesToLong(subAuth)));
+                offset+= 4;
+            }
+            
+            return decodedSid.toString();
+            
+        } catch(IOException ioe) {
+            LOG.error(ioe.getMessage(), ioe);
+            return null;
+        }
+    }*/
+    
+    private String decodeSID(byte[] sid) {
+        String strSID = "";
+        int version;
+        long authority;
+        int count;
+        String rid = "";
+        strSID = "S";
+
+         // get version
+        version = sid[0];
+        strSID = strSID + "-" + Integer.toString(version);
+        for (int i=6; i>0; i--) {
+                rid += byte2hex(sid[i]);
+        }
+
+        // get authority
+        authority = Long.parseLong(rid);
+        strSID = strSID + "-" + Long.toString(authority);
+
+        //next byte is the count of sub-authorities
+        count = sid[7]&0xFF;
+
+        //iterate all the sub-auths
+        for (int i=0;i<count;i++) {
+                rid = "";
+                for (int j=11; j>7; j--) {
+                        rid += byte2hex(sid[j+(i*4)]);
+                }
+                strSID = strSID + "-" + Long.parseLong(rid,16);
+        }
+        return strSID;    
+    }
+  
+    public static String byte2hex(byte b) {
+        String ret = Integer.toHexString((int)b&0xFF);
+        if (ret.length()<2) {
+            ret = "0"+ret;
+        }
+        return ret;
+    }
+    
+    private String getPrimaryGroupSID(SearchResult ldapUser) throws NamingException {
+        LDAPSearchContext search = ensureContextFactory().getSearch();
+        byte[] objectSID = ((String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get()).getBytes();
+        String strPrimaryGroupID = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.PRIMARY_GROUP_ID)).get();
+        
+        String strObjectSid = decodeSID(objectSID);
+        
+        return strObjectSid.substring(0, strObjectSid.lastIndexOf('-') + 1) + strPrimaryGroupID;
+        
+        /*
+        
+        byte[] sid = objectSID.getBytes();
+        final byte primaryGroupId[];
+        try {
+            primaryGroupId = longToBytes(Long.parseLong(strPrimaryGroupID));
+        } catch(IOException ioe) {
+            LOG.error(ioe.getMessage(), ioe);
+            return null;
+        }
+        
+        for(int i = 0; i < primaryGroupId.length; i++) {
+            sid[sid.length - primaryGroupId.length - i] = primaryGroupId[i];
+        }
+        
+        return sid;*/
+    }
+    
+    private String getSIDAsByteString(byte[] sid) {
+        String byteSID = "";
+        int j;
+        //Convert the SID into string using the byte format
+        for (int i=0;i<sid.length;i++) {
+                j = (int)sid[i] & 0xFF;
+                if (j<0xF) {
+                //add a leading zero, add two leading \\ to make it easy 
+                //to paste into subsequent searches
+                        byteSID = byteSID + "\\0" + Integer.toHexString(j);
+                }
+                else {
+                        byteSID = byteSID + "\\" + Integer.toHexString(j);
+                }
+        }  
+        return byteSID;
+    }
 
     @Override
     public final synchronized Group getGroup(Subject invokingUser, String name) {
@@ -271,7 +442,7 @@ public class LDAPRealm extends AbstractRealm {
                 ctx = getContext(invokingUser);
 
                 //do the lookup
-                SearchResult ldapGroup = findGroupByGroupName(ctx, name);
+                SearchResult ldapGroup = findGroupByGroupName(ctx, removeDomainPostfix(name));
                 if(ldapGroup == null) {
                     return null;
                 } else {
@@ -295,12 +466,21 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    private String removeDomainPostfix(String accountName) {
-        String userName = accountName;
-        if(userName.indexOf("@") > -1 && userName.endsWith(ensureContextFactory().getDomain())) {
-            userName = userName.substring(0, userName.indexOf("@"));
+    
+    private String addDomainPostfix(String principalName) {
+        String name = principalName;
+        if(name.indexOf("@") == -1){
+            name += '@' + ensureContextFactory().getDomain();
         }
-        return userName;
+        return name;
+    }
+    
+    private String removeDomainPostfix(String principalName) {
+        String name = principalName;
+        if(name.indexOf('@') > -1 && name.endsWith(ensureContextFactory().getDomain())) {
+            name = name.substring(0, name.indexOf('@'));
+        }
+        return name;
     }
 
     private boolean checkAccountRestrictionList(String accountname) {
@@ -378,6 +558,30 @@ public class LDAPRealm extends AbstractRealm {
         return searchResult;
     }
 
+    private String findGroupBySID(DirContext ctx, String sid) throws NamingException {
+        
+        LDAPSearchContext search = ensureContextFactory().getSearch();
+        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID), sid);
+
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+        NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+        if(results.hasMoreElements()) {
+            SearchResult searchResult = (SearchResult) results.nextElement();
+
+            //make sure there is not another item available, there should be only 1 match
+            if(results.hasMoreElements()) {
+                LOG.error("Matched multiple groups for the group with SID: " + sid);
+                return null;
+            } else {
+                return addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+            }
+        }
+        return null;
+    }
+    
     private SearchResult findGroupByGroupName(DirContext ctx, String groupName) throws NamingException {
 
         if(!checkGroupRestrictionList(groupName)) {
@@ -482,7 +686,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String username = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                String username = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
                 if(checkAccountRestrictionList(username)) {
                     usernames.add(username);
                 }
@@ -520,7 +724,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String username = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                String username = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
                 
                 if(checkAccountRestrictionList(username)) {
                     usernames.add(username);
@@ -559,7 +763,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String groupname = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
                 if(checkGroupRestrictionList(groupname)) {
                     groupnames.add(groupname);
                 }
@@ -595,7 +799,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String groupname = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
                 if(checkGroupRestrictionList(groupname)) {
                     groupnames.add(groupname);
                 }
@@ -639,7 +843,7 @@ public class LDAPRealm extends AbstractRealm {
 
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String member = (String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get() + "@" + ensureContextFactory().getDomain();
+                String member = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
                 if(checkAccountRestrictionList(member)) {
                     groupMembers.add(member);
                 }

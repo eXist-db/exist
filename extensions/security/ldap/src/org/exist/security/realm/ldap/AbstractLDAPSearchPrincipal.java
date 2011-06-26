@@ -81,7 +81,10 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
     public enum LDAPSearchAttributeKey {
         NAME("name"),
         DN("dn"),
-        MEMBER_OF("memberOf");
+        MEMBER_OF("memberOf"),
+        PRIMARY_GROUP_TOKEN("primaryGroupToken"),
+        PRIMARY_GROUP_ID("primaryGroupID"),
+        OBJECT_SID("objectSid");
 
         private final String key;
         LDAPSearchAttributeKey(String key) {
