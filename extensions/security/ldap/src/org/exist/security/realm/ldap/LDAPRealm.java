@@ -319,8 +319,15 @@ public class LDAPRealm extends AbstractRealm {
             principalName = principalName.substring(0, principalName.indexOf('@'));
         }
         
-        List<String> blackList = searchPrinciple.getBlackList().getRestrictionList();
-        List<String> whiteList = searchPrinciple.getWhiteList().getRestrictionList();
+        List<String> blackList = null;
+        if(searchPrinciple.getBlackList() != null) {
+            blackList = searchPrinciple.getBlackList().getRestrictionList();
+        }
+        
+        List<String> whiteList = null;
+        if(searchPrinciple.getWhiteList() != null) {
+            whiteList = searchPrinciple.getWhiteList().getRestrictionList();
+        }
         
         if(blackList != null) {
             for(String blackEntry : blackList) {
