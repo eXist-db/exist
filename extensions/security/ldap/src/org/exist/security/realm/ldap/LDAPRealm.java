@@ -21,14 +21,10 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -59,7 +55,7 @@ import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * 
+ * @author Adam Retter <adam@exist-db.org>
  */
 @ConfigurationClass("realm") //TODO: id = LDAP
 public class LDAPRealm extends AbstractRealm {
@@ -87,7 +83,7 @@ public class LDAPRealm extends AbstractRealm {
             }
 
             LdapContextFactory factory = new LdapContextFactory(configuration);
-
+            
             this.ldapContextFactory = factory;
         }
         return this.ldapContextFactory;
@@ -138,15 +134,25 @@ public class LDAPRealm extends AbstractRealm {
             broker.setUser(getSecurityManager().getSystemSubject());
 
             //get (or create) the primary group if it doesnt exist
-            if(primaryGroupName != null) { //TODO remove this check as the primary group should never be null
-                Group primaryGroup = getGroup(invokingUser, primaryGroupName);
+            Group primaryGroup = getGroup(invokingUser, primaryGroupName);
+            
+            //get (or create) member groups
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
+            List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
+            
+            List<Group> memberOf_groups = new ArrayList<Group>();
+            for(String memberOf_groupName : memberOf_groupNames) {
+                memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
             }
             
-            //create member groups
-            Object members = ldapUser.getAttributes().get(searchAccount.getSearchAttribute(LDAPSearchAttributeKey.MEMBER_OF)).get(); 
-            
             //create the user account
-            UserAider userAider = new UserAider(ID, username);
+            UserAider userAider = new UserAider(ID, username, primaryGroup);
+            
+            //add the member groups
+            for(Group memberOf_group : memberOf_groups) {
+                userAider.addGroup(memberOf_group);
+            }
 
             //store any requested metadata
             for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
@@ -216,21 +222,24 @@ public class LDAPRealm extends AbstractRealm {
                     e.getMessage(), e);
         } finally {
             if(broker != null) {
+                broker.setUser(invokingUser);
                 getDatabase().release(broker);
             }
         }
     }
 
     private LdapContext getContext(Subject invokingUser) throws NamingException {
+        Map<String, Object> additionalEnv = new HashMap<String, Object>();
+        additionalEnv.put("java.naming.ldap.attributes.binary", "objectSID");
         LdapContextFactory ctxFactory = ensureContextFactory();
         LdapContext ctx = null;
         if(invokingUser != null && invokingUser instanceof AuthenticatedLdapSubjectAccreditedImpl) {
             //use the provided credentials for the lookup
-            ctx = ctxFactory.getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials());
+            ctx = ctxFactory.getLdapContext(invokingUser.getUsername(), ((AuthenticatedLdapSubjectAccreditedImpl) invokingUser).getAuthenticatedCredentials(), additionalEnv);
         } else {
             //use the default credentials for lookup
             LDAPSearchContext searchCtx = ctxFactory.getSearch();
-            ctx = ctxFactory.getLdapContext(searchCtx.getDefaultUsername(), searchCtx.getDefaultPassword());
+            ctx = ctxFactory.getLdapContext(searchCtx.getDefaultUsername(), searchCtx.getDefaultPassword(), additionalEnv);
         }
         return ctx;
     }
@@ -276,160 +285,70 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
     
-    /*
-    private byte[] longToBytes(long l) throws IOException {
-        DataOutputStream dos = null;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();  
-            dos = new DataOutputStream(baos);
-            dos.writeLong(l);
-            dos.flush();
-            return baos.toByteArray();
-        } finally {
-            dos.close();
-        }
-    }*/
-    
-    /*
-    private long bytesToLong(byte b[]) throws IOException {
-       long val = 0;
-       int startOffset = (b.length >= 8 ? 7 : b.length - 1); //restrict size to long i.e. 8 bytes
-       for(int i = startOffset; i > -1; i--) {
-           val |= (((long)b[i]) << ((startOffset - i) * 8));
-       }
-       return val;
-    }*/
-    
     /**
-     *
+     * The binary data is in form:
      * byte[0] - revision level
-     * byte[1-7] - 48 bit authority
-     * byte[8]- count of sub authorities
-     * and then count x 32 bit sub authorities
+     * byte[1] - count of sub-authorities
+     * byte[2-7] - 48 bit authority (big-endian)
+     * and then count x 32 bit sub authorities (little-endian)
      * 
-     * S-Revision-Authority-SubAuths....
+     * The String value is: S-Revision-Authority-SubAuthority[n]...
+     * 
+     * http://forums.oracle.com/forums/thread.jspa?threadID=1155740&tstart=0
      */
-    /*
-    private String decodeSID(byte[] sid) {
+    public static String decodeSID(byte[] sid) {
         
-        try {
-            StringBuilder decodedSid = new StringBuilder("S-");
+        final StringBuilder strSid = new StringBuilder("S-");
 
-            //revision level
-            decodedSid.append(Integer.toString(sid[0]));
-
-            decodedSid.append("-");
-
-            //authority
-            byte[] authority = Arrays.copyOfRange(sid, 1, 7);
-            decodedSid.append(Long.toHexString(bytesToLong(authority)));
-
-            //get the count of sub authorities
-            int countSubAuths = sid[7];
-
-            int offset = 8;
-
-            for(int i = 0; i < countSubAuths; i++) {
-                byte subAuth[] = Arrays.copyOfRange(sid, offset, offset+4);
-                decodedSid.append("-");
-                decodedSid.append(Long.toHexString(bytesToLong(subAuth)));
-                offset+= 4;
-            }
-            
-            return decodedSid.toString();
-            
-        } catch(IOException ioe) {
-            LOG.error(ioe.getMessage(), ioe);
-            return null;
-        }
-    }*/
-    
-    private String decodeSID(byte[] sid) {
-        String strSID = "";
-        int version;
-        long authority;
-        int count;
+        // get version
+        final int version = sid[0];
+        strSid.append(Integer.toString(version));
+        
+        //get the authority
         String rid = "";
-        strSID = "S";
-
-         // get version
-        version = sid[0];
-        strSID = strSID + "-" + Integer.toString(version);
-        for (int i=6; i>0; i--) {
-                rid += byte2hex(sid[i]);
+        for(int i = 2; i <= 7; i++) {
+            rid += byte2hex(sid[i]);
         }
 
         // get authority
-        authority = Long.parseLong(rid);
-        strSID = strSID + "-" + Long.toString(authority);
+        final long authority = Long.parseLong(rid);
+        strSid.append("-");
+        strSid.append(Long.toString(authority));
 
         //next byte is the count of sub-authorities
-        count = sid[7]&0xFF;
+        final int count = sid[1] & 0xFF;
 
         //iterate all the sub-auths
-        for (int i=0;i<count;i++) {
-                rid = "";
-                for (int j=11; j>7; j--) {
-                        rid += byte2hex(sid[j+(i*4)]);
-                }
-                strSID = strSID + "-" + Long.parseLong(rid,16);
+        for(int i=0;i<count;i++) {
+            rid = "";
+            for(int j=11; j>7; j--) {
+                rid += byte2hex(sid[j+(i*4)]);
+            }
+            strSid.append("-");
+            strSid.append(Long.parseLong(rid,16));
         }
-        return strSID;    
+        
+        return strSid.toString();    
     }
   
     public static String byte2hex(byte b) {
         String ret = Integer.toHexString((int)b&0xFF);
-        if (ret.length()<2) {
-            ret = "0"+ret;
+        if(ret.length()<2) {
+            ret = "0" + ret;
         }
         return ret;
     }
     
     private String getPrimaryGroupSID(SearchResult ldapUser) throws NamingException {
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        byte[] objectSID = ((String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get()).getBytes();
+        byte[] objectSID = (byte[])ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get();
         String strPrimaryGroupID = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.PRIMARY_GROUP_ID)).get();
         
         String strObjectSid = decodeSID(objectSID);
         
         return strObjectSid.substring(0, strObjectSid.lastIndexOf('-') + 1) + strPrimaryGroupID;
-        
-        /*
-        
-        byte[] sid = objectSID.getBytes();
-        final byte primaryGroupId[];
-        try {
-            primaryGroupId = longToBytes(Long.parseLong(strPrimaryGroupID));
-        } catch(IOException ioe) {
-            LOG.error(ioe.getMessage(), ioe);
-            return null;
-        }
-        
-        for(int i = 0; i < primaryGroupId.length; i++) {
-            sid[sid.length - primaryGroupId.length - i] = primaryGroupId[i];
-        }
-        
-        return sid;*/
     }
     
-    private String getSIDAsByteString(byte[] sid) {
-        String byteSID = "";
-        int j;
-        //Convert the SID into string using the byte format
-        for (int i=0;i<sid.length;i++) {
-                j = (int)sid[i] & 0xFF;
-                if (j<0xF) {
-                //add a leading zero, add two leading \\ to make it easy 
-                //to paste into subsequent searches
-                        byteSID = byteSID + "\\0" + Integer.toHexString(j);
-                }
-                else {
-                        byteSID = byteSID + "\\" + Integer.toHexString(j);
-                }
-        }  
-        return byteSID;
-    }
-
     @Override
     public final synchronized Group getGroup(Subject invokingUser, String name) {
         Group grp = groupsByName.get(name);
@@ -565,8 +484,8 @@ public class LDAPRealm extends AbstractRealm {
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-        NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+        
+        NamingEnumeration<SearchResult> results = ctx.search(search.getAbsoluteBase(), searchFilter, searchControls);
 
         if(results.hasMoreElements()) {
             SearchResult searchResult = (SearchResult) results.nextElement();
@@ -594,7 +513,7 @@ public class LDAPRealm extends AbstractRealm {
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-        NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+        NamingEnumeration<SearchResult> results = ctx.search(search.getAbsoluteBase(), searchFilter, searchControls);
 
         if(results.hasMoreElements()) {
             SearchResult searchResult = (SearchResult) results.nextElement();
@@ -739,6 +658,44 @@ public class LDAPRealm extends AbstractRealm {
         }
 
         return usernames;
+    }
+    
+    
+    private List<String> findGroupnamesForUserDistinguishedName(Subject invokingUser, String userDistinguishedName) {
+
+        List<String> groupnames = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.MEMBER), userDistinguishedName);
+
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getAbsoluteBase(), searchFilter, searchControls);
+
+            SearchResult searchResult = null;
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                if(checkGroupRestrictionList(groupname)) {
+                    groupnames.add(groupname);
+                }
+            }
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return groupnames;
     }
     
     @Override

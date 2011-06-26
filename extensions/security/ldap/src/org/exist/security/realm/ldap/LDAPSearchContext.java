@@ -37,6 +37,13 @@ public class LDAPSearchContext implements Configurable {
     public String getBase() {
         return base;
     }
+    
+    public String getAbsoluteBase() {
+        if(base != null) {
+            return getBase().substring(getBase().indexOf("dc="));
+        }
+        return null;
+    }
 
     public String getDefaultUsername() {
         return defaultUsername;

@@ -82,6 +82,7 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
         NAME("name"),
         DN("dn"),
         MEMBER_OF("memberOf"),
+        MEMBER("member"),
         PRIMARY_GROUP_TOKEN("primaryGroupToken"),
         PRIMARY_GROUP_ID("primaryGroupID"),
         OBJECT_SID("objectSid");
