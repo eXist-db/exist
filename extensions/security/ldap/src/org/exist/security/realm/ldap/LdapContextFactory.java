@@ -69,8 +69,6 @@ public class LdapContextFactory implements Configurable {
 
 	private boolean usePooling = true;
 
-	private Map<String, String> additionalEnvironment;
-
 	private Configuration configuration = null;
         
         @ConfigurationFieldAsElement("search")
@@ -89,8 +87,12 @@ public class LdapContextFactory implements Configurable {
 	public LdapContext getSystemLdapContext() throws NamingException {
 		return getLdapContext(systemUsername, systemPassword);
 	}
-
-	public LdapContext getLdapContext(String username, String password) throws NamingException {
+        
+        public LdapContext getLdapContext(String username, String password) throws NamingException {
+            return getLdapContext(username, password, null);
+        }
+        
+	public LdapContext getLdapContext(String username, String password, Map<String, Object>additionalEnv) throws NamingException {
 		if (url == null)
 			throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
 
@@ -119,8 +121,8 @@ public class LdapContextFactory implements Configurable {
 			env.put(SUN_CONNECTION_POOLING_PROPERTY, "true");
 		}
 
-		if (additionalEnvironment != null) {
-			env.putAll(additionalEnvironment);
+		if(additionalEnv != null) {
+                    env.putAll(additionalEnv);
 		}
 
 		if (LOG.isDebugEnabled()) {
