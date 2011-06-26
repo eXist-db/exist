@@ -205,6 +205,11 @@ public class JettyStart implements LifeCycle.Listener {
             	openid = Class.forName("org.exist.security.realm.openid.AuthenticatorOpenIdServlet");
             } catch (ClassNotFoundException e) {
 			}
+            Class<?> oauth = null;
+            try {
+            	oauth = Class.forName("org.exist.security.realm.oauth.OAuthServlet");
+            } catch (ClassNotFoundException e) {
+			}
             //*************************************************************
 
             logger.info("-----------------------------------------------------");
@@ -229,6 +234,18 @@ public class JettyStart implements LifeCycle.Listener {
             				suffix = "openid";
            				else 
                				suffix = "/openid";
+            			logger.info("'"+contextHandler.getContextPath() + suffix+"'");
+            		}
+            	if (oauth != null)
+            		if (handler instanceof ServletContextHandler) {
+            			ServletContextHandler contextHandler = (ServletContextHandler) handler;
+            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)openid), "/oauth");
+
+            			String suffix;
+            			if (contextHandler.getContextPath().endsWith("/"))
+            				suffix = "oauth";
+           				else 
+               				suffix = "/oauth";
             			logger.info("'"+contextHandler.getContextPath() + suffix+"'");
             		}
                 //*************************************************************
