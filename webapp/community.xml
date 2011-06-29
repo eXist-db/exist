@@ -27,100 +27,118 @@
         <section>
             <title>General</title>
 
-                <table class="general">
-                    <tgroup cols="2">
-                        <tbody>
-                            <tr>
-                                <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
-                                <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for
-                                    databases running in embedded mode that takes advantage of Java 5.0 features.</td>
-                            </tr>
-                            <tr>
-                                <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db  contrib</ulink></td>
-                                <td>eXist-db contrib is a collection tools, module, functions, extension etc for
-                                    eXist-db, hosted by google code.</td>
-                            </tr>
-                            <tr>
-                                <td class="doclink"><ulink url="https://github.com/fsteeg/sinist">Sinist</ulink></td>
-                                <td>A simple (and very early) Scala wrapper to access eXist DB</td>
-                            </tr>
-                            <tr>
-                                <td class="doclink"><ulink url="https://github.com/knipknap/pyexist">PYexist</ulink></td>
-                                <td>A simple Python library for communicating with an eXist XML database
-                                    via its REST API</td>
-                            </tr>
-                        </tbody>
-                    </tgroup>
-                </table>
-            
+            <table class="general">
+                <tgroup cols="2">
+                    <tbody>
+                        <tr>
+                            <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
+                            <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for databases
+                                running in embedded mode that takes advantage of Java 5.0 features.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db
+                                    contrib</ulink></td>
+                            <td>eXist-db contrib is a collection tools, module, functions, extension etc for eXist-db,
+                                hosted by google code.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="https://github.com/knipknap/pyexist">PYexist</ulink></td>
+                            <td>A simple Python library for communicating with an eXist XML database via its REST
+                                API</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="https://github.com/fsteeg/sinist">Sinist</ulink></td>
+                            <td>A simple (and very early) Scala wrapper to access eXist DB</td>
+                        </tr>
+
+                        <tr>
+                            <td class="doclink"><ulink url="http://www.xqjapi.com/exist/">XQJ API</ulink></td>
+                            <td>A very fast XQJ API implementation for eXist-db, release by Charles Foster.</td>
+                        </tr>
+                    </tbody>
+                </tgroup>
+            </table>
+
         </section>
 
         <section>
             <title>Using and used by eXist-db</title>
-            
+
             <table class="based">
                 <tgroup cols="2">
                     <tbody>
                         <tr>
-                            <td class="doclink"><ulink url="http://wiki.orbeon.com/forms/doc/developer-guide/processors-xml-databases">Orbeon</ulink></td>
-                            <td>By default, Orbeon Forms ships with an embedded eXist database</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="https://www.betterform.de/trac/wiki/XRX">betterForm</ulink></td>
+                            <td class="doclink"><ulink url="https://www.betterform.de/trac/wiki/XRX"
+                                >betterForm</ulink></td>
                             <td>eXist-db is shipped by betterForm, betterForm is shipped with eXist-db</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="http://en.wikibooks.org/wiki/XRX/XSLTForms_and_eXist">Xslt Forms</ulink></td>
+                            <td class="doclink"><ulink
+                                    url="http://wiki.orbeon.com/forms/doc/developer-guide/processors-xml-databases"
+                                    >Orbeon</ulink></td>
+                            <td>By default, Orbeon Forms ships with an embedded eXist database</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://en.wikibooks.org/wiki/XRX/XSLTForms_and_eXist">Xslt
+                                    Forms</ulink></td>
                             <td>A version of XSLTforms is available as part of eXist-db.</td>
                         </tr>
-                        
+
                     </tbody>
                 </tgroup>
             </table>
-            
+
         </section>
-        
+
         <section>
             <title>Social Media</title>
-            
+
             <table class="based">
                 <tgroup cols="2">
                     <tbody>
+
+
+
                         <tr>
-                            <td class="doclink"><ulink url="http://stackoverflow.com/questions/tagged/exist">Stack overflow</ulink></td>
-                            <td>Stackoverflow has a tag for eXist-db. Note that this is not the recommended way of getting
-                            support, please consult the exist-open mailinglist.</td>
+                            <td class="doclink"><ulink url="http://www.delicious.com/tag/existdb"
+                                >Del.icio.us</ulink></td>
+                            <td>Recent existdb Bookmarks</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="https://lists.sourceforge.net/lists/listinfo/exist-open">exist-open</ulink></td>
-                            <td>The primary medium for asking questions and getting help is the exist-open mailing list. 
-                                The mailing list's archives can be searched using <ulink url="http://exist-open.markmail.org/search/?q=">markmail.org</ulink></td>
+                            <td class="doclink"><ulink url="https://lists.sourceforge.net/lists/listinfo/exist-open"
+                                    >exist-open</ulink></td>
+                            <td>The primary medium for asking questions and getting help is the exist-open mailing list.
+                                The mailing list's archives can be searched using <ulink
+                                    url="http://exist-open.markmail.org/search/?q=">markmail.org</ulink></td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://www.linkedin.com/groups?mostPopular=&amp;gid=35624"
+                                    >Linked-in</ulink></td>
+                            <td>eXist-db professionals network</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://stackoverflow.com/questions/tagged/exist">Stack
+                                    overflow</ulink></td>
+                            <td>Stackoverflow has a tag for eXist-db. Note that this is not the recommended way of
+                                getting support, please consult the exist-open mailinglist instead.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="https://twitter.com/#!/existdb">Twitter</ulink></td>
                             <td>The official eXist-db "Open Source Native XML Database" micro-blog</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="http://www.delicious.com/tag/existdb">Del.icio.us</ulink></td>
-                            <td>Recent existdb Bookmarks</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="http://www.linkedin.com/groups?mostPopular=&amp;gid=35624">linked-in</ulink></td>
-                            <td>eXist-db professionals network</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="http://atomic.exist-db.org/blogs/eXist/">exist-db WiKi</ulink></td>
+                            <td class="doclink"><ulink url="http://atomic.exist-db.org/blogs/eXist/">WiKi</ulink></td>
                             <td>eXist-db official atom based weblog</td>
                         </tr>
-                        
-                        
+
+
                     </tbody>
                 </tgroup>
             </table>
-            
+
         </section>
-        
-        
-        
+
+
+
     </chapter>
 </book>
