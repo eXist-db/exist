@@ -76,7 +76,9 @@ public class ContentFunctions extends BasicFunction {
             		"The callback function. Expected signature: callback($node as node())"),
             new FunctionParameterSequenceType("namespaces", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
             		"Prefix/namespace mappings to be used for matching the paths. Pass an XML fragment with the following " +
-            		"structure: <namespaces><namespace prefix=\"prefix\" uri=\"uri\"/></namespaces>.")
+            		"structure: <namespaces><namespace prefix=\"prefix\" uri=\"uri\"/></namespaces>."),
+            new FunctionParameterSequenceType("userData", Type.ITEM, Cardinality.ZERO_OR_MORE,
+            		"Additional data which will be passed to the callback function.")
         },
         new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY, "Returns empty sequence")
     );
@@ -104,7 +106,7 @@ public class ContentFunctions extends BasicFunction {
         		NodeValue namespaces = (NodeValue) args[3].itemAt(0);
         		parseMappings(namespaces, mappings);
         	}
-        	return streamContent(ce, binary, args[1], ref, mappings);
+        	return streamContent(ce, binary, args[1], ref, mappings, args[4]);
         } else {
 	        try {
 	            if(isCalledAs("get-metadata")) {
@@ -148,7 +150,7 @@ public class ContentFunctions extends BasicFunction {
 	}
 
 	private Sequence streamContent(ContentExtraction ce, BinaryValue binary, Sequence pathSeq,
-			FunctionReference ref, Map<String, String> mappings) throws XPathException {
+			FunctionReference ref, Map<String, String> mappings, Sequence data) throws XPathException {
 		NodePath[] paths = new NodePath[pathSeq.getItemCount()];
 		int i = 0;
 		for (SequenceIterator iter = pathSeq.iterate(); iter.hasNext(); i++) {
@@ -156,7 +158,7 @@ public class ContentFunctions extends BasicFunction {
 			paths[i] = new NodePath(mappings, path, false);
 		}
 		
-		ContentReceiver receiver = new ContentReceiver(paths, ref);
+		ContentReceiver receiver = new ContentReceiver(paths, ref, data);
 		try {
 			ce.extractContentAndMetadata(binary, receiver);
 		} catch (IOException ex) {
@@ -180,10 +182,12 @@ public class ContentFunctions extends BasicFunction {
 		private NodePath[] paths;
 		private DocumentBuilderReceiver receiver = null;
 		private NodePath lastPath = null;
+		private Sequence userData = null;
 		
-		ContentReceiver(NodePath[] paths, FunctionReference ref) {
+		ContentReceiver(NodePath[] paths, FunctionReference ref, Sequence userData) {
 			this.paths = paths;
 			this.ref = ref;
+			this.userData = userData;
 		}
 		
 		protected Sequence getResult() {
@@ -242,8 +246,9 @@ public class ContentFunctions extends BasicFunction {
 					lastPath = null;
 					context.popDocumentContext();
 					
-					Sequence[] params = new Sequence[1];
+					Sequence[] params = new Sequence[2];
 					params[0] = root;
+					params[1] = userData;
 					FunctionCall call = ref.getFunctionCall();
 					try {
 						Sequence ret = call.evalFunction(null, null, params);
