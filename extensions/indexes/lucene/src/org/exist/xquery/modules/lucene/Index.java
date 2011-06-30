@@ -51,22 +51,36 @@ public class Index extends BasicFunction {
     private static final Logger logger = Logger.getLogger(Index.class);
     
     public final static FunctionSignature signatures[] = {
+    	new FunctionSignature(
+	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+	            "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
+	            new SequenceType[] {
+	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
+	                "URI path of document in database."),
+	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
+	                "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
+	                + "<doc> <field name=\"field1\">data1</field> "
+	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> ")
+	            },
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")
+	        ),
             new FunctionSignature(
-            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-            "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
-                "URI path of document in database."),
-                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
-                "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
-                + "<doc> <field name=\"field1\">data1</field> "
-                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> "),
-                new FunctionParameterSequenceType("close", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                "If true, close the Lucene document. Subsequent calls to ft:index will thus add to a " +
-                "new Lucene document. If false, the document remains open and is not flushed to disk. " +
-                "Call the ft:close function to explicitely close and flush the current document.")
-            },
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")),
+	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+	            "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
+	            new SequenceType[]{
+	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
+	                "URI path of document in database."),
+	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
+	                "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
+	                + "<doc> <field name=\"field1\">data1</field> "
+	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> "),
+	                new FunctionParameterSequenceType("close", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+	                "If true, close the Lucene document. Subsequent calls to ft:index will thus add to a " +
+	                "new Lucene document. If false, the document remains open and is not flushed to disk. " +
+	                "Call the ft:close function to explicitely close and flush the current document.")
+	            },
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")
+	        ),
     
             new FunctionSignature(
 	            new QName("close", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
