@@ -50,7 +50,7 @@ public class Index extends BasicFunction {
 
     private static final Logger logger = Logger.getLogger(Index.class);
     
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
             new FunctionSignature(
             new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
@@ -60,14 +60,26 @@ public class Index extends BasicFunction {
                 new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
                 "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
                 + "<doc> <field name=\"field1\">data1</field> "
-                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> ")
+                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> "),
+                new FunctionParameterSequenceType("close", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                "If true, close the Lucene document. Subsequent calls to ft:index will thus add to a " +
+                "new Lucene document. If false, the document remains open and is not flushed to disk. " +
+                "Call the ft:close function to explicitely close and flush the current document.")
             },
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
+            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")),
+    
+            new FunctionSignature(
+	            new QName("close", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+	            "Close the current Lucene document and flush it to disk. Subsequent calls to " +
+	            "ft:index will write to a new Lucene document.",
+	            null,
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""))
+    };
 
     /*
      * Constructor
      */
-    public Index(XQueryContext context) {
+    public Index(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -76,33 +88,42 @@ public class Index extends BasicFunction {
 
         DocumentImpl doc = null;
         try {
-            // Get first parameter, this is the document
-            String path = args[0].itemAt(0).getStringValue();
-
-            // Retrieve document from database
-            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
-
-            // Verify the document actually exists
-            if (doc == null) {
-                throw new XPathException("Document " + path + " does not exist.");
-            }
-
-            // Get 'solr' node from second parameter
-            NodeValue descriptor = (NodeValue) args[1].itemAt(0);
-
-            // Retrieve Lucene
+        	// Retrieve Lucene
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker()
                     .getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-
-            // Note: code order is important here,
-            index.setDocument(doc, StreamListener.STORE);
-            index.setMode(StreamListener.STORE);
-
-            // Pas document and index instructions to indexer
-            index.indexNonXML(descriptor);
-
-            // Make sure things are written 
-            index.writeNonXML();
+            
+        	if (isCalledAs("index")) {
+	            // Get first parameter, this is the document
+	            String path = args[0].itemAt(0).getStringValue();
+	
+	            // Retrieve document from database
+	            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+	
+	            // Verify the document actually exists
+	            if (doc == null) {
+	                throw new XPathException("Document " + path + " does not exist.");
+	            }
+	
+	            boolean flush = args.length == 2 || args[2].effectiveBooleanValue();
+	
+	            // Note: code order is important here,
+	            index.setDocument(doc, StreamListener.STORE);
+	            index.setMode(StreamListener.STORE);
+	
+	            // Get 'solr' node from second parameter
+	            NodeValue descriptor = (NodeValue) args[1].itemAt(0);
+	            
+	            // Pas document and index instructions to indexer
+	            index.indexNonXML(descriptor);
+	            
+	            if (flush) {
+	            	// Make sure things are written 
+	            	index.writeNonXML();
+	            }
+        	} else {
+        		// "close"
+        		index.writeNonXML();
+        	}
 
         } catch (Exception ex) { // PermissionDeniedException
             logger.error(ex);
