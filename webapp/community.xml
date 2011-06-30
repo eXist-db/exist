@@ -32,19 +32,17 @@
                     <tbody>
                         <tr>
                             <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
-                            <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for databases
-                                running in embedded mode that takes advantage of Java 5.0 features.</td>
+                            <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for databases running in embedded mode that takes
+                                advantage of Java 5.0 features.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db
-                                    contrib</ulink></td>
-                            <td>eXist-db contrib is a collection tools, module, functions, extension etc for eXist-db,
-                                hosted by google code.</td>
+                            <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db contrib</ulink></td>
+                            <td>eXist-db contrib is a collection of tools, module, functions, extensions, etc. for eXist-db, hosted by google code - a
+                                "playground for code that might be integrated with the eXist database in the future".</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="https://github.com/knipknap/pyexist">PYexist</ulink></td>
-                            <td>A simple Python library for communicating with an eXist XML database via its REST
-                                API</td>
+                            <td>A simple Python library for communicating with an eXist XML database via its REST API</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="https://github.com/fsteeg/sinist">Sinist</ulink></td>
@@ -53,8 +51,14 @@
 
                         <tr>
                             <td class="doclink"><ulink url="http://www.xqjapi.com/exist/">XQJ API</ulink></td>
-                            <td>A very fast XQJ API implementation for eXist-db, release by Charles Foster.</td>
+                            <td>A very fast XQJ API implementation for eXist-db, released by Charles Foster.</td>
                         </tr>
+
+                        <tr>
+                            <td class="doclink"><ulink url="http://www.xmlsh.org/ModuleExist">xmlsh - XML Shell</ulink></td>
+                            <td>An extension for connecting to exist-db from xmlsh, the command line shell for XML released by David A. Lee.</td>
+                        </tr>
+
                     </tbody>
                 </tgroup>
             </table>
@@ -69,8 +73,8 @@
                     <tbody>
                         <tr>
                             <td class="doclink"><ulink url="https://www.betterform.de/trac/wiki/XRX"
-                                >betterForm</ulink></td>
-                            <td>eXist-db is shipped by betterForm, betterForm is shipped with eXist-db</td>
+                                >betterFORM</ulink></td>
+                            <td>eXist-db is shipped by betterFORM, betterFORM is shipped with eXist-db</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink
@@ -112,7 +116,7 @@
                                     url="http://exist-open.markmail.org/search/?q=">markmail.org</ulink></td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="http://www.linkedin.com/groups?mostPopular=&amp;gid=35624"
+                            <td class="doclink"><ulink url="http://www.linkedin.com/groups?gid=35624"
                                     >Linked-in</ulink></td>
                             <td>eXist-db professionals network</td>
                         </tr>
@@ -128,7 +132,7 @@
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="http://atomic.exist-db.org/blogs/eXist/">WiKi</ulink></td>
-                            <td>eXist-db official atom based weblog</td>
+                            <td>eXist-db official Atom based developer's blog</td>
                         </tr>
 
 
