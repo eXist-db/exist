@@ -203,7 +203,6 @@ declare function setup:importLocal() as element()+
 
 
 				(: Storing betterFORM dashboard :)
-				setup:copyFile(concat("file://", $home, "/extensions/betterform/src/main/webapp/dashboard.html"), concat($home,"/webapp/dashboard.html")),
 				setup:create-collection("/db/betterform", "utils"),
                 setup:store-files("/db/betterform/utils", $betterform-xforms, "utils/*.xql","application/xquery"),
 
@@ -228,21 +227,6 @@ declare function setup:importLocal() as element()+
 
     )
 };
-
-declare function setup:copyFile($sourceURL as xs:string, $destination as xs:string ) as element()
-{
-    let $fileContent := file:read-binary($sourceURL),
-    $success := file:serialize-binary($fileContent, $destination)
-
-    return
-    if ($success)
-    then (
-      <li>Copied: {$sourceURL} to {$destination}</li>
-    ) else (
-      <li>Failed copying: {$sourceURL} to {$destination}</li>
-    )
-};
-
 
 declare function setup:importFromURLs() as element()+
 {

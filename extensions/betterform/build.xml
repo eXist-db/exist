@@ -72,7 +72,7 @@
         </echo>
 
         <delete dir="${exist.rootdir}/webapp/betterform"/>
-        <delete file="${exist.rootdir}/webapp/dashboard.html" failonerror="false"/>
+        <delete file="${exist.rootdir}/webapp/dashboard.html"/>
 
         <!--delete files from WEB-INF-->
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
@@ -109,6 +109,9 @@
         <echo>
             Copying betterFORM error page to webapp.
         </echo>
+         <copy todir="${exist.rootdir}/webapp/">
+            <fileset file="${betterform.webapp}/dashboard.html"/>
+        </copy>
         <copy todir="${exist.rootdir}/webapp/betterform/xquery">
             <fileset dir="${betterform.webapp}/xquery"/>
         </copy>
