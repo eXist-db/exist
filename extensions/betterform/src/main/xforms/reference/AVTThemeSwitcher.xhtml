@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml" xmlns:bf="http://betterform.sourceforge.net/xforms" bf:evalAVTs="class style">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>AVT Theme Switcher</title>
+      <style type="text/css">
+            @import "/betterform/bfResources/scripts/dijit/themes/tundra/tundra.css";
+            @import "/betterform/bfResources/scripts/dijit/themes/soria/soria.css";
+            @import "/betterform/bfResources/scripts/dijit/themes/claro/claro.css";
+
+            .tundra h1, .soria h1, .claro h1 {
+                font-size: 20pt;
+            }
+
+            .bfVerticalTable .xfControl {
+                margin: 10px;
+            }
+
+            .bfVerticalTable .xfSelect1 {
+                margin-top: 0;
+            }
+			.bfVerticalTableLabel{
+				vertical-align:middle;
+			}
+			.bfVerticalTableInfo{display:none;}
+            .claro .xfInput .xfValue{height:1.6em;}
+        </style>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="{theme} InlineAlert bf" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model id="model-1">
+               
+               
+               <xf:instance xmlns="" id="instance-1">
+                  
+                  <avt>
+                     
+                     <theme>tundra</theme>
+                     
+                  </avt>
+                  
+               </xf:instance>
+               
+               
+            </xf:model>
+         </div>
+         <div class="pageintro">
+            <h1>AVT Theme Switcher</h1>
+            <div class="description">
+               
+               <p>
+                  This page demonstrates the use of Attribute Value Templates (AVT) as known from XSL. By
+                  putting an attribute value inside of curly brackets you signal to the processor to evaluate the
+                  contents as an XPath expression.
+                  
+               </p>
+               
+               <p>
+                  AVTs can be used to dynamically style a page dependent on some instance data. The example below switches
+                  between the main Dojo themes available.
+                  
+               </p>
+               
+            </div>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:group id="outer" appearance="bf:verticalTable">
+               
+               <xf:select1 id="select" ref="theme" appearance="full" incremental="true">
+                  
+                  <xf:label>Switch Theme</xf:label>
+                  
+                  <xf:item>
+                     
+                     <xf:label>claro</xf:label>
+                     
+                     <xf:value>claro</xf:value>
+                     
+                  </xf:item>
+                  
+                  <xf:item>
+                     
+                     <xf:label>soria</xf:label>
+                     
+                     <xf:value>soria</xf:value>
+                     
+                  </xf:item>
+                  
+                  <xf:item>
+                     
+                     <xf:label>tundra</xf:label>
+                     
+                     <xf:value>tundra</xf:value>
+                     
+                  </xf:item>
+                  
+               </xf:select1>
+               
+               
+               <xf:trigger>
+                  
+                  <xf:label>a sample trigger</xf:label>
+                  
+                  <xf:message>button clicked</xf:message>
+                  
+               </xf:trigger>
+               
+               <xf:input ref="theme">
+                  
+                  <xf:label>current theme</xf:label>
+                  
+               </xf:input>
+               
+            </xf:group>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;html bf:evalAVTs="class style"&gt;
+    &lt;body class="{theme}"&gt;...&lt;/body&gt;   
+&lt;/html&gt;
+
+&lt;xf:instance id="instance-1"&gt;
+    &lt;avt&gt;
+        &lt;theme&gt;tundra&lt;/theme&gt;
+    &lt;/avt&gt;
+&lt;/xf:instance&gt;
+
+&lt;xf:group id="outer" appearance="bf:verticalTable"&gt;
+    &lt;xf:select1 id="select" ref="theme" appearance="full" incremental="true"&gt;
+        &lt;xf:label&gt;Switch Theme&lt;/xf:label&gt;
+        &lt;xf:item&gt;
+            &lt;xf:label&gt;claro&lt;/xf:label&gt;
+            &lt;xf:value&gt;claro&lt;/xf:value&gt;
+        &lt;/xf:item&gt;
+        &lt;xf:item&gt;
+            &lt;xf:label&gt;soria&lt;/xf:label&gt;
+            &lt;xf:value&gt;soria&lt;/xf:value&gt;
+        &lt;/xf:item&gt;
+        &lt;xf:item&gt;
+            &lt;xf:label&gt;tundra&lt;/xf:label&gt;
+            &lt;xf:value&gt;tundra&lt;/xf:value&gt;
+        &lt;/xf:item&gt;
+    &lt;/xf:select1&gt;
+
+    &lt;xf:trigger&gt;
+        &lt;xf:label&gt;a sample trigger&lt;/xf:label&gt;
+        &lt;xf:message&gt;button clicked&lt;/xf:message&gt;
+    &lt;/xf:trigger&gt;
+    &lt;xf:input ref="theme"&gt;
+        &lt;xf:label&gt;current theme&lt;/xf:label&gt;
+    &lt;/xf:input&gt;
+&lt;/xf:group&gt;
+</code></pre></div>
+         <h2>Limitations</h2>
+         <div class="Limitations">
+            
+            <p>
+               AVTs do not work inside of the <span class="keyword">class</span> attribute on xforms UI elements as it
+               would overwrite the state classes that are computed to reflect the control status.
+               
+            </p>
+            
+            <p>
+               It is easy to work around this restriction by simply wrapping the wanted element inside of a 
+               <span class="keyword">span</span> or <span class="keyword">div</span>.
+               
+            </p>
+            
+         </div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

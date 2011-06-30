@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>select control rendered as list control</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance id="instance-1">
+                  
+                  <data xmlns="" constraint="true" readonly="false" required="false" relevant="true">
+                     
+                     <select1 constraint="true" readonly="false" required="true" relevant="true">
+                        
+                        <value>AX DZ</value>
+                        
+                     </select1>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               <xf:bind nodeset="select1">
+                  
+                  <xf:bind nodeset="value" constraint="boolean-from-string(../@constraint)" readonly="boolean-from-string(../@readonly)" required="boolean-from-string(../@required)" relevant="boolean-from-string(../@relevant)"></xf:bind>
+                  
+                  <xf:bind nodeset="@constraint" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@readonly" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@required" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@relevant" type="boolean"></xf:bind>
+                  
+               </xf:bind>
+               
+               <xf:instance id="codes">
+                  
+                  <countrylist xmlns="" lang="en" constraint="true" readonly="false" required="true" relevant="true">
+                     
+                     <country constraint="true" readonly="false" required="true" relevant="true">
+                        
+                        <country-name constraint="true" readonly="false" required="true" relevant="true">
+                           AFGHANISTAN
+                           
+                        </country-name>
+                        
+                        <code constraint="true" readonly="false" required="true" relevant="true">AF</code>
+                        
+                     </country>
+                     
+                     <country constraint="true" readonly="false" required="true" relevant="true">
+                        
+                        <country-name constraint="true" readonly="false" required="true" relevant="true">LAND
+                           ISLANDS
+                           
+                        </country-name>
+                        
+                        <code constraint="true" readonly="false" required="true" relevant="true">AX</code>
+                        
+                     </country>
+                     
+                     <country constraint="true" readonly="false" required="true" relevant="true">
+                        
+                        <country-name constraint="true" readonly="false" required="true" relevant="true">
+                           ALBANIA
+                           
+                        </country-name>
+                        
+                        <code constraint="true" readonly="false" required="true" relevant="true">AL</code>
+                        
+                     </country>
+                     
+                     <country constraint="true" readonly="false" required="true" relevant="true">
+                        
+                        <country-name constraint="true" readonly="false" required="true" relevant="true">
+                           ALGERIA
+                           
+                        </country-name>
+                        
+                        <code constraint="true" readonly="false" required="true" relevant="true">DZ</code>
+                        
+                     </country>
+                     
+                  </countrylist>
+                  
+               </xf:instance>
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d30e170" onmouseover="showClass('xfSelect1');" onmouseout="hideClass('xfSelect1');">xfSelect1
+                     <div dojoType="dijit.Tooltip" connectId="d30e170">matches an Element that represents a XForms
+                        select
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d30e182" onmouseover="showClass('xfSelectorItem');" onmouseout="hideClass('xfSelectorItem');">xfSelectorItem
+                     <div dojoType="dijit.Tooltip" connectId="d30e182">matches an item of a XForms
+                        select1
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadonly" onmouseover="showClass('xfReadOnly');" onmouseout="hideClass('xfReadOnly');">
+                     xfReadOnly
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadonly">
+                        matches a xforms control that is currently readonly
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadwrite" onmouseover="showClass('xfReadWrite');" onmouseout="hideClass('xfReadWrite');">
+                     xfReadWrite
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadwrite">
+                        matches a xforms control that is currently writable
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfrequired" onmouseover="showClass('xfRequired');" onmouseout="hideClass('xfRequired');">
+                     xfRequired
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfrequired">
+                        matches a xforms control that is currently required
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfoptional" onmouseover="showClass('xfOptional');" onmouseout="hideClass('xfOptional');">
+                     xfOptional
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfoptional">
+                        matches a xforms control that is currently optional
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfenabled" onmouseover="showClass('xfEnabled');" onmouseout="hideClass('xfEnabled');">
+                     xfEnabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfenabled">
+                        matches a xforms control that is currently relevant (enabled)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfdisabled" onmouseover="showClass('xfDisabled');" onmouseout="hideClass('xfDisabled');">
+                     xfDisabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfdisabled">
+                        matches a xforms control that is currently disabled (can't be visualized here as the control gets hidden)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalid" onmouseover="showClass('xfValid');" onmouseout="hideClass('xfValid');">
+                     xfValid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalid">
+                        matches a xforms control that is currently valid
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfinvalid" onmouseover="showClass('xfInvalid');" onmouseout="hideClass('xfInvalid');">
+                     xfInvalid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfinvalid">
+                        matches a xforms control that is currently invalid
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>select control rendered as list control</h1>
+            <div class="description">
+               
+               <p>
+                  This form control allows the user to make multiple selections from a set of choices.
+                  
+                  
+               </p>
+               
+               <p>
+                  A
+                  <span class="keyword">select1</span>
+                  with
+                  <span class="keyword">appearance</span>
+                  'compact' will be
+                  rendered as a list conrol.
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#ui-selectOne" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#elems-form-controls" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:select1 id="select1" ref="select1/value" appearance="compact" incremental="true">
+               
+               <xf:label>a select1 list</xf:label>
+               
+               <xf:hint>a Hint for this control</xf:hint>
+               
+               <xf:help>help for select1</xf:help>
+               
+               <xf:alert>invalid</xf:alert>
+               
+               <xf:itemset nodeset="instance('codes')/country">
+                  
+                  <xf:label ref="country-name"></xf:label>
+                  
+                  <xf:value ref="code"></xf:value>
+                  
+               </xf:itemset>
+               
+            </xf:select1>
+         </div>
+         <div class="MIPS">
+            
+            <xf:group appearance="full">
+               
+               <xf:label></xf:label>
+               
+               <xf:input id="select1-readonly" ref="select1/@readonly" incremental="true">
+                  
+                  <xf:label>readonly</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="select1-required" ref="select1/@required" incremental="true">
+                  
+                  <xf:label>required</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="select1-relevant" ref="select1/@relevant" incremental="true">
+                  
+                  <xf:label>relevant</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="select1-valid" ref="select1/@constraint" incremental="true">
+                  
+                  <xf:label>valid</xf:label>
+                  
+               </xf:input>
+               
+            </xf:group>
+            
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:select1 id="select1" ref="select1/value" appearance="compact" incremental="true"&gt;
+    &lt;xf:label&gt;a select1 list&lt;/xf:label&gt;
+    &lt;xf:hint&gt;a Hint for this control&lt;/xf:hint&gt;
+    &lt;xf:help&gt;help for select1&lt;/xf:help&gt;
+    &lt;xf:alert&gt;invalid&lt;/xf:alert&gt;
+    &lt;xf:itemset nodeset="instance('codes')/country"&gt;
+        &lt;xf:label ref="country-name"&gt;&lt;/xf:label&gt;
+        &lt;xf:value ref="code"&gt;&lt;/xf:value&gt;
+    &lt;/xf:itemset&gt;
+&lt;/xf:select1&gt;
+</code></pre></div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

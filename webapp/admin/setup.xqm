@@ -11,6 +11,7 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace system="http://exist-db.org/xquery/system";
+declare namespace file="http://exist-db.org/xquery/file";
 
 declare namespace xproc="http://xproc.net/xproc";
 
@@ -73,7 +74,9 @@ declare function setup:importLocal() as element()+
             concat($home, $pathSep, "webapp")
         )
         ,
-        $betterform := concat($home, "/extensions/betterform/src/main/xrx/timetracker/")
+        $betterform-xrx := concat($home, "/extensions/betterform/src/main/xrx/timetracker/"),
+        $betterform-xforms := concat($home, "/extensions/betterform/src/main/xforms")
+
 
     return (
                 setup:create-collection("/db/system/config", "db"),
@@ -169,37 +172,77 @@ declare function setup:importLocal() as element()+
 				setup:create-collection("/db", "betterform"),
 				setup:create-collection("/db/betterform", "apps"),
 				setup:create-collection("/db/betterform/apps", "timetracker"),				
-				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.xql","application/xquery"),
-				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.html","text/html"),
-				setup:store-files("/db/betterform/apps/timetracker", $betterform, "*.xml","application/xml"),
+				setup:store-files("/db/betterform/apps/timetracker", $betterform-xrx, "*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker", $betterform-xrx, "*.html","text/html"),
+				setup:store-files("/db/betterform/apps/timetracker", $betterform-xrx, "*.xml","application/xml"),
 				setup:create-collection("/db/betterform/apps/timetracker", "data"),
-				setup:store-files("/db/betterform/apps/timetracker/data", $betterform, "data/*.xml", "application/xml"),
+				setup:store-files("/db/betterform/apps/timetracker/data", $betterform-xrx, "data/*.xml", "application/xml"),
 				setup:create-collection("/db/betterform/apps/timetracker/data", "task"),
-				setup:store-files("/db/betterform/apps/timetracker/data/task", $betterform, "data/task/*.xml","application/xml"),
+				setup:store-files("/db/betterform/apps/timetracker/data/task", $betterform-xrx, "data/task/*.xml","application/xml"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "edit"),
-				setup:store-files("/db/betterform/apps/timetracker/edit", $betterform, "edit/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/edit", $betterform-xrx, "edit/*.xql","application/xquery"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "lucene"),
-				setup:store-files("/db/betterform/apps/timetracker/lucene", $betterform, "lucene/*.xconf","application/xml"),
+				setup:store-files("/db/betterform/apps/timetracker/lucene", $betterform-xrx, "lucene/*.xconf","application/xml"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "reports"),
-				setup:store-files("/db/betterform/apps/timetracker/reports", $betterform, "reports/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/reports", $betterform-xrx, "reports/*.xql","application/xquery"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "resources"),
-				setup:store-files("/db/betterform/apps/timetracker/resources", $betterform, "resources/*.css","text/css"),
+				setup:store-files("/db/betterform/apps/timetracker/resources", $betterform-xrx, "resources/*.css","text/css"),
 				setup:create-collection("/db/betterform/apps/timetracker/resources", "images"),
-				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.gif","image/gif"),
-				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.png","image/png"),
-				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform, "resources/images/*.jpg","image/jpeg"),  
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform-xrx, "resources/images/*.gif","image/gif"),
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform-xrx, "resources/images/*.png","image/png"),
+				setup:store-files("/db/betterform/apps/timetracker/resources/images", $betterform-xrx, "resources/images/*.jpg","image/jpeg"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "search"),
-				setup:store-files("/db/betterform/apps/timetracker/search", $betterform, "search/*.xql","application/xquery"),
-				setup:store-files("/db/betterform/apps/timetracker/search", $betterform, "search/*.html","text/html"),
+				setup:store-files("/db/betterform/apps/timetracker/search", $betterform-xrx, "search/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/search", $betterform-xrx, "search/*.html","text/html"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "update"),
-				setup:store-files("/db/betterform/apps/timetracker/update", $betterform, "update/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/update", $betterform-xrx, "update/*.xql","application/xquery"),
 				setup:create-collection("/db/betterform/apps/timetracker/", "views"),
-				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xql","application/xquery"),
-				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.html","text/html"),
-				setup:store-files("/db/betterform/apps/timetracker/views", $betterform, "views/*.xsl","application/xml")
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform-xrx, "views/*.xql","application/xquery"),
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform-xrx, "views/*.html","text/html"),
+				setup:store-files("/db/betterform/apps/timetracker/views", $betterform-xrx, "views/*.xsl","application/xml"),
+
+
+				(: Storing betterFORM dashboard :)
+				setup:copyFile(concat("file://", $home, "/extensions/betterform/src/main/webapp/dashboard.html"), concat($home,"/webapp/dashboard.html")),
+				setup:create-collection("/db/betterform", "utils"),
+                setup:store-files("/db/betterform/utils", $betterform-xforms, "utils/*.xql","application/xquery"),
+
+				(: Storing betterFORM XForms reference forms :)
+				setup:store-files("/db/betterform", $betterform-xforms, "*.xhtml","application/xhtml+xml"),
+				setup:create-collection("/db/betterform", "forms"),
+				setup:create-collection("/db/betterform/forms", "reference"),
+				setup:store-files("/db/betterform/forms/reference", $betterform-xforms, "reference/*.xhtml","application/xhtml+xml"),
+				setup:store-files("/db/betterform/forms/reference", $betterform-xforms, "reference/*.css","text/css"),
+				setup:store-files("/db/betterform/forms/reference", $betterform-xforms, "reference/*.html","text/html"),
+				setup:create-collection("/db/betterform/forms/reference", "images"),
+				setup:store-files("/db/betterform/forms/reference/images", $betterform-xforms, "reference/images/*.png","image/png"),
+				setup:store-files("/db/betterform/forms/reference/images", $betterform-xforms, "reference/images/*.gif","image/gif"),
+				setup:create-collection("/db/betterform/forms/reference", "resources"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.xhtml","application/xhtml+xml"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.html","text/html"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.css","text/css"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.js","application/x-javascript"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.jpg","image/jpeg"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.mp3","audio/mpeg"),
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.ogg","audio/ogg")
 
     )
 };
+
+declare function setup:copyFile($sourceURL as xs:string, $destination as xs:string ) as element()
+{
+    let $fileContent := file:read-binary($sourceURL),
+    $success := file:serialize-binary($fileContent, $destination)
+
+    return
+    if ($success)
+    then (
+      <li>Copied: {$sourceURL} to {$destination}</li>
+    ) else (
+      <li>Failed copying: {$sourceURL} to {$destination}</li>
+    )
+};
+
 
 declare function setup:importFromURLs() as element()+
 {
