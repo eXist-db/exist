@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>Table via repeat attributes</title>
+      <style type="text/css">
+            th {
+                width:100px;
+                background:#add8e6;
+                padding:4px;
+                color:#00008b;
+            }
+            td{
+                padding:2px;
+            }
+        </style>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               
+               <xf:instance xmlns="">
+                  
+                  <data>
+                     
+                     <items>
+                        
+                        <item1>item 11</item1>
+                        
+                        <item2>item 12</item2>
+                        
+                        <item3>item 13</item3>
+                        
+                        <item4>item 14</item4>
+                        
+                        <item5>item 15</item5>
+                        
+                     </items>
+                     
+                     <items>
+                        
+                        <item1>item 21</item1>
+                        
+                        <item2>item 22</item2>
+                        
+                        <item3>item 23</item3>
+                        
+                        <item4>item 24</item4>
+                        
+                        <item5>item 25</item5>
+                        
+                     </items>
+                     
+                     <items>
+                        
+                        <item1>item 31</item1>
+                        
+                        <item2>item 32</item2>
+                        
+                        <item3>item 33</item3>
+                        
+                        <item4>item 34</item4>
+                        
+                        <item5>item 35</item5>
+                        
+                     </items>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               <xf:instance id="labels">
+                  
+                  <data xmlns="">
+                     
+                     <item1>Label 1</item1>
+                     
+                     <item2>Label 2</item2>
+                     
+                     <item3>Label 3</item3>
+                     
+                     <item4>Label 4</item4>
+                     
+                     <item5>Label 5</item5>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d27e223" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d27e223">matches any Element that represents a XForms group | repeat | switch element</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e241" onmouseover="showClass('xfRepeatItem');" onmouseout="hideClass('xfRepeatItem');">xfRepeatItem
+                     <div dojoType="dijit.Tooltip" connectId="d27e241">matches all repeat items
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e253" onmouseover="showClass('xfRepeatIndex');" onmouseout="hideClass('xfRepeatIndex');">xfRepeatIndex
+                     <div dojoType="dijit.Tooltip" connectId="d27e253">matches the currently selected repeat item
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e265" onmouseover="showClass('xfTbody');" onmouseout="hideClass('xfTbody');">xfTbody
+                     <div dojoType="dijit.Tooltip" connectId="d27e265">matches the element wearing the repeat attributes</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e277" onmouseover="showClass('one');" onmouseout="hideClass('one');">one
+                     <div dojoType="dijit.Tooltip" connectId="d27e277">matches a cells that have the author class 'one' on them</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e287" onmouseover="showClass('two');" onmouseout="hideClass('two');">two
+                     <div dojoType="dijit.Tooltip" connectId="d27e287">matches a cells that have the author class 'two' on them</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e296" onmouseover="showClass('three');" onmouseout="hideClass('three');">three
+                     <div dojoType="dijit.Tooltip" connectId="d27e296">matches a cells that have the author class 'three' on them</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e305" onmouseover="showClass('four');" onmouseout="hideClass('four');">four
+                     <div dojoType="dijit.Tooltip" connectId="d27e305">matches a cells that have the author class 'four' on them</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d27e314" onmouseover="showClass('five');" onmouseout="hideClass('five');">five
+                     <div dojoType="dijit.Tooltip" connectId="d27e314">matches a cells that have the author class 'five' on them</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>Table via repeat attributes</h1>
+            <div class="description">
+               
+               <p>
+                  This form shows usage of repeat attributes in conjunction with a HTML table.
+                  
+               </p>
+               
+               <p>
+                  Please note that this example uses <span class="keyword">output</span> controls for the table header which
+                  are bound to a separate instance. This allows to internationalize the labels if you need to but it is
+                  no requirement for working with <span class="keyword">repeat</span> attributes.
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#ui.repeat.via.attrs" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#Switch" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:trigger>
+               
+               <xf:label>insert</xf:label>
+               
+               <xf:action>
+                  
+                  <xf:insert nodeset="items"></xf:insert>
+                  
+               </xf:action>
+               
+            </xf:trigger>
+            <xf:trigger>
+               
+               <xf:label>delete</xf:label>
+               
+               <xf:action>
+                  
+                  <xf:delete nodeset="items[index('r-attrs')]"></xf:delete>
+                  
+               </xf:action>
+               
+            </xf:trigger>
+            <table>
+               
+               <thead>
+                  
+                  <tr>
+                     
+                     <th>
+                        
+                        <xf:output ref="instance('labels')/item1"></xf:output>
+                        
+                     </th>
+                     
+                     <th>
+                        
+                        <xf:output ref="instance('labels')/item2"></xf:output>
+                        
+                     </th>
+                     
+                     <th>
+                        
+                        <xf:output ref="instance('labels')/item3"></xf:output>
+                        
+                     </th>
+                     
+                     <th>
+                        
+                        <xf:output ref="instance('labels')/item4"></xf:output>
+                        
+                     </th>
+                     
+                     <th>
+                        
+                        <xf:output ref="instance('labels')/item5"></xf:output>
+                        
+                     </th>
+                     
+                  </tr>
+                  
+               </thead>
+               
+               <tbody id="r-attrs" xf:repeat-nodeset="items">
+                  
+                  <tr>
+                     
+                     <td id="foo" class="one" style="color:steelblue;font-weight:bold;">
+                        
+                        <xf:output ref="item1"></xf:output>
+                        
+                     </td>
+                     
+                     <td class="two" style="color:blue;">
+                        
+                        <xf:output ref="item2"></xf:output>
+                        
+                     </td>
+                     
+                     <td class="three" style="color:blue;">
+                        
+                        <xf:output ref="item3"></xf:output>
+                        
+                     </td>
+                     
+                     <td class="four" style="color:blue;">
+                        
+                        <xf:output ref="item4"></xf:output>
+                        
+                     </td>
+                     
+                     <td class="five" style="color:blue;">
+                        
+                        <xf:output ref="item5"></xf:output>
+                        
+                     </td>
+                     
+                  </tr>
+                  
+               </tbody>
+               
+               
+            </table>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:instance&gt;
+    &lt;data&gt;
+        &lt;items&gt;
+            &lt;item1&gt;item 11&lt;/item1&gt;
+            &lt;item2&gt;item 12&lt;/item2&gt;
+            &lt;item3&gt;item 13&lt;/item3&gt;
+            &lt;item4&gt;item 14&lt;/item4&gt;
+            &lt;item5&gt;item 15&lt;/item5&gt;
+        &lt;/items&gt;
+        &lt;items&gt;
+            &lt;item1&gt;item 21&lt;/item1&gt;
+            &lt;item2&gt;item 22&lt;/item2&gt;
+            &lt;item3&gt;item 23&lt;/item3&gt;
+            &lt;item4&gt;item 24&lt;/item4&gt;
+            &lt;item5&gt;item 25&lt;/item5&gt;
+        &lt;/items&gt;
+        &lt;items&gt;
+            &lt;item1&gt;item 31&lt;/item1&gt;
+            &lt;item2&gt;item 32&lt;/item2&gt;
+            &lt;item3&gt;item 33&lt;/item3&gt;
+            &lt;item4&gt;item 34&lt;/item4&gt;
+            &lt;item5&gt;item 35&lt;/item5&gt;
+        &lt;/items&gt;
+    &lt;/data&gt;
+&lt;/xf:instance&gt;
+
+&lt;xf:instance id="labels"&gt;
+    &lt;data&gt;
+        &lt;item1&gt;Label 1&lt;/item1&gt;
+        &lt;item2&gt;Label 2&lt;/item2&gt;
+        &lt;item3&gt;Label 3&lt;/item3&gt;
+        &lt;item4&gt;Label 4&lt;/item4&gt;
+        &lt;item5&gt;Label 5&lt;/item5&gt;
+    &lt;/data&gt;
+&lt;/xf:instance&gt;
+
+&lt;xf:trigger&gt;
+    &lt;xf:label&gt;insert&lt;/xf:label&gt;
+    &lt;xf:action&gt;
+        &lt;xf:insert nodeset="items"&gt;&lt;/xf:insert&gt;
+    &lt;/xf:action&gt;
+&lt;/xf:trigger&gt;
+
+&lt;xf:trigger&gt;
+    &lt;xf:label&gt;delete&lt;/xf:label&gt;
+    &lt;xf:action&gt;
+        &lt;xf:delete nodeset="items[index('r-attrs')]"&gt;&lt;/xf:delete&gt;
+    &lt;/xf:action&gt;
+&lt;/xf:trigger&gt;
+
+&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;
+                &lt;xf:output ref="instance('labels')/item1"&gt;&lt;/xf:output&gt;
+            &lt;/th&gt;
+            &lt;th&gt;
+                &lt;xf:output ref="instance('labels')/item2"&gt;&lt;/xf:output&gt;
+            &lt;/th&gt;
+            &lt;th&gt;
+                &lt;xf:output ref="instance('labels')/item3"&gt;&lt;/xf:output&gt;
+            &lt;/th&gt;
+            &lt;th&gt;
+                &lt;xf:output ref="instance('labels')/item4"&gt;&lt;/xf:output&gt;
+            &lt;/th&gt;
+            &lt;th&gt;
+                &lt;xf:output ref="instance('labels')/item5"&gt;&lt;/xf:output&gt;
+            &lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody id="r-attrs" xf:repeat-nodeset="items"&gt;
+        &lt;tr&gt;
+            &lt;td id="foo" class="one" style="color:steelblue;font-weight:bold;"&gt;
+                &lt;xf:output ref="item1"&gt;&lt;/xf:output&gt;
+            &lt;/td&gt;
+            &lt;td class="two" style="color:blue;"&gt;
+                &lt;xf:output ref="item2"&gt;&lt;/xf:output&gt;
+            &lt;/td&gt;
+            &lt;td class="three" style="color:blue;"&gt;
+                &lt;xf:output ref="item3"&gt;&lt;/xf:output&gt;
+            &lt;/td&gt;
+            &lt;td class="four" style="color:blue;"&gt;
+                &lt;xf:output ref="item4"&gt;&lt;/xf:output&gt;
+            &lt;/td&gt;
+            &lt;td class="five" style="color:blue;"&gt;
+                &lt;xf:output ref="item5"&gt;&lt;/xf:output&gt;
+            &lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+
+&lt;/table&gt;
+</code></pre></div>
+         <h2>Notes</h2>
+         <div class="Notes">
+            Please note that if you use a display:block for class xfContainer you should add a rule
+            
+         </div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

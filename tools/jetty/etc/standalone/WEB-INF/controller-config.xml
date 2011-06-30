@@ -17,7 +17,9 @@
 	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
-    
+    <!-- betterFORM resource-servlet -->
+    <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
+
     <!-- 
         ++ Main web application is served from the
         ++ database. URLs starting with /db are handled
