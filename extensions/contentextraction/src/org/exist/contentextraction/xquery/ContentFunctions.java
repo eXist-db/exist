@@ -73,7 +73,12 @@ public class ContentFunctions extends BasicFunction {
             new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ZERO_OR_MORE, 
             		"A sequence of (simple) node paths which should be passed to the callback function"),
             new FunctionParameterSequenceType("callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
-            		"The callback function. Expected signature: callback($node as node())"),
+            		"The callback function. Expected signature: " +
+					"callback($node as node(), $userData as item()*, $retValue as item()*)," +
+					"where $node is the currently processed node, $userData contains the data supplied in the " +
+					"$userData parameter of stream-content, and $retValue is the return value of the previous " +
+					"call to the callback function. The last two parameters are used for passing information " +
+					"between the calling function and subsequent invocations of the callback function."),
             new FunctionParameterSequenceType("namespaces", Type.ELEMENT, Cardinality.ZERO_OR_ONE,
             		"Prefix/namespace mappings to be used for matching the paths. Pass an XML fragment with the following " +
             		"structure: <namespaces><namespace prefix=\"prefix\" uri=\"uri\"/></namespaces>."),
@@ -183,6 +188,7 @@ public class ContentFunctions extends BasicFunction {
 		private DocumentBuilderReceiver receiver = null;
 		private NodePath lastPath = null;
 		private Sequence userData = null;
+		private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
 		
 		ContentReceiver(NodePath[] paths, FunctionReference ref, Sequence userData) {
 			this.paths = paths;
@@ -246,12 +252,14 @@ public class ContentFunctions extends BasicFunction {
 					lastPath = null;
 					context.popDocumentContext();
 					
-					Sequence[] params = new Sequence[2];
+					Sequence[] params = new Sequence[3];
 					params[0] = root;
 					params[1] = userData;
+					params[2] = prevReturnData;
 					FunctionCall call = ref.getFunctionCall();
 					try {
 						Sequence ret = call.evalFunction(null, null, params);
+						prevReturnData = ret;
 						result.addAll(ret);
 					} catch (XPathException e) {
 						LOG.warn(e.getMessage(), e);
