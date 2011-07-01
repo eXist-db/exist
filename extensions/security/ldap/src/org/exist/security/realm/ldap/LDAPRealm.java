@@ -301,42 +301,37 @@ public class LDAPRealm extends AbstractRealm {
         final StringBuilder strSid = new StringBuilder("S-");
 
         // get version
-        final int version = sid[0];
-        strSid.append(Integer.toString(version));
+        final int revision = sid[0];
+        strSid.append(Integer.toString(revision));
+        
+        //next byte is the count of sub-authorities
+        final int countSubAuths = sid[1] & 0xFF;
         
         //get the authority
-        String rid = "";
+        long authority = 0;
+        //String rid = "";
         for(int i = 2; i <= 7; i++) {
-            rid += byte2hex(sid[i]);
+           authority |= ((long)sid[i]) << (8 * (5 - (i - 2)));
         }
-
-        // get authority
-        final long authority = Long.parseLong(rid);
         strSid.append("-");
-        strSid.append(Long.toString(authority));
-
-        //next byte is the count of sub-authorities
-        final int count = sid[1] & 0xFF;
-
+        strSid.append(Long.toHexString(authority));
+        
         //iterate all the sub-auths
-        for(int i=0;i<count;i++) {
-            rid = "";
-            for(int j=11; j>7; j--) {
-                rid += byte2hex(sid[j+(i*4)]);
+        int offset = 8;
+        int size = 4; //4 bytes for each sub auth
+        for(int j = 0; j < countSubAuths; j++) {
+            long subAuthority = 0;
+            for(int k = 0; k < size; k++) {
+                subAuthority |= (long)(sid[offset + k] & 0xFF) << (8 * k);
             }
+            
             strSid.append("-");
-            strSid.append(Long.parseLong(rid,16));
+            strSid.append(subAuthority);
+            
+            offset += size;
         }
         
         return strSid.toString();    
-    }
-  
-    public static String byte2hex(byte b) {
-        String ret = Integer.toHexString((int)b&0xFF);
-        if(ret.length()<2) {
-            ret = "0" + ret;
-        }
-        return ret;
     }
     
     private String getPrimaryGroupSID(SearchResult ldapUser) throws NamingException {
