@@ -148,6 +148,16 @@ public abstract class BinaryValue extends AtomicValue {
 
         throw new XPathException("Cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
+    
+    /**
+     * Return the underlying Java object for this binary value. Might be a File or byte[].
+     * 
+     * @return
+     * @throws XPathException
+     */
+    public Object toJavaObject() throws XPathException {
+    	return toJavaObject(byte[].class);
+    }
 
     @Override
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
