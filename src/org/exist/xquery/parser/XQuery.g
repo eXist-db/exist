@@ -1253,7 +1253,7 @@ elementConstructor throws XPathException
 	;
 
 elementWithoutAttributes throws XPathException
-{ String name= null; }
+{ String name = null, cname = null; }
 :
 	LT name=q:qName
 	(
@@ -1273,14 +1273,14 @@ elementWithoutAttributes throws XPathException
 				elementStack.push(name);
 				lexer.inElementContent= true;
 			}
-			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
+			content:mixedElementContent END_TAG_START! cname=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "found additional closing tag: " + name);
+					throw new XPathException(#qn, "found additional closing tag: " + cname);
 				String prev= (String) elementStack.pop();
-				if (!prev.equals(name))
-					throw new XPathException(#qn, "found closing tag: " + name + "; expected: " + prev);
-				#elementWithoutAttributes= #(#[ELEMENT, name], #content);
+				if (!prev.equals(cname))
+					throw new XPathException(#qn, "found closing tag: " + cname + "; expected: " + prev);
+				#elementWithoutAttributes= #(#[ELEMENT, cname], #content);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
 					//lexer.wsExplicit= false;
@@ -1299,7 +1299,7 @@ elementWithoutAttributes throws XPathException
 // === XML ===
 	
 elementWithAttributes throws XPathException
-{ String name= null; }
+{ String name= null, cname=null; }
 :
 	LT! name=q:qName attrs:attributeList
 	(
@@ -1318,14 +1318,14 @@ elementWithAttributes throws XPathException
 				elementStack.push(name);
 				lexer.inElementContent= true;
 			}
-			content:mixedElementContent END_TAG_START! name=qn:qName! GT!
+			content:mixedElementContent END_TAG_START! cname=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "err:XPST0003: Found closing tag without opening tag: " + name);
+					throw new XPathException(#qn, "err:XPST0003: Found closing tag without opening tag: " + cname);
 				String prev= (String) elementStack.pop();
-				if (!prev.equals(name))
-					throw new XPathException(#qn, "err:XPST0003: Found closing tag: " + name + "; expected: " + prev);
-				#elementWithAttributes= #(#[ELEMENT, name], #attrs);
+				if (!prev.equals(cname))
+					throw new XPathException(#qn, "err:XPST0003: Found closing tag: " + cname + "; expected: " + prev);
+				#elementWithAttributes= #(#[ELEMENT, cname], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
 				}
