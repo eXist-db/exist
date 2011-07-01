@@ -9881,7 +9881,7 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST attrs_AST = null;
 		org.exist.xquery.parser.XQueryAST content_AST = null;
 		org.exist.xquery.parser.XQueryAST qn_AST = null;
-		String name= null;
+		String name= null, cname=null;
 		
 		try {      // for error handling
 			match(LT);
@@ -9927,18 +9927,18 @@ inputState.guessing--;
 				content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 				astFactory.addASTChild(currentAST, returnAST);
 				match(END_TAG_START);
-				name=qName();
+				cname=qName();
 				qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 				match(GT);
 				if ( inputState.guessing==0 ) {
 					elementWithAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					
 									if (elementStack.isEmpty())
-										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag without opening tag: " + name);
+										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag without opening tag: " + cname);
 									String prev= (String) elementStack.pop();
-									if (!prev.equals(name))
-										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag: " + name + "; expected: " + prev);
-									elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(attrs_AST));
+									if (!prev.equals(cname))
+										throw new XPathException(qn_AST, "err:XPST0003: Found closing tag: " + cname + "; expected: " + prev);
+									elementWithAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,cname)).add(attrs_AST));
 									if (!elementStack.isEmpty()) {
 										lexer.inElementContent= true;
 									}
@@ -9984,7 +9984,7 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST q_AST = null;
 		org.exist.xquery.parser.XQueryAST content_AST = null;
 		org.exist.xquery.parser.XQueryAST qn_AST = null;
-		String name= null;
+		String name = null, cname = null;
 		
 		try {      // for error handling
 			org.exist.xquery.parser.XQueryAST tmp396_AST = null;
@@ -10031,18 +10031,18 @@ inputState.guessing--;
 				content_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 				astFactory.addASTChild(currentAST, returnAST);
 				match(END_TAG_START);
-				name=qName();
+				cname=qName();
 				qn_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 				match(GT);
 				if ( inputState.guessing==0 ) {
 					elementWithoutAttributes_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					
 									if (elementStack.isEmpty())
-										throw new XPathException(qn_AST, "found additional closing tag: " + name);
+										throw new XPathException(qn_AST, "found additional closing tag: " + cname);
 									String prev= (String) elementStack.pop();
-									if (!prev.equals(name))
-										throw new XPathException(qn_AST, "found closing tag: " + name + "; expected: " + prev);
-									elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,name)).add(content_AST));
+									if (!prev.equals(cname))
+										throw new XPathException(qn_AST, "found closing tag: " + cname + "; expected: " + prev);
+									elementWithoutAttributes_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(ELEMENT,cname)).add(content_AST));
 									if (!elementStack.isEmpty()) {
 										lexer.inElementContent= true;
 										//lexer.wsExplicit= false;
