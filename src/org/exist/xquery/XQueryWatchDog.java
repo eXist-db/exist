@@ -82,6 +82,8 @@ public class XQueryWatchDog {
 		} catch (NumberFormatException e) {
 			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
+		if (timeout < 0)
+			timeout = Long.MAX_VALUE;
 		if (LOG.isDebugEnabled()) {
 			NumberFormat nf = NumberFormat.getNumberInstance();
 			LOG.debug("timeout set from option: " + nf.format(timeout) + " ms.");
