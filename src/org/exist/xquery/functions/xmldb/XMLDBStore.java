@@ -43,6 +43,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -183,7 +184,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 					resource.setContent(item.getStringValue());
 
 				} else if(item.getType() == Type.BASE64_BINARY) {
-					resource.setContent(item.toJavaObject(byte[].class));
+					resource.setContent(((BinaryValue)item).toJavaObject());
 
 				} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
 					if(binary) {

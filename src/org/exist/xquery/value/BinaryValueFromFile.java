@@ -94,4 +94,9 @@ public class BinaryValueFromFile extends BinaryValue {
             }
         });
     }
+    
+    @Override
+    public Object toJavaObject() throws XPathException {
+    	return file;
+    }
 }
