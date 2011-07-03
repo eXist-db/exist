@@ -29,14 +29,11 @@ declare function local:set-credentials($user as xs:string, $password as xs:strin
 :)
 declare function local:set-user() as element()* {
     session:create(),
-    let $logout := request:get-parameter("logout", ())
     let $user := request:get-parameter("user", ())
     let $password := request:get-parameter("password", ())
     let $sessionCredentials := local:credentials-from-session()
     return
-        if ($logout) then
-            session:invalidate()
-        else if ($user) then
+        if ($user) then
             let $loggedIn := xmldb:login("/db", $user, $password)
             return
                 if ($loggedIn) then
@@ -47,6 +44,11 @@ declare function local:set-user() as element()* {
             local:set-credentials($sessionCredentials[1], $sessionCredentials[2])
         else
             ()
+};
+
+declare function local:logout() as element() {
+    session:invalidate(),
+    <ok/>
 };
 
 if ($exist:path eq '/') then
@@ -66,6 +68,9 @@ else if ($exist:resource eq 'login') then
             response:set-status-code(401),
             <fail/>
         )
+
+else if ($exist:resource eq "logout") then
+    local:logout()
 
 else if ($exist:resource eq "index.html") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

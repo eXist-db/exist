@@ -205,8 +205,21 @@ Sub level menu list items (undo style from Top level List Items)
 }
 
 .eXide-browse-resources {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	padding: 0;
 	margin: 0;
+}
+
+.eXide-browse-resources .collection {
+	color: #0044FF;
+}
+
+.eXide-browse-resources .selected {
+	background-color: #C0C0C0;
 }
 
 .eXide-browse-resources table {
@@ -490,7 +503,7 @@ fieldset li:hover .hint {
 	margin-top: 20px;
 }
 
-form.file_upload {
+form.file_upload .file_upload_body{
 	position: relative;
 	overflow: hidden;
 	direction: ltr;
@@ -528,11 +541,11 @@ form.file_upload_large {
 	border: 1px solid limegreen;
 }
 
-form.file_upload_highlight,form.file_upload:hover {
+form.file_upload_highlight,form.file_upload .file_upload_body:hover {
 	background: lawngreen;
 }
 
-form.file_upload input {
+form.file_upload .file_upload_body input {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -547,7 +560,7 @@ form.file_upload input {
 	height: 100%;
 }
 
-:root form.file_upload input {
+:root form.file_upload .file_upload_body {
 	height: auto;
 }
 

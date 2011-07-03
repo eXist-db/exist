@@ -53,8 +53,9 @@ eXide.edit.Template = (function () {
 		insert: function() {
 			this.editor.getSession().remove(this.range);
 			this.editor.insert(this.code);
-			
-			if (this.code.substring(0, 1) != "$")
+			var sel = this.editor.getSelection();
+			var lead = sel.getSelectionLead();
+			if (this.code.substring(0, 1) != "$" && lead.column > 0)
 				this.editor.navigateLeft();
 			if (this.type != "variable")
 				this.nextParam();
@@ -70,6 +71,7 @@ eXide.edit.Template = (function () {
 			var sel = this.editor.getSelection();
 			var lead = sel.getSelectionLead();
 			
+			$.log("lead.row = %i startLine = %i", lead.row, this.startLine);
 			// return immediately if the cursor is outside the template
 			if (lead.row < this.startLine || lead.row > this.endLine)
 				return false;

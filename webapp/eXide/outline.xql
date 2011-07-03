@@ -34,11 +34,12 @@ declare option exist:serialize "method=json indent=yes";
     let $prefixes := request:get-parameter("prefix", ())
     let $base := request:get-parameter("base", ())
     for $uri at $i in $uris
-    let $source := if (starts-with($sources[$i], "/")) then $sources[$i] else concat($base, "/", $sources[$i])
+    let $source := if (matches($sources[$i], "^(/|\w+:)")) then $sources[$i] else concat($base, "/", $sources[$i])
     return
             util:catch("*",
 				let $log := util:log("DEBUG", ("Importing module ", $source))
-                let $import := util:import-module($uri, concat("pfx", $i), $source)
+				let $tempPrefix := concat("pfx", $i)
+                let $import := util:import-module($uri, $tempPrefix, $source)
                 let $prefix := $prefixes[$i]
                 return
                     <modules json:array='true' source='{$source}'>
@@ -46,8 +47,16 @@ declare option exist:serialize "method=json indent=yes";
                         for $func in util:registered-functions($uri)
                         (: fix namespace prefix to match the one in the import :)
                         let $name := concat($prefix, ":", substring-after($func, ":"))
+						let $desc := 
+							util:describe-function(
+								xs:QName(concat($tempPrefix, ":", substring-after($func, ":")))
+							)
+						for $prototype in $desc/prototype
                         return
-                            <functions json:array="true">{$name}</functions>
+                            <functions json:array="true">
+								<name>{$name}</name>
+								<signature>{$prototype/signature/text()}</signature>
+							</functions>
                     }
                     {
                         for $var in util:declared-variables($uri)

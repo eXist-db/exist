@@ -69,14 +69,7 @@ eXide.edit.Outline = (function () {
 		gotoDefinition: function(doc, name) {
 			$.each(doc.functions, function (i, func) {
 				if (name == func.name) {
-					switch (func.type) {
-					case TYPE_FUNCTION:
-						eXide.app.findFunction(func.source == '' ? null : func.source, name);
-						break;
-					case TYPE_VARIABLE:
-						eXide.app.findVarDecl(func.source == '' ? null : func.source, name);
-						break;
-					}
+					eXide.app.locate(func.type, func.source == '' ? null : func.source, name);
 					return;
 				}
 			});
@@ -161,8 +154,8 @@ eXide.edit.Outline = (function () {
 								for (var j = 0; j < funcs.length; j++) {
 									functions.push({
 										type: TYPE_FUNCTION,
-										name: funcs[j],
-										signature: funcs[j],
+										name: funcs[j].name,
+										signature: funcs[j].signature,
 										source: modules[i].source
 									});
 								}
@@ -226,9 +219,9 @@ eXide.edit.Outline = (function () {
 				$(a).click(function () {
 					var path = this.hash.substring(1);
 					if (this.className == "t_function") {
-						eXide.app.findFunction(path == '' ? null : path, $(this).text());
+						eXide.app.locate("function", path == '' ? null : path, $(this).text());
 					} else {
-						eXide.app.findVarDecl(path == '' ? null : path, $(this).text());
+						eXide.app.locate("variable", path == '' ? null : path, $(this).text());
 					}
 					return false;
 				});
