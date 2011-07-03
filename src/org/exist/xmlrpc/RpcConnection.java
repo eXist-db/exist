@@ -46,7 +46,6 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.realm.oauth.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
