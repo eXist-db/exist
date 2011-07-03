@@ -419,6 +419,26 @@ eXide.util.mimeTypes = (function () {
     }
 }());
 
+eXide.namespace("eXide.util.oop");
+
+/**
+ * Static utility method for class inheritance.
+ * 
+ * @param name
+ * @param path
+ * @param mimeType
+ */
+eXide.util.oop.inherit = (function() {
+	
+	var F = function() {};
+	return function(C, P) {
+		F.prototype = P.prototype;
+		C.prototype = new F();
+		C.super_ = P.prototype;
+		C.prototype.constructor = C;
+	}
+}());
+
 /* Debug and logging functions */
 (function($) {
     $.log = function() {

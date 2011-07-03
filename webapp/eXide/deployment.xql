@@ -19,7 +19,7 @@
  :
  :  $Id$
  :)
-xquery version "1.0";
+xquery version "3.0";
 
 (:~ 
     Edit the expath and repo app descriptors.
@@ -367,11 +367,20 @@ let $expathConf := if ($collection) then collection($collection)/expath:package 
 let $repoConf := if ($collection) then collection($collection)/repo:meta else ()
 let $abbrev := request:get-parameter("abbrev", ())
 return
-    if ($info) then
-        local:get-info($info)
-    else if ($deploy) then
-        local:deploy($collection, $expathConf, $repoConf)
-    else if ($abbrev) then
-        local:store($collection, $expathConf, $repoConf)
-    else
-        local:view($collection, $expathConf, $repoConf)
+    try {
+        if ($info) then
+            local:get-info($info)
+        else if ($deploy) then
+            local:deploy($collection, $expathConf, $repoConf)
+        else if ($abbrev) then
+            local:store($collection, $expathConf, $repoConf)
+        else
+            local:view($collection, $expathConf, $repoConf)
+    } catch exerr:EXXQDY0003 {
+        response:set-status-code(403),
+        <span>You don't have permissions to access or write the application archive.
+            Please correct the location or log in as a different user.</span>
+    } catch exerr:EXREPOINSTALL001 {
+        response:set-status-code(404),
+        <p>Failed to install application.</p>
+    }

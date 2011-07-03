@@ -137,8 +137,13 @@ eXide.edit.PackageEditor = (function () {
 								"<center><a href=\"" + url + "\" target=\"_new\">" + url + "</a></center>");
 					},
 					error: function (xhr, status) {
-						eXide.util.Dialog.warning("Deployment Error", "<p>An error has been reported by the database:</p>" +
+						if (xhr.status == 404) {
+							eXide.util.error("Deployment failed. The document currently opened in the editor " +
+									"should belong to an application package.");
+						} else {
+							eXide.util.Dialog.warning("Deployment Error", "<p>An error has been reported by the database:</p>" +
 								"<p>" + xhr.responseText + "</p>");
+						}
 					}
 				});
 			},
@@ -149,28 +154,33 @@ eXide.edit.PackageEditor = (function () {
 			synchronize: function (collection) {
 				var $this = this;
 				$.getJSON("deployment.xql", { info: collection }, function (data) {
-					if (!data.isAdmin) {
-						eXide.util.error("You need to be logged in as an admin user with dba role " +
-								"to use this feature.");
-						return;
+					if (!data) {
+						eXide.util.error("Application not found: The document currently opened in the editor " +
+									"should belong to an application package.");
+					} else {
+						if (!data.isAdmin) {
+							eXide.util.error("You need to be logged in as an admin user with dba role " +
+									"to use this feature.");
+							return;
+						}
+						$this.collection = data.root;
+						$this.syncDialog.find("input[name=date]").val(data.deployed);
+						$this.syncDialog.dialog("open");
 					}
-					$this.collection = data.root;
-					$this.syncDialog.find("input[name=date]").val(data.deployed);
-					$this.syncDialog.dialog("open");
 				});
 			},
 			
 			runApp: function (collection) {
 				var $this = this;
 				$.getJSON("deployment.xql", { info: collection }, function (data) {
-//					if (!data.isAdmin) {
-//						eXide.util.error("You need to be logged in as an admin user with dba role " +
-//								"to use this feature.");
-//						return;
-//					}
-					var link = "/exist/apps/" + data.root.replace(/^\/db\//, "") + "/";
-					eXide.util.Dialog.message("Run Application", "<p>Click on the following link to open your application:</p>" +
+					if (!data) {
+						eXide.util.error("Application not found: The document currently opened in the editor " +
+									"should belong to an application package.");
+					} else {
+						var link = "/exist/apps/" + data.root.replace(/^\/db\//, "") + "/";
+						eXide.util.Dialog.message("Run Application", "<p>Click on the following link to open your application:</p>" +
 							"<center><a href=\"" + link + "\" target=\"_new\">" + link + "</a></center>");
+					}
 				});
 			},
 			

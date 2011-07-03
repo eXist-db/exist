@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/skin/ui.dynatree.css" />
     <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/css/jquery.pnotify.default.css" />
     <link rel="stylesheet" type="text/css" href="scripts/jquery/jquery.layout-latest.css" />
+    <link rel="stylesheet" type="text/css" href="scripts/jquery/slick.grid.css" />
     <link rel="stylesheet" type="text/css" href="eXide.css" />
     
     <script type="text/javascript" src="libs/scripts/jquery/jquery-1.4.2.min.js"></script>
@@ -15,9 +16,18 @@
     <script type="text/javascript" src="libs/scripts/jquery/jquery.dynatree.min.js"></script>
     <script type="text/javascript" src="libs/scripts/jquery/jquery.pnotify.min.js"></script>
     <script type="text/javascript" src="libs/scripts/jquery/jquery-utils.js"></script>
-    <script type="text/javascript" src="scripts/jquery/jquery.layout-latest.min.js"></script>
+    <!-- The following javascript libraries are compressed into jquery.plugins.min.js -->
+    <!-- script type="text/javascript" src="scripts/jquery/jquery.layout-1.3.0.rc29.15.js"></script>
+    <script type="text/javascript" src="scripts/jquery/jquery.event.drag-2.0.js"></script>
     <script type="text/javascript" src="scripts/jquery/jquery.fileupload.js"></script>
     <script type="text/javascript" src="scripts/jquery/jquery.fileupload-ui.js"></script>
+    <script type="text/javascript" src="scripts/jquery/slick.core.js"></script>
+	<script type="text/javascript" src="scripts/jquery/slick.rowselectionmodel.js"></script>
+    <script type="text/javascript" src="scripts/jquery/slick.grid.js"></script-->
+    
+    <!-- Compressed version of above scripts -->
+    <script type="text/javascript" src="scripts/jquery/jquery.plugins.min.js"></script>
+    
     <script src="scripts/ace/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="scripts/ace/theme-pastel_on_dark.js" type="text/javascript" charset="utf-8"></script>
     <script src="scripts/ace/theme-dawn.js" type="text/javascript" charset="utf-8"></script>
@@ -29,19 +39,21 @@
     <script src="scripts/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
 
     <!--  Uncompressed Javascript files. Uncomment for development/debugging. -->
-    <script src="src/mode-xquery.js" type="text/javascript" charset="utf-8"></script>
+    <!-- script type="text/javascript" src="src/ace-modes.js"></script>
     <script type="text/javascript" src="src/util.js"></script>
     <script type="text/javascript" src="src/commands.js"></script>
-    <script type="text/javascript" src="src/keybinding.js"></script>
+    <script type="text/javascript" src="src/mode-helper.js"></script>
+    <script type="text/javascript" src="src/xquery-helper.js"></script>
+    <script type="text/javascript" src="src/xml-helper.js"></script>
     <script type="text/javascript" src="src/outline.js"></script>
     <script type="text/javascript" src="src/editor.js"></script>
     <script type="text/javascript" src="src/deployment.js"></script>
     <script type="text/javascript" src="src/eXide.js"></script>
     <script type="text/javascript" src="src/templates.js"></script>
-    <script type="text/javascript" src="src/resources.js"></script>
+    <script type="text/javascript" src="src/resources.js"></script-->
     
     <!-- Compressed version -->
-    <!--script type="text/javascript" src="scripts/eXide-1.0.min.js"></script-->
+    <script type="text/javascript" src="scripts/eXide-1.0.min.js"></script>
   </head>
   <body>
     <div class="ui-layout-north">
@@ -133,19 +145,26 @@
     		<div class="eXide-browse-main ui-layout-center">
     			<div class="eXide-browse-resources">
     			</div>
-    			<div id="file_upload" class="eXide-browse-upload">
-    			  <p>Drop files here or click on the button below to upload them to the selected collection.
-    			    Maximum file size is 100MB.</p>
-    			  <form class="file_upload" action="upload.xql" method="POST" enctype="multipart/form-data">
-    				  <input type="hidden" name="collection" value=""/>
-					    <input type="file" name="file[]" multiple="multiple"/>
-					    <button>Upload</button>
-					    <div class="file_upload_label">Upload files</div>
-					   </form>
-				   <table id="files"></table>
-    			   <button id="eXide-browse-upload-done">Done</button>
-    			</div>
-    		</div>
+				<div id="file_upload" class="eXide-browse-upload">
+					<p>Drop files here or click on the button below to upload them
+						to the selected collection. Maximum file size is 100MB.</p>
+					<form class="file_upload" action="upload.xql" method="POST"
+						enctype="multipart/form-data">
+						<div class="options">
+							<input type="checkbox" name="deploy" checked="checked" /> Auto
+							deploy uploaded .xar packages
+						</div>
+						<input type="hidden" name="collection" value="" />
+						<div class="file_upload_body">
+							<input type="file" name="file[]" multiple="multiple" />
+							<button>Upload</button>
+							<div class="file_upload_label">Upload files</div>
+						</div>
+					</form>
+					<table id="files"></table>
+					<button id="eXide-browse-upload-done">Done</button>
+				</div>
+			</div>
     		<div class="eXide-browse-upload ui-layout-center"></div>
     	</div>
     	<div class="eXide-browse-form">

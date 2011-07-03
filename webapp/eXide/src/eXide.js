@@ -65,7 +65,6 @@ eXide.app = (function() {
 		    
 		    editor.init();
 		    editor.addEventListener("outlineChange", eXide.app.onOutlineChange);
-		    
 		    eXide.app.resize();
 
 			$(window).resize(eXide.app.resize);
@@ -101,11 +100,11 @@ eXide.app = (function() {
 			}
 		},
 		
-		findFunction: function(path, funcName) {
+		locate: function(type, path, symbol) {
 			if (path == null) {
-				editor.gotoFunction(funcName);
+				editor.exec("locate", type, symbol);
 			} else {
-				$.log("Locating function %s in document %s", funcName, path);
+				$.log("Locating %s in document %s", symbol, path);
 				var doc = editor.getDocument(path);
 				if (doc == null) {
 					var resource = {
@@ -113,32 +112,11 @@ eXide.app = (function() {
 							path: path
 					};
 					eXide.app.$doOpenDocument(resource, function() {
-						editor.gotoFunction(funcName);
+						editor.exec("locate", type, symbol);
 					});
 				} else {
 					editor.switchTo(doc);
-					editor.gotoFunction(funcName);
-				}
-			}
-		},
-		
-		findVarDecl: function (path, varName) {
-			if (path == null) {
-				editor.gotoVarDecl(varName);
-			} else {
-				$.log("Locating variable %s in document %s", varName, path);
-				var doc = editor.getDocument(path);
-				if (doc == null) {
-					var resource = {
-							name: path.match(/[^\/]+$/),
-							path: path
-					};
-					eXide.app.$doOpenDocument(resource, function() {
-						editor.gotoVarDecl(varName);
-					});
-				} else {
-					editor.switchTo(doc);
-					editor.gotoVarDecl(varName);
+					editor.exec("locate", type, symbol);
 				}
 			}
 		},
@@ -147,7 +125,7 @@ eXide.app = (function() {
 			dbBrowser.reload(["reload"], true);
 			$("#open-dialog").dialog("option", "title", "Open Document");
 			$("#open-dialog").dialog("option", "buttons", { 
-				"cancel": function() { $(this).dialog("close"); },
+				"cancel": function() { $(this).dialog("close"); editor.focus(); },
 				"open": eXide.app.openSelectedDocument
 			});
 			$("#open-dialog").dialog("open");
@@ -235,6 +213,7 @@ eXide.app = (function() {
 		},
 		
 		runQuery: function() {
+			editor.updateStatus("Running query ...");
 			var code = editor.getText();
 			var moduleLoadPath = "xmldb:exist://" + editor.getActiveDocument().getBasePath();
 			$('#results-container .results').empty();
@@ -250,6 +229,7 @@ eXide.app = (function() {
 				        eXide.util.error(msg, "Compilation Error");
 				        editor.evalError(msg);
 					} else {
+						editor.updateStatus("");
 						editor.clearErrors();
 						var layout = $("body").layout();
 						layout.open("south");
@@ -273,7 +253,7 @@ eXide.app = (function() {
 		},
 
 		checkQuery: function() {
-			editor.validateQuery();
+			editor.validate();
 		},
 
 		/** If there are more query results to load, retrieve
@@ -433,8 +413,10 @@ eXide.app = (function() {
 				var doc = {
 						path: localStorage["eXide." + i + ".path"],
 						name: localStorage["eXide." + i + ".name"],
-						writable: (localStorage["eXide." + i + ".writable"] == "true") 
+						writable: (localStorage["eXide." + i + ".writable"] == "true"),
+						line: parseInt(localStorage["eXide." + i + ".last-line"])
 				};
+				$.log("doc.line = %i", doc.line);
 				var data = localStorage["eXide." + i + ".data"];
 				if (data) {
 					editor.newDocumentWithText(data, localStorage["eXide." + i + ".mime"], doc);
@@ -456,6 +438,22 @@ eXide.app = (function() {
 			
 			editor.saveState();
 			deploymentEditor.saveState();
+		},
+		
+		ping: function() {
+			$.ajax({
+				url: "index.html",
+				type: "HEAD",
+				success: function () {
+					setTimeout(function () { eXide.app.ping(); }, 30000);
+				},
+				error: function (xhr, textStatus) {
+					$.log("ping failed: %s", textStatus);
+					eXide.app.login = null;
+					$("#user").empty();
+					$("#login").text("Login");
+				}
+			});
 		},
 		
 		$checkLogin: function () {
@@ -492,7 +490,7 @@ eXide.app = (function() {
 				title: "Open File",
 				modal: false,
 		        autoOpen: false,
-		        height: 400,
+		        height: 480,
 		        width: 700,
 				open: function() { dbBrowser.init(); },
 				resize: function() { dbBrowser.resize(); }
@@ -504,7 +502,7 @@ eXide.app = (function() {
 				height: 400,
 				width: 600,
 				buttons: {
-					"Cancel": function () { $(this).dialog("close"); },
+					"Cancel": function () { $(this).dialog("close"); editor.focus(); },
 					"Save": function () {
 						var form = $("form", this);
 						preferences.theme = $("select[name=theme]", form).val();
@@ -514,6 +512,7 @@ eXide.app = (function() {
 						eXide.app.applyPreferences();
 						
 						$(this).dialog("close");
+						editor.focus();
 					}
 				}
 			});
@@ -524,7 +523,7 @@ eXide.app = (function() {
 				buttons: {
 					"Login": function() {
 						$.ajax({
-							url: "login", 
+							url: "login",
 							data: $("#login-form").serialize(),
 							success: function (data) {
 								eXide.app.login = $("#login-form input[name=user]").val();
@@ -532,6 +531,8 @@ eXide.app = (function() {
 								$("#login-dialog").dialog("close");
 								$("#user").text("Logged in as " + eXide.app.login + ". ");
 								$("#login").text("Logout");
+								setTimeout(function () { eXide.app.ping(); }, 30000);
+								editor.focus();
 							},
 							error: function () {
 								$("#login-error").text("Login failed. Bad username or password.");
@@ -539,7 +540,7 @@ eXide.app = (function() {
 							}
 						});
 					},
-					"Cancel": function () { $(this).dialog("close"); }
+					"Cancel": function () { $(this).dialog("close"); editor.focus(); }
 				},
 				open: function() {
 					// clear form fields
@@ -564,7 +565,7 @@ eXide.app = (function() {
 					"Close": function () { $(this).dialog("close"); }
 				},
 				open: function () {
-					eXide.keyboard.help($("#keyboard-help"));
+					eXide.edit.commands.help($("#keyboard-help"));
 				}
 			});
 			$("#help-shortcuts").click(function (ev) {
@@ -652,7 +653,15 @@ eXide.app = (function() {
 			
 			$("#login").click(function (ev) {
 				ev.preventDefault();
-				$("#login-dialog").dialog("open");
+				if (eXide.app.login) {
+					// logout
+					$.get("logout");
+					$("#user").empty();
+					$("#login").text("Login");
+					eXide.app.login = null;
+				} else {
+					$("#login-dialog").dialog("open");
+				}
 			});
 			$('#results-container .next').click(eXide.app.browseNext);
 			$('#results-container .previous').click(eXide.app.browsePrevious);

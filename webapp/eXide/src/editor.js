@@ -26,7 +26,7 @@ eXide.namespace("eXide.edit.Document");
  * Represents an open document.
  */
 eXide.edit.Document = (function() {
-	
+
 	Constr = function(name, path, session) {
 		this.name = name;
 		this.path = path;
@@ -35,7 +35,8 @@ eXide.edit.Document = (function() {
 		this.saved = false;
 		this.editable = true;
 		this.functions = [];
-		
+		this.helper = null;
+		this.history = [];
 		this.$session = session;
 	};
 	
@@ -65,6 +66,10 @@ eXide.edit.Document = (function() {
 			return this.syntax;
 		},
 		
+		getSession: function() {
+			return this.$session;
+		},
+		
 		isSaved: function() {
 			return this.saved;
 		},
@@ -75,6 +80,28 @@ eXide.edit.Document = (function() {
 		
 		isXQuery: function() {
 			return this.mime == "application/xquery";
+		},
+		
+		setModeHelper: function(mode) {
+			this.helper = mode;
+		},
+		
+		getModeHelper: function() {
+			return this.helper;
+		},
+		
+		addToHistory: function(line) {
+			this.history.push(line);
+		},
+		
+		getLastLine: function() {
+			return this.history.pop(line);
+		},
+		
+		getCurrentLine: function() {
+			var sel = this.$session.getSelection();
+			var lead = sel.getSelectionLead();
+			return lead.row;
 		}
 	};
 	return Constr;
@@ -91,8 +118,23 @@ eXide.edit.Editor = (function () {
 	var Editor = require("ace/editor").Editor;
 	var EditSession = require("ace/edit_session").EditSession;
     var UndoManager = require("ace/undomanager").UndoManager;
-
-    var RE_FUNC_NAME = /^[\$\w:\-_\.]+/;
+    
+    function parseErrMsg(error) {
+		var msg;
+		if (error.line) {
+			msg = error["#text"];
+		} else {
+			msg = error;
+		}
+		var str = /.*line:?\s(\d+)/i.exec(msg);
+		var line = -1;
+		if (str) {
+			line = parseInt(str[1]) - 1;
+		} else if (error.line) {
+			line = parseInt(error.line) - 1;
+		}
+		return { line: line, msg: msg };
+	}
     
 	Constr = function(container) {
 		var $this = this;
@@ -117,11 +159,11 @@ eXide.edit.Editor = (function () {
 	    renderer.setShowGutter(true);
 	    
 		this.editor = new Editor(renderer);
+		this.editor.setBehavioursEnabled(true);
 		
-	    this.editor.setKeyboardHandler(eXide.keyboard.getKeybinding());
-	    
 	    this.outline = new eXide.edit.Outline(this);
 	    
+	    // Set up the status bar
 	    this.status = document.getElementById("error-status");
 	    $(this.status).click(function (ev) {
 	    	ev.preventDefault();
@@ -136,6 +178,12 @@ eXide.edit.Editor = (function () {
 	    
 	    this.lastChangeEvent = new Date().getTime();
 		this.validateTimeout = null;
+		
+		// register mode helpers
+		$this.modes = {
+			"xquery": new eXide.edit.XQueryModeHelper($this),
+			"xml": new eXide.edit.XMLModeHelper($this)
+		};
 	};
 	
 	Constr.prototype = {
@@ -143,6 +191,13 @@ eXide.edit.Editor = (function () {
 		init: function() {
 		    if (this.documents.length == 0)
 		    	this.newDocument();
+		},
+		
+		exec: function () {
+			if (this.activeDoc.getModeHelper()) {
+				var args = Array.prototype.slice.call(arguments, 1);
+				this.activeDoc.getModeHelper().exec(arguments[0], this.activeDoc, args);
+			}
 		},
 		
 		getActiveDocument: function() {
@@ -165,18 +220,7 @@ eXide.edit.Editor = (function () {
 			newDocId++;
 			var newDocument = new eXide.edit.Document("new-document " + newDocId,
 					"__new__" + newDocId, new EditSession("xquery version \"1.0\";\n"));
-			newDocument.$session.setUndoManager(new UndoManager());
-			newDocument.$session.addEventListener("change", function () {
-				newDocument.saved = false;
-				$this.triggerCheck();
-			});
-			var XQueryMode = require("ace/mode/xquery").Mode;
-			newDocument.$session.setMode(new XQueryMode());
-			
-			this.addTab(newDocument);
-			
-			this.editor.setSession(newDocument.$session);
-			this.editor.focus();
+			this.$initDocument(newDocument);
 		},
 		
 		newDocumentWithText: function(data, mime, resource) {
@@ -185,6 +229,10 @@ eXide.edit.Editor = (function () {
 			doc.mime = mime;
 			doc.syntax = eXide.util.mimeTypes.getLangFromMime(mime);
 			doc.saved = false;
+			if (resource.line) {
+				doc.addToHistory(resource.line);
+				this.editor.gotoLine(resource.line);
+			}
 			this.$initDocument(doc);
 		},
 		
@@ -200,7 +248,14 @@ eXide.edit.Editor = (function () {
 			doc.mime = mime;
 			doc.syntax = eXide.util.mimeTypes.getLangFromMime(mime);
 			doc.saved = true;
-			$.log("opening %s, mime: %s, syntax: %s", resource.name, doc.mime, doc.syntax);
+			if (resource.line) {
+				doc.addToHistory(resource.line);
+				var sel = doc.$session.getSelection();
+				sel.clearSelection();
+				sel.moveCursorTo(resource.line, 1);
+				doc.$session.setScrollTopRow(resource.line);
+			}
+			$.log("opening %s, mime: %s, syntax: %s, line: %i", resource.name, doc.mime, doc.syntax, resource.line);
 			this.$initDocument(doc);
 		},
 		
@@ -208,12 +263,13 @@ eXide.edit.Editor = (function () {
 			var $this = this;
 			$this.$setMode(doc);
 			doc.$session.setUndoManager(new UndoManager());
-			doc.$session.addEventListener("change", function () {
+			doc.$session.addEventListener("change", function (ev) {
 				if (doc.saved) {
 					doc.saved = false;
 					$this.updateTabStatus(doc.path, doc);
 				}
 				$this.triggerCheck();
+//				$this.onInput(doc, ev.data);
 			});
 			$this.addTab(doc);
 			
@@ -228,16 +284,16 @@ eXide.edit.Editor = (function () {
 		},
 		
 		$setMode: function(doc, setMime) {
-			switch (doc.syntax) {
+			switch (doc.getSyntax()) {
 			case "xquery":
-				var XQueryMode = require("ace/mode/xquery").Mode;
-				doc.$session.setMode(new XQueryMode());
+				var XQueryMode = require("eXide/mode/xquery").Mode;
+				doc.$session.setMode(new XQueryMode(this));
 				if (setMime)
 					doc.mime = "application/xquery";
 				break;
 			case "xml":
-				var XmlMode = require("ace/mode/xml").Mode;
-				doc.$session.setMode(new XmlMode());
+				var XMLMode = require("eXide/mode/xml").Mode;
+				doc.$session.setMode(new XMLMode(this));
 				if (setMime)
 					doc.mime = "application/xml";
 				break;
@@ -260,6 +316,7 @@ eXide.edit.Editor = (function () {
 					doc.mime = "text/css";
 				break;
 			}
+			doc.setModeHelper(this.modes[doc.getSyntax()]);
 		},
 		
 		closeDocument: function() {
@@ -343,273 +400,34 @@ eXide.edit.Editor = (function () {
 					return this.documents[i];
 			}
 		},
+
+		/**
+		 * Dispatch document change events to mode helpers.
+		 */
+		onInput: function (doc, delta) {
+			var mode = doc.getModeHelper();
+			if (mode && mode.onInput) {
+				mode.onInput(doc, delta);
+			}
+		},
 		
 		autocomplete: function() {
-			if (!this.activeDoc.isXQuery()) {
-				return;
-			}
-			var lang = require("pilot/lang");
-			var Range = require("ace/range").Range;
-			
-		    var sel   = this.editor.getSelection();
-		    var session   = this.editor.getSession();
-		    
-			var lead = sel.getSelectionLead();
-			var line = session.getDisplayLine(lead.row);
-			var start = lead.column - 1;
-			var end = lead.column;
-			while (start >= 0) {
-				var ch = line.substring(start, end);
-				if (ch.match(/^\$[\w:\-_\.]+$/)) {
-					break;
-				}
-				if (!ch.match(/^[\w:\-_\.]+$/)) {
-					start++;
-					break;
-				}
-				start--;
-			}
-			var token = line.substring(start, end);
-			$.log("completing token: %s", token);
-			var range = new Range(lead.row, start, lead.row, end);
-
-			var pos = this.editor.renderer.textToScreenCoordinates(lead.row, lead.column);
-			var editorHeight = $(this.container).height();
-			if (pos.pageY + 150 > editorHeight) {
-				pos.pageY = editorHeight - 150;
-				$.log("window height: %i, pageY: %i", editorHeight, pos.pageY);
-			}
-			$("#autocomplete-box").css({ left: pos.pageX + "px", top: (pos.pageY + 10) + "px" });
-			$("#autocomplete-help").css({ left: (pos.pageX + 324) + "px", top: (pos.pageY + 10) + "px" });
-			
-			if (token.length == 0) {
-				this.templateLookup(this.activeDoc, token, range, true);
-			} else {
-				this.functionLookup(this.activeDoc, token, range, true);
-			}
-			return true;
-		},
-		
-		$localVars: function(prefix, wordrange, complete) {
-			var variables = [];
-			var stopRegex = /declare function|};/;
-			var varRegex = /let \$[\w\:]+|for \$[\w\:]+|\$[\w\:]+\)/;
-			var getVarRegex = /\$[\w\:]+/;
-			var nameRegex = new RegExp("^\\" + prefix);
-			var session = this.editor.getSession();
-			var row = wordrange.start.row;
-			while (row > -1) {
-				var line = session.getDisplayLine(row);
-				var m;
-				if (m = line.match(varRegex)) {
-					$.log("Var: %s", m[0]);
-					var name = m[0].match(getVarRegex);
-					if (name[0].match(nameRegex)) {
-						variables.push({
-							name: name[0],
-							type: "variable"
-						});
-					}
-				}
-				if (line.match(stopRegex)) {
-					$.log("Stop: %s", line);
-					return variables;
-				}
-				row--;
-			}
-			return variables;
-		},
-		
-		functionLookup: function(doc, prefix, wordrange, complete) {
-			var $this = this;
-			// Call docs.xql to retrieve declared functions and variables
-			$.ajax({
-				url: "docs.xql",
-				dataType: "text",
-				type: "POST",
-				data: { prefix: prefix},
-				
-				success: function (data) {
-					data = $.parseJSON(data);
-					
-					var funcs = [];
-					var regexStr;
-					var isVar = prefix.substring(0, 1) == "$";
-					
-					if (isVar) {
-						regexStr = "^\\" + prefix;
-						funcs = $this.$localVars(prefix, wordrange, complete);
-					} else {
-						regexStr = "^" + prefix;
-					}
-					var regex = new RegExp(regexStr);
-					
-					// add local functions to the set
-					var localFuncs = $this.activeDoc.functions;
-					$.each(localFuncs, function (i, func) {
-						if (func.name.match(regex)) {
-							funcs.push(func);
-						}
-					});
-					
-					if (data)
-						funcs = funcs.concat(data);
-					
-					// Create popup menu
-					// add function defs
-					var popupItems = [];
-					for (var i = 0; i < funcs.length; i++) {
-						var item = { 
-								label: funcs[i].signature ? funcs[i].signature : funcs[i].name,
-								type: funcs[i].type
-						};
-						if (funcs[i].help) {
-							item.tooltip = funcs[i].help;
-						}
-						popupItems.push(item);
-					}
-					
-					$this.$addTemplates(prefix, popupItems);
-					
-					$this.$showPopup(doc, wordrange, popupItems);
-				},
-				error: function(xhr, msg) {
-					eXide.util.error(msg);
-				}
-			});
-		},
-		
-		templateLookup: function(doc, prefix, wordrange, complete) {
-			var popupItems = [];
-			this.$addTemplates(prefix, popupItems);
-			this.$showPopup(doc, wordrange, popupItems);
-		},
-		
-		$addTemplates: function (prefix, popupItems) {
-			// add templates
-			var templates = this.outline.getTemplates(prefix);
-			for (var i = 0; i < templates.length; i++) {
-				var item = {
-						type: "template",
-						label: "[S] " + templates[i].name,
-						tooltip: templates[i].help,
-						template: templates[i].template
-				};
-				popupItems.push(item);
+			var mode = this.activeDoc.getModeHelper();
+			if (mode && mode.autocomplete) {
+				mode.autocomplete(this.activeDoc);
 			}
 		},
 		
-		$showPopup: function (doc, wordrange, popupItems) {
-			// display popup
-			var $this = this;
-			eXide.util.popup($("#autocomplete-box"), $("#autocomplete-help"), popupItems,
-					function (selected) {
-						if (selected) {
-							var expansion = selected.label;
-							if (selected.type == "template") {
-								expansion = selected.template;
-							} else if (selected.type == "function") {
-								expansion = eXide.util.parseSignature(expansion);
-							}
-							
-							doc.template = new eXide.edit.Template($this, wordrange, expansion, selected.type);
-							doc.template.insert();
-						}
-						$this.editor.focus();
-					}
-			);
-		},
-		
-		getFunctionAtCursor: function (lead) {
-			var row = lead.row;
-		    var session = this.editor.getSession();
-			var line = session.getDisplayLine(row);
-			var start = lead.column;
-			do {
-				start--;
-			} while (start >= 0 && line.charAt(start).match(RE_FUNC_NAME));
-			start++;
-			var end = lead.column;
-			while (end < line.length && line.charAt(end).match(RE_FUNC_NAME)) {
-				end++;
-			}
-			return line.substring(start, end);
-		},
-		
-		showFunctionDoc: function () {
-			var sel = this.editor.getSelection();
-			var lead = sel.getSelectionLead();
-			
-			var pos = this.editor.renderer.textToScreenCoordinates(lead.row, lead.column);
-			$("#autocomplete-box").css({ left: pos.pageX + "px", top: (pos.pageY + 20) + "px" });
-			$("#autocomplete-help").css({ left: (pos.pageX + 324) + "px", top: (pos.pageY + 20) + "px" });
-			var func = this.getFunctionAtCursor(lead);
-			this.functionLookup(this.activeDoc, func, null, false);
-		},
-		
-		gotoDefinition: function () {
-			var sel = this.editor.getSelection();
-			var lead = sel.getSelectionLead();
-			var funcName = this.getFunctionAtCursor(lead);
-			$.log("funcName = %s", funcName);
-			if (funcName) {
-				this.outline.gotoDefinition(this.activeDoc, funcName);
-			}
-		},
-		
-		gotoFunction: function (name) {
-			var prefix = this.getModuleNamespacePrefix();
-			if (prefix != null) {
-				name = name.replace(/[^:]+:/, prefix + ":");
-			}
-
-			$.log("Goto function %s", name);
-			var regexp = new RegExp("function\\s+" + name + "\\s*\\(");
-			var len = this.activeDoc.$session.getLength();
-			for (var i = 0; i < len; i++) {
-				var line = this.activeDoc.$session.getLine(i);
-				if (line.match(regexp)) {
-					this.editor.gotoLine(i + 1);
-					this.editor.focus();
-					return;
-				}
-			}
-		},
-		
-		gotoVarDecl: function (name) {
-			var prefix = this.getModuleNamespacePrefix();
-			if (prefix != null) {
-				name = name.replace(/[^:]+:/, "$" + prefix + ":");
-			}
-			
-			$.log("Goto variable declaration %s", name);
-			var regexp = new RegExp("variable\\s+\\" + name);
-			var len = this.activeDoc.$session.getLength();
-			for (var i = 0; i < len; i++) {
-				var line = this.activeDoc.$session.getLine(i);
-				if (line.match(regexp)) {
-					this.editor.gotoLine(i + 1);
-					this.editor.focus();
-					return;
-				}
-			}
-		},
-		
-		getModuleNamespacePrefix: function () {
-			var moduleRe = /^\s*module\s+namespace\s+([^=\s]+)\s*=/;
-			var len = this.activeDoc.$session.getLength();
-			for (var i = 0; i < len; i++) {
-				var line = this.activeDoc.$session.getLine(i);
-				var matches = line.match(moduleRe);
-				if (matches) {
-					return matches[1];
-				}
-			}
-			return null;
+		getHeight: function () {
+			return $(this.container).height();
 		},
 		
 		resize: function () {
 			this.editor.resize();
+		},
+		
+		clearErrors: function () {
+			this.editor.getSession().clearAnnotations();
 		},
 		
 		addTab: function(doc) {
@@ -684,7 +502,7 @@ eXide.edit.Editor = (function () {
 				else
 					$(this).removeClass("active");
 			});
-			this.status.innerHTML = "";
+			this.updateStatus("");
 			this.$triggerEvent("activate", [doc]);
 		},
 		
@@ -702,8 +520,22 @@ eXide.edit.Editor = (function () {
 			this.editor.setTheme(theme);
 		},
 		
+		/**
+		 * Update the status bar.
+		 */
+		updateStatus: function(msg, href) {
+			this.status.innerHTML = msg;
+			if (href) {
+				this.status.href = href;
+			}
+		},
+		
+		/**
+		 * Trigger validation.
+		 */
 		triggerCheck: function() {
-			if (this.activeDoc.isXQuery()) { 
+			var mode = this.activeDoc.getModeHelper();
+			if (mode) { 
 				var $this = this;
 				if ($this.pendingCheck) {
 					return;
@@ -713,33 +545,26 @@ eXide.edit.Editor = (function () {
 					clearTimeout($this.validateTimeout);
 				}
 				$this.lastChangeEvent = time;
-				$this.validateTimeout = setTimeout(function() { $this.validateQuery.apply($this); }, 2000);
+				$this.validateTimeout = setTimeout(function() { 
+						$this.validate.apply($this); 
+					}, 2000);
 			}
 		},
 
-		validateQuery: function() {
-			if (!this.activeDoc.isXQuery) {
+		/**
+		 * Validate the current document's text by calling validate on the
+		 * mode helper.
+		 */
+		validate: function() {
+			var $this = this;
+			var mode = $this.activeDoc.getModeHelper();
+			if (!(mode && mode.validate)) {
 				return;
 			}
-			this.pendingCheck = true;
+			$this.pendingCheck = true;
 			$.log("Running validation...");
-			var $this = this;
-			var code = $this.getText();
-			var basePath = "xmldb:exist://" + $this.activeDoc.getBasePath();
-			
-			$.ajax({
-				type: "POST",
-				url: "compile.xql",
-				data: {q: code, base: basePath},
-				dataType: "json",
-				success: function (data) {
-					$this.compileError(data);
-					$this.pendingCheck = false;
-				},
-				error: function (xhr, status) {
-					$this.pendingCheck = false;
-					$.log("Compile error: %s - %s", status, xhr.responseText);
-				}
+			mode.validate($this.activeDoc, $this.getText(), function (success) {
+				$this.pendingCheck = false;
 			});
 			$this.$triggerEvent("validate", [$this.activeDoc]);
 		},
@@ -766,40 +591,8 @@ eXide.edit.Editor = (function () {
 			this.editor.getSession().setAnnotations(annotation);
 		},
 		
-		/*
-		 * { "result" : "fail", "error" : { "line" : "52", "column" : "43", "#text" : "XPDY0002
-		 */
-		compileError: function(data) {
-			if (data.result == "fail") {
-				var msg;
-				if (data.error.line) {
-					msg = data.error["#text"];
-				} else {
-					msg = data.error;
-				}
-				var str = /.*line:?\s(\d+)/i.exec(msg);
-				var line = -1;
-				if (str) {
-					line = parseInt(str[1]) - 1;
-				} else if (data.error.line) {
-					line = parseInt(data.error.line) - 1;
-				}
-				var annotation = [{
-					row: line,
-					text: msg,
-					type: "error"
-				}];
-				this.status.innerHTML = msg;
-				this.status.href = this.activeDoc.path + "#" + line;
-				this.editor.getSession().setAnnotations(annotation);
-			} else {
-				this.clearErrors();
-				this.status.innerHTML = "";
-			}
-		},
-		
-		clearErrors: function () {
-			this.editor.getSession().clearAnnotations();
+		focus: function() {
+			this.editor.focus();
 		},
 		
 		saveState: function() {
@@ -810,11 +603,13 @@ eXide.edit.Editor = (function () {
 					localStorage["eXide." + i + ".name"] = doc.name;
 					localStorage["eXide." + i + ".mime"] = doc.mime;
 					localStorage["eXide." + i + ".data"] = doc.getText();
+					localStorage["eXide." + i + ".last-line"] = doc.getCurrentLine();
 				} else {
 					localStorage["eXide." + i + ".path"] = doc.path;
 					localStorage["eXide." + i + ".name"] = doc.name;
 					localStorage["eXide." + i + ".mime"] = doc.mime;
 					localStorage["eXide." + i + ".writable"] = (doc.editable ? "true" : "false");
+					localStorage["eXide." + i + ".last-line"] = doc.getCurrentLine();
 					if (!doc.saved)
 						localStorage["eXide." + i + ".data"] = doc.getText();
 				}
