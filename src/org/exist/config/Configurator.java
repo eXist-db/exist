@@ -56,12 +56,7 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
-import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.config.annotation.ConfigurationFieldClassMask;
-import org.exist.config.annotation.ConfigurationFieldSettings;
-import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.config.annotation.*;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
@@ -91,7 +86,7 @@ import org.xml.sax.XMLReader;
  */
 public class Configurator {
 
-    protected final static Logger LOG = Logger.getLogger(Configurator.class);
+    public final static Logger LOG = Logger.getLogger(Configurator.class);
 
     protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 
@@ -269,11 +264,14 @@ public class Configurator {
                 } else if (typeName.equals("java.util.List")) {
                     //skip, it will be processed as structure
                     //TODO what about simple generic types?
+
                 } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
+                    //use annotation ConfigurationFieldClassMask
                     value = org.exist.xmldb.XmldbURI.create(
                             configuration.getProperty(property)
                     );
                 //TODO: remove, use methods instead
+                //use annotation ConfigurationFieldClassMask
                 } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
                     value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
                 } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
@@ -331,7 +329,7 @@ public class Configurator {
                 
                     String confName = element.getAnnotation().value();
                     field.setAccessible(true);
-                    List<Configurable> list = (List<Configurable>) field.get(instance);
+                    List list = (List) field.get(instance);
 
                     String referenceBy;
                     List<Configuration> confs;
@@ -350,9 +348,14 @@ public class Configurator {
                     
                     if (confs != null) {
                         //remove & update
-                        for (Iterator<Configurable> iterator = list.iterator() ; iterator.hasNext() ; ) {
-                            Configurable obj = iterator.next();
-                            Configuration current_conf = obj.getConfiguration();
+                        for (Iterator<?> iterator = list.iterator() ; iterator.hasNext() ; ) {
+                            Object obj = iterator.next();
+                            Configuration current_conf = null;
+                            if (!(obj instanceof Configurable)) {
+                            	current_conf = org.exist.config.mapper.Constructor.getConfiguration(obj);
+							} else {
+	                            current_conf = ((Configurable) obj).getConfiguration();
+							}
                             if (current_conf == null) {
                                 //skip internal staff //TODO: static list
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
@@ -424,7 +427,13 @@ public class Configurator {
                             
                             ConfigurationFieldClassMask annotation = getAnnotation(field, ConfigurationFieldClassMask.class);
                             if (annotation == null) {
-                                LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation ["+conf.getName()+"], skip instance creation.");
+                            	NewClass newClass = getAnnotation(field, NewClass.class);
+                                if (newClass != null) {
+                                	Object obj = org.exist.config.mapper.Constructor.load(newClass, instance, conf);
+                                	list.add(obj);
+                                } else
+                                	LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation ["+conf.getName()+"], skip instance creation.");
+                            	
                                 continue;
                             }
                             
@@ -496,16 +505,23 @@ public class Configurator {
                 }
             }
         } catch (IllegalArgumentException e) {
+            LOG.error(e);
             e.printStackTrace();
             return null;
         } catch (IllegalAccessException e) {
+            LOG.error(e);
             e.printStackTrace();
             return null;
         }
         return configuration;
     }
 
-    //public static Configuration parse(InputStream is) throws ExceptionConfiguration {
+	private static void proccessExternalObject() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	//public static Configuration parse(InputStream is) throws ExceptionConfiguration {
         //throw new ExceptionConfiguration("parser was not implemented");
     //}
 
@@ -968,7 +984,7 @@ public class Configurator {
         LOG.info("STORING CONFIGURATION collection = "+collection.getURI()+" document = "+uri);
         Subject currentUser = broker.getSubject();
         try {
-            broker.setUser(pool.getSecurityManager().getSystemSubject());
+            broker.setSubject(pool.getSecurityManager().getSystemSubject());
             
             txn = transact.beginTransaction();
             txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
@@ -1001,7 +1017,7 @@ public class Configurator {
         	LOG.error(e);
             throw new IOException(e);
         } finally {
-            broker.setUser(currentUser);
+            broker.setSubject(currentUser);
         }
     }
 
