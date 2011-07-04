@@ -111,7 +111,7 @@ public class Configurator {
         }
 
         Class<?> superClass = clazz.getSuperclass();
-        if (superClass.isAnnotationPresent(ConfigurationClass.class)) {
+        if (superClass.isAnnotationPresent(ConfigurationClass.class)) { //XXX: remove? this force to have annotation at superclass
             ConfigurationAnnotatedFields superFields = getConfigurationAnnotatedFields(superClass);
 
             fields.addAllAttributes(superFields.getAttributes());
