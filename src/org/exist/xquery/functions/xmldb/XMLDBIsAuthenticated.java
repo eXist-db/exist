@@ -38,7 +38,7 @@ import org.exist.xquery.value.Type;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@Deprecated
+@Deprecated //remove after 1.6
 public class XMLDBIsAuthenticated extends BasicFunction
 {
 	protected static final Logger logger = Logger.getLogger(XMLDBIsAuthenticated.class);
