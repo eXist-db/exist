@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>group with appearance 'full'</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance>
+                  
+                  <data xmlns="">
+                     
+                     <repeat>
+                        
+                        <items>
+                           
+                           <item>text 1</item>
+                           
+                           <item>2009-01-20</item>
+                           
+                           <item>true</item>
+                           
+                        </items>
+                        
+                        
+                        <items>
+                           
+                           <item>text 2</item>
+                           
+                           <item>2010-03-17</item>
+                           
+                           <item>false</item>
+                           
+                        </items>
+                        
+                        
+                        <items>
+                           
+                           <item>text 3</item>
+                           
+                           <item>2011-05-22</item>
+                           
+                           <item>true</item>
+                           
+                        </items>
+                        
+                        
+                        <items>
+                           
+                           <item>text 4</item>
+                           
+                           <item>2008-06-13</item>
+                           
+                           <item>false</item>
+                           
+                        </items>
+                        
+                     </repeat>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               
+               <xf:bind nodeset="repeat/items">
+                  
+                  <xf:bind nodeset="item[1]" type="xf:string"></xf:bind>
+                  
+                  <xf:bind nodeset="item[2]" type="xf:date"></xf:bind>
+                  
+                  <xf:bind nodeset="item[3]" type="xf:boolean"></xf:bind>
+                  
+               </xf:bind>
+               
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d26e140" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d26e140">matches any Element that represents a XForms
+                        group
+                        |
+                        repeat
+                        |
+                        switch
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d26e158" onmouseover="showClass('xfFullRepeat');" onmouseout="hideClass('xfFullRepeat');">xfFullRepeat
+                     <div dojoType="dijit.Tooltip" connectId="d26e158">matches an Element that represents a XForms
+                        repeat
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d26e170" onmouseover="showClass('xfRepeatItem');" onmouseout="hideClass('xfRepeatItem');">xfRepeatItem
+                     <div dojoType="dijit.Tooltip" connectId="d26e170">matches all repeat items
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d26e182" onmouseover="showClass('xfRepeatIndex');" onmouseout="hideClass('xfRepeatIndex');">xfRepeatIndex
+                     <div dojoType="dijit.Tooltip" connectId="d26e182">matches the currently selected repeat item
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>group with appearance 'full'</h1>
+            <div class="description">
+               
+               <p>
+                  A repeat with no <span class="keyword">appearance</span>, 'minimal'
+                  <span class="keyword">appearance</span>
+                  or 'full'
+                  <span class="keyword">appearance</span>
+                  will be rendered
+                  vertically with labels on the left and controls on the right.
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#ui-repeat" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#Switch" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:repeat id="repeat1" nodeset="repeat/items" appearance="full">
+               
+               <xf:input ref="item[1]">
+                  
+                  <xf:label>String:</xf:label>
+                  
+               </xf:input>
+               <br />
+               
+               <xf:input ref="item[2]">
+                  
+                  <xf:label>Date:</xf:label>
+                  
+               </xf:input>
+               <br />
+               
+               <xf:input ref="item[3]">
+                  
+                  <xf:label>Boolean:</xf:label>
+                  
+               </xf:input>
+               
+            </xf:repeat>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:repeat id="repeat1" nodeset="repeat/items" appearance="full"&gt;
+    &lt;xf:input ref="item[1]"&gt;
+        &lt;xf:label&gt;String:&lt;/xf:label&gt;
+    &lt;/xf:input&gt;
+    &lt;br&gt;&lt;/br&gt;
+    &lt;xf:input ref="item[2]"&gt;
+        &lt;xf:label&gt;Date:&lt;/xf:label&gt;
+    &lt;/xf:input&gt;
+    &lt;br&gt;&lt;/br&gt;
+    &lt;xf:input ref="item[3]"&gt;
+        &lt;xf:label&gt;Boolean:&lt;/xf:label&gt;
+    &lt;/xf:input&gt;
+&lt;/xf:repeat&gt;
+</code></pre></div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

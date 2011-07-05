@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>Default Alert Handler - inline alerts</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance xmlns="">
+                  
+                  <data>
+                     
+                     <grouped-data>
+                        
+                        <group>
+                           
+                           <a></a>
+                           
+                           <b></b>
+                           
+                           <c></c>
+                           
+                           <d></d>
+                           
+                        </group>
+                        
+                     </grouped-data>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               
+               <xf:bind nodeset="grouped-data">
+                  
+                  <xf:bind nodeset="group">
+                     
+                     <xf:bind nodeset="a" constraint="string-length(.) &gt; 3"></xf:bind>
+                     
+                     <xf:bind nodeset="b" type="xf:date"></xf:bind>
+                     
+                     <xf:bind nodeset="c" type="xf:integer"></xf:bind>
+                     
+                     <xf:bind nodeset="d"></xf:bind>
+                     
+                  </xf:bind>
+                  
+               </xf:bind>
+               
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d3e180" onmouseover="showClass('InlineAlert');" onmouseout="hideClass('InlineAlert');">InlineAlert
+                     <div dojoType="dijit.Tooltip" connectId="d3e180">matches a body that uses inline alerts</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d3e189" onmouseover="showClass('xfInput');" onmouseout="hideClass('xfInput');">xfInput
+                     <div dojoType="dijit.Tooltip" connectId="d3e189">matches an Element that represents a XForms input element</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d3e198" onmouseover="showClass('xfAlert');" onmouseout="hideClass('xfAlert');">xfAlert
+                     <div dojoType="dijit.Tooltip" connectId="d3e198">matches an Element that represents a XForms alert element</div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadonly" onmouseover="showClass('xfReadOnly');" onmouseout="hideClass('xfReadOnly');">
+                     xfReadOnly
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadonly">
+                        matches a xforms control that is currently readonly
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadwrite" onmouseover="showClass('xfReadWrite');" onmouseout="hideClass('xfReadWrite');">
+                     xfReadWrite
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadwrite">
+                        matches a xforms control that is currently writable
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfrequired" onmouseover="showClass('xfRequired');" onmouseout="hideClass('xfRequired');">
+                     xfRequired
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfrequired">
+                        matches a xforms control that is currently required
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfoptional" onmouseover="showClass('xfOptional');" onmouseout="hideClass('xfOptional');">
+                     xfOptional
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfoptional">
+                        matches a xforms control that is currently optional
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfenabled" onmouseover="showClass('xfEnabled');" onmouseout="hideClass('xfEnabled');">
+                     xfEnabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfenabled">
+                        matches a xforms control that is currently relevant (enabled)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfdisabled" onmouseover="showClass('xfDisabled');" onmouseout="hideClass('xfDisabled');">
+                     xfDisabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfdisabled">
+                        matches a xforms control that is currently disabled (can't be visualized here as the control gets hidden)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalid" onmouseover="showClass('xfValid');" onmouseout="hideClass('xfValid');">
+                     xfValid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalid">
+                        matches a xforms control that is currently valid
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfinvalid" onmouseover="showClass('xfInvalid');" onmouseout="hideClass('xfInvalid');">
+                     xfInvalid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfinvalid">
+                        matches a xforms control that is currently invalid
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>Default Alert Handler - inline alerts</h1>
+            <div class="description">
+               
+               <p>
+                  This form shows the default alert handling which is choosen when you do not specify
+                  via some custom class (see other examples). This will show alert messages inline with their controls.
+                  
+               </p>
+               
+               <p>
+                  By default alerts are displayed to the right of the widget but this can be influenced by overwriting
+                  the xfAlert styles.
+                  It is the most common rendering of an input which is bound to a string value in the
+                  Instance.
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:bind nodeset="grouped-data">
+               
+               <xf:bind nodeset="group">
+                  
+                  <xf:bind nodeset="a" constraint="string-length(.) &gt; 3"></xf:bind>
+                  
+                  <xf:bind nodeset="b" type="xf:date"></xf:bind>
+                  
+                  <xf:bind nodeset="c" type="xf:integer"></xf:bind>
+                  
+                  <xf:bind nodeset="d"></xf:bind>
+                  
+               </xf:bind>
+               
+            </xf:bind>
+            <xf:group ref="grouped-data/group" appearance="compact" class="InlineAlert">
+               
+               <xf:label>a compact group with inline inputs - no initial data</xf:label>
+               
+               <xf:input ref="a">
+                  
+                  <xf:label>A-label</xf:label>
+                  
+                  <xf:alert>Your input is not long enough</xf:alert>
+                  
+                  <xf:hint>The input must be longer than 5 characters</xf:hint>
+                  
+                  <xf:help>Help für Control A</xf:help>
+                  
+               </xf:input>
+               
+               <xf:input ref="b">
+                  
+                  <xf:label>Bb-label</xf:label>
+                  
+                  <xf:alert>Alert für Control B</xf:alert>
+                  
+                  <xf:hint>Type a valid date or pick one from the drowdown</xf:hint>
+                  
+                  <xf:help>Help für Control B</xf:help>
+                  
+               </xf:input>
+               
+               <xf:input ref="c">
+                  
+                  <xf:label>Ccc-label</xf:label>
+                  
+                  <xf:alert>The input must be an integer number</xf:alert>
+                  
+                  <xf:hint>Please input a number</xf:hint>
+                  
+                  <xf:help>Help für Control C</xf:help>
+                  
+               </xf:input>
+               
+               <xf:input ref="d">
+                  
+                  <xf:label>Dddd-label</xf:label>
+                  
+                  <xf:alert>Alert für Control D</xf:alert>
+                  
+                  <xf:hint>Hint für Control D</xf:hint>
+                  
+                  <xf:help>Help für Control D</xf:help>
+                  
+               </xf:input>
+               
+            </xf:group>
+         </div>
+         <div class="MIPS">
+            
+            <xf:group appearance="full">
+               
+               <xf:label></xf:label>
+               
+               <xf:input id="input1-readonly" ref="input1/@readonly" incremental="true">
+                  
+                  <xf:label>readonly</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="input1-required" ref="input1/@required" incremental="true">
+                  
+                  <xf:label>required</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="input1-relevant" ref="input1/@relevant" incremental="true">
+                  
+                  <xf:label>relevant</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="input1-valid" ref="input1/@constraint" incremental="true">
+                  
+                  <xf:label>valid</xf:label>
+                  
+               </xf:input>
+               
+            </xf:group>
+            
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:bind nodeset="grouped-data"&gt;
+    &lt;xf:bind nodeset="group"&gt;
+        &lt;xf:bind nodeset="a" constraint="string-length(.) &gt; 3"&gt;&lt;/xf:bind&gt;
+        &lt;xf:bind nodeset="b" type="xf:date"&gt;&lt;/xf:bind&gt;
+        &lt;xf:bind nodeset="c" type="xf:integer"&gt;&lt;/xf:bind&gt;
+        &lt;xf:bind nodeset="d"&gt;&lt;/xf:bind&gt;
+    &lt;/xf:bind&gt;
+&lt;/xf:bind&gt;
+
+&lt;xf:group ref="grouped-data/group" appearance="compact" class="InlineAlert"&gt;
+    &lt;xf:label&gt;a compact group with inline inputs - no initial data&lt;/xf:label&gt;
+    &lt;xf:input ref="a"&gt;
+        &lt;xf:label&gt;A-label&lt;/xf:label&gt;
+        &lt;xf:alert&gt;Your input is not long enough&lt;/xf:alert&gt;
+        &lt;xf:hint&gt;The input must be longer than 5 characters&lt;/xf:hint&gt;
+        &lt;xf:help&gt;Help für Control A&lt;/xf:help&gt;
+    &lt;/xf:input&gt;
+    &lt;xf:input ref="b"&gt;
+        &lt;xf:label&gt;Bb-label&lt;/xf:label&gt;
+        &lt;xf:alert&gt;Alert für Control B&lt;/xf:alert&gt;
+        &lt;xf:hint&gt;Type a valid date or pick one from the drowdown&lt;/xf:hint&gt;
+        &lt;xf:help&gt;Help für Control B&lt;/xf:help&gt;
+    &lt;/xf:input&gt;
+    &lt;xf:input ref="c"&gt;
+        &lt;xf:label&gt;Ccc-label&lt;/xf:label&gt;
+        &lt;xf:alert&gt;The input must be an integer number&lt;/xf:alert&gt;
+        &lt;xf:hint&gt;Please input a number&lt;/xf:hint&gt;
+        &lt;xf:help&gt;Help für Control C&lt;/xf:help&gt;
+    &lt;/xf:input&gt;
+    &lt;xf:input ref="d"&gt;
+        &lt;xf:label&gt;Dddd-label&lt;/xf:label&gt;
+        &lt;xf:alert&gt;Alert für Control D&lt;/xf:alert&gt;
+        &lt;xf:hint&gt;Hint für Control D&lt;/xf:hint&gt;
+        &lt;xf:help&gt;Help für Control D&lt;/xf:help&gt;
+    &lt;/xf:input&gt;
+&lt;/xf:group&gt;
+</code></pre></div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>
