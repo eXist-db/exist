@@ -114,8 +114,10 @@ declare function local:list-collection-contents($collection as xs:string, $user 
         for $child in xmldb:get-child-collections($collection)
         return
             concat("/", $child)
-    return
-        ($subcollections, xmldb:get-child-resources($collection))
+    for $resource in ($subcollections, xmldb:get-child-resources($collection))
+	order by $resource ascending
+	return
+		$resource
 };
 
 declare function local:resources($collection as xs:string, $user as xs:string) {
