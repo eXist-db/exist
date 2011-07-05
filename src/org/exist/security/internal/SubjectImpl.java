@@ -54,4 +54,9 @@ public final class SubjectImpl extends AbstractSubject {
 	public boolean isAuthenticated() {
 		return authenticated;
 	}
+
+	@Override
+	public boolean isExternallyAuthenticated() {
+		return isAuthenticated();
+	}
 }
