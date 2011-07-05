@@ -8,6 +8,8 @@
     <forward pattern="/webstart" servlet="jnlp"/>
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
+    <!-- betterFORM resource-servlet -->
+    <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
     <!-- REST interface -->
 	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
     <!-- WebDAV interface -->

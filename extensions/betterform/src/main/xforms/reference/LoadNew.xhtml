@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>Load element with load="new"</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="betterform/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance xmlns="">
+                  
+                  <data></data>
+                  
+               </xf:instance>
+               
+            </xf:model>
+         </div>
+         <div class="pageintro">
+            <h1>Load element with load="new"</h1>
+            <div class="description">
+               
+               <p>
+                  This page demonstrates the use of a XForms load element with load <span class="keyword">new</span>.<br />
+                  
+               </p>
+               
+               <p>
+                  
+                  
+               </p>
+               
+            </div>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:trigger>
+               
+               <xf:label>Load this Page in a new window</xf:label>
+               
+               <xf:action>
+                  
+                  <xf:load resource="LoadNew.xhtml" show="new"></xf:load>
+                  
+               </xf:action>
+               
+            </xf:trigger>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:trigger&gt;
+    &lt;xf:label&gt;Load this Page in a new window&lt;/xf:label&gt;
+    &lt;xf:action&gt;
+        &lt;xf:load resource="LoadNew.xhtml" show="new"&gt;&lt;/xf:load&gt;
+    &lt;/xf:action&gt;
+&lt;/xf:trigger&gt;
+</code></pre></div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

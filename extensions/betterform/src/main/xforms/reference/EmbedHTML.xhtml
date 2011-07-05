@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>Submission element with replace="embedHTML"</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="betterform/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance xmlns="">
+                  
+                  <data></data>
+                  
+               </xf:instance>
+               
+               
+               <xf:submission id="s-embedHTML-audio" replace="embedHTML" targetid="mountpoint-audio" resource="resources/htmlToEmbed.html#HTMLToEmbed-audio" method="get"></xf:submission>
+               
+               
+               <xf:submission id="s-embedHTML-plain" replace="embedHTML" targetid="mountpoint-plain" resource="resources/htmlToEmbed.html#HTMLToEmbed-plain" method="get"></xf:submission>
+               
+               
+               <xf:submission id="s-embedHTML-full" replace="embedHTML" targetid="mountpoint-full" resource="resources/htmlToEmbed.html" method="get"></xf:submission>
+               
+               
+            </xf:model>
+         </div>
+         <div class="pageintro">
+            <h1>Submission element with replace="embedHTML"</h1>
+            <div class="description">
+               
+               <p>
+                  This page demonstrates the use of a XForms submission element with replace <span class="keyword">embedHTML</span>
+                  
+               </p>
+               
+               <p>
+                  
+                  
+               </p>
+               
+            </div>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:trigger>
+               
+               <xf:label>Load HTML 5 audio element as part from an external file</xf:label>
+               
+               <xf:send submission="s-embedHTML-audio"></xf:send>
+               
+            </xf:trigger>
+            <div id="mountpoint-audio"></div>
+            <xf:trigger>
+               
+               <xf:label>Load Plain HTML as part from an external file</xf:label>
+               
+               <xf:send submission="s-embedHTML-plain"></xf:send>
+               
+            </xf:trigger>
+            <div id="mountpoint-plain"></div>
+            <xf:trigger>
+               
+               <xf:label>Load full external HTML file</xf:label>
+               
+               <xf:send submission="s-embedHTML-full"></xf:send>
+               
+            </xf:trigger>
+            <div id="mountpoint-full"></div>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:submission id="s-embedHTML-audio" replace="embedHTML" targetid="mountpoint-audio" resource="resources/htmlToEmbed.html#HTMLToEmbed-audio" method="get"&gt;&lt;/xf:submission&gt;
+
+&lt;xf:submission id="s-embedHTML-plain" replace="embedHTML" targetid="mountpoint-plain" resource="resources/htmlToEmbed.html#HTMLToEmbed-plain" method="get"&gt;&lt;/xf:submission&gt;
+
+&lt;xf:submission id="s-embedHTML-full" replace="embedHTML" targetid="mountpoint-full" resource="resources/htmlToEmbed.html" method="get"&gt;&lt;/xf:submission&gt;
+
+&lt;xf:trigger&gt;
+    &lt;xf:label&gt;Load HTML 5 audio element as part from an external file&lt;/xf:label&gt;
+    &lt;xf:send submission="s-embedHTML-audio"&gt;&lt;/xf:send&gt;
+&lt;/xf:trigger&gt;
+
+&lt;div id="mountpoint-audio"&gt;&lt;/div&gt;
+
+&lt;xf:trigger&gt;
+    &lt;xf:label&gt;Load Plain HTML as part from an external file&lt;/xf:label&gt;
+    &lt;xf:send submission="s-embedHTML-plain"&gt;&lt;/xf:send&gt;
+&lt;/xf:trigger&gt;
+
+&lt;div id="mountpoint-plain"&gt;&lt;/div&gt;
+
+&lt;xf:trigger&gt;
+    &lt;xf:label&gt;Load full external HTML file&lt;/xf:label&gt;
+    &lt;xf:send submission="s-embedHTML-full"&gt;&lt;/xf:send&gt;
+&lt;/xf:trigger&gt;
+
+&lt;div id="mountpoint-full"&gt;&lt;/div&gt;
+</code></pre></div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

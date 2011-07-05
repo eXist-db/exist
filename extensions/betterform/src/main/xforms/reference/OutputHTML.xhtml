@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>HTML output control</title>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               
+               <xf:instance xmlns="">
+                  
+                  <data>
+                     
+                     <output1 constraint="true" readonly="false" required="false" relevant="true">
+                        
+                        <value>
+                           &lt;b&gt;Providing&lt;/b&gt;
+                           &lt;i&gt;basic&lt;/i&gt; HTML &lt;u&gt;formatting&lt;/u&gt;
+                           
+                           
+                        </value>
+                        
+                     </output1>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+               
+               <xf:bind nodeset="output1">
+                  
+                  <xf:bind nodeset="value" constraint="boolean-from-string(../@constraint)" readonly="boolean-from-string(../@readonly)" required="boolean-from-string(../@required)" relevant="boolean-from-string(../@relevant)"></xf:bind>
+                  
+                  <xf:bind nodeset="@constraint" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@readonly" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@required" type="boolean"></xf:bind>
+                  
+                  <xf:bind nodeset="@relevant" type="boolean"></xf:bind>
+                  
+               </xf:bind>
+               
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d20e127" onmouseover="showClass('xfOutput');" onmouseout="hideClass('xfOutput');">xfOutput
+                     <div dojoType="dijit.Tooltip" connectId="d20e127">matches an Element that represents a XForms
+                        output
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadonly" onmouseover="showClass('xfReadOnly');" onmouseout="hideClass('xfReadOnly');">
+                     xfReadOnly
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadonly">
+                        matches a xforms control that is currently readonly
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadwrite" onmouseover="showClass('xfReadWrite');" onmouseout="hideClass('xfReadWrite');">
+                     xfReadWrite
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadwrite">
+                        matches a xforms control that is currently writable
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfrequired" onmouseover="showClass('xfRequired');" onmouseout="hideClass('xfRequired');">
+                     xfRequired
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfrequired">
+                        matches a xforms control that is currently required
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfoptional" onmouseover="showClass('xfOptional');" onmouseout="hideClass('xfOptional');">
+                     xfOptional
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfoptional">
+                        matches a xforms control that is currently optional
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfenabled" onmouseover="showClass('xfEnabled');" onmouseout="hideClass('xfEnabled');">
+                     xfEnabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfenabled">
+                        matches a xforms control that is currently relevant (enabled)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfdisabled" onmouseover="showClass('xfDisabled');" onmouseout="hideClass('xfDisabled');">
+                     xfDisabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfdisabled">
+                        matches a xforms control that is currently disabled (can't be visualized here as the control gets hidden)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalid" onmouseover="showClass('xfValid');" onmouseout="hideClass('xfValid');">
+                     xfValid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalid">
+                        matches a xforms control that is currently valid
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfinvalid" onmouseover="showClass('xfInvalid');" onmouseout="hideClass('xfInvalid');">
+                     xfInvalid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfinvalid">
+                        matches a xforms control that is currently invalid
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>HTML output control</h1>
+            <div class="description">
+               
+               <p>
+                  This form control renders content based in part on instance
+                  data, but it provides no means for entering or changing data.
+                  
+               </p>
+               
+               <p>
+                  If an
+                  <span class="keyword">output</span>
+                  uses the
+                  <span class="keyword">mediatype</span>
+                  attribute
+                  with a value of
+                  <span class="keyword">text/html</span>
+                  the bound data are rendered as HTML.
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#ui-output" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#elems-form-controls" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:output id="output1" ref="output1/value" mediatype="text/html" incremental="true">
+               
+               <xf:label>a label:</xf:label>
+               
+               <xf:hint>a Hint for this control</xf:hint>
+               
+               <xf:help>help for output1</xf:help>
+               
+               <xf:alert>invalid</xf:alert>
+               
+            </xf:output>
+         </div>
+         <div class="MIPS">
+            
+            <xf:group appearance="full">
+               
+               <xf:label></xf:label>
+               
+               <xf:input id="output1-readonly" ref="output1/@readonly" incremental="true">
+                  
+                  <xf:label>readonly</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="output1-required" ref="output1/@required" incremental="true">
+                  
+                  <xf:label>required</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="output1-relevant" ref="output1/@relevant" incremental="true">
+                  
+                  <xf:label>relevant</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="output1-valid" ref="output1/@constraint" incremental="true">
+                  
+                  <xf:label>valid</xf:label>
+                  
+               </xf:input>
+               
+            </xf:group>
+            
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:instance&gt;
+    &lt;data&gt;
+        &lt;output1 constraint="true" readonly="false" required="false" relevant="true"&gt;
+            &lt;value&gt;
+                &lt;b&gt;Providing&lt;/b&gt;
+                &lt;i&gt;basic&lt;/i&gt; HTML &lt;u&gt;formatting&lt;/u&gt;
+                
+            &lt;/value&gt;
+        &lt;/output1&gt;
+    &lt;/data&gt;
+&lt;/xf:instance&gt;
+
+&lt;xf:output id="output1" ref="output1/value" mediatype="text/html" incremental="true"&gt;
+    &lt;xf:label&gt;a label:&lt;/xf:label&gt;
+    &lt;xf:hint&gt;a Hint for this control&lt;/xf:hint&gt;
+    &lt;xf:help&gt;help for output1&lt;/xf:help&gt;
+    &lt;xf:alert&gt;invalid&lt;/xf:alert&gt;
+&lt;/xf:output&gt;
+</code></pre></div>
+         <h2>Notes</h2>
+         <div class="Notes">
+            
+            <p>
+               Though the Model Item Properties
+               <span class="keyword">readonly</span>
+               and
+               <span class="keyword">required</span>
+               are shown in the above example they of course cannot be influenced directly via the
+               <span class="keyword">output</span>
+               control but the same node might be bound by other XForms controls that allow data entry. State
+               changes resulting by entering data through other controls will be reflected by the<span class="keyword">
+                  output</span>.
+               
+            </p>
+            
+            <p>
+               The
+               <span class="keyword">output</span>
+               is the only control that may leave out the
+               <span class="keyword">label</span>
+               child
+               element and can then be used inline with other content in a page.
+               
+            </p>
+            
+         </div>
+         <h2>Limitations</h2>
+         <div class="Limitations">
+            
+            <p>
+               The HTML markup in the bound instance data node must enclosed within a CDATA section. This is not
+               shown in the sample above due to limitations with the syntax highlighting. 
+               
+            </p>
+            
+         </div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

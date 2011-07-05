@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?><html xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
+      
+      <title>XForms switch rendered as tabcontainer</title>
+      <style type="text/css">
+            .caseContent{
+				height:100%;
+			}
+			.caseContent h2{
+				margin:0;
+			}
+			.bfTabContainer{
+				height:300px;
+			}
+        </style>
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></head>
+   
+   <body class="soria InlineAlert" style="margin:30px">
+      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+         <div style="display:none">
+            <xf:model>
+               
+               <xf:instance xmlns="">
+                  
+                  <data>
+                     
+                  </data>
+                  
+               </xf:instance>
+               
+            </xf:model>
+         </div>
+         <div class="CSS">
+            <table>
+               <caption>CSS</caption>
+               <tr>
+                  <th style="font-style:italic;color:#C46B47;">
+                     Hover the classes to see matching element(s) in the example
+                     
+                  </th>
+               </tr>
+               <tr>
+                  <td id="d36e180" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d36e180">matches any Element that represents a XForms
+                        group
+                        |
+                        repeat
+                        |
+                        switch
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d36e198" onmouseover="showClass('xfSwitch');" onmouseout="hideClass('xfSwitch');">xfSwitch
+                     <div dojoType="dijit.Tooltip" connectId="d36e198">matches an Element that represents a XForms
+                        switch
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d36e210" onmouseover="showClass('xfCase');" onmouseout="hideClass('xfCase');">xfCase
+                     <div dojoType="dijit.Tooltip" connectId="d36e210">matches an Element that represents a XForms
+                        case
+                        element
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="d36e222" onmouseover="showClass('bfTabContainer');" onmouseout="hideClass('bfTabContainer');">bfTabContainer
+                     <div dojoType="dijit.Tooltip" connectId="d36e222">matches an Element that represents a XForms
+                        switch
+                        element and is rendered as a Dojo TabContainer
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfcontrol" onmouseover="showClass('xfControl');" onmouseout="hideClass('xfControl');">xfControl
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfcontrol">
+                        matches an Element that represents a XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xflabel" onmouseover="showClass('xfLabel');" onmouseout="hideClass('xfLabel');">xfLabel
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xflabel">
+                        matches the label part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalue" onmouseover="showClass('xfValue');" onmouseout="hideClass('xfValue');">xfValue
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalue">
+                        matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+            </table>
+         </div>
+         <div class="pageintro">
+            <h1>XForms switch rendered as tabcontainer</h1>
+            <div class="description">
+               
+               <p>
+                  A switch Element with
+                  <span class="keyword">appearance</span>
+                  attribute set to 'dijit.TabContainer'
+                  will be rendered as a tabbed panel which can be toggled by clicking a card or by navigating the cards
+                  with the
+                  keyboard.
+                  
+               </p>
+               
+               <p>
+                  As the author might need other actions besides simply activating another case ( to e.g. prepare
+                  data for the new view) we need a explicit trigger that toggles the wanted case. On the other
+                  hand when the user clicks a tab we have to let the processor know which trigger has to run
+                  for the switching.
+                  
+               </p>
+               
+               <p>
+                  To allow mapping from active case to the trigger that performs the switch
+                  you have to follow a convention to achieve the mapping:
+                  
+                  <ol>
+                     
+                     <li>write one trigger for each case</li>
+                     
+                     <li>give the trigger an id of 't-' + CASE_ID where CASE_ID
+                        references the respective case you want to activate
+                     </li>
+                     
+                     <li>put all triggers inside a div which you hide
+                        from display with a style="display:none;"
+                     </li>
+                     
+                     <li>write your switch as normal and give it an
+                        <span class="keyword">appearance</span>
+                        of 'dijit.TabContainer.
+                     </li>
+                     
+                  </ol>
+                  
+               </p>
+               
+            </div>
+            <table id="references">
+               <tr>
+                  <td rowspan="3"><a href="http://www.w3c.org" class="link" id="linkLogo" style="margin-right:25px;" target="_blank"><img id="logo" class="image" src="images/w3c_home_nb.png" alt="W3C" /></a></td>
+                  <td style="color:#005A9C; font-size:16px;">XForms 1.1 Links</td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/specs/XForms1.1/index-all.html#ui-switch" target="_blank">
+                        Recommendation
+                        </a></td>
+               </tr>
+               <tr>
+                  <td><a style="color:#005A9C;" href="http://www.w3.org/MarkUp/Forms/2010/xforms11-qr.html#Switch" target="_blank">
+                        Quick Reference
+                        </a></td>
+               </tr>
+            </table>
+         </div>
+         <h2>Example</h2>
+         <div class="Section sample">
+            <xf:group>
+               
+               <xf:label>Switch / Case</xf:label>
+               
+               <div style="display:none;">
+                  
+                  <xf:trigger id="t-case1">
+                     
+                     <xf:label>Case 1</xf:label>
+                     
+                     <xf:toggle case="case1"></xf:toggle>
+                     
+                  </xf:trigger>
+                  
+                  <xf:trigger id="t-case2">
+                     
+                     <xf:label>Case 2</xf:label>
+                     
+                     <xf:toggle case="case2"></xf:toggle>
+                     
+                  </xf:trigger>
+                  
+                  <xf:trigger id="t-case3">
+                     
+                     <xf:label>Case 3</xf:label>
+                     
+                     <xf:toggle case="case3"></xf:toggle>
+                     
+                  </xf:trigger>
+                  
+                  <xf:trigger id="t-case4">
+                     
+                     <xf:label>Case 4</xf:label>
+                     
+                     <xf:toggle case="case4"></xf:toggle>
+                     
+                  </xf:trigger>
+                  
+               </div>
+               
+               <xf:switch id="switch1" appearance="dijit:TabContainer">
+                  
+                  <xf:case id="case1" selected="true">
+                     
+                     <xf:label>Case 1</xf:label>
+                     
+                     <div class="caseContent" style="background:#bbbbff">
+                        
+                        <h2>CASE 1</h2>
+                        
+                        <p>This is some content for the first case</p>
+                        
+                     </div>
+                     
+                  </xf:case>
+                  
+                  <xf:case id="case2">
+                     
+                     <xf:label>Case 2</xf:label>
+                     
+                     <div class="caseContent" style="background:#ccccff">
+                        
+                        <h2>CASE 2</h2>
+                        
+                        <p>This is some content for the second case</p>
+                        
+                     </div>
+                     
+                  </xf:case>
+                  
+                  <xf:case id="case3">
+                     
+                     <xf:label>Case 3</xf:label>
+                     
+                     <div class="caseContent" style="background:#ddddff">
+                        
+                        <h2>CASE 3</h2>
+                        
+                        <p>This is some content for the third case</p>
+                        
+                     </div>
+                     
+                  </xf:case>
+                  
+                  <xf:case id="case4">
+                     
+                     <xf:label>Case 4</xf:label>
+                     
+                     <div class="caseContent" style="background:#eeeeff">
+                        
+                        <h2>CASE 4</h2>
+                        
+                        <p>This is some content for the fourth case</p>                
+                        
+                     </div>
+                     
+                  </xf:case>
+                  
+               </xf:switch>
+               
+            </xf:group>
+         </div>
+         <h2>XForms Markup</h2>
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:group&gt;
+    &lt;xf:label&gt;Switch / Case&lt;/xf:label&gt;
+    &lt;div style="display:none;"&gt;
+        &lt;xf:trigger id="t-case1"&gt;
+            &lt;xf:label&gt;Case 1&lt;/xf:label&gt;
+            &lt;xf:toggle case="case1"&gt;&lt;/xf:toggle&gt;
+        &lt;/xf:trigger&gt;
+        &lt;xf:trigger id="t-case2"&gt;
+            &lt;xf:label&gt;Case 2&lt;/xf:label&gt;
+            &lt;xf:toggle case="case2"&gt;&lt;/xf:toggle&gt;
+        &lt;/xf:trigger&gt;
+        &lt;xf:trigger id="t-case3"&gt;
+            &lt;xf:label&gt;Case 3&lt;/xf:label&gt;
+            &lt;xf:toggle case="case3"&gt;&lt;/xf:toggle&gt;
+        &lt;/xf:trigger&gt;
+        &lt;xf:trigger id="t-case4"&gt;
+            &lt;xf:label&gt;Case 4&lt;/xf:label&gt;
+            &lt;xf:toggle case="case4"&gt;&lt;/xf:toggle&gt;
+        &lt;/xf:trigger&gt;
+    &lt;/div&gt;
+    &lt;xf:switch id="switch1" appearance="dijit:TabContainer"&gt;
+        &lt;xf:case id="case1" selected="true"&gt;
+            &lt;xf:label&gt;Case 1&lt;/xf:label&gt;
+            &lt;div class="caseContent" style="background:#bbbbff"&gt;
+                &lt;h2&gt;CASE 1&lt;/h2&gt;
+                &lt;p&gt;This is some content for the first case&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/xf:case&gt;
+        &lt;xf:case id="case2"&gt;
+            &lt;xf:label&gt;Case 2&lt;/xf:label&gt;
+            &lt;div class="caseContent" style="background:#ccccff"&gt;
+                &lt;h2&gt;CASE 2&lt;/h2&gt;
+                &lt;p&gt;This is some content for the second case&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/xf:case&gt;
+        &lt;xf:case id="case3"&gt;
+            &lt;xf:label&gt;Case 3&lt;/xf:label&gt;
+            &lt;div class="caseContent" style="background:#ddddff"&gt;
+                &lt;h2&gt;CASE 3&lt;/h2&gt;
+                &lt;p&gt;This is some content for the third case&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/xf:case&gt;
+        &lt;xf:case id="case4"&gt;
+            &lt;xf:label&gt;Case 4&lt;/xf:label&gt;
+            &lt;div class="caseContent" style="background:#eeeeff"&gt;
+                &lt;h2&gt;CASE 4&lt;/h2&gt;
+                &lt;p&gt;This is some content for the fourth case&lt;/p&gt;                
+            &lt;/div&gt;
+        &lt;/xf:case&gt;
+    &lt;/xf:switch&gt;
+&lt;/xf:group&gt;
+</code></pre></div>
+         <h2>Notes</h2>
+         <div class="Notes">
+            'bfTabContainer' class sets a fixed width in betterform.css. I you like to change the size you should
+            overwrite this rule. E.g. the example above sets a height of 300px.
+            
+         </div><script type="text/javascript">
+                    function showClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.addClass(item,'showClass');
+                        });
+                    }
+                    function hideClass(cssClass){
+                        dojo.query('.sample .'+ cssClass).forEach(function(item){
+                            dojo.removeClass(item,'showClass');
+                        });
+                    }                    
+                </script></div>
+   </body>
+   
+</html>

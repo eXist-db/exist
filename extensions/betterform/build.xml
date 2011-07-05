@@ -25,10 +25,6 @@
     <property name="betterform.lib" value="${betterform.home}/src/main/lib"/>
     <property name="betterform.webapp" value="${betterform.home}/src/main/webapp"/>
 
-    <!--todo:move property to build.properties.xml-->
-    <property name="bf.release.name" value="betterform-3.2.0"/>
-
-
     <macrodef name="xslt-saxon">
         <attribute name="in"/>
         <attribute name="out"/>
@@ -75,8 +71,8 @@
             Uninstalling betterFORM.
         </echo>
 
-
         <delete dir="${exist.rootdir}/webapp/betterform"/>
+        <delete file="${exist.rootdir}/webapp/dashboard.html" failonerror="false"/>
 
         <!--delete files from WEB-INF-->
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
@@ -97,10 +93,10 @@
     </target>
 
     <target name="deployBFResources">
-
         <echo>
             Creating uninstall folder.
         </echo>
+
         <mkdir dir="${betterform.home}/uninstall"/>
 
         <echo>
@@ -111,11 +107,15 @@
         <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
 
         <echo>
-            Copying betterFORM error page to webapp.
+            Copying betterFORM error page and dashboard to webapp.
         </echo>
-        <copy todir="${exist.rootdir}/webapp/betterform/xquery">
-            <fileset file="${betterform.webapp}/xquery/xferror.xql"/>
+         <copy todir="${exist.rootdir}/webapp/">
+            <fileset file="${betterform.webapp}/dashboard.html"/>
         </copy>
+        <copy todir="${exist.rootdir}/webapp/betterform/xquery">
+            <fileset dir="${betterform.webapp}/xquery"/>
+        </copy>
+
     </target>
 
 </project>
