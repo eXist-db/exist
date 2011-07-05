@@ -58,4 +58,9 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	public boolean isAuthenticated() {
 		return (letterOfCredit != null);
 	}
+
+	@Override
+	public boolean isExternallyAuthenticated() {
+		return !(letterOfCredit instanceof SecurityManagerImpl);
+	}
 }

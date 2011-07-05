@@ -17,9 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
+ *  $Id: XMLDBIsAuthenticated.java 13941 2011-03-08 17:25:09Z shabanovd $
  */
-package org.exist.xquery.functions.xmldb;
+package org.exist.xquery.functions.securitymanager;
 
 import org.apache.log4j.Logger;
 
@@ -38,21 +38,19 @@ import org.exist.xquery.value.Type;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@Deprecated
-public class XMLDBIsAuthenticated extends BasicFunction
+public class IsExternallyAuthenticated extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(XMLDBIsAuthenticated.class);
+	protected static final Logger logger = Logger.getLogger(IsExternallyAuthenticated.class);
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("is-authenticated", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the true() if current user from the xquery context is authenticated, false() otherwise.",
+			new QName("is-externally-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
+			"Returns the true() if current account is authenticated by external user, false() otherwise.",
 			null,
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise"),
-			"Use sm.is-externally-authenticated() function."
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
 		);
 	
-	public XMLDBIsAuthenticated(XQueryContext context, FunctionSignature signature) {
+	public IsExternallyAuthenticated(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
