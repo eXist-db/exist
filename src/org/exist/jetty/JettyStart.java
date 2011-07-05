@@ -239,7 +239,7 @@ public class JettyStart implements LifeCycle.Listener {
             	if (oauth != null)
             		if (handler instanceof ServletContextHandler) {
             			ServletContextHandler contextHandler = (ServletContextHandler) handler;
-            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)openid), "/oauth");
+            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)oauth), "/oauth/*");
 
             			String suffix;
             			if (contextHandler.getContextPath().endsWith("/"))
