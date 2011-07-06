@@ -23,6 +23,11 @@
 // main entry point
 $(document).ready(function() {
 	eXide.app.init();
+	
+	if (/^\?open=/.test(window.location.search)) {
+		$.log("parameters: %s", window.location.search);
+		eXide.app.findDocument(window.location.search.substring(6));
+	}
 });
 
 eXide.namespace("eXide.app");
