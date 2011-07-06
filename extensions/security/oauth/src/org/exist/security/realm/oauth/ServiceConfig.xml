@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class name="com.neurologic.oauth.config.ServiceConfig">
+	<callMethod name="setPath" attribute="path"/>
+	<callMethod name="setServiceClass" attribute="class"/>
+	<callMethod name="setRefOAuth" attribute="server"/>
+
+	<callMethod name="setSuccessConfig" element="success">
+		<class name="com.neurologic.oauth.config.SuccessConfig">
+			<callMethod name="setPath" attribute="path"/>
+		</class>
+	</callMethod>
+</class>

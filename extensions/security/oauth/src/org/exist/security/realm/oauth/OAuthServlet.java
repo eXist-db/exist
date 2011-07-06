@@ -22,12 +22,17 @@
 package org.exist.security.realm.oauth;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.oauth.enums.ResponseType;
+import net.oauth.exception.OAuthException;
 
 import com.neurologic.oauth.config.ConsumerConfig;
 import com.neurologic.oauth.config.OAuthConfig;
@@ -36,6 +41,7 @@ import com.neurologic.oauth.config.ServiceConfig;
 import com.neurologic.oauth.config.SuccessConfig;
 import com.neurologic.oauth.service.OAuthService;
 import com.neurologic.oauth.service.factory.OAuthServiceAbstractFactory;
+import com.neurologic.oauth.service.impl.OAuth2Service;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -66,6 +72,12 @@ public class OAuthServlet extends HttpServlet {
     
     private void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String path = request.getPathInfo();
+    	System.out.println("the " + request.getMethod() + " method, path info "+path);
+    	Map params = request.getParameterMap();
+    	for (Object key : request.getParameterMap().keySet()) {
+    		System.out.println(""+key+" = "+Arrays.toString((Object[])params.get(key)));
+    		
+    	}
         if (OAuthRealm.LOG.isTraceEnabled()) {
         	OAuthRealm.LOG.trace("the " + request.getMethod() + " method, path info "+path);
         }
@@ -92,6 +104,19 @@ public class OAuthServlet extends HttpServlet {
 	            throw new Exception("No <consumer> defined under <oauth>. Cannot create OAuth Consumer.");
 	        
 	        OAuthService service = OAuthServiceAbstractFactory.getOAuthServiceFactory(oauthConfig.getVersion()).createOAuthService(clazz, providerConfig, consumerConfig);
+
+			if (request.getParameterMap().containsKey("auth")) {
+            	if (service instanceof OAuth2Service) {
+            		OAuth2Service s2 = (OAuth2Service)service; 
+					response.sendRedirect(
+							s2.getConsumer().generateRequestAuthorizationUrl(
+							ResponseType.CODE, s2.getRedirectUri(), null, (String[])null)
+					);
+					return;
+				} else
+					throw new OAuthException("unsuppored OAuth service "+service);
+			}
+				
 	        service.execute(request, response);
 	        
 	        //Finally
@@ -104,7 +129,7 @@ public class OAuthServlet extends HttpServlet {
 	            dispatcher.forward(request, response);
 	        }
         } catch (Exception e) {
-			throw new ServletException();
+			throw new ServletException(e.getMessage(), e);
 		}
     }
 }

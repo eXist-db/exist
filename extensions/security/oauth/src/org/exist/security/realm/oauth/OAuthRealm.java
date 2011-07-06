@@ -29,10 +29,8 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
-import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.config.Configurator;
+import org.exist.config.annotation.*;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
@@ -54,9 +52,9 @@ public class OAuthRealm extends AbstractRealm {
     protected final static Logger LOG = Logger.getLogger(OAuthRealm.class);
     
     protected static OAuthRealm _ = null;
-
+    
     @ConfigurationFieldAsAttribute("id")
-    public static String ID = "OAuth";
+    public final static String ID = "OAuth";
 
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
@@ -64,6 +62,8 @@ public class OAuthRealm extends AbstractRealm {
     public OAuthRealm(SecurityManagerImpl sm, Configuration config) {
         super(sm, config);
         _ = this;
+        
+		configuration = Configurator.configure(this, config);
     }
 
 	@Override
@@ -121,16 +121,53 @@ public class OAuthRealm extends AbstractRealm {
 
 	//OAuth servlet's methods
 	
+	/*
+	 * <server name="twitter" oauth-version="1">
+	 *  <consumer key="TWITTER_KEY" secret="TWITTER_SECRET" />
+	 *  <provider 
+	 *    requestTokenUrl="https://api.twitter.com/oauth/request_token" 
+	 *    authorizationUrl="https://api.twitter.com/oauth/authorize" 
+	 *    accessTokenUrl="https://api.twitter.com/oauth/access_token" />
+	 * 
+	 * </server>
+	 * 
+	 * <server name="facebook" oauth-version="2">
+	 *  <consumer key="APP_ID" secret="APP_SECRET" />
+	 *  <provider 
+	 *    authorizationUrl="https://graph.facebook.com/oauth/authorize" 
+	 *    accessTokenUrl="https://graph.facebook.com/oauth/access_token" />
+	 * </server>
+	 */
 	@ConfigurationFieldAsElement("server")
+	@NewClass(
+		name = "com.neurologic.oauth.config.OAuthConfig",
+		mapper = "org/exist/security/realm/oauth/OAuthConfig.xml")
 	private List<OAuthConfig> oauthConfigList = new ArrayList<OAuthConfig>();
 	
+	/*
+	 * <service 
+	 *   path="/request_token_ready" 
+	 *   class="org.exist.security.realm.oauth.TwitterOAuthService" 
+	 *   server="twitter">
+	 *  
+	 *  <success path="/start.htm" />
+	 * 
+	 * </service>
+	 * 
+	 * <service path="/oauth_redirect" class="com.neurologic.example.FacebookOAuthService" server="facebook">
+	 *  <success path="/start.htm" />
+	 * </service>
+	 */
 	@ConfigurationFieldAsElement("service")
+	@NewClass(
+		name = "com.neurologic.oauth.config.ServiceConfig", 
+		mapper = "org/exist/security/realm/oauth/ServiceConfig.xml")
     private List<ServiceConfig> serviceConfigList = new ArrayList<ServiceConfig>();
 
 	public ServiceConfig getServiceConfigByPath(String path) throws Exception {
         for (ServiceConfig service : serviceConfigList) {
             if (path.equals(service.getPath())) {
-                    return service;
+                return service;
             }
         }
     
