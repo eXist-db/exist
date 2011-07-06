@@ -352,7 +352,9 @@ public class Configurator {
                             Object obj = iterator.next();
                             Configuration current_conf = null;
                             if (!(obj instanceof Configurable)) {
-                            	current_conf = org.exist.config.mapper.Constructor.getConfiguration(obj);
+                                iterator.remove();
+                                continue;
+                            	//current_conf = org.exist.config.mapper.Constructor.getConfiguration(obj);
 							} else {
 	                            current_conf = ((Configurable) obj).getConfiguration();
 							}
@@ -430,7 +432,8 @@ public class Configurator {
                             	NewClass newClass = getAnnotation(field, NewClass.class);
                                 if (newClass != null) {
                                 	Object obj = org.exist.config.mapper.Constructor.load(newClass, instance, conf);
-                                	list.add(obj);
+                                	if (obj != null)
+                                		list.add(obj);
                                 } else
                                 	LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation ["+conf.getName()+"], skip instance creation.");
                             	
