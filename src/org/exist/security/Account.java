@@ -169,9 +169,9 @@ public interface Account extends Principal, User {
     public void assertCanModifyAccount(Account user) throws PermissionDeniedException;
 
     
-    public void setMetadataValue(AXSchemaType axSchemaType, String value);
+    public void setMetadataValue(SchemaType schemaType, String value);
 
-    public String getMetadataValue(AXSchemaType axSchemaType);
+    public String getMetadataValue(SchemaType schemaType);
 
-    public Set<AXSchemaType> getMetadataKeys();
+    public Set<SchemaType> getMetadataKeys();
 }
