@@ -298,20 +298,23 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     }
 
     @Override
-    public String getMetadataValue(AXSchemaType axSchemaType) {
-        return metadata.get(axSchemaType.getNamespace());
+    public String getMetadataValue(SchemaType schemaType) {
+        return metadata.get(schemaType.getNamespace());
     }
 
     @Override
-    public void setMetadataValue(AXSchemaType axSchemaType, String value) {
-        metadata.put(axSchemaType.getNamespace(), value);
+    public void setMetadataValue(SchemaType schemaType, String value) {
+        metadata.put(schemaType.getNamespace(), value);
     }
 
     @Override
-    public Set<AXSchemaType> getMetadataKeys() {
-        Set<AXSchemaType> metadataKeys = new HashSet<AXSchemaType>();
+    public Set<SchemaType> getMetadataKeys() {
+        Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
         for(String key : metadata.keySet()) {
-            metadataKeys.add(AXSchemaType.valueOfNamespace(key));
+        	//XXX: other types?
+        	AXSchemaType axKey = AXSchemaType.valueOfNamespace(key);
+        	if (axKey != null)
+        		metadataKeys.add(axKey);
         }
         return metadataKeys;
     }

@@ -25,6 +25,7 @@ import java.util.Set;
 import org.exist.dom.QName;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
+import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -117,10 +118,10 @@ public class GetAccountMetadataFunction extends BasicFunction {
     private Sequence getAccountMetadataKeys(DBBroker broker, Subject currentUser, String username) throws XPathException {
         SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         Account account = securityManager.getAccount(currentUser, username);
-        Set<AXSchemaType> metadataKeys = account.getMetadataKeys();
+        Set<SchemaType> metadataKeys = account.getMetadataKeys();
         Sequence seq = new ValueSequence(metadataKeys.size());
-        for(AXSchemaType axSchemaType : metadataKeys) {
-            seq.add(new AnyURIValue(axSchemaType.getNamespace()));
+        for(SchemaType schemaType : metadataKeys) {
+            seq.add(new AnyURIValue(schemaType.getNamespace()));
         }
 
         return seq;

@@ -21,7 +21,6 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.exist.security.AXSchemaType;
 import org.exist.security.Group;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
@@ -207,22 +207,22 @@ public class UserAider implements Account {
 		return null;
 	}
 
-	private Map<AXSchemaType, String> metadata = new EnumMap<AXSchemaType, String>(AXSchemaType.class);
+	private Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
 
 	@Override
-        public String getMetadataValue(AXSchemaType axSchemaType) {
-            return metadata.get(axSchemaType);
-        }
+    public String getMetadataValue(SchemaType schemaType) {
+        return metadata.get(schemaType);
+    }
 
-        @Override
-        public void setMetadataValue(AXSchemaType axSchemaType, String value) {
-            metadata.put(axSchemaType, value);
-        }
+    @Override
+    public void setMetadataValue(SchemaType schemaType, String value) {
+        metadata.put((AXSchemaType) schemaType, value);
+    }
 
-        @Override
-        public Set<AXSchemaType> getMetadataKeys() {
-            return metadata.keySet();
-        }
+    @Override
+    public Set<SchemaType> getMetadataKeys() {
+        return metadata.keySet();
+    }
 
 	@Override
 	public Group getDefaultGroup() {

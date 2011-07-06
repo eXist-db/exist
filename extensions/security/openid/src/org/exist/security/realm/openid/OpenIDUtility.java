@@ -24,6 +24,7 @@ package org.exist.security.realm.openid;
 import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.SchemaType;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -70,7 +71,7 @@ public class OpenIDUtility {
         }
 
         String userInfo = "registerUser: [" + principal.getMetadataValue(AXSchemaType.ALIAS_USERNAME) + ", ";
-        for(AXSchemaType metadataKey : principal.getMetadataKeys()) {
+        for(SchemaType metadataKey : principal.getMetadataKeys()) {
             userInfo += metadataKey.getNamespace() +"(" + principal.getMetadataValue(metadataKey) + "), ";
         }
         userInfo += "]";

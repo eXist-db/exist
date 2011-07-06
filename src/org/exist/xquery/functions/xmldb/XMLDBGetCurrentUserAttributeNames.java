@@ -27,7 +27,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.Set;
-import org.exist.security.AXSchemaType;
+import org.exist.security.SchemaType;
 
 /**
  * Created by IntelliJ IDEA.
@@ -55,10 +55,9 @@ public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
 
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
     {
-        Set<AXSchemaType> values = context.getSubject().getMetadataKeys();
+        Set<SchemaType> values = context.getSubject().getMetadataKeys();
         Sequence retval = new ValueSequence();
-        for (AXSchemaType value : values)
-        {
+        for (SchemaType value : values) {
             retval.add(new StringValue(value.getNamespace()));
         }
         return retval;

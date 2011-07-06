@@ -33,6 +33,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.Group;
 import org.exist.security.MessageDigester;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.Account;
@@ -48,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
-import org.exist.security.AXSchemaType;
 
 /**
  * Represents a user within the database.
@@ -190,7 +190,7 @@ public class AccountImpl extends AbstractAccount {
         home = from_user.getHome();
 
         //copy metadata
-        for(AXSchemaType metadataKey : from_user.getMetadataKeys()) {
+        for(SchemaType metadataKey : from_user.getMetadataKeys()) {
             String metadataValue = from_user.getMetadataValue(metadataKey);
             setMetadataValue(metadataKey, metadataValue);
         }
@@ -228,7 +228,7 @@ public class AccountImpl extends AbstractAccount {
         home = from_user.home;
 
         //copy metadata
-        for(AXSchemaType metadataKey : from_user.getMetadataKeys()) {
+        for(SchemaType metadataKey : from_user.getMetadataKeys()) {
             String metadataValue = from_user.getMetadataValue(metadataKey);
             setMetadataValue(metadataKey, metadataValue);
         }

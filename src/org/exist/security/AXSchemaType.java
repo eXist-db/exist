@@ -25,7 +25,7 @@ package org.exist.security;
  *
  * @author aretter
  */
-public enum AXSchemaType {
+public enum AXSchemaType implements SchemaType {
 
     ALIAS_USERNAME("http://axschema.org/namePerson/friendly", "Alias"),
     FIRSTNAME("http://axschema.org/namePerson/first", "FirstName"),

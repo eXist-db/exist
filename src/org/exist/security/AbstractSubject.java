@@ -249,30 +249,28 @@ public abstract class AbstractSubject implements Subject {
 	}
 
 
-        @Override
-        public void save() throws PermissionDeniedException {
-            //do nothing
-        }
+    @Override
+    public void save() throws PermissionDeniedException {
+        //do nothing
+    }
 
-        @Override
-        public String getMetadataValue(AXSchemaType axSchemaType) {
-            return account.getMetadataValue(axSchemaType);
-        }
+    @Override
+    public String getMetadataValue(SchemaType schemaType) {
+        return account.getMetadataValue(schemaType);
+    }
 
-        @Override
-        public void setMetadataValue(AXSchemaType axSchemaType, String value) {
-            account.setMetadataValue(axSchemaType, value);
-        }
+    @Override
+    public void setMetadataValue(SchemaType schemaType, String value) {
+        account.setMetadataValue(schemaType, value);
+    }
 
-        @Override
-        public Set<AXSchemaType> getMetadataKeys() {
-            return account.getMetadataKeys();
-        }
+    @Override
+    public Set<SchemaType> getMetadataKeys() {
+        return account.getMetadataKeys();
+    }
 
     @Override
     public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
         account.assertCanModifyAccount(user);
     }
-
-
 }
