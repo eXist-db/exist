@@ -202,7 +202,8 @@ eXide.browse.ResourceBrowser = (function () {
 			var cell = $this.grid.getCellFromEvent(e);
 			if ($this.data[cell.row].isCollection) {
 				// navigate to new collection
-				$this.$triggerEvent("activateCollection", [ $this.data[cell.row] ]);
+				var childColl = $this.collection + "/" + $this.data[cell.row].name;
+				$this.$triggerEvent("activateCollection", [ childColl ]);
 			}
 		});
 		this.grid.onKeyDown.subscribe(function (e) {
@@ -440,7 +441,7 @@ eXide.browse.Browser = (function () {
 		toolbar.append(button);
 		
 		this.btnDeleteCollection = document.createElement("button");
-		this.btnDeleteCollection.title = "Delete Collection or Resource";
+		this.btnDeleteCollection.title = "Delete Collection";
 		this.btnDeleteCollection.id = "eXide-browse-toolbar-delete-collection";
 		this.btnDeleteCollection.tabindex = 2;
 		img = document.createElement("img");
@@ -448,10 +449,7 @@ eXide.browse.Browser = (function () {
 		this.btnDeleteCollection.appendChild(img);
 		$(this.btnDeleteCollection).click(function (ev) {
 			ev.preventDefault();
-			if ($this.resources.hasSelection())
-				$this.resources.deleteResource();
-			else
-				$this.collections.deleteCollection();
+			$this.collections.deleteCollection();
 		});
 		toolbar.append(this.btnDeleteCollection);
 		
@@ -481,6 +479,18 @@ eXide.browse.Browser = (function () {
 			$(".eXide-browse-upload", container).show();
 		});
 		toolbar.append(this.btnUpload);
+		
+		this.btnDeleteResource = document.createElement("button");
+		this.btnDeleteResource.title = "Delete Resource";
+		this.btnDeleteResource.id = "eXide-browse-toolbar-delete-resource";
+		img = document.createElement("img");
+		img.src = "images/page_delete.png";
+		this.btnDeleteResource.appendChild(img);
+		$(this.btnDeleteResource).click(function (ev) {
+			ev.preventDefault();
+			$this.resources.deleteResource();
+		});
+		toolbar.append(this.btnDeleteResource);
 		
 		button = document.createElement("button");
 		button.title = "Open Selected";
@@ -603,10 +613,12 @@ eXide.browse.Browser = (function () {
 				$(this.btnCreateCollection).css("display", "");
 				$(this.btnUpload).css("display", "");
 				$(this.btnDeleteCollection).css("display", "");
+				$(this.btnDeleteResource).css("display", "");
 			} else {
 				$(this.btnCreateCollection).css("display", "none");
 				$(this.btnUpload).css("display", "none");
 				$(this.btnDeleteCollection).css("display", "none");
+				$(this.btnDeleteResource).css("display", "none");
 			}
 				
 			this.resources.update(key, writable);
