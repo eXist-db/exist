@@ -121,110 +121,113 @@ public class LDAPRealm extends AbstractRealm {
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
 
-    private Account createAccountInDatabase(Subject invokingUser, String username, SearchResult ldapUser, String primaryGroupName) throws AuthenticationException {
+    private Account createAccountInDatabase(final Subject invokingUser, final String username, final SearchResult ldapUser, final String primaryGroupName) throws AuthenticationException {
 
-        LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
-        
-        DBBroker broker = null;
+        final LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
 
         try {
-            broker = getDatabase().get(invokingUser);
+            return executeAsSystemUser(invokingUser, new Unit<Account>(){
+                @Override
+                public Account execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+                    //get (or create) the primary group if it doesnt exist
+                    Group primaryGroup = getGroup(invokingUser, primaryGroupName);
 
-            //elevate to system privs
-            broker.setUser(getSecurityManager().getSystemSubject());
+                    //get (or create) member groups
+                    LDAPSearchContext search = ensureContextFactory().getSearch();
+                    String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
+                    List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
 
-            //get (or create) the primary group if it doesnt exist
-            Group primaryGroup = getGroup(invokingUser, primaryGroupName);
-            
-            //get (or create) member groups
-            LDAPSearchContext search = ensureContextFactory().getSearch();
-            String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
-            List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
-            
-            List<Group> memberOf_groups = new ArrayList<Group>();
-            for(String memberOf_groupName : memberOf_groupNames) {
-                memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
-            }
-            
-            //create the user account
-            UserAider userAider = new UserAider(ID, username, primaryGroup);
-            
-            //add the member groups
-            for(Group memberOf_group : memberOf_groups) {
-                userAider.addGroup(memberOf_group);
-            }
-
-            //store any requested metadata
-            for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
-                String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
-                Attributes userAttributes = ldapUser.getAttributes();
-                if(userAttributes != null) {
-                    Attribute userAttribute = userAttributes.get(searchAttribute);
-                    if(userAttribute != null) {
-                        String attributeValue = userAttribute.get().toString();
-                        userAider.setMetadataValue(axSchemaType, attributeValue);
+                    List<Group> memberOf_groups = new ArrayList<Group>();
+                    for(String memberOf_groupName : memberOf_groupNames) {
+                        memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
                     }
-                }
-            }
 
-            Account account = getSecurityManager().addAccount(userAider);
+                    //create the user account
+                    UserAider userAider = new UserAider(ID, username, primaryGroup);
 
-            //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
+                    //add the member groups
+                    for(Group memberOf_group : memberOf_groups) {
+                        userAider.addGroup(memberOf_group);
+                    }
 
-            //TODO expand to a general method that rewrites the useraider based on the realTransformation
-            boolean updatedAccount = false;
-            if(ensureContextFactory().getTransformationContext() != null){
-                List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
-                if(additionalGroupNames != null) {
-                    for(String additionalGroupName : additionalGroupNames) {
-                        Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
-                        if(additionalGroup != null) {
-                            account.addGroup(additionalGroup);
-                            updatedAccount = true;
+                    //store any requested metadata
+                    for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
+                        String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
+                        Attributes userAttributes = ldapUser.getAttributes();
+                        if(userAttributes != null) {
+                            Attribute userAttribute = userAttributes.get(searchAttribute);
+                            if(userAttribute != null) {
+                                String attributeValue = userAttribute.get().toString();
+                                userAider.setMetadataValue(axSchemaType, attributeValue);
+                            }
                         }
                     }
-                }
-            }
-            if(updatedAccount) {
-                boolean updated = getSecurityManager().updateAccount(invokingUser, account);
-                if(!updated) {
-                    LOG.error("Could not update account");
-                }
-            }
 
-            return account;
+                    Account account = getSecurityManager().addAccount(userAider);
 
+                    //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
+
+                    //TODO expand to a general method that rewrites the useraider based on the realTransformation
+                    boolean updatedAccount = false;
+                    if(ensureContextFactory().getTransformationContext() != null){
+                        List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
+                        if(additionalGroupNames != null) {
+                            for(String additionalGroupName : additionalGroupNames) {
+                                Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
+                                if(additionalGroup != null) {
+                                    account.addGroup(additionalGroup);
+                                    updatedAccount = true;
+                                }
+                            }
+                        }
+                    }
+                    if(updatedAccount) {
+                        boolean updated = getSecurityManager().updateAccount(invokingUser, account);
+                        if(!updated) {
+                            LOG.error("Could not update account");
+                        }
+                    }
+
+                    return account;
+                }
+            });
         } catch(Exception e) {
-            throw new AuthenticationException(
-                    AuthenticationException.UNNOWN_EXCEPTION,
-                    e.getMessage(), e);
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
+        }
+    }
+
+    private interface Unit<R> {
+        public R execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException;
+    }
+    
+    private <R> R executeAsSystemUser(Subject invokingUser, Unit<R> unit) throws EXistException, PermissionDeniedException, NamingException {
+        
+        DBBroker broker = null;
+        Subject currentSubject = getDatabase().getSubject();
+        try {
+            //elevate to system privs
+            broker = getDatabase().get(getSecurityManager().getSystemSubject());
+                    
+            return unit.execute(invokingUser, broker);
         } finally {
             if(broker != null) {
-                broker.setUser(invokingUser);
+                broker.setSubject(currentSubject);
                 getDatabase().release(broker);
             }
         }
     }
-
-    private Group createGroupInDatabase(Subject invokingUser, String groupname) throws AuthenticationException {
-        DBBroker broker = null;
+    
+    private Group createGroupInDatabase(Subject invokingUser, final String groupname) throws AuthenticationException {
         try {
-            broker = getDatabase().get(invokingUser);
-
-            //elevate to system privs
-            broker.setUser(getSecurityManager().getSystemSubject());
-
-            //return sm.addGroup(instantiateGroup(this, groupname));
-            return getSecurityManager().addGroup(new GroupAider(ID, groupname));
+            return executeAsSystemUser(invokingUser, new Unit<Group>(){
+                @Override
+                public Group execute(Subject invokingUser, DBBroker broker) throws PermissionDeniedException, EXistException {
+                    //return sm.addGroup(instantiateGroup(this, groupname));
+                    return getSecurityManager().addGroup(new GroupAider(ID, groupname));
+                }
+            });
         } catch(Exception e) {
-            throw new AuthenticationException(
-                    AuthenticationException.UNNOWN_EXCEPTION,
-                    e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                broker.setUser(invokingUser);
-                getDatabase().release(broker);
-            }
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
         }
     }
 
