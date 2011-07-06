@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class name="com.neurologic.oauth.config.OAuthConfig">
+	<callMethod name="setName" attribute="name"/>
+	<callMethod name="setVersion" attribute="oauth-version"/>
+
+	<callMethod name="setConsumer" element="consumer">
+		<class name="com.neurologic.oauth.config.ConsumerConfig">
+			<callMethod name="setKey" attribute="key"/>
+			<callMethod name="setSecret" attribute="secret"/>
+		</class>
+	</callMethod>
+
+	<callMethod name="setProvider" element="provider">
+		<class name="com.neurologic.oauth.config.ProviderConfig">
+			<callMethod name="setRequestTokenUrl" attribute="requestTokenUrl"/>
+			<callMethod name="setAuthorizationUrl" attribute="authorizationUrl"/>
+			<callMethod name="setAccessTokenUrl" attribute="accessTokenUrl"/>
+		</class>
+	</callMethod>
+</class>
