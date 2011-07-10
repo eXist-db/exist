@@ -127,7 +127,7 @@ public class RealmImpl extends AbstractRealm {
 	}
 
     @Override
-	public synchronized boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+	public synchronized boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 		if(account == null)
 			return false;
 		

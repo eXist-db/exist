@@ -45,4 +45,8 @@ public class PermissionDeniedException extends Exception {
     public PermissionDeniedException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public PermissionDeniedException(Throwable cause) {
+        super(cause);
+    }
 }
