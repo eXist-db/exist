@@ -22,8 +22,6 @@
 package org.exist.security.realm.oauth;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -72,15 +70,9 @@ public class OAuthServlet extends HttpServlet {
     
     private void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String path = request.getPathInfo();
-    	System.out.println("the " + request.getMethod() + " method, path info "+path);
-    	Map params = request.getParameterMap();
-    	for (Object key : request.getParameterMap().keySet()) {
-    		System.out.println(""+key+" = "+Arrays.toString((Object[])params.get(key)));
-    		
-    	}
-        if (OAuthRealm.LOG.isTraceEnabled()) {
+        
+        if (OAuthRealm.LOG.isTraceEnabled())
         	OAuthRealm.LOG.trace("the " + request.getMethod() + " method, path info "+path);
-        }
         
         try {
 	        ServiceConfig serviceConfig = OAuthRealm._.getServiceConfigByPath(path);

@@ -24,15 +24,24 @@ package org.exist.security.realm.oauth;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import org.eclipse.jetty.security.DefaultIdentityService;
+import org.eclipse.jetty.server.Authentication;
+import org.eclipse.jetty.server.UserIdentity;
 import org.exist.security.AXSchemaType;
+import org.exist.security.AbstractAccount;
 import org.exist.security.Account;
 import org.exist.security.SchemaType;
+import org.exist.security.internal.SubjectAccreditedImpl;
+import org.exist.security.realm.openid.SessionAuthentication;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +49,6 @@ import net.oauth.exception.OAuthException;
 import net.oauth.token.v2.AccessToken;
 import net.oauth.util.OAuthUtil;
 
-import com.neurologic.exception.HttpException;
 import com.neurologic.http.HttpClient;
 import com.neurologic.http.impl.ApacheHttpClient;
 import com.neurologic.oauth.service.impl.OAuth2Service;
@@ -90,27 +98,41 @@ public class ServiceFacebook extends OAuth2Service {
 				responseAttributes = OAuthUtil.parseQueryString(response);
 			}
 			
-			for (String key : responseAttributes.keySet()) {
-				System.out.println(" "+key+" = "+responseAttributes.get(key));
-			}
-			
 			String id = responseAttributes.get("id");
 			
-			Account found = null;
+			String accountName = id + "@facebook.com";
 
-			//XXX: use index somehow 
-			for (Account account : OAuthRealm._.getAccounts()) {
-				if (account.getMetadataValue(FBSchemaType.ID).equals(id)) {
-					found = account;
-					break;
-				}
-			}
+			Account found = OAuthRealm._.getAccount(accountName);
 			
 			if (found == null) {
+				Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
+				metadata.put(FBSchemaType.ID, responseAttributes.get("id"));
+				metadata.put(AXSchemaType.FIRSTNAME, responseAttributes.get("first_name"));
+				metadata.put(AXSchemaType.LASTNAME, responseAttributes.get("last_name"));
+				metadata.put(AXSchemaType.FULLNAME, responseAttributes.get("name"));
+				metadata.put(AXSchemaType.TIMEZONE, responseAttributes.get("timezone"));
 				
+				found = OAuthRealm._.createAccountInDatabase(accountName, metadata);
 			}
 			
+			Account principal = new SubjectAccreditedImpl((AbstractAccount) found, accessToken);
+			
+	        HttpSession session = request.getSession(true);
+
+			Subject subject = new Subject();
+
+			//TODO: hardcoded to jetty - rewrite
+			//*******************************************************
+			DefaultIdentityService _identityService = new DefaultIdentityService();
+			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
+            
+			Authentication cached=new SessionAuthentication(session, user);
+            session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
+			//*******************************************************
+			
+			
 		} catch (Exception e) {
+			e.printStackTrace();
 			request.setAttribute("exception", e);
 		}
 		request.getSession().setAttribute(FACEBOOK_ACCESS_TOKEN_SESSION, accessToken);
