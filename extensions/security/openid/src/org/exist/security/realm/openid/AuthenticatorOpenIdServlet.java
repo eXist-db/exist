@@ -376,6 +376,9 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 						}
 					}
 				}
+				//update metadata
+				OpenIDRealm.instance.updateAccount(principal);
+				
                 OpenIDUtility.registerUser(principal);
 				return principal; 
 			}
