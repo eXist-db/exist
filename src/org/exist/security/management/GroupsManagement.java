@@ -35,11 +35,15 @@ public interface GroupsManagement {
 
 	public Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
+	public Group getGroup(String name);
+	@Deprecated //use getGroup(String name)
 	public Group getGroup(Subject invokingUser, String name);
 
 	public boolean hasGroup(Group group);
 	public boolean hasGroup(String name);
 
+	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+	@Deprecated //use updateGroup(Group group)
 	public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;

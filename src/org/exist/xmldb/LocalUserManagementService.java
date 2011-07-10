@@ -634,11 +634,10 @@ public class LocalUserManagementService implements UserManagementService {
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    if(!sm.hasAdminPrivileges(user)) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove users");
-                    }
+                    if(!sm.hasAdminPrivileges(user))
+                    	throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove users");
 	        
-                    sm.deleteAccount(user, u);
+                    sm.deleteAccount(u);
                     
                     return null;
                 }
