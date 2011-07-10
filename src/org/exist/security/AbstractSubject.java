@@ -22,10 +22,8 @@
 package org.exist.security;
 
 import java.util.Set;
-import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.security.realm.Realm;
-import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -35,9 +33,11 @@ import org.exist.xmldb.XmldbURI;
 public abstract class AbstractSubject implements Subject {
 
 	protected final AbstractAccount account;
+	protected final Session session;
 	
 	public AbstractSubject(AbstractAccount account) {
 		this.account = account;
+		this.session = new Session(this);
 	}
 
 	/* (non-Javadoc)
@@ -232,22 +232,14 @@ public abstract class AbstractSubject implements Subject {
 		return account.equals(obj);
 	}
 
-	//session part
-	String sessionId = null;
-	
 	@Override
 	public String getSessionId() {
-		if (sessionId == null) {
-			try {
-				SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
-				sessionId = sm.registerSession(this);
-			} catch (EXistException e) {
-				return null;
-			}
-		}
-		return sessionId;
+		return session.getId();
 	}
 
+	public Session getSession() {
+		return session;
+	}
 
     @Override
     public void save() throws PermissionDeniedException {

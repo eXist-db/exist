@@ -35,4 +35,5 @@ public interface Subject extends Account {
 
 	public String getSessionId();
 
+	public Session getSession();
 }

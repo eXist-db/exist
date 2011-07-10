@@ -73,7 +73,7 @@ public interface SecurityManager extends Configurable {
    <A extends Account> A addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
-   <A extends Account> void deleteAccount(Subject invokingUser, A user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> void deleteAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
@@ -113,7 +113,7 @@ public interface SecurityManager extends Configurable {
    Realm getRealm(String iD);
 
    //session manager part
-   String registerSession(Subject subject);
+   void registerSession(Session session);
    
    Subject getSubjectBySessionId(String sessionid);
 

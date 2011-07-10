@@ -37,19 +37,16 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsAttribute;
-import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.config.annotation.ConfigurationFieldClassMask;
+import org.exist.config.annotation.*;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
+import org.exist.security.Session;
 import org.exist.security.Subject;
 import org.exist.security.Account;
-import org.exist.security.UUIDGenerator;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
@@ -261,11 +258,11 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
 	public synchronized void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
-		deleteAccount(invokingUser, getAccount(invokingUser, name));
+		deleteAccount(getAccount(invokingUser, name));
 	}
 	
     @Override
-    public synchronized <A extends Account> void deleteAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+    public synchronized <A extends Account> void deleteAccount(A account) throws PermissionDeniedException, EXistException {
 
         if(account == null){
             return;
@@ -277,7 +274,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
         Realm registeredRealm = findRealmForRealmId(account.getRealmId());
 
-        registeredRealm.deleteAccount(invokingUser, account);
+        registeredRealm.deleteAccount(account);
     }
 
 	public Account getAccount(String name) {
@@ -346,7 +343,7 @@ public class SecurityManagerImpl implements SecurityManager {
 		Subject currentUser = broker.getSubject();
 		
 		try {
-			broker.setUser(getSystemSubject());
+			broker.setSubject(getSystemSubject());
 			Collection home = broker.getOrCreateCollection(transaction, user.getHome());
 			home.getPermissions().setOwner(user.getName());
 			
@@ -358,14 +355,14 @@ public class SecurityManagerImpl implements SecurityManager {
 			
 			broker.saveCollection(transaction, home);
 		} finally {
-			broker.setUser(currentUser);
+			broker.setSubject(currentUser);
 		}
 	}
 
     @Override
 	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
 		if ("jsessionid".equals(username)) {
-			Subject subject = sessions.get(credentials);
+			Subject subject = sessions.get(credentials).getSubject();
 			
 			if (subject == null)
 				throw new AuthenticationException(
@@ -644,21 +641,16 @@ public class SecurityManagerImpl implements SecurityManager {
 	//Session management part
 	
 	//TODO: validate & remove if session timeout
-	Map<String, Subject> sessions = new HashMap<String, Subject>();
+	Map<String, Session> sessions = new HashMap<String, Session>();
 	
 	@Override
-	public String registerSession(Subject subject) {
-		String sessionId = UUIDGenerator.getUUID();
-		
-		sessions.put(sessionId, subject);
-		
-		return sessionId;
+	public void registerSession(Session session) {
+		sessions.put(session.getId(), session);
 	}
 
 	@Override
 	public Subject getSubjectBySessionId(String sessionid) {
-		//TODO: validate
-		return sessions.get(sessionid);
+		return sessions.get(sessionid).getSubject();
 	}
 
     @Override

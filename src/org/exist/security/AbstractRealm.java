@@ -219,8 +219,14 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public synchronized Account getAccount(Subject invokingUser, String name) {
+	public synchronized Account getAccount(String name) {
 		return usersByName.get(name);
+	}
+
+	@Override
+	@Deprecated
+	public synchronized Account getAccount(Subject invokingUser, String name) {
+		return getAccount(name);
 	}
 
 	@Override
@@ -244,12 +250,18 @@ public abstract class AbstractRealm implements Realm, Configurable {
 		return groupsByName.containsKey(name);
 	}
 
-        @Override
+    @Override
 	public final synchronized boolean hasGroup(Group role) {
 		return groupsByName.containsKey(role.getName());
 	}
 
-        @Override
+    @Override
+	public synchronized Group getGroup(String name) {
+		return groupsByName.get(name);
+	}
+
+    @Override
+    @Deprecated
 	public synchronized Group getGroup(Subject invokingUser, String name) {
 		return groupsByName.get(name);
 	}
@@ -332,6 +344,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
+    public synchronized boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+    	return updateAccount(null, account);
+    }
+
+    @Override
     public synchronized boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
         try {
@@ -374,7 +391,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public synchronized boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
+    public synchronized boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
 
         DBBroker broker = null;
         try {
@@ -383,7 +400,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
             group.assertCanModifyGroup(user);
 
-            Group updatingGroup = getGroup(invokingUser, group.getName());
+            Group updatingGroup = getGroup(group.getName());
             if(updatingGroup == null) {
                 throw new PermissionDeniedException("group " + group.getName() + " does not exist");
             }
@@ -413,7 +430,33 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
+    public synchronized boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
+    	return updateGroup(group);
+    }
+    
+    @Override
     public Group getExternalGroup(Subject invokingUser, String name) {
         return getSecurityManager().getGroup(invokingUser, name);
+    }
+
+    protected interface Unit<R> {
+        public R execute(DBBroker broker) throws EXistException, PermissionDeniedException;
+    }
+    
+    protected <R> R executeAsSystemUser(Unit<R> unit) throws EXistException, PermissionDeniedException {
+        
+        DBBroker broker = null;
+        Subject currentSubject = getDatabase().getSubject();
+        try {
+            //elevate to system privs
+            broker = getDatabase().get(getSecurityManager().getSystemSubject());
+                    
+            return unit.execute(broker);
+        } finally {
+            if(broker != null) {
+                broker.setSubject(currentSubject);
+                getDatabase().release(broker);
+            }
+        }
     }
 }
