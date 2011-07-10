@@ -24,6 +24,8 @@ package org.exist.security.realm.oauth;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -36,8 +38,12 @@ import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.DBBroker;
 
 import com.neurologic.oauth.config.OAuthConfig;
 import com.neurologic.oauth.config.ServiceConfig;
@@ -50,6 +56,7 @@ import com.neurologic.oauth.config.ServiceConfig;
 public class OAuthRealm extends AbstractRealm {
 
     protected final static Logger LOG = Logger.getLogger(OAuthRealm.class);
+    private final static String OAUTH = "OAuth";
     
     protected static OAuthRealm _ = null;
     
@@ -58,8 +65,10 @@ public class OAuthRealm extends AbstractRealm {
 
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
+    
+    private Group primaryGroup = null;
 
-    public OAuthRealm(SecurityManagerImpl sm, Configuration config) {
+    public OAuthRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
         super(sm, config);
         _ = this;
         
@@ -69,6 +78,32 @@ public class OAuthRealm extends AbstractRealm {
 	@Override
 	public String getId() {
 		return ID;
+	}
+	
+	private synchronized Group getPrimaryGroup() throws PermissionDeniedException {
+		if (primaryGroup == null) {
+			primaryGroup = getGroup(OAUTH);
+			if (primaryGroup == null)
+				try {
+					primaryGroup = executeAsSystemUser(new Unit<Group>() {
+						@Override
+						public Group execute(DBBroker broker) throws EXistException, PermissionDeniedException {
+							return addGroup(new GroupAider(ID, OAUTH));
+						}
+					});
+		            
+					if (primaryGroup == null)
+						throw new ConfigurationException("OAuth realm can not create primary group 'OAuth'.");
+					
+				} catch (PermissionDeniedException e) {
+					throw e;
+				} catch (ConfigurationException e) {
+					throw new PermissionDeniedException(e);
+				} catch (EXistException e) {
+					throw new PermissionDeniedException(e);
+				}
+		}
+		return primaryGroup;
 	}
 
 	@Override
@@ -108,7 +143,7 @@ public class OAuthRealm extends AbstractRealm {
 	}
 
 	@Override
-	public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -183,4 +218,28 @@ public class OAuthRealm extends AbstractRealm {
     
         throw new Exception("No <server> defined with name='" + oauthName + "'.");
     }
+	
+    protected Account createAccountInDatabase(final String username, final Map<SchemaType, String> metadata) throws AuthenticationException {
+
+        try {
+            return executeAsSystemUser(new Unit<Account>(){
+                @Override
+                public Account execute(DBBroker broker) throws EXistException, PermissionDeniedException {
+                    //create the user account
+                    UserAider userAider = new UserAider(ID, username, getPrimaryGroup());
+
+                    //store any requested metadata
+                    for(Entry<SchemaType, String> entry : metadata.entrySet())
+                        userAider.setMetadataValue(entry.getKey(), entry.getValue());
+
+                    Account account = getSecurityManager().addAccount(userAider);
+
+                    return account;
+                }
+            });
+        } catch(Exception e) {
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
+        }
+    }
+
 }
