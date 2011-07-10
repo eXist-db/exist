@@ -111,8 +111,19 @@ public class LogFunction extends BasicFunction
 		
 		// add line of the log statement
 		StringBuilder buf = new StringBuilder();
-		buf.append("(Line: ");
+                buf.append("(");
+                
+                if(getSource() != null) {
+                    String srcKey = getSource().getKey();
+                    if(srcKey != null) {
+                        buf.append(srcKey);
+                        buf.append(" ");
+                    }
+                }
+                
+		buf.append("Line: ");
 		buf.append(this.getLine());
+                
 		buf.append(") ");
 		
 		while(i.hasNext()) {
