@@ -216,7 +216,7 @@ public class UserAider implements Account {
 
     @Override
     public void setMetadataValue(SchemaType schemaType, String value) {
-        metadata.put((AXSchemaType) schemaType, value);
+        metadata.put(schemaType, value);
     }
 
     @Override

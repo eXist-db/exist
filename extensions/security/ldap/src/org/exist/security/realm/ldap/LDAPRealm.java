@@ -545,7 +545,7 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
+    public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
         // TODO we dont support writting to LDAP
         return false;
     }

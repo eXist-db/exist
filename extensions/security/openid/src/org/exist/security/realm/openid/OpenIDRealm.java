@@ -102,7 +102,7 @@ public class OpenIDRealm extends AbstractRealm {
 	}
 
 	@Override
-	public boolean deleteAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
 		return false;
 	}
 
