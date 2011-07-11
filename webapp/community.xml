@@ -58,6 +58,10 @@
                             <td class="doclink"><ulink url="http://www.xmlsh.org/ModuleExist">xmlsh - XML Shell</ulink></td>
                             <td>An extension for connecting to exist-db from xmlsh, the command line shell for XML released by David A. Lee.</td>
                         </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="http://montag.sourceforge.net/docs/configuration.html">Montag - Web Services middleware</ulink></td>
+                            <td>Montag aims to provide Web Services for any XML:DB API enabled database, and has support for eXist-db.</td>
+                        </tr>
 
                     </tbody>
                 </tgroup>
