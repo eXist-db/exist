@@ -5,7 +5,9 @@
     <property name="tools" value="./tools"/>
     <property name="scripts" value="./scripts"/>
     <property name="top.dir" value="../.."/>
-
+    <property name="templates.dir" value="./templates"/>
+    <property name="templates.default.dir" value="${templates.dir}/default"/>
+        
     <property name="closure.compiler.url"
         value="http://closure-compiler.googlecode.com/files/compiler-latest.zip"/>
 
@@ -67,5 +69,9 @@
                 <file name="slick.grid.js"/>
             </sources>
         </jscomp>
+    </target>
+    
+    <target name="templates">
+        <zip basedir="${templates.default.dir}" destfile="${templates.dir}/default-0.1.xar"/>
     </target>
 </project>
