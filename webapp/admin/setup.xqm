@@ -221,10 +221,7 @@ declare function setup:importLocal() as element()+
 				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.html","text/html"),
 				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.css","text/css"),
 				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.js","application/x-javascript"),
-				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.jpg","image/jpeg"),
-				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.mp3","audio/mpeg"),
-				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.ogg","audio/ogg")
-
+				setup:store-files("/db/betterform/forms/reference/resources", $betterform-xforms, "reference/resources/*.jpg","image/jpeg")
     )
 };
 
