@@ -40,8 +40,7 @@ eXide.edit.Outline = (function () {
 		editor.addEventListener("close", this, this.clearOutline);
 		
 		// pre-compile regexp needed by this class
-		this.funcRe = /declare\s+function\s+(([^\(]+)\([^\)]*\))/;
-		this.funcDefRe = /declare\s+function\s+[^\(]+\([^\)]*\)/g;
+		this.funcDefRe = /declare\s+function\s+([^\(]+)\(/g;
 		this.varDefRe = /declare\s+variable\s+\$[^\s;]+/gm;
 		this.varRe = /declare\s+variable\s+(\$[^\s;]+)/;
 		this.parseImportRe = /import\s+module\s+namespace\s+[^=]+\s*=\s*["'][^"']+["']\s*at\s+["'][^"']+["']\s*;/g;
@@ -96,16 +95,18 @@ eXide.edit.Outline = (function () {
 		$parseLocalFunctions: function(text, doc) {
 			doc.functions = [];
 			
-			var funcDefs = text.match(this.funcDefRe);
-			if (funcDefs) {
-				for (var i = 0; i < funcDefs.length; i++) {
-					var func = this.funcRe.exec(funcDefs[i]);
-					doc.functions.push({
-						type: TYPE_FUNCTION,
-						name: func[2],
-						signature: func[1]
-					});
+			while (true) {
+				var funcDef = this.funcDefRe.exec(text);
+				if (funcDef == null) {
+					break;
 				}
+				var offset = this.funcDefRe.lastIndex;
+				var end = this.$findMatchingParen(text, offset);
+				doc.functions.push({
+					type: TYPE_FUNCTION,
+					name: funcDef[1],
+					signature: funcDef[1] + "(" + text.substring(offset, end) + ")"
+				});
 			}
 			var varDefs = text.match(this.varDefRe);
 			if (varDefs) {
@@ -117,6 +118,21 @@ eXide.edit.Outline = (function () {
 					});
 				}
 			}
+		},
+		
+		$findMatchingParen: function (text, offset) {
+			var depth = 1;
+			for (var i = offset; i < text.length; i++) {
+				var ch = text.charAt(i);
+				if (ch == ')') {
+					depth -= 1;
+					if (depth == 0)
+						return i;
+				} else if (ch == '(') {
+					depth += 1;
+				}
+			}
+			return -1;
 		},
 		
 		$parseImports: function(code) {

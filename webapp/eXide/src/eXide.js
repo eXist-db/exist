@@ -136,12 +136,13 @@ eXide.app = (function() {
 			$("#open-dialog").dialog("open");
 		},
 
-		openSelectedDocument: function() {
+		openSelectedDocument: function(close) {
 			var resource = dbBrowser.getSelection();
 			if (resource) {
 				eXide.app.$doOpenDocument(resource);
 			}
-			$("#open-dialog").dialog("close");
+			if (close == undefined || close)
+				$("#open-dialog").dialog("close");
 		},
 
 		$doOpenDocument: function(resource, callback) {

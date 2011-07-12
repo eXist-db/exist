@@ -212,11 +212,15 @@ eXide.browse.ResourceBrowser = (function () {
 					e.stopPropagation();
 		            e.preventDefault();
 		            var rows = selectionModel.getSelectedRows();
-					if (rows.length == 1 && $this.data[rows[0]].isCollection) {
-						// navigate to new collection
-						var childColl = $this.collection + "/" + $this.data[rows[0]].name;
-						$this.$triggerEvent("activateCollection", [ childColl ]);
-					}
+		            if (rows.length == 1) {
+						if ($this.data[rows[0]].isCollection) {
+							// navigate to new collection
+							var childColl = $this.collection + "/" + $this.data[rows[0]].name;
+							$this.$triggerEvent("activateCollection", [ childColl ]);
+						} else {
+							eXide.app.openSelectedDocument();
+						}
+		            }
 				} else if (e.which == 8) {
 					var p = $this.collection.lastIndexOf("/");
 					if (p > 0) {
@@ -501,7 +505,7 @@ eXide.browse.Browser = (function () {
 		button.appendChild(img);
 		$(button).click(function (ev) {
 			ev.preventDefault();
-			eXide.app.openSelectedDocument();
+			eXide.app.openSelectedDocument(false);
 		});
 		toolbar.append(button);
 		
