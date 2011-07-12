@@ -175,7 +175,7 @@
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
-    <target name="compile" depends="prepare" description="Compiles the source code">
+    <target name="compile" description="Compiles the source code">
 
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
@@ -384,7 +384,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-betterform, extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-webdav,test-compile"
+    <target name="all" depends="prepare,jar,wrapper,extension-betterform, extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-webdav,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -398,7 +398,7 @@
     <!-- ================================================================== -->
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="javadocs" description="Create javadoc">
+    <target name="javadocs" description="Create javadoc">
         <mkdir dir="${build.src}"/>
 
         <!--delete dir="webapp/api"/>
