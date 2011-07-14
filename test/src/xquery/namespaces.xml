@@ -1,0 +1,64 @@
+<TestSet>
+    <testName>tests for namespaces</testName>
+    <description>
+        <p>tests for namespace inheritance</p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <test output="xml">
+        <task>in-scope namespace should not be inherited across function boundary #1</task>
+        <code><![CDATA[
+declare function local:build-node() {
+    <map>somemap</map>
+};
+
+<div xmlns="http://www.w3.org/1999/xhtml">
+{ local:build-node() }
+</div>
+            ]]></code>
+        <expected>
+            <div xmlns="http://www.w3.org/1999/xhtml">
+                <map xmlns="">somemap</map>
+            </div>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>in-scope namespace should not be inherited across function boundary #2</task>
+        <code><![CDATA[
+declare function local:build-node() {
+    <map>somemap</map>
+};
+
+<div xmlns="http://www.w3.org/1999/xhtml">
+{
+    let $result := local:build-node() return
+        $result
+}
+</div>
+            ]]></code>
+        <expected>
+            <div xmlns="http://www.w3.org/1999/xhtml">
+                <map xmlns="">somemap</map>
+            </div>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>in-scope namespace should not be inherited across function boundary #3</task>
+        <code><![CDATA[
+declare function local:build-node() {
+    <map>somemap</map>
+};
+
+let $result := local:build-node() return
+
+<div xmlns="http://www.w3.org/1999/xhtml">
+{ $result }
+</div>
+            ]]></code>
+        <expected>
+            <div xmlns="http://www.w3.org/1999/xhtml">
+                <map xmlns="">somemap</map>
+            </div>
+        </expected>
+    </test>
+    
+</TestSet>
