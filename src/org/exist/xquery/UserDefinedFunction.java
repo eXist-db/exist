@@ -241,4 +241,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
     public void setCaller(FunctionCall call){
     	this.call = call;
     }
+    
+    protected Sequence[] getCurrentArguments() {
+        return currentArguments;
+    }
 }

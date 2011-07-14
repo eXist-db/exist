@@ -54,7 +54,7 @@ public class FunctionCall extends Function {
 	private QName name = null;
 	private List<Expression> arguments = null;
 	
-	private boolean isRecursive = false;
+	private boolean recursive = false;
 
     private VariableReference varDeps[];
 
@@ -114,7 +114,7 @@ public class FunctionCall extends Function {
 			}
 		}
 	}
-	
+        
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
@@ -125,7 +125,7 @@ public class FunctionCall extends Function {
          newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
          super.analyze(newContextInfo);
 		if (context.tailRecursiveCall(functionDef.getSignature())) {
-			isRecursive = true;
+			setRecursive(true);
 		}
 		context.functionStart(functionDef.getSignature());
 		try {
@@ -261,9 +261,9 @@ public class FunctionCall extends Function {
 		
         functionDef.setArguments(seq, contextDocs);
         
-        if (isRecursive) {
+        if(isRecursive()) {
 //            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
-            return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem);
+            return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem, seq, contextDocs);
         } else {
             
         	//XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
@@ -330,11 +330,15 @@ public class FunctionCall extends Function {
 
         private Sequence contextSequence;
         private Item contextItem;
+        private final Sequence[] seq;
+        private final DocumentSet[] contextDocs;
 
-        public DeferredFunctionCallImpl(FunctionSignature signature, Sequence contextSequence, Item contextItem) {
+        private DeferredFunctionCallImpl(FunctionSignature signature, Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) {
             super(signature);
             this.contextSequence = contextSequence;
             this.contextItem = contextItem;
+            this.seq = seq;
+            this.contextDocs = contextDocs;
         }
         
         protected Sequence execute() throws XPathException {
@@ -345,6 +349,13 @@ public class FunctionCall extends Function {
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
+                
+                /*
+                  Ensure that the arguments are set for a deferred function
+                  as reset may alreay have been called before our deferred execution
+                 */
+                functionDef.setArguments(seq, contextDocs);
+                
                 Sequence returnSeq = expression.eval(contextSequence, contextItem);
 //                LOG.debug("Returning from execute()");
                 return returnSeq;
@@ -366,7 +377,11 @@ public class FunctionCall extends Function {
         
     }
     
+    protected void setRecursive(boolean recursive) {
+        this.recursive = recursive;
+    }
+    
     public boolean isRecursive(){
-    	return isRecursive;
+    	return recursive;
     }
 }
