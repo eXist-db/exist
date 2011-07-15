@@ -34,27 +34,27 @@
     	</copy>
     	
     	<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db"
-    		user="admin" password=""
+    		user="${config.username}" password="${config.password}"
     		createcollection="true">
             <fileset dir=".">
                 <include name="xqts.xconf"/>
             </fileset>
         </xmldb:store>
     	
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS" createcollection="true">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS" createcollection="true" user="${config.username}" password="${config.password}">
             <fileset dir=".">
                 <include name="config.xml"/>
                 <include name="stylesheets/*.xsl"/>
             </fileset>
         </xmldb:store>
 
-        <!-- xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true">
+        <!-- xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true" user="${config.username}" password="${config.password}">
             <fileset dir=".">
                 <include name="collectresults.xql"/>
             </fileset>
         </xmldb:store-->
         
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true" user="${config.username}" password="${config.password}">
             <fileset dir="${config.basedir}/ReportingResults">
                 <include name="XQTSResult.xsd"/>
                 <include name="XQTSResults.xsl"/>
@@ -62,13 +62,13 @@
             </fileset>
         </xmldb:store>
         
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS" createcollection="true">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS" createcollection="true" user="${config.username}" password="${config.password}">
             <fileset dir="${config.basedir}">
                 <include name="XQTSCatalog.xml"/>
             </fileset>
         </xmldb:store>
 
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" user="${config.username}" password="${config.password}">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
@@ -80,7 +80,7 @@
             </fileset>
         </xmldb:store>
              
-        <!--xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
+        <!--xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml" user="${config.username}" password="${config.password}">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="orders"/>
             </fileset>
