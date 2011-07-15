@@ -113,16 +113,14 @@ public class LogFunction extends BasicFunction
 		StringBuilder buf = new StringBuilder();
                 buf.append("(");
                 
-                if(getSource() != null) {
-                    String srcKey = getSource().getKey();
-                    if(srcKey != null) {
-                        buf.append(srcKey);
-                        buf.append(" ");
-                    }
-                }
-                
 		buf.append("Line: ");
 		buf.append(this.getLine());
+                
+                //add the source to the log statement
+                if(getSource() != null && getSource().getKey() != null) {
+                    buf.append(" ");
+                    buf.append(getSource().getKey());
+                }
                 
 		buf.append(") ");
 		
