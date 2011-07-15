@@ -1363,7 +1363,7 @@ public class XQueryTest extends XMLTestCase {
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
             System.out.println("testModulesAndNS result: " + result.getResource(0).getContent().toString());
-            assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a href='#'>Link</a></div>",
+            assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a xmlns=\"\" href='#'>Link</a></div>",
                     result.getResource(0).getContent().toString());
 
             query = "xquery version \"1.0\";\n" +
@@ -3371,7 +3371,7 @@ public class XQueryTest extends XMLTestCase {
 
             assertEquals(1, result.getSize());
             assertEquals(query, "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
-                    +"<ul class=\"a\"/></html>",
+                    +"<ul xmlns=\"\" class=\"a\"/></html>",
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {

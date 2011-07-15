@@ -270,7 +270,8 @@ public class FunctionCall extends Function {
         	context.stackEnter(this);
             
         	context.functionStart(functionDef.getSignature());
-            LocalVariable mark = context.markLocalVariables(true);
+                LocalVariable mark = context.markLocalVariables(true);
+                context.pushInScopeNamespaces(false);
             try {
                 if (context.getProfiler().traceFunctions())
                     context.getProfiler().traceFunctionStart(this);
@@ -293,7 +294,8 @@ public class FunctionCall extends Function {
     			e.addFunctionCall(functionDef, this);
     			throw e;
     		} finally {
-    			context.popLocalVariables(mark);
+                context.popInScopeNamespaces();
+                context.popLocalVariables(mark);
                 context.functionEnd();
                 
                 context.stackLeave(this);
