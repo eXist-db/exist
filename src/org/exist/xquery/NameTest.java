@@ -101,13 +101,25 @@ public class NameTest extends TypeTest {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+    public String toString() {
         StringBuilder result = new StringBuilder();
-        if(nodeName.getLocalName() == null)
-            result.append(nodeName.getPrefix() + ":*");
-        else
-            result.append(nodeName.getStringValue());            
+        
+        if(nodeName.getPrefix() != null) {
+            result.append(nodeName.getPrefix());
+            result.append(":");
+        } else if(nodeName.getNamespaceURI() != null) {
+            result.append("{");
+            result.append(nodeName.getNamespaceURI());
+            result.append("}");
+        }
+        
+        if(nodeName.getLocalName() == null) {
+            result.append("*");
+        } else {
+            result.append(nodeName.getLocalName());
+        }
+        
         return result.toString();
-	}
+    }
 
 }
