@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -77,6 +78,18 @@ public class Deploy extends BasicFunction {
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
 					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
 		new FunctionSignature(
+				new QName("deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+				"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
+				"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
+				"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
+				new SequenceType[] { 
+					new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name"),
+					new FunctionParameterSequenceType("targetCollection", Type.STRING, Cardinality.EXACTLY_ONE, "the target " +
+							"collection into which the package will be stored")
+				},
+				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
+						"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+		new FunctionSignature(
 				new QName("undeploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 				"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
 				"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
@@ -122,7 +135,7 @@ public class Deploy extends BasicFunction {
 				}
 			}
             if (packageDir == null)
-            	throw new XPathException(this, "Package " + pkgName + " not found");
+            	throw new XPathException(this, ExpathPackageModule.EXPATH001, "Package " + pkgName + " not found");
 			
 			// find and parse the repo.xml descriptor
 			File repoFile = new File(packageDir, "repo.xml");
@@ -146,6 +159,14 @@ public class Deploy extends BasicFunction {
 				} else {
 					// otherwise copy all child directories to the target collection
 					XmldbURI targetCollection = XmldbURI.ROOT_COLLECTION_URI;
+					if (args.length == 2) {
+						try {
+							targetCollection = XmldbURI.create(args[1].getStringValue());
+						} catch (Exception e) {
+							throw new XPathException(this, ExpathPackageModule.EXPATH002, 
+									"Bad collection URI passed as parameter: " + args[1].getStringValue());
+						}
+					}
 
 					ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
 					if (target != null) {
@@ -153,7 +174,7 @@ public class Deploy extends BasicFunction {
 						try {
 							targetCollection = XmldbURI.create(target.getStringValue());
 						} catch (Exception e) {
-							throw new XPathException(this, "Bad collection URI for <target> element: " +
+							throw new XPathException(this, ExpathPackageModule.EXPATH002, "Bad collection URI for <target> element: " +
 									target.getStringValue());
 						}
 					}
@@ -494,6 +515,7 @@ public class Deploy extends BasicFunction {
 	private class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
 
 		private String time;
+		private Stack<String> stack = new Stack<String>();
 		
 		public UpdatingDocumentReceiver( MemTreeBuilder builder, String time )
 	    {
@@ -503,46 +525,50 @@ public class Deploy extends BasicFunction {
 		
 		@Override
 		public void startElement(QName qname, AttrList attribs) {
-			if (qname.getLocalName().equals("deployed"))
-				return;
 			super.startElement(qname, attribs);
+			stack.push(qname.getLocalName());
 		}
 		
 		@Override
 		public void startElement(String namespaceURI, String localName,
 				String qName, Attributes attrs) throws SAXException {
-			if (localName.equals("deployed"))
-				return;
 			super.startElement(namespaceURI, localName, qName, attrs);
+			stack.push(localName);
 		}
 		
 		@Override
 		public void endElement(QName qname) throws SAXException {
-			if (qname.getLocalName().equals("deployed")) {
-				return;
-			}
-			if (qname.getLocalName().equals("meta")) {
-				addTime(qname.getPrefix());
-			}
+			stack.pop();
 			super.endElement(qname);
 		}
 		
 		@Override
 		public void endElement(String uri, String localName, String qName)
 				throws SAXException {
-			if (localName.equals("deployed"))
-				return;
-			if (localName.equals("meta")) {
-				addTime(QName.extractPrefix(qName));
-			}
+			stack.pop();
 			super.endElement(uri, localName, qName);
 		}
 		
-		private void addTime(String prefix) throws SAXException {
-			QName timeQName = new QName("deployed", "http://exist-db.org/xquery/repo", prefix);
-			super.startElement(timeQName, null);
-			super.characters(time);
-			super.endElement(timeQName);
+		@Override
+		public void characters(char[] ch, int start, int len)
+				throws SAXException {
+			if (!deployTime())
+				super.characters(ch, start, len);
+		}
+		
+		@Override
+		public void characters(CharSequence seq) throws SAXException {
+			if (!deployTime())
+				super.characters(seq);
+		}
+		
+		private boolean deployTime() throws SAXException {
+			String current = stack.peek();
+			if (current.equals("deployed")) {
+				super.characters(time);
+				return true;
+			}
+			return false;
 		}
 	}
 }
