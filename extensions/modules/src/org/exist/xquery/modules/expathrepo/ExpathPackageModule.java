@@ -23,7 +23,8 @@ package org.exist.xquery.modules.expathrepo;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.*;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.ErrorCodes.EXistErrorCode;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,9 @@ public class ExpathPackageModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2010-07-27";
     public final static String RELEASED_IN_VERSION = "eXist-1.5";
 
+    public final static ErrorCode EXPATH001 = new EXistErrorCode("EXPATH001", "Package not found.");
+    public final static ErrorCode EXPATH002 = new EXistErrorCode("EXPATH002", "Bad collection URI.");
+    
     private final static FunctionDef[] functions = {
     	new FunctionDef(Deploy.signatures[0], Deploy.class),
     	new FunctionDef(Deploy.signatures[1], Deploy.class),
