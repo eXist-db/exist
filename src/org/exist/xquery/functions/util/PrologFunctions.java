@@ -100,6 +100,8 @@ public class PrologFunctions extends BasicFunction {
 	}
 
 	private void declareNamespace(Sequence[] args) throws XPathException {
+		context.saveState();
+		
 		String prefix;
 		if (args[0].isEmpty())
 			prefix = "";
@@ -110,6 +112,8 @@ public class PrologFunctions extends BasicFunction {
 	}
 	
 	private void importModule(Sequence[] args) throws XPathException {
+		context.saveState();
+		
 		String uri = args[0].getStringValue();
 		String prefix = args[1].getStringValue();
 		String location = args[2].getStringValue();
