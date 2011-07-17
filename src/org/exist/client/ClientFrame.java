@@ -30,6 +30,15 @@ import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -48,17 +57,21 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
+import javax.swing.DropMode;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -81,6 +94,7 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ProgressMonitor;
+import javax.swing.TransferHandler;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
@@ -100,11 +114,9 @@ import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
-import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
@@ -314,6 +326,12 @@ public class ClientFrame extends JFrame
         fileman = new JTable();
         fileman.setModel(resources);
         fileman.addMouseListener(new TableMouseListener());
+        //fileman.setTransferHandler(new TransferHandler(){  
+        //});
+        
+        fileman.setDropMode(DropMode.ON);
+        DropTarget filemanDropTarget = new DropTarget(fileman, DnDConstants.ACTION_COPY, new FileListDropTargetListener());
+        fileman.setDropTarget(filemanDropTarget);
         
         ResourceTableCellRenderer renderer = new ResourceTableCellRenderer();
         fileman.setDefaultRenderer(Object.class, renderer);
@@ -1124,23 +1142,29 @@ public class ClientFrame extends JFrame
             preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
 
             final File[] files = chooser.getSelectedFiles();
-            if (files.length > 0) {
-                new Thread() {
-                    public void run() {
-                        UploadDialog upload = new UploadDialog();
-                        try {
-                            client.parse(files, upload);
-                            client.getResources();
-                        } catch (XMLDBException e) {
-                            showErrorMessage(Messages.getString("ClientFrame.147") //$NON-NLS-1$
-                                    + e.getMessage(), e);
-                        }
-                    }
-                }.start();
-            }
+            uploadFiles(files);
         }
     }
     
+    private void uploadFiles(final File[] files) {
+        
+        if(files != null && files.length > 0) {
+
+            new Thread() {
+                @Override
+                public void run() {
+                    UploadDialog upload = new UploadDialog();
+                    try {
+                        client.parse(files, upload);
+                        client.getResources();
+                    } catch (XMLDBException e) {
+                        showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
+                    }
+                }
+            }.start();
+        }
+    }
+
     private boolean deleteDirectory(File target) {
         if (target.isDirectory()) {
             String[] children = target.list();
@@ -1909,5 +1933,85 @@ public class ClientFrame extends JFrame
         }
     }
     
-    
+    private class FileListDropTargetListener implements DropTargetListener {
+
+        @Override
+        public void dragEnter(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dragOver(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+        }
+
+        @Override
+        public void dragExit(DropTargetEvent dte) {
+
+        }
+
+        @Override
+        public void drop(DropTargetDropEvent dtde) {
+            try {
+                
+                dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                
+                Transferable transferable = dtde.getTransferable();
+
+                //should work for Win32 systems
+                List<File> files = getFilesWin32(transferable);
+
+                //should work for *nix systems
+                if(files == null) {
+                    files = getFilesUnix(transferable);
+                }
+
+                if(files != null) {
+                    uploadFiles(files.toArray(new File[files.size()]));
+                }
+            } catch(URISyntaxException use) {
+                System.err.println("An exception occurred while dragging and dropping files: " + use.getMessage());
+                use.printStackTrace();
+            } catch(ClassNotFoundException cnfe) {
+                System.err.println("An exception occurred while dragging and dropping files: " + cnfe.getMessage());
+                cnfe.printStackTrace();
+            } catch(UnsupportedFlavorException ufe) {
+                System.err.println("An exception occurred while dragging and dropping files: " + ufe.getMessage());
+                ufe.printStackTrace();
+            } catch(IOException ioe) {
+                System.err.println("An exception occurred while dragging and dropping files: " + ioe.getMessage());
+                ioe.printStackTrace();
+            }
+        }
+
+        private List<File> getFilesWin32(Transferable transferable) throws UnsupportedFlavorException, IOException {
+            return (List<File>)transferable.getTransferData(DataFlavor.javaFileListFlavor);
+        }
+
+        private List<File> getFilesUnix(Transferable transferable) throws ClassNotFoundException, UnsupportedFlavorException, IOException, URISyntaxException {
+
+            List<File> files = null;
+
+            DataFlavor unixFileDataFlavour = new DataFlavor("text/uri-list;class=java.lang.String");
+            String data = (String)transferable.getTransferData(unixFileDataFlavour);
+            for(StringTokenizer st = new StringTokenizer(data, "\r\n"); st.hasMoreTokens();) {
+                String token = st.nextToken().trim();
+                if(token.startsWith("#") || token.isEmpty()) {
+                     // comment line, by RFC 2483
+                     continue;
+                }
+
+                //lazy
+                if(files == null) {
+                    files = new ArrayList<File>();
+                }
+
+                files.add(new File(new URI(token)));
+            }
+
+            return files;
+        }
+    }
 }
