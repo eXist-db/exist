@@ -53,6 +53,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
     private final static FunctionDef[] functions = {
     	new FunctionDef(Deploy.signatures[0], Deploy.class),
     	new FunctionDef(Deploy.signatures[1], Deploy.class),
+        new FunctionDef(Deploy.signatures[2], Deploy.class),
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signature, InstallFunction.class),
         new FunctionDef(RemoveFunction.signature, RemoveFunction.class)
