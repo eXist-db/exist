@@ -119,6 +119,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( SystemTime.signatures[2], SystemTime.class ),
         new FunctionDef( RandomFunction.signatures[0], RandomFunction.class ),
         new FunctionDef( RandomFunction.signatures[1], RandomFunction.class ),
+        new FunctionDef( RandomFunction.signatures[2], RandomFunction.class ),
         new FunctionDef( FunUnEscapeURI.signature, FunUnEscapeURI.class ),
         new FunctionDef( UUID.signatures[0], UUID.class ),
         new FunctionDef( UUID.signatures[1], UUID.class ),
