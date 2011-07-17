@@ -204,6 +204,9 @@ public class XQueryContext implements BinaryValueManager, Context
     /** Loaded modules, including ones bubbled up from imported modules. */
     protected HashMap<String, Module>                  allModules                                       = new HashMap<String, Module>();
 
+    /** Used to save current state when modules are imported dynamically */
+    protected SavedState		   					   savedState										= new SavedState();
+    
     /**
      * Whether some modules were rebound to new instances since the last time this context's query was analyzed. (This assumes that each context is
      * attached to at most one query.)
@@ -1424,6 +1427,8 @@ public class XQueryContext implements BinaryValueManager, Context
             mappedModules.clear();
         }
 
+        savedState.restore();
+        
         //remove the context-vars, subsequent execution of the query
         //may generate different values for the vars based on the
         //content of the db
@@ -2615,8 +2620,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         mappedModules.put( namespace, uri );
     }
-
-
+    
     /**
      * Import a module and make it available in this context. The prefix and location parameters are optional. If prefix is null, the default prefix
      * specified by the module is used. If location is null, the module will be read from the namespace URI.
@@ -2937,7 +2941,48 @@ public class XQueryContext implements BinaryValueManager, Context
         }
     }
 
-
+    /* ----------------- Save state ------------------------ */
+    
+    private class SavedState {
+    	
+    	private HashMap<String, Module> modulesSaved = null;
+    	private HashMap<String, Module> allModulesSaved = null;
+    	private HashMap<String, String> staticNamespacesSaved = null;
+    	private HashMap<String, String> staticPrefixesSaved = null;
+    	
+    	@SuppressWarnings("unchecked")
+		void save() {
+    		if (modulesSaved == null) {
+	    		modulesSaved = (HashMap<String, Module>) modules.clone();
+	        	allModulesSaved = (HashMap<String, Module>) allModules.clone();
+	        	staticNamespacesSaved = (HashMap<String, String>) staticNamespaces.clone();
+	        	staticPrefixesSaved = (HashMap<String, String>) staticPrefixes.clone();
+    		}
+    	}
+    	
+    	void restore() {
+    		if (modulesSaved != null) {
+	    		modules = modulesSaved;
+	    		modulesSaved = null;
+	    		allModules = allModulesSaved;
+	    		allModulesSaved = null;
+	    		staticNamespaces = staticNamespacesSaved;
+	    		staticNamespacesSaved = null;
+	    		staticPrefixes = staticPrefixesSaved;
+	    		staticPrefixesSaved = null;
+    		}
+    	}
+    }
+    
+    /**
+     * Before a dynamic import, make sure relevant parts of the current context a saved
+     * to the stack. This is important for util:import-module. The context will be restored
+     * during {@link #reset()}.
+     */
+    public void saveState() {
+    	savedState.save();
+    }
+    
     public boolean optimizationsEnabled()
     {
         return( enableOptimizer );
