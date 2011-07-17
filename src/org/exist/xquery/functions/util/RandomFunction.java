@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.math.BigInteger;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -38,47 +39,59 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-public class RandomFunction extends BasicFunction
-{
-	protected static final Logger logger = Logger.getLogger(RandomFunction.class);
+public class RandomFunction extends BasicFunction {
+    
+    protected static final Logger logger = Logger.getLogger(RandomFunction.class);
 	
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a random number between 0.0 and 1.0",
             null,
-            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "a random number between 0.0 and 1.0")),
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "a random number between 0.0 and 1.0")
+        ),
         
         new FunctionSignature(
-                new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                "Returns a random number between 0 (inclusive) and $max (exclusive), that is, a number greater than or equal to 0 but less than $max",
-                new SequenceType[] {
-    					new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "A number to be used as the exclusive maximum value for the random number; the return value will be less than this number.")
-    			},
-                new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "a random number between 0 and $max"))
+            new QName("random-ulong", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns a random number between 0 and the maximum xs:unsignedLong",
+            null,
+            new FunctionReturnSequenceType(Type.UNSIGNED_LONG, Cardinality.EXACTLY_ONE, "a random number between 0 and the maximum xs:unsignedLong")
+        ),
+        
+        new FunctionSignature(
+            new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns a random number between 0 (inclusive) and $max (exclusive), that is, a number greater than or equal to 0 but less than $max",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("max", Type.INTEGER, Cardinality.EXACTLY_ONE, "A number to be used as the exclusive maximum value for the random number; the return value will be less than this number.")
+            },
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "a random number between 0 and $max")
+        )
     };
     
-    public RandomFunction(XQueryContext context, FunctionSignature signature)
-    {
+    public RandomFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
-    	Random rndGen = new Random();
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	
-    	if(getArgumentCount() == 0)
-    	{
-    		DoubleValue result = new DoubleValue(rndGen.nextDouble());
-			return result;
+        final Sequence result;
+        
+        Random rnd = new Random();
+    	
+    	if(getArgumentCount() == 0) {
+            if(isCalledAs("random")) {
+                result = new DoubleValue(rnd.nextDouble());
+            } else {
+                BigInteger rndInt = new BigInteger(64, rnd);
+                result = new IntegerValue(rndInt, Type.UNSIGNED_LONG);
+            }
+    	} else {
+            IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
+            result = new IntegerValue(rnd.nextInt(upper.getInt()));
     	}
-    	else
-    	{
-    		IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
-    		IntegerValue result = new IntegerValue(rndGen.nextInt(upper.getInt()));
-			return result;
-    		
-    	}
+        
+        return result;
     }
 }
 
