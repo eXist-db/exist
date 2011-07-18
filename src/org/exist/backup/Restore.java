@@ -81,23 +81,23 @@ import org.exist.security.internal.aider.ACEAider;
  */
 public class Restore extends DefaultHandler
 {
-    private static final int        strictUriVersion = 1;
+    private static final int strictUriVersion = 1;
 
-    private BackupDescriptor        contents;
-    private String                  uri;
-    private String                  username;
-    private String                  pass;
-    private XMLReader               reader;
-    private CollectionImpl          current;
-    private Stack<BackupDescriptor> stack            = new Stack<BackupDescriptor>();
-    private RestoreDialog           dialog           = null;
-    private int                     version          = 0;
-    private RestoreListener         listener;
-    private List<String>			 errors = new ArrayList<String>();
+    private BackupDescriptor contents;
+    private String uri;
+    private String username;
+    private String pass;
+    private XMLReader reader;
+    private CollectionImpl current;
+    private Stack<BackupDescriptor> backupDescriptors = new Stack<BackupDescriptor>();
+    private RestoreDialog dialog = null;
+    private int version = 0;
+    private RestoreListener listener;
+    private List<String> errors = new ArrayList<String>();
     
-    private boolean                 skipSecurityV1   = false;
+    private boolean skipSecurityV1 = false;
 
-    private DeferredPermission deferredPermission = null;
+    private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
     
     /**
      * Constructor for Restore.
@@ -153,7 +153,7 @@ public class Restore extends DefaultHandler
                 throw( new SAXException( "Unable to create backup descriptor object from " + contents, e ) );
             }
 
-            stack.push( bd );
+            backupDescriptors.push( bd );
 
             // check if the system collection is in the backup. We have to process
             // this first to create users.
@@ -161,7 +161,7 @@ public class Restore extends DefaultHandler
             BackupDescriptor sysbd = bd.getChildBackupDescriptor( "system" );
 
             if( sysbd != null ) {
-                stack.push( sysbd );
+                backupDescriptors.push( sysbd );
                 
                 skipSecurityV1 = (sysbd.getChildBackupDescriptor( "security" ) != null);
             }
@@ -196,10 +196,10 @@ public class Restore extends DefaultHandler
             Thread restoreThread = new Thread() {
                 public void run()
                 {
-                    while( !stack.isEmpty() ) {
+                    while( !backupDescriptors.isEmpty() ) {
 
                         try {
-                            contents = stack.pop();
+                            contents = backupDescriptors.pop();
                             dialog.setBackup( contents.getSymbolicPath() );
                             reader.parse( contents.getInputSource() );
                         }
@@ -237,8 +237,8 @@ public class Restore extends DefaultHandler
             }
         } else {
 
-            while( !stack.isEmpty() ) {
-                contents = stack.pop();
+            while( !backupDescriptors.isEmpty() ) {
+                contents = backupDescriptors.pop();
                 EXistInputSource is = contents.getInputSource();
                 is.setEncoding( "UTF-8" );
                 //restoring sysId
@@ -281,14 +281,13 @@ public class Restore extends DefaultHandler
         final ACE_ACCESS_TYPE access_type = ACE_ACCESS_TYPE.valueOf(atts.getValue("access_type"));
         final int mode = Integer.parseInt(atts.getValue("mode"), 8);
 
-        deferredPermission.addACE(index, target, who, access_type, mode);
+        deferredPermissions.peek().addACE(index, target, who, access_type, mode);
     }
 
     private void setDeferredPermissions() {
-        if(deferredPermission != null) {
-            deferredPermission.apply();
-            deferredPermission = null;
-        }
+        
+        DeferredPermission deferredPermission = deferredPermissions.pop();
+        deferredPermission.apply();
     }
 
     @Override
@@ -351,12 +350,15 @@ public class Restore extends DefaultHandler
                 throw new SAXException("Collection not found: " + collUri);
             }
             
+            final DeferredPermission deferredPermission;
             if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                 //prevents restore of a backup from changing system collection ownership
                 deferredPermission = new CollectionDeferredPermission(current, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(mode, 8));
             } else {
                 deferredPermission = new CollectionDeferredPermission(current, owner, group, Integer.parseInt(mode, 8));
             }
+            deferredPermissions.push(deferredPermission);
+            
         } catch(Exception e) {
             listener.warn("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!");
             e.printStackTrace();
@@ -378,7 +380,7 @@ public class Restore extends DefaultHandler
         BackupDescriptor subbd = contents.getChildBackupDescriptor( name );
 
         if(subbd != null) {
-            stack.push(subbd);
+            backupDescriptors.push(subbd);
         } else {
             listener.warn("collection " + contents.getSymbolicPath(name, false) + " does not exist or is not readable.");
         }
@@ -504,13 +506,14 @@ public class Restore extends DefaultHandler
                     }
                 }
 
+                final DeferredPermission deferredPermission;
                 if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                     //prevents restore of a backup from changing system collection resource ownership
                     deferredPermission = new ResourceDeferredPermission(res, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
                 } else {
                     deferredPermission = new ResourceDeferredPermission(res, owner, group, Integer.parseInt(perms, 8));
                 }
-                
+                deferredPermissions.push(deferredPermission); 
 //	                    	current.setTriggersEnabled(true);
 
             } else {
