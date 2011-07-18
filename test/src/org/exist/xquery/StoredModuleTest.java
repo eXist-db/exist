@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.xmldb.api.base.Resource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -390,6 +391,74 @@ public class StoredModuleTest {
 
         CompiledExpression query = xqService.compile(index_module);
         ResourceSet execute = xqService.execute(query);
+    }
+    
+    @Test
+    public void dyanmicModuleImport_for_same_namespace() throws XMLDBException {
+        
+        Collection testHome = createCollection("testDynamicModuleImport");
+        
+        final String module1 =
+                "xquery version \"1.0\";" +
+                "module namespace modA = \"http://moda\";" +
+                "declare function modA:hello() {" +
+                "\t<hello-from>module1</hello-from>" +
+                "};";
+        
+        
+        final String module2 =
+                "xquery version \"1.0\";" +
+                "module namespace modA = \"http://moda\";" +
+                "declare function modA:hello() {" +
+                "\t<hello-from>module2</hello-from>" +
+                "};";
+        
+        final String implModule = 
+                "xquery version \"1.0\";" +
+                "module namespace impl = \"http://impl\";" +
+                "declare function impl:execute-module-function($module-namespace as xs:anyURI, $controller-file as xs:anyURI, $function-name as xs:string) {" +
+                "\tlet $mod := util:import-module($module-namespace, 'pfx', xs:anyURI(fn:concat('xmldb:exist://', $controller-file))) return" +
+                "\t\tutil:eval(fn:concat('pfx:', $function-name, '()'), false())" +
+                "};";
+        
+        final String processorModule = 
+                "xquery version \"1.0\";" +
+                "module namespace processor = \"http://processor\";" +
+                "import module namespace impl = \"http://impl\" at \"xmldb:exist://" + testHome.getName() + "/impl.xqm\";" +
+                "declare function processor:execute-module-function($module-namespace as xs:anyURI, $controller-file as xs:anyURI, $function-name as xs:string) {" +
+                "\timpl:execute-module-function($module-namespace, $controller-file, $function-name)" +
+                "};";
+        
+        writeModule(testHome, "module1.xqm", module1);
+        writeModule(testHome, "module2.xqm", module2);
+        writeModule(testHome, "impl.xqm", implModule);
+        writeModule(testHome, "processor.xqm", processorModule);
+        
+        final String query1 = 
+                "xquery version \"1.0\";" +
+                "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";" +
+                "\tprocessor:execute-module-function(xs:anyURI('http://moda'), xs:anyURI('" + testHome.getName() + "/module1.xqm'), 'hello')";
+        
+        final CompiledExpression xq1 = xqService.compile(query1);
+        final ResourceSet rs1 = xqService.execute(xq1);
+        
+        assertEquals(1, rs1.getSize());
+        Resource r1 = rs1.getIterator().nextResource();
+        assertEquals("<hello-from>module1</hello-from>", (String)r1.getContent());
+        
+        final String query2 = 
+                "xquery version \"1.0\";" +
+                "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";" +
+                "\tprocessor:execute-module-function(xs:anyURI('http://moda'), xs:anyURI('" + testHome.getName() + "/module2.xqm'), 'hello')";
+        
+        
+        final CompiledExpression xq2 = xqService.compile(query2);
+        final ResourceSet rs2 = xqService.execute(xq2);
+        
+        assertEquals(1, rs2.getSize());
+        Resource r2 = rs2.getIterator().nextResource();
+        assertEquals("<hello-from>module2</hello-from>", (String)r2.getContent());
+        
     }
 
     private void writeFile(String path, String module) throws IOException {
