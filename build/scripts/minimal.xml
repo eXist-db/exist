@@ -59,12 +59,14 @@ highlight-matches=none
   <xslt in="${src.dir}/log4j.xml" out="${dist.minimal}/log4j.xml" style="${build.scripts}/minimal-fix-log4j.xsl"/>
   <copy file="${src.dir}/mime-types.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/server.xml" todir="${dist.minimal}"/>
-  <copy file="${src.dir}/atom-services.xml" todir="${dist.minimal}"/>
-  <copy file="${src.dir}/atom-example.xq" todir="${dist.minimal}"/>
+  <!-- copy file="${src.dir}/atom-services.xml" todir="${dist.minimal}"/ -->
+  <!-- copy file="${src.dir}/atom-example.xq" todir="${dist.minimal}"/ -->
   <copy file="${src.dir}/start.jar" todir="${dist.minimal}"/>
   <mkdir dir="${dist.minimal}/bin"/>
   <copy todir="${dist.minimal}/bin">
-    <fileset dir="${src.dir}/bin"/>
+    <fileset dir="${src.dir}/bin">
+        <exclude name="startup*"/>      <!-- we only support server.sh standalone mode for minimal dist -->
+    </fileset>
   </copy>
   <mkdir dir="${dist.minimal}/data"/>
   <mkdir dir="${dist.minimal}/data/journal"/>
@@ -75,14 +77,29 @@ highlight-matches=none
         <exclude name="**/cocoon/*.jar"/>
     </fileset>
   </copy>
+  
+  <!-- lucence extension is now enabled by default! -->
+  <copy todir="${dist.minimal}/lib/extensions">
+      <fileset dir="${src.dir}/extensions/indexes/lucene/lib">
+        <include name="*.jar"/>
+      </fileset>
+  </copy>
+  
   <mkdir dir="${dist.minimal}/tools"/>
+  
   <mkdir dir="${dist.minimal}/tools/jetty"/>
   <copy todir="${dist.minimal}/tools/jetty">
-    <fileset dir="${src.dir}/tools/jetty"/>
+    <fileset dir="${src.dir}/tools/jetty">
+        <exclude name="**/jetty.xml"/>         <!-- we only support server.sh standalone mode for minimal dist -->
+    </fileset>
   </copy>
-<!--
-  <mkdir dir="${dist.minimal}/webapp"/>
--->
+  
+  <!-- aspectj is now required -->
+  <mkdir dir="${dist.minimal}/tools/aspectj"/>
+  <copy todir="${dist.minimal}/tools/aspectj">
+    <fileset dir="${src.dir}/tools/aspectj"/>
+  </copy>
+
 </target>
 
 <target name="clean-minimal">
