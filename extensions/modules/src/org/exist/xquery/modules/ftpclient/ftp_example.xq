@@ -2,10 +2,10 @@ xquery version "1.0";
 
 import module namespace ftpclient="http://exist-db.org/xquery/ftpclient";
 
-(:ftpclient:getDirectoryList("localhost","username","password","remote/dir"):)
+let $connection := ftpclient:get-connection("ftp.host.com", "username", "password") return
 
-(:let $file := ftpclient:getFile("localhost","username","password","remote/dir", "file.name"):)
+    let $file-to-send := util:binary-doc("/db/ftp_test/image.jpg") return
+        ftpclient:send-binary-file($connection, "remote/dir", "image.jpg")
 
-let $file_to_sent := util:binary-doc("/db/ftp_test/image.jpg")
-
-return ftpclient:sendFile("localhost","username","password","remote/dir", "file.name")
+(: ftpclient:list($connection, "remote/dir") :)
+(: let $file := ftpclient:get-binary-file($connection, "remote/dir", "file.name") :)
