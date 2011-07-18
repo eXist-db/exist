@@ -25,9 +25,12 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Random;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
@@ -295,4 +298,77 @@ public class ModuleUtils {
             }
             return properties;
 	}
+        
+        /**
+     * Retrieves a previously stored Object from the Context of an XQuery.
+     *
+     * @param   context         The Context of the XQuery containing the Object
+     * @param   contextMapName  DOCUMENT ME!
+     * @param   objectUID       The UID of the Object to retrieve from the Context of the XQuery
+     *
+     * @return  DOCUMENT ME!
+     */
+    public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
+        
+        // get the existing object map from the context
+        Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+
+        if(map == null) {
+            return null;
+        }
+
+        // get the connection
+        return map.get(objectUID);
+    }
+    
+    
+    public static <T> Map<Long, T> retrieveContextMap(XQueryContext context, String contextMapName) {
+        // get the existing map from the context
+        return (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+    }
+    
+    public static <T> void storeContextMap(XQueryContext context, String contextMapName, Map<Long, T> contextMap) {
+        // get the existing map from the context
+        context.setXQueryContextVar(contextMapName, contextMap);
+    }
+
+    /**
+     * Stores an Object in the Context of an XQuery.
+     *
+     * @param   context         The Context of the XQuery to store the Object in
+     * @param   contextMapName  The name of the context map
+     * @param   o               The Object to store
+     *
+     * @return  A unique ID representing the Object
+     */
+    public static synchronized <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
+        // get the existing map from the context
+        Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+
+        if(map == null) {
+            // if there is no map, create a new one
+            map = new HashMap<Long, T>();
+        }
+
+        // get an id for the map
+        long uid = 0;
+        while(uid == 0 || map.keySet().contains(uid)) {
+            uid = getUID();
+        }
+
+        // place the object in the map
+        map.put(uid, o);
+
+        // store the map back in the context
+        context.setXQueryContextVar(contextMapName, map);
+
+        return (uid);
+    }
+    
+    private final static Random random = new Random();
+    
+    private static long getUID() {
+        BigInteger bi = new BigInteger(64, random);
+        return bi.longValue();
+    }
 }

@@ -30,10 +30,10 @@ import org.exist.xquery.XQueryContext;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.exist.xquery.modules.ModuleUtils;
 
 /**
  * eXist SQL Module Extension.
@@ -100,8 +100,8 @@ public class SQLModule extends AbstractInternalModule {
      *
      * @return  DOCUMENT ME!
      */
-    public final static Connection retrieveConnection(XQueryContext context, long connectionUID) {
-        return (retrieveObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID));
+    public static Connection retrieveConnection(XQueryContext context, long connectionUID) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID);
     }
 
     /**
@@ -112,8 +112,8 @@ public class SQLModule extends AbstractInternalModule {
      *
      * @return  A unique ID representing the connection
      */
-    public final static synchronized long storeConnection(XQueryContext context, Connection con) {
-        return (storeObjectInContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, con));
+    public static synchronized long storeConnection(XQueryContext context, Connection con) {
+        return ModuleUtils.storeObjectInContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, con);
     }
 
     /**
@@ -124,8 +124,8 @@ public class SQLModule extends AbstractInternalModule {
      *
      * @return  DOCUMENT ME!
      */
-    public final static PreparedStatementWithSQL retrievePreparedStatement(XQueryContext context, long preparedStatementUID) {
-        return (retrieveObjectFromContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatementUID));
+    public static PreparedStatementWithSQL retrievePreparedStatement(XQueryContext context, long preparedStatementUID) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatementUID);
     }
 
     /**
@@ -136,62 +136,27 @@ public class SQLModule extends AbstractInternalModule {
      *
      * @return  A unique ID representing the PreparedStatement
      */
-    public final static synchronized long storePreparedStatement(XQueryContext context, PreparedStatementWithSQL stmt) {
-        return (storeObjectInContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, stmt));
+    public static synchronized long storePreparedStatement(XQueryContext context, PreparedStatementWithSQL stmt) {
+        return ModuleUtils.storeObjectInContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, stmt);
     }
 
     /**
-     * Retrieves a previously stored Object from the Context of an XQuery.
+     * Resets the Module Context and closes any DB connections for the XQueryContext.
      *
-     * @param   context         The Context of the XQuery containing the Object
-     * @param   contextMapName  DOCUMENT ME!
-     * @param   objectUID       The UID of the Object to retrieve from the Context of the XQuery
-     *
-     * @return  DOCUMENT ME!
+     * @param  xqueryContext  The XQueryContext
      */
-    private static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
-        // get the existing connections map from the context
-        HashMap<Long, T> map = (HashMap<Long, T>) context.getXQueryContextVar(contextMapName);
+    @Override
+    public void reset(XQueryContext xqueryContext) {
+        // reset the module context
+        super.reset(xqueryContext);
 
-        if(map == null) {
-            return (null);
-        }
+        // close any open PreparedStatements
+        closeAllPreparedStatements(xqueryContext);
 
-        // get the connection
-        return (map.get(objectUID));
+        // close any open Connections
+        closeAllConnections(xqueryContext);
     }
-
-    /**
-     * Stores an Object in the Context of an XQuery.
-     *
-     * @param   context         The Context of the XQuery to store the Object in
-     * @param   contextMapName  The name of the context map
-     * @param   o               The Object to store
-     *
-     * @return  A unique ID representing the Object
-     */
-    private static synchronized <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
-        // get the existing map from the context
-        HashMap<Long, T> map = (HashMap<Long, T>) context.getXQueryContextVar(contextMapName);
-
-        if(map == null) {
-
-            // if there is no map, create a new one
-            map = new HashMap<Long, T>();
-        }
-
-        // get an id for the map
-        long uid = getUID();
-
-        // place the object in the map
-        map.put(uid, o);
-
-        // store the map back in the context
-        context.setXQueryContextVar(contextMapName, map);
-
-        return (uid);
-    }
-
+    
     /**
      * Closes all the open DB Connections for the specified XQueryContext.
      *
@@ -199,7 +164,7 @@ public class SQLModule extends AbstractInternalModule {
      */
     private static void closeAllConnections(XQueryContext xqueryContext) {
         // get the existing Connections map from the context
-        HashMap<Long, Connection> connections = (HashMap<Long, Connection>) xqueryContext.getXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR);
+        Map<Long, Connection> connections = ModuleUtils.retrieveContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR);
 
         if(connections != null) {
 
@@ -221,7 +186,7 @@ public class SQLModule extends AbstractInternalModule {
             connections.clear();
 
             // update the context
-            xqueryContext.setXQueryContextVar(SQLModule.CONNECTIONS_CONTEXTVAR, connections);
+            ModuleUtils.storeContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, connections);
         }
     }
 
@@ -232,7 +197,7 @@ public class SQLModule extends AbstractInternalModule {
      */
     private static void closeAllPreparedStatements(XQueryContext xqueryContext) {
         // get the existing PreparedStatements map from the context
-        HashMap<Long, PreparedStatementWithSQL> preparedStatements = (HashMap<Long, PreparedStatementWithSQL>) xqueryContext.getXQueryContextVar(SQLModule.PREPARED_STATEMENTS_CONTEXTVAR);
+        Map<Long, PreparedStatementWithSQL> preparedStatements = ModuleUtils.retrieveContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR);
 
         if(preparedStatements != null) {
 
@@ -254,33 +219,7 @@ public class SQLModule extends AbstractInternalModule {
             preparedStatements.clear();
 
             // update the context
-            xqueryContext.setXQueryContextVar(SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
+            ModuleUtils.storeContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
         }
-    }
-
-    /**
-     * Returns a Unique ID based on the System Time.
-     *
-     * @return  The Unique ID
-     */
-    private static synchronized long getUID() {
-        return (currentUID++);
-    }
-
-    /**
-     * Resets the Module Context and closes any DB connections for the XQueryContext.
-     *
-     * @param  xqueryContext  The XQueryContext
-     */
-    @Override
-    public void reset(XQueryContext xqueryContext) {
-        // reset the module context
-        super.reset(xqueryContext);
-
-        // close any open PreparedStatements
-        closeAllPreparedStatements(xqueryContext);
-
-        // close any open Connections
-        closeAllConnections(xqueryContext);
     }
 }
