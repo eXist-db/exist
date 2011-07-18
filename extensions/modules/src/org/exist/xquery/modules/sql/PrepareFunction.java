@@ -61,7 +61,7 @@ public class PrepareFunction extends BasicFunction
 			new QName( "prepare", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ),
 			"Prepares a SQL statement against a SQL db using the connection indicated by the connection handle.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The connection handle" ),
+				new FunctionParameterSequenceType( "handle", Type.LONG, Cardinality.EXACTLY_ONE, "The connection handle" ),
 				new FunctionParameterSequenceType( "sql-statement", Type.STRING, Cardinality.EXACTLY_ONE, "The SQL statement" ),
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the statement handle")
