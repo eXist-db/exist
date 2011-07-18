@@ -88,7 +88,6 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         
         boolean collectionNeedsClose = false;
         
-        
         Collection collection = null;
         Item item = args[paramNumber].itemAt(0);
         if(Type.subTypeOf(item.getType(), Type.NODE))
@@ -132,6 +131,11 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     {
                     	// Must be a LOCAL collection
                         collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://", ""));
+                    }
+                    else if(collectionURI.startsWith("xmldb:exist://embedded-eXist-server"))
+                    {
+                    	// Must be a LOCAL collection
+                    	collection = createLocalCollection(collectionURI.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
                     }
                     else if(collectionURI.startsWith("xmldb:exist://localhost"))
                     {
