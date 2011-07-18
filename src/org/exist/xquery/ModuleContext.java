@@ -502,4 +502,10 @@ public class ModuleContext extends XQueryContext {
     public void stackLeave(Expression expr) {
        	parentContext.stackLeave(expr);
     }
+
+    @Override
+    public void saveState() {
+        super.saveState();
+        parentContext.saveState();
+    }
 }
