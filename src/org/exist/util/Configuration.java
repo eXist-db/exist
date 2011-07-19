@@ -1498,6 +1498,9 @@ public class Configuration implements ErrorHandler
                     if( uri.indexOf( "${WEBAPP_HOME}" ) != -1 ) {
                         uri = uri.replaceAll( "\\$\\{WEBAPP_HOME\\}", webappHome.toURI().toString() );
                     }
+                    if( uri.indexOf( "${EXIST_HOME}" ) != -1 ) {
+                        uri = uri.replaceAll( "\\$\\{EXIST_HOME\\}", dbHome );
+                    }
 
                     // Add uri to confiuration
                     LOG.info( "Add catalog uri " + uri + "" );
