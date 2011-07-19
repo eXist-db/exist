@@ -1755,24 +1755,24 @@ public class XQueryContext implements BinaryValueManager, Context
     	
     	QName name = function.getSignature().getName();
     	
-        if( Namespaces.XML_NS.equals( name.getNamespaceURI() ) ) {
-            throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.XML_NS + "'" ) );
+        if(Namespaces.XML_NS.equals(name.getNamespaceURI())) {
+            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XML_NS + "'" );
         }
 
-        if( Namespaces.SCHEMA_NS.equals( name.getNamespaceURI() ) ) {
-            throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'" ) );
+        if(Namespaces.SCHEMA_NS.equals( name.getNamespaceURI())) {
+            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'");
         }
 
-        if( Namespaces.SCHEMA_INSTANCE_NS.equals( name.getNamespaceURI() ) ) {
-            throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'" ) );
+        if(Namespaces.SCHEMA_INSTANCE_NS.equals( name.getNamespaceURI())) {
+            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'");
         }
 
-        if( Namespaces.XPATH_FUNCTIONS_NS.equals( name.getNamespaceURI() ) ) {
-            throw( new XPathException( "XQST0045: function is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'" ) );
+        if(Namespaces.XPATH_FUNCTIONS_NS.equals( name.getNamespaceURI())) {
+            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'");
         }
 
-        if( "".equals( name.getNamespaceURI() ) ) {
-            throw( new XPathException( "err:XQST0060: every declared function name must have a non-null namespace URI" ) );
+        if("".equals( name.getNamespaceURI())) {
+            throw new XPathException(function, ErrorCodes.XQST0060, "Every declared function name must have a non-null namespace URI, but function '" + name + "' does not meet this requirement.");
         }
 
         declaredFunctions.put( function.getSignature().getFunctionId(), function );
