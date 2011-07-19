@@ -30,10 +30,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observer;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -84,6 +89,7 @@ import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.dom.RawNodeIterator;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
+import org.exist.storage.index.CollectionStore.CollectionKey;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.Journal;
@@ -109,6 +115,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.exist.xquery.TerminatedException;
 
 /**
  *  Main class for the native XML storage backend.
@@ -724,6 +731,57 @@ public class NativeBroker extends DBBroker {
         return openCollection(uri, BFile.UNKNOWN_ADDRESS, lockMode);
     }
 
+    
+    @Override
+    public List<String> findCollectionsMatching(String regexp) {
+        
+        final List<String> collections = new ArrayList<String>();
+        
+        final Pattern p = Pattern.compile(regexp);
+        final Matcher m = p.matcher("");
+        
+        final Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            
+            //TODO write a regexp lookup for key data in BTree.query
+            //IndexQuery idxQuery = new IndexQuery(IndexQuery.REGEXP, regexp);
+            //List<Value> keys = collectionsDb.findKeysByCollectionName(idxQuery);
+            List<Value> keys = collectionsDb.getKeys();
+            
+            for(Value key : keys) {
+                
+                //TODO restrict keys to just collection uri's
+                
+                final String collectionName = new String(key.getData());
+                m.reset(collectionName);
+
+                if(m.matches()) {
+                    collections.add(collectionName);
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            //LOG.error("Unable to encode '" + uri + "' in UTF-8");
+            //return null;
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            //return null;
+        } catch (TerminatedException e) {
+            LOG.error(e.getMessage(), e);
+            //return null;
+        } catch (BTreeException e) {
+            LOG.error(e.getMessage(), e);
+            //return null;
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+            //return null;
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+        
+        return collections;
+    }
+    
     /**
      *  Get collection object. If the collection does not exist, null is
      *  returned.

@@ -320,6 +320,8 @@ public abstract class DBBroker extends Observable {
      */
     public abstract Collection openCollection(XmldbURI uri, int lockMode);
 
+    public abstract List<String> findCollectionsMatching(String regexp);
+    
     /**
      * Returns the database collection identified by the specified path. If the
      * collection does not yet exist, it is created - including all ancestors.

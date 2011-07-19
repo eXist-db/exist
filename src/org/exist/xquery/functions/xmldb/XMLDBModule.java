@@ -117,7 +117,8 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBDefragment.signatures[0], XMLDBDefragment.class),
         new FunctionDef(XMLDBDefragment.signatures[1], XMLDBDefragment.class),
         new FunctionDef(XMLDBGetUsers.signature, XMLDBGetUsers.class),
-        new FunctionDef(FindLastModifiedSince.signature, FindLastModifiedSince.class)
+        new FunctionDef(FindLastModifiedSince.signature, FindLastModifiedSince.class),
+        new FunctionDef(XMLDBMatchCollection.signature, XMLDBMatchCollection.class)
     };
 
     static {
