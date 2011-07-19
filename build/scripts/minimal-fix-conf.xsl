@@ -16,9 +16,15 @@
 <xsl:attribute name="journal-dir"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
 </xsl:template>
 
-<xsl:template match="catalog/@file">
-<xsl:attribute name="file"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
+<xsl:template match="catalog/@uri">
+<xsl:attribute name="uri">
+<xsl:choose>
+<xsl:when test="contains(.,'${WEBAPP_HOME}/WEB-INF/')">${EXIST_HOME}/<xsl:value-of select="substring-after(.,'${WEBAPP_HOME}/WEB-INF/')"/></xsl:when>
+<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+</xsl:choose>
+</xsl:attribute>
 </xsl:template>
+
 
 <xsl:template match="@*|node()">
     <xsl:copy>
