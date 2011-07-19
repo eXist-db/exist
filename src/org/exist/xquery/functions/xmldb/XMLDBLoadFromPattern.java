@@ -67,7 +67,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     // easily setup per installation/execution host for each function. /ljo
     
     protected final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
-    protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
+    protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.ZERO_OR_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
 	protected static final SequenceType PARAM_PRESERVE_STRUCTURE = new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.");
 
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of document paths");
@@ -108,14 +108,13 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         logger.debug("Loading files from directory: " + baseDir);
 
         //determine resource type - xml or binary?
-        String mimeType = MimeType.XML_TYPE.getName();
-        String resourceType = "XMLResource";
-        if(getSignature().getArgumentCount() > 3) {
-            mimeType = args[3].getStringValue();
-            MimeType mime = MimeTable.getInstance().getContentType(mimeType);
-	    
-            if(mime != null && !mime.isXMLType())
-                resourceType = "BinaryResource";
+        MimeType mimeTypeFromArgs = null;
+        if(getSignature().getArgumentCount() > 3 && args[3].hasOne()) {
+            String mimeTypeParam = args[3].getStringValue();
+            mimeTypeFromArgs = MimeTable.getInstance().getContentType(mimeTypeParam);
+            if (mimeTypeFromArgs == null) {
+            	throw new XPathException(this, "Unknown mime type specified: " + mimeTypeParam);
+            }
         }
 
         //keep the directory structure?
@@ -155,11 +154,18 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                         prevDir = relDir;
                     }
 
+                    MimeType mimeType = mimeTypeFromArgs;
+                    if (mimeType == null) {
+                    	mimeType = MimeTable.getInstance().getContentTypeFor(files[j].getName());
+                    	if (mimeType == null)
+                    		mimeType = MimeType.BINARY_TYPE;
+                    }
+                    
                     //TODO  : these probably need to be encoded and checked for right mime type
-                    Resource resource = col.createResource(files[j].getName(), resourceType);
+                    Resource resource = col.createResource(files[j].getName(), mimeType.getXMLDBType());
                     resource.setContent(files[j]);
 
-                    ((EXistResource) resource).setMimeType(mimeType);
+                    ((EXistResource) resource).setMimeType(mimeType.getName());
 
                     col.storeResource(resource);
 
