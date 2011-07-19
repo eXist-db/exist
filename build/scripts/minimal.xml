@@ -55,7 +55,7 @@ highlight-matches=none
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/LICENSE" todir="${dist.minimal}"/>
-  <echo file="${src.dir}/log4j.dtd"/>
+  <copy file="${src.dir}/log4j.dtd" todit="${dist.minimal}"/>
   <xslt in="${src.dir}/log4j.xml" out="${dist.minimal}/log4j.xml" style="${build.scripts}/minimal-fix-log4j.xsl"/>
   <copy file="${src.dir}/mime-types.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/server.xml" todir="${dist.minimal}"/>
@@ -99,6 +99,14 @@ highlight-matches=none
   <copy todir="${dist.minimal}/tools/aspectj">
     <fileset dir="${src.dir}/tools/aspectj"/>
   </copy>
+
+  <!-- set permissions on shell scripts -->
+  <chmod perm="+x">
+      <fileset dir="${dist.minimal}/bin">
+          <include name="**/*.sh"/>
+      </fileset>
+  </chmod>
+
 
 </target>
 
