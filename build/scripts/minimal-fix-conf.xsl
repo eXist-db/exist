@@ -20,10 +20,10 @@
 <xsl:attribute name="file"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
 </xsl:template>
 
-<xsl:template match="*|@*">
-  <xsl:copy>
-  <xsl:apply-templates select="@*|node()|comment()"/>
-  </xsl:copy>
+<xsl:template match="@*|node()">
+    <xsl:copy>
+        <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
 </xsl:template>
 
 </xsl:transform>
