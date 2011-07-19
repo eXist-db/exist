@@ -182,7 +182,7 @@
     </category-->
     
     <category name="net.sf.ehcache" additivity="false">
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
     
@@ -192,12 +192,13 @@
     </category>
     
     <!--
-        Axis produces a large amount of debugging output if
-        priority is set to debug 
+        Axis and other apache.org libs produce a large amount of debugging output 
+        if priority is set to debug 
     -->
     <category name="org.apache" additivity="false">
-        <priority value="debug"/>
-        <appender-ref ref="console"/>
+        <priority value="info"/>
+        <!--appender-ref ref="console"/-->
+        <appender-ref ref="exist.core"/>
     </category>
     
     <!-- 
