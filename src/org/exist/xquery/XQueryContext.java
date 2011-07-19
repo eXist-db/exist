@@ -1759,15 +1759,15 @@ public class XQueryContext implements BinaryValueManager, Context
             throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XML_NS + "'" );
         }
 
-        if(Namespaces.SCHEMA_NS.equals( name.getNamespaceURI())) {
+        if(Namespaces.SCHEMA_NS.equals(name.getNamespaceURI())) {
             throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'");
         }
 
-        if(Namespaces.SCHEMA_INSTANCE_NS.equals( name.getNamespaceURI())) {
+        if(Namespaces.SCHEMA_INSTANCE_NS.equals(name.getNamespaceURI())) {
             throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'");
         }
 
-        if(Namespaces.XPATH_FUNCTIONS_NS.equals( name.getNamespaceURI())) {
+        if(Namespaces.XPATH_FUNCTIONS_NS.equals(name.getNamespaceURI())) {
             throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'");
         }
 
