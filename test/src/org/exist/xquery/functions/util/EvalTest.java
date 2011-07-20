@@ -9,16 +9,20 @@ import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalXMLResource;
+import org.exist.xmldb.XQueryService;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
 
 /**
  *
@@ -26,7 +30,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EvalTest {
 
-    private XPathQueryService service;
+    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    
+    private XQueryService service;
     private Collection root = null;
     private Database database = null;
     private Resource invokableQuery;
@@ -45,7 +51,7 @@ public class EvalTest {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
         root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
-        service = (XPathQueryService) root.getService("XQueryService", "1.0");
+        service = (XQueryService) root.getService("XQueryService", "1.0");
 
         invokableQuery = root.createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
         invokableQuery.setContent(
@@ -224,5 +230,91 @@ public class EvalTest {
             fail(e.getMessage());
         }
 
+    }
+    
+    @Test
+    public void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
+        
+        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        
+        final String query =
+            "xquery version \"1.0\";\r\n" +
+            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
+            "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
+            "let $q := \"/db:article\" return\r\n" +
+            "util:eval($q)";
+
+        final ResourceSet result = executeQuery(query);
+    }
+    
+    @Test
+    public void evalInContextWithPreDeclaredNamespaceAcrossLocalFunctionBoundary() throws XMLDBException {
+        
+        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        
+        final String query =
+            "xquery version \"1.0\";\r\n" +
+            "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
+            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
+            "declare function local:process($q as xs:string) {\r\n" +
+            "\tutil:eval($q)\r\n" +
+            "};\r\n" +
+            "let $q := \"/db:article\" return\r\n" +
+            "local:process($q)";
+
+        final ResourceSet result = executeQuery(query);
+    }
+    
+    //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
+    @Test(expected=XMLDBException.class)
+    public void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() throws XMLDBException {
+        
+        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        
+        final String processorModule =
+                "xquery version \"1.0\";\r\n" +
+                "module namespace processor = \"http://processor\";\r\n" +
+                "import module namespace util = \"http://exist-db.org/xquery/util\";\r\n" +
+                "declare function processor:process($q as xs:string) {\r\n" +
+                "\tutil:eval($q)\r\n" +
+                "};";
+        
+        writeModule(testHome, "processor.xqm", processorModule);
+        
+        final String query =
+            "xquery version \"1.0\";\r\n" +
+            "import module namespace processor = \"http://processor\" at \"xmldb:exist://" + testHome.getName() + "/processor.xqm\";\r\n" +
+            "declare namespace db = \"http://docbook.org/ns/docbook\";\r\n" +
+            "let $q := \"/db:article\" return\r\n" +
+            "processor:process($q)";
+
+        final ResourceSet result = executeQuery(query);
+    }
+    
+    private Collection createCollection(String collectionName) throws XMLDBException {
+        Collection collection = root.getChildCollection(collectionName);
+        if (collection == null) {
+            CollectionManagementService cmService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+            cmService.createCollection(collectionName);
+        }
+
+        collection = DatabaseManager.getCollection(URI + "/" + collectionName, "admin", "");
+        assertNotNull(collection);
+        return collection;
+    }
+    
+    private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
+        BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
+        ((EXistResource) res).setMimeType("application/xquery");
+        res.setContent(module.getBytes());
+        collection.storeResource(res);
+        collection.close();
+    }
+
+    private ResourceSet executeQuery(String query) throws XMLDBException {
+        
+        CompiledExpression compiledQuery = service.compile(query);
+        ResourceSet result = service.execute(compiledQuery);
+        return result;
     }
 }
