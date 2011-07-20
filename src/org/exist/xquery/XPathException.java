@@ -119,6 +119,23 @@ public class XPathException extends Exception {
         }
         this.errorVal = errorVal;
     }
+    
+    //useful at static analysis time
+    public XPathException(ErrorCode errorCode, String errorDesc) {
+        this.errorCode = errorCode;
+
+        if(errorDesc==null){
+            errorCode.toString();
+        }
+    }
+    public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+
+        if(errorDesc==null){
+            errorCode.toString();
+        }
+    }
 
     @Deprecated
     public XPathException(int line, int column, String message, Throwable cause) {
