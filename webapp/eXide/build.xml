@@ -1,46 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="compress" name="sandbox">
-
+<project basedir="." default="all" name="eXide">
     <property name="src" value="./src"/>
     <property name="tools" value="./tools"/>
-    <property name="scripts" value="./scripts"/>
+    <property name="build" value="./build"/>
+    <property name="scripts" value="./resources/scripts"/>
+    <property name="ace" value="${scripts}/ace"/>
+    <property name="ace.src" value="./support/ace"/>
     <property name="top.dir" value="../.."/>
     <property name="templates.dir" value="./templates"/>
     <property name="templates.default.dir" value="${templates.dir}/default"/>
-        
-    <property name="closure.compiler.url"
-        value="http://closure-compiler.googlecode.com/files/compiler-latest.zip"/>
-
-    <path id="classpath.core">
-        <fileset dir="${top.dir}/tools/ant/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <pathelement path="${tools}/compiler.jar"/>
-        <pathelement path="${java.class.path}"/>
-    </path>
-
-    <!-- 
-        existdb-contrib fetch task import used for downloading and extracting jar/class from zip
-    -->
-    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"
-        classpathref="classpath.core"/>
-
-    <target name="prepare">
+    <property name="closure.compiler.url" value="http://closure-compiler.googlecode.com/files/compiler-latest.zip"/>
+    <available property="closure.available" file="${tools}/compiler.jar"/>
+    <target name="get-closure" unless="closure.available">
         <mkdir dir="${tools}"/>
-
-        <fetch classpathref="classpath.core" dest="${tools}" url="${closure.compiler.url}"
-            classname="com.google.javascript.jscomp.CommandLineRunner"/>
+        <get src="${closure.compiler.url}" dest="${tools}"/>
         <unzip dest="${tools}">
             <fileset dir="${tools}">
                 <include name="*.zip"/>
             </fileset>
         </unzip>
         <delete file="${tools}/compiler-latest.zip"/>
-
-        <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
-            classpath="${tools}/compiler.jar"/>
     </target>
-    
+    <target name="prepare" depends="get-closure">
+        <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask" classpath="${tools}/compiler.jar"/>
+    </target>
+    <target name="all" depends="compress,ace,xar"/>
+    <target name="ace">
+        <mkdir dir="${ace}"/>
+        <copy todir="${ace}">
+            <fileset dir="${ace.src}/build/src">
+                <exclude name="*-uncompressed.js"/>
+            </fileset>
+        </copy>
+    </target>
     <target name="compress" depends="prepare">
         <jscomp compilationLevel="simple" debug="false" output="${scripts}/eXide-1.0.min.js">
             <sources dir="${basedir}/src">
@@ -70,8 +62,22 @@
             </sources>
         </jscomp>
     </target>
-    
-    <target name="templates">
-        <zip basedir="${templates.default.dir}" destfile="${templates.dir}/default-0.1.xar"/>
+    <target name="clean">
+        <delete dir="${ace}"/>
+        <delete file="${scripts}/eXide-1.0.min.js"/>
+        <delete file="${scripts}/jquery/jquery.plugins.min.js"/>
+    </target>
+    <target name="xar">
+        <mkdir dir="${build}"/>
+        <zip destfile="${build}/eXide-1.0.xar">
+            <fileset dir=".">
+                <include name="*.*"/>
+                <include name="modules/**"/>
+                <include name="resources/**"/>
+                <include name="templates/**"/>
+                <include name="src/**"/>
+                <exclude name=".git*"/>
+            </fileset>
+        </zip>
     </target>
 </project>

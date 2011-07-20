@@ -63,10 +63,10 @@ else
     case $value return $block
     default return $block]]></code>
     </snippet>
-	<snippet abbrev="comment (for function)">
-		<description>Insert an XQDoc comment for a function declaration</description>
-		<code><![CDATA[(:~
+    <snippet abbrev="comment (for function)">
+        <description>Insert an XQDoc comment for a function declaration</description>
+        <code><![CDATA[(:~
  :
  :)]]></code>
- 	</snippet>
+    </snippet>
 </snippets>
