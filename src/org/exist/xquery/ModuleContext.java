@@ -86,31 +86,33 @@ public class ModuleContext extends XQueryContext {
 		    try {
 		        if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||
                     (location.indexOf(':') < 0 &&
-                     parentContext.moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+                     parentContext.getModuleLoadPath().startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
 		            // use XmldbURI resolution - unfortunately these are not interpretable as URIs 
 		            // because the scheme xmldb:exist: is not a valid URI scheme
                     XmldbURI locationUri = XmldbURI.xmldbUriFor(FileUtils.dirname(location));
-                    if (parentContext.moduleLoadPath.equals ("."))
-                        moduleLoadPath = locationUri.toString();
+                    if (parentContext.getModuleLoadPath().equals ("."))
+                        setModuleLoadPath(locationUri.toString());
                     else {
-                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.moduleLoadPath);
+                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.getModuleLoadPath());
                         XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
-                        moduleLoadPath = moduleLoadUri.toString();
+                        setModuleLoadPath(moduleLoadUri.toString());
                     }
 		        } else {
                     String dir = FileUtils.dirname(location);
-		            if (parentContext.moduleLoadPath.equals(".")) {
+		            if (parentContext.getModuleLoadPath().equals(".")) {
 		                if (! dir.equals(".")) {
-		                    if (dir.startsWith("/"))
-		                        moduleLoadPath = "." + dir;
-		                    else
-		                        moduleLoadPath = "./" + dir;
+		                    if (dir.startsWith("/")) {
+		                        setModuleLoadPath("." + dir);
+                                    } else {
+		                        setModuleLoadPath("./" + dir);
+                                    }
 		                }
 		            } else {
-		                if (dir.startsWith("/"))
-		                    moduleLoadPath = dir;
-		                else
-		                    moduleLoadPath = FileUtils.addPaths(parentContext.moduleLoadPath, dir);
+		                if (dir.startsWith("/")) {
+		                    setModuleLoadPath(dir);
+                                } else {
+		                    setModuleLoadPath(FileUtils.addPaths(parentContext.getModuleLoadPath(), dir));
+                                }
 		            }
 		        }
 		    } catch (URISyntaxException e) {
