@@ -119,9 +119,7 @@ public class TryCatchExpression extends AbstractExpression {
         context.expressionStart(this);
 
         if(getContext().getXQueryVersion()<30){
-            ErrorCode ec = new EXistErrorCode("EXXQDY0002", "The try-catch expression is supported "
-                    + "for xquery version \"3.0\" and later.");
-            throw new XPathException(ec, ec.getDescription(), null);
+            throw new XPathException(this, ErrorCodes.EXXQDY0003, "The try-catch expression is supported for xquery version \"3.0\" and later.");
         }
 
         try {

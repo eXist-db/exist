@@ -50,8 +50,6 @@ import java.io.StringReader;
 
 public class Parse extends BasicFunction {
 	
-	public static final ErrorCode EXUTLPARSE001 = new EXistErrorCode("EXUTLPARSE001", "Error parsing XML.");
-	
 	protected static final FunctionReturnSequenceType RESULT_TYPE = new FunctionReturnSequenceType( Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "the XML fragment parsed from the string" );
 
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType( "to-be-parsed", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed" );
@@ -124,11 +122,11 @@ public class Parse extends BasicFunction {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
         } catch (ParserConfigurationException e) {
-            throw new XPathException(this, EXUTLPARSE001, "Error while constructing XML parser: " + e.getMessage());
+            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: " + e.getMessage(), args[0], e);
         } catch (SAXException e) {
             logger.debug("Error while parsing XML: " + e.getMessage(), e);
         } catch (IOException e) {
-            throw new XPathException(this, EXUTLPARSE001, "Error while parsing XML: " + e.getMessage());
+            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
         }
         
         if (report.isValid())
@@ -136,7 +134,7 @@ public class Parse extends BasicFunction {
         else {
         	MemTreeBuilder builder = context.getDocumentBuilder();
             NodeImpl result = Shared.writeReport(report, builder);
-    		throw new XPathException(this, EXUTLPARSE001, report.toString(), result);
+    		throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);
         }
     }
 }
