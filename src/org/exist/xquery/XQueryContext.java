@@ -236,7 +236,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     protected boolean                                  baseURISetInProlog            = false;
 
-    protected String                                   moduleLoadPath                = ".";
+    private String                                     moduleLoadPath                = ".";
 
     protected String                                   defaultFunctionNamespace      = Function.BUILTIN_FUNCTION_NS;
     protected AnyURIValue                              defaultElementNamespace       = AnyURIValue.EMPTY_URI;
@@ -2367,15 +2367,15 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @param  path
      */
-    public void setModuleLoadPath( String path )
-    {
+    @Override
+    public void setModuleLoadPath(String path) {
         this.moduleLoadPath = path;
     }
 
 
-    public String getModuleLoadPath()
-    {
-        return( moduleLoadPath );
+    @Override
+    public String getModuleLoadPath() {
+        return moduleLoadPath;
     }
 
 
