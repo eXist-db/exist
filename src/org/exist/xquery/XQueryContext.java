@@ -2631,11 +2631,15 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @throws  XPathException
      */
-    public Module importModule( String namespaceURI, String prefix, String location ) throws XPathException
-    {
+    public Module importModule( String namespaceURI, String prefix, String location ) throws XPathException {
     	
-    	if ("".equals(namespaceURI))
-            throw new XPathException("err:XQST0088: The first URILiteral in a module import must be of nonzero length.");
+        if(prefix != null && (prefix.equals("xml") || prefix.equals("xmlns"))) {
+            throw new XPathException(ErrorCodes.XQST0070, "The prefix declared for a module import must not be 'xml' or 'xmlns'.");
+        }
+        
+    	if(namespaceURI != null && namespaceURI.isEmpty()) {
+            throw new XPathException(ErrorCodes.XQST0088, "The first URILiteral in a module import must be of nonzero length.");
+        }
     	
         Module module = getRootModule( namespaceURI );
 
@@ -2688,30 +2692,29 @@ public class XQueryContext implements BinaryValueManager, Context
                         try {
                             sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
 
-                            if( sourceDoc == null ) {
-                                throw( new XPathException( "source for module " + location + " not found in database" ) );
+                            if(sourceDoc == null) {
+                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to anything.");
+                                
                             }
 
-                            if( ( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" ) ) {
-                                throw( new XPathException( "source for module " + location + " is not an XQuery or " + "declares a wrong mime-type" ) );
+                            if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
+                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to an XQuery.");
                             }
+                            
                             moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
 
                             // we don't know if the module will get returned, oh well
                             module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
 
-                        } catch( PermissionDeniedException e ) {
-                            throw( new XPathException( "permission denied to read module source from " + location ) );
-
+                        } catch(PermissionDeniedException e) {
+                            throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", e);
                         } finally {
-
-                            if( sourceDoc != null ) {
-                                sourceDoc.getUpdateLock().release( Lock.READ_LOCK );
+                            if(sourceDoc != null) {
+                                sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                             }
                         }
-
-                    } catch( URISyntaxException e ) {
-                        throw( new XPathException( e.getMessage(), e ) );
+                    } catch(URISyntaxException e) {
+                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", e);
                     }
                     
                 } else {
@@ -2722,14 +2725,12 @@ public class XQueryContext implements BinaryValueManager, Context
                         //TODO: use URIs to ensure proper resolution of relative locations
                         moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
 
-                    } catch( MalformedURLException e ) {
-                        throw( new XPathException( "source location for module " + namespaceURI + " should be a valid URL: " + e.getMessage() ) );
-
-                    } catch( IOException e ) {
-                        throw( new XPathException( "source for module '" + namespaceURI + "' not found at '" + location + "': " + e.getMessage() ) );
-
-                    } catch( PermissionDeniedException e ) {
-                        throw( new XPathException( "Permission denied to access module '" + namespaceURI + "' at '" + location + "': " + e.getMessage() ) );
+                    } catch(MalformedURLException e) {
+                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", e);
+                    } catch(IOException e) {
+                        throw new XPathException(ErrorCodes.XQST0059, "Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", e);
+                    } catch(PermissionDeniedException e) {
+                        throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", e);
                     }
 
                     // we don't know if the module will get returned, oh well
