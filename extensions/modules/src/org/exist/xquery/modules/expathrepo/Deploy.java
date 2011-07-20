@@ -135,7 +135,7 @@ public class Deploy extends BasicFunction {
 				}
 			}
             if (packageDir == null)
-            	throw new XPathException(this, ErrorCodes.EXPDY001, "Package " + pkgName + " not found");
+            	throw new XPathException(this, EXPathErrorCode.EXPDY001, "Package " + pkgName + " not found");
 			
 			// find and parse the repo.xml descriptor
 			File repoFile = new File(packageDir, "repo.xml");
@@ -163,7 +163,7 @@ public class Deploy extends BasicFunction {
 						try {
 							targetCollection = XmldbURI.create(args[1].getStringValue());
 						} catch (Exception e) {
-							throw new XPathException(this, ErrorCodes.EXPDY002, "Bad collection URI: " + args[1].getStringValue(), args[1], e);
+							throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI: " + args[1].getStringValue(), args[1], e);
 						}
 					}
 
@@ -173,7 +173,7 @@ public class Deploy extends BasicFunction {
 						try {
 							targetCollection = XmldbURI.create(target.getStringValue());
 						} catch (Exception e) {
-							throw new XPathException(this, ErrorCodes.EXPDY002, "Bad collection URI for <target> element: " + target.getStringValue(), args[0], e);
+							throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI for <target> element: " + target.getStringValue(), args[0], e);
 						}
 					}
 
