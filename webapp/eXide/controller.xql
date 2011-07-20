@@ -14,8 +14,8 @@ declare function local:credentials-from-session() as xs:string* {
 declare function local:set-credentials($user as xs:string, $password as xs:string?) as element()+ {
     session:set-attribute("myapp.user", $user), 
     session:set-attribute("myapp.password", $password),
-    <set-attribute name="xquery.user" value="{$user}"/>,
-    <set-attribute name="xquery.password" value="{$password}"/>
+    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist" name="xquery.user" value="{$user}"/>,
+    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist" name="xquery.password" value="{$password}"/>
 };
 
 (:~
@@ -75,7 +75,7 @@ else if ($exist:resource eq "logout") then
 else if ($exist:resource eq "index.html") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
-            <forward url="index.xql"/>
+            <forward url="modules/view.xql"/>
         </view>
     </dispatch>
 
@@ -100,7 +100,7 @@ else if ($exist:resource eq 'execute') then
             <view>
             <!-- Post process the result: store it into the HTTP session
                and return the number of hits only. -->
-            <forward url="session.xql">
+            <forward url="modules/session.xql">
                <clear-attribute name="xquery.source"/>
                <clear-attribute name="xquery.attribute"/>
                <set-attribute name="elapsed" 
@@ -114,7 +114,7 @@ else if ($exist:resource eq 'execute') then
  : item in the result set :)
 else if (starts-with($exist:path, '/results/')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="../session.xql">
+        <forward url="../modules/session.xql">
             {local:set-user()}
             <add-parameter name="num" value="{$exist:resource}"/>
         </forward>
@@ -126,7 +126,7 @@ else if ($exist:resource eq "outline") then
 	return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 	        <!-- Query is executed by XQueryServlet -->
-            <forward url="outline.xql">
+            <forward url="modules/outline.xql">
                 {local:set-user()}
 	        <set-attribute name="xquery.module-load-path" value="{$base}"/>
             </forward>

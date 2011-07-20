@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/eXide" abbrev="eXide" version="1.0" spec="1.0">
+    <title>eXide - XQuery IDE</title>
+</package>
