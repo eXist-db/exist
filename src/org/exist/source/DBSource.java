@@ -153,6 +153,9 @@ public class DBSource extends AbstractSource {
 
     @Override
     public void validate(Subject subject, int perm) throws PermissionDeniedException {
+        
+        //TODO This check should not even be here! Its up to the database to refuse access not requesting source
+        
         if(!doc.getPermissions().validate(subject, perm)) {
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have " + Integer.toOctalString(perm) + " access to resource '" + doc.getURI() + "'.");
         }
