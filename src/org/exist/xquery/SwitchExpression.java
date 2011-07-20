@@ -78,12 +78,9 @@ public class SwitchExpression extends AbstractExpression {
         this.defaultClause = new Case(null, defaultClause);
     }
     
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-        throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if(getContext().getXQueryVersion() < 30){
-            ErrorCode ec = new EXistErrorCode("EXXQDY0002", "The switch expression is supported "
-                    + "for xquery version \"3.0\" and later.");
-            throw new XPathException(ec, ec.getDescription(), null);
+            throw new XPathException(this, ErrorCodes.EXXQDY0003, "switch expression is not available before XQuery 3.0", contextSequence);
         }
 
         if (contextItem != null)

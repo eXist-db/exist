@@ -47,6 +47,9 @@ public interface Namespaces {
         public final static String EXIST_XQUERY_XPATH_ERROR_NS = "http://www.exist-db.org/xqt-errors/";
         public final static String EXIST_XQUERY_XPATH_ERROR_PREFIX = "exerr";
 
+        public final static String EXPATH_ERROR_NS = "http://expath.org/ns/error";
+        public final static String EXPATH_ERROR_PREFIX = "experr";
+        
 	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
 	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";
