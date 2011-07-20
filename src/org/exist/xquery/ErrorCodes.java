@@ -196,19 +196,6 @@ public class ErrorCodes {
     public static ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
     public static ErrorCode EXXQDY0003 = new EXistErrorCode("EXXQDY0003", "Only Supported for xquery version \"3.0\" and later.");
     
-    /**
-     * EXPATH specific errors [EXP][DY|SE|ST][nnnn]
-     * 
-     * EXP = EXPath
-     * DY = Dynamic
-     * DY = Dynamic
-     * SE = Serialization
-     * ST = Static
-     * nnnn = number
-     */
-    public final static ErrorCode EXPDY001 = new EXPathErrorCode("EXPATH001", "Package not found.");
-    public final static ErrorCode EXPDY002 = new EXPathErrorCode("EXPATH002", "Bad collection URI.");
-    
     
     public static class ErrorCode {
 
@@ -250,13 +237,6 @@ public class ErrorCodes {
 
         private EXistErrorCode(String code, String description) {
             super(new QName(code, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX), description);
-        }
-    }
-    
-    public static class EXPathErrorCode extends ErrorCode {
-
-        private EXPathErrorCode(String code, String description) {
-            super(new QName(code, Namespaces.EXPATH_ERROR_NS, Namespaces.EXPATH_ERROR_PREFIX), description);
         }
     }
 
