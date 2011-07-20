@@ -319,7 +319,7 @@ public class Eval extends BasicFunction {
         Sequence sequence = null;
 
         XQuery xqueryService = evalContext.getBroker().getXQueryService();
-        XQueryContext innerContext;
+        final XQueryContext innerContext;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
             innerContext = xqueryService.newContext(evalContext.getAccessContext());
@@ -331,19 +331,23 @@ public class Eval extends BasicFunction {
             innerContext.setShared(true);
             //innerContext = context;
         }
-        if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
-        	String uri = null;
-        	Object key = querySource.getKey();
-        	if (key instanceof XmldbURI) {
-        		uri = ((XmldbURI) key).removeLastSegment().toString();
-//			} else if (key instanceof URL) {
-//        		TODO: uri = ((URL) key).getParent()
-			} else if (key instanceof String && querySource instanceof FileSource) {
-        		uri = ((FileSource) querySource).getFile().getParent();
-			}
+        
+        //set module load path
+        if(Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
+            String uri = null;
+            Object key = querySource.getKey();
+            
+            if(key instanceof XmldbURI) {
+                uri = XmldbURI.EMBEDDED_SERVER_URI.append(((XmldbURI)key).removeLastSegment()).toString();
+//          } else if (key instanceof URL) {
+//              TODO: uri = ((URL) key).getParent()
+            } else if (key instanceof String && querySource instanceof FileSource) {
+                uri = ((FileSource) querySource).getFile().getParent();
+            }
         	
-        	if (uri != null)
-        		innerContext.setModuleLoadPath(uri);
+            if (uri != null) {
+                innerContext.setModuleLoadPath(uri);
+            }
         }
 
         //bind external vars?
