@@ -119,27 +119,23 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
         File dir = descriptor.getParentFile();
 
         if( dir != null ) {
-            File parentDir = dir.getParentFile();
+        	File propFile = new File( dir, BACKUP_PROPERTIES );
 
-            if( parentDir != null ) {
-                File propFile = new File( parentDir, BACKUP_PROPERTIES );
+        	try {
+        		InputStream is         = new BufferedInputStream( new FileInputStream( propFile ) );
+        		Properties  properties = new Properties();
 
-                try {
-                    InputStream is         = new BufferedInputStream( new FileInputStream( propFile ) );
-                    Properties  properties = new Properties();
-
-                    try {
-                        properties.load( is );
-                    }
-                    finally {
-                        is.close();
-                    }
-                    return( properties );
-                }
-                catch( FileNotFoundException e ) {
-                    // do nothing, return null
-                }
-            }
+        		try {
+        			properties.load( is );
+        		}
+        		finally {
+        			is.close();
+        		}
+        		return( properties );
+        	}
+        	catch( FileNotFoundException e ) {
+        		// do nothing, return null
+        	}
         }
         return( null );
     }
