@@ -60,14 +60,12 @@ import org.exist.xquery.value.DateTimeValue;
 
 import java.io.*;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
 import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
+import org.exist.storage.DataBackup;
 
 
 /**
@@ -87,8 +85,6 @@ import javax.xml.transform.OutputKeys;
 public class SystemExport
 {
     private final static Logger     LOG                     = Logger.getLogger( SystemExport.class );
-
-    private final static DateFormat dateFormat              = new SimpleDateFormat( "yyyyMMdd-HHmm" );
 
     private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal( NativeBroker.TEMP_COLLECTION );
     private static final XmldbURI   CONTENTS_URI            = XmldbURI.createInternal( "__contents__.xml" );
@@ -657,7 +653,7 @@ public class SystemExport
 
     public static File getUniqueFile( String base, String extension, String dir )
     {
-        String filename = base + '-' + dateFormat.format( new Date() );
+        String filename = base + '-' + DataBackup.creationDateFormat.format( Calendar.getInstance().getTime() );
         File   file     = new File( dir, filename + extension );
         int    version  = 0;
 
