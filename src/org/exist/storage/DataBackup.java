@@ -33,8 +33,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,8 +43,7 @@ public class DataBackup implements SystemTask {
 
     private final static Logger LOG = Logger.getLogger(DataBackup.class);
     
-    private final static SimpleDateFormat creationDateFormat =
-        new SimpleDateFormat("yyMMdd-HHmmss", Locale.US);
+    public final static SimpleDateFormat creationDateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
     
 	private String dest;
 	
@@ -83,7 +82,7 @@ public class DataBackup implements SystemTask {
 		
 		LOG.debug("Backing up data files ...");
 		
-		String creationDate = creationDateFormat.format(new Date());
+		String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
         String outFilename = dest + File.separatorChar + creationDate + ".zip";
         
         // Create the ZIP file
