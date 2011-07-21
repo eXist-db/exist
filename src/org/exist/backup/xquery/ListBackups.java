@@ -98,7 +98,8 @@ public class ListBackups extends BasicFunction
                             if( files[i].getName().endsWith( ".zip" ) ) {
                                 descriptor = new ZipArchiveBackupDescriptor( files[i] );
                             } else {
-                                descriptor = new FileSystemBackupDescriptor( files[i] );
+                            	File descriptorFile = new File(new File(files[i], "db"), BackupDescriptor.COLLECTION_DESCRIPTOR);
+                                descriptor = new FileSystemBackupDescriptor( descriptorFile );
                             }
                             Properties properties = descriptor.getProperties();
 

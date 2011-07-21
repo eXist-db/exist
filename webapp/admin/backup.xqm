@@ -33,11 +33,13 @@ declare function backup:get-directory() {
     
 declare function backup:trigger() {
     let $incremental := request:get-parameter("inc", ())
+    let $zip := request:get-parameter("zip", ())
     let $params :=
         <parameters>
             <param name="output" value="{$backup:BACKUP_DIR}"/>
             <param name="backup" value="yes"/>
             <param name="incremental" value="{if ($incremental) then 'yes' else 'no'}"/>
+            <param name="zip" value="{if ($zip) then 'yes' else 'no'}"/>
         </parameters>
     return (
         system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params),
@@ -61,10 +63,11 @@ declare function backup:display() {
             <div class="inner-panel">
     		    <h2>Trigger Backup</h2>
     		    
-    	        <span class="spacing">
+                <input type="checkbox" name="zip"/> Zip (Don't use for database with more than 4gb)<br/>
+                <input type="checkbox" name="inc"/> Incremental<br/>
+    	        <div class="spacing">
     	            <button type="submit" name="action" value="trigger">Trigger</button>
-                </span>
-                <input type="checkbox" name="inc"/> Incremental
+                </div>
                 <input type="hidden" name="panel" value="backup"/>
     	    </div>
 	    </form>
@@ -92,7 +95,12 @@ declare function backup:list-backups($dir as xs:string) as element(table) {
                     return
                         <tr>
                             <td>
-                                <a href="{$download}">{$backup/@file/string()}</a>
+                            {
+                                if (ends-with($backup/@file, ".zip")) then
+                                    <a href="{$download}">{$backup/@file/string()}</a>
+                                else
+                                    $backup/@file/string()
+                            }
                             </td>
                             <td>{date:format-dateTime($date)}</td>
                             <td class="last">{$backup/exist:incremental/text()}</td>
