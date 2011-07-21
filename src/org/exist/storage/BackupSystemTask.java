@@ -10,9 +10,7 @@ import org.xmldb.api.base.XMLDBException;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -61,8 +59,6 @@ public class BackupSystemTask implements SystemTask {
 
     private static final Logger LOG = Logger.getLogger(BackupSystemTask.class);
 
-    private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HHmm");
-
     private String user;
     private String password;
     private File directory;
@@ -106,7 +102,7 @@ public class BackupSystemTask implements SystemTask {
 
 
     public void execute(DBBroker broker) throws EXistException {
-        String dateTime = df.format(new Date());
+        String dateTime = DataBackup.creationDateFormat.format(Calendar.getInstance().getTime());
         String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
 
         Backup backup = new Backup(user, password, dest, collection);
