@@ -65,6 +65,7 @@ public class ExportGUI extends javax.swing.JFrame
     private javax.swing.JLabel       currentTask;
     private javax.swing.JTextField   dbConfig;
     private javax.swing.JButton      exportBtn;
+    private javax.swing.JCheckBox    zipBtn;
     private javax.swing.JCheckBox    incrementalBtn;
     private JCheckBox                directAccessBtn;
     private javax.swing.JLabel       jLabel1;
@@ -155,6 +156,7 @@ public class ExportGUI extends javax.swing.JFrame
         exportBtn       = new javax.swing.JButton();
         incrementalBtn  = new JCheckBox( "Incremental backup" );
         directAccessBtn = new JCheckBox( "Direct access" );
+        zipBtn			= new JCheckBox("Create ZIP");
         outputDir       = new javax.swing.JTextField();
         jLabel1         = new javax.swing.JLabel();
         btnChangeDir    = new javax.swing.JButton();
@@ -243,6 +245,7 @@ public class ExportGUI extends javax.swing.JFrame
 
         jToolBar1.add( incrementalBtn );
         jToolBar1.add( directAccessBtn );
+        jToolBar1.add( zipBtn );
 
         gridBagConstraints           = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
@@ -486,11 +489,15 @@ public class ExportGUI extends javax.swing.JFrame
             Object[] selected     = directAccessBtn.getSelectedObjects();
             boolean  directAccess = ( selected != null ) && ( selected[0] != null );
 
-            displayMessage( "Starting export ..." );
             selected = incrementalBtn.getSelectedObjects();
             boolean      incremental = ( selected != null ) && ( selected[0] != null );
+            
+            selected = zipBtn.getSelectedObjects();
+            boolean zip = ( selected != null ) && ( selected[0] != null );
+            
+            displayMessage( "Starting export ..." );
             SystemExport sysexport   = new SystemExport( broker, callback, null, directAccess );
-            File         file        = sysexport.export( exportTarget, incremental, true, errorList );
+            File         file        = sysexport.export( exportTarget, incremental, zip, errorList );
 
             displayMessage( "Export to " + file.getAbsolutePath() + " completed successfully." );
             progress.setString( "" );
