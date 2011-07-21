@@ -47,6 +47,7 @@ public class ExportMain
     private final static int                  CONFIG_OPT        = 'c';
     private final static int                  INCREMENTAL_OPT   = 'i';
     private final static int                  DIRECT_ACCESS_OPT = 'D';
+    private final static int                  ZIP_OPT 			= 'z';
 
     private final static CLOptionDescriptor[] OPTIONS           = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
@@ -54,7 +55,8 @@ public class ExportMain
         new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db." ),
         new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures" ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
-        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" )
+        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
+        new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" )
     };
 
     protected static BrokerPool startDB( String configFile )
@@ -92,6 +94,7 @@ public class ExportMain
         boolean        export       = false;
         boolean        incremental  = false;
         boolean        direct       = false;
+        boolean		   zip			= false;
         String         exportTarget = "export/";
         String         dbConfig     = null;
 
@@ -130,6 +133,11 @@ public class ExportMain
 
                 case INCREMENTAL_OPT: {
                     incremental = true;
+                    break;
+                }
+                
+                case ZIP_OPT: {
+                    zip = true;
                     break;
                 }
             }
