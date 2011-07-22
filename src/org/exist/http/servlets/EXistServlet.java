@@ -247,7 +247,7 @@ public class EXistServlet extends HttpServlet {
 			// If the current user is the Default User and they do not have permission
 			// then send a challenge request to prompt the client for a username/password.
 			// Else return a FORBIDDEN Error
-			if (user.equals(defaultUser)) {
+			if (user != null && user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -342,7 +342,7 @@ public class EXistServlet extends HttpServlet {
 			// If the current user is the Default User and they do not have permission
 			// then send a challenge request to prompt the client for a username/password.
 			// Else return a FORBIDDEN Error
-			if (user.equals(defaultUser)) {
+			if (user != null && user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -409,7 +409,7 @@ public class EXistServlet extends HttpServlet {
 			// If the current user is the Default User and they do not have permission
 			// then send a challenge request to prompt the client for a username/password.
 			// Else return a FORBIDDEN Error
-			if (user.equals(defaultUser)) {
+			if (user != null && user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -471,7 +471,7 @@ public class EXistServlet extends HttpServlet {
 			// If the current user is the Default User and they do not have permission
 			// then send a challenge request to prompt the client for a username/password.
 			// Else return a FORBIDDEN Error
-			if (user.equals(defaultUser)) {
+			if (user != null && user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -563,7 +563,7 @@ public class EXistServlet extends HttpServlet {
 			// If the current user is the Default User and they do not have permission
 			// then send a challenge request to prompt the client for a username/password.
 			// Else return a FORBIDDEN Error
-			if (user.equals(defaultUser)) {
+			if (user != null && user.equals(defaultUser)) {
 				authenticator.sendChallenge(request, response);
                 
 			} else {
