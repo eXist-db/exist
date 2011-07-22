@@ -407,4 +407,8 @@ public class JettyStart implements LifeCycle.Listener {
         status = STATUS_STOPPED;
         notifyAll();
     }
+    
+    public void systemInfo() {
+    	BrokerPool.systemInfo();
+    }
 }

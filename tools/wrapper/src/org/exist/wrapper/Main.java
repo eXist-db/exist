@@ -110,7 +110,14 @@ public class Main implements WrapperListener, Observer {
 	 * @see org.tanukisoftware.wrapper.WrapperListener#controlEvent(int)
 	 */
 	public void controlEvent(int event) {
-		if(WrapperManager.isControlledByNativeWrapper()) {
+		if (event == WrapperManager.WRAPPER_CTRL_HUP_EVENT) {
+			try {
+				Method method = klazz.getDeclaredMethod("systemInfo", new Class[0]);
+				method.invoke(app, new Object[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else if(WrapperManager.isControlledByNativeWrapper()) {
 			// the wrapper will take care of this event
 		} else {
 			if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) ||
