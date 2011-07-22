@@ -418,12 +418,12 @@ public class LDAPRealm extends AbstractRealm {
         
         List<String> blackList = null;
         if(searchPrinciple.getBlackList() != null) {
-            blackList = searchPrinciple.getBlackList().getRestrictionList();
+            blackList = searchPrinciple.getBlackList().getPrincipals();
         }
         
         List<String> whiteList = null;
         if(searchPrinciple.getWhiteList() != null) {
-            whiteList = searchPrinciple.getWhiteList().getRestrictionList();
+            whiteList = searchPrinciple.getWhiteList().getPrincipals();
         }
         
         if(blackList != null) {
