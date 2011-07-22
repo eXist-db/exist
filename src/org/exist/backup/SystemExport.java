@@ -199,7 +199,7 @@ public class SystemExport
             if( zip ) {
                 output = new ZipWriter( backupFile, DBBroker.ROOT_COLLECTION );
             } else {
-                output = new FileSystemWriter( new File( backupFile, DBBroker.ROOT_COLLECTION_NAME ) );
+                output = new FileSystemWriter( backupFile );
             }
             output.setProperties( properties );
 
@@ -356,9 +356,9 @@ public class SystemExport
             throw( new TerminatedException( "system export terminated by db" ) );
         }
 
-        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
+//        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
             output.newCollection( Backup.encode( URIUtils.urlDecodeUtf8( current.getURI() ) ) );
-        }
+//        }
 
         try {
             Writer        contents   = output.newContents();
@@ -444,9 +444,9 @@ public class SystemExport
         }
         finally {
 
-            if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
+//            if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
                 output.closeCollection();
-            }
+//            }
         }
     }
 
