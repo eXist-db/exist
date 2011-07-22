@@ -16,7 +16,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 public abstract class AbstractLDAPPrincipalRestrictionList implements Configurable {
     
     @ConfigurationFieldAsElement("principal")
-    private List<String> restrictionList = new ArrayList<String>();
+    private List<String> principals = new ArrayList<String>();
 
     protected Configuration configuration;
 
@@ -34,7 +34,11 @@ public abstract class AbstractLDAPPrincipalRestrictionList implements Configurab
         return (configuration != null);
     }
     
-    public List<String> getRestrictionList() {
-        return restrictionList;
+    public List<String> getPrincipals() {
+        return principals;
+    }
+    
+    public void addPrincipal(String principal) {
+        this.principals.add(principal);
     }
 }

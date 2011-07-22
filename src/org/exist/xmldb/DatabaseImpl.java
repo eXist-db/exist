@@ -267,7 +267,7 @@ public class DatabaseImpl implements Database {
     try {
         return securityManager.authenticate(user, password);
 	} catch (AuthenticationException e) {
-		throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage());
+		throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 	}
   }
 
