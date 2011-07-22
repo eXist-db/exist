@@ -91,12 +91,7 @@ public class BackupDirectory
 
     public BackupDescriptor lastBackupFile()
     {
-        File[] files      = dir.listFiles( new FileFilter() {
-                public boolean accept( File path )
-                {
-                    return( path.isFile() );
-                }
-            } );
+        File[] files      = dir.listFiles();
 
         File newest       = null;
         Date newestDate   = null;
