@@ -37,6 +37,7 @@ import java.util.Properties;
  */
 public class FileSystemWriter implements BackupWriter
 {
+	private File		 rootDir;
     private File         currentDir;
     private File         currentContents;
     private Writer       currentContentsOut;
@@ -58,11 +59,17 @@ public class FileSystemWriter implements BackupWriter
         }
         file.mkdirs();
         currentDir = file;
+        rootDir = file;
     }
 
     public void newCollection( String name )
     {
-        File file = new File( currentDir, name );
+    	File file;
+    	if (new File(name).isAbsolute()) {
+    		file = new File( rootDir, name );
+    	} else {
+    		file = new File( currentDir, name );
+    	}
 
         if( file.exists() ) {
             file.delete();
@@ -118,7 +125,7 @@ public class FileSystemWriter implements BackupWriter
         if( dataWritten ) {
             throw( new IOException( "Backup properties need to be set before any backup data is written" ) );
         }
-        File         propFile = new File( currentDir, "backup.properties" );
+        File         propFile = new File( rootDir, "backup.properties" );
         OutputStream os       = new FileOutputStream( propFile );
         properties.store( os, "Backup properties" );
         os.close();
