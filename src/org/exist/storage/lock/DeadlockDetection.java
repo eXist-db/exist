@@ -23,6 +23,7 @@ package org.exist.storage.lock;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -226,27 +227,27 @@ public class DeadlockDetection {
     }
 
     public static void debug(PrintWriter writer, String name, LockInfo info) {
-        writer.println("THREAD: " + name);
+        writer.println("Thread: " + name);
         if (info != null) {
-            writer.println("Lock type: " + info.getLockType());
-            writer.println("Lock mode: " + info.getLockMode());
-            writer.println("Lock id: " + info.getId());
-            writer.println("Held by: " + arrayToString(info.getOwners()));
-            writer.println("Read locks: " + arrayToString(info.getReadLocks()));
-            writer.println("Wait for read: " + arrayToString(info.getWaitingForRead()));
-            writer.println("Wait for write: " + arrayToString(info.getWaitingForWrite()));
+            writer.format("%20s: %s\n", "Lock type", info.getLockType());
+            writer.format("%20s: %s\n", "Lock mode", info.getLockMode());
+            writer.format("%20s: %s\n", "Lock id", info.getId());
+            writer.format("%20s: %s\n", "Held by", Arrays.toString(info.getOwners()));
+            writer.format("%20s: %s\n", "Held by", Arrays.toString(info.getOwners()));
+            writer.format("%20s: %s\n", "Held by", Arrays.toString(info.getOwners()));
+            writer.format("%20s: %s\n", "Waiting for read", Arrays.toString(info.getWaitingForRead()));
+            writer.format("%20s: %s\n\n", "Waiting for write", Arrays.toString(info.getWaitingForWrite()));
         }
     }
 
-    public static void debug() {
-        StringWriter sout = new StringWriter();
-        PrintWriter writer = new PrintWriter(sout);
+    public static void debug(PrintWriter writer) {
+        writer.println("Threads currently waiting for a lock:");
+        writer.println("=====================================");
+        
         Map<String, LockInfo> threads = getWaitingThreads();
         for (Map.Entry<String, LockInfo> entry : threads.entrySet()) {
             debug(writer, entry.getKey().toString(), entry.getValue());
         }
-        writer.close();
-        System.out.println(sout.toString());
     }
 
     //TODO: move to utils

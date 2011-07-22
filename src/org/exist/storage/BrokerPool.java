@@ -23,6 +23,8 @@ package org.exist.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -61,6 +63,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.btree.DBException;
+import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
@@ -355,6 +358,12 @@ public class BrokerPool extends Observable implements Database {
         instances.clear();
     }
 
+    public final static void systemInfo() {
+    	for (BrokerPool instance : instances.values()) {
+    		instance.printSystemInfo();
+    	}
+    }
+    
     public static void registerStatusObserver(Observer observer) {
         statusObserver = observer;
         LOG.debug("registering observer: " + observer.getClass().getName());
@@ -564,6 +573,8 @@ public class BrokerPool extends Observable implements Database {
     //the time that the database was started
     private final Calendar startupTime = Calendar.getInstance();
 
+    private BrokerWatchdog watchdog = null;
+    
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
@@ -690,6 +701,9 @@ public class BrokerPool extends Observable implements Database {
         	//TODO : why not automatically register Sync in system tasks ?
             scheduler.createPeriodicJob(2500, new Sync(), 2500);
         }
+        
+        if (System.getProperty("trace.brokers", "no").equals("yes"))
+        	watchdog = new BrokerWatchdog();
 	}
 	
 	//TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
@@ -1392,6 +1406,10 @@ public class BrokerPool extends Observable implements Database {
 			broker = inactiveBrokers.pop();
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
+			
+			if (watchdog != null)
+				watchdog.add(broker);
+			
 			broker.incReferenceCount();
             if (user != null)
                 broker.setSubject(user);
@@ -1449,6 +1467,9 @@ public class BrokerPool extends Observable implements Database {
 	        Subject lastUser = broker.getSubject();
 			broker.setSubject(securityManager.getGuestSubject());
 			inactiveBrokers.push(broker);
+			if (watchdog != null)
+				watchdog.remove(broker);
+			
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
 				//TODO : use a "clean" dedicated method (we have some below) ?
@@ -1690,6 +1711,7 @@ public class BrokerPool extends Observable implements Database {
                 long waitStart = System.currentTimeMillis();
                 //Are there active brokers ?
                 if (activeBrokers.size() > 0) {
+                	printSystemInfo();
                     LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
                     while (activeBrokers.size() > 0) {
                         try {
@@ -1823,4 +1845,19 @@ public class BrokerPool extends Observable implements Database {
         return startupTime;
     }
     
+    public void printSystemInfo() {
+    	StringWriter sout = new StringWriter();
+        PrintWriter writer = new PrintWriter(sout);
+        
+        writer.println("SYSTEM INFO");
+    	writer.format("Database instance: %s\n", getId());
+    	writer.println("-------------------------------------------------------------------");
+    	if (watchdog != null)
+    		watchdog.dump(writer);
+    	DeadlockDetection.debug(writer);
+    	
+    	String s = sout.toString();
+    	LOG.info(s);
+    	System.err.println(s);
+    }
 }
