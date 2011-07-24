@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
@@ -427,7 +428,7 @@ public class BrokerPool extends Observable implements Database {
 	/**
 	 * The number of active brokers for the database instance 
 	 */	
-	private Map<Thread, DBBroker> activeBrokers = new HashMap<Thread, DBBroker>();
+	private Map<Thread, DBBroker> activeBrokers = new IdentityHashMap<Thread, DBBroker>();
 		
 	/**
      * The configuration object for the database instance
@@ -1113,6 +1114,10 @@ public class BrokerPool extends Observable implements Database {
 		return maxBrokers;
 	}	
 	 
+	public int total() {
+		return brokersCount;
+	}
+	
 	/**
 	 * Returns whether the database instance has been configured.
 	 *
@@ -1442,7 +1447,7 @@ public class BrokerPool extends Observable implements Database {
 			broker.decReferenceCount();
 			if(broker.getReferenceCount() > 0) {
 				//it is still in use and thus can't be marked as inactive
-				return;  
+				return;
 			}
 			
 	        //Broker is no more used : inactivate it
@@ -1474,11 +1479,11 @@ public class BrokerPool extends Observable implements Database {
 			if(activeBrokers.size() == 0) {
 				//TODO : use a "clean" dedicated method (we have some below) ?
 				if (syncRequired) {
-					//Note that the broker is not yet really inactive ;-)
+					//Note t hat the broker is not yet really inactive ;-)
 					sync(broker, syncEvent);
 					this.syncRequired = false;
                     this.checkpoint = false;
-				}				
+				}			
                 if (serviceModeUser != null && !lastUser.equals(serviceModeUser)) {
                     inServiceMode = true;
                 }

@@ -67,6 +67,11 @@ public class Database implements DatabaseMBean {
     }
 
     @Override
+    public int getTotalBrokers() {
+    	return pool.total();
+    }
+    
+    @Override
     public TabularData getActiveBrokersMap() {
         OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING };
         try {
