@@ -25,14 +25,18 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
 import javax.management.openmbean.*;
+
+import java.io.StringWriter;
 import java.util.Map;
 
 public class Database implements DatabaseMBean {
 
-    private static String[] itemNames = { "owner", "referenceCount" };
+    private static String[] itemNames = { "owner", "referenceCount", "stack", "stackAcquired" };
     private static String[] itemDescriptions = {
             "Name of the thread owning the broker",
-            "Number of references held by the thread"
+            "Number of references held by the thread",
+            "Stack trace",
+            "Broker acquired"
     };
     private static String[] indexNames = { "owner" };
 
@@ -64,7 +68,7 @@ public class Database implements DatabaseMBean {
 
     @Override
     public TabularData getActiveBrokersMap() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER };
+        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING };
         try {
             CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
                     itemNames, itemDescriptions, itemTypes);
@@ -73,7 +77,12 @@ public class Database implements DatabaseMBean {
             for (Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
                 Thread thread = entry.getKey();
                 DBBroker broker = entry.getValue();
-                Object[] itemValues = { thread.getName(), broker.getReferenceCount() };
+                String trace = printStackTrace(thread);
+                String watchdogTrace = null;
+                if (pool.getWatchdog() != null) {
+                	watchdogTrace = pool.getWatchdog().get(broker);
+                }
+                Object[] itemValues = { thread.getName(), broker.getReferenceCount(), trace, watchdogTrace };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
             return data;
@@ -106,5 +115,15 @@ public class Database implements DatabaseMBean {
     @Override
     public String getExistHome() {
         return pool.getConfiguration().getExistHome().getAbsolutePath();
+    }
+    
+    public String printStackTrace(Thread thread) {
+    	StackTraceElement[] stack = thread.getStackTrace();
+    	StringWriter writer = new StringWriter();
+    	int showItems = stack.length > 20 ? 20 : stack.length;
+		for (int i = 0; i < showItems; i++) {
+			writer.append(stack[i].toString()).append('\n');
+		}
+		return writer.toString();
     }
 }

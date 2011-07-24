@@ -33,10 +33,11 @@ public class BrokerWatchdog {
 		}
 		
 		void trace() {
-			trace.append("Reference count: ").append(broker.getReferenceCount()).append("\n\n");
+			trace.append("Reference count: ").append(broker.getReferenceCount()).append("\n");
 			StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-			for (StackTraceElement elem : stack) {
-				trace.append(elem.toString()).append('\n');
+			int showElementCount = stack.length > 20 ? 20 : stack.length;
+			for (int i = 4; i < showElementCount; i++) {
+				trace.append(stack[i].toString()).append('\n');
 			}
 			trace.append("\n");
 		}
@@ -57,6 +58,14 @@ public class BrokerWatchdog {
 	
 	public void remove(DBBroker broker) {
 		watched.remove(broker);
+	}
+	
+	public String get(DBBroker broker) {
+		WatchedBroker w = watched.get(broker);
+		if (w != null) {
+			return w.trace.toString();
+		}
+		return "";
 	}
 	
 	public void checkForTimeout() throws EXistException {

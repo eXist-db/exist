@@ -1819,6 +1819,10 @@ public class BrokerPool extends Observable implements Database {
         }
 	}
 
+	public BrokerWatchdog getWatchdog() {
+		return watchdog;
+	}
+	
 	//TODO : move this elsewhere
     public void triggerCheckpoint() {
         if (syncRequired)
