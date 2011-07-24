@@ -33,6 +33,8 @@ public interface DatabaseMBean {
 
     int getActiveBrokers();
 
+    int getTotalBrokers();
+    
     long getReservedMem();
 
     long getCacheMem();
