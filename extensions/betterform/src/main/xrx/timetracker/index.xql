@@ -180,7 +180,8 @@ return
                     <xf:action ev:event="xforms-ready">
                         <xf:setvalue ref="to" value="substring(local-date(), 1, 10)"/>
                         <xf:recalculate/>
-                        <xf:setvalue ref="from" value="days-to-date(number(days-from-date(instance()/to) - instance('i-vars')/default-duration))"/>
+                        <!-- <xf:setvalue ref="from" value="days-to-date(number(days-from-date(instance()/to) - instance('i-vars')/default-duration))"/> -->
+                        <xf:setvalue ref="from" value="'2010-01-01'"/>
                     </xf:action>
 
                      <!-- ***************************
