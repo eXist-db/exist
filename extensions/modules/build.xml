@@ -59,6 +59,12 @@
     <condition property="include.module.jfreechart.config">
         <istrue value="${include.module.jfreechart}"/>
     </condition>
+	<condition property="include.module.jfreechart_svg">
+	    <and>
+            <istrue value="${include.module.jfreechart}"/>
+            <istrue value="${include.module.xslfo}"/>
+        </and>
+    </condition>
     <condition property="include.module.jndi.config">
         <istrue value="${include.module.jndi}"/>
     </condition>
@@ -293,6 +299,7 @@
             <exclude name="org/exist/xquery/modules/httpclient/**" unless="include.module.httpclient.config"/>
             <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
             <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
+            <exclude name="org/exist/xquery/modules/jfreechart/render/SVG**" unless="include.module.jfreechart_svg"/>
             <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
             <exclude name="org/exist/xquery/modules/lib/**" unless="include.module.lib.config"/>
 			<exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
