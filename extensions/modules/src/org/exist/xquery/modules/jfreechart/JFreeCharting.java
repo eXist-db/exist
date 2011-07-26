@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.apache.commons.io.IOUtils;
 
 import org.apache.log4j.Logger;
 
@@ -48,6 +49,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.xquery.modules.jfreechart.render.Renderer;
+import org.exist.xquery.modules.jfreechart.render.RendererFactory;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 
@@ -156,15 +159,17 @@ public class JFreeCharting extends BasicFunction {
             if(chart==null){
                throw new XPathException(this, "Unable to create chart '"+chartType+"'");
             }
+            
+            Renderer renderer = RendererFactory.getRenderer(config.getImageType());
 
             // Render output
             if(isCalledAs("render")){
-                byte[] image=writePNG(config, chart);
+                byte[] image=renderer.render(chart, config);
                 return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(image));
 
             } else {
                 ResponseWrapper response = getResponseWrapper(context);
-                writePNGtoResponse(config, response, chart);
+                writeToResponseWrapper(config, response, chart, renderer);
             }
             
 
@@ -207,33 +212,29 @@ public class JFreeCharting extends BasicFunction {
      *
      * @throws XPathException Thrown when an IO exception is thrown,
      */
-    private void writePNGtoResponse(Configuration config, ResponseWrapper response, JFreeChart chart)
+    private void writeToResponseWrapper(Configuration config, ResponseWrapper response, JFreeChart chart, Renderer renderer)
             throws XPathException {
         OutputStream os = null;
         try {
-            response.setContentType("image/png");
+            response.setContentType(renderer.getContentType());
+            
+            String contentEncoding = renderer.getContentEncoding();
+            if(contentEncoding!=null){
+                response.setHeader("Content-Encoding", contentEncoding);
+            }
+            
             os = response.getOutputStream();
-            ChartUtilities.writeChartAsPNG(os, chart, config.getImageWidth(), config.getImageHeight());
-            os.close();
+            renderer.render(chart, config, os);
+            
 
         } catch (IOException ex) {
             LOG.error(ex);
             throw new XPathException(this, "IO issue while serializing image. " + ex.getMessage());
 
         } finally {
-            try {
-                os.close();
-            } catch (IOException ex) {
-                // Ignore
-                LOG.debug(ex);
-            }
+            IOUtils.closeQuietly(os);
         }
 
     }
 
-    private byte[] writePNG(Configuration config, JFreeChart chart) throws IOException{
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ChartUtilities.writeChartAsPNG(os, chart, config.getImageWidth(), config.getImageHeight());
-        return os.toByteArray();
-    }
 }

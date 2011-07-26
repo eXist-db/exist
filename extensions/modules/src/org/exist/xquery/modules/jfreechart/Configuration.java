@@ -45,6 +45,10 @@ public class Configuration {
 
     // Chart title
     private String title;
+    
+    // Image type
+    private String imageType = "png";
+
 
     // Labels
     private String categoryAxisLabel;
@@ -64,8 +68,7 @@ public class Configuration {
     private TableOrder order = TableOrder.BY_COLUMN;
     private PlotOrientation orientation = PlotOrientation.HORIZONTAL;
     
-    // Colors
-    
+    // Colors   
     private Color titleColor;
     private Color chartBackgroundColor;
     private Color plotBackgroundColor;
@@ -80,8 +83,7 @@ public class Configuration {
     private String sectionColorsDelimiter                   = ",";
     
     
-    // Range
-    
+    // Range  
     private Double  rangeLowerBound;
     private Double  rangeUpperBound;
 
@@ -90,8 +92,13 @@ public class Configuration {
     private boolean generateTooltips = false;
     private boolean generateUrls = false;
 
+    
     // =========================
     // Getters
+    
+    public String getImageType() {
+        return imageType;
+    }
 
     public String getTimeAxisLabel() {
         return timeAxisLabel;
@@ -481,6 +488,14 @@ public class Configuration {
                             throw new XPathException("Value for 'categoryItemLabelGeneratorNumberFormat' cannot be parsed");
                         } else {
                             categoryItemLabelGeneratorNumberFormat = value;
+                        }
+                        
+                    } else if (child.getLocalName().equals("imageType")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'imageType' cannot be parsed");
+                        } else {
+                            imageType = value;
                         }
                     }
                     
