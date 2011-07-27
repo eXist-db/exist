@@ -182,11 +182,13 @@ public class SystemExport {
 
             backupFile = directory.createBackup(incremental && prevBackup != null, zip);
             BackupWriter output;
-            if (zip)
-                output = new ZipWriter(backupFile, DBBroker.ROOT_COLLECTION);
-            else
-                output = new FileSystemWriter(new File(backupFile, DBBroker.ROOT_COLLECTION_NAME));
-            output.setProperties(properties);
+
+            if( zip ) {
+                output = new ZipWriter( backupFile, DBBroker.ROOT_COLLECTION );
+            } else {
+                output = new FileSystemWriter( backupFile );
+            }
+            output.setProperties( properties );
 
             Date date = prevBackup == null ? null : prevBackup.getDate();
             CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
@@ -316,14 +318,19 @@ public class SystemExport {
      * @throws IOException
      * @throws SAXException
      */
-    private void export(Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs) throws IOException, SAXException, TerminatedException {
-        if (callback != null)
-            callback.startCollection(current.getURI().toString());
-        if (monitor != null && !monitor.proceed())
-            throw new TerminatedException("system export terminated by db");
-        if (!current.getURI().equalsInternal(XmldbURI.ROOT_COLLECTION_URI)) {
-            output.newCollection(Backup.encode(URIUtils.urlDecodeUtf8(current.getURI())));
+    private void export( Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException
+    {
+        if( callback != null ) {
+            callback.startCollection( current.getURI().toString() );
         }
+
+        if( ( monitor != null ) && !monitor.proceed() ) {
+            throw( new TerminatedException( "system export terminated by db" ) );
+        }
+
+//        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
+            output.newCollection( Backup.encode( URIUtils.urlDecodeUtf8( current.getURI() ) ) );
+//        }
         try {
             Writer contents = output.newContents();
             // serializer writes to __contents__.xml
@@ -396,10 +403,12 @@ public class SystemExport {
             serializer.endPrefixMapping("");
             serializer.endDocument();
             output.closeContents();
-        } finally {
-            if (!current.getURI().equalsInternal(XmldbURI.ROOT_COLLECTION_URI)) {
+        }
+        finally {
+
+//            if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
                 output.closeCollection();
-            }
+//            }
         }
     }
 

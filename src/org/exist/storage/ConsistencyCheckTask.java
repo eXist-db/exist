@@ -49,6 +49,7 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private String exportDir;
     private boolean createBackup = false;
+    private boolean createZip = true;
     private boolean paused = false;
     private boolean incremental = false;
     private boolean incrementalCheck = false;
@@ -59,6 +60,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private ProcessMonitor.Monitor monitor = new ProcessMonitor.Monitor();
     
     public final static String OUTPUT_PROP_NAME = "output";
+    public final static String ZIP_PROP_NAME = "zip";
     public final static String BACKUP_PROP_NAME = "backup";
     public final static String INCREMENTAL_PROP_NAME = "incremental";
     public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
@@ -79,6 +81,9 @@ public class ConsistencyCheckTask implements SystemTask {
 
         String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
+        String zip = properties.getProperty(ZIP_PROP_NAME, "yes");
+        createZip = zip.equalsIgnoreCase("YES");
+        
         String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
         incremental = inc.equalsIgnoreCase("YES");
         String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
@@ -141,7 +146,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Starting backup...");
                 SystemExport sysexport = new SystemExport(broker, null, monitor, false);
-                lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, true, errors);
+                lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, createZip, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
                 if (LOG.isDebugEnabled() && lastExportedBackup != null)
                     LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
