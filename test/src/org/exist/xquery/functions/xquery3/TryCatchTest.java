@@ -129,7 +129,7 @@ public class TryCatchTest extends EmbeddedExistTester {
             Throwable cause = t.getCause();
             if (cause instanceof XPathException) {
                 XPathException ex = (XPathException) cause;
-                assertEquals("exerr:EXXQDY0002", ex.getErrorCode().getErrorQName().getStringValue());
+                assertEquals("exerr:EXXQDY0003", ex.getErrorCode().getErrorQName().getStringValue());
 
             } else {
                 t.printStackTrace();
