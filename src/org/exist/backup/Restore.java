@@ -140,7 +140,7 @@ public class Restore extends DefaultHandler
             try {
 
                 if( contents.isDirectory() ) {
-                    bd = new FileSystemBackupDescriptor( new File( contents, BackupDescriptor.COLLECTION_DESCRIPTOR ) );
+                	bd=new FileSystemBackupDescriptor(new File(new File(contents, "db"), BackupDescriptor.COLLECTION_DESCRIPTOR));
                 } else if( contents.getName().endsWith( ".zip" ) || contents.getName().endsWith( ".ZIP" ) ) {
                     bd = new ZipArchiveBackupDescriptor( contents );
                 } else {
