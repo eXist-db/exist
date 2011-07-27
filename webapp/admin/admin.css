@@ -234,7 +234,7 @@ td.last {
 }
 
 .spacing {
-    margin-right: 3em;
+    margin: 10px 3em 0 0;
 }
 
 .refresh {
