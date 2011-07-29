@@ -1,0 +1,197 @@
+/*
+ * Copyright (c) 2010. betterForm Project - http://www.betterform.de
+ * Licensed under the terms of BSD License
+ */
+
+#registration table {
+    border-collapse: collapse;
+}
+
+#registration * {
+    font-size: 11pt;
+    font-family: sans-serif;
+    color: #666666;
+}
+
+#registration .dijitButtonNode {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+#registration .dijitTextBoxFocused,
+#registration .dijitComboBoxFocused,
+#registration .dijitSpinnerFocused,
+#registration .dijitSpinnerUpArrowActive,
+#registration .dijitSpinnerDownArrowActive,
+#registration .dijitTextAreaFocused {
+    border-color: gray;
+}
+
+#registration .dijitInputField input,
+#registration .dijitTextBox,
+#registration .dijitComboBox,
+#registration .dijitSpinner {
+    margin: 0;
+}
+
+#registration #signin {
+    float: right;
+    font-size: 8pt;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    width: 216px;
+    color: blue;
+    text-decoration: underline;
+}
+
+#registration .bfVerticalTable {
+    border: none;
+    padding: 20px;
+    padding-bottom: 0px;
+    width: 700px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#registration #subtitle {
+    display: block;
+    font-size: 8pt;
+
+}
+
+#registration .bfVerticalTable td {
+    padding-top: 10px;
+}
+
+#registration .bfVerticalTableLabel {
+    padding-right: 5px;
+    width: 23%;
+    text-align: right;
+}
+
+#registration .bfVerticalTableValue {
+    width: 24%;
+}
+
+#registration .bfVerticalTableInfo {
+    width: 120px;
+    position: relative;
+
+}
+
+#registration .xfValue {
+    padding: 5px;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-bottom-left-radius: 8px;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+}
+
+#registration .xfInvalid .xfValue {
+    background: white;
+}
+
+#registration  .xfAlert,
+#registration  .xfHint,
+#registration  .xfHelp,
+#registration  .info {
+    font-size: 9pt;
+    font-family: sans-serif;
+    width: 95%;
+    padding: 7px 0px 5px 30px;
+    height: 15px;
+    border: solid 1px;
+}
+
+#registration .xfAlert {
+    display: block;
+    background: #FFCFCF;
+    color: #801B1B;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    background: #FFCFCF url(../images/error.png) no-repeat scroll 2% 5px;
+    margin: 0; /*overflow: hidden; */
+    white-space: nowrap;
+    width: 100%;
+    border-color: #E5A3A3 !important;
+	position: relative;
+}
+
+#registration .xfHint {
+    display: block;
+    background: #F2F2F2 url(../images/hint.png) no-repeat 3% 7px;
+    color: #666666;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    margin: 0; /*overflow: hidden;*/
+    white-space: nowrap;
+    width: 190px;
+    border-color: #DBDBDB !important;
+	position: relative;
+
+}
+
+#registration .info {
+    display: block;
+    background: #F0FEE9 url(../images/ok.png) no-repeat 3% 7px;
+    color: #666666;
+    -moz-border-radius-topright: 8px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    margin: 0; /*overflow: hidden;*/
+    white-space: nowrap;
+    width: 190px;
+    border-color: #E1EFDB !important;
+	position:relative;
+}
+
+#registration .xfControl, #registration .xfAlert, #registration .xfHint, #registration .info {
+    margin-bottom: 8px;
+}
+
+#registration .xfGroupLabel {
+    font-size: 1.5em; /*border-bottom: 4px double #999999;*/
+    padding-bottom: 5px;
+    color: #333333;
+}
+
+#registration .xfTriggerMiddleColumnTrigger {
+    float: right;
+}
+
+#registration .xfRequired .xfValue {
+/*background: #F2F2F2;*/
+    height: 17px;
+}
+
+#registration .dijitFocused {
+    /* background-color: #F2F2F2 !important;
+    border:none;            */
+}
+
+#registration td, td span {
+/*    position: relative; */
+}
+
+/*
+#registration .dijitTextBox,
+#registration .dijitComboBox,
+#registration .dijitSpinner  {
+    width: 10em;
+}
+*/
+.xfLabel {
+    padding-top: 6px;
+    display: block;
+}
