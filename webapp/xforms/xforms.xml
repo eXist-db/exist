@@ -1,126 +1,271 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<article>
-    <articleinfo><graphic fileref="../logo.jpg"/>
+<book>
+    <bookinfo>
+        <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>XForms Introduction</title><author>
+        <title>XForms Introduction</title>
+        <author>
             <firstname>James</firstname>
             <surname>Fuller</surname>
             <affiliation>
                 <address format="linespecific"><email>jim.fuller at webcomposite.com</email></address>
-            </affiliation></author><author><firstname>Wolfgang</firstname><surname>Meier</surname></author></articleinfo>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+        </author>
+    </bookinfo>
+    
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
-    <section>
-        <title>XForms Support in eXist</title>
-        <abstract>
-            <para>eXist now directly supports XForms via Alain Couthures' excellent <a
-                    href="http://www.agencexml.com">XSLTForms</a> processor. XSLTForms implements
-                the XForms standard within the browser and is thus easy to integrate. However, eXist
-                will also work with other XForms processors like <ulink url="http://www.orbeon.com"
-                    >Orbeon</ulink> or <ulink url="http://www.betterform.de/">betterFORM</ulink>. </para>
-        </abstract>
-        <para>XSLTForms transforms the XForms xml into an XHTML page with javascript that can
-            process XForms. As eXist has support for RESTful interactions the action of saving the
-            XML representation of data provided by XForms can be as easy as using HTTP PUT method
-            with an action attribute referencing an xml document in the XML Database. For more
-            complex tasks, you can submit your XForms instances to an XQuery, post-process it there
-            and get the results back into your XForms. Several <ulink url="examples.xml"
-                >examples</ulink> are provided.</para>
+    <chapter>
         <section>
-            <title>Using xsltform inside of eXist</title>
-            <para>XSLTForms mainly consists of two components:</para>
-            <itemizedlist>
-                <listitem>
-                    <para>the XSLT stylesheet <filename>xsltforms.xsl</filename> which transforms
-                        the XForms markup into HTML and javascript understood by the browser</para>
-                </listitem>
-                <listitem>
-                    <para>a javascript library</para>
-                </listitem>
-            </itemizedlist>
-            <para>The XSLT stylesheet can either be applied <emphasis role="bold"
-                    >server-side</emphasis> or within the <emphasis role="bold">client</emphasis>,
-                i.e. the browser. To let the browser do the job, all you have to do is to prepend an
-                XSL PI to your XForms document, pointing to the <filename
-                    >xsltforms/xsltforms.xsl</filename> stylesheet:</para>
-            <example>
-                <title>Activate xforms by using XSL PI</title>
-                <programlisting><markup><![CDATA[<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms">
-    ...
-</html>
-]]></markup></programlisting>
-            </example>
-            <para>Please have a look at <ulink url="hello.xml">hello.xml</ulink> for a very basic
-                example using client-side transformation.</para>
-            <para>When applying the stylesheet server-side, you need to make sure serialization
-                parameters are correctly set. For example, you can apply the stylesheet within an
-                    <ulink url="urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
-            <example>
-                <title>Applying the stylesheet server-side via controller.xql</title>
-                <programlisting><markup><![CDATA[<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-    <view>
-        <forward servlet="XSLTServlet">
-            (: Apply xsltforms.xsl stylesheet :)
-    		<set-attribute name="xslt.stylesheet"
-    			value="xsltforms/xsltforms.xsl"/>
-    	    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
-    	    <set-attribute name="xslt.output.indent" value="no"/>
-    	    <set-attribute name="xslt.output.media-type" value="text/html"/>
-    	    <set-attribute name="xslt.output.method" value="xhtml"/>
-    	    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
-    	</forward>
-    </view>
-    <cache-control cache="yes"/>
-</dispatch>]]></markup></programlisting>
-            </example>
-            <para>It is important to set the <option>indent</option> serialization parameter to
-                "no", otherwise you'll get javascript errors when viewing the page. Also, if you
-                apply the stylesheet server-side, make sure you removed the processing instruction
-                from the source file or the browser will try to run the stylesheet as well (which
-                most likely leads to errors).</para>
-            <para>The <ulink url="tasks/todo-list.xml">"task manager"</ulink> and <ulink
-                    url="shakespeare.xml">Shakespeare</ulink> examples are both using a server-side
-                transformation. Please have a look at the corresponding controller.xql in <filename
-                    >webapp/xforms/controller.xql</filename> to see how it is done.</para>
+            <title>XForms Support in eXist</title>
+            <para>eXist now has broad support for the W3C XForms standard. It offers a client-side 
+                (<ulink href="http://www.agencexml.com">XSLTForms</ulink>) and a server-side 
+                (<ulink href="http://www.betterform.de">betterFORM</ulink>) implementation and thus is ideally 
+                equipped to build complete applications that use XML from front to back.
+            </para>
+            <para> However, eXist will also work with other XForms processors, like Orbeon or Chiba (the ancestor 
+                of betterFORM).</para>
+            <para>As eXist has support for RESTful interactions saving XML
+                data is as easy as using a HTTP PUT submission. For more complex tasks, you can submit your
+                XForms instances to an XQuery, post-process them and get the results back into your
+                form. Several examples are provided.</para>
         </section>
         <section>
-            <title>Known Issues</title>
-            <para>Loading an XForms document through eXist's REST interface: when the REST server
-                finds an xsl-stylesheet processing instruction in a document, it tries to apply the
-                referenced stylesheet server-side. Unfortunately, the default serialization settings
-                of the REST interface set <option>indent="yes"</option>, which leads to problems
-                with the XForms javascript library.</para>
-            <para>As a workaround, you can append a request parameter <option>?_indent=no</option>
-                to the REST URI. However, the recommended approach would be to use XQueryURLRewrite
-                to properly handle those requests and apply the stylesheet.</para>
+            <title>Using betterFORM inside of eXist</title>
+            <para>
+                betterFORM is a server-side W3C XForms 1.1 implementation written in Java that now is closely 
+                integrated within eXist. It covers 99% of the XForms recommendation and has been extensively 
+                tested against the official XForms 1.1 Test Suite. All modern browsers are supported without 
+                the need for plugins. betterFORM can also be obtained (<ulink
+                    url="https://github.com/betterFORM/betterFORM">via Github</ulink>) and run separately as a
+                standard webapp. It is published under the BSD license.
+            </para>
+            <para>
+                With betterFORM XHTML/XForms document are transcoded on the server into plain (X)HTML + JavaScript.
+                The resulting page uses an AJAX layer to keep client and server in sync and provide an attractive 
+                user interface without the need of writing a single line of script code.
+            </para>
+            <para>
+                XForms processing with betterFORM is handled by a servlet filter (XFormsFilter) which nicely 
+                integrates with the URL Rewriting feature of eXist. You can use XQuery to generate your
+                XForms markup and process it in a single request.
+            </para>
+            <section>
+                <title>Getting started</title>
+                <para>betterFORM by now is activated once you have installed eXist on your machine.
+                    By default betterFORM is configured to run XForms exclusively from the database.</para>
+
+                <para>To execute a XHTML/XForms document it is sufficient to store it into your database
+                    (using WebDAV or the admin client) and access it via the REST interface.</para>
+                <para>betterFORM can also be configured to listen only for a certain collections or to fetch documents
+                    from the filesystem (somewhere below ‘webapp’ dir) by changing the filter mapping in
+                    webapp/WEB-INF/web.xml.</para>
+                <example>
+                    <title>Configure filtermapping in web.xml</title>
+                    <programlisting><markup><![CDATA[
+                        <filter-mapping>
+                            <filter-name>XFormsFilter</filter-name>
+                            <url-pattern>/rest/db/*</url-pattern>
+                        </filter-mapping>
+                        <filter-mapping>
+                            <filter-name>XFormsFilter</filter-name>
+                            <servlet-name>XFormsPostServlet</servlet-name>
+                        </filter-mapping>
+                        <filter-mapping>
+                            <filter-name>XQueryURLRewrite</filter-name>
+                            <url-pattern>/*</url-pattern>
+                        </filter-mapping>                                                
+                    ]]></markup></programlisting>
+                </example>                         
+            </section>
+            <section>
+                <title>betterFORM Add-ons</title>
+                <para>To ease the work with betterFORM it is highly recommended to install the betterFROM dashboard 
+                    along with the FeatureExplorer and the demo application. Before the betterFORM add-ons can be 
+                    used the examples (eXist-db-shipped files) must be installed via the 
+                    <ulink href="../admin/admin.xql?panel=setup">Admin panel</ulink></para>
+                <itemizedlist>
+                    <listitem>
+                        <para><ulink href="../dashboard.html"><emphasis role="bold">Dashboard</emphasis></ulink> 
+                            is a simple browser to your database. It allows to navigate the collections and shows all 
+                            the containing files. It has a source code view and allows to upload a file into the 
+                            database and to create collections.</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink href="../rest/db/betterform/forms/reference/FeatureExplorer.xhtml">
+                            <emphasis role="bold">FeatureExplorer</emphasis></ulink> is the live documentation of 
+                            betterFORM. It is itself a XForms document that offers a navigation menu with links to
+                            many sample XForms that show working examples along with the relevant links to the Spec. 
+                            A live CSS reference helps with styling forms by showing all available CSS classes.
+                            FeatureExplorer will be enhanced continuously as the feature-set grows.</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink href="../rest/db/betterform/apps/timetracker/index.xql">
+                            <emphasis role="bold">Timetracker</emphasis></ulink> is a small but complete demo application. It
+                            shows a basic <emphasis role="bold">XRX application</emphasis> and can give some 
+                            hints for writing your own single-page applications with eXist and betterFORM.</para>
+                    </listitem>
+                </itemizedlist>
+                <para>See the <ulink href="examples.xml">XForms example</ulink> page for more betterFORM demo &amp;
+                reference forms.</para>
+            </section>
+        </section>
+        
+        
+        
+        <!-- XSLT FORMS SECTION -->
+        <section>
+            <title>Using XSLTForms inside of eXist</title>
+            <para>eXist now directly supports XForms via Alain Couthures' excellent <ulink
+                href="http://www.agencexml.com">XSLTForms</ulink> processor. XSLTForms implements the XForms 
+                standard within the browser and is thus easy to integrate. XSLTForms transforms the XForms xml 
+                into an XHTML page with javascript that can process XForms.</para>
+            <section>
+                <title>Using XSLTForms inside of eXist</title>
+                <para>XSLTForms mainly consists of two components:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>the XSLT stylesheet <filename>xsltforms.xsl</filename>, which transforms
+                            the XForms markup into HTML and javascript understood by the browser</para>
+                    </listitem>
+                    <listitem>
+                        <para>a javascript library</para>
+                    </listitem>
+                </itemizedlist>
+                <para>The XSLT stylesheet can either be applied <emphasis role="bold"
+                    >server-side</emphasis> or within the <emphasis role="bold">client</emphasis>,
+                    i.e. the browser. To let the browser do the job, all you have to do is to prepend an
+                    XSL PI to your XForms document, pointing to the <filename
+                        >xsltforms/xsltforms.xsl</filename> stylesheet:</para>
+                <example>
+                    <title>Activate xforms by using XSL PI</title>
+                    <programlisting><markup><![CDATA[<?xml-stylesheet href="xsltforms/xsltforms.xsl" type="text/xsl"?>
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms">
+        ...
+    </html>
+    ]]></markup></programlisting>
+                </example>
+                <para>Please have a look at <ulink url="hello.xml">hello.xml</ulink> for a very basic
+                    example using client-side transformation.</para>
+                <para>When applying the stylesheet server-side, you need to make sure serialization
+                    parameters are correctly set. For example, you can apply the stylesheet within an
+                    <ulink url="../urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
+                <example>
+                    <title>Applying the stylesheet server-side via controller.xql</title>
+                    <programlisting><markup><![CDATA[<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <view>
+            <forward servlet="XSLTServlet">
+                (: Apply xsltforms.xsl stylesheet :)
+        		<set-attribute name="xslt.stylesheet"
+        			value="xsltforms/xsltforms.xsl"/>
+        	    <set-attribute name="xslt.output.omit-xml-declaration" value="yes"/>
+        	    <set-attribute name="xslt.output.indent" value="no"/>
+        	    <set-attribute name="xslt.output.media-type" value="text/html"/>
+        	    <set-attribute name="xslt.output.method" value="xhtml"/>
+        	    <set-attribute name="xslt.baseuri" value="xsltforms/"/>
+        	</forward>
+        </view>
+        <cache-control cache="yes"/>
+    </dispatch>]]></markup></programlisting>
+                </example>
+                <para>It is important to set the <option>indent</option> serialization parameter to
+                    "no", otherwise you'll get javascript errors when viewing the page. Also, if you
+                    apply the stylesheet server-side, make sure you removed the processing instruction
+                    from the source file or the browser will try to run the stylesheet as well (which
+                    most likely leads to errors).</para>
+                <para>The <ulink url="tasks/todo-list.xml">"task manager"</ulink> and <ulink
+                    url="shakespeare.xml">Shakespeare</ulink> examples are both using a server-side
+                    transformation. Please have a look at the corresponding controller.xql in <filename
+                        >webapp/xforms/controller.xql</filename> to see how it is done.</para>
+            </section>
+            <section>
+                <title>Known Issues</title>
+                <para>Loading an XForms document through eXist's REST interface: when the REST server
+                    finds an xsl-stylesheet processing instruction in a document, it tries to apply the
+                    referenced stylesheet server-side. Unfortunately, the default serialization settings
+                    of the REST interface set <option>indent="yes"</option>, which leads to problems
+                    with the XForms javascript library.</para>
+                <para>As a workaround, you can append a request parameter <option>?_indent=no</option>
+                    to the REST URI. However, the recommended approach would be to use XQueryURLRewrite
+                    to properly handle those requests and apply the stylesheet.</para>
+            </section>
         </section>
         <section>
             <title>Additional XForms Resources</title>
-            <section><title>Mailing Lists</title>
-                <ul>
-                    <li>XSLTForms <a
-                            href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support"
-                            >mailing list</a></li>
-                </ul>
+            <section>
+                <title>XForms examples running in eXist</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>XSLT &amp; betterFORM XForms 
+                            <ulink url="examples.xml">Examples</ulink></para>
+                    </listitem>            
+                </itemizedlist>
+            </section>
+            
+            <section>
+                <title>Mailing Lists</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>XSLTForms 
+                            <ulink url="https://lists.sourceforge.net/lists/listinfo/xsltforms-support">
+                                mailing list</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <ulink url="https://lists.sourceforge.net/lists/listinfo/betterform-users">
+                                betterFORM Users</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <ulink url="https://lists.sourceforge.net/lists/listinfo/betterform-developer">
+                                betterFORM Developers</ulink></para>
+                    </listitem>
+                </itemizedlist>
             </section>
             <section><title>XForms Specifications</title>
-                <ul>
-                    <li>
-                        <a href="http://www.w3.org/TR/xforms/">XForms v1.0 (Third Edition)</a>
-                    </li>
-                </ul>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <ulink url="http://www.w3.org/TR/xforms/">XForms v1.1 
+                                (W3C Recommendation)</ulink></para>
+                    </listitem>
+                </itemizedlist>
             </section>
             <section><title>Useful</title>
-                <ul>
-                    <li><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is
-                        a useful place to learn XForms</li>
-                    <li>
-                        <a
-                            href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/"
-                            target="_resource">XSLTForms coverage of W3C test suite</a>
-                    </li>
-                </ul>
+                <itemizedlist>
+                    <listitem>
+                        <para><ulink url="http://betterform.wordpress.com">betterFORM Blog</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="https://betterform.de/trac">betterFORM Issue Tracking</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://betterform.de">betterFORM homepage</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="https://github.com/betterFORM/betterFORM">betterFORM@github</ulink> - source code available here</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://betterform.de/reports/Firefox-3.0-Mac-OS-X-10.6-ConformanceReport1.1.html">betterFORM coverage</ulink>  of W3C XForms 1.1 Test Suite</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://en.wikibooks.org/wiki/XForms">XForms Wikibook</ulink> is a useful place to learn XForms</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://en.wikibooks.org/wiki/XRX">XRX Wikibook</ulink> about XML application building</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://en.wikibooks.org/wiki/XSLTForms">XSLTForms Wikibook</ulink> is providing specific informations</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/">XSLTForms coverage</ulink> of W3C test suite</para>
+                    </listitem>
+                </itemizedlist>
             </section>
         </section>
-    </section>
-</article>
+    </chapter>
+    
+</book>

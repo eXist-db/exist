@@ -110,64 +110,6 @@ declare function local:generateUploadMarkup($uri as xs:string, $contextPath as x
 	</div>
 };
 
-declare function local:generateLoginMarkup($uri as xs:string, $contextPath as xs:string, $path as xs:string) {
-    let $xqeuryPath := functx:substring-before-last($uri, 'FormsQuery.xql')
-    let $guest := xmldb:get-current-user() eq 'guest'
-    let $label := if ($guest) then ('Not logged in' ) else ('Logged in')
-    let $markup := if (xmldb:get-current-user() eq 'guest')
-    then (
-        <div dojoType="dijit.form.DropDownButton" class="loginDropDownButton">
-            <span class="label">
-                <img style="height:28px;width:28px;" src="{fn:concat($contextPath, '/bfResources/images/gear-blue-trans.png')}" title="{$label}"/>
-            </span>
-            <div dojoType="dijit.TooltipDialog" name="loginTooltip">
-                <form type="dijit.form.Form" name="login" class="login" method="post"  enctype="multipart/form-data" action="{$xqeuryPath}login.xql" >
-                    <fieldset>
-                        <p>Name:
-                            <input dojoType="dijit.form.TextBox" type="name" name="user" value=""/>
-                        </p>
-                        <p>Password:
-                            <input dojoType="dijit.form.TextBox" type="password" name="password" value=""/>
-                        </p>
-                        <p>
-                            <button dojoType="dijit.form.Button" type="button">login
-                                <script type="dojo/method" event="onClick" args="evt">
-                                    login();
-                                </script>
-                            </button>
-                        </p>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-    ) else (
-     <div dojoType="dijit.form.DropDownButton" class="loginDropDownButton">
-            <span class="label">
-                <img style="height:28px;width:28px;" src="{fn:concat($contextPath, '/bfResources/images/gear-blue-trans.png')}" title="{$label}"/>
-            </span>
-            <div dojoType="dijit.TooltipDialog" name="loginTooltip">
-                <form type="dijit.form.Form" name="login" class="login" method="post"  enctype="multipart/form-data" action="{$xqeuryPath}login.xql" >
-                    <fieldset>
-                        <input dojoType="dijit.form.TextBox" type="name" name="user" value="guest" style="display:none"/>
-                        <input dojoType="dijit.form.TextBox" type="password" name="password" value="guest" style="display:none"/>
-                        <p>
-                            <button dojoType="dijit.form.Button" type="button">logout
-                                <script type="dojo/method" event="onClick" args="evt">
-                                    login();
-                                </script>
-                            </button>
-                        </p>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-    )
-	return
-	    <span>
-            {$markup}
-        </span>
-};
-
 declare function local:generateExistAdminClientMarkup($uri as xs:string, $contextPath as xs:string, $path as xs:string) {
 <div class="eXistAdminClient" >
 	<span class="label">
@@ -317,7 +259,6 @@ declare function local:getHTMLFilesListing($uri as xs:string, $contextPath as xs
                   {local:generateExistAdminClientMarkup($uri, $contextPath, $path)}
                   {local:generateCollectionMarkup($uri, $contextPath, $path, $altTextCreateCollection)}
 			      {local:generateUploadMarkup($uri, $contextPath, $path, $altTextFormUpload)}
-			      {local:generateLoginMarkup($uri, $contextPath, $path)}
   			</div>
 		</div>
 			
