@@ -67,13 +67,13 @@ public class PutFunction extends CacheBasicFunction {
 		try {
 			String key = serialize(args[1]);
 			if (item.getType()==Type.STRING){
-				if( logger.isDebugEnabled() ) {
-					logger.debug("putting cache value [" + item.getStringValue() + ", " + key +"]");
+				if( logger.isTraceEnabled() ) {
+					logger.trace("putting cache value [" + item.getStringValue() + ", " + key +"]");
 				}
 				return Cache.put(item.getStringValue(), key, value);
 			} else {
-				if( logger.isDebugEnabled() ) {
-					logger.debug("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
+				if( logger.isTraceEnabled() ) {
+					logger.trace("putting cache value [" + item.toJavaObject(Cache.class).toString() + ", " + key +"]");
 				}
 				return ((Cache)item.toJavaObject(Cache.class)).put(key, value);
 			}
