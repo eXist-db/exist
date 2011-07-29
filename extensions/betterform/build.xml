@@ -32,7 +32,7 @@
         <sequential>
             <echo level="info">XSLT Generating @{out}</echo>
             <java classname="net.sf.saxon.Transform"
-                  classpath="${betterform.home}/src/main/lib/saxon-9.2.1.5.jar"
+                  classpath="${exist.rootdir}/lib/endorsed/saxon-9.2.1.5.jar"
                   logError="true"
                   output="@{out}"
                   fork="true">
