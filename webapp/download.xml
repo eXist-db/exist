@@ -13,56 +13,50 @@
                 <address format="linespecific">
                     <email>dizzzz@exist-db.org</email>
                 </address>
-            </affiliation></author>
+            </affiliation>
+        </author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
     <chapter>
         <title>Download</title>
         <section id="versions">
             <title>Versions</title>
-            <para>Release <emphasis>1.4</emphasis> is our current production quality release. Among
-                other things, it improves eXist's XQuery processing thanks to a better and more
-                robust handling of in memory documents. It features faster and customizable full
-                text indexing by transparently integrating Lucene into the XQuery engine. eXist now
-                also provides a lightweight URL rewriting and MVC framework (which in part replaces
-                Cocoon), along with support for XProc, XForms and many new XQuery extension
-                modules.</para>
-            <para>1.4 replaces the <emphasis>1.2</emphasis> series as stable branch. Release
-                    <emphasis>1.5</emphasis> becomes the new <ulink
-                    url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
+            <para>Release <emphasis>1.4</emphasis> is our current production quality release. Among other things, it
+                improves eXist's XQuery processing thanks to a better and more robust handling of in memory documents.
+                It features faster and customizable full text indexing by transparently integrating Lucene into the
+                XQuery engine. eXist now also provides a lightweight URL rewriting and MVC framework (which in part
+                replaces Cocoon), along with support for XProc, XForms and many new XQuery extension modules.</para>
+            <para>1.4 replaces the <emphasis>1.2</emphasis> series as stable branch. Release <emphasis>1.5</emphasis>
+                becomes the new <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
                 development release. New features will be added to this release only.</para>
         </section>
         <section>
             <title>Donations, Consulting, Training</title>
-            <para class="float-left"><ulink
-                    url="http://sourceforge.net/donate/index.php?group_id=17691">
+            <para class="float-left"><ulink url="http://sourceforge.net/donate/index.php?group_id=17691">
                     <graphic fileref="resources/project-support.jpg"/>
                 </ulink></para>
-            <para>eXist depends on the commitment of volunteers. Making a donation acknowledges
-                their efforts and helps to finance the few things we need to keep the project at
-                speed.</para>
-            <para>Another way to support eXist is to <ulink url="acknowledge.xml">"sponsor"</ulink> features or solutions you may need
-                for your own applications. Members of our development team are available for
-                    <emphasis>consulting</emphasis>, <emphasis>training</emphasis> or
-                    <emphasis>first-hand support</emphasis> on a flexible basis. If interested,
-                please send an email to <ulink url="mailto:info@exist-db.org"
-                    >info@exist-db.org</ulink> and we will coordinate the requests.</para>
-            <para>A commercial support plan is provided by <ulink url="http://www.existsolutions.com">eXist Solutions GmbH</ulink> since 2010. 
-                The company is backed by large parts of the active development team (in cooperation with
-                all interested parties).</para>
+            <para>eXist depends on the commitment of volunteers. Making a donation acknowledges their efforts and helps
+                to finance the few things we need to keep the project at speed.</para>
+            <para>Another way to support eXist is to <ulink url="acknowledge.xml">"sponsor"</ulink> features or
+                solutions you may need for your own applications. Members of our development team are available for
+                    <emphasis>consulting</emphasis>, <emphasis>training</emphasis> or <emphasis>first-hand
+                    support</emphasis> on a flexible basis. If interested, please send an email to <ulink
+                    url="mailto:info@exist-db.org">info@exist-db.org</ulink> and we will coordinate the requests.</para>
+            <para>A commercial support plan is provided by <ulink url="http://www.existsolutions.com">eXist Solutions
+                    GmbH</ulink> since 2010. The company is backed by large parts of the active development team (in
+                cooperation with all interested parties).</para>
         </section>
         <section id="download">
             <title>Downloads</title>
-            <para>For information concerning upgrades from previous versions, see our <ulink
-                    url="upgrading.xml">Upgrade Guide</ulink>.</para>
+            <para>For information concerning upgrades from previous versions, see our <ulink url="upgrading.xml">Upgrade
+                    Guide</ulink>.</para>
             <section>
-                <title>Stable Release 1.4 (Codename: <ulink
-                        url="http://en.wikipedia.org/wiki/Eindhoven">Eindhoven</ulink>)</title>
+                <title>Stable Release 1.4 (Codename: <ulink url="http://en.wikipedia.org/wiki/Eindhoven"
+                        >Eindhoven</ulink>)</title>
                 <table cellpadding="5" cellspacing="5">
                     <caption/>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4 (Stable
-                            Release)</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4 (Stable Release)</th>
                     </tr>
                     <tr>
                         <td>
@@ -82,29 +76,26 @@
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
-                        <td colspan="2">We no longer distribute a <filename>.war</filename> package
-                            as we would like to encourage new users to start with the stand alone
-                            distribution. Running eXist within an isolated environment helps to
-                            identify issues and avoid unnecessary problems. However, experienced
-                            users can always <ulink url="building.xml#war">repackage</ulink> the
-                            standard distribution. It only takes seconds.</td>
+                        <td colspan="2">We no longer distribute a <filename>.war</filename> package as we would like to
+                            encourage new users to start with the stand alone distribution. Running eXist within an
+                            isolated environment helps to identify issues and avoid unnecessary problems. However,
+                            experienced users can always <ulink url="building.xml#war">repackage</ulink> the standard
+                            distribution. It only takes seconds.</td>
                     </tr>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as
-                            Cocoon block</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11.
-                            We would like to provide an eXist-as-Cocoon block as we have done in the
-                            past. However, we lacked the manpower to get this ready for 1.4. If you
-                            have experience with Cocoon please drop a message on the developer's
-                            list.</td>
+                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11. We would like to
+                            provide an eXist-as-Cocoon block as we have done in the past. However, we lacked the
+                            manpower to get this ready for 1.4. If you have experience with Cocoon please drop a message
+                            on the developer's list.</td>
                     </tr>
                 </table>
             </section>
             <section>
-                <title>Previous Stable Release (Codename: <ulink
-                        url="http://en.wikipedia.org/wiki/Rennes">Rennes</ulink>)</title>
+                <title>Previous Stable Release (Codename: <ulink url="http://en.wikipedia.org/wiki/Rennes"
+                        >Rennes</ulink>)</title>
                 <table cellpadding="5" cellspacing="5">
                     <caption/>
                     <tr>
@@ -133,22 +124,20 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.2/eXist-1.2.6-rev9165.war/download"
                                 >eXist-1.2.6-rev9165.war</ulink>
                         </td>
-                        <td>Web application archive, ready to be installed into an existing
-                            servlet-engine like Tomcat or Jetty. </td>
+                        <td>Web application archive, ready to be installed into an existing servlet-engine like Tomcat
+                            or Jetty. </td>
                     </tr>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as
-                            Cocoon block</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2"> The standard distribution already ships with
-                            Cocoon. However, this version is a bit older and offers only a subset of
-                            the available Cocoon modules (called "blocks" in Cocoon). If you work a
-                            lot with Cocoon, you might prefer to have eXist integrated into full
-                            Cocoon build. The installer-based distribution contains build scripts to
-                            set up eXist as a block in Cocoon. Please refer to the <ulink
-                                url="building.xml"> documentation</ulink>. As a service to Cocoon
-                            users, we also provide a pre-compiled Cocoon 2.1.11 below: </td>
+                        <td align="left" colspan="2"> The standard distribution already ships with Cocoon. However, this
+                            version is a bit older and offers only a subset of the available Cocoon modules (called
+                            "blocks" in Cocoon). If you work a lot with Cocoon, you might prefer to have eXist
+                            integrated into full Cocoon build. The installer-based distribution contains build scripts
+                            to set up eXist as a block in Cocoon. Please refer to the <ulink url="building.xml">
+                                documentation</ulink>. As a service to Cocoon users, we also provide a pre-compiled
+                            Cocoon 2.1.11 below: </td>
                     </tr>
                     <tr>
                         <td>
@@ -156,9 +145,8 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.2/cocoon-2.1.11-with-eXist-1.2.6.war"
                                 > cocoon-2.1.11-with-eXist-1.2.6.war </ulink>
                         </td>
-                        <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2
-                            as a block. You should find eXist in
-                                <code>http://my-server:port/cocoon/samples/blocks/exist/</code>.</td>
+                        <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2 as a block. You
+                            should find eXist in <code>http://my-server:port/cocoon/samples/blocks/exist/</code>.</td>
                     </tr>
                 </table>
             </section>
@@ -167,35 +155,30 @@
             <title>Important Notes</title>
             <section>
                 <title>Java versions</title>
-                <para>eXist-db version <emphasis>1.4.x</emphasis> requires
-                        <emphasis>Java5</emphasis>. The database has been implemented and tested
-                    with the Java implementation of Sun. Implementations of other vendors will
-                    probably work but have not been tested as extensively.</para>
+                <para>eXist-db version <emphasis>1.4.x</emphasis> requires <emphasis>Java5</emphasis>. The database has
+                    been implemented and tested with the Java implementation of Sun. Implementations of other vendors
+                    will probably work but have not been tested as extensively.</para>
             </section>
             <section>
                 <title>Endorsed library</title>
-                <para>eXist-db heavily depends on the Apache <ulink
-                        url="http://xerces.apache.org/xerces2-j/">Xerces2</ulink> parser, Apache
-                        <ulink url="http://xml.apache.org/xalan-j">Xalan</ulink>-Java XSLT processor
-                    and the Apache XML Commons <ulink
-                        url="http://xml.apache.org/commons/components/resolver/index.html"
-                        >Resolver</ulink> libraries. When eXist-db is installed in a servlet
-                    container like tomcat, these jar files must be made available to eXist via the
-                        <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/standards/index.html"
-                        >java</ulink>
-                    <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html"
-                        >endorsed</ulink> feature.</para>
+                <para>eXist-db heavily depends on the Apache <ulink url="http://xerces.apache.org/xerces2-j/"
+                        >Xerces2</ulink> parser, Apache <ulink url="http://xml.apache.org/xalan-j">Xalan</ulink>-Java
+                    XSLT processor and the Apache XML Commons <ulink
+                        url="http://xml.apache.org/commons/components/resolver/index.html">Resolver</ulink> libraries.
+                    When eXist-db is installed in a servlet container like tomcat, these jar files must be made
+                    available to eXist via the <ulink
+                        url="http://java.sun.com/j2se/1.5.0/docs/guide/standards/index.html">java</ulink>
+                    <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html">endorsed</ulink>
+                    feature.</para>
             </section>
             <section>
                 <title>Tomcat</title>
                 <para>Due to some restrictions of Apache <ulink
                         url="https://sourceforge.net/tracker/?func=detail&amp;atid=117691&amp;aid=1760998&amp;group_id=17691"
-                        >Tomcat</ulink> the validation functions do not fully work on stored
-                    documents (using the <emphasis>xmldb:exist:///</emphasis>-type URLs - Note the
-                    three slashes). </para>
-                <para>By default Apache Tomcat is started with a limited HeapSize. This heapsize
-                    must be increased to have optimal performance and to prevent "Out of Memory"
-                    errors.</para>
+                        >Tomcat</ulink> the validation functions do not fully work on stored documents (using the
+                        <emphasis>xmldb:exist:///</emphasis>-type URLs - Note the three slashes). </para>
+                <para>By default Apache Tomcat is started with a limited HeapSize. This heapsize must be increased to
+                    have optimal performance and to prevent "Out of Memory" errors.</para>
             </section>
         </section>
     </chapter>
