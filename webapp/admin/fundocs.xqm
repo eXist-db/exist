@@ -25,12 +25,6 @@ declare variable $docs:config :=
                 </text>
                 <text qname="title" boost="2.0"/>
             </lucene>
-            <lucene>
-                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                <text qname="para"/>
-                <text qname="title" boost="2.0"/>
-                <ignore qname="title"/>
-            </lucene>
             <ngram qname="xqdoc:name"/>
             <ngram qname="xqdoc:description"/>
         </index>
