@@ -5,7 +5,7 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Server Configuration</title>
-        <date>September 2009</date>
+        <date>July 2011</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -17,6 +17,12 @@
             <firstname>Alex</firstname>
             <email>alexmilowski@users.sourceforge.net</email>
         </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
@@ -24,25 +30,25 @@
         <section>
             <title>Overview</title>
             <para>This section deals with the configuration of the eXist server. The main
-                configuration file for <application>eXist</application> is called <filename
+                configuration file for <application>eXist-db</application> is called <filename
                     >conf.xml</filename>, which is loaded from different directories depending on
                 the server set-up (see <ulink url="deployment.xml">Server Deployment</ulink> for
                 more information).</para>
-            <para>Specifically, if you installed the standalone eXist distribution with the
+            <para>Specifically, if you installed the standalone eXist-db distribution with the
                 installer, the <filename>conf.xml</filename> file located in the root directory of
                 the distribution (as specified by the system property <option>exist.home</option>)
-                will be loaded by default. On the other hand, if eXist is installed as a web
+                will be loaded by default. On the other hand, if eXist-db is installed as a web
                 application (packaged in a <filename>.war</filename> file) in a servlet engine like
                 tomcat, <filename moreinfo="none"> conf.xml</filename> is read from the <filename
                     moreinfo="none">WEB-INF</filename> directory of the web application.</para>
             <para>Why is the configuration file placed in two separate locations? The reason is that
-                eXist normally has no access to files outside the context in which it is running
+                eXist-db normally has no access to files outside the context in which it is running
                 when it is deployed as part of a web application. Therefore, when eXist is deployed
                 in this way, the configuration is read from the <filename>WEB-INF</filename>
                 directory.</para>
         </section>
         <section>
-            <title>eXist Configuration: Editing conf.xml</title>
+            <title>eXist-db Configuration: Editing conf.xml</title>
             <para>The configuration file <filename moreinfo="none">conf.xml</filename> can be
                 divided into four sections with the following elements:</para>
             <variablelist>
@@ -76,7 +82,7 @@
                 elements.</para>
             <section>
                 <title>&lt;db-connection&gt;</title>
-                <para>This element contains basic default storage settings for eXist, including
+                <para>This element contains basic default storage settings for eXist-db, including
                     memory and system limits. Only one <sgmltag>db-connection</sgmltag> should be
                     specified. An example configuration for the native back-end is shown
                     below:</para>
@@ -103,7 +109,7 @@
                             <listitem>
                                 <para>This attribute selects a database system type. Since
                                     relational database back-ends are no longer supported by the
-                                    current release of eXist, only "<option>native</option>" and
+                                    current release of eXist-db, only "<option>native</option>" and
                                         "<option>native_cluster</option>" are available.</para>
                             </listitem>
                         </varlistentry>
@@ -117,7 +123,7 @@
                                         <option>exist.home</option> system property. If this data
                                     directory does not have write permissions (see <ulink
                                         url="security.xml"> User Authentication and Access
-                                        Control</ulink>), eXist will internally switch to
+                                        Control</ulink>), eXist-db will internally switch to
                                         <emphasis>read-only mode</emphasis> such that any attempt to
                                     change the database will throw an exception.</para>
                             </listitem>
@@ -130,12 +136,12 @@
                                     capacity). The database uses this parameter to calculate the
                                     maximum size of each internal cache. You can increase this value
                                     if your system allows for greater memory use.</para>
-                                <para>While indexing documents, eXist will reserve the amount of
+                                <para>While indexing documents, eXist-db will reserve the amount of
                                     memory specified in cacheSize - even if not all caches are
                                     filled - and will not use it for temporary data.</para>
                                 <para>The cacheSize should not be more than half of the size of the
                                     JVM heap size (set by the JVM -Xmx parameter). If the JVM heap
-                                    is less than 512 megabyte, the cacheSize should even be smaller,
+                                    is less than 512 MB, the cacheSize should even be smaller,
                                     e.g. 1/3.</para>
                             </listitem>
                         </varlistentry>
@@ -144,9 +150,9 @@
                             <listitem>
                                 <para>Determines the size of the collection cache, which is a
                                     separate caching space. Usually this setting does not need to be
-                                    changed unless you really have more than a few thousand
-                                    collections in the db. Increase it carefully, maybe up to
-                                    128M.</para>
+                                    changed unless you have more than a few thousand
+                                    collections in the database. Increase it carefully, maybe up to
+                                    128 MB.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -160,8 +166,8 @@
                         <varlistentry>
                             <term>nodesBuffer</term>
                             <listitem>
-                                <para>Size of the temporary buffer used by eXist for caching index
-                                    data while indexing a document. If set to -1, eXist will use the
+                                <para>Size of the temporary buffer used by eXist-db for caching index
+                                    data while indexing a document. If set to -1, eXist-db will use the
                                     entire free memory to buffer index entries and will flush the
                                     cache once the memory is full.</para>
                                 <para>If set to a value > 0, the buffer will be fixed to the given
@@ -211,15 +217,15 @@
                             <listitem>
                                 <para>This option specifies the maximum amount of time (in
                                     milliseconds) that the database will allow for any running
-                                    processes to complete upon database shutdown. After that, eXist
+                                    processes to complete upon database shutdown. After that, eXist-db
                                     will try to kill the remaining processes.</para>
-                                <para>If wait-before-shutdown is set to a positive number, eXist
-                                    will stop the db after the specified timeout, even if there were
+                                <para>If wait-before-shutdown is set to a positive number, eXist-db
+                                   will stop the db after the specified timeout, even if there were
                                     still running database operations. In this case, no checkpoint
                                     will be written to the transaction log. If there were any open
-                                    transactions, eXist will trigger a recovery run after
+                                    transactions, eXist-db will trigger a recovery run after
                                     restart.</para>
-                                <para>If wait-before-shutdown is set to -1, eXist will not shut down
+                                <para>If wait-before-shutdown is set to -1, eXist-db will not shut down
                                     before all active database operations returned. This is a safe
                                     setting, but it may require a manual intervention to stop the
                                     jvm.</para>
@@ -275,7 +281,7 @@
                                     "<option>yes</option>", the journal is protected against
                                     operating system failures. However, this will slow performance -
                                     especially on Windows systems. If set to "<option>no</option>",
-                                    eXist will rely on the operating system to flush out the journal
+                                    eXist-db will rely on the operating system to flush out the journal
                                     contents to disk. In the worst case scenario, in which there is
                                     a complete system failure, some committed transactions might not
                                     have yet been written to the journal, and so will be rolled
@@ -285,10 +291,10 @@
                         <varlistentry>
                             <term>group-commit</term>
                             <listitem>
-                                <para>If set to "yes", eXist will not sync the journal file
+                                <para>If set to "yes", eXist-db will not sync the journal file
                                     immediately after every transaction commit. Instead, it will
-                                    wait until the current file buffer (32kb) is really full. This
-                                    can speed up eXist on some systems where a file sync is an
+                                    wait until the current file buffer (32KB) is really full. This
+                                    can speed up eXist-db on some systems where a file sync is an
                                     expensive operation (mainly windows XP; not necessary on
                                     Linux).</para>
                                 <para>However, <option>group-comit="yes"</option> will increase the
@@ -363,7 +369,7 @@
                 <section>
                     <title>&lt;default-permissions&gt;</title>
                     <para>Specifies the default permissions for all resources and collections in
-                        eXist (see <ulink url="security.xml"> User Authentication and Access
+                        eXist-db (see <ulink url="security.xml"> User Authentication and Access
                             Control</ulink>). When this is not configured, the default
                             "<option>mod</option>" (similar to the Unix "chmod" command) is set to
                             <option>0775</option> in the <option>resources</option> and
@@ -390,7 +396,7 @@
                                         <emphasis>class</emphasis> Attribute (LDAP)</title>
                                     <programlisting><markup>&lt;security class="org.exist.security.LDAPSecurityManager" /&gt;</markup></programlisting>
                                 </example>
-                                <para>eXist is distributed with the following built-in security
+                                <para>eXist-db is distributed with the following built-in security
                                     manager implementations:</para>
                                 <variablelist>
                                     <varlistentry>
@@ -448,7 +454,7 @@
             </section>
             <section>
                 <title>&lt;indexer&gt;</title>
-                <para>This element sets parameters on how XML files are to be indexed by eXist. An
+                <para>This element sets parameters on how XML files are to be indexed by eXist-db. An
                     example configuration is shown below:</para>
                 <example>
                     <title>Specifying Indexer-Options in conf.xml</title>
@@ -464,11 +470,8 @@
         <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
             connectionTimeout="10000" flushAfter="300" />            
         -->
-		<!-- The full text index is always required and should
-			 not be disabled. We still have some dependencies on
-             this index in the database core. These will be removed
-             once the redesign has been completed. -->
-		<module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+		<!-- The legacy full text index is fully disabled from version 1.4.1. -->
+		<!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
     </modules>
         
     <stopwords file="stopword"/>
@@ -498,14 +501,14 @@
                                         <function>contains()</function>, <function
                                         >starts-with()</function> and <function
                                         >ends-with()</function>. This setting does not apply to
-                                    operators or functions of the fulltext index (e.g.
+                                    operators or functions of the legacy full text index (e.g.
                                         "<option>&amp;=</option>", "<option>|=</option>", "<function
                                         >near()</function>") or the n-gram index, which are
                                         <emphasis>never</emphasis> case-sensitive</para>
                                 <para>Setting <option>caseSensitive="yes"</option> violates the
                                     XQuery specs! The option should be regarded as a dirty
                                     workaround, which will be removed in the future. Please use the
-                                    n-gram or full-text indexes for case-insensitive queries or - if
+                                    n-gram or full text index for case-insensitive queries or - if
                                     that is impossible - specify a <ulink
                                         url="xquery.xml#collations">collation</ulink>.</para>
                             </listitem>
@@ -613,7 +616,7 @@
                         <sgmltag>modules</sgmltag>
                     </title>
                     <para>This section configures optional indexing modules. Beginning with version
-                        1.2, eXist features a modularized indexing architecture, which allows new
+                        1.2 (June 2007 or newer), eXist-db features a modularized indexing architecture, which allows new
                         indexes to be plugged into the indexing pipeline. The
                             <sgmltag>modules</sgmltag> section lists and configures the indexes that
                         will be available to the database: </para>
@@ -627,11 +630,10 @@
     <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
         connectionTimeout="10000" flushAfter="300" />            
     -->
-	<!-- The full text index is always required and should
-		 not be disabled. We still have some dependencies on
-         this index in the database core. These will be removed
-         once the redesign has been completed. -->
-	<module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+    <!-- 
+    The legacy full text index is fully disabled from version 1.4.1.
+     -->
+	<!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
 </modules>]]></markup>
                 </programlisting>
                     </example>
@@ -648,7 +650,7 @@
                     </title>
                     <para>The <option>file</option> for this element points to a file containing a
                         list of <emphasis>stopwords</emphasis>. Note that stopwords are
-                            <emphasis>NOT</emphasis> added to the fullext index.</para>
+                            <emphasis>NOT</emphasis> added to the legacy full text index.</para>
                 </section>
                 <section>
                     <title>
@@ -665,7 +667,7 @@
             </section>
             <section>
                 <title><sgmltag>scheduler</sgmltag></title>
-                <para>This section is used to configure asynchronous jobs with eXist's internal
+                <para>This section is used to configure asynchronous jobs with eXist-db's internal
                     scheduler. Three types of jobs are supported:</para>
                 <variablelist>
                     <varlistentry>
@@ -866,10 +868,10 @@
             </section>
             <section>
                 <title><sgmltag>transformer</sgmltag></title>
-                <para>This section determines which XSLT processor will be used by eXist. By
-                    default, eXist relies on Xalan, which is an XSLT 1.0 engine. Please refer to
+                <para>This section determines which XSLT processor will be used by eXist-db. By
+                    default, eXist-db relies on Xalan, which is an XSLT 1.0 engine. Please refer to
                         <ulink url="http://atomic.exist-db.org/wiki/HowTo/XSLT2/">this howto</ulink>
-                    to switch to an XSLT 2.0 processor like saxon.</para>
+                    to switch to an XSLT 2.0 processor like Saxon.</para>
             </section>
             <section>
                 <title><sgmltag>validation</sgmltag></title>
@@ -882,7 +884,7 @@
             <section>
                 <title>&lt;xupdate&gt;</title>
                 <para>Inserting new nodes into a document can lead to fragmentation in the DOM
-                    storage file. eXist will thus trigger a defragmentation run if the fragmentation
+                    storage file. eXist-db will thus trigger a defragmentation run if the fragmentation
                     exceeds a certain limit. The frequency of such defragmentation runs can be
                     configured in the <sgmltag>xupdate</sgmltag> section. The main parameter is
                     called <option>allowed-fragmentation</option>:</para>
@@ -962,7 +964,7 @@
                                         >doc()</command>, <command>xmldb:document()</command>,
                                         <command>collection()</command> or <command
                                         >xmldb:xcollection()</command> should raise an error
-                                    (FODC0002) when an XML resource can not be retrieved.</para>
+                                    (err:FODC0002) when an XML resource can not be retrieved.</para>
                                 <para>set to <literal>"no"</literal> if a call to <command
                                         >doc()</command>, <command>xmldb:document()</command>,
                                         <command>collection()</command> or <command
@@ -1010,7 +1012,7 @@ uri="http://exist-db.org/xquery/file" />]]></synopsis>
                         must point to the XQuery source code of the module, e.g.:</para>
                     <synopsis language="xml"><![CDATA[<module src="resource:org/exist/xquery/lib/json.xq" 
 uri="http://www.json.org"/>]]></synopsis>
-                    <para>For the src attribute, eXist understands the <ulink
+                    <para>For the src attribute, eXist-db understands the <ulink
                             url="http://localhost:8080/exist/xquery.xml#N10195">same types of
                             URIs</ulink> as in an ordinary XQuery import statement.</para>
                 </section>
@@ -1020,7 +1022,7 @@ uri="http://www.json.org"/>]]></synopsis>
             <title>Cocoon Sitemap Configuration</title>
             <para>Cocoon uses a sitemap XML file called <filename moreinfo="none"
                     >sitemap.xmap</filename> to configure the processing pipelines it uses to
-                process HTTP requests. eXist's integration with Cocoon is completely based on the
+                process HTTP requests. eXist-db's integration with Cocoon is completely based on the
                 XML:DB database API, however any XML:DB-enabled database (e.g.
                     <emphasis>Xindice</emphasis>) can be integrated with Cocoon.</para>
             <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are
@@ -1029,8 +1031,8 @@ uri="http://www.json.org"/>]]></synopsis>
                 a known protocol such as <filename>http://</filename> or <filename
                     >file://</filename> is specified in the sitemap. Currently, the distribution
                 defines a pseudo-protocol to access XML:DB-enabled databases. </para>
-            <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file
-                    <filename moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these
+            <para>In eXist-db, pseudo-protocols are configured in Cocoon's main configuration file
+                    by default in <filename moreinfo="none">EXIST_HOME/webapp/WEB-INF/cocoon.xconf</filename>. To make use of these
                 protocols, simply specify the correct database driver class, as in the following
                 example:</para>
             <example>
@@ -1064,7 +1066,7 @@ in xmldb-collection /db/shakespeare/plays -->
 </programlisting>]]></markup>
         </programlisting>
             </example>
-            <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist also
+            <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist-db also
                 contains more complex examples.</para>
         </section>
     </chapter>
