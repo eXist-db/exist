@@ -5,12 +5,18 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>eXist - Tuning</title>
-        <date>November 2009</date>
+        <date>July 2011</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation></author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
             </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -34,7 +40,7 @@
             <para>On <emphasis>Windows</emphasis>, the <option>-Xmx</option> settings is done in the
                 main .bat files, .e.g. <filename>EXIST_HOME\bin\startup.bat</filename>.</para>
             <para>If you launch <emphasis>eXist as a service</emphasis>, all Java settings will be
-                controlled by the service wrapper. In this case, the file to edit is <filename
+                controlled by the service wrapper. In this case, the file to edit is by default<filename
                     >EXIST_HOME/tools/wrapper/conf/wrapper.conf</filename>. Search for the following
                 lines:</para>
             <synopsis># Maximum Java Heap Size (in MB)
@@ -44,7 +50,7 @@ wrapper.java.maxmemory=128</synopsis>
             <title>Cache settings</title>
             <para>Each of the core database files and indexes has a page cache. The main purpose of
                 this cache is to make sure that the most frequently used pages of the db files are
-                kept in memory. If a file's cache becomes too small, eXist may start to unload pages
+                kept in memory. If a file's cache becomes too small, eXist-db may start to unload pages
                 just to reload them a few moment later. This "trashing effect" results in an
                 immediate performance drop, in particular while indexing documents.</para>
             <para>All caches share a single memory pool, whose size is determined by the attribute
@@ -59,22 +65,21 @@ wrapper.java.maxmemory=128</synopsis>
         files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="-1">]]></programlisting>
             </example>
             <para>The default <ulink url="http://www.exist-db.org/configuration.html#N101B8"
-                    >setting</ulink> for <option>cacheSize</option> is very conservative (48M). It
+                    >setting</ulink> of 48MB for <option>cacheSize</option> is <emphasis>very</emphasis> conservative. It
                 will be ok for smaller databases, but you may soon experience a performance drop
-                when indexing more than several 100M of XML data. Consider increasing
-                    <option>cacheSize</option> up to approx. 1/3 of the main memory available to
+                when indexing more than a few 100MB of XML data. Consider increasing
+                    <option>cacheSize</option> up to approximately 1/3 of the main memory available to
                 Java (determined by the <option>-Xmx</option> parameter passed to the Java command
-                line). If you are running eXist with other web applications in the same servlet
-                engine, you may need to choose a smaller setting (running out of memory will crash
+                line). If you are forced to run eXist-db with other web applications in the same servlet
+                engine, not recommended, you may need to choose a smaller setting (running out of memory will with high certainty crash
                 the database, so please be careful).</para>
             <para>The <option>cacheSize</option> is mainly relevant when storing/updating data. The
                 effect on query speed should not be that big, unless some of the index caches are
                 really much too small.</para>
             <para>If you continue to experience performance issues while storing data, you may need
                 to revisit your index configuration. Removing unused indexes will give more room to
-                the other indexes. In particular, the full text index can grow very fast until it
-                becomes a bottleneck. Try to disable the default full text index (see below).</para>
-            <para>The <option>nodesBuffer</option> attribute can be used to set eXist's temporary
+                the other indexes. Only do full text indexing on the lowest possible level.</para>
+            <para>The <option>nodesBuffer</option> attribute can be used to set eXist-db's temporary
                 internal buffer to a fixed size. The buffer is used during indexing to cache nodes
                 before they are flushed to disk. The default setting (nodesBuffer="-1") is to use as
                 much memory as is available, but this can be problematic if you have to store large
@@ -86,28 +91,27 @@ wrapper.java.maxmemory=128</synopsis>
             <title>Index configuration</title>
             <section>
                 <title>Don't rely on the default behaviour</title>
-                <para>eXist does <emphasis>NOT</emphasis> index any element or attribute values by
-                    default. It may create a full text index (see below), but this won't help with
+                <para>eXist-db does <emphasis>NOT</emphasis> index any element or attribute values <emphasis>at all</emphasis> by
+                    default. Always add appropriate indexing fitting your needs. It may create a full text index (see below), but this won't help with
                     standard comparison operators or functions. Thus, when evaluating an expression
                     like</para>
                 <synopsis>//SPEECH[SPEAKER = "HAMLET"]</synopsis>
                 <para>the query engine will fall back to a full scan over all
-                        <sgmltag>SPEAKER</sgmltag> elements in the db. This is very slow and limits
-                    concurrency. You should at least create a global index definition (in <filename
-                        >/db/system/config/db/collection.xconf</filename>) and add range indexes for
+                        <sgmltag>SPEAKER</sgmltag> elements in the database. This is very slow and limits
+                    concurrency. You should at least create a global index definition (in <filename>/db/system/config/db/collection.xconf</filename> inside the database) and add range indexes for
                     the most frequently used comparisons.</para>
             </section>
             <section>
                 <title>Disable any default indexes (pre 1.4)</title>
-                <para>If no other index <ulink url="indexing.xml">index configuration</ulink> is
-                    found for a database collection, eXist will use the default settings specified
-                    in <filename>conf.xml</filename>. For older eXist versions, the default is to
-                    create a full text index on <emphasis>ALL</emphasis> elements and attributes in
+                <para>If no other <ulink url="indexing.xml">index configuration</ulink> is
+                    found for a database collection, eXist-db will use the default settings specified
+                    in <filename>conf.xml</filename>. For pre-1.4 eXist-db versions, the default is to
+                    create a legacy full text index on <emphasis>ALL</emphasis> elements and attributes in
                     the database. The problem with this is that</para>
                 <orderedlist>
                     <listitem>
                         <para>maintaining the default index costs performance and memory, which
-                            could be better used for other indexes. The index may grow very fast,
+                            could be better used for other more specific indexes. The index may grow very fast,
                             which can be a destabilizing factor.</para>
                     </listitem>
                     <listitem>
@@ -116,12 +120,12 @@ wrapper.java.maxmemory=128</synopsis>
                                 url="#idxdefs">see below</ulink>).</para>
                     </listitem>
                 </orderedlist>
-                <para>If you experience memory issues or observe a constantly decreasing performance
+                <para>If you experience memory issues or observe constantly decreasing performance
                     while loading documents, tuning your indexes should be one of the first
                     steps:</para>
                 <itemizedlist>
                     <listitem>
-                        <para>disable the default full text index in your index <ulink
+                        <para>disable the legacy full text index in your index <ulink
                                 url="indexing.xml#N10422">definitions</ulink>:</para>
                         <programlisting language="xquery"><![CDATA[
 <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -138,7 +142,7 @@ wrapper.java.maxmemory=128</synopsis>
                             configuration by path.</para>
                     </listitem>
                     <listitem>
-                        <para>if you are using eXist 1.4, consider <emphasis>switching to the new
+                        <para>if you are using eXist 1.4 or newer, we strongly asks you to consider <emphasis>switching to the new
                                     <ulink url="lucene.xml">Lucene-based index</ulink></emphasis>.
                             It provides better performance and stability.</para>
                     </listitem>
@@ -169,8 +173,8 @@ wrapper.java.maxmemory=128</synopsis>
                     improve query times by an order of magnitude. Replacing a context-dependant
                     index by a simple index on qname can thus result in a performance boost, thanks
                     to eXist's new <ulink url="http://atomic.exist-db.org/blogs/eXist/NewIndexing"
-                        >query-rewriting optimizer</ulink>. Older versions of eXist did not offer
-                    those possibilities.</para>
+                        >query-rewriting optimizer</ulink>. eXist-db versions released before June 2007 do not offer
+                    these possibilities.</para>
             </section>
             <!-- Extend and move to the index configuration guide? -->
             <!--section>
@@ -205,13 +209,13 @@ wrapper.java.maxmemory=128</synopsis>
                     strings are <emphasis>case-sensitive</emphasis> or rather, to use the correct
                     formulation, sensitive to the default <ulink
                         url="http://en.wikipedia.org/wiki/Collation">collation</ulink>. If you need
-                    case-insensitive queries, consider an ngram index.</para>
+                    case-insensitive queries, consider a n-gram index.</para>
             </section>
             <section>
-                <title>Consider an n-gram index for exact substring queries on longer text
+                <title>Consider a n-gram index for exact substring queries on longer text
                     sequences</title>
                 <para>While range indexes tend to become slow for substring queries (like
-                        <code>contains(title, "XSLT 2.0")</code>), an n-gram index is nearly as fast
+                        <code>contains(title, "XSLT 2.0")</code>), a n-gram index is nearly as fast
                     as a full text index, but it also indexes whitespace and punctuation.
                         <code>ngram:contains(title, "XSLT 2.0")</code> will only match titles
                     containing the exact phrase "XSLT 2.0". n-gram indexes are <emphasis>case
@@ -224,16 +228,16 @@ wrapper.java.maxmemory=128</synopsis>
                     a sequence of separate words or tokens in a longer text. It can sometimes even
                     be faster to post-process the returned node set and filter out wrong matches
                     than using a much slower regular expression.</para>
-                <para>eXist 1.4 offers a <ulink url="lucene.xml">new full text index</ulink> which
+                <para>eXist-db version 1.4 and newer offers a <ulink url="lucene.xml">new full text index</ulink> which
                     is based on Apache Lucene. It provides better performance and overall stability
-                    than the builtin index.</para>
+                    than the legacy full text index.</para>
             </section>
         </section>
         <section>
             <title>Writing Queries</title>
             <section>
                 <title>Prefer short paths</title>
-                <para>eXist uses indexes to directly locate an element or attribute by its name. It
+                <para>eXist-db uses indexes to directly locate an element or attribute by its name. It
                     doesn't need to <ulink url="http://en.wikipedia.org/wiki/Tree_traversal"
                         >traverse</ulink> the entire document tree. This means that the direct
                     selection of a node through a single descendant step is
@@ -264,7 +268,7 @@ wrapper.java.maxmemory=128</synopsis>
                 <para>into a multi filter step as shown above.</para>
             </section>
             <section>
-                <title>Allow eXist to process large node sets in one step</title>
+                <title>Allow eXist-db to process large node sets in one step</title>
                 <para>The query engine is optimized to process a path expression in one, single
                     operation. For instance, the XPath:</para>
                 <synopsis language="xquery">//A/*[B = 'C']</synopsis>
@@ -286,18 +290,18 @@ wrapper.java.maxmemory=128</synopsis>
                 <para>There are functions to which the above does not apply. This includes most
                     functions which operate on indexes, e.g. <code>contains</code>,
                         <code>matches</code>, <code>starts-with</code>, <code>ngram:contains</code>,
-                    and the like. They are optimized so eXist only needs to call them once to
+                    and the like. They are optimized so eXist-db only needs to call them once to
                     process the entire context set. For example, using <code>ngram:contains</code>
                     as below is perfectly ok:</para>
                 <synopsis language="xquery">//A/*[ngram:contains(B, 'C')]</synopsis>
                 <para>while</para>
                 <synopsis language="xquery">//A/*[ngram:contains(f:process(B), 'C')]</synopsis>
-                <para>will again force eXist into step-by-step evaluation.</para>
+                <para>will again force eXist-db into step-by-step evaluation.</para>
             </section>
             <section>
                 <title>Prefer XPath Predicates Over Where Expressions</title>
                 <para>This is a variation of the problems discussed above. Many users tend to
-                    formulate SQL-style queries using an explite "where" clause:</para>
+                    formulate SQL-style queries using an explicit "where" clause:</para>
                 <example>
                     <title/>
                     <programlisting language="xquery"><![CDATA[
@@ -370,7 +374,7 @@ return
             </section>
             <section>
                 <title>Use the ancestor or parent axis instead of a top-down approach</title>
-                <para>eXist can navigate the ancestor axis as fast as the descendant axis. It can
+                <para>eXist-db can navigate the ancestor axis as fast as the descendant axis. It can
                     thus be more efficient to build a query bottom-up instead of top-down. Here's a
                     top-down example:</para>
                 <example>
@@ -427,7 +431,7 @@ return
                 <synopsis language="xquery">//section[@xml:id = 'sect1']/head</synopsis>
                 <para>will <emphasis>NOT</emphasis> use the id index (you will need to declare an
                     extra range index for that).</para>
-                <para>Please be also aware that larger xml:id values cost performance as has been
+                <para>Please be also aware that larger xml:id attribute values cost performance as has been
                     reported by some users working with large databases.</para>
             </section>
             <section>
@@ -460,7 +464,7 @@ return
     (: Generate HTML for output :)
     <div>(: Create complex HTML markup using $node :)</div>]]></programlisting>
                 </example>
-                <para>Please note also that eXist uses <emphasis>lazy evaluation</emphasis> when
+                <para>Please note also that eXist-db uses <emphasis>lazy evaluation</emphasis> when
                     constructing new XML fragments. For example:</para>
                 <synopsis language="xquery"><![CDATA[<book>{$node/title}</book>]]></synopsis>
                 <para>Assuming that $node references a node in the database, the query engine will
@@ -489,7 +493,7 @@ return
                     can even block the db for a while. Also, experience shows that the overall
                     stability of the db suffers if too many temporary fragments have to be
                     stored/cleaned up in short time.</para>
-                <para>eXist 1.4 fixes those issues completely. It has a redesigned query engine,
+                <para>eXist-db version 1.4 or newer fixes those issues completely. It has a redesigned query engine,
                     which is able to directly operate on in-memory nodes without transforming them
                     into persistent nodes. No temporary documents need to be stored. As a
                     consequence, queries on in-memory fragments will be much faster with 1.4.0 and
@@ -499,7 +503,7 @@ return
                     If you see lots of them, there are two possibilities:</para>
                 <orderedlist>
                     <listitem>
-                        <para>upgrade to 1.4. </para>
+                        <para>upgrade to 1.4.1 </para>
                     </listitem>
                     <listitem>
                         <para>find the XQuery expressions which generate the temporary fragments. In
