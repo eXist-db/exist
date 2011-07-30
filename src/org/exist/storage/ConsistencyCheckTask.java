@@ -68,6 +68,11 @@ public class ConsistencyCheckTask implements SystemTask {
 
 
     
+    @Override
+    public boolean afterCheckpoint() {
+    	return false;
+    }
+    
     public void configure(Configuration config, Properties properties) throws EXistException {
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         File dir = new File(exportDir);

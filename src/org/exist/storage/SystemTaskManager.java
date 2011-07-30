@@ -41,8 +41,9 @@ public class SystemTaskManager {
                 oldUser = broker.getUser();
                 broker.setUser(org.exist.security.SecurityManager.SYSTEM_USER);
                 while (!waitingSystemTasks.isEmpty()) {
-                    pool.sync(broker, Sync.MAJOR_SYNC);
-                    SystemTask task = (SystemTask) waitingSystemTasks.pop();
+                	SystemTask task = (SystemTask) waitingSystemTasks.pop();
+                	if (task.afterCheckpoint())
+                		pool.sync(broker, Sync.MAJOR_SYNC);
                     runSystemTask(task, broker);
                 }
             } catch(Exception e) {

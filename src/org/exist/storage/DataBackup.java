@@ -55,6 +55,11 @@ public class DataBackup implements SystemTask {
         dest = destination;
     }
     
+    @Override
+    public boolean afterCheckpoint() {
+    	return true;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.storage.SystemTask#configure(java.util.Properties)
      */
