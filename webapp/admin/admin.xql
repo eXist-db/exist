@@ -138,8 +138,11 @@ declare function admin:display-login-form() as element()
             {
                 for $param in request:get-parameter-names()
                 return
-                    <input type="hidden" name="{$param}" 
-                        value="{request:get-parameter($param, ())}"/>
+                    if ( $param = ("user","pass") ) then
+                        ()
+                    else 
+                        <input type="hidden" name="{$param}" value="{request:get-parameter($param, ())}"/>
+                        
             }
         </form>
     </div>
