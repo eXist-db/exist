@@ -592,5 +592,39 @@ return
                 </variablelist>
             </section>
         </section>
+        <section>
+            <title>Pitfalls</title>
+            
+            <section>
+                <title>Indexing too much</title>
+                
+                <para>While Lucene queries are usually very fast, creating a Lucene index needs considerable resources. You should thus
+                be careful when configuring a Lucene index on many different elements of a collection, in particular, if they are nested.</para>
+                
+                <para>For example, a common mistake is to create an index on an element and all its descendants, using a path like 
+                    <option>/chapter//*</option>. This is usually unnecessary and will blow up the index. A simple index on 
+                    <option>/chapter</option> will already include the contents of all descendant nodes. If you would like to query 
+                    on a lower level, put your index on sections or paragraphs instead.</para>
+
+                <para>If you query on a high level element like chapter, but you would still like to figure out the immediate
+                context of a hit (e.g. the paragraph), you can always use the match elements eXist inserts in the matching text (when it gets serialized)
+                to locate the context of the match. In the following example, we query the <sgmltag>section</sgmltag> element, but
+                we would like to display only the paragraphs containing a match:</para>
+                
+                <example>
+                    <title>Filtering hits</title>
+                    <programlisting language="xquery"><![CDATA[for $hit in //section[ft:query(., "lucene")]
+let $expanded := util:expand($hit)
+for $match in $expanded//exist:match
+return
+	$match/ancestor::para]]></programlisting>
+                </example>
+                
+                <para>The KWIC module in eXist uses the same technique to display text matches in context. However, for best performance
+                only do this for matches you actually want to display to the user.</para>
+            </section>
+            
+        </section>
+        
     </chapter>
 </book>
