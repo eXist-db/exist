@@ -78,10 +78,7 @@
             <link
                 href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse"
                 >Submit Patches</link>
-        </item>
-        <item>
-            <link href="gsoc/2008/summer.xml">Google Summer of Code</link>
-        </item>        
+        </item>       
     </group>
     <group name="Administration">
         <item>
@@ -93,15 +90,19 @@
     </group>
 
     <banner>
-        <link href="http://exist-db.org">
-            <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
-        </link>
+      <script type="text/javascript" src="http://www.ohloh.net/p/252/widgets/project_thin_badge.js"></script>
     </banner>
 
-    <banner name="" empty="true">
-        <link href="http://sourceforge.net/projects/exist">
-            <img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125"
-                height="37" border="0" alt="SourceForge Logo"/>
-        </link>
+   	<banner name="" empty="true">
+      <link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link>
     </banner>
+
+    <banner>
+      <link href="http://www.existsolutions.com"><img alt="eXist Solutions GmbH" border="0" src="resources/existsolutions.png"/></link>
+    </banner>
+
+    <banner>
+      <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
+    </banner>
+    
 </sidebar>

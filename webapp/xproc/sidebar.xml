@@ -101,27 +101,18 @@
     </group>
 
     <banner>
-        <link href="http://exist-db.org">
-            <img alt="powered by eXist" border="0" src="resources/powered.gif"/>
-        </link>
+      <script type="text/javascript" src="http://www.ohloh.net/p/252/widgets/project_thin_badge.js"></script>
     </banner>
 
-    <banner name="" empty="true">
-        <link href="http://sourceforge.net/projects/exist">
-            <img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125"
-                height="37" border="0" alt="SourceForge Logo"/>
-        </link>
+   	<banner name="" empty="true">
+      <link href="http://sourceforge.net/projects/exist"><img src="http://sourceforge.net/sflogo.php?group_id=17691&amp;type=4" width="125" height="37" border="0" alt="SourceForge Logo"/></link>
     </banner>
 
     <banner>
-        <link href="http://www.java.net">
-            <img src="resources/javanet_button_90.gif" border="0" alt="java.net Member Button"/>
-        </link>
+      <link href="http://www.existsolutions.com"><img alt="eXist Solutions GmbH" border="0" src="../resources/existsolutions.png"/></link>
     </banner>
 
-    <reference>
-        <link href="http://www.izforge.com/izpack/">
-            <img src="resources/izpack-88x31.png" border="0" alt="IzPack Installer Generator"/>
-        </link>
-    </reference>
+    <banner>
+      <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="../resources/powered.gif"/></link>
+    </banner>
 </sidebar>
