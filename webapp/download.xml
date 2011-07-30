@@ -27,8 +27,8 @@
                 XQuery engine. eXist now also provides a lightweight URL rewriting and MVC framework (which in part
                 replaces Cocoon), along with support for XProc, XForms and many new XQuery extension modules.</para>
             <para>1.4 replaces the <emphasis>1.2</emphasis> series as stable branch. Release <emphasis>1.5</emphasis>
-                becomes the new <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
-                development release. New features will be added to this release only.</para>
+                is the new <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
+                development release, which will relabeled to 1.6 when ready.. New features will be added to this release only.</para>
         </section>
         <section>
             <title>Donations, Consulting, Training</title>
@@ -61,35 +61,36 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.jar/download"
-                                >eXist-setup-1.4.0-rev10440.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.jar/download"
+                                >eXist-setup-1.4.1-revXXXXX.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.0-rev10440.jar</code></td>
+                                eXist-1.4.0-revXXXXX.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.exe/download"
-                                >eXist-setup-1.4.0-rev10440.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.exe/download"
+                                >eXist-setup-1.4.0-revXXXXX.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
-                        <td colspan="2">We no longer distribute a <filename>.war</filename> package as we would like to
-                            encourage new users to start with the stand alone distribution. Running eXist within an
-                            isolated environment helps to identify issues and avoid unnecessary problems. However,
-                            experienced users can always <ulink url="building.xml#war">repackage</ulink> the standard
-                            distribution. It only takes seconds.</td>
+                        <td>
+                            <ulink
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.war/download"
+                                >eXist-setup-1.4.0-revXXXXX.war</ulink>
+                        </td>
+                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
                     <tr>
                         <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11. We would like to
-                            provide an eXist-as-Cocoon block as we have done in the past. However, we lacked the
-                            manpower to get this ready for 1.4. If you have experience with Cocoon please drop a message
-                            on the developer's list.</td>
+                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11. Starting release 1.5 
+                            cocoon will only available as an optional block. The development team is looking for
+                            a maintainer for this code. If you have experience with Cocoon please drop a message
+                            on the developer's list, otherwise this feature might be removed in the future.</td>
                     </tr>
                 </table>
             </section>
