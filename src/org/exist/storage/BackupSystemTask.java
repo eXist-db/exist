@@ -160,4 +160,8 @@ public class BackupSystemTask implements SystemTask {
         }
     }
 
+    @Override
+    public boolean afterCheckpoint() {
+    	return false;
+    }
 }

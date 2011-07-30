@@ -3,6 +3,7 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.security.Subject;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.sync.SyncTask;
 
 import java.util.Stack;
 
@@ -42,8 +43,9 @@ public class SystemTaskManager {
                 oldUser = broker.getSubject();
                 broker.setUser(pool.getSecurityManager().getSystemSubject());
                 while (!waitingSystemTasks.isEmpty()) {
-                    pool.sync(broker, Sync.MAJOR_SYNC);
-                    SystemTask task = waitingSystemTasks.pop();
+                	SystemTask task = waitingSystemTasks.pop();
+                	if (task.afterCheckpoint())
+                		pool.sync(broker, Sync.MAJOR_SYNC);
                     runSystemTask(task, broker);
                 }
 
