@@ -205,7 +205,13 @@ public class RewriteConfig {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             }
         }
-        urlRewrite.clearCaches();
+        
+        try {
+            urlRewrite.clearCaches();
+            
+		} catch (EXistException e) {
+			throw new ServletException("Failed to update controller.xml: " + e.getMessage(), e);
+		}
     }
 
     private void parse(Document doc) throws ServletException {
