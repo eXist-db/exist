@@ -112,6 +112,12 @@
     </banner>
     
     <banner>
+        <link href="http://www.existsolutions.com"><img alt="eXist Solutions GmbH" border="0" src="resources/existsolutions.png"/></link>
+    </banner>
+    
+    <banner>
         <link href="http://exist-db.org"><img alt="powered by eXist" border="0" src="resources/powered.gif"/></link>
     </banner>
+    
+
 </sidebar>
