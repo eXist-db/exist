@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2011 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- * $Id$
+ *  $Id$
  */
 package org.exist.storage;
 
@@ -3350,7 +3350,7 @@ public class NativeBroker extends DBBroker {
         private int mode = MODE_STORE;
 
         /** overall switch to activate fulltext indexation */
-        private boolean fullTextIndex = true;
+        private boolean fullTextIndex = false;
 
         NodeProcessor() {
         }
