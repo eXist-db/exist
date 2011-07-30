@@ -1428,7 +1428,6 @@ public class BrokerPool extends Observable {
         if (status != SHUTDOWN)
             broker.cleanUpTempResources();
         if (syncEvent == Sync.MAJOR_SYNC) {
-        	LOG.debug("Major sync");
             try {
                 if (!FORCE_CORRUPTION)
                     transactionManager.checkpoint(checkpoint);
@@ -1441,7 +1440,6 @@ public class BrokerPool extends Observable {
             	notificationService.debug();
         } else {
             cacheManager.checkDistribution();
-            LOG.debug("Minor sync");
         }
         //TODO : touch this.syncEvent and syncRequired ?
 	
