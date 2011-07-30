@@ -207,4 +207,25 @@ public class ExternalModuleImpl implements ExternalModule {
         mContext.reset();
         mStaticVariables.clear();
     }
+    
+	private Expression rootExpression = null;
+
+	/**
+     * Set the root expression for this context.
+     *
+     * @param  expr
+     */
+    public void setRootExpression( Expression expr ) {
+        rootExpression = expr;
+    }
+
+
+    /**
+     * Returns the root expression associated with this context.
+     *
+     * @return  root expression
+     */
+    public Expression getRootExpression() {
+        return  rootExpression;
+    }
 }

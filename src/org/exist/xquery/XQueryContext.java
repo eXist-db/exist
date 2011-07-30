@@ -199,12 +199,12 @@ public class XQueryContext {
 	/**
 	 * Loaded modules.
 	 */
-	protected HashMap modules = new HashMap();
+	protected HashMap<String,Module> modules = new HashMap<String,Module>();
 	
 	/**
 	 * Loaded modules, including ones bubbled up from imported modules.
 	 */
-	protected HashMap allModules = new HashMap();
+	protected HashMap<String,Module> allModules = new HashMap<String,Module>();
 	
 	/**
 	 * Whether some modules were rebound to new instances since the last time this context's
@@ -2364,10 +2364,15 @@ public class XQueryContext {
         				+ astParser.getErrorMessage(),
         			astParser.getLastException());
         	}
+            
+           
         	path.analyze(new AnalyzeContextInfo());
         	ExternalModule modExternal = astParser.getModule();
         	if(modExternal == null)
-        		throw new XPathException("source at " + location + " is not a valid module");        	
+        		throw new XPathException("source at " + location + " is not a valid module");  
+            
+            modExternal.setRootExpression(path);
+            
         	if(!modExternal.getNamespaceURI().equals(namespaceURI))
         		throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + 
         			") does not match namespace URI in import statement, which was: " + namespaceURI);
