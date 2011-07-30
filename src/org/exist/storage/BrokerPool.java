@@ -49,6 +49,7 @@ import org.exist.management.AgentFactory;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
+import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -57,6 +58,7 @@ import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.sync.SyncTask;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -662,7 +664,9 @@ public class BrokerPool extends Observable {
 		//setup database synchronization job
         if (majorSyncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
-            scheduler.createPeriodicJob(2500, new Sync(), 2500);
+//            scheduler.createPeriodicJob(2500, new Sync(), 2500);
+            SyncTask syncTask = new SyncTask();
+            scheduler.createPeriodicJob(2500, new SystemTaskJob(SyncTask.getJobName(), syncTask), 2500);
         }
 	}
 	
@@ -1416,14 +1420,15 @@ public class BrokerPool extends Observable {
     // WM: the method will always be under control of the BrokerPool. It is guaranteed that no
     // other brokers are active when it is called. That's why we don't need to synchronize here.
 	//TODO : make it protected ?
-	protected void sync(DBBroker broker, int syncEvent) {
+	public void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
 		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
         if (status != SHUTDOWN)
             broker.cleanUpTempResources();
-        if (syncEvent == Sync.MAJOR_SYNC){
+        if (syncEvent == Sync.MAJOR_SYNC) {
+        	LOG.debug("Major sync");
             try {
                 if (!FORCE_CORRUPTION)
                     transactionManager.checkpoint(checkpoint);
@@ -1434,8 +1439,10 @@ public class BrokerPool extends Observable {
             lastMajorSync = System.currentTimeMillis();
             if (LOG.isDebugEnabled())
             	notificationService.debug();
-        } else
+        } else {
             cacheManager.checkDistribution();
+            LOG.debug("Minor sync");
+        }
         //TODO : touch this.syncEvent and syncRequired ?
 	
         //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
@@ -1454,6 +1461,7 @@ public class BrokerPool extends Observable {
 		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
         if (status == SHUTDOWN)
             return;
+        LOG.debug("Triggering sync: " + syncEvent);
         synchronized (this) {
 			//Are there available brokers ?
 		    // TOUNDERSTAND (pb) : the trigger is ignored !
