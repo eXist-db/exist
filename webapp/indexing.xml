@@ -5,21 +5,45 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Configuring Database Indexes</title>
-        <date>November 2009</date>
+        <date>July 2011</date>
         <orgname>The eXist Project</orgname>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation></author>
+	    <author>
+	      <firstname>Loren</firstname>
+	      <surname>Cahlander</surname>
+	      <affiliation>
+		<address format="linespecific">
+		  <email>loren at syntactica.com</email>
+		</address>
+	      </affiliation></author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <title>Configuring Database Indexes</title>
         <section>
             <title>Overview</title>
-            <para>In this section, we discuss the types of database indexes used by eXist, as well
+            <para>In this section, we discuss the types of database indexes which might be used by eXist-db, as well
                 as how they are created, configured and maintained. It assumes readers have a basic
                 understanding of XML and XQuery.</para>
-            <para>Database indexes are used extensively by eXist to facilitate efficient querying of
+            <para>Database indexes are, if defined, used extensively by eXist-db to facilitate efficient querying of
                 the database. This is accomplished both by system-generated and user-configured
-                database indexes. The current version of eXist by default includes the following
-                types of indexes:</para>
+                database indexes.</para> 
+
+		<note><para>Please note that by default no indexes are defined. You therefore need to add index configurations to fit your needs.</para></note>
+
+		<para>In the current version of eXist-db the following
+                types of indexes are supported by default:</para>
             <orderedlist>
                 <listitem>
                     <para>
@@ -38,17 +62,10 @@
                 <listitem>
                     <para>
                         <emphasis>
-                            <ulink url="ftlegacy.xml">Old Legacy Full Text Indexes</ulink>
-                        </emphasis>These map specific text nodes and attributes of the documents in
-                        a collection to text tokens.</para>
-                </listitem>
-                <listitem>
-                    <para>
-                        <emphasis>
-                            <ulink url="lucene.xml">New Full Text Indexes</ulink>
-                        </emphasis>(eXist 1.4): new full text indexing module. Features faster and
+                            <ulink url="lucene.xml">Full Text Indexes</ulink>
+                        </emphasis>With eXist-db 1.4 we got a new full text indexing module, which features faster and
                         customizable full text indexing by transparently integrating Lucene into the
-                        XQuery engine. Prefer this index over the old builtin implementation.
+                        XQuery engine.
                     </para>
                 </listitem>
                 <listitem>
@@ -59,7 +76,7 @@
                         in a collection to splitted tokens of n-characters (where n = 3 by default).
                         Very efficient for exact substring searches and for queries on scripts
                         (mostly non-european ones) which can not be easily split into whitespace
-                        separated tokens and are thus a bad match for the full text index. </para>
+                        separated tokens and are thus a bad match for the full text indexing. </para>
                 </listitem>
                 <listitem>
                     <para>
@@ -83,7 +100,7 @@
         </section>
         <section>
             <title>Built-in Indexes</title>
-            <para>This section describes the features of those indexes that are part of the eXist
+            <para>This section describes the features of those indexes that are part of the eXist-db
                 distribution. Some of those indexes (n-gram, spatial) may need to be enabled first
                 (see <ulink url="#moduleconf">below</ulink>). </para>
             <section id="structuralidx">
@@ -228,12 +245,11 @@
                         <synopsis>//item[price = self]</synopsis>
                     </listitem>
                 </orderedlist>
-                <para>Concerning range indexes on strings there's another restriction to be
-                    considered: up to version 1.3, range indexes on strings can only be used with
-                    the default unicode collation. Also, string indexes will always be case
+                <para>
+                    One note on string indexes is that it will always be case
                     sensitive (while n-gram and full text indexes are not). It is not yet possible
                     to define a string index on a different collation (e.g. for German or French) or
-                    to make it case insensitve. This is a limitation we plan to address in the next
+                    to make it case insensitve. This is a limitation we plan to address in the 1.6
                     release.</para>
             </section>
             <section id="spatialidx">
@@ -246,7 +262,7 @@
         </section>
         <section>
             <title>Optional Index Modules</title>
-            <para>eXist features a <emphasis>modularized indexing architecture</emphasis>, which
+            <para>eXist-db features a <emphasis>modularized indexing architecture</emphasis>, which
                 allows arbitrary indexes to be plugged into an indexing pipeline. Consequently, some
                 indexes were moved out of the database core and are now available as plugins. For
                 the DB core, those indexes are a black box: they handle their own creation,
@@ -269,11 +285,11 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <ulink url="lucene.xml">New Full Text Index</ulink>
+                        <ulink url="lucene.xml">Lucene Full Text Index Module</ulink>
                     </term>
                     <listitem>
                         <para>Faster, better configurable, more feature rich and reliable than
-                            eXist's old index.</para>
+                            eXist-db's legacy full text index.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -281,7 +297,7 @@
                         <ulink url="ftlegacy.xml">Legacy Full Text Index</ulink>
                     </term>
                     <listitem>
-                        <para>Old full text index. Deprecated, though still supported for backwards
+                        <para>Lagacy full text index. Deprecated, though still supported for backwards
                             compatibility.</para>
                     </listitem>
                 </varlistentry>
@@ -302,22 +318,26 @@
         <section id="moduleconf">
             <title>Enabling Index Modules</title>
             <para>While a few indexes (n-gram, full text) are already pre-build in the standard
-                eXist distribution, other modules may need to be enabled first. For example, the
+                eXist-db distribution, other modules may need to be enabled first. For example, the
                 spatial index depends on a bunch of external libraries, which do not ship with
-                eXist. However, enabling the spatial index is a simple process:</para>
+                eXist-db. However, enabling the spatial index is a simple process if you installed the sourcecode:</para>
             <procedure>
                 <step>
-                    <para>Copy the properties file <filename
-                            >extensions/indexes/build.properties</filename> and store it as
-                            <filename>local.properties</filename> in the same directory.</para>
+                    <para>If you don't already have a file 
+		    <filename>EXIST_HOME/extensions/indexes/local.properties</filename> copy the properties file 
+		    <filename>EXIST_HOME/extensions/indexes/build.properties</filename> and store it as
+                            <filename>EXIST_HOME/extensions/indexes/local.properties</filename>.</para>
                 </step>
                 <step>
-                    <para>Edit <filename>extensions/indexes/local.properties</filename>:</para>
+                    <para>Edit <filename>EXIST_HOME/extensions/indexes/local.properties</filename>:</para>
                     <example>
                         <title>local.properties</title>
                         <programlisting>
 # N-gram module
 include.index.ngram = true
+
+# Lucene integration
+include.index.lucene = true
 
 # Spatial module
 include.index.spatial = false
@@ -335,7 +355,7 @@ include.index.spatial = false
             <para>The build process should create a jar file for every index implementation in
                 directory <filename>lib/extensions</filename>. For example, the spatial index is
                 packaged into the jar <filename>exist-spatial-module.jar</filename>.</para>
-            <para>Once the index module has been built, it can be announced to eXist. To activate an
+            <para>Once the index module has been built, it can be announced to eXist-db. To activate an
                 index plugin, it needs to be added to the <sgmltag>modules</sgmltag> section within
                 the global configuration file <filename>conf.xml</filename>:</para>
             <example>
@@ -344,11 +364,9 @@ include.index.spatial = false
 <markup><![CDATA[<modules>
     <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
         file="ngram.dbx" n="3"/>
-    <!-- The full text index is always required and should
-         not be disabled. We still have some dependencies on
-         this index in the database core. These will be removed
-         once the redesign has been completed. -->
-    <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+    <!-- The legacy full text index is fully disables from version 1.4.1.
+      -->
+    <!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
 </modules>]]></markup>
                 </programlisting>
             </example>
@@ -365,7 +383,7 @@ include.index.spatial = false
         </section>
         <section id="idxconf">
             <title>Configuring Indexes</title>
-            <para>eXist has no "create index" command. Instead, indexes are configured in
+            <para>eXist-db has no "create index" command. Instead, indexes are configured in
                 collection-specific configuration files. These files are stored as standard XML
                 documents in the system collection: <filename>/db/system/config</filename>, which
                 can be accessed like any other document (e.g. using the Admin interface or Java
@@ -377,8 +395,7 @@ include.index.spatial = false
                 by descendants in the hierarchy unless they have their own configuration (i.e. the
                 configuration settings for the child collection override those set for the parent).
                 If no collection-specific configuration file is created for any document, the global
-                settings in the main configuration file, <filename>conf.xml</filename>, will apply
-                by default. That being said, the <filename>conf.xml</filename> file should only
+                settings in the main configuration file, by default <filename>EXIST_HOME/conf.xml</filename>, will apply. That being said, the <filename>conf.xml</filename> file should only
                 define the default global <emphasis>index creation policy</emphasis>.</para>
             <para> To configure a given collection - e.g. <filename>/db/foo</filename> - create a
                 file <filename>collection.xconf</filename> and store it as <filename
@@ -399,7 +416,7 @@ include.index.spatial = false
                     but it <emphasis>must</emphasis> have the <filename>.xconf</filename>
                     extension.</para>
                 <para>You can only have <emphasis>one</emphasis>
-                    <filename>.xconf</filename> file at each level.</para>
+                    <filename>.xconf</filename> file in each database collection.</para>
             </note>
             <section>
                 <title>Maintaining Indexes and Re-indexing</title>
@@ -409,20 +426,20 @@ include.index.spatial = false
                         <tbody>
                             <tr>
                                 <td>
-                                    <para>The eXist index system automatically maintains and updates
-                                        indexes defined by the user. You therefore do not need to
+                                    <para>The eXist-db index system automatically maintains and updates
+                                        indexes already defined by the user. You therefore do not need to
                                         update an index when you update a database document or
-                                        collection. eXist will even update indexes following partial
+                                        collection. eXist-db will even update indexes following partial
                                         document updates via <emphasis>XUpdate</emphasis> or
                                             <emphasis>XQuery Update</emphasis> expressions.</para>
-                                    <para>The only exception to eXist's automatic update occurs when
+                                    <note><para>The only exception to eXist-db's automatic update occurs when
                                         you <emphasis>add a new index definition to an existing
                                             database collection</emphasis>. In this case, the new
                                         index settings will <emphasis>only</emphasis> apply to new
                                         data added to this collection, or any of its
                                         sub-collections, and <emphasis>not</emphasis> to previously
-                                        existing data. To apply the new settings to the entire
-                                        collection, you need to trigger a "manual reindex" of the
+                                        existing data. </para></note> <para>To apply the new settings to an entire
+                                        collection hierarchy, you need to trigger a "manual reindex" of the
                                         collection being updated. You can re-index collections using
                                         the Java Admin Client (shown on the right). From the Admin
                                         menu, select <guimenu>File</guimenu>&#187;<guimenuitem
@@ -449,15 +466,16 @@ include.index.spatial = false
                     <programlisting><markup><![CDATA[
 <collection xmlns="http://exist-db.org/collection-config/1.0">
     <index>
-        <!-- Old full text index configuration. Deprecated. -->
+        <!-- The legacy full text index should be disabled unless you have 
+	     really good reasons for enabling it. -->
         <fulltext default="none" attributes="false">
-            <!-- Full text indexes -->
+            <!-- Legacy full text indexes -->
             <create qname="author"/>
             <create qname="title" content="mixed"/>
             <!-- "old" context-dependant configuration using the path attribute: -->
             <include path="booktitle"/>
         </fulltext>
-        <!-- New full text index based on Lucene -->
+        <!-- Full text index based on Lucene -->
         <lucene>
             <text qname="SPEECH">
                 <ignore qname="SPEAKER"/>
@@ -501,10 +519,11 @@ include.index.spatial = false
 <markup><![CDATA[
 <collection xmlns="http://exist-db.org/collection-config/1.0">
     <index xmlns:atom="http://www.w3.org/2005/Atom">
-        <fulltext default="none" attributes="no">
-            <create qname="atom:title"/>
-        </fulltext>
-        <create qname="atom:id" type="xs:string"/>
+      <lucene>
+        <analyzer class="org.apache.lucene.analysis.StandardAnalyzer"/>
+        <text qname="atom:title" />
+      </lucene>
+      <create qname="atom:id" type="xs:string"/>
     </index>
 </collection>
 ]]></markup>
@@ -515,7 +534,7 @@ include.index.spatial = false
                             <literal>atom</literal> namespace and we thus need to declare a mapping
                         for this namespace. Please note that the <option>xmlns</option> namespace
                         attributes have to be specified on the <sgmltag>index</sgmltag> element, not
-                        the <sgmltag>create</sgmltag> or <sgmltag>fulltext</sgmltag>
+                        the <sgmltag>create</sgmltag> or <sgmltag>lucene</sgmltag>
                         elements.</para>
                 </section>
                 <section>
