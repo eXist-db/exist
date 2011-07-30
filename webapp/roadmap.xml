@@ -1,25 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <roadmap>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
-    <title>eXist: Current State, Features and Roadmap</title>
+    <title>eXist-db: Current State, Features and Roadmap</title>
     <comment>Due to size restrictions, longer remarks on some of the listed topics are available in
         separate documents. This is indicated with a reference.</comment>
     <module>
         <name>Document Storage</name>
-        <part>
-            <name>File size/complexity limits</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="2006" end="2007" isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p> The numbering scheme at the core of eXist 1.0 did limit the maximum size of a
-                    document to be stored within the database. In eXist releases 1.1 and later this
-                    is fixed.</p>
-            </remark>
-        </part>
         <part>
             <name>Collection storage</name>
             <status>Stable_redesign</status>
@@ -56,32 +43,6 @@
             </remark>
         </part>
         <part>
-            <name>DOM Redesign</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20080201T000000Z" end="20080226T000000Z" task="20" isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p>eXist currently uses 2 DOM (document object model) implementations: one for nodes
-                    stored in the db, and a different one for in-memory nodes constructed during an
-                    XQuery. The two models can not be mixed. To process an XQuery expression on an
-                    in-memory node, the query engine needs to create a temporary persistent copy.
-                    This costs performance and did cause stability issues in the past.</p>
-
-                <p>To solve those problems, we are currently redesigning the in-memory DOM to
-                    implement the same interfaces as the persistent DOM. The query engine should be
-                    able to mix nodes of both models.</p>
-
-                <p class="update">The current SVN trunk can directly evaluate XQuery expressions on
-                    the in-memory DOM, which solves all previous issues and contributes to the
-                    overall stability of the db. Refer to <a
-                        href="http://atomic.exist-db.org/blogs/eXist/InMemoryFragments">this
-                        article</a> for details.</p>
-            </remark>
-        </part>
-        <part>
             <name>Allow metadata to be associated with a document</name>
             <status>Open</status>
             <priority>Avg</priority>
@@ -114,22 +75,6 @@
             </ul>
         </remark>
         <part>
-            <name>Full text indexing</name>
-            <status>Beta</status>
-            <priority>Avg</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>75</progress>
-            <event start="20070907T000000Z" end="20071112T000000Z" duration="149760"
-                isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p class="update">As of Oct 2008, a <a
-                        href="http://atomic.exist-db.org/blogs/eXist/LuceneIndexModule">new full
-                        text index</a> is available. It is based on Lucene and eXist's new
-                    modularized indexing architecture.</p>
-            </remark>
-        </part>
-        <part>
             <name>XQuery and XPath Full Text 1.0</name>
             <status>Open</status>
             <priority>Avg</priority>
@@ -137,74 +82,12 @@
             <progress>15</progress>
             <who></who>
             <remark>
-                <p>Implement the W3C's full text extensions to XQuery, probably based on the new
-                    Lucene index module (see above). Many features could be easily implemented on
+                <p>Implement the W3C's full text extensions to XQuery. Many features could be easily implemented on
                     top of Lucene.</p>
 
                 <p>The grammar for the full text extensions has already been merged into the XQuery
                     parser as part of a Google Summer of Code project and is available in an SVN
                     branch. It just needs to be filled with life.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Range indexing</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Indexes on xml:id</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>Currently stored in the structural index. Should be moved to the range index.</p>
-
-                <p class="update">As of version 1.2.4 and 1.3, xml:id values are stored in the range
-                    index.</p>
-            </remark>
-        </part>
-        <part>
-            <name>N-gram</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20070201T000000Z" end="20070614T000000Z" isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p>When dealing with texts in many non-European languages, the token-based full-text
-                    index produces insufficient results. Tokenization is currently based on Unicode
-                    code points. Most chinese characters, for example, are thus stored as single
-                    tokens. Users have to abuse the near() or phrase() function to search for
-                    character sequences consisting of more than one character, which is quite slow.
-                    It also means that real proximity searches are not available.</p>
-                <p> An N-gram based index would be much more suitable for these languages. It would
-                    also allow additional functionality to be implemented, e.g. to deal with varying
-                    spellings. The main question is how the N-gram index would integrate
-                    conceptually with the existing full-text functions.</p>
-                <p class="update">A N-gram index based on the new modularized indexing architecture
-                    is in SVN trunk as of July 2007 and in eXist 1.2 and later releases.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Integration of other index types (e.g. Spatial indexes, external indexes)</name>
-            <status>Beta</status>
-            <priority>Avg</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>75</progress>
-            <event start="20070201T000000Z" end="20070614T000000Z" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>eXist now offers spatial indexes in SVN trunk as of July 2007 and in version 1.2
-                    and later releases.</p>
             </remark>
         </part>
         <part>
@@ -249,26 +132,6 @@
                 high-priority.</p>
         </remark>
         <part>
-            <name>Journal log</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Recovery</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
             <name>Internal transaction management</name>
             <status>Stable</status>
             <priority>x</priority>
@@ -278,7 +141,7 @@
             <who/>
             <remark>
                 <p>Transactions are maintained internally, but they are not exposed to applications.
-                    eXist does not yet support full ACID transactions. Read-only operations bypass
+                    eXist-db does not yet support full ACID transactions. Read-only operations bypass
                     the transaction system.</p>
             </remark>
         </part>
@@ -299,16 +162,6 @@
     <module>
         <name>Backup / Restore</name>
         <part>
-            <name>Backup / Restore Tool</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
             <name>Store configuration into backup</name>
             <status>Open</status>
             <priority>x</priority>
@@ -321,24 +174,7 @@
                     page size, additional XQuery or index modules etc. are important. </p>
             </remark>
         </part>
-        <part>
-            <name>DB repair tool</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20080101T000000Z" end="20080124T000000Z" task="19" isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p>Create a DB repair tool which can handle and resolve inconsistencies in the
-                    database structure. It should be possible to recreate the db if at least
-                    dom.dbx, collections.dbx and symbols.dbx are more or less intact. If a single
-                    document is damaged, it could be filtered out.</p>
-                <p>As of version 1.2.4, eXist provides a <a
-                        href="http://exist-db.org/backup.html#consistency">consistency check and
-                        repair</a> tool.</p>
-            </remark>
-        </part>
+
     </module>
     <module>
         <name>Configuration</name>
@@ -403,101 +239,9 @@
             <p>Since version 1.1, eXist supports the XACML standard for fine-grained access control
                 to stored XQueries, Java classes etc.</p>
         </remark>
-        <part>
-            <name>User management</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Access control on resources and collections</name>
-            <status>Stable_redesign</status>
-            <priority>Avg</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>Need more dynamic ACL structures that can adapt to varying requirements.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Access control on stored XQueries, XQuery functions and modules</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>incomplete</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Java binding </name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
     </module>
     <module>
         <name>Schema Validation </name>
-        <part>
-            <name>Validate document against schema when indexing</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Validate document after node-level updates</name>
-            <status>Open</status>
-            <priority>Avg</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Locate schema's and DTDs stored in database</name>
-            <status>Beta</status>
-            <priority>High</priority>
-            <test_coverage>x</test_coverage>
-            <progress>90</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Support for catalog files in database</name>
-            <status>Beta</status>
-            <priority>High</priority>
-            <test_coverage>x</test_coverage>
-            <progress>90</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Manual validation against schema</name>
-            <status>Beta</status>
-            <priority>High</priority>
-            <test_coverage>Tested</test_coverage>
-            <progress>75</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
         <part>
             <name>XQuery validation features</name>
             <status>Open</status>
@@ -528,25 +272,15 @@
             <who>dizzzz</who>
             <remark/>
         </part>
-        <part>
-            <name>Support for RelaxNG and Schematron</name>
-            <status>Open</status>
-            <priority>Low</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>0</progress>
-            <event start="20080317T000000Z" end="20080409T000000Z" task="24" isDuration="true"/>
-            <who>dizzzz</who>
-            <remark/>
-        </part>
     </module>
     <module>
         <name>XQuery</name>
         <remark>
             <p>The XQuery engine as well as the standard function libraries should be updated to
-                align with the XQuery 1.0 recommendation. Basically, almost all core language
+                align with the XQuery 3.0 recommendation. Basically, almost all XQuery 1.0 core language
                 features are implemented, excluding schema related features, which are currently
-                beyond eXist's scope.</p>
-            <p>XQuery support in eXist is covered by the official W3C XQuery Test Suite (XQTS) 1.02.
+                beyond eXist-db's scope.</p>
+            <p>XQuery support in eXist-db is covered by the official W3C XQuery Test Suite (XQTS) 1.02.
                 Implementing the official XQTS XQuery test suite was a top priority in order to
                 guarantee standard conformance and avoid future regressions.</p>
         </remark>
@@ -612,47 +346,6 @@
             </remark>
         </part>
         <part>
-            <name>XQuery test suite – XQTS</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20070101T000000Z" end="20070730T000000Z" isDuration="true"/>
-            <who/>
-        </part>
-        <part>
-            <name>XQuery Optimizer</name>
-            <status>Stable</status>
-            <priority>High</priority>
-            <test_coverage>tested</test_coverage>
-            <progress>90</progress>
-            <event start="20080515T000000Z" end="20080609T000000Z" task="23" isDuration="true"/>
-            <who>wolf, perig</who>
-            <remark>
-                <p>With the 1.2 release, eXist features a new query-rewriting optimizer. It analyzes
-                    the query at compile time and searches for optimizable subexpressions within the
-                    query tree. If it finds an optimizable expression, the optimizer will modify the
-                    query and wrap some special instructions around the optimizable code block.
-                    Together with the new indexing features (see <a
-                        href="http://atomic.exist-db.org/wiki/blogs/eXist/NewIndexing">blog
-                        article</a>, the optimizer can achieve dramatic improvements.</p>
-
-                <p>However, the optimizer is currently limited to predicate expressions. It does not
-                    optimize e.g. "where" clauses in a FLWOR statement. The query-rewriting should
-                    thus be extended to recognize other types of expressions beyond predicate
-                    statements. In short, we need a better static analysis of the query.</p>
-
-                <p>Based on eXist's current indexes, it is also often difficult to decide if a
-                    certain optimization path leads to performance improvements or not. Better index
-                    statistics could help here. Also, there's a wide range of performance
-                    optimizations which could be applied if we had appropriate statistics on node
-                    distribution and frequency.</p>
-
-                <p class="update">As of Oct 2008, the current trunk has a statistics module, but it
-                    is not yet used for real optimizations.</p>
-            </remark>
-        </part>
-        <part>
             <name>Error reporting</name>
             <status>Stable_redesign</status>
             <priority>Avg</priority>
@@ -663,73 +356,6 @@
             <remark>
                 <p>Error reports by the XQuery parser and compiler need to be improved.</p>
             </remark>
-        </part>
-        <part>
-            <name>Make function calls tail-recursive</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>70</test_coverage>
-            <progress>100</progress>
-            <event start="20070501T000000Z" end="20070502T000000Z" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>Recursive functions may trigger a StackOverflowException. We need to handle
-                    tail-recursion.</p>
-                <p class="update">No issues with recursive functions have been reported during the
-                    past year. The tail recursion handling is reliable.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Better Try-Catch</name>
-            <status>Stable</status>
-            <priority>Low</priority>
-            <test_coverage>0</test_coverage>
-            <progress>0</progress>
-            <who/>
-            <remark>
-                <p> eXist already provides a util:catch() function which basically corresponds to a
-                    Java try-catch. The XQuery 1.1 draft also defines try-catch, but more closely
-                    integrated with XQuery. It should not be too difficult to implement this in
-                    eXist. See <a
-                        href="http://www.zorba-xquery.com/doc/zorba-0.9.2/zorba/html/trycatch.html"
-                        >http://www.zorba-xquery.com/doc/zorba-0.9.2/zorba/html/trycatch.html</a>
-                    for some examples. </p>
-            </remark>
-        </part>
-        <part>
-            <name>XQuery Debugger</name>
-            <status>Open</status>
-            <priority>High</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>75</progress>
-            <event start="20080315T000000Z" end="20080516T120000Z" duration="1440000" task="22"
-                isDuration="true"/>
-            <who>ljo, dmitriy</who>
-            <remark>
-                <p>Remote debugging protocol - <a href="http://www.xdebug.org">DBGp</a></p>
-                <p>Command line debugger similar to jdb as prototype</p>
-                <p>Decide which functionality to expose.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Drop and deprecate xmldb:collection()</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>tested</test_coverage>
-            <progress>100</progress>
-            <event start="20070907T000000Z" end="20070910T000000Z" duration="57600" task="5"
-                isDuration="true"/>
-            <who>delirium</who>
-        </part>
-        <part>
-            <name>Move fn:document() to xmldb:document() and deprecate</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>tested</test_coverage>
-            <progress>100</progress>
-            <event start="20070907T000000Z" end="20070910T000000Z" duration="57600" task="6"
-                isDuration="true"/>
-            <who>perig</who>
         </part>
     </module>
     <module>
@@ -795,180 +421,11 @@
             <event start="20071020T000000Z" end="2008" isDuration="true"/>
             <who/>
         </part>
-        <part>
-            <name>Cocoon Integration</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>No tests</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>General functionality tests required</p>
-            </remark>
-        </part>
-        <part>
-            <name>XQJ XQuery API for Java (JSR-225)</name>
-            <status>Beta</status>
-            <priority>Low</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>70</progress>
-            <event start="20071126T000000Z" end="20080114T000000Z" task="17" isDuration="true"/>
-            <who>allad, perig, ljo, dizzzz</who>
-            <remark>
-
-
-                <p>A nearly finished implementation of the XQuery API for Java (XQJ) is available in
-                    SVN. It was started as a Google Summer of Code project in 2007 and provides two
-                    XQJ drivers, one for embedded database access, one for remote access.</p>
-
-                <p>I recently invested some time to bring the branch into sync with the current
-                    trunk. The remote database driver, which is based on the REST-style HTTP
-                    interface of eXist, should already be pretty usable. The embedded driver needs
-                    some redesign though (it breaks the test suite). However, it should not be too
-                    much work to fix this and finally merge it into trunk. Open Tasks:</p>
-
-                <ul>
-                    <li>integrate the official XQJ test suite</li>
-                    <li>test for standard conformance</li>
-                    <li>fix the embedded database driver</li>
-                    <li>merge into trunk</li>
-                    <li>performance tests</li>
-                </ul>
-
-
-            </remark>
-        </part>
-        <part>
-            <name>XForms filter</name>
-            <status>Beta</status>
-            <priority>Low</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>80</progress>
-            <event start="20070907T000000Z" end="20071015T000000Z" task="8" isDuration="true"/>
-            <who>delirium</who>
-            <remark/>
-        </part>
     </module>
     <module>
         <name>Documentation</name>
         <part>
-            <name>XQuery stored modules</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>calling XQuery scripts stored in the DB; import stored modules into a query
-                    passed to the DB.</p>
-            </remark>
-        </part>
-        <part>
-            <name>WebDAV</name>
-            <status>Beta</status>
-            <priority>Avg</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>90</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Deployment</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20071020T000000Z" end="2008" isDuration="true"/>
-            <who/>
-            <remark>
-                <p>Integration with a servlet engine, Cocoon, stand-alone server, embedded use.</p>
-            </remark>
-        </part>
-        <part>
-            <name>Index creation, index configuration and query rewriting</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20071001T000000Z" end="20071018T000000Z" task="10" isDuration="true"/>
-            <who/>
-            <remark/>
-        </part>
-        <part>
-            <name>Validation</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20070907T000000Z" end="20070926T000000Z" task="4" isDuration="true"/>
-            <who>dizzzz</who>
-            <remark/>
-        </part>
-        <part>
-            <name>Trigger</name>
-            <status>Beta</status>
-            <priority>Low</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
-            <event start="20071210T000000Z" end="20071210T000000Z" task="9" duration="57600"
-                isDuration="true"/>
-            <who>delirium</who>
-            <remark/>
-        </part>
-        <part>
-            <name>Searchable Documentation</name>
-            <status>Stable</status>
-            <priority>x</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <who>wolf</who>
-            <event start="20071020T000000Z" end="20071031T000000Z" isDuration="true"/>
-            <remark>
-                <p>The documentation that comes with eXist should be made searchable. I started
-                    working on a search interface which is based on eXist's own full text search
-                    features.</p>
-
-                <p class="update">As of Oct. 2008, a <a href="http://demo.exist-db.org/search.xql"
-                        >search function</a> is provided. It requires features only available in SVN
-                    trunk though.</p>
-            </remark>
-            <who/>
-        </part>
-        <part>
-            <name>XQDoc integration</name>
-            <status>Alpha</status>
-            <priority>High</priority>
-            <test_coverage>Partially tested</test_coverage>
-            <progress>60</progress>
-            <event start="20071101T000000Z" end="20071126T000000Z" task="3" duration=""
-                isDuration="true"/>
-            <who>ljo, wolf</who>
-            <remark>
-                <p>Migrate the function documentation to XQDoc. Use XQDoc to better document all
-                    XQuery examples.</p>
-            </remark>
-        </part>
-    </module>
-    <module>
-        <name>Releases</name>
-        <part>
-            <name>1.2</name>
-            <status>Stable</status>
-            <priority>High</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>99</progress>
-            <event start="20071214T000000Z" end="20071214T000000Z" task="12" isDuration="false"/>
-            <who/>
-            <remark>
-                <p>Imperative release with new features from 2006–2007 to replace version 1.0-line.
-                    The last release based on Java 1.4.</p>
-            </remark>
-        </part>
-        <part>
-            <name>1.4</name>
+            <name>1.5</name>
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
@@ -976,36 +433,14 @@
             <event start="20080615T000000Z" end="20080615T000000Z" task="25" isDuration="false"/>
             <who/>
             <remark>
-                <p>Based on Java 5.</p>
+                <p>Based on Java 6.</p>
             </remark>
         </part>
     </module>
     <module>
         <name>Other Tasks</name>
         <part>
-            <name>Complete New Sandbox Application</name>
-            <status>Beta</status>
-            <priority>Avt</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>70%</progress>
-            <event start="20071101T000000Z" end="20071122T000000Z" task="15" duration="460800"
-                isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p> Some time ago we did a major rewrite of the sandbox application: <a
-                        href="http://demo.exist-db.org/sandbox2/sandbox.xql"
-                        >http://demo.exist-db.org/sandbox2/sandbox.xql</a> It is nearly usable, but
-                    the syntax-highlighting editor component is limited. In particular, it has no
-                    support for safari. Also, the sandbox still uses util:eval to execute the
-                    entered XQuery code. This works well for simple queries, but can have
-                    side-effects if the query imports external modules or tries to access the http
-                    context. For the purpose of the sandbox, it would be better to post the
-                    user-supplied query to a dedicated servlet, which executes the code and sends
-                    back a result. </p>
-            </remark>
-        </part>
-        <part>
-            <name>I18n</name>
+            <name>i18n</name>
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
@@ -1030,21 +465,6 @@
             </remark>
         </part>
         <part>
-            <name>Move to Java 5</name>
-            <status>Open</status>
-            <priority>Low</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
-            <event start="20071215T000000Z" end="20071215T000000Z" isDuration="false"/>
-            <who/>
-            <remark>
-                <p>Change build taget in switch for development branch 1.3 to Java 5 after eXist
-                    version 1.2 is released.</p>
-                <p>This will make some more stuff easier. Especially since the jmx monitors and
-                    junit 4 tests are by requirements targeted for Java 5 already.</p>
-            </remark>
-        </part>
-        <part>
             <name>Move to ANTLR3 parser</name>
             <status>Instable</status>
             <priority>High</priority>
@@ -1059,21 +479,6 @@
                 <p>Maybe use gunit for testing?</p>
             </remark>
         </part>
-        <part>
-            <name>Move to AtomicWiki</name>
-            <status>Stable</status>
-            <priority>High</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>100</progress>
-            <event start="20071101T000000Z" end="20071122T000000Z" task="15" duration="460800"
-                isDuration="true"/>
-            <who>wolf</who>
-            <remark>
-                <p>Change from the current spam-ridden and unmaintained wiki to our own Atom-based
-                    AtomicWiki.</p>
-            </remark>
-        </part>
-
     </module>
     <legend>
         <title>Legend</title>
