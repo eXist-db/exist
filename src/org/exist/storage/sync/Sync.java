@@ -32,36 +32,8 @@ import java.util.Map;
  * It will periodically trigger a cache sync to write
  * cached pages to disk. 
  */
-public class Sync extends UserJavaJob {
+public interface Sync {
 
-	@SuppressWarnings("unused")
-	private final static String JOB_GROUP = "eXist.internal";
-	private final static String JOB_NAME = "Sync";
-	
 	public final static int MINOR_SYNC = 0;
 	public final static int MAJOR_SYNC = 1;
-	
-	public Sync()
-	{
-	}
-	
-	public String getName()
-	{
-		return JOB_NAME;
-	}
-
-    public void setName(String name) {
-    }
-
-	public void execute(BrokerPool pool, Map<String, ?> params) throws JobException
-	{
-		if(System.currentTimeMillis() - pool.getLastMajorSync() > pool.getMajorSyncPeriod())
-		{
-			pool.triggerSync(MAJOR_SYNC);
-		}
-		else
-		{
-			pool.triggerSync(MINOR_SYNC);
-		}
-	} 
 }

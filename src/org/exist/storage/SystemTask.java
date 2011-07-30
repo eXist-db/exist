@@ -60,4 +60,10 @@ public interface SystemTask {
 	 * @throws EXistException
 	 */
 	void execute(DBBroker broker) throws EXistException;
+	
+	/**
+	 * @return true if a checkpoint should be generated before this system task
+	 * runs. A checkpoint guarantees that all changes were written to disk.
+	 */
+	boolean afterCheckpoint();
 }

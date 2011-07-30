@@ -65,6 +65,11 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private final static LoggingCallback logCallback = new LoggingCallback();
     
+    @Override
+    public boolean afterCheckpoint() {
+    	return false;
+    }
+    
     public void configure(Configuration config, Properties properties) throws EXistException {
         
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
