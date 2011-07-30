@@ -125,9 +125,10 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/json-test.xql">Transform XML fragments to JSON</link>
+                            <link href="xquery/json/">JSON Serialization Demo</link>
                         </td>
-                        <td width="70%">An XQuery does not necessarily need to return XML.</td>
+                        <td width="70%">An jQuery dynatree example, the tree data is loaded via an AJAX call to an XQuery. This example shows
+                                        that an XQuery can return non-xml output (JSON) with a serialization option.</td>
                     </tr>
                 </table>
             </section>
@@ -148,7 +149,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            URL Rewriting
+                            <link href="urlrewrite/">URL Rewriting</link>
                         </td>
                         <td width="70%">eXist's XQueryURLRewrite servlet filter calls a user-defined XQuery to 
                             decide how a HTTP request is handled. The XML fragment returned by the
