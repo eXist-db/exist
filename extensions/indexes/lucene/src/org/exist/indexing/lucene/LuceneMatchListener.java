@@ -185,6 +185,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         break;
                     case XMLStreamConstants.CHARACTERS:
                         NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        textOffset += extractor.beforeCharacters();
                         offsets.add(textOffset, nodeId);
                         textOffset += extractor.characters(reader.getXMLText());
                         break;
@@ -203,7 +204,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
         	analyzer = index.getDefaultAnalyzer();
         }
         LOG.debug("Analyzer: " + analyzer + " for path: " + path);
-        TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(extractor.getText().toString()));
+        String str = extractor.getText().toString();
+        TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         Token token;
         try {
@@ -265,9 +267,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         if (offset != null)
                             offset.add(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]);
-                        else
+                        else {
                             nodesWithMatch.put(nodeId, new Offset(token.startOffset() - offsets.offsets[idx],
                                 token.endOffset() - offsets.offsets[idx]));
+                        }
                     }
                 }
             }
