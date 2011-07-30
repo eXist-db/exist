@@ -362,6 +362,8 @@ public class XQueryContext {
     private boolean isShared = false;
 
     private XACMLSource source = null;
+
+    private boolean analyzed = false;
     
     private XQueryContext() {}
 	
@@ -1219,6 +1221,8 @@ public class XQueryContext {
         clearUpdateListeners();
         
         profiler.reset();
+
+        analyzed = false;
     }
 	
 	/**
@@ -1361,7 +1365,19 @@ public class XQueryContext {
 		return true;
 	}
 
-	public void analyzeAndOptimizeIfModulesChanged(PathExpr expr) throws XPathException {
+	public void analyzeAndOptimizeIfModulesChanged(Expression expr) throws XPathException {
+
+        if (analyzed)
+               return;
+        analyzed = true;
+
+        for (Module module : expr.getContext().modules.values()) {
+           if( !module.isInternalModule() ) {
+               Expression root = ((ExternalModule)module).getRootExpression();
+               ((ExternalModule)module).getContext().analyzeAndOptimizeIfModulesChanged(root);
+           }
+        }
+
         expr.analyze(new AnalyzeContextInfo());
         if (optimizationsEnabled()) {
             Optimizer optimizer = new Optimizer(this);
