@@ -60,6 +60,10 @@
                     from a server running an older version may sometimes lead to unexpected
                     problems.</para>
             </note>
+            <important>
+                <para>Due to limitations of the ZIP format, please make sure the size of your zipped backup does
+                not exceed 4 gigabytes. All backup methods support backups to the file system as an alternative.</para>
+            </important>
         </section>
         <section>
             <title>Backup Methods</title>
@@ -245,6 +249,7 @@
     cron-trigger="0 0 0/12 * * ?">
     <!-- the output directory. paths are relative to the data dir -->
     <parameter name="output" value="export"/>
+    <parameter name="zip" value="yes"/>
     <parameter name="backup" value="yes"/>
     <parameter name="incremental" value="yes"/>
 	<parameter name="incremental-check" value="no"/>
@@ -276,6 +281,16 @@
                                 backup.</para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>zip</term>
+                        <listitem>
+                            <para>If set to "yes", the backup will be written into a zip archive. For larger databases, please
+                            make sure the generated archive is smaller than 4 gigabytes. Due to limitations of the zip format,
+                            archives larger than 4 gigabytes may not be readable. In this case, use a backup to the file system
+                            instead.</para>
+                        </listitem>
+                    </varlistentry>
+                    
                     <varlistentry>
                         <term>incremental</term>
                         <listitem>
