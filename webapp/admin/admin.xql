@@ -162,16 +162,19 @@ declare function admin:display-login-form() as element()
             {
                 for $param in request:get-parameter-names()
                 return
-                    <input type="hidden" name="{$param}" 
-                        value="{request:get-parameter($param, ())}"/>
+                    if ( $param = ("user","pass") ) then
+                        ()
+                    else 
+                        <input type="hidden" name="{$param}" value="{request:get-parameter($param, ())}"/>
+                        
             }
         </form>
     </div>
 };
 
 (: main entry point :)
-let $userParam := request:get-parameter("user", ())[1]
-let $passwdParam := request:get-parameter("pass", ())[1]
+let $userParam := request:get-parameter("user", ())
+let $passwdParam := request:get-parameter("pass", ())
 let $isLoggedIn :=  if(xdb:get-current-user() eq "guest") then
     (
         (: is this a login attempt? :)
