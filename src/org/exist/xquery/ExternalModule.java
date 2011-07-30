@@ -84,4 +84,13 @@ public interface ExternalModule extends Module {
 	 * Is this module still valid or should it be reloaded from its source?
 	 */
 	public boolean moduleIsValid(DBBroker broker);
+    
+    
+    /**
+     * Returns the root expression associated with this context.
+     *
+     * @return  root expression
+     */
+    public Expression getRootExpression();
+    public void setRootExpression(Expression expr);
 }
