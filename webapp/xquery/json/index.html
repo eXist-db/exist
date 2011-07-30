@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>JSON Demo</title>
+        <script type="text/javascript" src="libs/scripts/jquery/jquery-1.4.2.min.js"></script>
+        <script type="text/javascript" src="libs/scripts/jquery/jquery-ui-1.8.custom.min.js"></script>
+        <script type="text/javascript" src="libs/scripts/jquery/jquery.dynatree.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="libs/scripts/jquery/skin/ui.dynatree.css"/>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#collection-tree').dynatree({
+                    persist: false,
+                    rootVisible: false,
+                    initAjax: {url: "json.xql" },
+                    clickFolderMode: 1,
+                    onPostInit: function(isReloading, isError) {
+                        var dbNode = this.getNodeByKey("/db");
+                    	dbNode.activate();
+                    	dbNode.expand(true);
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>JSON Serialization Demo</h1>
+        <p>This example embeds the jQuery dynatree widget to display the current database collection hierarchy
+        as a tree. The tree is loaded via an AJAX call to the XQuery <a href="json.xql">json.xql</a>, which returns
+        data in the JSON format as expected by the dynatree widget.</p>
+        <div id="collection-tree"/>
+    </body>
+</html>
