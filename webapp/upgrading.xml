@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: security.xml 10003 2009-09-05 08:43:51Z wolfgang_m $ -->
+<!-- $Id$ -->
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Upgrade Guide</title>
-        <date>November 2009</date>
+        <date>July 2011</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation></author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
             </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
@@ -18,29 +24,30 @@
         <title>Upgrade Guide</title>
         <section>
             <title>General Information</title>
-            <para>Never install a new version of eXist into the same directory as an older
-                version:</para>
+            <para><emphasis>Never</emphasis> install a new version of eXist-db into the same directory as an older
+                version.</para>
             <procedure>
                 <step>
-                    <para>Create a <ulink url="backup.xml">backup</ulink> of your data. If the new
-                        version is <emphasis>binary compatible</emphasis> with the old version, keep
-                        the data directory (by default in <filename>webapp/WEB-INF/data</filename>)
-                        of the old version. Note: eXist needs to be stopped before copying files
+                    <para>Always create a <ulink url="backup.xml">backup</ulink> of your data. In rare cases the new
+                        version is <emphasis>binary compatible</emphasis> with the old version, then and only then you can copy 
+                        the old data directory (by default in <filename>$EXIST_HOME/webapp/WEB-INF/data</filename>)
+                        of the old version. Note: eXist-db needs to be <emphasis>stopped</emphasis> before copying files
                         from the data dir.</para>
                 </step>
                 <step>
                     <para>Install the new version into a different location.</para>
                 </step>
-                <step>
-                    <para>If the new version is <emphasis>binary compatible</emphasis>, replace the
-                        data directory of the new install with the one from the old one.</para>
-                    <para>Otherwise you need to do a full <ulink url="backup.xml#restore"
-                            >restore</ulink> of the data.</para>
+		<step>
+		  <para>Check your configuration and adapt to your needs before starting the newly installed eXist-db instance.</para>
+		</step>
+		<step>
+                    <para>Do a full <ulink url="backup.xml#restore"
+                            >restore</ulink> of the data you backed up in the first step.</para>
                 </step>
             </procedure>
         </section>
         <section>
-            <title>Upgrading to 1.4.0</title>
+            <title>Upgrading to 1.4.1</title>
             <para>The 1.4 release is not binary compatible with the 1.2.x series. You need to
                 backup/restore.</para>
             <section>
@@ -97,14 +104,14 @@
                         <term>Cocoon</term>
                         <listitem>
                             <para>eXist does no longer require Cocoon for viewing documentation and
-                                samples. Cocoon has been largely replaced by eXist's own <ulink
+                                samples. Cocoon has been largely replaced by eXist-db's own <ulink
                                     url="urlrewrite.xml">URL rewriting and MVC
                                 framework</ulink>.</para>
                             <para>Consequently, we now limit Cocoon to one directory of the web
-                                application (<filename>webapp/cocoon</filename>) and moved all the
-                                Cocoon samples in there. For the 1.4 final, we plan to completely
-                                remove Cocoon from the standard distribution, though we would like
-                                to continue to provide a separate
+                                application (by default <filename>$EXIST_HOME/webapp/cocoon</filename>) and moved all the
+                                Cocoon samples in there. For the 1.5 version, we will completely
+                                remove Cocoon from the standard distribution, though we 
+				continue to provide a separate
                                     <emphasis>eXist-as-Cocoon-block</emphasis> distribution.</para>
                         </listitem>
                     </varlistentry>
