@@ -212,10 +212,8 @@ public class XQueryURLRewrite implements Filter {
                 }
 
                 // check if the request URI is already in the url cache
-                ModelAndView modelView;
-                synchronized (urlCache) {
-                    modelView = urlCache.get(modifiedRequest.getRequestURI());
-                }
+                ModelAndView modelView = getFromCache(modifiedRequest.getHeader("Host") + modifiedRequest.getRequestURI(), user);
+                
                 // no: create a new model and view configuration
                 if (modelView == null) {
                     modelView = new ModelAndView();
@@ -285,7 +283,7 @@ public class XQueryURLRewrite implements Filter {
 
                     if (modelView.useCache()) {
                         synchronized (urlCache) {
-                            urlCache.put(request.getRequestURI(), modelView);
+                            urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
                         }
                     }
                 }
@@ -372,32 +370,63 @@ public class XQueryURLRewrite implements Filter {
             response.flushBuffer();
         }
     }
+    
+    
+    private ModelAndView getFromCache(String url, User user) throws EXistException {
+        /* Make sure we have a broker *before* we synchronize on urlCache or we may run
+         * into a deadlock situation (with method checkCache)
+         */
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+            synchronized (urlCache) {
+                return urlCache.get(url);
+            }
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
+    protected void clearCaches() throws EXistException {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user); // DW: used to be default user
+            synchronized (urlCache) {
+                urlCache.clear();
+                sources.clear();
+            }
+        } finally {
+            pool.release(broker);
+        }
+    }
 
     private void checkCache() throws EXistException {
         if (checkModified) {
             // check if any of the currently used sources has been updated
             // if yes, clear the cache
-            synchronized (urlCache) {
-                for (Source source : sources.values()) {
-                    if (source instanceof DBSource) {
-                        // Check if the XQuery source changed. If yes, clear all caches.
-                        DBBroker broker = null;
-                        try {
-                            broker = pool.get(user);
+            DBBroker broker = null;
+            try {
+                broker = pool.get(user);
+                synchronized (urlCache) {
+                    for (Source source : sources.values()) {
+                        if (source instanceof DBSource) {
+                            // Check if the XQuery source changed. If yes, clear all caches.
                             if (source.isValid(broker) != Source.VALID) {
                                 clearCaches();
                                 break;
                             }
-                        } finally {
-                            pool.release(broker);
-                        }
-                    } else {
-                        if (source.isValid((DBBroker)null) != Source.VALID) {
-                            clearCaches();
-                            break;
+
+                        } else {
+                            if (source.isValid((DBBroker) null) != Source.VALID) { //DW
+                                clearCaches();
+                                break;
+                            }
                         }
                     }
                 }
+
+            } finally {
+                pool.release(broker);
             }
         }
     }
@@ -437,12 +466,12 @@ public class XQueryURLRewrite implements Filter {
         return config;
     }
     
-    protected void clearCaches() {
-        synchronized (urlCache) {
-            urlCache.clear();
-            sources.clear();
-        }
-    }
+//    protected void clearCaches() {
+//        synchronized (urlCache) {
+//            urlCache.clear();
+//            sources.clear();
+//        }
+//    }
     
     private URLRewrite parseAction(HttpServletRequest request, Element action) throws ServletException {
         URLRewrite rewrite = null;
