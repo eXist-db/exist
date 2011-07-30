@@ -46,6 +46,8 @@
 
   <root pattern="/apps" path="xmldb:exist:///db"/>
   
+  <root pattern="/solutions" path="xmldb:exist:///db/solutions/"/>
+  
   <!-- 
     ++ To redirect requests based on the server name (i.e. www.example.com)
   	++ to a specific collection within the database, comment out the following
