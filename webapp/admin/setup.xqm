@@ -262,13 +262,13 @@ declare function setup:create-collection($parent as xs:string, $name as xs:strin
 declare function setup:select() as element()
 {
     <form action="{session:encode-url(request:get-uri())}" method="post">
-        <p>eXist ships with a number of XQuery examples. Some of these
-        require certain documents to be stored in the database. The XQuery examples also use some 
+        <p>eXist ships with a number of XQuery examples, which almost all
+        require certain documents to be stored in the database. Some XQuery examples require 
 		XML data not included with the distribution which can be downloaded by selecting
 		the checkboxes below.</p>
 
 		<input type="checkbox" name="local" checked="true"/>
-		eXist-db shipped files<br/>
+		eXist-db shipped files (*)<br/>
         
         <input type="checkbox" name="xmlad"/>
         <a href="http://sourceforge.net/projects/xmlad/">The XML Acronym Demystifier</a>
@@ -281,6 +281,8 @@ declare function setup:select() as element()
         <p><input type="submit" name="action" value="Import Files"/>
         <input type="submit" name="action" value="Skip"/></p>
         <input type="hidden" name="panel" value="setup"/>
+        <P>(*) Contains data for the betterFORM, shakespeare, xinclude, library, mods and xproc examples. 
+            It also contains the index configuration definitions for the mondial and acronym examples.</P>
     </form>
 };
 
