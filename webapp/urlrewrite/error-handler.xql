@@ -16,8 +16,9 @@ return
             </style:page-head>
             <div id="content2col">
                 <h2>An error has occurred</h2>
-                {$input//div[@class = 'description']}
-                
+				<div class="description">
+                {$input//div[@id = 'container']/h2/text()}
+                </div>
                 <p><a href="index.xml">Back</a> to the examples.</p>
             </div>
         </body>
