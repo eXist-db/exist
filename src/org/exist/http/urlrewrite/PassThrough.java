@@ -17,17 +17,19 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: PassThrough.java 12936 2010-10-14 14:05:15Z gev $
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
+import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.w3c.dom.Element;
 
 public class PassThrough extends URLRewrite {
 
@@ -41,8 +43,9 @@ public class PassThrough extends URLRewrite {
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        setHeaders(response);
+        setHeaders(new HttpResponseWrapper(response));
         chain.doFilter(request, response);
     }
 }

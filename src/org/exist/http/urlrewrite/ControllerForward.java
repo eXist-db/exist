@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: ControllerForward.java 13439 2010-12-22 17:12:51Z wolfgang_m $
  */
 
 package org.exist.http.urlrewrite;
@@ -32,7 +32,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 public class ControllerForward extends URLRewrite {
-
+	
     /**
      * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
      * <br/>
@@ -54,13 +54,16 @@ public class ControllerForward extends URLRewrite {
         this.target = config.getAttribute("path");
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
     }
 
+    @Override
     public boolean isControllerForward() {
         return true;
     }
 
+    @Override
     protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
         super.updateRequest(request);
         if (!(target.length() == 0 || target.equals("/") ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
@@ -70,8 +73,9 @@ public class ControllerForward extends URLRewrite {
         }
     }
 
+    @Override
     protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
-    	if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+        if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             XmldbURI dbURI = XmldbURI.create(target);
             this.uri = "/rest";
             String colPath = dbURI.getCollectionPath();
