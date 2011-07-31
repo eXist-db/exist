@@ -3,12 +3,19 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <title>Open Source Native XML Database</title>
-        <date>September 2009</date>
+        <date>July 2011</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
             </affiliation>
         </author>
         <style> table { margin-left: 15px; margin-right: 15px; } td { margin-bottom: 2em;
@@ -24,11 +31,11 @@
             <title>Supporters</title>
 
             <para>We would like to thank the following organizations and corporations for supporting
-                and sponsoring the development of eXist:</para>
+                and sponsoring the development of eXist-db:</para>
 
             <table cellspacing="0" cellpadding="15">
                 <tr>
-                    <td class="description"> The new indexing engine featured in eXist, since version
+                    <td class="description"> The new indexing engine featured in eXist-db, since version
                         1.1, was made possible through the agency of the
                             <a href="http://tapor.uvic.ca/home.php">University of Victoria</a> node
                         of the Canadian TAPoR consortium, who have made it available for general
@@ -41,7 +48,7 @@
                     <td class="description"><a href="http://www.trapezenetworks.com">Trapeze
                             Networks</a>, headquartered in Pleasanton, Calif., has continuously
                         sponsored improvements and new features since 2004 and helped to advance
-                        development by testing and deploying eXist in a production environment.</td>
+                        development by testing and deploying eXist-db in a production environment.</td>
                     <td align="center">
                         <a href="http://www.trapezenetworks.com">
                             <img border="0" src="resources/trapeze.gif"/>
@@ -63,7 +70,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="description">The eXist Wiki, the demo server and other vital parts of
+                    <td class="description">The eXist-db Wiki, the demo server and other vital parts of
                         our project infrastructure are kindly hosted by <a
                             href="http://www.friprogramvarusyndikatet.se/">Fri
                             programvaru-syndikatet / exist-db.se</a> in Sweden.</td>
@@ -86,12 +93,22 @@
                 </tr>
                 <tr>
                     <td class="description"> The versioning extensions, released with
-                        eXist 1.4, were kindly sponsored by the <a href="http://www.telota.de/"
+                        eXist-db 1.4, were kindly sponsored by the <a href="http://www.telota.de/"
                             >Telota Initiative</a> of the <a href="http://www.bbaw.de"
                             >Berlin-Brandenburg Academy of Sciences and Humanities</a>. </td>
                     <td align="center">
                         <a href="http://www.bbaw.de/bbaw/Akademie/">
                             <img border="0" src="resources/BBAW_Logo.png"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description"> Travelling and development costs sponsored by <a href="http://spraakbanken.gu.se/"
+                            >Språkbanken (The Swedish Language Bank)</a> of <a href="http://www.gu.se/"
+                            >University of Gothenburg</a>. </td>
+                    <td align="center">
+                        <a href="http://spraakbanken.gu.se/">
+                            <img border="0" src="resources/sb_logo.png"/>
                         </a>
                     </td>
                 </tr>
@@ -102,21 +119,10 @@
             <title>Tools We Use in Development</title>
             <table>
                 <tr>
-                    <td class="description">Viewtier's <a
-                            href="http://www.viewtier.com/products/parabuild/index.htm"
-                            >Parabuild</a> ensures that new changes do not break the eXist codebase
-                        by hosting Continuous Integration system for eXist.</td>
-                    <td align="center">
-                        <a href="http://www.viewtier.com/products/parabuild/">
-                            <img border="0" src="resources/parabuild.png"/>
-                        </a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="description">XML and non-XML resources of an eXist database can be
+                    <td class="description">XML and non-XML resources of an eXist-db database can be
                         edited and processed with XSLT and XQuery seamlessly in <a
                             href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a>
-                        both through an eXist connection and through WebDAV in an integrated
+                        both through an eXist-db connection and through WebDAV in an integrated
                         environment.</td>
                     <td align="center">
                         <a href="http://www.oxygenxml.com">
@@ -127,7 +133,7 @@
                 <tr>
                     <td class="description">Jetbrains' <a
                             href="http://www.jetbrains.com/teamcity/"
-                            >Team City</a> is used to ensures that new changes do not break the eXist codebase and build nightly installer snapshots.</td>
+                            >Team City</a> is used to ensures that new changes do not break the eXist-db codebase and build nightly installer snapshots.</td>
                     <td align="center">
                         <a href="http://www.jetbrains.com/teamcity/">
                             <img border="0" src="resources/teamcity_small.gif"/>
