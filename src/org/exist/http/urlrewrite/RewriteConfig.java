@@ -6,12 +6,12 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.dom.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.memtree.SAXAdapter;
-import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.Constants;
+import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,6 +43,7 @@ public class RewriteConfig {
     public final static String CONFIG_FILE = "controller-config.xml";
 
     public final static String MAP_ELEMENT = "map";
+    public final static String PATTERN_ATTRIBUTE = "pattern";
     /**
      * Adding server-name="www.example.com" to a root tag in the controller-config.xml file.<br/>
      * <br/>
@@ -58,7 +59,6 @@ public class RewriteConfig {
      *  
      */
     public final static String SERVER_NAME_ATTRIBUTE = "server-name";
-    public final static String PATTERN_ATTRIBUTE = "pattern";
 
     /**
      * Maps a regular expression to an URLRewrite instance
@@ -71,10 +71,11 @@ public class RewriteConfig {
 
         private Mapping(String regex, URLRewrite action) throws ServletException {
             try {
-                regex = RegexTranslator.translate(regex, true);
-                this.pattern = Pattern.compile(regex, 0);
+            	regex = RegexTranslator.translate(regex, true);
+                
+            	this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
-            } catch (RegexTranslator.RegexSyntaxException e) {
+            } catch (RegexSyntaxException e) {
                 throw new ServletException("Syntax error in regular expression specified for path. " +
                     e.getMessage(), e);
             }
@@ -175,7 +176,7 @@ public class RewriteConfig {
             DBBroker broker = null;
             DocumentImpl doc = null;
             try {
-                broker = urlRewrite.pool.get(urlRewrite.user);
+                broker = urlRewrite.pool.get(urlRewrite.defaultUser);
 
                 doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
                 if (doc != null)
@@ -205,10 +206,8 @@ public class RewriteConfig {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             }
         }
-        
         try {
-            urlRewrite.clearCaches();
-            
+			urlRewrite.clearCaches();
 		} catch (EXistException e) {
 			throw new ServletException("Failed to update controller.xml: " + e.getMessage(), e);
 		}

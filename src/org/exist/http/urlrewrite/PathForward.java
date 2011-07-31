@@ -17,12 +17,12 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: PathForward.java 13765 2011-02-12 13:51:55Z wolfgang_m $
  */
 package org.exist.http.urlrewrite;
 
+import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.w3c.dom.Element;
-import org.exist.xmldb.XmldbURI;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterConfig;
@@ -48,6 +48,14 @@ public class PathForward extends Forward {
         }
     }
 
+    
+    @Override
+	protected void setAbsolutePath(RequestWrapper request) {
+		request.setPaths(target, servletName);
+	}
+
+
+	@Override
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
         if (servletName != null)
             return filterConfig.getServletContext().getNamedDispatcher(servletName);

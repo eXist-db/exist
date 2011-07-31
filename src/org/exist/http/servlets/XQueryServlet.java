@@ -258,14 +258,14 @@ public class XQueryServlet extends HttpServlet {
         }
         
         
-        if (request.getCharacterEncoding() == null)
-            try {
-                request.setCharacterEncoding(formEncoding);
-            } catch (IllegalStateException e) {
-            }
+//        if (request.getCharacterEncoding() == null)
+//            try {
+//                request.setCharacterEncoding(formEncoding);
+//            } catch (IllegalStateException e) {
+//            }
         ServletOutputStream sout = response.getOutputStream();
         PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-        response.setContentType(contentType + "; charset=" + formEncoding);
+//        response.setContentType(contentType + "; charset=" + formEncoding);
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
 
@@ -314,7 +314,7 @@ public class XQueryServlet extends HttpServlet {
                 if(descriptor.allowSource(path)) {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
-                    response.setContentType("text/plain;charset=" + formEncoding);
+//                    response.setContentType("text/plain;charset=" + formEncoding);
                     output.write(source.getContent());
                     output.flush();
                     return;
@@ -332,18 +332,18 @@ public class XQueryServlet extends HttpServlet {
         // Date: Aug/06/2004
         //-------------------------------
         
-        String contentType = this.contentType;
-        try {
-            contentType = getServletContext().getMimeType(path);
-            if (contentType == null)
-                contentType = this.contentType;
-        } catch (Throwable e) {
-            contentType = this.contentType;
-        } finally {
-            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
-                contentType += ";charset=" + formEncoding;
-            response.setContentType(contentType );
-        }
+//        String contentType = this.contentType;
+//        try {
+//            contentType = getServletContext().getMimeType(path);
+//            if (contentType == null)
+//                contentType = this.contentType;
+//        } catch (Throwable e) {
+//            contentType = this.contentType;
+//        } finally {
+//            if (contentType.startsWith("text/") || (contentType.endsWith("+xml")))
+//                contentType += ";charset=" + formEncoding;
+//            response.setContentType(contentType );
+//        }
         
         //-------------------------------
         

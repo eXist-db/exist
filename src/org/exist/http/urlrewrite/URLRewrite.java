@@ -17,41 +17,49 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: URLRewrite.java 13765 2011-02-12 13:51:55Z wolfgang_m $
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.exist.Namespaces;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.exist.Namespaces;
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 
 /**
  * Base class for all rewritten URLs.
  */
 public abstract class URLRewrite {
 
-    private final static Object UNSET = new Object();
+    private final static String UNSET = "";
     
     protected String uri;
     protected String target;
     protected String prefix = null;
-    protected Map attributes = null;
-    protected Map parameters = null;
-    protected Map headers = null;
-
+    protected Map<String, String> attributes = null;
+    protected Map<String, List<String>> parameters = null;
+    protected Map<String, String> headers = null;
+    protected boolean absolute = false;
+    
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
+        if (config != null && config.hasAttribute("absolute"))
+        	absolute = config.getAttribute("absolute").equals("yes");
         // Check for add-parameter elements etc.
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
@@ -82,7 +90,15 @@ public abstract class URLRewrite {
         // do nothing by default
     }
 
-    /**
+    protected void setAbsolutePath(XQueryURLRewrite.RequestWrapper request) {
+    	request.setPaths(target, null);
+    }
+    
+    protected boolean doResolve() {
+		return !absolute;
+	}
+
+	/**
      * Resolve the target of this rewrite rule against the current request context.
      *
      * @return the new target path excluding context path
@@ -111,26 +127,39 @@ public abstract class URLRewrite {
     }
 
     private void setHeader(String key, String value) {
-        if (headers == null)
-            headers = new HashMap();
+        if(headers == null) {
+            headers = new HashMap<String, String>();
+        }
         headers.put(key, value);
     }
 
+    private void addNameValue(String name, String value, Map<String, List<String>> map) {
+        List<String> values = map.get(name);
+        if(values == null) {
+            values = new ArrayList<String>();
+        }
+        values.add(value);
+        map.put(name, values);
+    }
+
     private void addParameter(String name, String value) {
-        if (parameters == null)
-            parameters = new HashMap();
-        parameters.put(name, value);
+        if(parameters == null){
+            parameters = new HashMap<String, List<String>>();
+        }
+        addNameValue(name, value, parameters);
     }
 
     private void setAttribute(String name, String value) {
-        if (attributes == null)
-            attributes = new HashMap();
+        if(attributes == null) {
+            attributes = new HashMap<String, String>();
+        }
         attributes.put(name, value);
     }
 
     private void unsetAttribute(String name) {
-        if (attributes == null)
-            attributes = new HashMap();
+        if(attributes == null){
+            attributes = new HashMap<String, String>();
+        }
         attributes.put(name, UNSET);
     }
     
@@ -165,27 +194,27 @@ public abstract class URLRewrite {
 
     public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {
-            for (Iterator iterator = parameters.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                request.addParameter(entry.getKey().toString(), (String) entry.getValue());
+            for(Map.Entry<String, List<String>> param : parameters.entrySet()) {
+                for(String paramValue : param.getValue()) {
+                    request.addParameter(param.getKey().toString(), paramValue);
+                }
             }
         }
         if (attributes != null) {
-            for (Iterator iterator = attributes.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object value = entry.getValue();
-                if (value == UNSET)
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            	String value = entry.getValue();
+                if(value.equals(UNSET)) {
                     request.removeAttribute(entry.getKey().toString());
-                else
+                } else {
                     request.setAttribute(entry.getKey().toString(), entry.getValue());
+                }
             }
         }
     }
 
-    protected void setHeaders(HttpServletResponse response) {
+    protected void setHeaders(HttpResponseWrapper response) {
         if (headers != null) {
-            for (Iterator iterator = headers.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry entry = (Map.Entry) iterator.next();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
                 response.setHeader(entry.getKey().toString(), entry.getValue().toString());
             }
         }

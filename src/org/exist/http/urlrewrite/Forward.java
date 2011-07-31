@@ -17,18 +17,20 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: Forward.java 12936 2010-10-14 14:05:15Z gev $
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
+import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterChain;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.w3c.dom.Element;
 
 public abstract class Forward extends URLRewrite {
 
@@ -36,11 +38,12 @@ public abstract class Forward extends URLRewrite {
         super(config, uri);
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null)
             throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
-        setHeaders(response);
+        setHeaders(new HttpResponseWrapper(response));
         dispatcher.forward(request, response);
     }
 

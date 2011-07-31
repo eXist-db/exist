@@ -17,11 +17,12 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ * $Id: ModuleCall.java 11844 2010-06-14 21:35:38Z deliriumsky $
  */
 package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Module;
@@ -29,25 +30,15 @@ import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Type;
 import org.exist.dom.QName;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
-import org.exist.storage.serializers.Serializer;
-import org.xml.sax.SAXException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import java.io.IOException;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Properties;
 
 public class ModuleCall extends URLRewrite {
 
@@ -80,12 +71,13 @@ public class ModuleCall extends URLRewrite {
             else
                 func = context.resolveFunction(fqn, arity);
             call = new FunctionCall(context, func);
-            call.setArguments(new ArrayList());
+            call.setArguments(new ArrayList<Expression>());
         } catch (XPathException e) {
             e.printStackTrace();
         }
     }
 
+    @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         try {
