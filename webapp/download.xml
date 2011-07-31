@@ -38,18 +38,10 @@
                     url="http://sourceforge.net/donate/index.php?group_id=17691">
                     <graphic fileref="resources/project-support.jpg"/>
                 </ulink></para>
-            <para>eXist depends on the commitment of volunteers. Making a donation acknowledges
-                their efforts and helps to finance the few things we need to keep the project at
-                speed.</para>
-            <para>Another way to support eXist is to <ulink url="acknowledge.xml">"sponsor"</ulink> features or solutions you may need
-                for your own applications. Members of our development team are available for
-                    <emphasis>consulting</emphasis>, <emphasis>training</emphasis> or
-                    <emphasis>first-hand support</emphasis> on a flexible basis. If interested,
-                please send an email to <ulink url="mailto:info@exist-db.org"
-                    >info@exist-db.org</ulink> and we will coordinate the requests.</para>
-            <para>A commercial support plan is provided by <ulink url="http://www.existsolutions.com">eXist Solutions GmbH</ulink> since 2010. 
-                The company is backed by large parts of the active development team (in cooperation with
-                all interested parties).</para>
+            <para>eXist as an Open Source community depends on the contributions of volunteers. Making a donation acknowledges their efforts, and helps to finance the few things that we need to keep the project running smoothly.</para>
+            <para>Another way to support eXist is to <ulink url="acknowledge.xml">sponsor</ulink> the addition of new features, that you may need for your own applications or from our own <ulink url="roadmap.xml">roadmap</ulink>.</para>
+            <para>Members of our development team and community have come together commercially under the umbrella of <ulink url="http://www.existsolutions.com">eXist Solutions</ulink>. They are available for <ulink url="http://www.existsolutions.com/consultancy.xml">Consultancy</ulink>, <ulink url="http://www.existsolutions.com/training.xml">Training</ulink> or <ulink url="http://www.existsolutions.com/consultancy.xml">Bespoke Development</ulink> on a flexible basis, as such if you need some extra support or development resource, please <ulink url="http://www.existsolutions.com/contact.xml">contact us</ulink> at <ulink url="mailto:info@existsolutions.com">info@existsolutions.com</ulink>.</para>
+            <para><ulink url="http://www.existsolutions.com">eXist Solutions</ulink> can also provide annual <ulink url="http://www.existsolutions.com/support.xml">Production and Development Support</ulink> plans. Should your organisation require contractual support, please see <ulink url="http://www.existsolutions.com/support.xml">this page</ulink>.</para>  
         </section>
         <section id="download">
             <title>Downloads</title>
