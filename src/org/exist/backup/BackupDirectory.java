@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id$
+ *  $Id: BackupDirectory.java 14941 2011-07-22 11:48:12Z wolfgang_m $
  */
 package org.exist.backup;
 
@@ -26,92 +26,111 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.Date;
-import java.text.SimpleDateFormat;
+
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
-public class BackupDirectory {
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    public final static Logger LOG = Logger.getLogger(BackupDirectory.class);
 
-    
-    public final static String PREFIX_FULL_BACKUP_FILE = "full";
-    public final static String PREFIX_INC_BACKUP_FILE = "inc";
-    
-    public final static String FILE_REGEX = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
+public class BackupDirectory
+{
+    public final static Logger     LOG                     = Logger.getLogger( BackupDirectory.class );
 
-    public final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd-HHmm");
 
-    
+    public final static String     PREFIX_FULL_BACKUP_FILE = "full";
+    public final static String     PREFIX_INC_BACKUP_FILE  = "inc";
 
-    private File dir;
+    public final static String     FILE_REGEX              = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
 
-    private Matcher matcher;
+    public final static DateFormat DATE_FORMAT             = new SimpleDateFormat( "yyyyMMdd-HHmm" );
 
-    public BackupDirectory(String dirPath) {
-        this(new File(dirPath));
+
+    private File                   dir;
+
+    private Matcher                matcher;
+
+    public BackupDirectory( String dirPath )
+    {
+        this( new File( dirPath ) );
     }
 
-    public BackupDirectory(File directory) {
+
+    public BackupDirectory( File directory )
+    {
         this.dir = directory;
-        Pattern pattern = Pattern.compile(FILE_REGEX);
-        matcher = pattern.matcher("");
+        Pattern pattern = Pattern.compile( FILE_REGEX );
+        matcher = pattern.matcher( "" );
     }
 
-    public File createBackup(boolean incremental, boolean zip) {
-        int counter = 0;
+    public File createBackup( boolean incremental, boolean zip )
+    {
+        int  counter = 0;
         File file;
+
         do {
             StringBuilder buf = new StringBuilder();
-            buf.append(incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE);
-            buf.append(DATE_FORMAT.format(new Date()));
-            if (counter++ > 0)
-                buf.append('_').append(counter);
-            if (zip)
-                buf.append(".zip");
-            file = new File(dir, buf.toString());
-        } while (file.exists());
-        return file;
+            buf.append( incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE );
+            buf.append( DATE_FORMAT.format( new Date() ) );
+
+            if( counter++ > 0 ) {
+                buf.append( '_' ).append( counter );
+            }
+
+            if( zip ) {
+                buf.append( ".zip" );
+            }
+            file = new File( dir, buf.toString() );
+        } while( file.exists() );
+        return( file );
     }
 
-    public BackupDescriptor lastBackupFile() {
-        File[] files = dir.listFiles(new FileFilter() {
-            public boolean accept(File path) {
-                return path.isFile();
-            }
-        });
 
-        File newest = null;
-        Date newestDate = null;
-        for (int i = 0; i < files.length; i++) {
-            matcher.reset(files[i].getName());
-            if (matcher.matches()) {
-                String dateTime = matcher.group(2);
+    public BackupDescriptor lastBackupFile()
+    {
+        File[] files      = dir.listFiles();
+
+        File newest       = null;
+        Date newestDate   = null;
+
+        for( int i = 0; i < files.length; i++ ) {
+            matcher.reset( files[i].getName() );
+
+            if( matcher.matches() ) {
+                String dateTime = matcher.group( 2 );
+
                 try {
-                    Date date = DATE_FORMAT.parse(dateTime);
-                    if (newestDate == null || date.after(newestDate)) {
+                    Date date = DATE_FORMAT.parse( dateTime );
+
+                    if( ( newestDate == null ) || date.after( newestDate ) ) {
                         newestDate = date;
-                        newest = files[i];
+                        newest     = files[i];
                     }
-                } catch (ParseException e) {
+                }
+                catch( ParseException e ) {
                 }
             }
         }
         BackupDescriptor descriptor = null;
-        if (newest != null) {
+
+        if( newest != null ) {
+
             try {
-                if (newest.getName().endsWith(".zip") || newest.getName().endsWith(".ZIP"))
-                    descriptor = new ZipArchiveBackupDescriptor(newest);
-                else
-                    descriptor = new FileSystemBackupDescriptor(new File(newest + "/db", BackupDescriptor.COLLECTION_DESCRIPTOR));
-            } catch (IOException e) {
+
+                if( newest.getName().endsWith( ".zip" ) || newest.getName().endsWith( ".ZIP" ) ) {
+                    descriptor = new ZipArchiveBackupDescriptor( newest );
+                } else {
+                    descriptor = new FileSystemBackupDescriptor( new File( newest + "/db", BackupDescriptor.COLLECTION_DESCRIPTOR ) );
+                }
+            }
+            catch( IOException e ) {
                 e.printStackTrace();
             }
         }
-        return descriptor;
+        return( descriptor );
     }
 
 }
