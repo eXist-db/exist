@@ -16,8 +16,10 @@ declare function local:credentials-from-session() as xs:string* {
 declare function local:set-credentials($user as xs:string, $password as xs:string?) as element()+ {
     session:set-attribute("myapp.user", $user), 
     session:set-attribute("myapp.password", $password),
-    <set-attribute name="xquery.user" value="{$user}"/>,
-    <set-attribute name="xquery.password" value="{$password}"/>
+    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+		name="xquery.user" value="{$user}"/>,
+    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+		name="xquery.password" value="{$password}"/>
 };
 
 (:~
@@ -41,7 +43,10 @@ declare function local:set-user() as element()* {
         else if ($user) then
             let $loggedIn := xdb:login("/db", $user, $password)
             return
-                local:set-credentials($user, $password)
+				if ($loggedIn) then
+                	local:set-credentials($user, $password)
+				else
+					util:log("DEBUG", ("Could not log in ", $user, $password))
         else if ($sessionCredentials) then
             local:set-credentials($sessionCredentials[1], $sessionCredentials[2])
         else
@@ -61,19 +66,6 @@ else if ($exist:resource eq 'index.xml') then
     	</view>
     </dispatch>
     
-(: 
-	jQuery module demo: tags in the jquery namespace are expanded
-	by style-jquery.xql
-:)
-else if ($exist:resource eq 'jquery.xml') then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        {local:set-user()}
-        <view>
-            <forward url="style.xql"/>
-            <forward url="style-jquery.xql"/>
-    	</view>
-    </dispatch>
-
 (:
 	Error handling: faulty.xql will trigger an XQuery error which
 	will be handled by error-handler.xql
@@ -96,7 +88,7 @@ else if ($exist:resource eq 'faulty.xql') then
 else if ($exist:resource eq 'protected.xml') then
     let $login := local:set-user()
     return
-        if ($login) then
+        if (exists($login)) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 {$login}
                 <view>

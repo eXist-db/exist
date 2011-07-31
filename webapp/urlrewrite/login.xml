@@ -21,8 +21,8 @@
                     <input type="text" name="user"/>
                 </div>
                 <div>
-                    <label for="passord">Password:</label>
-                    <input type="password" name="passord"/>
+                    <label for="password">Password:</label>
+                    <input type="password" name="password"/>
                 </div>
                 <div>
                     <input type="submit" value="Login"/>
