@@ -140,7 +140,7 @@ public class Index extends BasicFunction {
         	}
 
         } catch (Exception ex) { // PermissionDeniedException
-            logger.error(ex);
+            logger.error(ex.getMessage(), ex);
             throw new XPathException(ex);
 
         } finally {
