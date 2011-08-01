@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.StringReader;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * Low-level tests for fulltext index configuration and index updates.
@@ -781,11 +782,15 @@ public class FTIndexTest {
     }
     
     private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
+        
+        TextSearchEngine engine = broker.getTextEngine();
+        assertNotNull("old FullText has been switched off by default", engine);
+        
         Occurrences[] occur;
         if (qn == null)
-            occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), term, null);
+            occur = engine.scanIndexTerms(docs, docs.docsToNodeSet(), term, null);
         else
-            occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), qn, term, null);
+            occur = engine.scanIndexTerms(docs, docs.docsToNodeSet(), qn, term, null);
         printOccurrences(term, occur);
         assertEquals(expected, occur.length);
         return occur;
