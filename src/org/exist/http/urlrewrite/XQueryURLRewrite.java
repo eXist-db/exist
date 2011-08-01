@@ -153,7 +153,7 @@ public class XQueryURLRewrite implements Filter {
 
     private RewriteConfig rewriteConfig;
     
-    @Override
+    //@Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // save FilterConfig for later use
         this.config = filterConfig;
@@ -170,7 +170,7 @@ public class XQueryURLRewrite implements Filter {
         
     }
 
-    @Override
+    //@Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (rewriteConfig == null) {
             configure();
@@ -438,7 +438,7 @@ public class XQueryURLRewrite implements Filter {
         	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false);
         	
     	} catch (SAXException e) {
-    		throw new IOException(e);
+    		throw new IOException(e.getMessage());
     	} finally {
     		serializerPool.returnObject(sax);
     	}
@@ -627,7 +627,7 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
-    @Override
+    //@Override
     public void destroy() {
         config = null;
     }
