@@ -126,6 +126,7 @@ public abstract class ConcurrentTestBase extends TestCase {
             File existDir = existHome==null ? new File(".") : new File(existHome);
             DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -144,6 +145,7 @@ public abstract class ConcurrentTestBase extends TestCase {
             rootCol = null;
             testCol = null;
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
