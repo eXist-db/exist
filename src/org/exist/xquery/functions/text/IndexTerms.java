@@ -125,8 +125,9 @@ public class IndexTerms extends BasicFunction {
         try {
             TextSearchEngine engine = context.getBroker().getTextEngine();
             if(engine==null){
-                throw new XPathException("The old fulltext engine has been disabled for "
-                        + "stability reasons. Please use the Lucene FT search instead."); 
+                throw new XPathException("The legacy fulltext indexing has "
+                        + "been disabled by default from version 1.4.1. Please "
+                        + "consider migrating to the new full text indexing.."); 
             }
             Occurrences occur[] = engine.scanIndexTerms(docs, nodes, qnames, start, null);
             if (args.length == 4) {
