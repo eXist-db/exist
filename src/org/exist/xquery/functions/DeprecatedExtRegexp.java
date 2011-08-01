@@ -59,6 +59,7 @@ import org.exist.xquery.value.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * @author wolf
@@ -315,10 +316,17 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
 
     protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List terms)
     throws XPathException {
+        
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The old fulltext engine has been disabled for "
+                    + "stability reasons. Please use the Lucene FT search instead."); 
+        }
+        
         NodeSet hits[] = new NodeSet[terms.size()];
         for (int k = 0; k < terms.size(); k++) {
             hits[k] =
-                    context.getBroker().getTextEngine().getNodesContaining(
+                    engine.getNodesContaining(
                             context,
                             docs,
                             contextSet, axis,

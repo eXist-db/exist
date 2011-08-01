@@ -233,7 +233,11 @@ public class FTIndexTest {
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
-            Occurrences[] occur = broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), "o", "ox");
+            TextSearchEngine engine = broker.getTextEngine();
+            if(engine==null){
+                fail("The old FT index has been switched off by default");
+            }
+            Occurrences[] occur = engine.scanIndexTerms(docs, docs.docsToNodeSet(), "o", "ox");
             printOccurrences("o, ox", occur);
             assertEquals(2, occur.length);
             assertEquals("of", occur[0].getTerm());
@@ -784,7 +788,8 @@ public class FTIndexTest {
     private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
         
         TextSearchEngine engine = broker.getTextEngine();
-        assertNotNull("old FullText has been switched off by default", engine);
+        if(engine==null)
+            fail("old FullText has been switched off by default");
         
         Occurrences[] occur;
         if (qn == null)

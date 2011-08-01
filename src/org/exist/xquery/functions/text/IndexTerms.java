@@ -33,6 +33,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.*;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * @author wolf
@@ -122,7 +123,12 @@ public class IndexTerms extends BasicFunction {
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         try {
-            Occurrences occur[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
+            TextSearchEngine engine = context.getBroker().getTextEngine();
+            if(engine==null){
+                throw new XPathException("The old fulltext engine has been disabled for "
+                        + "stability reasons. Please use the Lucene FT search instead."); 
+            }
+            Occurrences occur[] = engine.scanIndexTerms(docs, nodes, qnames, start, null);
             if (args.length == 4) {
                 Occurrences occur2[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
                 if (occur == null || occur.length == 0)
