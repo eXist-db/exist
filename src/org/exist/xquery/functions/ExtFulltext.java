@@ -46,6 +46,7 @@ import org.exist.xquery.value.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * Implements the fulltext operators: &amp;= and |=.
@@ -325,7 +326,17 @@ public class ExtFulltext extends Function implements Optimizable {
     protected String[] getSearchTerms(String searchString)
 		throws EXistException {
 		List tokens = new ArrayList();
-		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
+		 
+                // Can return NPE
+                TextSearchEngine engine = context.getBroker().getTextEngine();
+                
+                if(engine==null) {
+                    throw new EXistException("The old fulltext engine has been disabled "
+                            + "for stability reasons. Please use the Lucene FT search "
+                            + "instead.");
+                }
+                        
+                Tokenizer tokenizer = engine.getTokenizer();
 		tokenizer.setText(searchString);
 		org.exist.storage.analysis.TextToken token;
 		String word;
