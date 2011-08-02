@@ -73,6 +73,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * This class implements the actual methods defined by
@@ -4077,9 +4078,16 @@ public class RpcConnection implements RpcAPI {
      * @throws PermissionDeniedException
      */
     private Vector scanIndexTerms(String start, String end, DBBroker broker, DocumentSet docs, NodeSet nodes)
-    throws PermissionDeniedException {
-        Occurrences occurrences[] =
-                broker.getTextEngine().scanIndexTerms(docs, nodes, start, end);
+    throws PermissionDeniedException, EXistException {
+        
+        TextSearchEngine engine = broker.getTextEngine();
+        if(engine==null){
+            throw new EXistException("The legacy fulltext indexing has been disabled "
+                    + "by default from version 1.4.1. Please consider migrating to the "
+                    + "new full text indexing.");
+        }
+        
+        Occurrences occurrences[] = engine.scanIndexTerms(docs, nodes, start, end);
         Vector result = new Vector(occurrences.length);
         Vector temp;
         for (int i = 0; i < occurrences.length; i++) {
