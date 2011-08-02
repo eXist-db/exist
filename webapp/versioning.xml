@@ -6,27 +6,37 @@
         <productname>Open Source Native XML Database</productname>
         <title>Versioning Module</title>
         <orgname>The eXist Project</orgname>
-        <date>September 2009</date>
+        <date>August 2011</date>
         <author>
             <firstname>Wolfgang</firstname>
             <surname>Meier</surname>
+	    <affiliation>
+	      <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+	    </affiliation>
         </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation>
+	</author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Versioning Extensions</title>
+        <title>Versioning Extension</title>
 
         <abstract>
-            <para>Since release 1.4, eXist provides a basic document versioning extension. The
+            <para>eXist-db provides a basic document versioning extension. The
                 extension will track all changes to a document by storing a diff between the
                 revisions. Older versions can be restored on the fly and even queried in memory.
                 There's also basic support to detect and intercept conflicting writes.</para>
 
-            <para>However, eXist has no control over the client. It does not know where a document
+            <para>However, eXist-db has no control over the client. It does not know where a document
                 update comes from and cannot directly communicate with the user. The versioning
                 extension should be seen more like a toolbox than a complete solution. Advanced
                 functionality (e.g. merging and conflict resolution) will require support from the
-                end-user applications, which is outside of eXist's reach.</para>
+                end-user applications, which is outside of eXist-db's reach.</para>
             
             <para>The versioning extension has been created with human editors in mind, who will 
                 typically be changing a document through an editor or some form-based frontend.
@@ -159,7 +169,7 @@
 </serializer>]]></programlisting>
                 </example>
                 
-                <para>eXist needs to be restarted for the versioning filter to become active.</para>
+                <para>eXist-db needs to be restarted for the versioning filter to become active.</para>
             </section>
             
         </section>
@@ -221,11 +231,11 @@ v:history(doc("/db/shakespeare/plays/hamlet.xml"))]]></programlisting>
     <v:document>/db/shakespeare/plays/hamlet.xml</v:document>
     <v:revisions>
         <v:revision rev="35">
-            <v:date>2009-08-22T22:19:33.777+02:00</v:date>
+            <v:date>2011-08-02T14:51:33.777+02:00</v:date>
             <v:user>admin</v:user>
         </v:revision>
         <v:revision rev="36">
-            <v:date>2009-08-22T22:38:41.629+02:00</v:date>
+            <v:date>2011-08-02T14:57:41.629+02:00</v:date>
             <v:user>admin</v:user>
         </v:revision>
     </v:revisions>
