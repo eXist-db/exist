@@ -12,6 +12,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -56,9 +57,9 @@ public class GetField extends BasicFunction {
             String content = index.getFieldContent(context, doc.getDocId(), field);
             return content == null ? Sequence.EMPTY_SEQUENCE : new org.exist.xquery.value.StringValue(content);
 		} catch (PermissionDeniedException e) {
-			throw new XPathException(this, ErrorCodes.EXXQDY0004, "Permission denied to read document " + args[0].getStringValue());
+			throw new XPathException(this, LuceneModule.EXXQDYFT0001, "Permission denied to read document " + args[0].getStringValue());
 		} catch (IOException e) {
-			throw new XPathException(this, ErrorCodes.EXXQDY0004, "IO error while reading document " + args[0].getStringValue());
+			throw new XPathException(this, LuceneModule.EXXQDYFT0002, "IO error while reading document " + args[0].getStringValue());
 		} finally {
 			if (doc != null)
 				doc.getUpdateLock().release(Lock.READ_LOCK);
