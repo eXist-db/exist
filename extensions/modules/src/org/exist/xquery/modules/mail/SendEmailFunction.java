@@ -87,8 +87,8 @@ import org.w3c.dom.Node;
  * @author Robert Walpole <robert.walpole@devon.gov.uk>
  * @author Andrzej Taramina <andrzej@chaeron.com>
  * @author José María Fernández <josemariafg@gmail.com>
- * @serial 2010-03-19
- * @version 1.5
+ * @serial 2011-08-02
+ * @version 1.6
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -1057,50 +1057,42 @@ public class SendEmailFunction extends BasicFunction
      *
      * @return		RFC822 formated date and time as a String
      */
-    private String getDateRFC822()
-    {
+    private String getDateRFC822() {
+        
         String dateString = new String();
-        Calendar rightNow = Calendar.getInstance();
+        final Calendar rightNow = Calendar.getInstance();
 
         //Day of the week
-        switch(rightNow.get(Calendar.DAY_OF_WEEK))
-        {
+        switch(rightNow.get(Calendar.DAY_OF_WEEK)) {
             case Calendar.MONDAY:
-            {
-                    dateString = "Mon";
-                    break;
-            }
+                dateString = "Mon";
+                break;
+            
             case Calendar.TUESDAY:
-            {
-                    dateString = "Tue";
-                    break;
-            }
+                dateString = "Tue";
+                break;
+            
             case Calendar.WEDNESDAY:
-            {
-                    dateString = "Wed";
-                    break;
-            }
+                dateString = "Wed";
+                break;
+            
             case Calendar.THURSDAY:
-            {
-                    dateString = "Thu";
-                    break;
-            }
+                dateString = "Thu";
+                break;
+            
             case Calendar.FRIDAY:
-            {
-                    dateString = "Fri";
-                    break;
-            }
+                dateString = "Fri";
+                break;
+
             case Calendar.SATURDAY:
-            {
-                    dateString = "Sat";
-                    break;
-            }
+                dateString = "Sat";
+                break;
+            
             case Calendar.SUNDAY:
-            {
-                    dateString = "Sun";
-                    break;
-            }
+                dateString = "Sun";
+                break;   
         }
+        
         dateString += ", ";
 
         //Date
@@ -1108,68 +1100,54 @@ public class SendEmailFunction extends BasicFunction
         dateString += " ";
 
         //Month
-        switch(rightNow.get(Calendar.MONTH))
-        {
+        switch(rightNow.get(Calendar.MONTH)) {
             case Calendar.JANUARY:
-            {
-                    dateString += "Jan";
-                    break;
-            }
+                dateString += "Jan";
+                break;
+            
             case Calendar.FEBRUARY:
-            {
-                    dateString += "Feb";
-                    break;
-            }
+                dateString += "Feb";
+                break;
+            
             case Calendar.MARCH:
-            {
-                    dateString += "Mar";
-                    break;
-            }
+                dateString += "Mar";
+                break;
+
             case Calendar.APRIL:
-            {
-                    dateString += "Apr";
-                    break;
-            }
+                dateString += "Apr";
+                break;
+            
             case Calendar.MAY:
-            {
-                    dateString += "May";
-                    break;
-            }
+                dateString += "May";
+                break;
+            
             case Calendar.JUNE:
-            {
-                    dateString += "Jun";
-                    break;
-            }
+                dateString += "Jun";
+                break;
+            
             case Calendar.JULY:
-            {
-                    dateString += "Jul";
-                    break;
-            }
+                dateString += "Jul";
+                break;
+            
             case Calendar.AUGUST:
-            {
-                    dateString += "Aug";
-                    break;
-            }
+                dateString += "Aug";
+                break;
+            
             case Calendar.SEPTEMBER:
-            {
-                    dateString += "Sep";
-                    break;
-            }
+                dateString += "Sep";
+                break;
+            
             case Calendar.OCTOBER:
-            {
-                    dateString += "Oct";
-                    break;
-            }
+                dateString += "Oct";
+                break;
+            
             case Calendar.NOVEMBER:
-            {
-                    dateString += "Nov";
-                    break;
-            }
+                dateString += "Nov";
+                break;
+            
             case Calendar.DECEMBER:
-            {
-                    dateString += "Dec";
-                    break;
-            }
+                dateString += "Dec";
+                break;
         }
         dateString += " ";
 
@@ -1179,18 +1157,17 @@ public class SendEmailFunction extends BasicFunction
 
         //Time
         String tHour = Integer.toString(rightNow.get(Calendar.HOUR_OF_DAY));
-        if(tHour.length() == 1)
-        {
+        if(tHour.length() == 1) {
                 tHour = "0" + tHour;
         }
+        
         String tMinute = Integer.toString(rightNow.get(Calendar.MINUTE));
-        if(tMinute.length() == 1)
-        {
+        if(tMinute.length() == 1) {
                 tMinute = "0" + tMinute;
         }
+        
         String tSecond = Integer.toString(rightNow.get(Calendar.SECOND));
-        if(tSecond.length() == 1)
-        {
+        if(tSecond.length() == 1) {
                 tSecond = "0" + tSecond;
         }
 
@@ -1201,51 +1178,48 @@ public class SendEmailFunction extends BasicFunction
         String tzHours = new String();
         String tzMinutes = new String();
 
-        TimeZone thisTZ = TimeZone.getDefault();
-        int TZOffset = thisTZ.getOffset(rightNow.get(Calendar.DATE)); //get timezone offset in milliseconds
-        TZOffset = (TZOffset / 1000); //convert to seconds
-        TZOffset = (TZOffset / 60); //convert to minutes
-
+        final TimeZone thisTZ = TimeZone.getDefault();
+        int tzOffset = thisTZ.getOffset(rightNow.get(Calendar.DATE)); //get timezone offset in milliseconds
+        tzOffset = (tzOffset / 1000); //convert to seconds
+        tzOffset = (tzOffset / 60); //convert to minutes
+        
         //Sign
-        if(TZOffset > 1)
-        {
+        if(tzOffset > 1) {
             tzSign = "+";
-        }
-        else
-        {
+        } else {
             tzSign = "-";
+            tzOffset *= -1;
         }
 
         //Calc Hours and Minutes?
-        if(TZOffset >= 60 || TZOffset <= -60)
-        {
+        if(tzOffset >= 60) {
             //Minutes and Hours
-            tzHours += (TZOffset / 60); //hours
-            if(tzHours.length() == 1)  // do we need to prepend a 0
-            {
-                    tzHours = "0" + tzHours;
+            tzHours += (tzOffset / 60); //hours
+            
+            // do we need to prepend a 0
+            if(tzHours.length() == 1) {  
+                tzHours = "0" + tzHours;
             }
 
-            tzMinutes += (TZOffset % 60); //minutes
-            if(tzMinutes.length() == 1)  // do we need to prepend a 0
-            {
-                    tzMinutes = "0" + tzMinutes;
+            tzMinutes += (tzOffset % 60); //minutes
+            
+            // do we need to prepend a 0
+            if(tzMinutes.length() == 1) {
+                tzMinutes = "0" + tzMinutes;
             }
-        }
-        else
-        {
+        } else {
             //Just Minutes
             tzHours = "00";
-            tzMinutes += TZOffset;
-            if(tzMinutes.length() == 1)  // do we need to prepend a 0
-            {
-                    tzMinutes = "0" + tzMinutes;
+            tzMinutes += tzOffset;
+            // do we need to prepend a 0
+            if(tzMinutes.length() == 1) {
+                tzMinutes = "0" + tzMinutes;
             }
         }
 
         dateString += tzSign + tzHours + tzMinutes;
 
-        return(dateString);
+        return dateString;
     }
 	
     /**
