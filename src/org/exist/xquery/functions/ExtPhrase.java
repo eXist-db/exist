@@ -38,6 +38,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NativeTextEngine;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.util.GlobToRegex;
@@ -78,6 +79,14 @@ public class ExtPhrase extends ExtFulltext {
 		NodeSet hits = processQuery(terms, nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
+        
+        // Can return NPE ; prevents issue exact matches
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
         
 		boolean hasWildcards = false;
 		for(int i = 0; i < terms.length; i++) {

@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
@@ -109,12 +110,20 @@ public class FtIndexLookup extends Function {
         }
         String query = querySeq.itemAt(0).getStringValue();
         
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
         String[] terms = getSearchTerms(query);
         NodeSet hits[] = new NodeSet[terms.length];
         NodeSet contextSet = contextSequence.toNodeSet();
         for (int k = 0; k < terms.length; k++) {
             hits[k] =
-                    context.getBroker().getTextEngine().getNodesContaining(
+                    engine.getNodesContaining(
                             context,
                             contextSet.getDocumentSet(),
                             null, NodeSet.DESCENDANT, null,

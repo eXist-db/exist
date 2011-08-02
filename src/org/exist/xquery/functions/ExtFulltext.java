@@ -371,10 +371,19 @@ public class ExtFulltext extends Function implements Optimizable {
 
     protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, String[] terms)
     throws XPathException {
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
         NodeSet hits[] = new NodeSet[terms.length];
         for (int k = 0; k < terms.length; k++) {
             hits[k] =
-                    context.getBroker().getTextEngine().getNodesContaining(
+                    engine.getNodesContaining(
                             context,
                             docs,
                             contextSet, axis,

@@ -27,6 +27,7 @@ import java.util.List;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.TermMatcher;
+import org.exist.storage.TextSearchEngine;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
@@ -76,6 +77,15 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 						"should be a single double value");
 			threshold = ((DoubleValue) thresOpt.convertTo(Type.DOUBLE)).getDouble();
 		}
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
 		NodeSet hits[] = new NodeSet[terms.size()];
 		String term;
 		TermMatcher matcher;
@@ -86,7 +96,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 			else {
 				matcher = new FuzzyMatcher(term, threshold);
 				hits[k] =
-					context.getBroker().getTextEngine().getNodes(
+					engine.getNodes(
 					    context,
 						nodes.getDocumentSet(),
 						nodes, NodeSet.ANCESTOR, null,

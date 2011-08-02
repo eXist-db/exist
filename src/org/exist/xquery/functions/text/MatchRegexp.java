@@ -57,6 +57,7 @@ import org.exist.xquery.value.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.exist.storage.TextSearchEngine;
 
 /**
  * @author wolf
@@ -356,10 +357,19 @@ public class MatchRegexp extends Function implements Optimizable {
 
     protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List terms, boolean matchAll)
     throws XPathException {
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
         NodeSet hits[] = new NodeSet[terms.size()];
         for (int k = 0; k < terms.size(); k++) {
             hits[k] =
-                    context.getBroker().getTextEngine().getNodesContaining(
+                    engine.getNodesContaining(
                             context,
                             docs,
                             contextSet, axis,
