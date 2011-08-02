@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
+import org.apache.commons.io.input.CloseShieldInputStream;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -898,6 +899,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     }
                 } catch (IOException e) {
                     // mark is not supported: exception is expected, do nothing
+                    LOG.error("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
                 }
                 XMLReader reader = getReader(broker, false, info.getCollectionConfig());
                 info.setReader(reader, null);
@@ -1106,7 +1108,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 XMLReader reader = getReader(broker, true, colconf);
                 info.setReader(reader, null);
                 try {
-                    reader.parse(source);
+                    
+                    /*
+                     * Note - we must close shield the input source,
+                     * else it can be closed by the Reader, so subsequently
+                     * when we try and read it in storeXmlInternal we will get
+                     * an exception.
+                     */
+                    InputSource closeShieldedInputSource = closeShieldInputSource(source);
+                    
+                    reader.parse(closeShieldedInputSource);
                 } catch (SAXException e) {
                     throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
                 } catch (IOException e) {
@@ -1116,6 +1127,46 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 }
             }
         });
+    }
+    
+    //stops streams on the input source from being closed
+    private InputSource closeShieldInputSource(InputSource source) {
+        
+        final InputSource protectedInputSource = new InputSource();
+        protectedInputSource.setEncoding(source.getEncoding());
+        protectedInputSource.setSystemId(source.getSystemId());
+        protectedInputSource.setPublicId(source.getPublicId());
+        
+        if(source.getByteStream() != null) {
+            //TODO consider AutoCloseInputStream
+            InputStream closeShieldByteStream = new CloseShieldInputStream(source.getByteStream());
+            protectedInputSource.setByteStream(closeShieldByteStream);
+        }
+        
+        if(source.getCharacterStream() != null) {
+            //TODO consider AutoCloseReader
+            Reader closeShieldReader = new CloseShieldReader(source.getCharacterStream());
+            protectedInputSource.setCharacterStream(closeShieldReader);
+        }
+        
+        return protectedInputSource;
+    }
+    
+    private class CloseShieldReader extends Reader {
+        private final Reader reader;
+        public CloseShieldReader(Reader reader) {
+            this.reader = reader;
+        }
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            return reader.read(cbuf, off, len);
+        }
+
+        @Override
+        public void close() throws IOException {
+            //do nothing as we are close shield
+        }
     }
 
     /** 

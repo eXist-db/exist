@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.security.Permission;
@@ -65,6 +66,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import static org.exist.xmldb.XmldbLocalTests.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 public class ResourceTest {
 
@@ -170,6 +172,31 @@ public class ResourceTest {
         Document dom = builder.parse(new InputSource(new StringReader(xml)));
         doc.setContentAsDOM(dom.getDocumentElement());
         testCollection.storeResource(doc);
+    }
+    
+    @Test
+    public void setContentAsSource_Reader() throws XMLDBException, SAXException, IOException, XpathException {
+        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        assertNotNull(testCollection);
+
+        XMLResource doc = (XMLResource) testCollection.createResource("source.xml", "XMLResource");
+        final String xml =
+                "<test><title>Title1</title>"
+                        + "<para>Paragraph3</para>"
+                        + "<para>Paragraph4</para>"
+                        + "</test>";
+        
+        
+        doc.setContent(new InputSource(new StringReader(xml)));
+        testCollection.storeResource(doc);
+        
+        XMLResource newDoc = (XMLResource)testCollection.getResource("source.xml");
+        String newDocXml = (String)newDoc.getContent();
+        
+        assertXpathEvaluatesTo("Title1", "/test/title/text()", newDocXml);
+        assertXpathEvaluatesTo("2", "count(/test/para)", newDocXml);
+        assertXpathEvaluatesTo("Paragraph3", "/test/para[1]/text()", newDocXml);
+        assertXpathEvaluatesTo("Paragraph4", "/test/para[2]/text()", newDocXml);
     }
 
     @Test
