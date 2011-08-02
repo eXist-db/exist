@@ -4,23 +4,35 @@
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
-        <title>KWIC: Keywords in Context</title>
-        <date>September 2009</date>
+        <title>Keywords in Context (KWIC)</title>
+        <date>July 2011</date>
         <orgname>The eXist Project</orgname>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation></author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation></author>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
-        <title>Generating KWIC (Keywords in Context) Output</title>
+        <title>Generating Keywords in Context (KWIC) Output</title>
 
         <abstract>
             <para>A KWIC display helps users to quickly scan through a number of search results by
                 only showing a chunk of text surrounding each match. eXist provides a
                 general-purpose KWIC module, which is not bound to a specific index or query
                 operation. It can be applied to query results from all indexes that support match
-                highlighting. This includes the new Lucene-based index, the old full text index, as
-                well as the ngram index.</para>
+                highlighting. This includes the Lucene-based fullt text index
+                as well as the ngram index.</para>
 
-            <para>The documentation search function on eXist's home page is a good example. It
+            <para>The documentation search function in eXist-db's demo service is a good example. It
                 queries documents written in the docbook format. However, the KWIC module has also
                 been successfully used and deployed with different schemas (e.g. TEI) and languages
                 (e.g. Chinese).</para>
@@ -29,9 +41,8 @@
         <section>
             <title>Preparing your Query</title>
 
-            <para>The KWIC module is entirely written in XQuery. It requires eXist 1.3/1.4 and won't
-                work with eXist 1.2.x (the old KWIC functions in eXist 1.2.x are now deprecated). To
-                use the module, simple import its namespace into your query:</para>
+            <para>The KWIC module is entirely written in XQuery. To
+                use the module, simply import its namespace into your query:</para>
 
             <synopsis language="xquery">import module namespace kwic="http://exist-db.org/xquery/kwic";</synopsis>
 
