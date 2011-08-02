@@ -34,6 +34,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.storage.NativeTextEngine;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.util.GlobToRegex;
@@ -77,6 +78,15 @@ public class ExtNear extends ExtFulltext {
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext)
         throws XPathException {
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
         long start = System.currentTimeMillis();
         
         // the expression can be called multiple times, so we need to clear the previous preselectResult
@@ -128,6 +138,15 @@ public class ExtNear extends ExtFulltext {
 
     public Sequence evalQuery(String searchArg, NodeSet nodes)
         throws XPathException {
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
 		if (maxDistance != null) {
 			max_distance = ((IntegerValue) maxDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
 		}

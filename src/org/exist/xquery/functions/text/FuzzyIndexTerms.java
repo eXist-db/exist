@@ -25,6 +25,7 @@ package org.exist.xquery.functions.text;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.storage.TextSearchEngine;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -70,8 +71,16 @@ public class FuzzyIndexTerms extends BasicFunction {
 		else
 			docs = context.getStaticallyKnownDocuments();
 		String term = args[0].getStringValue();
-		String[] matches =
-			context.getBroker().getTextEngine().getIndexTerms(docs, new FuzzyMatcher(term, 0.65));
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+        
+		String[] matches = engine.getIndexTerms(docs, new FuzzyMatcher(term, 0.65));
 		ValueSequence result = new ValueSequence();
 		for(int i = 0; i < matches.length; i++)
 			result.add(new StringValue(matches[i]));

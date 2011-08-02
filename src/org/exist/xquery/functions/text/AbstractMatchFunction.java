@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.NodeSet;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
@@ -64,8 +65,17 @@ public abstract class AbstractMatchFunction extends DeprecatedExtRegexp {
 		String searchString = getArgument(1).eval(contextSequence)
 				.getStringValue();
 		List tokens = new ArrayList();
-		Tokenizer tokenizer = context.getBroker().getTextEngine()
-				.getTokenizer();
+        
+        // Can return NPE
+        TextSearchEngine engine = context.getBroker().getTextEngine();
+        if(engine==null){
+            throw new XPathException("The legacy fulltext indexing has been disabled by "
+                    + "default from version 1.4.1. Please consider migrating to "
+                    + "the new full text indexing.."); 
+        }
+                
+		Tokenizer tokenizer = engine.getTokenizer();
+        
 		tokenizer.setText(searchString);
 		org.exist.storage.analysis.TextToken token;
 		String word;
