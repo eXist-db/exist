@@ -23,7 +23,10 @@ package org.exist.xquery.modules.lucene;
 
 import java.util.List;
 import java.util.Map;
+
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.FunctionDef;
 
 /**
@@ -41,6 +44,9 @@ public class LuceneModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2008-09-03";
     public final static String RELEASED_IN_VERSION = "eXist-1.4";
 
+    public final static ErrorCode EXXQDYFT0001 = new LuceneErrorCode("EXXQDYFT0001", "Permission denied.");
+    public final static ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
+    
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
         new FunctionDef(Query.signatures[1], Query.class),
@@ -81,5 +87,12 @@ public class LuceneModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+    protected final static class LuceneErrorCode extends ErrorCode {
+
+		public LuceneErrorCode(String code, String description) {
+			super(new QName(code, NAMESPACE_URI, PREFIX), description);
+		}
+    	
+    }
 }
 
