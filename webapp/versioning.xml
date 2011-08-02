@@ -132,13 +132,12 @@
                 <para>VersioningTrigger accepts one
                     parameter, <option>overwrite</option>: if this is set to "no", the trigger will
                     check for potential write conflicts. For example, if two users opened the same
-                    document and are editing it, it may happen that the first user saves his changes
-                    without the second user recognizing it. The second user also made changes and if
-                    eXist did allow him to store his version, he would just overwrite the modifications
+                    document and are editing it, it may happen that the first user saves changes
+                    without the second user recognizing it. If the second user also made changes and those changes were stored it would just overwrite the modifications
                     already committed by the first user.</para>
                 
                 <para>The <option>overwrite="no"</option> setting
-                    prevents this. However, eXist has no control over the client. It does not know
+                    prevents this. However, eXist-db has no control over the client. It does not know
                     where the conflicting document came from. All it can do is to reject the write
                     attempt and raise an error. The error should then be handled by the client.
                     Right now there are no clients to support this. More work will be required
@@ -154,7 +153,7 @@
                     to keep track of the base revision to which changes were applied. It does this
                     by inserting special metadata attributes into a document when it is retrieved
                     from the database. For this purpose, a <emphasis>custom filter</emphasis> has
-                    to be registered with eXist's serializer. This is done in the <sgmltag>serializer</sgmltag>
+                    to be registered with eXist-db's serializer. This is done in the <sgmltag>serializer</sgmltag>
                     section in the main configuration file, <filename>conf.xml</filename>. Add a
                     <sgmltag>custom-filter</sgmltag> child tag to the <sgmltag>serializer</sgmltag>
                     element and set its <option>class</option> attribute to 
@@ -196,7 +195,7 @@
             
             <para>Clicking on <guimenuitem>Diff</guimenuitem> shows the differences between the selected
                 and the previous revision. The way in which the differences are recorded is specific
-                to eXist. It uses eXist's unique node ids to identify the reference node to which a change
+                to eXist-db. It uses unique node ids to identify the reference node to which a change
                 applies (the <option>ref</option> attributes in the XML shown above).</para>
             
             <para>The <guimenuitem>Restore</guimenuitem> link will restore the corresponding revision.
@@ -219,7 +218,7 @@
             </screenshot>
             
             <para>Like the admin webapp, you can use XQuery functions to access the revision history
-                or restore a given revision. eXist provides a single XQuery module for that. For
+                or restore a given revision. eXist-db provides a single XQuery module for that. For
                 example, to view the history of a resource, use the following query:</para>
             
             <programlisting language="xquery"><![CDATA[import module namespace v="http://exist-db.org/versioning";
@@ -258,7 +257,7 @@ v:doc(doc("/db/shakespeare/plays/hamlet.xml"), 35)//SPEECH[SPEAKER="HAMLET"]]]><
         <section>
             <title>Detecting write conflicts</title>
             
-            <para>To avoid that a user overwrites the changes made by another user, eXist
+            <para>To avoid that a user overwrites the changes made by another user, eXist-db
                 needs to know upon which revision the user's changes are based. To make this
                 possible, the versioning filter adds a number of metadata attributes to the
                 root element of a document when it is serialized (e.g. to be opened in an editor).
@@ -269,7 +268,7 @@ v:doc(doc("/db/shakespeare/plays/hamlet.xml"), 35)//SPEECH[SPEAKER="HAMLET"]]]><
             <programlisting language="xml"><![CDATA[<PLAY xmlns:v="http://exist-db.org/versioning" v:revision="36" v:key="12343e4940b24" 
 v:path="/db/shakespeare/plays/hamlet.xml">...</PLAY>]]></programlisting>
             
-            <para>As described above ("Setup"), when eXist detects a potential write conflict,
+            <para>As described above ("Setup"), when eXist-db detects a potential write conflict,
                 it cannot do more than to reject the update and raise an error. However, there's
                 an XQuery function which can be used by clients to check if newer revisions exist.
                 You pass it the revision number and the unique key as given in the versioning
