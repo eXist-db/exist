@@ -5,44 +5,49 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>eXist-db download</title>
-        <date>September 2009</date>
+        <date>August 2011</date>
         <author>
             <firstname>Dannes</firstname>
             <surname>Wessels</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>dizzzz@exist-db.org</email>
+                    <email>dizzzz at exist-db.org</email>
                 </address>
             </affiliation>
         </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
+            </affiliation></author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
     <chapter>
         <title>Download</title>
         <section id="versions">
             <title>Versions</title>
-            <para>Release <emphasis>1.4</emphasis> is our current production quality release. Among other things, it
-                improves eXist's XQuery processing thanks to a better and more robust handling of in memory documents.
-                It features faster and customizable full text indexing by transparently integrating Lucene into the
-                XQuery engine. eXist now also provides a lightweight URL rewriting and MVC framework (which in part
-                replaces Cocoon), along with support for XProc, XForms and many new XQuery extension modules.</para>
-            <para>1.4 replaces the <emphasis>1.2</emphasis> series as stable branch. Release <emphasis>1.5</emphasis>
-                is the new <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
-                development release, which will relabeled to 1.6 when ready.. New features will be added to this release only.</para>
+            <para>Release <emphasis>1.4.1</emphasis> is our current production quality release. Among other things, it
+                features a faster and more customizable full text indexing by transparently integrating Lucene into the
+                XQuery engine. eXist-db now also provides a lightweight URL rewriting and MVC framework (which in part
+                replaces Cocoon already and will completely replace it in version 1.5), along with support for XProc, XForms and many new XQuery extension modules.</para>
+            <para>1.4.1 replaces the <emphasis>1.4</emphasis> version from 2009. Release <emphasis>1.5</emphasis>
+                is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
+                development release, which will relabeled to 1.6 when ready. New features will be added to this release only.</para>
         </section>
         <section>
             <title>Donations, Consulting, Training</title>
             <para class="float-left"><ulink url="http://sourceforge.net/donate/index.php?group_id=17691">
                     <graphic fileref="resources/project-support.jpg"/>
                 </ulink></para>
-            <para>eXist depends on the commitment of volunteers. Making a donation acknowledges their efforts and helps
+            <para>eXist-db depends on the commitment of volunteers. Making a donation acknowledges their efforts and helps
                 to finance the few things we need to keep the project at speed.</para>
-            <para>Another way to support eXist is to <ulink url="acknowledge.xml">"sponsor"</ulink> features or
+            <para>Another way to support eXist-db is to <ulink url="acknowledge.xml">"sponsor"</ulink> features or
                 solutions you may need for your own applications. Members of our development team are available for
                     <emphasis>consulting</emphasis>, <emphasis>training</emphasis> or <emphasis>first-hand
                     support</emphasis> on a flexible basis. If interested, please send an email to <ulink
                     url="mailto:info@exist-db.org">info@exist-db.org</ulink> and we will coordinate the requests.</para>
-            <para>A commercial support plan is provided by <ulink url="http://www.existsolutions.com">eXist Solutions
+            <para>Commercial support plans are provided by <ulink url="http://www.existsolutions.com">eXist Solutions
                     GmbH</ulink> since 2010. The company is backed by large parts of the active development team (in
                 cooperation with all interested parties).</para>
         </section>
@@ -51,35 +56,35 @@
             <para>For information concerning upgrades from previous versions, see our <ulink url="upgrading.xml">Upgrade
                     Guide</ulink>.</para>
             <section>
-                <title>Stable Release 1.4 (Codename: <ulink url="http://en.wikipedia.org/wiki/Eindhoven"
+                <title>Stable Release 1.4.1 (Codename: <ulink url="http://en.wikipedia.org/wiki/Eindhoven"
                         >Eindhoven</ulink>)</title>
                 <table cellpadding="5" cellspacing="5">
                     <caption/>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4 (Stable Release)</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4.1 (Stable Release)</th>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.jar/download"
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.jar/download"
                                 >eXist-setup-1.4.1-revXXXXX.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.0-revXXXXX.jar</code></td>
+                                eXist-1.4.1-revXXXXX.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.exe/download"
-                                >eXist-setup-1.4.0-revXXXXX.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.exe/download"
+                                >eXist-setup-1.4.1-revXXXXX.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-revXXXXX.war/download"
-                                >eXist-setup-1.4.0-revXXXXX.war</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.war/download"
+                                >eXist-setup-1.4.1-revXXXXX.war</ulink>
                         </td>
                         <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
@@ -87,9 +92,9 @@
                         <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11. Starting release 1.5 
+                        <td align="left" colspan="2">The 1.4.1 release still includes Cocoon 2.1.11. Starting with release 1.5 
                             cocoon will only available as an optional block. The development team is looking for
-                            a maintainer for this code. If you have experience with Cocoon please drop a message
+                            a maintainer for this code. If you have experience with Cocoon please drop us a message
                             on the developer's list, otherwise this feature might be removed in the future.</td>
                     </tr>
                 </table>
