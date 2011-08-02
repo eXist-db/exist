@@ -21,17 +21,18 @@
  */
 package org.exist.performance.xquery;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.TextSearchEngine;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class RandomText extends BasicFunction {
 
@@ -67,16 +68,25 @@ public class RandomText extends BasicFunction {
 
     private void generateWordList() throws XPathException {
 		try {
+            // Can return NPE  DW: can probably be replaced
+            TextSearchEngine engine = context.getBroker().getTextEngine();
+            if(engine==null){
+                throw new XPathException("The legacy fulltext indexing has been disabled by "
+                        + "default from version 1.4.1. Please consider migrating to "
+                        + "the new full text indexing.."); 
+            }
+        
 			MutableDocumentSet docs = new DefaultDocumentSet();
             docs = context.getBroker().getAllXMLResources(docs);
             Occurrences[] occurrences =
-                    context.getBroker().getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), null, null);
+                    engine.scanIndexTerms(docs, docs.docsToNodeSet(), null, null);
             List list = new ArrayList();
             for (int i = 0; i < occurrences.length; i++) {
                 list.add(occurrences[i].getTerm().toString());
             }
             words = new String[list.size()];
             list.toArray(words);
+            
         } catch (PermissionDeniedException e) {
 			throw new XPathException(this, e.getMessage(), e);
 		}
