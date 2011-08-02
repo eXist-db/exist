@@ -42,6 +42,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import java.net.URISyntaxException;
+import org.exist.storage.TextSearchEngine;
 
 public class LocalIndexQueryService implements IndexQueryService {
 
@@ -205,7 +206,15 @@ public class LocalIndexQueryService implements IndexQueryService {
 			broker = pool.get(user);
 			MutableDocumentSet docs = new DefaultDocumentSet();
 			parent.getCollection().allDocs(broker, docs, inclusive, true);
-			return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
+            
+            TextSearchEngine engine = broker.getTextEngine();
+            if(engine==null){
+                throw new EXistException("The legacy fulltext indexing has been disabled "
+                        + "by default from version 1.4.1. Please consider migrating to the "
+                        + "new full text indexing.");
+            }
+            
+			return engine.scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				"permission denied", e);
