@@ -274,9 +274,9 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     }
 
     @Override
-    public void write(VariableByteOutputStream ostream) {
+    public void write(VariableByteOutputStream ostream) throws IOException {
         super.write(ostream);
-        ostream.writeByte((byte)acl.length);
+        ostream.write(acl.length);
         for(int i = 0; i < acl.length; i++) {
             ostream.writeInt(acl[i]);
         }
