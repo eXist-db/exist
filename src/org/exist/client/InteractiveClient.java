@@ -258,9 +258,11 @@ public class InteractiveClient {
     public static void main(String[] args) {
         try {
             InteractiveClient client = new InteractiveClient();
-            client.run(args);
+            if (!client.run(args))
+                System.exit(1); // return non-zero exit status on failure
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1); // return non-zero exit status on exception
         }
     }
     
@@ -512,7 +514,7 @@ public class InteractiveClient {
                 	src = URIUtils.encodeXmldbUriFor(args[1]);
                 	dest = URIUtils.encodeXmldbUriFor(args[2]);
                 } catch(URISyntaxException e) {
-                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    errorln("could not parse collection name into a valid URI: "+e.getMessage());
                     return false;
                 }
                 copy(src,dest);
@@ -524,7 +526,7 @@ public class InteractiveClient {
                     try {
                     	resource = URIUtils.encodeXmldbUriFor(args[1]);
                     } catch(URISyntaxException e) {
-                        messageln("could not parse resource name into a valid URI: "+e.getMessage());
+                        errorln("could not parse resource name into a valid URI: "+e.getMessage());
                         return false;
                     }
                     editResource(resource);
@@ -540,7 +542,7 @@ public class InteractiveClient {
                 try {
                 	resource = URIUtils.encodeXmldbUriFor(args[1]);
                 } catch(URISyntaxException e) {
-                    messageln("could not parse resource name into a valid URI: "+e.getMessage());
+                    errorln("could not parse resource name into a valid URI: "+e.getMessage());
                     return false;
                 }
                 Resource res = retrieve(resource);
@@ -603,7 +605,7 @@ public class InteractiveClient {
                     
                     nextInSet = 1;
                 } catch (Exception e) {
-                    messageln("An error occurred: " + e.getMessage());
+                    errorln("An error occurred: " + e.getMessage());
                 }
             } else if (args[0].equalsIgnoreCase("show")) {
                 // show search results
@@ -640,7 +642,7 @@ public class InteractiveClient {
                     messageln("displayed items " + (start + 1) + " to "
                             + (start + count) + " of " + result.getSize());
                 } catch (NumberFormatException nfe) {
-                    messageln("wrong argument");
+                    errorln("wrong argument");
                     return true;
                 }
                 
@@ -654,7 +656,7 @@ public class InteractiveClient {
                 try {
                 	collUri = URIUtils.encodeXmldbUriFor(args[1]);
                 } catch(URISyntaxException e) {
-                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    errorln("could not parse collection name into a valid URI: "+e.getMessage());
                     return false;
                 }
                 CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current
@@ -737,7 +739,7 @@ public class InteractiveClient {
                 try {
                 	collUri = URIUtils.encodeXmldbUriFor(args[1]);
                 } catch(URISyntaxException e) {
-                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    errorln("could not parse collection name into a valid URI: "+e.getMessage());
                     return false;
                 }
                 rmcol(collUri);
@@ -1069,7 +1071,7 @@ public class InteractiveClient {
             if (startGUI)
                 ClientFrame.showErrorMessage(getExceptionMessage(e), e);
             else {
-                messageln(getExceptionMessage(e));
+                errorln(getExceptionMessage(e));
                 e.printStackTrace();
             }
             return true;
@@ -1085,7 +1087,7 @@ public class InteractiveClient {
             view.setSize(new Dimension(640, 400));
             view.viewDocument();
         } catch (XMLDBException ex) {
-            messageln("XMLDB error: " + ex.getMessage());
+            errorln("XMLDB error: " + ex.getMessage());
         }
     }
         
@@ -1300,7 +1302,7 @@ public class InteractiveClient {
     }
     
     private synchronized boolean findRecursive(Collection collection, File dir,
-            XmldbURI base) {
+            XmldbURI base) throws XMLDBException {
         File files[] = dir.listFiles();
         Collection c;
         Resource document;
@@ -1345,9 +1347,7 @@ public class InteractiveClient {
                     	    + (System.currentTimeMillis() - start1) + "ms.");
                 }
             } catch (URISyntaxException e) {
-                messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
-            } catch (XMLDBException e) {
-                messageln("could not parse file " + files[i].getAbsolutePath() + ": " + e.getMessage());
+                errorln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
             }
         }
         return true;
@@ -1419,7 +1419,7 @@ public class InteractiveClient {
     
     
     private synchronized boolean findGZipRecursive(Collection collection, File dir,
-            XmldbURI base) {
+            XmldbURI base) throws XMLDBException {
         File files[] = dir.listFiles();
         Collection c;
         Resource document;
@@ -1476,9 +1476,7 @@ public class InteractiveClient {
                     	    + (System.currentTimeMillis() - start1) + "ms.");
                 }
             } catch (URISyntaxException e) {
-                messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
-            } catch (XMLDBException e) {
-                messageln("could not parse file " + files[i].getAbsolutePath() + ": " + e.getMessage());
+                errorln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
             }
         }
         return true;
@@ -1633,9 +1631,9 @@ public class InteractiveClient {
 	        messageln("parsed " + bytes + " bytes in "
 	                + (System.currentTimeMillis() - start0) + "ms.");
         } catch (URISyntaxException e) {
-            messageln("uri syntax exception parsing a ZIP entry from " + fileName + ": " + e.getMessage());
+            errorln("uri syntax exception parsing a ZIP entry from " + fileName + ": " + e.getMessage());
 	    } catch (IOException e) {
-	    	messageln("could not parse ZIP file " + fileName+": "+e.getMessage());
+	    	errorln("could not parse ZIP file " + fileName+": "+e.getMessage());
 	    }
         return true;
     }
@@ -1791,7 +1789,7 @@ public class InteractiveClient {
     
     
     private void mkcol(XmldbURI collPath) throws XMLDBException {
-        System.out.println("creating '" + collPath + "'");
+        messageln("creating '" + collPath + "'");
         XmldbURI[] segments = collPath.getPathSegments(); 
         CollectionManagementServiceImpl mgtService;
         Collection c;
@@ -2042,6 +2040,7 @@ public class InteractiveClient {
                                 .getArgument());
                     } catch (NumberFormatException e) {
                         System.err.println("parameter -t needs a valid number");
+                        return null;
                     }
                     break;
                 case CommandlineOptions.XUPDATE_OPT :
@@ -2059,7 +2058,8 @@ public class InteractiveClient {
                     } catch (UnsupportedEncodingException e1) {
                     	LOG.warn(e1);
                     } catch (FileNotFoundException e1) {
-                        messageln("Cannot open file " + traceFile);
+                        errorln("Cannot open file " + traceFile);
+                        return null;
                     } catch (IOException e) {
                     }
                     break;
@@ -2098,9 +2098,10 @@ public class InteractiveClient {
             try {
                 reindex();
             } catch (XMLDBException e) {
-                System.err.println("XMLDBException while removing collection: "
+                System.err.println("XMLDBException while reindexing collection: "
                         + getExceptionMessage(e));
                 e.printStackTrace();
+                return false;
             }
         }
         
@@ -2117,6 +2118,7 @@ public class InteractiveClient {
                 System.err.println("XMLDBException while removing collection: "
                         + getExceptionMessage(e));
                 e.printStackTrace();
+                return false;
             }
         }
         
@@ -2127,6 +2129,7 @@ public class InteractiveClient {
                 System.err.println("XMLDBException during mkcol: "
                         + getExceptionMessage(e));
                 e.printStackTrace();
+                return false;
             }
         }
         
@@ -2155,6 +2158,7 @@ public class InteractiveClient {
                         .println("XMLDBException while trying to retrieve document: "
                         + getExceptionMessage(e));
                 e.printStackTrace();
+                return false;
             }
         } else if (cOpt.optionRemove != null) {
             if (!cOpt.foundCollection) {
@@ -2164,9 +2168,10 @@ public class InteractiveClient {
                 try {
                     remove(cOpt.optionRemove);
                 } catch (XMLDBException e) {
-                    System.out.println("XMLDBException during parse: "
+                    System.err.println("XMLDBException during parse: "
                             + getExceptionMessage(e));
                     e.printStackTrace();
+                    return false;
                 }
             }
         } else if (cOpt.doStore) {
@@ -2178,9 +2183,10 @@ public class InteractiveClient {
                     try {
                         parse((String) i.next());
                     } catch (XMLDBException e) {
-                        System.out.println("XMLDBException during parse: "
+                        System.err.println("XMLDBException during parse: "
                                 + getExceptionMessage(e));
                         e.printStackTrace();
+                        return false;
                     }
             }
         } else if (cOpt.optionXpath != null || cOpt.optionQueryFile != null) {
@@ -2208,6 +2214,7 @@ public class InteractiveClient {
                 } catch (IOException e) {
                     System.err.println("failed to read query from stdin");
                     cOpt.optionXpath = null;
+                    return false;
                 }
             }
             if (cOpt.optionXpath != null) {
@@ -2244,6 +2251,7 @@ public class InteractiveClient {
                     System.err.println("XMLDBException during query: "
                             + getExceptionMessage(e));
                     e.printStackTrace();
+                    return false;
                 }
             }
             //		} else if (optionQueryFile != null) {
@@ -2254,9 +2262,11 @@ public class InteractiveClient {
             } catch (XMLDBException e) {
                 System.err.println("XMLDBException during xupdate: "
                         + getExceptionMessage(e));
+                return false;
             } catch (IOException e) {
                 System.err.println("IOException during xupdate: "
                         + getExceptionMessage(e));
+                return false;
             }
         }
         
@@ -2281,10 +2291,9 @@ public class InteractiveClient {
     }
     
     /**
-     *  Reusable method for connecting to database.
-     * @return TRUE if successfull,
+     *  Reusable method for connecting to database. Exits process on failure.
      */
-    private boolean connectToDatabase(){
+    private void connectToDatabase() {
         try {
             connect();
         } catch (Exception cnf) {
@@ -2295,20 +2304,17 @@ public class InteractiveClient {
                 System.err.println("Connection to database failed; message: "
                         + cnf.getMessage());
             cnf.printStackTrace();
-            System.exit(0);
+            System.exit(1);
         }
-        return true;
     }
     
     /**
      * Main processing method for the InteractiveClient object
      *
      * @param args arguments from main()
+     * @return true on success, false on failure
      */
-    public void run(String args[]) throws Exception {        
-        if (!quiet)
-            printNotice();
-
+    public boolean run(String args[]) throws Exception {  
         // Get exist home directory
         File home = ConfigurationHelper.getExistHome();
 
@@ -2329,8 +2335,12 @@ public class InteractiveClient {
         CommandlineOptions cOpt = getCommandlineOptions(args, properties);
         if(cOpt==null){
             // An error occured during parsing. exit program.
-            return;
+            return false;
         }
+        
+        // print copyright notice - after parsing command line options, or it can't be silenced!
+        if (!quiet)
+            printNotice();
         
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
         properties.setProperty("uri", URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
@@ -2340,7 +2350,7 @@ public class InteractiveClient {
             
             boolean haveLoginData = getGuiLoginData(properties);
             if(!haveLoginData){
-                System.exit(0);
+                return false;
             }
             
         } else if (cOpt.needPasswd) {
@@ -2380,12 +2390,12 @@ public class InteractiveClient {
             else
                 System.err.println("Could not retrieve collection " + path);
             shutdown(false);
-            return;
+            return false;
         }
         
         boolean processingOK = processCommandLineActions(cOpt);
         if(!processingOK){
-            return;
+            return false;
         }
         
         if (cOpt.interactive) {
@@ -2403,10 +2413,11 @@ public class InteractiveClient {
                 try {
                     getResources();
                 } catch (XMLDBException e) {
-                    System.out.println("XMLDBException while "
+                    System.err.println("XMLDBException while "
                             + "retrieving collection contents: "
                             + getExceptionMessage(e));
                     e.getCause().printStackTrace();
+                    return false;
                 }
                 
             } else {
@@ -2436,7 +2447,7 @@ public class InteractiveClient {
                         boolean haveLoginData = getGuiLoginData(properties);
                         if(!haveLoginData){
                             // pressed cancel
-                            System.exit(0);
+                            return false;
                         }
                         
                         // Need to shutdown ?? ask wolfgang
@@ -2450,7 +2461,7 @@ public class InteractiveClient {
                         if(errorMessage!=""){
                             // No pattern match, but we have an error. stop here
                             frame.dispose();
-                            System.exit(1);
+                            return false;
                         } else {
                             // No error message, continue startup.
                             retry=false;
@@ -2471,6 +2482,7 @@ public class InteractiveClient {
                 frame.displayPrompt();
         } else
             shutdown(false);
+        return true;
     }
     
     public final static String getExceptionMessage(Throwable e) {
@@ -2506,7 +2518,7 @@ public class InteractiveClient {
                         "Error while reading query history: " + e.getMessage(),
                         e);
             else
-                messageln("Error while reading query history: "
+                errorln("Error while reading query history: "
                         + e.getMessage());
         }
     }
@@ -2635,6 +2647,13 @@ public class InteractiveClient {
             else
                 System.out.println(msg);
         }
+    }
+    
+    private final void errorln(String msg) {
+        if (startGUI && frame != null)
+            frame.display(msg + '\n');
+        else
+            System.err.println(msg);
     }
     
     private Collection resolveCollection(XmldbURI path) throws XMLDBException {
