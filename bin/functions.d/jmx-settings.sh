@@ -12,8 +12,5 @@ check_jmx_status() {
 		-Dcom.sun.management.jmxremote.authenticate=false \
 		-Dcom.sun.management.jmxremote.ssl=false"
 	JAVA_OPTIONS="$JAVA_OPTIONS $JMX_OPTS"
-	echo "Using JMX: ${JMX_OPTS}"
-	
     fi
-
 }
