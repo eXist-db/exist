@@ -16,8 +16,12 @@ JMX_SHORT_EQUAL="-j="
 JMX_LONG="--jmx"
 JMX_LONG_EQUAL="--jmx="
 
+QUIET_OPTS="|-q|--quiet|"
+QUIET_ENABLED=0
+
 NR_JAVA_OPTS=0
 declare -a JAVA_OPTS
+declare -a CLIENT_PROPS
 
 substring() {
     [ "${1#*$2*}" = "$1" ] && return 1
@@ -27,7 +31,7 @@ substring() {
 is_integer() {
     [ $1 -eq 1 ] 2> /dev/null;
     if [ $? -eq 2 ]; then
-	echo "Port need to be an integer"
+	echo "Port need to be an integer" > /dev/stderr;
 	exit 1
     fi
     return 0
@@ -57,6 +61,12 @@ is_jmx_switch() {
     return 1;
 }
 
+check_quiet_switch() {
+    if substring "${QUIET_OPTS}" "|$1|"; then
+	QUIET_ENABLED=1;
+    fi
+}
+
 get_opts() {
     local -a ALL_OPTS=( "$@" )
     local found_jmx_opt
@@ -73,10 +83,27 @@ get_opts() {
 	if is_jmx_switch "$OPT"; then
 	    found_jmx_opt=1
 	else
+	    check_quiet_switch "$OPT";
 	    JAVA_OPTS[${NR_JAVA_OPTS}]="$OPT";
 	    let "NR_JAVA_OPTS += 1";
 	fi
     done
-	
-    echo "${JAVA_OPTS[@]}";
+    
+    if [ "${QUIET_ENABLED}" -eq 0 ]; then
+	echo "${JAVA_OPTS[@]}";
+    fi
+}
+
+get_client_props() {
+    shopt -s extglob
+    while IFS="=" read -r key value
+    do
+	case "${key}" in
+	    !(#*) )
+                #echo "Read client properties key: ${key}, value: ${value}"
+		CLIENT_PROPS["${key}"]="${value}"
+     ;;
+  esac
+done < ${EXIST_HOME}/client.properties
+
 }
