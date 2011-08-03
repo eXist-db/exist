@@ -28,9 +28,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
         
@@ -44,6 +44,7 @@ public class SimpleACLPermissionTest {
         verify(mockSecurityManager, mockDatabase, mockCurrentSubject);
         
         assertEquals(1, permission.getACECount());
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
         assertEquals(userId, permission.getACEId(0));
         assertEquals(mode, permission.getACEMode(0));
     }
@@ -62,9 +63,9 @@ public class SimpleACLPermissionTest {
         final String userName = "aretter";
         final String mode = "rwu";
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         expect(mockSecurityManager.getAccount(null, userName)).andReturn(mockAccount);
         expect(mockAccount.getId()).andReturn(userId);
@@ -77,6 +78,8 @@ public class SimpleACLPermissionTest {
 
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
     }
 
@@ -94,9 +97,9 @@ public class SimpleACLPermissionTest {
         final String groupName = "aretter";
         final String mode = "rwu";
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
         
         expect(mockSecurityManager.getGroup(null, groupName)).andReturn(mockGroup);
         expect(mockGroup.getId()).andReturn(groupId);
@@ -109,6 +112,8 @@ public class SimpleACLPermissionTest {
 
         assertEquals(1, permission.getACECount());
         assertEquals(groupId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.GROUP, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
         assertEquals(mode, permission.getACEModeString(0));
     }
@@ -119,9 +124,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
         
@@ -137,6 +142,8 @@ public class SimpleACLPermissionTest {
 
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
     }
 
@@ -146,9 +153,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
         
@@ -158,8 +165,11 @@ public class SimpleACLPermissionTest {
         final int userId = 1112;
         final int mode = ALL;
         permission.addUserACE(ACE_ACCESS_TYPE.ALLOWED, userId, mode);
+        
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
@@ -168,6 +178,8 @@ public class SimpleACLPermissionTest {
         
         assertEquals(2, permission.getACECount());
         assertEquals(secondUserId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(secondMode, permission.getACEMode(0));
         
         verify(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -179,9 +191,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -192,29 +204,44 @@ public class SimpleACLPermissionTest {
         final int userId = 1112;
         final int mode = ALL;
         permission.addUserACE(ACE_ACCESS_TYPE.ALLOWED, userId, mode);
+        
         assertEquals(1, permission.getACECount());
+        
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
         final int secondMode = 04;
         permission.addUserACE(ACE_ACCESS_TYPE.ALLOWED, secondUserId, secondMode);
+        
         assertEquals(2, permission.getACECount());
+        
         assertEquals(secondUserId, permission.getACEId(1));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(1));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(1));
         assertEquals(secondMode, permission.getACEMode(1));
 
         final int thirdUserId = 1114;
         final int thirdMode = 02;
         permission.insertUserACE(1, ACE_ACCESS_TYPE.ALLOWED, thirdUserId, thirdMode);
+        
         assertEquals(3, permission.getACECount());
-
+        
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
 
         assertEquals(thirdUserId, permission.getACEId(1));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(1));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(1));
         assertEquals(thirdMode, permission.getACEMode(1));
 
         assertEquals(secondUserId, permission.getACEId(2));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(2));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(2));
         assertEquals(secondMode, permission.getACEMode(2));
         
         verify(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -226,9 +253,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -239,8 +266,11 @@ public class SimpleACLPermissionTest {
         final int userId = 1112;
         final int mode = ALL;
         permission.addUserACE(ACE_ACCESS_TYPE.ALLOWED, userId, mode);
+        
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
@@ -256,9 +286,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
         
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -273,6 +303,8 @@ public class SimpleACLPermissionTest {
 
         permission.removeACE(0);
         assertEquals(1, permission.getACECount());
+        assertEquals(ACE_ACCESS_TYPE.ALLOWED, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(secondUserId, permission.getACEId(0));
         
         verify(mockSecurityManager, mockDatabase, mockCurrentSubject);
@@ -284,9 +316,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(4);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(4);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(4);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(4);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(4);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(4);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
         
@@ -315,9 +347,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -343,9 +375,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -361,6 +393,7 @@ public class SimpleACLPermissionTest {
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
         assertEquals(access_type, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(mode, permission.getACEMode(0));
 
         permission.modifyACE(0, access_type, Permission.WRITE);
@@ -368,12 +401,14 @@ public class SimpleACLPermissionTest {
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
         assertEquals(access_type, permission.getACEAccessType(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(Permission.WRITE, permission.getACEMode(0));
 
         permission.modifyACE(0, ACE_ACCESS_TYPE.DENIED, Permission.READ | Permission.WRITE);
 
         assertEquals(1, permission.getACECount());
         assertEquals(userId, permission.getACEId(0));
+        assertEquals(ACE_TARGET.USER, permission.getACETarget(0));
         assertEquals(ACE_ACCESS_TYPE.DENIED, permission.getACEAccessType(0));
         assertEquals(Permission.READ | Permission.WRITE, permission.getACEMode(0));
         
@@ -386,9 +421,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
 
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(3);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(3);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(3);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject);
 
@@ -440,9 +475,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int mode = 0700;
@@ -474,9 +509,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int mode = 0700;
@@ -520,9 +555,9 @@ public class SimpleACLPermissionTest {
         final Database mockDatabase = EasyMock.createMock(Database.class);
         final Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
         
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
+        //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
+        //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject).times(2);
+        //expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int mode = 0700;
