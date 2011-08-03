@@ -269,7 +269,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         int aclLength = istream.read();
         acl = new int[aclLength];
         for(int i = 0; i < aclLength; i++) {
-            acl[0] = istream.readInt();
+            acl[i] = istream.readInt();
         }
     }
 
