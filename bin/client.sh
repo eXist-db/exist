@@ -43,7 +43,13 @@ set_locale_lang;
 # save LD_LIBRARY_PATH
 set_library_path;
 
-"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client "${JAVA_OPTS[@]}"
+if [ "${QUIET_ENABLED}" -gt 0 ]; then
+    # Be quiet, no messages on stdout
+    "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client "${JAVA_OPTS[@]}" > /dev/null || exit 1 # forward non-zero exit status
+else
+    echo "Using locale: ${LANG}";
+    "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" client "${JAVA_OPTS[@]}" || exit 1 # forward non-zero exit status
 
+fi
 restore_library_path;
 restore_locale_lang;

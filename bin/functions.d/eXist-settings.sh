@@ -21,7 +21,7 @@ check_exist_home() {
     fi
 
     if [ ! -f "${EXIST_HOME}/start.jar" ]; then
-	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory.";
+	echo "Unable to find start.jar. Please set EXIST_HOME to point to your installation directory." > /dev/stderr;
 	exit 1;
     fi
     JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
@@ -44,7 +44,6 @@ set_locale_lang() {
     # UTF-8 char map is unfortunately not available but we set it anyway...
 	LANG=en_US.UTF-8
     fi
-    echo "Using locale: ${LANG}"
     export LANG
 }
 
