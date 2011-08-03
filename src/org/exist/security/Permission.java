@@ -224,7 +224,7 @@ public interface Permission {
      */
     public boolean validate(Subject user, int mode);
 
-    public void write(VariableByteOutputStream ostream);
+    public void write(VariableByteOutputStream ostream) throws IOException;
 
     public void read(VariableByteInput istream) throws IOException;
 

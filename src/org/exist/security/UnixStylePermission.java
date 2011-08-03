@@ -457,7 +457,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     @Override
-    public void write(VariableByteOutputStream ostream) {
+    public void write(VariableByteOutputStream ostream) throws IOException {
         ostream.writeLong(vector);
     }
 
