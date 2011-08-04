@@ -125,9 +125,11 @@ public interface SecurityManager extends Configurable {
 
    boolean hasUser(int id);
 
+   /**
+    * @deprecated Will be removed, should be private to the SecurityManagerImpl
+    */
+   @Deprecated
    public int getNextGroupId();
-
-   public int getNextAccountId();
 
    /**
     * Find users by their personal name

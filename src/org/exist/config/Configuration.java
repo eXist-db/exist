@@ -69,7 +69,7 @@ public interface Configuration {
 
 	public void checkForUpdates(ElementAtExist document);
 
-	public void save() throws PermissionDeniedException;
+	public void save() throws PermissionDeniedException, ConfigurationException;
 
 	public boolean equals(Object obj, String uniqField);
 }

@@ -93,7 +93,7 @@ public abstract class AbstractPrincipal implements Principal {
 	}
 
         @Override
-	public void save() throws PermissionDeniedException {
+	public void save() throws ConfigurationException, PermissionDeniedException {
             if (configuration != null) {
                 configuration.save();
             }

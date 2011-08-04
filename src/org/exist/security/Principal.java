@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import org.exist.config.Configurable;
+import org.exist.config.ConfigurationException;
 import org.exist.security.realm.Realm;
 
 /**
@@ -36,5 +37,5 @@ public interface Principal extends java.security.Principal, Configurable {
 
 	public String getRealmId();
 
-        public void save() throws PermissionDeniedException;
+        public void save() throws ConfigurationException, PermissionDeniedException;
 }
