@@ -187,7 +187,7 @@ public class SymbolTable {
      * @param name
      */
 	public synchronized short getSymbol(String name) {
-		if (name.length() == 0)
+		if (name.length() == 0) // DW: can cause NPE
 			throw new IllegalArgumentException("name is empty");
 		short id = (short) nameSymbols.get(name);
 		if (id != -1)
