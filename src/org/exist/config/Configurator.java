@@ -35,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -769,14 +770,7 @@ public class Configurator {
                     String typeName = field.getType().getName();
                     if(typeName.equals("java.util.List")) {
                         simple = false;
-                        List<Configurable> list = (List<Configurable>) field.get(instance);
-                        for (Configurable el : list) {
-                            if (referenceBy == null) {
-                                    serialize(el, serializer);
-                            } else {
-                                    serialize(el, serializer, element.getAnnotation().value(), referenceBy);
-                            }
-                        }
+                        serializeList(instance, element, serializer);
                     } else if(implementsInterface(field.getType(), Configurable.class)) {
                         simple = false;
                         Configurable subInstance = (Configurable) field.get(instance);
@@ -831,6 +825,59 @@ public class Configurator {
         }
     }
 
+    private static void serializeList(Configurable instance, ConfigurationAnnotatedField<ConfigurationFieldAsElement> element, SAXSerializer serializer) throws ConfigurationException, IllegalArgumentException, IllegalAccessException, SAXException {
+        
+        final Field field = element.getField();
+        field.setAccessible(true);
+        
+        //determine the list entries type from its generic type
+        Type fieldGenericType = field.getGenericType();
+        if(fieldGenericType instanceof ParameterizedType) {
+            Type genericTypeArgs[] = ((ParameterizedType)fieldGenericType).getActualTypeArguments();
+            if(genericTypeArgs != null && genericTypeArgs.length == 1) {
+                Type genericListType = genericTypeArgs[0];
+
+                if(genericListType.equals(String.class)) {
+                    serializeStringList((List<String>)field.get(instance), element, serializer);
+                } else {
+                    //assume List<Configurable>
+                    serializeConfigurableList((List<Configurable>)field.get(instance), field, element, serializer);
+                }
+            }
+        } else {
+            //assume List<Configurable>
+            serializeConfigurableList((List<Configurable>)field.get(instance), field, element, serializer);
+        }
+    }
+    
+    private static void serializeStringList(List<String> list, ConfigurationAnnotatedField<ConfigurationFieldAsElement> element, SAXSerializer serializer) throws SAXException {
+        
+        final String fieldAsElementName = element.getAnnotation().value();
+        final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
+        
+        for(String listItem : list) {
+            serializer.startElement(qnConfig, null);
+            serializer.characters(listItem);
+            serializer.endElement(qnConfig);
+        }
+    }
+    
+    private static void serializeConfigurableList(List<Configurable> list, Field field, ConfigurationAnnotatedField<ConfigurationFieldAsElement> element, SAXSerializer serializer) throws ConfigurationException, SAXException {
+        
+        String referenceBy = null;
+        if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+            referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
+        }
+        
+        for (Configurable el : list) {
+            if (referenceBy == null) {
+                    serialize(el, serializer);
+            } else {
+                    serialize(el, serializer, element.getAnnotation().value(), referenceBy);
+            }
+        }
+    }
+    
     private static void serializeMap(String mapName, Map<String, String> map, SAXSerializer serializer) throws SAXException {
         if(map != null){
             final QName mapQName = new QName(mapName, Configuration.NS);
