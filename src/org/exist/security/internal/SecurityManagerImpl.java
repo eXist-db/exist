@@ -418,7 +418,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	public Database getDatabase() {
 		return pool;
 	}
-	
+
+        //TODO should be private !!!!
     @Override
     public synchronized int getNextGroupId() {
         if(lastGroupId + 1 == MAX_GROUP_ID) {
@@ -427,8 +428,7 @@ public class SecurityManagerImpl implements SecurityManager {
         return ++lastGroupId;
     }
 
-    @Override
-    public synchronized int getNextAccountId() {
+    private synchronized int getNextAccountId() {
         if(lastUserId +1 == MAX_USER_ID) {
             throw new RuntimeException("System has no more user-ids available");
         }
