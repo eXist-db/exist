@@ -55,7 +55,7 @@ highlight-matches=none
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/LICENSE" todir="${dist.minimal}"/>
-  <copy file="${src.dir}/log4j.dtd" todit="${dist.minimal}"/>
+  <copy file="${src.dir}/log4j.dtd" todir="${dist.minimal}"/>
   <xslt in="${src.dir}/log4j.xml" out="${dist.minimal}/log4j.xml" style="${build.scripts}/minimal-fix-log4j.xsl"/>
   <copy file="${src.dir}/mime-types.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/server.xml" todir="${dist.minimal}"/>
