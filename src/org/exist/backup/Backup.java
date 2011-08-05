@@ -1,22 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2006 The eXist team
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2011 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.backup;
@@ -275,22 +275,16 @@ public class Backup {
                 if(resource instanceof ExtendedResource) {
                     ((ExtendedResource)resource).getContentIntoAStream(os);
                 } else {
-                    try {
-                        writer =
-                            new BufferedWriter(
-                                    new OutputStreamWriter(os, "UTF-8"));
-                        // write resource to contentSerializer
-                        contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                        contentSerializer.setOutput(writer, defaultOutputProperties);
-                        ((EXistResource)resource).setLexicalHandler(contentSerializer);
-                        ((XMLResource)resource).getContentAsSAX(contentSerializer);
-                        SerializerPool.getInstance().returnObject(contentSerializer);
-                        writer.flush();
-                    } catch(Exception e) {
-                        System.err.println("An exception occurred while writing the resource: " + e.getMessage());
-                        e.printStackTrace();
-                        continue;
-                    }
+                    writer =
+                        new BufferedWriter(
+                                           new OutputStreamWriter(os, "UTF-8"));
+                    // write resource to contentSerializer
+                    contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                    contentSerializer.setOutput(writer, defaultOutputProperties);
+                    ((EXistResource)resource).setLexicalHandler(contentSerializer);
+                    ((XMLResource)resource).getContentAsSAX(contentSerializer);
+                    SerializerPool.getInstance().returnObject(contentSerializer);
+                    writer.flush();
                 }
                 output.closeEntry();
                 EXistResource ris = (EXistResource)resource;
@@ -359,6 +353,7 @@ public class Backup {
                 serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
             } catch(XMLDBException e) {
                 System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
+                throw e;
             }
       }
 		// write subcollections
@@ -420,8 +415,9 @@ public class Backup {
 			DatabaseManager.registerDatabase(database);
 			Backup backup = new Backup("admin", null, "backup", URIUtils.encodeXmldbUriFor(args[0]));
 			backup.backup(false, null);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
+            System.exit(0);
 		}
 	}
 }

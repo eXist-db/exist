@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2011 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.backup;
 
 import java.io.File;
@@ -44,6 +65,7 @@ public class Main {
 	private final static int RESTORE_OPT = 'r';
 	private final static int OPTION_OPT = 'o';
 	private final static int GUI_OPT = 'U';
+	private final static int QUIET_OPT = 'q';
 
 	private final static CLOptionDescriptor OPTIONS[] =
 		new CLOptionDescriptor[] {
@@ -93,7 +115,13 @@ public class Main {
 				CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED,
 				OPTION_OPT,
 				"specify extra options: property=value. For available properties see "
-					+ "client.properties.")};
+                + "client.properties."),
+			new CLOptionDescriptor(
+				"quiet",
+				CLOptionDescriptor.ARGUMENT_DISALLOWED,
+				QUIET_OPT,
+				"be quiet. Just print errors.")
+    };
 
 	/**
 	 * Constructor for Main.
@@ -134,6 +162,7 @@ public class Main {
 		boolean doBackup = false;
 		boolean doRestore = false;
 		boolean guiMode = false;
+		boolean quiet = false;
 		for (int i = 0; i < size; i++) {
 			option = (CLOption) opt.get(i);
 			switch (option.getId()) {
@@ -143,6 +172,9 @@ public class Main {
 				case GUI_OPT :
 					guiMode = true;
 					break;
+                case QUIET_OPT :
+                    quiet = true;
+                    break;
 				case OPTION_OPT :
 					properties.setProperty(option.getArgument(0), option.getArgument(1));
 					break;
@@ -235,15 +267,7 @@ public class Main {
 						XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup),
 						properties);
 					backup.backup(guiMode, null);
-				} catch (XMLDBException e) {
-					reportError(e);
-				} catch (IOException e) {
-					reportError(e);
-				} catch (SAXException e) {
-					System.err.println("ERROR: " + e.getMessage());
-					System.err.println("caused by ");
-					e.getException().printStackTrace();
-				} catch (URISyntaxException e) {
+				} catch (Exception e) {
 					reportError(e);
 				}
 			}
@@ -269,17 +293,7 @@ public class Main {
 							new File(optionRestore),
 							properties.getProperty("uri", "xmldb:exist://"));
 					restore.restore(guiMode, null);
-				} catch (FileNotFoundException e) {
-					reportError(e);
-				} catch (ParserConfigurationException e) {
-					reportError(e);
-				} catch (SAXException e) {
-					reportError(e);
-				} catch (XMLDBException e) {
-					reportError(e);
-				} catch (IOException e) {
-					reportError(e);
-				} catch (URISyntaxException e) {
+				} catch (Exception e) {
 					reportError(e);
 				}
 			}
@@ -291,19 +305,20 @@ public class Main {
 					properties.getProperty("user", "admin"),
 					optionDbaPass == null ? optionPass : optionDbaPass);
 			shutdown(root);
-		} catch (XMLDBException e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			reportError(e);
 		}
 		System.exit(0);
 	}
 
 	private final static void reportError(Throwable e) {
-		System.err.println("ERROR: " + e.getMessage());
 		e.printStackTrace();
 		if (e.getCause() != null) {
 			System.err.println("caused by ");
 			e.getCause().printStackTrace();
 		}
+
+        System.exit(1);
 	}
 
 	private final static void printUsage() {
@@ -328,6 +343,11 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		process(args);
+        try {
+            process(args);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 	}
 }
