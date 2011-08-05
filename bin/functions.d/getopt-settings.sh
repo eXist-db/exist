@@ -99,10 +99,11 @@ get_client_props() {
     while IFS="=" read -r key value
     do
 	case "${key}" in
-	    !(#*) )
+	    \#* ) ;;
+            * )
                 #echo "Read client properties key: ${key}, value: ${value}"
 		CLIENT_PROPS["${key}"]="${value}"
-     ;;
+		;;
   esac
 done < ${EXIST_HOME}/client.properties
 
