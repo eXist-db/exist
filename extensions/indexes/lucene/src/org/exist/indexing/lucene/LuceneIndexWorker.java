@@ -692,6 +692,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             reader = index.getReader();
             for (QName qname : qnames) {
+            	System.out.println("QNAME: " + qname.toString());
                 String field = encodeQName(qname);
                 TermEnum terms;
                 if (start == null)
@@ -997,8 +998,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
             short localNameId = (short) ((l >>> 32) & 0xFFFFL);
             byte type = (byte) (l & 0xFFL);
+            if (namespaceId < 0 || localNameId < 0)
+            	return null;
             String namespaceURI = symbols.getNamespace(namespaceId);
             String localName = symbols.getName(localNameId);
+            if (namespaceURI == null || localName == null)
+            	return null;
             QName qname = new QName(localName, namespaceURI, "");
             qname.setNameType(type);
             return qname;
