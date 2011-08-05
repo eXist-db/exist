@@ -327,23 +327,15 @@ public class Backup
                 if( resource instanceof ExtendedResource ) {
                     ( (ExtendedResource)resource ).getContentIntoAStream( os );
                 } else {
+                    writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
 
-                    try {
-                        writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
-
-                        // write resource to contentSerializer
-                        contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-                        contentSerializer.setOutput( writer, defaultOutputProperties );
-                        ( (EXistResource)resource ).setLexicalHandler( contentSerializer );
-                        ( (XMLResource)resource ).getContentAsSAX( contentSerializer );
-                        SerializerPool.getInstance().returnObject( contentSerializer );
-                        writer.flush();
-                    }
-                    catch( Exception e ) {
-                        System.err.println( "An exception occurred while writing the resource: " + e.getMessage() );
-                        e.printStackTrace();
-                        continue;
-                    }
+                    // write resource to contentSerializer
+                    contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+                    contentSerializer.setOutput( writer, defaultOutputProperties );
+                    ( (EXistResource)resource ).setLexicalHandler( contentSerializer );
+                    ( (XMLResource)resource ).getContentAsSAX( contentSerializer );
+                    SerializerPool.getInstance().returnObject( contentSerializer );
+                    writer.flush();
                 }
                 output.closeEntry();
                 EXistResource ris = (EXistResource)resource;
@@ -392,6 +384,7 @@ public class Backup
             }
             catch( XMLDBException e ) {
                 System.err.println( "Failed to backup resource " + resources[i] + " from collection " + current.getName() );
+                throw e;
             }
         }
 
@@ -444,8 +437,9 @@ public class Backup
             Backup backup = new Backup( "admin", null, "backup", URIUtils.encodeXmldbUriFor( args[0] ) );
             backup.backup( false, null );
         }
-        catch( Exception e ) {
+        catch( Throwable e ) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 

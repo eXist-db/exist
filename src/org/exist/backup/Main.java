@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2011 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.backup;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
@@ -36,9 +57,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 
 /**
- * Main.java.
- *
- * @author  Wolfgang Meier
+ * Main.java
+ * 
+ * @author Wolfgang Meier
  */
 public class Main
 {
@@ -51,6 +72,7 @@ public class Main
     private final static int                  RESTORE_OPT    = 'r';
     private final static int                  OPTION_OPT     = 'o';
     private final static int                  GUI_OPT        = 'U';
+    private final static int                  QUIET_OPT      = 'q';
 
     private final static CLOptionDescriptor[] OPTIONS        = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
@@ -61,7 +83,8 @@ public class Main
         new CLOptionDescriptor( "backup", CLOptionDescriptor.ARGUMENT_REQUIRED, BACKUP_OPT, "backup the specified collection." ),
         new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED, BACKUP_DIR_OPT, "specify the directory to use for backups." ),
         new CLOptionDescriptor( "restore", CLOptionDescriptor.ARGUMENT_REQUIRED, RESTORE_OPT, "read the specified restore file and restore the " + "resources described there." ),
-        new CLOptionDescriptor( "option", CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED, OPTION_OPT, "specify extra options: property=value. For available properties see " + "client.properties." )
+        new CLOptionDescriptor( "option", CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED, OPTION_OPT, "specify extra options: property=value. For available properties see " + "client.properties." ),
+        new CLOptionDescriptor( "quiet", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUIET_OPT, "be quiet. Just print errors." )
     };
 
     /**
@@ -116,6 +139,7 @@ public class Main
         boolean              doBackup      = false;
         boolean              doRestore     = false;
         boolean              guiMode       = false;
+        boolean              quiet         = false;
 
         for( CLOption option : opts ) {
 
@@ -131,6 +155,10 @@ public class Main
                     break;
                 }
 
+                case QUIET_OPT: {
+                    quiet = true;
+                    break;
+                }
                 case OPTION_OPT: {
                     properties.setProperty( option.getArgument( 0 ), option.getArgument( 1 ) );
                     break;
@@ -230,18 +258,7 @@ public class Main
                     Backup backup = new Backup( properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), properties.getProperty( "backup-dir", "backup" ), XmldbURI.xmldbUriFor( properties.getProperty( "uri", "xmldb:exist://" ) + optionBackup ), properties );
                     backup.backup( guiMode, null );
                 }
-                catch( XMLDBException e ) {
-                    reportError( e );
-                }
-                catch( IOException e ) {
-                    reportError( e );
-                }
-                catch( SAXException e ) {
-                    System.err.println( "ERROR: " + e.getMessage() );
-                    System.err.println( "caused by " );
-                    e.getException().printStackTrace();
-                }
-                catch( URISyntaxException e ) {
+                catch( Exception e ) {
                     reportError( e );
                 }
             }
@@ -266,22 +283,7 @@ public class Main
                     Restore restore = new Restore( properties.getProperty( "user", "admin" ), optionPass, optionDbaPass, new File( optionRestore ), properties.getProperty( "uri", "xmldb:exist://" ) );
                     restore.restore( guiMode, null );
                 }
-                catch( FileNotFoundException e ) {
-                    reportError( e );
-                }
-                catch( ParserConfigurationException e ) {
-                    reportError( e );
-                }
-                catch( SAXException e ) {
-                    reportError( e );
-                }
-                catch( XMLDBException e ) {
-                    reportError( e );
-                }
-                catch( IOException e ) {
-                    reportError( e );
-                }
-                catch( URISyntaxException e ) {
+                catch( Exception e ) {
                     reportError( e );
                 }
             }
@@ -291,8 +293,8 @@ public class Main
             Collection root = DatabaseManager.getCollection( properties.getProperty( "uri", "xmldb:exist://" ) + DBBroker.ROOT_COLLECTION, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
             shutdown( root );
         }
-        catch( XMLDBException e1 ) {
-            e1.printStackTrace();
+        catch( Exception e ) {
+            reportError( e );
         }
         System.exit( 0 );
     }
@@ -300,13 +302,14 @@ public class Main
 
     private static void reportError( Throwable e )
     {
-        System.err.println( "ERROR: " + e.getMessage() );
         e.printStackTrace();
 
         if( e.getCause() != null ) {
             System.err.println( "caused by " );
             e.getCause().printStackTrace();
         }
+        
+        System.exit(1);
     }
 
 
@@ -338,6 +341,12 @@ public class Main
 
     public static void main( String[] args )
     {
-        process( args );
+        try {
+            process( args );
+        }
+        catch( Throwable e ) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }
