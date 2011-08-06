@@ -20,8 +20,9 @@
  */
 package org.exist.dom;
 
-import junit.framework.TestCase;
-import org.apache.log4j.BasicConfigurator;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.CollectionConfigurationManager;
@@ -34,6 +35,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
@@ -53,6 +55,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test basic {@link org.exist.dom.NodeSet} operations to ensure that
@@ -61,16 +67,16 @@ import java.io.File;
  * @author wolf
  *
  */
-public class BasicNodeSetTest extends TestCase {
+public class BasicNodeSetTest {
 
-	private final static String NESTED_XML =
+    private final static String NESTED_XML =
         "<section n='1'>" +
-		    "<section n='1.1'>" +
-		        "<section n='1.1.1'>" +
-		            "<para n='1.1.1.1'/>" +
-		            "<para n='1.1.1.2'/>" +
-		            "<para n='1.1.1.3'/>" +
-	            "</section>" +
+                    "<section n='1.1'>" +
+                        "<section n='1.1.1'>" +
+                            "<para n='1.1.1.1'/>" +
+                            "<para n='1.1.1.2'/>" +
+                            "<para n='1.1.1.3'/>" +
+                    "</section>" +
                 "<section n='1.1.2'>" +
                     "<para n='1.1.2.1'/>" +
                 "</section>" +
@@ -91,422 +97,362 @@ public class BasicNodeSetTest extends TestCase {
         "	</index>" +
     	"</collection>";
 
-	private static String directory = "samples/shakespeare";
+    private static String directory = "samples/shakespeare";
     
-//    private static File dir = new File(directory);
+    //private static File dir = new File(directory);
     private static File dir = null;
     static {
       String existHome = System.getProperty("exist.home");
       File existDir = existHome==null ? new File(".") : new File(existHome);
       dir = new File(existDir,directory);
     }
+
+    private static BrokerPool pool = null;
+    private static Collection root = null;
+    private static DBBroker broker = null;
+    private static Sequence seqSpeech = null;
     
-	public static void main(String[] args) {
-		BasicConfigurator.configure();
-		junit.textui.TestRunner.run(BasicNodeSetTest.class);
-	}
-
-	private BrokerPool pool = null;
-	private Collection root = null;
-	
-	public void testSelectors() {
-		DBBroker broker = null;
-        try {
-        	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            
-            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
-            Sequence seq = executeQuery(broker, "//SPEECH", 2628, null);
-            
-            System.out.println("Testing ChildSelector ...");
-            NameTest test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
-            NodeSelector selector = new ChildSelector(seq.toNodeSet(), -1);
-            NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
-            		test.getName(), selector);
-            assertEquals(9492, set.getLength());
-            System.out.println("ChildSelector: PASS");
-            
-            System.out.println("Testing DescendantOrSelfSelector ...");
-            selector = new DescendantOrSelfSelector(seq.toNodeSet(), -1);
-            test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
-            		test.getName(), selector);
-            assertEquals(2628, set.getLength());
-            System.out.println("DescendantOrSelfSelector: PASS");
-            
-            System.out.println("Testing AncestorSelector ...");
-            test = new NameTest(Type.ELEMENT, new QName("ACT", ""));
-            selector = new AncestorSelector(seq.toNodeSet(), -1, false, true);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
-            		test.getName(), selector);
-            assertEquals(15, set.getLength());
-            System.out.println("AncestorSelector: PASS");
-            
-            System.out.println("Testing AncestorSelector: self");
-            test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
-            NodeSet ns = seq.toNodeSet();
-            System.out.println("ns = " + ns.getLength());
-            selector = new AncestorSelector(ns, -1, true, true);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
-            		test.getName(), selector);
-            assertEquals(2628, set.getLength());
-            System.out.println("AncestorSelector: PASS");
-            
-            System.out.println("Testing DescendantSelector ...");
-            seq = executeQuery(broker, "//SCENE", 72, null);
-            test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
-            selector = new DescendantSelector(seq.toNodeSet(), -1);
-            set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), 
-            		test.getName(), selector);
-            assertEquals(2639, set.getLength());
-            System.out.println("DescendantSelector: PASS");
-        } catch (Exception e) {
-            e.printStackTrace();
-	        fail(e.getMessage());
-        } finally {
-        	if (pool != null) pool.release(broker);
-        }
-	}
-	
-	public void testAxes() {
-		DBBroker broker = null;
-        try {
-        	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
-            
-            Sequence smallSet = executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']", 1, null);
-            Sequence largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']", 160, null);
-            Sequence outerSet = executeQuery(broker, "//SCENE[TITLE &= 'closet']", 1, null);
-            
-            NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
-            NodeSet speakers = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                    docs, test.getName(), null);
-            
-            System.out.println("Testing NodeSetHelper.selectParentChild ...");
-            NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(1, result.getLength());
-            String value = serialize(broker, result.itemAt(0));
-            System.out.println("NodeSetHelper.selectParentChild: " + value);
-            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
-            
-            result = NodeSetHelper.selectParentChild(speakers, largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(160, result.getLength());
-            System.out.println("NodeSetHelper.selectParentChild: PASS");
-            
-            System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
-            result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1, true);
-            assertEquals(56, result.getLength());
-            System.out.println("AbstractNodeSet.selectAncestorDescendant: PASS");
-            
-            System.out.println("Testing AbstractNodeSet.selectAncestorDescendant2 ...");
-            result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT,
-                true, -1, true);
-            assertEquals(1, result.getLength());
-            System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
-            
-            System.out.println("Testing AbstractNodeSet.getParents ...");
-            result = ((AbstractNodeSet)largeSet).getParents(-1);
-            assertEquals(49, result.getLength());
-            System.out.println("AbstractNodeSet.getParents: PASS");
-            
-            test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
-            NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                    docs, test.getName(), null);
-            scenes.getLength();
-            System.out.println("Testing AbstractNodeSet.selectAncestors ...");
-            result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
-            assertEquals(47, result.getLength());
-            System.out.println("AbstractNodeSet.selectAncestors: PASS");
-            
-            NodeProxy proxy = (NodeProxy) smallSet.itemAt(0);
-            System.out.println("Testing NodeProxy.getParents ...");
-            result = proxy.getParents(-1);
-            assertEquals(1, result.getLength());
-            System.out.println("NodeProxy.getParents: PASS");
-            
-            result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
-            assertEquals(1, result.getLength());
-            
-            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
-            test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
-            NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                    docs, test.getName(), null);
-            System.out.println("LINE: " + lines.getLength());
-            System.out.println("SPEAKER: " + largeSet.getItemCount());
-            result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
-            assertEquals(1451, result.getLength());
-            
-            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
-            result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
-            assertEquals(160, result.getLength());
-            
-            System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
-            Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
-            test = new NameTest(Type.ELEMENT, new QName("para", ""));
-            NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                    docs, test.getName(), null);
-            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-            assertEquals(3, result.getLength());
-            
-            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
-            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-            assertEquals(2, result.getLength());
-            
-            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.2')]", 3, null);
-            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-            assertEquals(4, result.getLength());
-            
-            nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
-            test = new NameTest(Type.ELEMENT, new QName("section", ""));
-            NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                    docs, test.getName(), null);
-            result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
-            assertEquals(1, result.getLength());
-        } catch (Exception e) {
-        	e.printStackTrace();
-	        fail(e.getMessage());
-        } finally {
-        	if (pool != null) pool.release(broker);
-        }
-	}
-	
-    public void testOptimizations() {
-        DBBroker broker = null;
-        try {
-            assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
-
-            System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
-            // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
-            ExtNodeSet nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
-            NodeSet children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
-            			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
-            assertEquals(3, children.getLength());
-            
-            // parent set: 1.1; child set: 1.1.1, 1.1.2
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
-            children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
-            			new QName("section", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
-            assertEquals(2, children.getLength());
-            
-            // parent set: 1, 1.1, 1.1.1, 1.1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
-            // problem: ancestor set contains nested nodes
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
-            children = 
-            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
-        			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
-            assertEquals(4, children.getLength());
-            
-            // parent set: 1.1, 1.1.2, 1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
-            // problem: ancestor set contains nested nodes
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
-                		Constants.CHILD_AXIS, docs, nestedSet, -1);
-            assertEquals(2, children.getLength());
-            
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
-                		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
-            assertEquals(4, children.getLength());
-            
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
-                		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
-            assertEquals(5, children.getLength());
-            
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
-                		Constants.DESCENDANT_SELF_AXIS, docs, nestedSet, -1);
-            assertEquals(1, children.getLength());
-            
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
-                		Constants.ATTRIBUTE_AXIS, docs, nestedSet, -1);
-            assertEquals(1, children.getLength());
-            
-            nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
-            children = 
-                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
-                		Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
-            assertEquals(7, children.getLength());
-            
-            System.out.println("------------ PASSED: NativeElementIndex.findChildNodesByTagName ---------");
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
-        }
+    @Test
+    public void childSelector() throws XPathException {
+        NodeSelector selector = new ChildSelector(seqSpeech.toNodeSet(), -1);
+        NameTest test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
+        NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seqSpeech.getDocumentSet(), test.getName(), selector);
+        
+        assertEquals(9492, set.getLength());
     }
     
-	public void testVirtualNodeSet() {
-		DBBroker broker = null;
-        try {
-        	assertNotNull(pool);
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);
-            
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-            
-            executeQuery(broker, "//*/LINE", 9492, null);
-            executeQuery(broker, "//*/LINE/*", 61, null);
-            executeQuery(broker, "//*/LINE/text()", 9485, null);
-            executeQuery(broker, "//SCENE/*/LINE", 9464, null);
-            executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
-            executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
-            executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
-            executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
-            executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
-            
-            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/preceding-sibling::*", 65, null);
-            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/following-sibling::*", 1, null);
-        } catch (Exception e) {
-        	e.printStackTrace();
-	        fail(e.getMessage());
-        } finally {
-        	if (pool != null) pool.release(broker);
-        }
-	}
-	
-	private Sequence executeQuery(DBBroker broker, String query, int expected,
-			String expectedResult) throws XPathException, SAXException {
-		XQuery xquery = broker.getXQueryService();
-		assertNotNull(xquery);
-		Sequence seq = xquery.execute(query, null, AccessContext.TEST);
-		assertNotNull(seq);
-		assertEquals(expected, seq.getItemCount());
-		System.out.println("Found: " + seq.getItemCount() + " for query:\n" + query);
-		if (expectedResult != null) {
-	        Item item = seq.itemAt(0);
-	        String value = serialize(broker, item);
-	        assertEquals(expectedResult, value);
-		}
-		return seq;
-	}
+    @Test
+    public void descendantOrSelfSelector() throws XPathException {
+        NodeSelector selector = new DescendantOrSelfSelector(seqSpeech.toNodeSet(), -1);
+        NameTest test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
+        NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seqSpeech.getDocumentSet(), test.getName(), selector);
+        
+        assertEquals(2628, set.getLength());
+    }
+    
+    @Test
+    public void ancestorSelector() throws XPathException {
+        NodeSelector selector = new AncestorSelector(seqSpeech.toNodeSet(), -1, false, true);
+        NameTest test = new NameTest(Type.ELEMENT, new QName("ACT", ""));
+        NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seqSpeech.getDocumentSet(),  test.getName(), selector);
+        
+        assertEquals(15, set.getLength());
+    }
+    
+    @Test
+    public void ancestorSelector_self() throws XPathException {
+        NodeSet ns = seqSpeech.toNodeSet();
+        NodeSelector selector = new AncestorSelector(ns, -1, true, true);
+        NameTest test = new NameTest(Type.ELEMENT, new QName("SPEECH", ""));
+        NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seqSpeech.getDocumentSet(), test.getName(), selector);
+        
+        assertEquals(2628, set.getLength());
+    }
 
-	private String serialize(DBBroker broker, Item item) throws SAXException, XPathException {
-		Serializer serializer = broker.getSerializer();
-		assertNotNull(serializer);
-        serializer.reset();
-		String value;
-		if (Type.subTypeOf(item.getType(), Type.NODE))
-			value = serializer.serialize((NodeValue) item);
-		else
-			value = item.getStringValue();
-		return value;
-	}
+    @Test
+    public void descendantSelector() throws XPathException, SAXException {
+        Sequence seq = executeQuery(broker, "//SCENE", 72, null);
+        NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
+        NodeSelector selector = new DescendantSelector(seq.toNodeSet(), -1);
+        NodeSet set = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, seq.getDocumentSet(), test.getName(), selector);
+        
+        assertEquals(2639, set.getLength());
+    }
 	
-	protected void setUp() throws Exception {        
-        DBBroker broker = null;
+    @Test
+    public void testAxes() throws XPathException, SAXException {
+            
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+
+        Sequence smallSet = executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']", 1, null);
+        Sequence largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']", 160, null);
+        Sequence outerSet = executeQuery(broker, "//SCENE[TITLE &= 'closet']", 1, null);
+
+        NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
+        NodeSet speakers = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                docs, test.getName(), null);
+
+        System.out.println("Testing NodeSetHelper.selectParentChild ...");
+        NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+        assertEquals(1, result.getLength());
+        String value = serialize(broker, result.itemAt(0));
+        System.out.println("NodeSetHelper.selectParentChild: " + value);
+        assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
+
+        result = NodeSetHelper.selectParentChild(speakers, largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+        assertEquals(160, result.getLength());
+        System.out.println("NodeSetHelper.selectParentChild: PASS");
+
+        System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
+        result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1, true);
+        assertEquals(56, result.getLength());
+        System.out.println("AbstractNodeSet.selectAncestorDescendant: PASS");
+
+        System.out.println("Testing AbstractNodeSet.selectAncestorDescendant2 ...");
+        result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT,
+            true, -1, true);
+        assertEquals(1, result.getLength());
+        System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
+
+        System.out.println("Testing AbstractNodeSet.getParents ...");
+        result = ((AbstractNodeSet)largeSet).getParents(-1);
+        assertEquals(49, result.getLength());
+        System.out.println("AbstractNodeSet.getParents: PASS");
+
+        test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
+        NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                docs, test.getName(), null);
+        scenes.getLength();
+        System.out.println("Testing AbstractNodeSet.selectAncestors ...");
+        result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
+        assertEquals(47, result.getLength());
+        System.out.println("AbstractNodeSet.selectAncestors: PASS");
+
+        NodeProxy proxy = (NodeProxy) smallSet.itemAt(0);
+        System.out.println("Testing NodeProxy.getParents ...");
+        result = proxy.getParents(-1);
+        assertEquals(1, result.getLength());
+        System.out.println("NodeProxy.getParents: PASS");
+
+        result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
+        assertEquals(1, result.getLength());
+
+        largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
+        test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
+        NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                docs, test.getName(), null);
+        System.out.println("LINE: " + lines.getLength());
+        System.out.println("SPEAKER: " + largeSet.getItemCount());
+        result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
+        assertEquals(1451, result.getLength());
+
+        largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
+        result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
+        assertEquals(160, result.getLength());
+
+        System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
+        Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
+        test = new NameTest(Type.ELEMENT, new QName("para", ""));
+        NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                docs, test.getName(), null);
+        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+        assertEquals(3, result.getLength());
+
+        nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+        assertEquals(2, result.getLength());
+
+        nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.2')]", 3, null);
+        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+        assertEquals(4, result.getLength());
+
+        nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
+        test = new NameTest(Type.ELEMENT, new QName("section", ""));
+        NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                docs, test.getName(), null);
+        result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
+        assertEquals(1, result.getLength());
+        
+    }
+	
+    @Test
+    public void testOptimizations() throws XPathException, SAXException {
+            
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+
+        System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
+        // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+        ExtNodeSet nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
+        NodeSet children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+                            new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+        assertEquals(3, children.getLength());
+
+        // parent set: 1.1; child set: 1.1.1, 1.1.2
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+                            new QName("section", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+        assertEquals(2, children.getLength());
+
+        // parent set: 1, 1.1, 1.1.1, 1.1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+        // problem: ancestor set contains nested nodes
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+                            new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+        assertEquals(4, children.getLength());
+
+        // parent set: 1.1, 1.1.2, 1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+        // problem: ancestor set contains nested nodes
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                            Constants.CHILD_AXIS, docs, nestedSet, -1);
+        assertEquals(2, children.getLength());
+
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                            Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
+        assertEquals(4, children.getLength());
+
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                            Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
+        assertEquals(5, children.getLength());
+
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
+                            Constants.DESCENDANT_SELF_AXIS, docs, nestedSet, -1);
+        assertEquals(1, children.getLength());
+
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                            Constants.ATTRIBUTE_AXIS, docs, nestedSet, -1);
+        assertEquals(1, children.getLength());
+
+        nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+        children = 
+            broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                            Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
+        assertEquals(7, children.getLength());
+
+        System.out.println("------------ PASSED: NativeElementIndex.findChildNodesByTagName ---------");
+    }
+    
+    @Test
+    public void virtualNodeSet() throws XPathException, SAXException {
+
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+
+        executeQuery(broker, "//*/LINE", 9492, null);
+        executeQuery(broker, "//*/LINE/*", 61, null);
+        executeQuery(broker, "//*/LINE/text()", 9485, null);
+        executeQuery(broker, "//SCENE/*/LINE", 9464, null);
+        executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
+        executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
+        executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
+        executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
+        executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
+
+        executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/preceding-sibling::*", 65, null);
+        executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/following-sibling::*", 1, null);
+    }
+	
+    private static Sequence executeQuery(DBBroker broker, String query, int expected, String expectedResult) throws XPathException, SAXException {
+        XQuery xquery = broker.getXQueryService();
+        Sequence seq = xquery.execute(query, null, AccessContext.TEST);
+        assertEquals(expected, seq.getItemCount());
+        
+        if (expectedResult != null) {
+            Item item = seq.itemAt(0);
+            String value = serialize(broker, item);
+            assertEquals(expectedResult, value);
+        }
+        return seq;
+    }
+
+    private static String serialize(DBBroker broker, Item item) throws SAXException, XPathException {
+        Serializer serializer = broker.getSerializer();
+	
+        serializer.reset();
+        String value;
+        if(Type.subTypeOf(item.getType(), Type.NODE)) {
+            value = serializer.serialize((NodeValue) item);
+        } else {	
+            value = item.getStringValue();
+        }
+        return value;
+    }
+	
+    @BeforeClass
+    public static void setUp() throws Exception {
         TransactionManager transact = null;
         Txn transaction = null;
         try {
-        	pool = startDB();
-        	assertNotNull(pool);
+            pool = startDB();
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);            
             transact = pool.getTransactionManager();
-            assertNotNull(transact);
             transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
-            System.out.println("BasicNodeSetTest#setUp ...");
 
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
-            assertNotNull(root);
             broker.saveCollection(transaction, root);
 
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG1);
-            
-            
+
             File files[] = dir.listFiles(new XMLFilenameFilter());
-            assertNotNull(files);
-            
+
             File f;
             IndexInfo info;
+
             // store some documents.
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
-                try {
-                    info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                    assertNotNull(info);
-                    root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
-                }
+                info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             }
-            
+
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
-            //TODO : unlock the collection here ?
-            assertNotNull(info);
             root.store(transaction, broker, info, NESTED_XML, false);
-            
+
             transact.commit(transaction);
-            System.out.println("BasicNodeSetTest#setUp finished.");
-        } catch (Exception e) {
-        	transact.abort(transaction);
-            e.printStackTrace();
-	        fail(e.getMessage()); 	        
-        } finally {
-        	if (pool != null) pool.release(broker);
+            pool.release(broker);
+            
+
+            //for the tests
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+            seqSpeech = executeQuery(broker, "//SPEECH", 2628, null);
+            
+        } catch(Exception e) {
+            if (pool != null) {
+                pool.release(broker);
+                BrokerPool.stopAll(false);
+                pool = null;
+                root = null;
+            }
+            throw e;
         }
-	}
+    }
 	
-	protected BrokerPool startDB() {
+    private static BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
         String home, file = "conf.xml";
         home = System.getProperty("exist.home");
-        if (home == null)
+        if (home == null) {
             home = System.getProperty("user.dir");
-        try {
-            Configuration config = new Configuration(file, home);
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
         }
-        return null;
+        
+        Configuration config = new Configuration(file, home);
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
     }
 
-    protected void tearDown() {
-        DBBroker broker = null;
+    @AfterClass
+    public static void tearDown() {
+        
         TransactionManager transact = null;
         Txn transaction = null;
-        try {
-            broker = pool.get(SecurityManager.SYSTEM_USER);
-            assertNotNull(broker);            
+        try {    
             transact = pool.getTransactionManager();
-            assertNotNull(transact);
             transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
-            System.out.println("BasicNodeSetTest#tearDown >>>");
-            
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
-            assertNotNull(root);
-//            broker.removeCollection(transaction, root);
+//          broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-            transact.abort(transaction);
-            e.printStackTrace();
+        } catch(Exception e) {
+            if(transaction != null) {
+                transact.abort(transaction);
+            }
         } finally {
             if (pool != null) pool.release(broker);
         }
