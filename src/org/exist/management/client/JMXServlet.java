@@ -78,7 +78,7 @@ public class JMXServlet extends HttpServlet {
 	public JMXServlet() {
 	}
 
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+	protected void service(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		Element root = null;
 		

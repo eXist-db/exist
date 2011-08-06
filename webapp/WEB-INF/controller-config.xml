@@ -25,7 +25,7 @@
     <forward pattern="/axis-servlet/AdminServlet" servlet="AdminServlet"/>
 
     <!-- The JMX status servlet used to monitor the db -->
-    <forward pattern="/status" servlet="JMXServlet"/>
+    <!--forward pattern="/status" servlet="JMXServlet"/-->
     
     <!-- 
         ++ Default configuration: main web application is served from the
