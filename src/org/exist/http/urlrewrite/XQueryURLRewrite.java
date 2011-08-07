@@ -613,6 +613,10 @@ public class XQueryURLRewrite implements Filter {
 		} catch (EXistException e) {
             throw new ServletException("Could not intialize db: " + e.getMessage(), e);
 		}
+		
+		defaultUser = pool.getSecurityManager().getUser(username);
+		if (!defaultUser.validate(password))
+			throw new ServletException("Could not initialize URL rewriting. Bad password for user " + username);
     }
 
     private void logResult(DBBroker broker, Sequence result) throws IOException, SAXException {
