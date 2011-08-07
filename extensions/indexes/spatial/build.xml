@@ -26,28 +26,39 @@
 	    <echo message="------------------------------------------------------"/>
 	    <echo message="Downloading libraries required by the spatial index..."/>
 	    <echo message="------------------------------------------------------"/>
+	    
 		<get src="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1.1/geoapi-nogenerics-2.1.1.jar" 
 			dest="${lib.dir}/geoapi-nogenerics-2.1.1.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-api/2.4.5/gt2-api-2.4.5.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-api/2.4.5/gt2-api-2.4.5.jar" 
 			dest="${lib.dir}/gt2-api-2.4.5.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-epsg-extension/2.4.5/gt2-epsg-extension-2.4.5.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-epsg-extension/2.4.5/gt2-epsg-extension-2.4.5.jar" 
 			dest="${lib.dir}/gt2-epsg-extension-2.4.5.jar" verbose="true" usetimestamp="true" />	
-	    <get src="http://maven.geotools.fr/repository/org/geotools/gt2-epsg-wkt/2.4.5/gt2-epsg-wkt-2.4.5.jar" 
+			
+	    <get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-epsg-wkt/2.4.5/gt2-epsg-wkt-2.4.5.jar" 
 			dest="${lib.dir}/gt2-epsg-wkt-2.4.5.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-main/2.4.5/gt2-main-2.4.5.jar"
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-main/2.4.5/gt2-main-2.4.5.jar"
 			dest="${lib.dir}/gt2-main-2.4.5.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-metadata/2.4.5/gt2-metadata-2.4.5.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-metadata/2.4.5/gt2-metadata-2.4.5.jar"
 			dest="${lib.dir}/gt2-metadata-2.4.5.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-referencing/2.4.5/gt2-referencing-2.4.5.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-referencing/2.4.5/gt2-referencing-2.4.5.jar" 
 			dest="${lib.dir}/gt2-referencing-2.4.5.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/org/geotools/gt2-xml/2.4.5/gt2-xml-2.4.5.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-xml/2.4.5/gt2-xml-2.4.5.jar" 
 			dest="${lib.dir}/gt2-xml-2.4.5.jar" verbose="true" usetimestamp="true" />
+			
 		<!-- hsqldb-1.8.0.7.jar -->
-		<get src="http://maven.geotools.fr/repository/javax/units/jsr108/0.01/jsr108-0.01.jar"
+		<get src="http://download.osgeo.org/webdav/geotools/javax/units/jsr108/0.01/jsr108-0.01.jar"
 			dest="${lib.dir}/jsr108-0.01.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/com/vividsolutions/jts/1.8/jts-1.8.jar" 
+			
+		<get src="http://download.osgeo.org/webdav/geotools/com/vividsolutions/jts/1.8/jts-1.8.jar" 
 			dest="${lib.dir}/jts-1.8.jar" verbose="true" usetimestamp="true" />
-		<get src="http://maven.geotools.fr/repository/java3d/vecmath/1.3.1/vecmath-1.3.1.jar"
+			
+		<get src="http://download.osgeo.org/webdav/geotools/java3d/vecmath/1.3.1/vecmath-1.3.1.jar"
 			dest="${lib.dir}/vecmath-1.3.1.jar" verbose="true" usetimestamp="true" />
 	</target>
 
@@ -70,11 +81,17 @@
     <available file="${resources.dir}/15385-SS7886-5i1.gml" property="15385-SS7886-5i1.present"/>
     
     <target name="download-15385-SS7886-5i1" unless="15385-SS7886-5i1.present">
-        <get src="http://www.ordnancesurvey.co.uk/docs/sample-data/os-mastermap-topography-layer-sample-data.gz" 
+        <get src="http://data.exist-db.org/spatial/os-mastermap-topography-layer-sample-data.gz" 
             dest="${resources.dir}/15385-SS7886-5i1.gz" verbose="true"/>
         <gunzip src="${resources.dir}/15385-SS7886-5i1.gz" 
             dest="${resources.dir}/15385-SS7886-5i1.gml"/>
         <delete file="${resources.dir}/15385-SS7886-5i1.gz" />
+        
+        <!-- Retrieve copy of the license -->
+        <get src="http://data.exist-db.org/spatial/ordnance-survey-discover-data-licence.pdf"
+            dest="${resources.dir}/ordnance-survey-discover-data-licence.pdf"/>
+        <get src="http://data.exist-db.org/spatial/README.txt"
+            dest="${resources.dir}/README.txt"/>
 	</target>
     
     <target name="test" depends="compile-tests, prepare-test-tresources">        
