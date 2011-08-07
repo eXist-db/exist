@@ -63,7 +63,10 @@ public class RandomText extends BasicFunction {
         for (int i = 0; i < max; i++) {
             if (text.length() > 0)
                 text.append(' ');
-            text.append(words[random.nextInt(words.length)]);
+            
+            if(words.length>0){
+                text.append(words[random.nextInt(words.length)]);
+            }
         }
         return new StringValue(text.toString());
     }
@@ -79,6 +82,8 @@ public class RandomText extends BasicFunction {
 		Occurrences[] occurrences = index.scanIndex(context, docs, null, null);
 		
 		List list = new ArrayList();
+        list.add("database");
+        list.add("xquery");
 		for (int i = 0; i < occurrences.length; i++) {
 		    list.add(occurrences[i].getTerm().toString());
 		}
