@@ -77,8 +77,15 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 	//		addAction(action3, 50, 0, 0);
 	//		addAction(action4, 50, 0, 0);
 	//		addAction(action5, 50, 0, 0);
-		} catch (Exception e) {            
-            fail(e.getMessage()); 
+		} catch (Exception e) {   
+             e.printStackTrace();
+            
+            Throwable t = e.getCause();
+            if(t instanceof org.exist.EXistException && t.getMessage().contains("legacy")){
+                fail("embedded error:" + t.getMessage());
+            } else {
+                fail(e.getMessage()); 
+            }
         }				
 	}
 	
