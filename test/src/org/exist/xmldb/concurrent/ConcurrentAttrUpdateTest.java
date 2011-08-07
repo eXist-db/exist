@@ -50,7 +50,13 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 			//addAction(new XQueryAction(URI + "/C1", "R1.xml", QUERY), 100, 100, 30);
 		} catch (Exception e) {   
             e.printStackTrace();
-            fail(e.getMessage()); 
+            
+            Throwable t = e.getCause();
+            if(t instanceof org.exist.EXistException && t.getMessage().contains("legacy")){
+                fail("embedded error:" + t.getMessage());
+            } else {
+                fail(e.getMessage()); 
+            }
         }				
 	}
 	
