@@ -104,7 +104,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
 
-            <test name="org.exist.indexing.spatial.AllSpatialTests"
+            <test name="org.exist.indexing.spatial.AllIndexTests"
                 todir="${junit.index.reports}" />
         </junit>
     </target>

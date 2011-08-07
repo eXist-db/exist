@@ -65,7 +65,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class GMLIndexTest extends TestCase {
 		
-	private final static String FILES[] = { "port-talbot.gml" };
+	private final static String FILES[] = { "15385-SS7886-5i1.gml" };
     static File existDir;
     static {
     	String existHome = System.getProperty("exist.home");
