@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 1999-2004 The Apache Software Foundation
 
@@ -13,9 +13,7 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-
-<!--+
+--><!--+
     | XSLT REC Compliant Version of IE5 Default Stylesheet
     |
     | Original version by Jonathan Marsh (jmarsh@microsoft.com)
@@ -25,20 +23,17 @@
     |
     | CVS $Id$
     +-->
-    
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-
-   <xsl:template match="/">
-      <HTML>
-         <xsl:call-template name="head"/>
-         <BODY>
-            <xsl:apply-templates/>
-         </BODY>
-      </HTML>
-   </xsl:template>
-
-   <xsl:template name="head">
-         <HEAD>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:template match="/">
+        <HTML>
+            <xsl:call-template name="head"/>
+            <BODY>
+                <xsl:apply-templates/>
+            </BODY>
+        </HTML>
+    </xsl:template>
+    <xsl:template name="head">
+        <HEAD>
             <STYLE>
               BODY  {background-color: white; color: black; font-family: monospace;}
                 .b  {cursor:pointer; color:red; font-weight:bold; text-decoration:none; padding-right: 2px;}
@@ -53,7 +48,8 @@
                 PRE {margin:0px; display:inline}
                 DIV {border:0; padding:0; margin:0;}
             </STYLE>
-            <SCRIPT><xsl:comment><![CDATA[
+            <SCRIPT>
+                <xsl:comment><![CDATA[
 function click(event) {
 
     var mark = event.target;
@@ -90,165 +86,162 @@ function click(event) {
 }  
 ]]></xsl:comment>
             </SCRIPT>
-         </HEAD>
-   </xsl:template>
+        </HEAD>
+    </xsl:template>
 
    <!-- match processing instructions -->
-   <xsl:template match="processing-instruction()">
-      <DIV class="e">
-         <SPAN class="m">&lt;?</SPAN>
-         <SPAN class="pi">
-            <xsl:value-of select="name(.)"/>
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="."/>
-         </SPAN>
-         <SPAN class="m">?></SPAN>
-      </DIV>
-   </xsl:template>
+    <xsl:template match="processing-instruction()">
+        <DIV class="e">
+            <SPAN class="m">&lt;?</SPAN>
+            <SPAN class="pi">
+                <xsl:value-of select="name(.)"/>
+                <xsl:text> </xsl:text>
+                <xsl:value-of select="."/>
+            </SPAN>
+            <SPAN class="m">?&gt;</SPAN>
+        </DIV>
+    </xsl:template>
 
    <!-- match text -->
-   <xsl:template match="text()">
-      <DIV class="e">
-         <SPAN class="t">
-            <xsl:value-of select="."/>
-         </SPAN>
-      </DIV>
-   </xsl:template>
+    <xsl:template match="text()">
+        <DIV class="e">
+            <SPAN class="t">
+                <xsl:value-of select="."/>
+            </SPAN>
+        </DIV>
+    </xsl:template>
 
    <!-- match comments -->
-   <xsl:template match="comment()">
-      <DIV class="e">
-         <SPAN class="b" onclick="click(event)">-</SPAN>
-         <SPAN class="m">&lt;!--</SPAN>
-         <SPAN class="c">
-            <PRE>
-               <xsl:value-of select="."/>
-            </PRE>
-         </SPAN>
-         <SPAN class="m">--></SPAN>
-      </DIV>
-   </xsl:template>
+    <xsl:template match="comment()">
+        <DIV class="e">
+            <SPAN class="b" onclick="click(event)">-</SPAN>
+            <SPAN class="m">&lt;!--</SPAN>
+            <SPAN class="c">
+                <PRE>
+                    <xsl:value-of select="."/>
+                </PRE>
+            </SPAN>
+            <SPAN class="m">--&gt;</SPAN>
+        </DIV>
+    </xsl:template>
 
    <!-- match attributes -->
-   <xsl:template match="@*">
-      <SPAN class="an">
-         <xsl:value-of select="name(.)"/>
-      </SPAN>
-      <SPAN class="m">="</SPAN>
-      <SPAN class="av">
-         <xsl:value-of select="."/>
-      </SPAN>
-      <SPAN class="m">"</SPAN>
-      <xsl:if test="position()!=last()">
-         <xsl:text> </xsl:text>
-      </xsl:if>
-   </xsl:template>
+    <xsl:template match="@*">
+        <SPAN class="an">
+            <xsl:value-of select="name(.)"/>
+        </SPAN>
+        <SPAN class="m">="</SPAN>
+        <SPAN class="av">
+            <xsl:value-of select="."/>
+        </SPAN>
+        <SPAN class="m">"</SPAN>
+        <xsl:if test="position()!=last()">
+            <xsl:text> </xsl:text>
+        </xsl:if>
+    </xsl:template>
    
    <!-- match empty elements -->
-   <xsl:template match="*[not(node())]">
-      <DIV class="e">
-        <SPAN class="m">&lt;</SPAN>
-        <SPAN class="en">
-           <xsl:value-of select="name(.)"/>
-        </SPAN>
-        <xsl:if test="@*">
-           <xsl:text> </xsl:text>
-        </xsl:if>
-        <xsl:apply-templates select="@*"/>
-        <xsl:apply-templates select="." mode="namespace"/>
-        <SPAN class="m">/&gt;</SPAN>
-      </DIV>
-   </xsl:template>
-
-   <!-- match elements with only text(), they are not closeable -->
-   <xsl:template match="*[text()][not(* or comment() or processing-instruction())]" priority="10">
-      <DIV class="e">
-        <SPAN class="m">&lt;</SPAN>
-        <SPAN class="en">
-           <xsl:value-of select="name(.)"/>
-        </SPAN>
-        <xsl:if test="@*">
-           <xsl:text> </xsl:text>
-        </xsl:if>
-        <xsl:apply-templates select="@*"/>
-        <xsl:apply-templates select="." mode="namespace"/>
-        <SPAN class="m">
-           <xsl:text>></xsl:text>
-        </SPAN>
-        <SPAN class="t">
-           <xsl:value-of select="."/>
-        </SPAN>
-        <SPAN class="m">&lt;/</SPAN>
-        <SPAN class="en">
-           <xsl:value-of select="name(.)"/>
-        </SPAN>
-        <SPAN class="m">
-           <xsl:text>></xsl:text>
-        </SPAN>
-      </DIV>
-   </xsl:template>
-
-   <xsl:template match="*[node()]">
-      <DIV class="e">
-         <DIV>
-            <SPAN class="b" onclick="click(event)">-</SPAN>
+    <xsl:template match="*[not(node())]">
+        <DIV class="e">
             <SPAN class="m">&lt;</SPAN>
             <SPAN class="en">
-               <xsl:value-of select="name(.)"/>
+                <xsl:value-of select="name(.)"/>
             </SPAN>
             <xsl:if test="@*">
-               <xsl:text> </xsl:text>
+                <xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:apply-templates select="@*"/>
+            <xsl:apply-templates select="." mode="namespace"/>
+            <SPAN class="m">/&gt;</SPAN>
+        </DIV>
+    </xsl:template>
+
+   <!-- match elements with only text(), they are not closeable -->
+    <xsl:template match="*[text()][not(* or comment() or processing-instruction())]" priority="10">
+        <DIV class="e">
+            <SPAN class="m">&lt;</SPAN>
+            <SPAN class="en">
+                <xsl:value-of select="name(.)"/>
+            </SPAN>
+            <xsl:if test="@*">
+                <xsl:text> </xsl:text>
             </xsl:if>
             <xsl:apply-templates select="@*"/>
             <xsl:apply-templates select="." mode="namespace"/>
             <SPAN class="m">
-               <xsl:text>></xsl:text>
+                <xsl:text>&gt;</xsl:text>
             </SPAN>
-         </DIV>
-         <DIV>
-            <xsl:apply-templates/>
+            <SPAN class="t">
+                <xsl:value-of select="."/>
+            </SPAN>
+            <SPAN class="m">&lt;/</SPAN>
+            <SPAN class="en">
+                <xsl:value-of select="name(.)"/>
+            </SPAN>
+            <SPAN class="m">
+                <xsl:text>&gt;</xsl:text>
+            </SPAN>
+        </DIV>
+    </xsl:template>
+    <xsl:template match="*[node()]">
+        <DIV class="e">
             <DIV>
-               <SPAN class="m">&lt;/</SPAN>
-               <SPAN class="en">
-                  <xsl:value-of select="name(.)"/>
-               </SPAN>
-               <SPAN class="m">
-                  <xsl:text>></xsl:text>
-               </SPAN>
+                <SPAN class="b" onclick="click(event)">-</SPAN>
+                <SPAN class="m">&lt;</SPAN>
+                <SPAN class="en">
+                    <xsl:value-of select="name(.)"/>
+                </SPAN>
+                <xsl:if test="@*">
+                    <xsl:text> </xsl:text>
+                </xsl:if>
+                <xsl:apply-templates select="@*"/>
+                <xsl:apply-templates select="." mode="namespace"/>
+                <SPAN class="m">
+                    <xsl:text>&gt;</xsl:text>
+                </SPAN>
             </DIV>
-         </DIV>
-      </DIV>
-   </xsl:template>
-
-   <xsl:template match="*" mode="namespace">
-     <xsl:variable name="context" select="."/>
-     <xsl:for-each select="namespace::node()">
-       <xsl:variable name="nsuri" select="."/>
-       <xsl:variable name="nsprefix" select="name()"/>
-       <xsl:choose>
-        <xsl:when test="$nsprefix = 'xml'">
+            <DIV>
+                <xsl:apply-templates/>
+                <DIV>
+                    <SPAN class="m">&lt;/</SPAN>
+                    <SPAN class="en">
+                        <xsl:value-of select="name(.)"/>
+                    </SPAN>
+                    <SPAN class="m">
+                        <xsl:text>&gt;</xsl:text>
+                    </SPAN>
+                </DIV>
+            </DIV>
+        </DIV>
+    </xsl:template>
+    <xsl:template match="*" mode="namespace">
+        <xsl:variable name="context" select="."/>
+        <xsl:for-each select="namespace::node()">
+            <xsl:variable name="nsuri" select="."/>
+            <xsl:variable name="nsprefix" select="name()"/>
+            <xsl:choose>
+                <xsl:when test="$nsprefix = 'xml'">
           <!-- xml namespace -->
-        </xsl:when>
-        <xsl:when test="$context/../namespace::node()[name() = $nsprefix and . = $nsuri]">
+                </xsl:when>
+                <xsl:when test="$context/../namespace::node()[name() = $nsprefix and . = $nsuri]">
           <!-- namespace already declared on the parent -->
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text> </xsl:text>
-          <SPAN class="an">
-            <xsl:text>xmlns</xsl:text>
-            <xsl:if test="$nsprefix">
-              <xsl:text>:</xsl:text>
-              <xsl:value-of select="$nsprefix"/>
-            </xsl:if>
-          </SPAN>
-          <SPAN class="m">="</SPAN>
-          <SPAN class="av">
-            <xsl:value-of select="."/>
-          </SPAN>
-          <SPAN class="m">"</SPAN>
-        </xsl:otherwise>
-       </xsl:choose>
-     </xsl:for-each>
-   </xsl:template>
-
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text> </xsl:text>
+                    <SPAN class="an">
+                        <xsl:text>xmlns</xsl:text>
+                        <xsl:if test="$nsprefix">
+                            <xsl:text>:</xsl:text>
+                            <xsl:value-of select="$nsprefix"/>
+                        </xsl:if>
+                    </SPAN>
+                    <SPAN class="m">="</SPAN>
+                    <SPAN class="av">
+                        <xsl:value-of select="."/>
+                    </SPAN>
+                    <SPAN class="m">"</SPAN>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+    </xsl:template>
 </xsl:stylesheet>
