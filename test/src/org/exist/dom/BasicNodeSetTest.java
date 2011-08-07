@@ -20,6 +20,7 @@
  */
 package org.exist.dom;
 
+import org.junit.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.EXistException;
@@ -160,100 +161,105 @@ public class BasicNodeSetTest {
     }
 	
     @Test
-    public void testAxes() throws XPathException, SAXException {
+    public void testAxes() throws  SAXException {
             
-        Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+        try {
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
 
-        Sequence smallSet = executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']", 1, null);
-        Sequence largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']", 160, null);
-        Sequence outerSet = executeQuery(broker, "//SCENE[TITLE &= 'closet']", 1, null);
+            Sequence smallSet = executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']", 1, null);
+            Sequence largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']", 160, null);
+            Sequence outerSet = executeQuery(broker, "//SCENE[TITLE &= 'closet']", 1, null);
 
-        NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
-        NodeSet speakers = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                docs, test.getName(), null);
+            NameTest test = new NameTest(Type.ELEMENT, new QName("SPEAKER", ""));
+            NodeSet speakers = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
 
-        System.out.println("Testing NodeSetHelper.selectParentChild ...");
-        NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-        assertEquals(1, result.getLength());
-        String value = serialize(broker, result.itemAt(0));
-        System.out.println("NodeSetHelper.selectParentChild: " + value);
-        assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
+            System.out.println("Testing NodeSetHelper.selectParentChild ...");
+            NodeSet result = NodeSetHelper.selectParentChild(speakers, smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+            assertEquals(1, result.getLength());
+            String value = serialize(broker, result.itemAt(0));
+            System.out.println("NodeSetHelper.selectParentChild: " + value);
+            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
 
-        result = NodeSetHelper.selectParentChild(speakers, largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-        assertEquals(160, result.getLength());
-        System.out.println("NodeSetHelper.selectParentChild: PASS");
+            result = NodeSetHelper.selectParentChild(speakers, largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+            assertEquals(160, result.getLength());
+            System.out.println("NodeSetHelper.selectParentChild: PASS");
 
-        System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
-        result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1, true);
-        assertEquals(56, result.getLength());
-        System.out.println("AbstractNodeSet.selectAncestorDescendant: PASS");
+            System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
+            result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1, true);
+            assertEquals(56, result.getLength());
+            System.out.println("AbstractNodeSet.selectAncestorDescendant: PASS");
 
-        System.out.println("Testing AbstractNodeSet.selectAncestorDescendant2 ...");
-        result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT,
-            true, -1, true);
-        assertEquals(1, result.getLength());
-        System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
+            System.out.println("Testing AbstractNodeSet.selectAncestorDescendant2 ...");
+            result = ((AbstractNodeSet)outerSet).selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT,
+                true, -1, true);
+            assertEquals(1, result.getLength());
+            System.out.println("AbstractNodeSet.selectAncestorDescendant2: PASS");
 
-        System.out.println("Testing AbstractNodeSet.getParents ...");
-        result = ((AbstractNodeSet)largeSet).getParents(-1);
-        assertEquals(49, result.getLength());
-        System.out.println("AbstractNodeSet.getParents: PASS");
+            System.out.println("Testing AbstractNodeSet.getParents ...");
+            result = ((AbstractNodeSet)largeSet).getParents(-1);
+            assertEquals(49, result.getLength());
+            System.out.println("AbstractNodeSet.getParents: PASS");
 
-        test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
-        NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                docs, test.getName(), null);
-        scenes.getLength();
-        System.out.println("Testing AbstractNodeSet.selectAncestors ...");
-        result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
-        assertEquals(47, result.getLength());
-        System.out.println("AbstractNodeSet.selectAncestors: PASS");
+            test = new NameTest(Type.ELEMENT, new QName("SCENE", ""));
+            NodeSet scenes = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            scenes.getLength();
+            System.out.println("Testing AbstractNodeSet.selectAncestors ...");
+            result = ((AbstractNodeSet)scenes).selectAncestors(largeSet.toNodeSet(), false, -1);
+            assertEquals(47, result.getLength());
+            System.out.println("AbstractNodeSet.selectAncestors: PASS");
 
-        NodeProxy proxy = (NodeProxy) smallSet.itemAt(0);
-        System.out.println("Testing NodeProxy.getParents ...");
-        result = proxy.getParents(-1);
-        assertEquals(1, result.getLength());
-        System.out.println("NodeProxy.getParents: PASS");
+            NodeProxy proxy = (NodeProxy) smallSet.itemAt(0);
+            System.out.println("Testing NodeProxy.getParents ...");
+            result = proxy.getParents(-1);
+            assertEquals(1, result.getLength());
+            System.out.println("NodeProxy.getParents: PASS");
 
-        result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
-        assertEquals(1, result.getLength());
+            result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
+            assertEquals(1, result.getLength());
 
-        largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
-        test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
-        NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                docs, test.getName(), null);
-        System.out.println("LINE: " + lines.getLength());
-        System.out.println("SPEAKER: " + largeSet.getItemCount());
-        result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
-        assertEquals(1451, result.getLength());
+            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
+            test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
+            NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            System.out.println("LINE: " + lines.getLength());
+            System.out.println("SPEAKER: " + largeSet.getItemCount());
+            result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
+            assertEquals(1451, result.getLength());
 
-        largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
-        result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
-        assertEquals(160, result.getLength());
+            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
+            result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
+            assertEquals(160, result.getLength());
 
-        System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
-        Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
-        test = new NameTest(Type.ELEMENT, new QName("para", ""));
-        NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                docs, test.getName(), null);
-        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-        assertEquals(3, result.getLength());
+            System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
+            Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
+            test = new NameTest(Type.ELEMENT, new QName("para", ""));
+            NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(3, result.getLength());
 
-        nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
-        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-        assertEquals(2, result.getLength());
+            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(2, result.getLength());
 
-        nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.2')]", 3, null);
-        result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
-        assertEquals(4, result.getLength());
+            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.2')]", 3, null);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(4, result.getLength());
 
-        nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
-        test = new NameTest(Type.ELEMENT, new QName("section", ""));
-        NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
-                docs, test.getName(), null);
-        result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
-        assertEquals(1, result.getLength());
+            nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
+            test = new NameTest(Type.ELEMENT, new QName("section", ""));
+            NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(1, result.getLength());
+        
+        } catch (XPathException ex) {
+            Assert.fail(ex.getMessage());
+        }
         
     }
 	
@@ -329,23 +335,28 @@ public class BasicNodeSetTest {
     }
     
     @Test
-    public void virtualNodeSet() throws XPathException, SAXException {
+    public void virtualNodeSet() throws SAXException {
 
         Serializer serializer = broker.getSerializer();
         serializer.reset();
+        
+        try {
+            executeQuery(broker, "//*/LINE", 9492, null);
+            executeQuery(broker, "//*/LINE/*", 61, null);
+            executeQuery(broker, "//*/LINE/text()", 9485, null);
+            executeQuery(broker, "//SCENE/*/LINE", 9464, null);
+            executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
+            executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
+            executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
+            executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
+            executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
 
-        executeQuery(broker, "//*/LINE", 9492, null);
-        executeQuery(broker, "//*/LINE/*", 61, null);
-        executeQuery(broker, "//*/LINE/text()", 9485, null);
-        executeQuery(broker, "//SCENE/*/LINE", 9464, null);
-        executeQuery(broker, "//SCENE/*[LINE &= 'spirit']", 21, null);
-        executeQuery(broker, "//SCENE/*[LINE &= 'the']", 1005, null);
-        executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
-        executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
-        executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
-
-        executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/preceding-sibling::*", 65, null);
-        executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/following-sibling::*", 1, null);
+            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/preceding-sibling::*", 65, null);
+            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/following-sibling::*", 1, null);
+            
+        } catch (XPathException ex) {
+            Assert.fail(ex.getMessage());
+        }
     }
 	
     private static Sequence executeQuery(DBBroker broker, String query, int expected, String expectedResult) throws XPathException, SAXException {
