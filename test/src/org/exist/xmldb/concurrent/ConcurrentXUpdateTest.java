@@ -78,7 +78,14 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 100, 100);
 			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 200, 100);
 		} catch (Exception e) {            
-            fail(e.getMessage()); 
+            e.printStackTrace();
+            
+            Throwable t = e.getCause();
+            if(t instanceof org.exist.EXistException && t.getMessage().contains("legacy")){
+                fail("embedded error:" + t.getMessage());
+            } else {
+                fail(e.getMessage()); 
+            }
         }				
 	}
 	
