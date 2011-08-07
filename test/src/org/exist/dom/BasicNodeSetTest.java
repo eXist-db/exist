@@ -20,7 +20,6 @@
  */
 package org.exist.dom;
 
-import org.junit.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.EXistException;
