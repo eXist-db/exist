@@ -53,6 +53,13 @@ check_jmx_status;
 # save LANG
 set_locale_lang;
 
-"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" backup "${JAVA_OPTS[@]}"
+if [ "${QUIET_ENABLED}" -gt 0 ]; then
+    # Be quiet, no messages on stdout
+    "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" backup "${JAVA_OPTS[@]}" > /dev/null || exit 1 # forward non-zero exit status
+else
+    echo "Using locale: ${LANG}";
+    "${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} ${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" backup "${JAVA_OPTS[@]}" || exit 1 # forward non-zero exit status
+
+fi
 
 restore_locale_lang;

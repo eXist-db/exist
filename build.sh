@@ -1,7 +1,7 @@
 #!/bin/bash
 # $Id$
 
-if [ "$JAVA_HOME" = "" ] ; then
+if [ -z "$JAVA_HOME" ]; then
   echo "ERROR: JAVA_HOME not found in your environment."
   echo
   echo "Please, set the JAVA_HOME variable in your environment to match the"

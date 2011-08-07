@@ -16,11 +16,11 @@ fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
-LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:$ANT_HOME/lib/junit-4.5.jar
+LOCALCLASSPATH="$ANT_HOME/lib/ant-launcher.jar"
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
-JAVA_OPTS="-Dant.home=$ANT_HOME -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist.home=$EXIST_HOME"
+JAVA_OPTS="-Dant.home=$ANT_HOME -Dant.library.dir=$ANT_HOME/lib -Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS -Dexist.home=$EXIST_HOME -Djavax.xml.transform.TransformerFactory=org.apache.xalan.processor.TransformerFactoryImpl"
 
 echo Starting Ant...
 echo
