@@ -220,11 +220,11 @@ return (
             <title>eXist Database Administration</title>
             <link type="text/css" href="admin.css" rel="stylesheet"/>
 			<link type="text/css" href="styles/prettify.css" rel="stylesheet"/>
-			<link type="text/css" href="../scripts/yui/yui-skin.css" rel="stylesheet"/>
+			<link type="text/css" href="libs/scripts/jquery/css/smoothness/jquery.ui.all.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 			<script type="text/javascript" src="scripts/prettify.js"/>
-			<script type="text/javascript" src="../scripts/yui/yui-combined2.7.0.js"></script>
+			<script type="text/javascript" src="libs/scripts/jquery/jquery-1.4.2.min.js"></script>
 			<script type="text/javascript" src="scripts/admin.js"></script>
 			{ admin:panel-header() }
         </head>

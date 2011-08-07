@@ -1,7 +1,4 @@
-var yDom = YAHOO.util.Dom,
-    yEvent = YAHOO.util.Event;
-
-yEvent.onDOMReady(function () {
+$(document).ready(function(){
     if (document.getElementById('xqueries-container')) {
     	setTimeout('reloadScheduledJobs()', 3000);
     	setTimeout('reloadJobs()', 3000);
@@ -10,47 +7,29 @@ yEvent.onDOMReady(function () {
 	if (document.forms['f-trace']) {
 	    profilingTabs.addListener('activeIndexChange', function (ev) {
 	        document.forms['f-trace'].elements['tab'].value = ev.newValue;
-	    }); 
+	    });
 	}
 });
 
 function reloadScheduledJobs() {
-	var pdiv = document.getElementById('scheduled-jobs-container');
-	var callback = {
-		success: function (response) {
-			pdiv.innerHTML = response.responseText;
-			setTimeout('reloadScheduledJobs()', 3000);
-		},
-		failure: function (response) {
-		}
-	};
-	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=p', callback);
+	$.get('proc.xql', { "mode": "p" }, function (data) {
+        $('#scheduled-jobs-container').html(data);
+        setTimeout('reloadScheduledJobs()', 3000);
+	});
 }
 
 function reloadJobs() {
-	var pdiv = document.getElementById('processes-container');
-	var callback = {
-		success: function (response) {
-			pdiv.innerHTML = response.responseText;
-			setTimeout('reloadJobs()', 3000);
-		},
-		failure: function (response) {
-		}
-	};
-	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=p', callback);
+	$.get('proc.xql', { "mode": "p" }, function (data) {
+    	$('#processes-container').innerHTML = data;
+		setTimeout('reloadJobs()', 3000);
+	});
 }
 
 function reloadQueries() {
-	var pdiv = document.getElementById('xqueries-container');
-	var callback = {
-		success: function (response) {
-			pdiv.innerHTML = response.responseText;
-			setTimeout('reloadQueries()', 5000);
-		},
-		failure: function (response) {
-		}
-	};
-	YAHOO.util.Connect.asyncRequest('GET', 'proc.xql?mode=q', callback);
+	$.get('proc.xql', { mode: "q" }, function (response) {
+    	$('#xqueries-container').innerHTML = response.responseText;
+		setTimeout('reloadQueries()', 5000);
+	});
 }
 
 function displayDiff(id, resource, revision) {
