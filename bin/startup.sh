@@ -16,15 +16,7 @@ usage="startup.sh [-j[jmx-port]|--jmx[=jmx-port]]\n"
 
 #DEBUG_OPTS="-Dexist.start.debug=true"
 
-case "$0" in
-	/*)
-		SCRIPTPATH=$(dirname "$0")
-		;;
-	*)
-		SCRIPTPATH=$(dirname "$PWD/$0")
-		;;
-esac
-
+SCRIPTPATH=$(dirname $(readlink -e "$0"))
 # source common functions and settings
 source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
 source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
