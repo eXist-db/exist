@@ -11,7 +11,15 @@
 # with optional port number e.g. -j1099 or --jmx=1099.
 #
 
-SCRIPTPATH=$(dirname $(readlink -e "$0"))
+case "$0" in
+	/*)
+		SCRIPTPATH=$(dirname "$0")
+		;;
+	*)
+		SCRIPTPATH=$(dirname "$PWD/$0")
+		;;
+esac
+
 # source common functions and settings
 source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
 source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
