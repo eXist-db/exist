@@ -16,9 +16,7 @@ declare function prof:main() as element()
 
 declare function prof:display-page() as element() {
     let $action := request:get-parameter("action", ())
-    let $tab := number(request:get-parameter("tab", 1))
     let $tracelog := request:get-parameter("tracelog", "off") = "on"
-    let $log := util:log("DEBUG", ("TAB: ", $tab))
     let $result :=
         if ($action eq "Clear") then
             system:clear-trace()
@@ -36,21 +34,16 @@ declare function prof:display-page() as element() {
     	<div class="panel">
     		<div class="panel-head">Query Profiling</div>
     		{ prof:display-form($trace, $sort) }
-    		{
-    		    yui:tabset(
-    		        <tabset selected="{$tab + 1}" var="profilingTabs">
-    		            <tab label="Queries">
-    		                { prof:queries($trace, $sort) }
-    	                </tab>
-    	                <tab label="Functions">
-    	                    { prof:functions($trace, $sort) }
-    	                </tab>
-    	                <tab label="Indexes">
-    	                    { prof:indexes($trace, $sort) }
-                        </tab>
-                    </tabset>
-                )
-            }
+            <ul class="tabs clearfix">
+                <li><a href="">Queries</a></li>
+                <li><a href="">Functions</a></li>
+                <li><a href="">Indexes</a></li>
+            </ul>
+            <div class="tab-container">
+                <div class="content">{ prof:queries($trace, $sort) }</div>
+                <div class="content">{ prof:functions($trace, $sort) }</div>
+                <div class="content">{ prof:indexes($trace, $sort) }</div>
+            </div>
     	</div>
 };
 

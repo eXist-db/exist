@@ -220,7 +220,6 @@ return (
             <title>eXist Database Administration</title>
             <link type="text/css" href="admin.css" rel="stylesheet"/>
 			<link type="text/css" href="styles/prettify.css" rel="stylesheet"/>
-			<link type="text/css" href="libs/scripts/jquery/css/smoothness/jquery.ui.all.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 			<script type="text/javascript" src="scripts/prettify.js"/>

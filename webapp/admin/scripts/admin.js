@@ -1,15 +1,53 @@
-$(document).ready(function(){
+$(document).ready(function() {
     if (document.getElementById('xqueries-container')) {
     	setTimeout('reloadScheduledJobs()', 3000);
     	setTimeout('reloadJobs()', 3000);
     	setTimeout('reloadQueries()', 5000);
 	}
-	if (document.forms['f-trace']) {
-	    profilingTabs.addListener('activeIndexChange', function (ev) {
-	        document.forms['f-trace'].elements['tab'].value = ev.newValue;
-	    });
-	}
+
+    /* Tabs */
+    $(".tab-container .content:first").show();
+    $(".tabs li a:first").addClass("tab-active");
+    $(".tabs li a").click(function () {
+        var linkIndex = $(".tabs li a").index(this);
+        $(".tabs li a").removeClass("tab-active");
+        $(".tab-container .content:visible").hide();
+        $(".tab-container .content:eq(" + linkIndex + ")").show();
+        $(this).addClass("tab-active");
+        return false;
+    });
+    
+    /* Repository: retrieve packages */
+    $("#retrieve-repo").click(function (ev) {
+        ev.preventDefault();
+        $("#loading-indicator").show();
+        var repoURL = $("input[name=repository-url]").val();
+        $.ajax({
+            type: "GET",
+            url: "get-packages.xql",
+            data: { url: repoURL },
+            success: function (html) {
+                $("#loading-indicator").hide();
+                $("#packages").html(html);
+                initPackages();
+            }
+        });
+    });
+    initPackages();
 });
+
+function initPackages() {
+    $(".package").each(function () {
+        var pkg = $(this);
+        $(".icon", pkg).click(function (ev) {
+            $(".details").hide();
+            $(".details", pkg).show();
+            $(".close-details", pkg).click(function (ev) {
+                $(".details", pkg).hide();
+            });
+        });
+    });
+}
 
 function reloadScheduledJobs() {
 	$.get('proc.xql', { "mode": "p" }, function (data) {
@@ -33,27 +71,17 @@ function reloadQueries() {
 }
 
 function displayDiff(id, resource, revision) {
-	var div = document.getElementById(id);
-	if (yDom.getStyle(div, 'display') == 'none')
-		yDom.setStyle(div, 'display', '');
-	else
-		yDom.setStyle(div, 'display', 'none');
-	
-	if (div.innerHTML == '') {
-		var callback = {
-			success: function (response) {
-				document.getElementById(id).innerHTML = 
-					'<pre class="prettyprint lang-xml">' +
-					escapeXML(response.responseText) +
-					'</pre>';
-				prettyPrint();
-			},
-			failure: function (response) {
-				alert('Failed to retrieve diff: ' + response.responseText);
-			}
-		};
-		var url = 'versions.xql?action=diff&resource=' + resource + '&rev=' + revision;
-		YAHOO.util.Connect.asyncRequest('GET', url, callback);
+    var div = $("#" + id);
+    div.toggle();
+	if (div.empty()) {
+        var params = { action: "diff", resource: resource, rev: revision };
+        $.get("versions.xql", params, function (data) {
+            div.html('<pre class="prettyprint lang-xml">' +
+				escapeXML(data) +
+				'</pre>');
+			prettyPrint();
+            return false;
+        });
 	}
 	return false;
 }

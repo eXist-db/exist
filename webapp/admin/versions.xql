@@ -8,7 +8,7 @@ at "java:org.exist.versioning.xquery.VersioningModule";
 
 declare namespace versions="http://exist-db.org/versioning/versions";
 
-declare option exist:serialize "method=xml media-type=text/xml expand-xincludes=no";
+declare option exist:serialize "method=xml media-type=text/html expand-xincludes=no";
 
 declare function versions:restore() {
 	let $resource := request:get-parameter("resource", ())
