@@ -39,8 +39,10 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Realm extends AuthenticatingRealm, AuthorizingRealm, 
-								AccountsManagement, GroupsManagement, Startable {
+public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement, Startable {
+    
+        public final static int DEFAULT_REALM_STORE_MODE = 0770;
+    
 	
 	public String getId();
 	

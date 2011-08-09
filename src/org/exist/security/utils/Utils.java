@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -41,13 +42,21 @@ public class Utils {
 
         Collection collection = broker.getOrCreateCollection(txn, uri);
 
-        if (collection == null){
-            throw new IOException("Collection "+uri+" can't be created.");
+        if(collection == null) {
+            throw new IOException("Collection " + uri + " cannot be created.");
         }
 
-        collection.setPermissions(0770);
+        collection.setPermissions(Realm.DEFAULT_REALM_STORE_MODE);
         broker.saveCollection(txn, collection);
 
         return collection;
+    }
+    
+    public static Collection getOrCreateCollection(DBBroker broker, Txn txn, XmldbURI collectionUri) throws PermissionDeniedException, IOException, LockException, TriggerException {
+        Collection col = broker.getCollection(collectionUri);
+        if(col == null) {
+            col = createCollection(broker, txn, collectionUri);
+        }
+        return col;
     }
 }
