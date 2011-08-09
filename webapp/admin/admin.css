@@ -125,7 +125,6 @@ h2 {
 }
 
 .browse {
-    width: 100%;
     padding-bottom: 4px;
     border-bottom: 1px solid black;
 }
@@ -275,4 +274,152 @@ label {
     overflow: auto;
     font-size: 75%;
     border: 1px solid #CCC;
+}
+
+/* Tabs */
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+ul.tabs {
+    list-style-type: none;
+    position: relative;
+    margin: 20px 0 0 0;
+    padding: 0;
+}
+
+ul.tabs li {
+    float: left;
+    width: 155px;
+    text-align: center;
+    position: relative;
+    margin: 0;
+}
+
+ul.tabs li a.tab-active {
+    color: #999;
+    background: #fff;
+    position: relative;
+    top: 1px;
+}
+
+ul.tabs li a {
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
+    border-right: 1px solid #999;
+    border-radius: 10px 10px 0px 0px;
+    -moz-border-radius: 10px 10px 0px 0px;
+	-webkit-border-radius: 10px 10px 0px 0px;
+    background: #777;
+    padding: 5px 5px 5px 0;
+    display: block;
+    text-decoration: none;
+    color: #fff;
+    position: relative;
+}
+
+.tab-container {
+    border: 1px solid #999;
+    background: #fff;
+    padding: 8px 8px 8px 8px;
+}
+
+.tab-container .content {
+    display: none;
+    min-height: 400px;
+}
+
+#loading-indicator {
+    width: 100%;
+    text-align: center;
+    display: none;
+}
+
+.package {
+    width: 128px;
+    float: left;
+    padding: 4px 4px;
+    margin: 10px 10px 0 0;
+    text-align: center;
+    position: relative;
+}
+
+.package > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    cursor: pointer;
+}
+
+.package h3 {
+    text-decoration: none;
+    font-size: 85%;
+    border: 0;
+}
+
+.package .details {
+    display: none;
+    position: absolute;
+    width: 460px;
+    top: 50%;
+    left: 25%;
+    background: #fff;
+    z-index: 1000;
+    padding: 4px;
+    text-align: left;
+    border: 2px solid #FFAD00;
+    border-radius: 15px;
+    moz-border-radius: 15px;
+    -moz-box-shadow: 10px 10px 5px #888;
+    -webkit-box-shadow: 10px 10px 5px #888;
+    box-shadow: 10px 10px 5px #888;
+}
+
+.details form {
+    display: inline;
+}
+
+.details table {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.details ul {
+    margin: 0;
+    padding: 0;
+}
+
+.details ul li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.details th {
+    text-align: right;
+    color: #444;
+    font-weight: bold;
+    padding-right: 10px;
+    vertical-align: top;
+}
+
+.details .download {
+    padding: 1em 0 0 8px;
+}
+
+.details a:link {
+    text-decoration: none;
+}
+
+.close-details {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
 }

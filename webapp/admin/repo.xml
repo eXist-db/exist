@@ -1,11 +1,12 @@
-<meta xmlns="http://exist-db.org/xquery/repo">
-  <author>eXist Project</author>
-  <website>http://exist-db.org</website>
-  <license>GNU-LGPL</license>
-  <copyright>true</copyright>
-  <description>eXist Admin Web Application</description>
-  <type>application</type>
-  <target>/db/admin</target>
-  <permissions user="guest" group="guest" mode="0444"/>
-  <status>stable</status>
-</meta>
+<?xml version="1.0" encoding="UTF-8"?>
+<repo:meta xmlns="http://exist-db.org/xquery/repo" xmlns:repo="http://exist-db.org/xquery/repo">
+    <repo:author>eXist Project</repo:author>
+    <repo:website>http://exist-db.org</repo:website>
+    <repo:license>GNU-LGPL</repo:license>
+    <repo:copyright>true</repo:copyright>
+    <repo:description>eXist Admin Web Application</repo:description>
+    <repo:type>application</repo:type>
+    <repo:target>/db/admin</repo:target>
+    <repo:permissions user="guest" group="guest" mode="0444"/>
+    <repo:status>stable</repo:status>
+</repo:meta>

@@ -8,73 +8,105 @@ declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
 declare variable $repomanager:coll := "/db/system/repo";
-declare variable $repomanager:repo-uri := if (request:get-parameter("repository-url", ())) then
-              request:get-parameter("repository-url", ())
-            else
-              "http://demo.exist-db.org/exist/repo/public/all/";
+declare variable $repomanager:repo-uri := 
+    if (request:get-parameter("repository-url", ())) then
+        request:get-parameter("repository-url", ())
+    else
+        "http://demo.exist-db.org/exist/apps/public-repo/retrieve.html"
+        (: "http://192.168.2.104:8080/exist/apps/public-repo/retrieve.html" :)
+;
 
 declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
 {
-
-	<entry>
-		<path>{$path}</path>
-		<type>{$type}</type>
-		<data>{$data}</data>
-	</entry>
+    if (starts-with($path, "icon")) then
+        <icon>{$path}</icon>
+    else
+    	<entry>
+    		<path>{$path}</path>
+    		<type>{$type}</type>
+    		<data>{$data}</data>
+    	</entry>
 };
 
 declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
 {
-	$path = ("repo.xml", "expath-pkg.xml")
+	starts-with($path, "icon") or $path = ("repo.xml", "expath-pkg.xml")
 };
 
 declare function repomanager:publicrepo() as element()
 {
-let $package-url := request:get-parameter("package-url", ())
-return
+    let $package-url := request:get-parameter("package-url", ())
+    return
         <div class="process">
             <h3>Actions:</h3>
             <ul>
                 {
-                if (ends-with($package-url,'.xar')) then
-                    (<li>uploaded package: {$package-url}</li>,
+                if (ends-with($package-url,'.xar')) then (
+                    <li>Downloaded package: {$package-url}</li>,
 
                     let $http-response := httpclient:get(xs:anyURI($package-url), false(), ())
                     let $name := tokenize($package-url, "/")[last()]
+                    let $package-mimetype := "application/xar"
+                    let $package-data := xs:base64Binary($http-response/httpclient:body/text())
+                    let $stored := xmldb:store($repomanager:coll, $name, $package-data, $package-mimetype)
+                    let $meta := 
+                        compression:unzip(
+                            util:binary-doc($stored), util:function(xs:QName("local:entry-filter"), 3), 
+                            (),  util:function(xs:QName("local:entry-data"), 4), ()
+                        )
+                    let $package := $meta//package:package/string(@name)
+                    let $type := $meta//repo:meta//repo:type/string()
+                    let $install :=
+                        repo:install(concat('http://localhost:',request:get-server-port(),'/exist/rest',$stored))
+                    let $deploy :=
+                        if ($type eq "application") then
+                            repo:deploy($package)
+                        else
+                            ()
                     return
-                    let $package-mimetype := "application/xar",
-                    $package-data := xs:base64Binary($http-response/httpclient:body/text())
-                    return
-                    xmldb:store($repomanager:coll, $name, $package-data, $package-mimetype)
-                    )
+                        <li>Package installed.</li>
+                )
                 else
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
                 }
             </ul>
-                <span><i>Important: installed XQuery library mappings will not become visible until eXist is restarted.</i></span>
+            <span><i>Important: installed XQuery library mappings will not become visible until eXist is restarted.</i></span>
     </div>
 };
 
 declare function repomanager:upload() as element()
 {
-    let $name := request:get-parameter("name", ()),
-    $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo'),
-    $docName := if($name) then $name else request:get-uploaded-file-name("upload"),
-    $file := request:get-uploaded-file-data("upload") return
-
-        <div class="process">
-            <h3>Actions:</h3>
-            <ul>
-                {
+    <div class="process">
+        <h3>Actions:</h3>
+        <ul>
+        {
+            let $name := request:get-parameter("name", ())
+            let $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo')
+            let $docName := if($name) then $name else request:get-uploaded-file-name("upload")
+            let $file := request:get-uploaded-file-data("upload")
+            return
                 if ($docName) then
-                    (<li>uploaded package: {$docName}</li>,
-
-                    xdb:decode-uri(xs:anyURI(xdb:store($repomanager:coll, xdb:encode-uri($docName), $file)))
-                    )
+                    let $stored := xdb:store($repomanager:coll, xdb:encode-uri($docName), $file)
+                    let $meta := 
+                        compression:unzip(
+                            util:binary-doc($stored), util:function(xs:QName("local:entry-filter"), 3), 
+                            (),  util:function(xs:QName("local:entry-data"), 4), ()
+                        )
+                    let $package := $meta//package:package/string(@name)
+                    let $type := $meta//repo:meta//repo:type/string()
+                    let $install := 
+                        repo:install(concat('http://localhost:',request:get-server-port(),'/exist/rest',$stored))
+                    let $deployed :=
+                        if ($type eq "application") then
+                            repo:deploy($package)
+                        else
+                            ()
+                    return
+                        <li>Package uploaded and installed: {$name}</li>
                 else
                     <li><span style="color:#FF2400">Error uploading - Must be a valid Package archive (.xar file extension)</span></li>
-                }
-            </ul>
+        }
+        </ul>
     </div>
 };
 
@@ -107,47 +139,27 @@ declare function repomanager:deactivate() as element()
     let $name := request:get-parameter("name", ())
     let $package := request:get-parameter("package", ())
     let $type := request:get-parameter("type", ())
-     return
-
+    let $undeploy :=
+        if ($type eq "application") then
+            repo:undeploy($package)
+        else
+            ()
+    let $remove := repo:remove($package)
+    (: let $delete := xmldb:remove($repomanager:coll, $name) :)
+    return
         <div class="process">
             <h3>Actions:</h3>
             <ul>
                 <li>Uninstalled package: {$name}</li>
-                {
-                    if ($type eq "application") then
-                        repo:undeploy($package)
-                    else
-                        (),
-                    repo:remove($package)
-                }
             </ul>
-                <span><i>Important: Installed XQuery libraries written in Java only become visible after a restart of eXist-db.</i></span>
-    </div>
-};
-
-declare function repomanager:remove() as element()
-{
-    let $name := request:get-parameter("name", ())
-     return
-
-        <div class="process">
-            <h3>Actions:</h3>
-            <ul>
-                <li>removed package: {$name}</li>
-                {xmldb:remove($repomanager:coll,concat($name,'.xar'))}
-            </ul>
-    </div>
+        </div>
 };
 
 declare function repomanager:process-action() as element()*
 {
     let $action := request:get-parameter("action", ()) return
         util:catch("java.lang.Exception",
-            if($action eq "remove") then
-            (
-                repomanager:remove()
-            )
-            else if($action eq "activate") then
+            if($action eq "activate") then
             (
                 repomanager:activate()
             )
@@ -159,7 +171,7 @@ declare function repomanager:process-action() as element()*
             (
                 repomanager:upload()
             )
-            else if($action eq "Download from Public Repository") then
+            else if($action eq "download") then
             (
                 repomanager:publicrepo()
             )else(),
@@ -171,108 +183,171 @@ declare function repomanager:process-action() as element()*
         )
 };
 
+declare function repomanager:all-packages() {
+    for $repo in repo:list()
+    return
+        <package url="{$repo}">
+        {
+            for $r in ("repo.xml", "expath-pkg.xml")
+            let $meta := repo:get-resource($repo, $r)
+            let $data := if (exists($meta)) then util:binary-to-string($meta) else ()
+            return
+                if (exists($data)) then
+                    util:parse($data)
+                else
+                    ()
+        }
+        {
+            let $icon := repo:get-resource($repo, "icon.png")
+            return
+                if (exists($icon)) then
+                    <icon>icon.png</icon>
+                else
+                    ()
+        }
+        </package>
+};
+
+declare function repomanager:view-installed() {
+    let $packages := repomanager:all-packages()
+    return
+        <div id="installed">
+        {
+            for $package in $packages
+            let $iconURL :=
+                if ($package/icon) then
+                    concat("get-icon.xql?package=", $package/@url)
+                else
+                    "images/package.png"
+            let $pkg-name := $package/package:package/string(@name)
+            let $pkg-abbrev := $package/package:package/string(@abbrev)
+            let $type := $package//repo:type/string()
+            let $version := $package/package:package/@version/string()
+            let $app-url :=
+				if ($package//repo:target) then
+                	concat(
+                    	request:get-context-path(), "/apps", 
+                    	substring-after($package//repo:target, "/db"), "/"
+                	)
+				else
+					()
+            return
+                <div class="package">
+                    <img class="icon" src="{$iconURL}" alt="{$package//package:title}" width="48"/>
+                    <h3>{$package//package:title/string()} ({$version})</h3>
+                    <div class="details">
+                        <img class="close-details" src="images/close.png" alt="Close" title="Close"/>
+                        <table>
+                            <tr>
+                                <th>Title:</th>
+                                <td>{ $package//package:title/text() }</td>
+                            </tr>
+							{
+								if ($app-url) then
+									<tr>
+										<th>Local URL:</th>
+										<td>
+											<a href="{$app-url}" target="_new">{$app-url}</a>
+										</td>
+									</tr>
+								else
+									()
+							}
+                            <tr>
+                                <th>Author(s):</th>
+                                <td>
+                                    <ul>
+                                    {
+                                        for $author in $package//repo:author
+                                        return
+                                            <li>{$author/text()}</li>
+                                    }
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Version:</th>
+                                <td>{ $version }</td>
+                            </tr>
+                            <tr>
+                                <th>Description:</th>
+                                <td>{ $package//repo:description/text() }</td>
+                            </tr>
+                            <tr>
+                                <th>License:</th>
+                                <td>{ $package//repo:license/text() }</td>
+                            </tr>
+                            <tr>
+                                <th>Website:</th>
+                                <td><a href="{$package//repo:website}">{ $package//repo:website/text() }</a></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="download">
+                                    <form method="POST" action="admin.xql">
+                                        <input type="hidden" name="panel" value="repo"/>
+                                        <input type="hidden" name="name" value="{$pkg-abbrev}-{$version}.xar"/>
+                                        <input type="hidden" name="package" value="{$pkg-name}"/>
+                                        <input type="hidden" name="type" value="{$type}"/>
+                                        <button type="submit" name="action" value="deactivate">
+                                            <img src="images/remove.png" alt="Uninstall" title="Uninstall"/>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+        }
+        </div>
+};
+
+declare function repomanager:show-public() {
+    <div class="public-repo-form">
+        <input name="repository-url" size="60" value="{$repomanager:repo-uri}"/>
+        <button name="retrieve-repo" id="retrieve-repo">Retrieve packages</button>
+        
+        <div id="loading-indicator">
+            <p>Retrieving packages ...</p>
+            <img src="images/ajax-loader.gif"/>
+        </div>
+        
+        <div id="packages"></div>
+        <div class="clearfix"></div>
+    </div>
+};
+
 declare function repomanager:main() as element() {
     let $action := lower-case(request:get-parameter("action", "set repository"))
     let $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo')
 
     return
         <div class="panel">
-        <h1>Package Repository</h1>
-        <form action="?panel=repo" method="POST" enctype="multipart/form-data">
-        { repomanager:process-action() }
-        {
-         let $files := if (collection($repomanager:coll)) then collection($repomanager:coll)/util:document-name(.)[contains(.,'.xar')] else ()
-         return
-            if (exists($files)) then
-                <table cellspacing="0" cellpadding="5" class="browse">
-                    <tr>
-                        <th/>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Date Installed</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                    {
-                        let $repos := repo:list()
-                       for $file in $files
-                       let $package-name := substring-before($file,'.xar')
-                       let $xar := util:binary-doc(concat($repomanager:coll,'/',$file))
-           
-                       let $meta := compression:unzip($xar, util:function(xs:QName("local:entry-filter"), 3), (),  util:function(xs:QName("local:entry-data"), 4), ())
-                       let $package := $meta//package:package
-                       let $pkg-name := $package/string(@name)
-                       let $pkg-abbrev := $package/string(@abbrev)
-                       let $repo := $meta//repo:meta
-                       let $type := $repo//repo:type/string()
-           
-                       let $installed := exists($repos[. eq $pkg-name])
-                       return
-                        <tr>
-                           <td/>
-                           <td><a href="{$repo//repo:website}" target="website">{$pkg-name}</a><br/>
-                           {$type}</td>
-                           <td>{ ( $repo//repo:description, $package/string(package:title) )[1]}</td>
-           
-                           <td>{xmldb:last-modified($repomanager:coll, concat($package-name,'.xar'))}</td>
-                           <td> 
-                           {if ($installed) then
-                               <span style="color:#00FF00">Installed</span>
-                           else
-                               <span style="color:#FF2400">Not Installed</span>
-                           }
-                           </td>
-                           <td>
-                           {
-                            if($installed) then
-                                <a href="?panel=repo&amp;action=deactivate&amp;name={$package-name}&amp;package={$pkg-name}&amp;type={$type}">Uninstall</a>
-                            else (
-                                <a href="?panel=repo&amp;action=activate&amp;name={$package-name}&amp;package={$pkg-name}&amp;type={$type}">Install</a>,
-                                <span> | </span>,
-                                <a href="?panel=repo&amp;action=remove&amp;name={$package-name}">Remove</a>
-                            )
-                           }
-           
-                           </td>
-                        </tr>
-                   }
-                </table>
-            else
-                ()
-        }
-                <span><i>Important: Installed XQuery libraries written in Java only become visible after a restart of eXist-db.</i></span>
-                <br/><br/>
-                <table>
-                    <tr>
-                        <td><input type="submit" name="action" value="Download from Public Repository"/></td>
-                        <td>
-                        <select size="5" width="200" style="width:340px" name="package-url">
-                           {
-                            let $packages := httpclient:get(xs:anyURI($repomanager:repo-uri),false(),())//httpclient:body/node()
-                             return
-                             for $package in $packages//package[contains(url/.,'.xar')]
-                             return
-                                <option value="{$package/url}">{tokenize($package/url, "/")[last()]}</option>
-                           }
-                        </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td> <a href="{substring-before($repomanager:repo-uri,'all/')}" target="_repo">Public Repository URL</a> :
-                        </td>
-                        <td><input name="repository-url" size="40" value="{$repomanager:repo-uri}"/></td>
-                        <td><input type="submit" name="action" value="set repository"/></td>
-                    </tr>
-
-                </table>
-                <br/>
-                <table>
-                    <tr>
-                        <td><input type="submit" name="action" value="Upload Package"/></td>
-                        <td><input type="file" size="30" name="upload"/></td>
-                    </tr>
-                </table>
-                <span><i>Note: You can upload example .xar packages located under webapp/repo/packages</i></span>
-          </form>
+            <h1>Package Repository</h1>
+            { repomanager:process-action() }
+            <ul class="tabs clearfix">
+                <li><a href="">Installed</a></li>
+                <li><a href="">Public Repo</a></li>
+                <li><a href="">Upload</a></li>
+            </ul>
+            <div class="tab-container">
+                <div class="content">
+                    { repomanager:view-installed() }
+                </div>
+                <div class="content">
+                    { repomanager:show-public() }
+                </div>
+                <div class="content">
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="panel" value="repo"/>
+                        <table>
+                            <tr>
+                                <td><input type="submit" name="action" value="Upload Package"/></td>
+                                <td><input type="file" size="30" name="upload"/></td>
+                            </tr>
+                        </table>
+                        <span><i>Note: You can upload example .xar packages located under webapp/repo/packages</i></span>
+                    </form>
+                </div>
+            </div>
         </div>
 };
