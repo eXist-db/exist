@@ -24,6 +24,7 @@ public class EXPathErrorCode extends ErrorCode {
      */
     public final static ErrorCode EXPDY001 = new EXPathErrorCode("EXPATH001", "Package not found.");
     public final static ErrorCode EXPDY002 = new EXPathErrorCode("EXPATH002", "Bad collection URI.");
+    public final static ErrorCode EXPDY003 = new EXPathErrorCode("EXPATH003", "Permission denied.");
     
     
     public final static String EXPATH_ERROR_NS = "http://expath.org/ns/error";

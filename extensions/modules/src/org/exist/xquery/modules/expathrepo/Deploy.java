@@ -13,7 +13,9 @@ import java.util.jar.JarInputStream;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.QName;
@@ -121,6 +123,10 @@ public class Deploy extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
+		if (!context.getSubject().hasDbaRole())
+			throw new XPathException(this, EXPathErrorCode.EXPDY003, "Permission denied. You need to be a member " +
+					"of the dba group to use repo:deploy/undeploy");
+		
 		String pkgName = args[0].getStringValue();
 		
 		try {
@@ -144,9 +150,13 @@ public class Deploy extends BasicFunction {
 			DocumentImpl repoXML = DocUtils.parse(context, new FileInputStream(repoFile));
 			
 			if (isCalledAs("undeploy")) {
+				ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
 				ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
 				if (cleanup != null) {
 					runQuery(null, packageDir, cleanup.getStringValue());
+				}
+				if (target != null) {
+					uninstall(args, target);
 				}
 				return statusReport(null);
 			} else {
@@ -222,6 +232,32 @@ public class Deploy extends BasicFunction {
 			}
 		} catch (IOException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
+		}
+	}
+
+	private void uninstall(Sequence[] args, ElementImpl target)
+			throws XPathException {
+		// determine target collection
+		XmldbURI targetCollection;
+		try {
+			targetCollection = XmldbURI.create(target.getStringValue());
+		} catch (Exception e) {
+			throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI for <target> element: " + target.getStringValue(), args[0], e);
+		}
+		TransactionManager mgr = context.getBroker().getBrokerPool().getTransactionManager();
+		Txn txn = mgr.beginTransaction();
+		try {
+			Collection collection = context.getBroker().getOrCreateCollection(txn, targetCollection);
+			if (collection != null)
+				context.getBroker().removeCollection(txn, collection);
+			
+			XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
+			collection = context.getBroker().getOrCreateCollection(txn, configCollection);
+			if (collection != null)
+				context.getBroker().removeCollection(txn, collection);
+			mgr.commit(txn);
+		} catch (Exception e) {
+			mgr.abort(txn);
 		}
 	}
 
@@ -321,6 +357,7 @@ public class Deploy extends BasicFunction {
 			ctx.declareVariable("target", targetCollection.toString());
 		else
 			ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);
+		ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
 		CompiledXQuery compiled;
 		try {
 			compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
