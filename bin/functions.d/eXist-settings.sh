@@ -11,7 +11,7 @@ get_exist_home() {
 			p="$PWD/$1"
 		;;
 	esac
-		(cd $(/usr/bin/dirname $(readlink -e "$p")) ; /bin/pwd)
+		(cd $(/usr/bin/dirname "$p") ; /bin/pwd)
 }
 
 check_exist_home() {
