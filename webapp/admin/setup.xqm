@@ -74,9 +74,17 @@ declare function setup:importLocal() as element()+
             concat($home, $pathSep, "webapp")
         )
         ,
-        $betterform-xrx := concat($home, "/extensions/betterform/src/main/xrx/timetracker/"),
-        $betterform-xforms := concat($home, "/extensions/betterform/src/main/xforms")
+    $betterform-home := if (ends-with($home, "WEB-INF")) then
+        (
+            concat( substring-before($home, "WEB-INF"), "/betterform/samples")
+        )
+        else
+        (
+            concat($home, "/extensions/betterform/src/main")
+        ),
 
+    $betterform-xrx := concat($betterform-home, "/xrx/timetracker/"),
+    $betterform-xforms := concat($betterform-home, "/xforms")
 
     return (
                 setup:create-collection("/db/system/config", "db"),
@@ -330,6 +338,8 @@ declare function setup:select() as element()
         <p><input type="submit" name="action" value="Import Files"/>
         <input type="submit" name="action" value="Skip"/></p>
         <input type="hidden" name="panel" value="setup"/>
+        <P>(*) Contains data for the betterFORM, shakespeare, xinclude, library, mods and xproc examples.
+            It also contains the index configuration definitions for the mondial and acronym examples.</P>
     </form>
 };
 

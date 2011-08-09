@@ -10,7 +10,7 @@
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="webapps">
+    <target name="webapps">
 	
         <mkdir dir="dist"/>
         
@@ -120,9 +120,12 @@
                 <exclude name="**/*.log*"/>
             </fileset>
             <!-- Betterform -->
-			<zipfileset dir="extensions/betterform/src/main/xrx/"  prefix="betterform/samples">
+			<zipfileset dir="extensions/betterform/src/main/xrx/"  prefix="betterform/samples/xrx">
 			    <include name="**/*"/>
 			</zipfileset>
+            <zipfileset dir="extensions/betterform/src/main/xforms/"  prefix="betterform/samples/xforms">
+                <include name="**/*"/>
+            </zipfileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>
