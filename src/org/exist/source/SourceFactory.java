@@ -90,7 +90,8 @@ public class SourceFactory {
         	{
 				XmldbURI pathUri = XmldbURI.create(location);
 				resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-				source = new DBSource(broker, (BinaryDocument)resource, true);
+				if (resource != null)
+					source = new DBSource(broker, (BinaryDocument)resource, true);
         	}
 			finally
 			{
