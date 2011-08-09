@@ -1,6 +1,4 @@
-#eXist build info (updated using svnkit)
-#Tue, 09 Aug 2011 21:58:51 +0200
 #eXist build info
-project.version=1.5.0dev
-project.build=20110809
-svn.revision=15113
+project.version=1.0.0dev
+project.build=20010101
+svn.revision=0000
