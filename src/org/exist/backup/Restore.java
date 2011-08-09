@@ -68,6 +68,9 @@ import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.apache.log4j.Logger;
+import org.exist.backup.restore.listener.AbstractRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
@@ -81,6 +84,8 @@ import org.exist.security.internal.aider.ACEAider;
  */
 public class Restore extends DefaultHandler
 {
+    private final static Logger LOG = Logger.getLogger(Restore.class);
+    
     private static final int strictUriVersion = 1;
 
     private BackupDescriptor contents;
@@ -93,7 +98,6 @@ public class Restore extends DefaultHandler
     private RestoreDialog dialog = null;
     private int version = 0;
     private RestoreListener listener;
-    private List<String> errors = new ArrayList<String>();
     
     private boolean skipSecurityV1 = false;
 
@@ -149,7 +153,6 @@ public class Restore extends DefaultHandler
                 properties = bd.getProperties();
             }
             catch( Exception e ) {
-                e.printStackTrace();
                 throw( new SAXException( "Unable to create backup descriptor object from " + contents, e ) );
             }
 
@@ -182,9 +185,13 @@ public class Restore extends DefaultHandler
         } while( contents != null );
     }
 
-    public void setListener( RestoreListener listener )
+    public void setListener(RestoreListener listener)
     {
         this.listener = listener;
+    }
+    
+    private RestoreListener getListener() {
+        return listener;
     }
 
 
@@ -213,8 +220,8 @@ public class Restore extends DefaultHandler
                             dialog.displayMessage( e.getMessage() );
                         } 
                     }
-                    if (errors.size() > 0) {
-                    	ClientFrame.showErrorMessage(formatErrors(), null);
+                    if (getListener() != null && getListener().hasProblems()) {
+                    	ClientFrame.showErrorMessage(getListener().warningsAndErrorsAsString(), null);
                     }
                     dialog.setVisible(false);
                 }
@@ -244,8 +251,8 @@ public class Restore extends DefaultHandler
                 //restoring sysId
                 reader.parse( is );
             }
-            if (errors.size() > 0)
-            	System.err.println(formatErrors());
+            if(getListener() != null && getListener().hasProblems())
+            	System.err.println(getListener().warningsAndErrorsAsString());
         }
 
     }
@@ -360,8 +367,9 @@ public class Restore extends DefaultHandler
             deferredPermissions.push(deferredPermission);
             
         } catch(Exception e) {
-            listener.warn("An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!");
-            e.printStackTrace();
+            final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!";
+            LOG.error(msg, e);
+            listener.warn(msg);
             throw new SAXException(e.getMessage(), e);
         }
 
@@ -502,7 +510,7 @@ public class Restore extends DefaultHandler
                     try {
                         ((EXistResource) res).setDocType(doctype);
                     } catch (XMLDBException e1) {
-                        e1.printStackTrace();
+                        LOG.error(e1.getMessage(), e1);
                     }
                 }
 
@@ -523,7 +531,7 @@ public class Restore extends DefaultHandler
 
         } catch(Exception e) {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + contents.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
 //                        throw( new RuntimeException( e ) );
         } finally {
             is.close();
@@ -611,16 +619,6 @@ public class Restore extends DefaultHandler
         pass = adminPassword;
     }
 
-    private String formatErrors() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("------------------------------------\n");
-        builder.append("Warnings were found during restore:\n");
-        for (String error : errors) {
-                builder.append("WARN: ").append(error).append('\n');
-        }
-        return builder.toString();
-    }
-
     public static void showErrorMessage(String message) {
         JTextArea msgArea = new JTextArea( message );
         msgArea.setEditable( false );
@@ -655,8 +653,11 @@ public class Restore extends DefaultHandler
                 
                 service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
             } catch (XMLDBException xe) {
-                xe.printStackTrace();
-                listener.warn("Failed to change owner on collection skipping ...");
+                String name = "unknown";
+                try { name = getTarget().getName(); } catch(XMLDBException x) { LOG.error(x.getMessage(), x); }
+                final String msg = "ERROR: Failed to set permissions on Collection '" + name + "'.";
+                LOG.error(msg, xe);
+                listener.warn(msg);
             }
         }
     }
@@ -674,8 +675,11 @@ public class Restore extends DefaultHandler
                 Permission permissions = service.getPermissions(getTarget());
                 service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
             } catch(XMLDBException xe) {
-                xe.printStackTrace();
-                listener.warn("Failed to change owner on document skipping ...");
+                String name = "unknown";
+                try { name = getTarget().getId(); } catch(XMLDBException x) { LOG.error(x.getMessage(), x); }
+                final String msg = "ERROR: Failed to set permissions on Document '" + name + "'.";
+                LOG.error(msg, xe);
+                listener.warn(msg);
             }
         }
     }
@@ -722,24 +726,9 @@ public class Restore extends DefaultHandler
         public abstract void apply();
     }
 
-    public interface RestoreListener {
-        void createCollection(String collection);
-        void restored(String resource);
-        void info(String message);
-        void warn(String message);
-    }
+    
 
-    private class DefaultListener implements RestoreListener {
-
-        @Override
-        public void createCollection(String collection) {
-            info("creating collection " + collection);
-        }
-
-        @Override
-        public void restored(String resource) {
-            info("restored " + resource);
-        }
+    private class DefaultListener extends AbstractRestoreListener {
 
         @Override
         public void info(String message) {
@@ -752,12 +741,24 @@ public class Restore extends DefaultHandler
 
         @Override
         public void warn(String message) {
+            super.warn(message);
+            
             if(dialog != null) {
                 dialog.displayMessage(message);
             } else {
                 System.err.println(message);
             }
-            errors.add(message);
+        }
+        
+        @Override
+        public void error(String message) {
+            super.error(message);
+            
+            if(dialog != null) {
+                dialog.displayMessage(message);
+            } else {
+                System.err.println(message);
+            }
         }
     }
 }

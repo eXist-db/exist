@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
+ *  Copyright (C) 2001-2011 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -38,6 +38,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.io.File;
+import org.exist.backup.restore.listener.AbstractRestoreListener;
 
 public class Restore extends BasicFunction {
 
@@ -57,15 +58,13 @@ public class Restore extends BasicFunction {
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the restore results"));
 
 	public final static QName RESTORE_ELEMENT = new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	
 
 	public Restore(XQueryContext context) {
 		super(context, signature);
 	}
 
+    @Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		String dirOrFile = args[0].getStringValue();
 		String adminPass = null;
@@ -91,36 +90,57 @@ public class Restore extends BasicFunction {
 		return (NodeValue) builder.getDocument().getDocumentElement();
 	}
 
-	private static class XMLRestoreListener implements org.exist.backup.Restore.RestoreListener {
+    private static class XMLRestoreListener extends AbstractRestoreListener {
 
-		MemTreeBuilder builder;
+        public final static QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public final static QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	
+        private final MemTreeBuilder builder;
 
-		private XMLRestoreListener(MemTreeBuilder builder) {
-			this.builder = builder;
-		}
+        private XMLRestoreListener(MemTreeBuilder builder) {
+            this.builder = builder;
+        }
 
-		public void createCollection(String collection) {
-			builder.startElement(COLLECTION_ELEMENT, null);
-			builder.characters(collection);
-			builder.endElement();
-		}
+        @Override
+        public void createCollection(String collection) {
+            builder.startElement(COLLECTION_ELEMENT, null);
+            builder.characters(collection);
+            builder.endElement();
+        }
 
-		public void restored(String resource) {
-			builder.startElement(RESOURCE_ELEMENT, null);
-			builder.characters(resource);
-			builder.endElement();
-		}
+        @Override
+        public void restored(String resource) {
+            builder.startElement(RESOURCE_ELEMENT, null);
+            builder.characters(resource);
+            builder.endElement();
+        }
 
-		public void info(String message) {
-			builder.startElement(INFO_ELEMENT, null);
-			builder.characters(message);
-			builder.endElement();
-		}
+        @Override
+        public void info(String message) {
+            builder.startElement(INFO_ELEMENT, null);
+            builder.characters(message);
+            builder.endElement();
+        }
 
-		public void warn(String message) {
-			builder.startElement(WARN_ELEMENT, null);
-			builder.characters(message);
-			builder.endElement();
-		}
-	}
+        @Override
+        public void warn(String message) {
+            super.warn(message);
+            
+            builder.startElement(WARN_ELEMENT, null);
+            builder.characters(message);
+            builder.endElement();
+        }
+
+        @Override
+        public void error(String message) {
+            super.error(message);
+            
+            builder.startElement(ERROR_ELEMENT, null);
+            builder.characters(message);
+            builder.endElement();
+        }
+    }
 }
