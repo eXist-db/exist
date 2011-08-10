@@ -151,7 +151,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                     GroupImpl group = new GroupImpl(this, conf);
                     group.removed = true;
                     
-                    //getSecurityManager().addGroup(group.getId(), group);
+                    getSecurityManager().addGroup(group.getId(), group);
                 }
             }
         }
