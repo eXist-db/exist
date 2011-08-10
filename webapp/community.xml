@@ -30,20 +30,31 @@
             <table class="general">
                 <tgroup cols="2">
                     <tbody>
+
+                        
                         <tr>
-                            <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
-                            <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for databases running in embedded mode that takes
-                                advantage of Java 5.0 features.</td>
-                        </tr>
+                            <td class="doclink"><ulink url="ttps://github.com/emory-libraries/eulexistdb">EULexistdb</ulink></td>
+                            <td>EULexistdb is a Python module that provides utilities and classes for interacting with 
+                                the eXist-db XML Database (version 1.4) in a pythonic, object-oriented way, with optional Django integration.</td>
+                        </tr>     
+                        
                         <tr>
                             <td class="doclink"><ulink url="http://code.google.com/p/existdb-contrib/">eXist-db contrib</ulink></td>
                             <td>eXist-db contrib is a collection of tools, module, functions, extensions, etc. for eXist-db, hosted by google code - a
                                 "playground for code that might be integrated with the eXist database in the future".</td>
                         </tr>
+                        
+                        <tr>
+                            <td class="doclink"><ulink url="http://fluent.exist-db.org/">Fluent</ulink></td>
+                            <td>Piotr Kaminski contributed an extension package org.exist.fluent, an API for databases running in embedded mode that takes
+                                advantage of Java 5.0 features.</td>
+                        </tr>
+                        
                         <tr>
                             <td class="doclink"><ulink url="https://github.com/knipknap/pyexist">PYexist</ulink></td>
                             <td>A simple Python library for communicating with an eXist XML database via its REST API</td>
                         </tr>
+                        
                         <tr>
                             <td class="doclink"><ulink url="https://github.com/fsteeg/sinist">Sinist</ulink></td>
                             <td>A simple (and very early) Scala wrapper to access eXist DB</td>
