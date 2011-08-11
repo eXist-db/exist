@@ -282,39 +282,25 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         }
     }
 
+    /**
+     * Evaluation order is - 
+     * 
+     * 1) ACL ACEs are evaluated first
+     * 2) Classic Unix Style Permissions are evaluated second
+     * 
+     * The first match is considered the authority
+     */
     @Override
     public boolean validate(Subject user, int mode) {
-
-        /*** START UNIX STYLE VALIDATION ***/
 
         //group dba has full access
         if(user.hasDbaRole()) {
             return true;
         }
-
-        //check owner
+        
         int userId = user.getId();
-        if(userId == (vector >>> 32)) {                   //check owner
-            return (mode & ((vector >>> 28) & 7)) == mode;      //check owner mode
-        }
-
-        //check group
         int userGroupIds[] = user.getGroupIds();
-        int groupId = (int)((vector >>> 8) & 1048575);
-        for(int userGroupId : userGroupIds) {
-            if(userGroupId == groupId) {
-                return (mode & ((vector >>> 4) & 7)) == mode;
-            }
-        }
-
-        //check other
-        if((mode & (vector & 7)) == mode) {
-            return true;
-        }
-
-        /*** END UNIX STYLE VALIDATION ***/
-
-
+        
         /*** START EXTENDED ACL VALIDATION ***/
         //exact encoding is [target(3),id(20),mode(3),access_type(3)]
 
@@ -342,6 +328,30 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         }
 
         /*** END EXTENDED ACL VALIDATION ***/
+        
+        
+        /*** FALLBACK to UNIX STYLE VALIDATION ***/
+
+        //check owner
+        if(userId == (vector >>> 32)) {                     //check owner
+            return (mode & ((vector >>> 28) & 7)) == mode;  //check owner mode
+        }
+
+        //check group
+        
+        int groupId = (int)((vector >>> 8) & 1048575);
+        for(int userGroupId : userGroupIds) {
+            if(userGroupId == groupId) {
+                return (mode & ((vector >>> 4) & 7)) == mode;
+            }
+        }
+
+        //check other
+        if((mode & (vector & 7)) == mode) {
+            return true;
+        }
+
+        /*** END FALLBACK to UNIX STYLE VALIDATION ***/
 
         return false;
     }
