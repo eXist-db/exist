@@ -29,6 +29,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DirSet;
 
 import org.exist.backup.Restore;
+import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
 
 /**
  * @author wolf
@@ -74,8 +76,9 @@ public class RestoreTask extends AbstractXMLDBTask {
                             log(msg, Project.MSG_ERR);
                         }
                     } else {
-                        Restore restore = new Restore(user, password, restorePassword, file, uri);
-                        restore.restore(false, null);
+                        final Restore restore = new Restore();
+                        final RestoreListener listener = new DefaultRestoreListener();
+                        restore.restore(listener, user, password, restorePassword, file, uri);
                     }
 
                 } else if (dirSet != null) {
@@ -97,8 +100,9 @@ public class RestoreTask extends AbstractXMLDBTask {
                         } else {
                             log("Restoring from " + contentsFile.getAbsolutePath() + " ...\n");
                             // TODO subdirectories as sub-collections?
-                            Restore restore = new Restore(user, password, restorePassword, contentsFile, uri);
-                            restore.restore(false, null);
+                            final Restore restore = new Restore();
+                            final RestoreListener listener = new DefaultRestoreListener();
+                            restore.restore(listener, user, password, restorePassword, contentsFile, uri);
                         }
                     }
 
@@ -112,8 +116,9 @@ public class RestoreTask extends AbstractXMLDBTask {
                             log(msg, Project.MSG_ERR);
                         }
                     } else {
-                        Restore restore = new Restore(user, password, restorePassword, zipFile, uri);
-                        restore.restore(false, null);
+                        final Restore restore = new Restore();
+                        final RestoreListener listener = new DefaultRestoreListener();
+                        restore.restore(listener, user, password, restorePassword, zipFile, uri);
                     }
                 }
                 
