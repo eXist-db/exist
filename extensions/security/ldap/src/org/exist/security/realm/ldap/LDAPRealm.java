@@ -67,6 +67,9 @@ public class LDAPRealm extends AbstractRealm {
 
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
+    
+    @ConfigurationFieldAsAttribute("principals-are-case-insensitive")
+    private boolean principalsAreCaseInsensitive;
 
     @ConfigurationFieldAsElement("context")
     protected LdapContextFactory ldapContextFactory;
@@ -99,8 +102,18 @@ public class LDAPRealm extends AbstractRealm {
         super.startUp(broker);
     }
 
+    private String ensureCase(String username) {
+        if(principalsAreCaseInsensitive) {
+            username = username.toLowerCase();
+        }
+        return username;
+    }
+    
     @Override
     public Subject authenticate(String username, Object credentials) throws AuthenticationException {
+        
+        username = ensureCase(username);
+        
         // Binds using the username and password provided by the user.
         LdapContext ctx = null;
         try {
@@ -177,7 +190,7 @@ public class LDAPRealm extends AbstractRealm {
                         List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
                         if(additionalGroupNames != null) {
                             for(String additionalGroupName : additionalGroupNames) {
-                                Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
+                                Group additionalGroup = getSecurityManager().getGroup(invokingUser, ensureCase(additionalGroupName));
                                 if(additionalGroup != null) {
                                     account.addGroup(additionalGroup);
                                     updatedAccount = true;
@@ -254,6 +267,8 @@ public class LDAPRealm extends AbstractRealm {
     @Override
     public final synchronized Account getAccount(Subject invokingUser, String name) {
 
+        name = ensureCase(name);
+        
         //first attempt to get the cached account
         Account acct = super.getAccount(invokingUser, name);
 
@@ -272,9 +287,8 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a user from ldap so cache them and return
                     try {
-                        LDAPSearchContext search = ensureContextFactory().getSearch();
                         String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
-                        return createAccountInDatabase(invokingUser, name, ldapUser, primaryGroup);
+                        return createAccountInDatabase(invokingUser, name, ldapUser, ensureCase(primaryGroup));
                         //registerAccount(acct); //TODO do we need this
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -303,7 +317,7 @@ public class LDAPRealm extends AbstractRealm {
      * 
      * http://forums.oracle.com/forums/thread.jspa?threadID=1155740&tstart=0
      */
-    public static String decodeSID(byte[] sid) {
+    private static String decodeSID(byte[] sid) {
         
         final StringBuilder strSid = new StringBuilder("S-");
 
@@ -353,6 +367,9 @@ public class LDAPRealm extends AbstractRealm {
     
     @Override
     public final synchronized Group getGroup(Subject invokingUser, String name) {
+        
+        name = ensureCase(name);
+        
         Group grp = groupsByName.get(name);
         if(grp != null) {
             return grp;
@@ -416,6 +433,8 @@ public class LDAPRealm extends AbstractRealm {
     
     private boolean checkPrincipalRestrictionList(String principalName, AbstractLDAPSearchPrincipal searchPrinciple) {
         
+        principalName = ensureCase(principalName);
+        
         if(principalName.indexOf('@') > -1) {
             principalName = principalName.substring(0, principalName.indexOf('@'));
         }
@@ -432,7 +451,7 @@ public class LDAPRealm extends AbstractRealm {
         
         if(blackList != null) {
             for(String blackEntry : blackList) {
-                if(blackEntry.equals(principalName)) {
+                if(ensureCase(blackEntry).equals(principalName)) {
                     return false;
                 }
             }
@@ -440,7 +459,7 @@ public class LDAPRealm extends AbstractRealm {
         
         if(whiteList != null && whiteList.size() > 0) {
             for(String whiteEntry : whiteList) {
-                if(whiteEntry.equals(principalName)) {
+                if(ensureCase(whiteEntry).equals(principalName)) {
                     return true;
                 }
             }
@@ -556,8 +575,7 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
-        // TODO we dont support writting to LDAP
-        return false;
+        return super.updateGroup(invokingUser, group);
     }
 
     @Override
@@ -589,6 +607,9 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+        
+        startsWith = ensureCase(startsWith);
+        
         List<String> usernames = new ArrayList<String>();
 
         LdapContext ctx = null;
@@ -607,7 +628,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String username = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String username = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 if(checkAccountRestrictionList(username)) {
                     usernames.add(username);
                 }
@@ -625,7 +646,9 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
-
+        
+        startsWith = ensureCase(startsWith);
+        
         List<String> usernames = new ArrayList<String>();
 
         LdapContext ctx = null;
@@ -645,7 +668,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String username = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String username = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 
                 if(checkAccountRestrictionList(username)) {
                     usernames.add(username);
@@ -684,7 +707,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String groupname = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 if(checkGroupRestrictionList(groupname)) {
                     groupnames.add(groupname);
                 }
@@ -703,6 +726,8 @@ public class LDAPRealm extends AbstractRealm {
     @Override
     public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
 
+        startsWith = ensureCase(startsWith);
+        
         List<String> groupnames = new ArrayList<String>();
 
         LdapContext ctx = null;
@@ -722,7 +747,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String groupname = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 if(checkGroupRestrictionList(groupname)) {
                     groupnames.add(groupname);
                 }
@@ -758,7 +783,7 @@ public class LDAPRealm extends AbstractRealm {
             SearchResult searchResult = null;
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String groupname = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String groupname = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 if(checkGroupRestrictionList(groupname)) {
                     groupnames.add(groupname);
                 }
@@ -777,6 +802,8 @@ public class LDAPRealm extends AbstractRealm {
     @Override
     public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
 
+        groupName = ensureCase(groupName);
+        
         List<String> groupMembers = new ArrayList<String>();
         
         if(!checkGroupRestrictionList(groupName)) {
@@ -802,7 +829,7 @@ public class LDAPRealm extends AbstractRealm {
 
             while(results.hasMoreElements()) {
                 searchResult = (SearchResult) results.nextElement();
-                String member = addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
+                String member = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
                 if(checkAccountRestrictionList(member)) {
                     groupMembers.add(member);
                 }
