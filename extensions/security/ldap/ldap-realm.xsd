@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/Configuration" xmlns:sec="http://exist-db.org/Configuration">
-    <xs:include schemaLocation="../../../schema/security-manager.xsd">
+    <xs:include schemaLocation="../../../schema/security-manager.xsd"/>
     
-        <xs:element name="realm">
+    <xs:element name="realm">
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="context">
@@ -21,6 +21,13 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="transformation" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="add-group" type="xs:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -33,6 +40,14 @@
         <xs:sequence>
             <xs:element name="search-filter-prefix" type="xs:string"/>
             <xs:element name="metadata-search-attribute" type="sec:metadataSearchAttributeType"/>
+            <xs:element name="whitelist" type="sec:principalRestricionListType" minOccurs="0"/>
+            <xs:element name="blacklist" type="sec:principalRestricionListType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="principalRestricionListType">
+        <xs:sequence>
+            <xs:element name="principal" type="xs:string" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
     
