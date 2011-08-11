@@ -1,6 +1,6 @@
-/**
+/*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist-db Project
+ *  Copyright (C) 2005-2011 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * \$Id\$
+ *  $Id: Restore.java 15109 2011-08-09 13:03:09Z deliriumsky $
  */
 package org.exist.backup.restore.listener;
 
@@ -25,7 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
-
+/**
+ *
+ * @author Adam Retter <adam@exist-db.org>
+ */
 public abstract class AbstractRestoreListener implements RestoreListener {
 
     private final List<Problem> problems = new ArrayList<Problem>();
