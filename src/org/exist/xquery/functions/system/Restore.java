@@ -39,6 +39,7 @@ import org.exist.xquery.value.Type;
 
 import java.io.File;
 import org.exist.backup.restore.listener.AbstractRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
 
 public class Restore extends BasicFunction {
 
@@ -65,30 +66,31 @@ public class Restore extends BasicFunction {
 	}
 
     @Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		String dirOrFile = args[0].getStringValue();
-		String adminPass = null;
-		if (args[1].hasOne())
-			adminPass = args[1].getStringValue();
-		String adminPassAfter = null;
-		if (args[2].hasOne())
-			adminPassAfter = args[2].getStringValue();
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        String dirOrFile = args[0].getStringValue();
+        String adminPass = null;
+        if (args[1].hasOne())
+                adminPass = args[1].getStringValue();
+        String adminPassAfter = null;
+        if (args[2].hasOne())
+                adminPassAfter = args[2].getStringValue();
 
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		builder.startDocument();
-		builder.startElement(RESTORE_ELEMENT, null);
-		try {
-			org.exist.backup.Restore restore = new org.exist.backup.Restore(org.exist.security.SecurityManager.DBA_USER, adminPass,
-					adminPassAfter, new File(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
-			restore.setListener(new XMLRestoreListener(builder));
-			restore.restore(false, null);
-		} catch (Exception e) {
-			throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
-		}
-		builder.endElement();
-		builder.endDocument();
-		return (NodeValue) builder.getDocument().getDocumentElement();
-	}
+        MemTreeBuilder builder = context.getDocumentBuilder();
+        builder.startDocument();
+        builder.startElement(RESTORE_ELEMENT, null);
+        
+        try {
+            org.exist.backup.Restore restore = new org.exist.backup.Restore();
+            RestoreListener listener = new XMLRestoreListener(builder);
+            restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, new File(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
+        } catch (Exception e) {
+            throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
+        }
+        
+        builder.endElement();
+        builder.endDocument();
+        return (NodeValue) builder.getDocument().getDocumentElement();
+    }
 
     private static class XMLRestoreListener extends AbstractRestoreListener {
 

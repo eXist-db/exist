@@ -21,6 +21,10 @@
  */
 package org.exist.backup;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
@@ -45,16 +49,26 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URISyntaxException;
-
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
-
+import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.client.ClientFrame;
 
 /**
  * Main.java
@@ -277,11 +291,18 @@ public class Main
                 }
             }
 
-            if( optionRestore != null ) {
+            if(optionRestore != null) {
 
+                final String username = properties.getProperty( "user", "admin" );
+                final File f = new File(optionRestore);
+                final String uri = properties.getProperty( "uri", "xmldb:exist://");
+                
                 try {
-                    Restore restore = new Restore( properties.getProperty( "user", "admin" ), optionPass, optionDbaPass, new File( optionRestore ), properties.getProperty( "uri", "xmldb:exist://" ) );
-                    restore.restore( guiMode, null );
+                    if(guiMode) {
+                        restoreWithGui(username, optionPass, optionDbaPass, f, uri);
+                    } else {
+                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri);
+                    }
                 }
                 catch( Exception e ) {
                     reportError( e );
@@ -299,7 +320,77 @@ public class Main
         System.exit( 0 );
     }
 
+    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f, final String uri) {
+        
+        final RestoreListener listener = new DefaultRestoreListener();
+        final Restore restore = new Restore();
 
+        try {
+            restore.restore(listener, username, password, dbaPassword, f, uri);
+        } catch(FileNotFoundException fnfe) {
+            listener.error(fnfe.getMessage());
+        } catch(IOException ioe) {
+            listener.error(ioe.getMessage());
+        } catch(SAXException saxe) {
+            listener.error(saxe.getMessage());
+        } catch(XMLDBException xmldbe) {
+            listener.error(xmldbe.getMessage());
+        } catch(ParserConfigurationException pce) {
+            listener.error(pce.getMessage());
+        } catch(URISyntaxException use) {
+            listener.error(use.getMessage());
+        }
+        
+        if(listener.hasProblems()) {
+            System.err.println(listener.warningsAndErrorsAsString());
+        }
+    }
+    
+    private static void restoreWithGui(final String username, final String password, final String dbaPassword, final File f, final String uri) {
+        
+        final GuiRestoreListener listener = new GuiRestoreListener();
+        
+        final Callable<Void> callable = new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                
+                final Restore restore = new Restore();
+                
+                try {
+                    restore.restore(listener, username, password, dbaPassword, f, uri);
+                    
+                    listener.hideDialog();
+
+                } catch (Exception e) {
+                    ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
+                } finally {
+                    if(listener.hasProblems()) {
+                        ClientFrame.showErrorMessage(listener.warningsAndErrorsAsString(), null);
+                    }
+                }
+                
+                return null;
+            }
+        };
+       
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<Void> future = executor.submit(callable);
+
+        while(!future.isDone() && !future.isCancelled()) {
+            try {
+                future.get(100, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ie) {
+
+            } catch (ExecutionException ee) {
+                break;
+            } catch (TimeoutException te) {
+
+            }
+        }
+    }
+    
+    
     private static void reportError( Throwable e )
     {
         e.printStackTrace();

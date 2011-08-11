@@ -23,10 +23,16 @@ package org.exist.backup.restore.listener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
 
 
 public abstract class AbstractRestoreListener implements RestoreListener {
 
+    private final List<Problem> problems = new ArrayList<Problem>();
+    private String currentCollectionName;
+    private String currentResourceName;
+    private List<Observable> observables;
+    
     private abstract class Problem {
         private final String message;
         public Problem(String message) {
@@ -59,17 +65,52 @@ public abstract class AbstractRestoreListener implements RestoreListener {
             return "WARN: " + getMessage();
         }
     }
-    
-    private final List<Problem> problems = new ArrayList<Problem>();
 
     @Override
+    public void restoreStarting() {
+        info("Starting restore of backup...");
+    }
+    
+    @Override
+    public void restoreFinished() {
+        info("Finished restore of backup.");
+    }
+    
+    @Override
     public void createCollection(String collection) {
-        info("creating collection " + collection);
+        info("Creating collection " + collection);
     }
 
     @Override
+    public void setCurrentBackup(String currentBackup) {
+        info("Processing backup: " + currentBackup);
+    }
+    
+    @Override
+    public void setCurrentCollection(String currentCollectionName) {
+        this.currentCollectionName = currentCollectionName;
+    }
+
+    @Override
+    public void setCurrentResource(String currentResourceName) {
+        this.currentResourceName = currentResourceName;
+    }
+
+    @Override
+    public void observe(Observable observable) {
+        
+        if(observables == null) {
+            observables = new ArrayList<Observable>();
+        }
+        
+        if(!observables.contains(observable)) {
+            observables.add(observable);
+        }
+    }
+    
+    @Override
     public void restored(String resource) {
-        info("restored " + resource);
+        info("Restored " + resource);
     }
 
     @Override

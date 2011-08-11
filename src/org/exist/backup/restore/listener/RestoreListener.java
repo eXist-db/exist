@@ -21,6 +21,8 @@
  */
 package org.exist.backup.restore.listener;
 
+import java.util.Observable;
+
 public interface RestoreListener {
     void createCollection(String collection);
     void restored(String resource);
@@ -30,4 +32,16 @@ public interface RestoreListener {
     String warningsAndErrorsAsString();
 
     boolean hasProblems();
+
+    public void setCurrentCollection(String currentCollectionName);
+
+    public void setCurrentResource(String currentResourceName);
+    
+    public void restoreStarting();
+
+    public void restoreFinished();
+
+    public void observe(Observable observable);
+
+    public void setCurrentBackup(String currentBackup);
 }

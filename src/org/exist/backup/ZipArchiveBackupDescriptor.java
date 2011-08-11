@@ -35,159 +35,150 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 
-public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor
-{
+public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
+    
     protected ZipFile  archive;
     protected ZipEntry descriptor;
     protected String   base;
 
-    public ZipArchiveBackupDescriptor( File fileArchive ) throws ZipException, IOException, FileNotFoundException
-    {
-        archive    = new ZipFile( fileArchive );
+    public ZipArchiveBackupDescriptor(File fileArchive) throws ZipException, IOException, FileNotFoundException {
+        archive    = new ZipFile(fileArchive);
 
         //is it full backup?
         base       = "db/";
-        descriptor = archive.getEntry( base + BackupDescriptor.COLLECTION_DESCRIPTOR );
+        descriptor = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
 
-        if( ( descriptor == null ) || descriptor.isDirectory() ) {
+        if((descriptor == null) || descriptor.isDirectory()) {
 
             base = null;
 
             //looking for highest collection
             //TODO: better to put some information on top?
-            ZipEntry                        item    = null;
+            ZipEntry item = null;
             Enumeration<? extends ZipEntry> zipEnum = archive.entries();
 
-            while( zipEnum.hasMoreElements() ) {
+            while(zipEnum.hasMoreElements()) {
                 item = zipEnum.nextElement();
 
-                if( !item.isDirectory() ) {
+                if(!item.isDirectory()) {
 
-                    if( item.getName().endsWith( BackupDescriptor.COLLECTION_DESCRIPTOR ) ) {
+                    if(item.getName().endsWith( BackupDescriptor.COLLECTION_DESCRIPTOR)) {
 
-                        if( ( base == null ) || ( base.length() > item.getName().length() ) ) {
+                        if((base == null) || (base.length() > item.getName().length())) {
                             descriptor = item;
-                            base       = item.getName();
+                            base = item.getName();
                         }
                     }
                 }
             }
 
-            if( base != null ) {
-                base = base.substring( 0, base.length() - BackupDescriptor.COLLECTION_DESCRIPTOR.length() );
+            if(base != null) {
+                base = base.substring(0, base.length() - BackupDescriptor.COLLECTION_DESCRIPTOR.length());
             }
         }
 
-        if( descriptor == null ) {
-            throw( new FileNotFoundException( "Archive " + fileArchive.getAbsolutePath() + " is not a valid eXist backup archive" ) );
+        if(descriptor == null) {
+            throw new FileNotFoundException("Archive " + fileArchive.getAbsolutePath() + " is not a valid eXist backup archive");
         }
     }
 
 
-    private ZipArchiveBackupDescriptor( ZipFile archive, String base ) throws FileNotFoundException
-    {
+    private ZipArchiveBackupDescriptor(ZipFile archive, String base) throws FileNotFoundException {
         this.archive = archive;
         this.base    = base;
-        descriptor   = archive.getEntry( base + BackupDescriptor.COLLECTION_DESCRIPTOR );
+        descriptor   = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
 
-        if( ( descriptor == null ) || descriptor.isDirectory() ) {
-            throw( new FileNotFoundException( archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive" ) );
+        if((descriptor == null) || descriptor.isDirectory()) {
+            throw new FileNotFoundException(archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive");
         }
     }
 
-    public BackupDescriptor getChildBackupDescriptor( String describedItem )
-    {
+    @Override
+    public BackupDescriptor getChildBackupDescriptor(String describedItem) {
         BackupDescriptor bd = null;
 
         try {
             bd = new ZipArchiveBackupDescriptor( archive, base + describedItem + "/" );
-        }
-        catch( FileNotFoundException fnfe ) {
+        } catch(FileNotFoundException fnfe) {
             // DoNothing(R)
         }
 
-        return( bd );
+        return bd;
     }
 
-
-    public BackupDescriptor getBackupDescriptor( String describedItem )
-    {
-        if( ( describedItem.length() > 0 ) && ( describedItem.charAt( 0 ) == '/' ) ) {
-            describedItem = describedItem.substring( 1 );
+    @Override
+    public BackupDescriptor getBackupDescriptor(String describedItem) {
+        if((describedItem.length() > 0) && (describedItem.charAt(0) == '/')) {
+            describedItem = describedItem.substring(1);
         }
 
-        if( !describedItem.endsWith( "/" ) ) {
+        if(!describedItem.endsWith("/")) {
             describedItem = describedItem + '/';
         }
+        
         BackupDescriptor bd = null;
 
         try {
-            bd = new ZipArchiveBackupDescriptor( archive, describedItem );
-        }
-        catch( FileNotFoundException e ) {
+            bd = new ZipArchiveBackupDescriptor(archive, describedItem);
+        } catch(FileNotFoundException e) {
             // DoNothing(R)
         }
-        return( bd );
+        
+        return bd;
     }
 
 
-    public EXistInputSource getInputSource()
-    {
-        return( new ZipEntryInputSource( archive, descriptor ) );
+    @Override
+    public EXistInputSource getInputSource() {
+        return new ZipEntryInputSource(archive, descriptor);
     }
 
-
-    public EXistInputSource getInputSource( String describedItem )
-    {
-        ZipEntry         ze     = archive.getEntry( base + describedItem );
+    @Override
+    public EXistInputSource getInputSource(String describedItem) {
+        ZipEntry ze = archive.getEntry(base + describedItem);
         EXistInputSource retval = null;
 
-        if( ( ze != null ) && !ze.isDirectory() ) {
-            retval = new ZipEntryInputSource( archive, ze );
+        if((ze != null) && !ze.isDirectory()) {
+            retval = new ZipEntryInputSource(archive, ze);
         }
 
-        return( retval );
+        return retval;
     }
 
-
-    public String getSymbolicPath()
-    {
-        return( archive.getName() + "#" + descriptor.getName() );
+    @Override
+    public String getSymbolicPath() {
+        return archive.getName() + "#" + descriptor.getName();
     }
 
-
-    public String getSymbolicPath( String describedItem, boolean isChildDescriptor )
-    {
+    @Override
+    public String getSymbolicPath(String describedItem, boolean isChildDescriptor) {
         String retval = archive.getName() + "#" + base + describedItem;
 
-        if( isChildDescriptor ) {
+        if(isChildDescriptor) {
             retval += "/" + BackupDescriptor.COLLECTION_DESCRIPTOR;
         }
-        return( retval );
+        return retval;
     }
 
-
-    public Properties getProperties() throws IOException
-    {
+    @Override
+    public Properties getProperties() throws IOException {
         Properties properties = null;
-        ZipEntry   ze         = archive.getEntry( BACKUP_PROPERTIES );
+        ZipEntry ze = archive.getEntry(BACKUP_PROPERTIES);
 
-        if( ze != null ) {
+        if(ze != null) {
             properties = new Properties();
-            properties.load( archive.getInputStream( ze ) );
+            properties.load(archive.getInputStream( ze ));
         }
-        return( properties );
+        return properties;
     }
 
-
-    public File getParentDir()
-    {
-        return( new File( archive.getName() ).getParentFile() );
+    @Override
+    public File getParentDir() {
+        return new File(archive.getName()).getParentFile();
     }
 
-
-    public String getName()
-    {
-        return( new File( archive.getName() ).getName() );
+    @Override
+    public String getName() {
+        return new File(archive.getName()).getName();
     }
 }

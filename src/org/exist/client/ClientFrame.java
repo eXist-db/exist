@@ -52,22 +52,32 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
@@ -94,7 +104,7 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ProgressMonitor;
-import javax.swing.TransferHandler;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
@@ -104,12 +114,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import org.exist.SystemProperties;
 
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
+import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
@@ -1229,10 +1241,6 @@ public class ClientFrame extends JFrame
         }
     }
     
-
-    
-
-    
     private void restoreAction(ActionEvent ev) {
         JFileChooser chooser = new JFileChooser(preferences.get("directory.backup", System.getProperty("user.dir")));
         chooser.setMultiSelectionEnabled(false);
@@ -1254,22 +1262,56 @@ public class ClientFrame extends JFrame
                     null, null, null) == JOptionPane.YES_OPTION) {
         		String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
 	            String restoreFile = f.getAbsolutePath();
-	            try {
-	                Restore restore = new Restore(properties.getProperty("user", //$NON-NLS-1$
-	                        "admin"), properties.getProperty("password", null), //$NON-NLS-1$ //$NON-NLS-2$
-	                        newDbaPass,
-	                        new File(restoreFile), properties.getProperty("uri", //$NON-NLS-1$
-	                        "xmldb:exist://")); //$NON-NLS-1$
-	                restore.restore(true, this);
-	                
-	                if (properties.getProperty("user", "admin").equals("admin") && newDbaPass != null) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		            	properties.setProperty("password", newDbaPass); //$NON-NLS-1$
-		            client.reloadCollection();
-	            } catch (Exception e) {
-	            	showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
-	            }
+	            
+                    final GuiRestoreListener listener = new GuiRestoreListener(this);    
+                    doRestore(listener, properties.getProperty("user", "admin"), properties.getProperty("password", null), newDbaPass, new File(restoreFile), properties.getProperty("uri", "xmldb:exist://"));
+                        
         	}
         }
+    }
+    
+    private void doRestore(final GuiRestoreListener listener, final String username, final String password, final String dbaPassword, final File f, final String uri) { 
+        
+        final Callable<Void> callable = new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+
+                final Restore restore = new Restore();
+                
+                try {
+                    restore.restore(listener, username, password, dbaPassword, f, uri);
+
+                    listener.hideDialog();
+
+                    if (properties.getProperty("user", "admin").equals("admin") && dbaPassword != null) {
+                        properties.setProperty("password", dbaPassword);
+                    }
+                    
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                client.reloadCollection();
+                            } catch(XMLDBException xe) {
+                                xe.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
+                } finally {
+                    if(listener.hasProblems()) {
+                        showErrorMessage(Messages.getString("ClientFrame.181") + listener.warningsAndErrorsAsString(), null);
+                    }
+                }
+                
+                return null;
+            }      
+        };   
+             
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<Void> future = executor.submit(callable);
     }
     
     private void editUsersAction(ActionEvent ev) {
