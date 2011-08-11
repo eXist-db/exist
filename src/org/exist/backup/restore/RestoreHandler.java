@@ -107,8 +107,6 @@ public class RestoreHandler extends DefaultHandler {
         listener.setCurrentBackup(descriptor.getSymbolicPath());
     }
     
-    
-    
     /**
      * @see  org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
@@ -120,19 +118,27 @@ public class RestoreHandler extends DefaultHandler {
             return;
         }
 
-        if(localName.equals("collection")) {
-            restoreCollectionEntry(atts);
+        if(localName.equals("collection") || localName.equals("resource")) {
+            
+            final DeferredPermission df;
+            
+            if(localName.equals("collection")) {
+                df = restoreCollectionEntry(atts);
+            } else {
+                df = restoreResourceEntry(atts);
+            }
+            
+            deferredPermissions.push(df);
+            
         } else if(localName.equals("subcollection")) {
             restoreSubCollectionEntry(atts);
-        } else if(localName.equals("resource")) {
-            restoreResourceEntry(atts);
         } else if(localName.equals("deleted" )) {
             restoreDeletedEntry(atts);
         } else if(localName.equals("ace")) {
             addACEToDeferredPermissions(atts);
         }
     }
-
+    
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
@@ -143,7 +149,7 @@ public class RestoreHandler extends DefaultHandler {
         super.endElement(namespaceURI, localName, qName);
     }
     
-    private void restoreCollectionEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreCollectionEntry(Attributes atts) throws SAXException {
         
         final String name = atts.getValue("name");
         
@@ -180,12 +186,14 @@ public class RestoreHandler extends DefaultHandler {
                     collUri = URIUtils.encodeXmldbUriFor(name);
                 } catch(URISyntaxException e) {
                     listener.warn("Could not parse document name into a URI: " + e.getMessage());
-                    return;
+                    return new SkippedEntryDeferredPermission();
                 }
             }
 
             currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
 
+            listener.setCurrentCollection(name);
+            
             if(currentCollection == null) {
                 throw new SAXException("Collection not found: " + collUri);
             }
@@ -197,7 +205,7 @@ public class RestoreHandler extends DefaultHandler {
             } else {
                 deferredPermission = new CollectionDeferredPermission(listener, currentCollection, owner, group, Integer.parseInt(mode, 8));
             }
-            deferredPermissions.push(deferredPermission);
+            return deferredPermission;
             
         } catch(Exception e) {
             final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!";
@@ -205,8 +213,6 @@ public class RestoreHandler extends DefaultHandler {
             listener.warn(msg);
             throw new SAXException(e.getMessage(), e);
         }
-
-        listener.setCurrentCollection(name);
     }
 
     private void restoreSubCollectionEntry(Attributes atts) throws SAXException {
@@ -255,18 +261,32 @@ public class RestoreHandler extends DefaultHandler {
         }
     }
     
-    private void restoreResourceEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreResourceEntry(Attributes atts) throws SAXException {
         
         final String skip = atts.getValue( "skip" );
 
         //dont process entries which should be skipped
         if(skip != null && !skip.equals("no")) {
-            return;
+            return new SkippedEntryDeferredPermission();
         }
         
         final String name = atts.getValue("name");
         if(name == null) {
             throw new SAXException("Resource requires a name attribute");
+        }
+        
+        //triggers should NOT be disabled, because it do used by the system tasks (like security manager)
+        //UNDERSTAND: split triggers: user & system
+        //current.setTriggersEnabled(false);
+        try {
+            if(currentCollection.getName().equals("/db/system") && name.equals("users.xml") && currentCollection.getChildCollection("security") != null) {
+                listener.warn("skip resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.");
+                return new SkippedEntryDeferredPermission();
+            }
+        } catch(XMLDBException xe) {
+            LOG.error(xe.getMessage(), xe);
+            listener.error(xe.getMessage());
+            return new SkippedEntryDeferredPermission();
         }
 
         final String type;
@@ -307,7 +327,7 @@ public class RestoreHandler extends DefaultHandler {
                 final String msg = "Could not parse document name into a URI: " + e.getMessage();
                 listener.error(msg);
                 LOG.error(msg, e);
-                return;
+                return new SkippedEntryDeferredPermission();
             }
         }
 
@@ -323,14 +343,6 @@ public class RestoreHandler extends DefaultHandler {
             listener.setCurrentResource(name);
             if(currentCollection instanceof Observable) {
                 listener.observe((Observable)currentCollection);
-            }
-
-            //triggers should NOT be disabled, because it do used by the system tasks (like security manager)
-            //UNDERSTAND: split triggers: user & system
-            //current.setTriggersEnabled(false);
-            if(currentCollection.getName().equals("/db/system") && name.equals("users.xml") && currentCollection.getChildCollection("security") != null) {
-                listener.warn("skip resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.");
-                return;
             }
 
             Resource res = currentCollection.createResource(docUri.toString(), type);
@@ -350,7 +362,10 @@ public class RestoreHandler extends DefaultHandler {
             }
 
             // Restoring name
-            if(res != null) {
+            if(res == null) {
+                listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'. The resource is empty.");
+                return new SkippedEntryDeferredPermission();
+            } else {
                 Date date_created = null;
                 Date date_modified = null;
 
@@ -388,18 +403,15 @@ public class RestoreHandler extends DefaultHandler {
                 } else {
                     deferredPermission = new ResourceDeferredPermission(listener, res, owner, group, Integer.parseInt(perms, 8));
                 }
-                deferredPermissions.push(deferredPermission); 
-//	                    	current.setTriggersEnabled(true);
-
-            } else {
-                listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'. The resource is empty.");
+                
+                listener.restored(name);
+                
+                return deferredPermission;
             }
-            listener.restored(name);
-
         } catch(Exception e) {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
             LOG.error(e.getMessage(), e);
-//                        throw( new RuntimeException( e ) );
+            return new SkippedEntryDeferredPermission();
         } finally {
             is.close();
         }
