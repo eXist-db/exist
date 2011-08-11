@@ -33,7 +33,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Adam Retter <adam@exist-db.org>
  */
 
-class ResourceDeferredPermission extends DeferredPermission<Resource> {
+class ResourceDeferredPermission extends AbstractDeferredPermission<Resource> {
 
     private final static Logger LOG = Logger.getLogger(ResourceDeferredPermission.class);
     

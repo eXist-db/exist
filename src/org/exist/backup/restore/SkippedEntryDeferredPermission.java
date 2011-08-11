@@ -25,12 +25,17 @@ import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 
 /**
+ * Represents the permissions for a skipped entry in the restore process, e.g. apply() does nothing
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author  Adam Retter <adam@exist-db.org>
  */
-public interface DeferredPermission {
-    
-    public void apply();
-    
-    public void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode);
+public class SkippedEntryDeferredPermission implements DeferredPermission {
+
+    @Override
+    public void apply() {
+    }
+
+    @Override
+    public void addACE(int index, ACE_TARGET target, String who, ACE_ACCESS_TYPE access_type, int mode) {
+    }
 }

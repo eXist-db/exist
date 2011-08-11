@@ -32,7 +32,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author  Adam Retter <adam@exist-db.org>
  */
-class CollectionDeferredPermission extends DeferredPermission<Collection> {
+class CollectionDeferredPermission extends AbstractDeferredPermission<Collection> {
     
     private final static Logger LOG = Logger.getLogger(CollectionDeferredPermission.class);
     
