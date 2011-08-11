@@ -107,7 +107,11 @@ public class LDAPRealm extends AbstractRealm {
             ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
         } catch(NamingException e) {
-            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+            if(e instanceof javax.naming.AuthenticationException) {
+                throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, e.getMessage());
+            } else {
+                throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage());
+            }
 
         } finally {
             LdapUtils.closeContext(ctx);
