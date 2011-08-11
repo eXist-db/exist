@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/Configuration" xmlns:sec="http://exist-db.org/Configuration">
+    <xs:include schemaLocation="../../../schema/security-manager.xsd">
+    
+        <xs:element name="realm">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="context">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="url" type="xs:anyURI"/>
+                            <xs:element name="domain" type="xs:string"/>
+                            <xs:element name="search">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="base" type="xs:string"/>
+                                        <xs:element name="default-username" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="default-password" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="account" type="sec:principalType_account"/>
+                                        <xs:element name="group" type="sec:principalType_group"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="principals-are-case-insensitive" type="xs:boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:complexType name="principalType">
+        <xs:sequence>
+            <xs:element name="search-filter-prefix" type="xs:string"/>
+            <xs:element name="metadata-search-attribute" type="sec:metadataSearchAttributeType"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="principalType_account">
+        <xs:complexContent>
+            <xs:extension base="sec:principalType">
+                <xs:sequence>
+                    <xs:element name="search-attribute" type="sec:searchAttributeType_account"/>    
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="principalType_group">
+        <xs:complexContent>
+            <xs:extension base="sec:principalType">
+                <xs:sequence>
+                    <xs:element name="search-attribute" type="sec:searchAttributeType_group"/>    
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="searchAttributeType">
+        <xs:simpleContent>
+            <xs:extension base="xs:integer">
+                <xs:anyAttribute/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    <xs:complexType name="searchAttributeType_account">
+        <xs:complexContent>
+            <xs:extension base="sec:searchAttributeType">
+                <xs:attribute name="key" type="sec:searchAttributeKeyType_account" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="searchAttributeType_group">
+        <xs:complexContent>
+            <xs:extension base="sec:searchAttributeType">
+                <xs:attribute name="key" type="sec:searchAttributeKeyType_group" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="searchAttributeKeyType_common">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="name"/>
+            <xs:enumeration value="dn"/>
+            <xs:enumeration value="objectSid"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="searchAttributeKeyType_account">
+        <xs:union memberTypes="sec:searchAttributeKeyType_common sec:searchAttributeKeyType_accountOnly"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="searchAttributeKeyType_group">
+        <xs:union memberTypes="sec:searchAttributeKeyType_common sec:searchAttributeKeyType_groupOnly"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="searchAttributeKeyType_accountOnly">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="memberOf"/>
+            <xs:enumeration value="primaryGroupID"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="searchAttributeKeyType_groupOnly">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="primaryGroupToken"/>
+            <xs:enumeration value="member"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="metadataSearchAttributeType">
+        <xs:simpleContent>
+            <xs:extension base="sec:metadataAttributeType">
+                <xs:attribute name="key" type="sec:metadataKeyType"/>        
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="metadataKeyType">
+        <xs:restriction base="xs:anyURI">
+            <xs:enumeration value="http://axschema.org/namePerson"/>
+            <xs:enumeration value="http://axschema.org/contact/email"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="metadataAttributeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="name"/>
+            <xs:enumeration value="mail"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
