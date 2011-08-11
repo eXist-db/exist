@@ -32,6 +32,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
@@ -152,12 +153,13 @@ public class DBSource extends AbstractSource {
     }
 
     @Override
-    public void validate(Subject subject, int perm) throws PermissionDeniedException {
+    public void validate(Subject subject, int mode) throws PermissionDeniedException {
         
         //TODO This check should not even be here! Its up to the database to refuse access not requesting source
         
-        if(!doc.getPermissions().validate(subject, perm)) {
-            throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have " + Integer.toOctalString(perm) + " access to resource '" + doc.getURI() + "'.");
+        if(!doc.getPermissions().validate(subject, mode)) {
+            String modeStr = new UnixStylePermissionAider(mode).toString();
+            throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
     }
 }
