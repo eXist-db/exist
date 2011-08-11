@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/Configuration" xmlns:sec="http://exist-db.org/Configuration">
+    <xs:element name="security-manager">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Authentication-Entry-Point" type="xs:anyURI"/>
+                <xs:element ref="sec:realm"/>
+            </xs:sequence>
+            <xs:attribute name="last-account-id" type="xs:int"/>
+            <xs:attribute name="last-group-id" type="xs:int"/>
+            <xs:attribute name="version" type="xs:decimal" fixed="2.0"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="realm">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:any/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:anyAttribute/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
