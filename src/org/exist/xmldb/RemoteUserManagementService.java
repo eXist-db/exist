@@ -371,7 +371,7 @@ public class RemoteUserManagementService implements UserManagementService {
             } catch(XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             } catch(PermissionDeniedException pde) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
             }
         }
 
@@ -429,7 +429,7 @@ public class RemoteUserManagementService implements UserManagementService {
             } catch (XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             } catch(PermissionDeniedException pde) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
             }
         }
 
@@ -461,7 +461,7 @@ public class RemoteUserManagementService implements UserManagementService {
         } catch (XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch(PermissionDeniedException pde) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
     }
 
@@ -491,7 +491,7 @@ public class RemoteUserManagementService implements UserManagementService {
         } catch(XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch(PermissionDeniedException pde) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
     }
 
@@ -513,34 +513,42 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@return                     The user value
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public Account getAccount(String name) throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(1);
-			params.add(name);
-			HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getAccount", params);
+    @Override
+    public Account getAccount(String name) throws XMLDBException { 
+        try {
+            
+            final List<Object> params = new ArrayList<Object>(1);
+            params.add(name);
+            final HashMap<?,?> tab = (HashMap<?,?>) parent.getClient().execute("getAccount", params);
 
-			GroupAider defaultGroup = new GroupAider(
-					(Integer) tab.get("default-group-id"),
-					(String) tab.get("default-group-realmId"),
-					(String) tab.get("default-group-name")
-				);
-
-			UserAider u = new UserAider(
-					(String) tab.get("realmId"), 
-					(String) tab.get("name"),
-					defaultGroup
-				);
-			
-			Object[] groups = (Object[]) tab.get("groups");
-            for (int i = 0; i < groups.length; i++) {
-				u.addGroup((String) groups[i]);
+            if(tab == null || tab.isEmpty()) {
+                return null;
             }
-			String home = (String) tab.get("home");
-			u.setHome(home==null?null:XmldbURI.create(home));
-			return u;
-		} catch (XmlRpcException e) {
-			return null;
-		}
+                        
+            GroupAider defaultGroup = new GroupAider(
+                (Integer) tab.get("default-group-id"),
+                (String) tab.get("default-group-realmId"),
+                (String) tab.get("default-group-name")
+            );
+
+            UserAider u = new UserAider(
+                (String) tab.get("realmId"), 
+                (String) tab.get("name"),
+                defaultGroup
+            );
+			
+            Object[] groups = (Object[]) tab.get("groups");
+            for(int i = 0; i < groups.length; i++) {
+                u.addGroup((String) groups[i]);
+            }
+            
+            String home = (String) tab.get("home");
+            u.setHome(home==null?null:XmldbURI.create(home));
+            return u;
+                        
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
 	/**
@@ -581,7 +589,7 @@ public class RemoteUserManagementService implements UserManagementService {
                 List<Object> params = new ArrayList<Object>(1);
                 params.add(name);
                 HashMap<String,Object> tab = (HashMap<String,Object>) parent.getClient().execute("getGroup", params);
-                if(tab != null) {
+                if(tab != null && !tab.isEmpty()) {
                     Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
                     return role;
                 }
