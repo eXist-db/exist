@@ -244,7 +244,7 @@ public class OptimizerTest {
         execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
-    @Test
+    @Test @Ignore
     public void reversePathsWithWildcard() {
         //parent with wildcard
         int r = execute("/root//b/parent::*[b = 'two']", false);
