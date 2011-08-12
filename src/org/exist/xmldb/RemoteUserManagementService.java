@@ -547,7 +547,7 @@ public class RemoteUserManagementService implements UserManagementService {
             return u;
                         
         } catch (XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            return null;
         }
     }
 
