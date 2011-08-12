@@ -788,6 +788,9 @@ public class FTIndexTest {
     private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, String term, int expected) throws PermissionDeniedException {
         
         TextSearchEngine engine = broker.getTextEngine();
+        
+        Assume.assumeNotNull(engine);
+        
         if(engine==null)
             fail("old FullText has been switched off by default");
         
