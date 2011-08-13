@@ -112,7 +112,18 @@
             div.empty().addClass('pagination-links');
             if (options.itemsPerPage == 1) {
 
-                var span = $('<span class="pagination-back">&lt;&lt;</span>');
+                var span = $('<span class="pagination-first">|&lt;</span>');
+                div.append(span);
+                if (currentItem <= 1) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(1);
+                        return false;
+                    });
+                }
+                
+                var span = $('<span class="pagination-previous">&lt;</span>');
                 div.append(span);
                 if (currentItem <= 1) {
                     span.addClass("inactive");
@@ -122,8 +133,12 @@
                         return false;
                     });
                 }
+				
+				span = $('<span class="pagination-info"></span>');
+                span.text('Record ' + currentItem);
+                div.append(span);
 
-                span = $('<span class="pagination-next">&gt;&gt;</span>');
+                span = $('<span class="pagination-next">&gt;</span>');
                 div.append(span);
                 if (currentItem >= options.totalItems) {
                     span.addClass("inactive");
@@ -134,9 +149,19 @@
                     });
                 }
 
+                var span = $('<span class="pagination-last">&gt;|</span>');
+                div.append(span);
+                if (currentItem == options.totalItems) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(options.totalItems);
+                        return false;
+                    });
+                }
+                
                 span = $('<span class="pagination-info"></span>');
-                span.text('Showing hit ' + currentItem + ' of ' + options.totalItems);
-                var listLink = $('<a class="pagination-list-view" href="#">[Switch to list view]</a>');
+                var listLink = $('<a class="pagination-list-view" href="#">List view</a>');
                 listLink.click(function (ev) {
                     ev.preventDefault();
                     options.itemsPerPage = 10;
@@ -149,6 +174,29 @@
                 span.append(listLink);
                 div.append(span);
             } else {
+            
+                var span = $('<span class="pagination-first">|&lt;</span>');
+                div.append(span);
+                if (currentItem <= 1) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(1);
+                        return false;
+                    });
+                }
+                
+                var span = $('<span class="pagination-previous">&lt;</span>');
+                div.append(span);
+                if (currentItem <= 10) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(currentItem - options.itemsPerPage);
+                        return false;
+                    });
+                }
+                
                 var pages = Math.ceil(options.totalItems / options.itemsPerPage);
                 var currentPage = Math.floor(currentItem / options.itemsPerPage);
                 var startPage = currentPage > 2 ? currentPage - 3 : 0;
@@ -166,6 +214,38 @@
                         end = options.totalItems;
                     appendPageLink(div, (i * options.itemsPerPage + 1), end);
                 }
+                
+                span = $('<span class="pagination-info"></span>');
+                if (options.totalItems == currentItem)
+                	recordSpan = ('Record ' + currentItem)
+                else if (options.totalItems < (currentItem + options.itemsPerPage - 1))
+                	recordSpan = ('Records ' + currentItem + ' to ' + options.totalItems)
+                else recordSpan = ('Records ' + currentItem + ' to ' + ((currentItem + options.itemsPerPage - 1)))
+                span.text(recordSpan);
+                div.append(span);
+
+				span = $('<span class="pagination-next">&gt;</span>');
+                div.append(span);
+                if (currentPage == endPage) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(currentItem + options.itemsPerPage);
+                        return false;
+                    });
+                }
+
+				var span = $('<span class="pagination-last">&gt;|</span>');
+                div.append(span);
+                if (options.totalItems < (currentItem + options.itemsPerPage - 1)) {
+                    span.addClass("inactive");
+                } else {
+                    span.click(function () {
+                        retrievePage(options.totalItems);
+                        return false;
+                    });
+                }
+
             }
             return div;
         }
