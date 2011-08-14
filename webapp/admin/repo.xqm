@@ -211,7 +211,7 @@ declare function repomanager:all-packages() {
 declare function repomanager:view-installed() {
     let $packages := repomanager:all-packages()
     return
-        <div id="installed">
+        <ul id="installed">
         {
             for $package in $packages
             let $iconURL :=
@@ -232,8 +232,10 @@ declare function repomanager:view-installed() {
 				else
 					()
             return
-                <div class="package">
-                    <img class="icon" src="{$iconURL}" alt="{$package//package:title}" width="48"/>
+                <li class="package">
+                    <div class="icon">
+                        <img src="{$iconURL}" alt="{$package//package:title}" width="64"/>
+                    </div>
                     <h3>{$package//package:title/string()} ({$version})</h3>
                     <div class="details">
                         <img class="close-details" src="images/close.png" alt="Close" title="Close"/>
@@ -296,9 +298,9 @@ declare function repomanager:view-installed() {
                             </tr>
                         </table>
                     </div>
-                </div>
+                </li>
         }
-        </div>
+        </ul>
 };
 
 declare function repomanager:show-public() {
