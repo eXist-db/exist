@@ -47,6 +47,16 @@ function initPackages() {
             });
         });
     });
+    var tallest = 0;
+    $("li.package").each(function () {
+        if ($(this).height() > tallest) {
+            tallest = $(this).height();
+        }
+    });
+    console.log("Tallest = %d", tallest);
+    $("li.package").each(function() {
+        $(this).height(tallest);
+    });
 }
 
 function reloadScheduledJobs() {

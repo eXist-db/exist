@@ -340,33 +340,50 @@ ul.tabs li a {
     display: none;
 }
 
+.packages {
+    width: 100%;
+}
+
+.packages li.package {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
 .package {
     width: 128px;
     float: left;
     padding: 4px 4px;
-    margin: 10px 10px 0 0;
+    margin: 8px 4px 30px 0;
     text-align: center;
     position: relative;
 }
 
-.package > img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+.package .icon {
+    display: inline-block;
+    height: 64px;
+    line-height: 64px;
+    width: 128px;
     text-align: center;
+    overflow: hidden;
+}
+
+.package > img {
+    display: inline;
     cursor: pointer;
+    vertical-align: middle;
 }
 
 .package h3 {
     text-decoration: none;
-    font-size: 85%;
+    font-size: 100%;
     border: 0;
 }
 
 .package .details {
     display: none;
     position: absolute;
-    width: 460px;
+    width: 400px;
     top: 50%;
     left: 25%;
     background: #fff;
@@ -381,13 +398,9 @@ ul.tabs li a {
     box-shadow: 10px 10px 5px #888;
 }
 
-.details form {
-    display: inline;
-}
-
 .details table {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 1em;
 }
 
 .details ul {
@@ -411,10 +424,6 @@ ul.tabs li a {
 
 .details .download {
     padding: 1em 0 0 8px;
-}
-
-.details a:link {
-    text-decoration: none;
 }
 
 .close-details {
