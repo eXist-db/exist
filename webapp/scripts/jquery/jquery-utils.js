@@ -188,7 +188,7 @@
                 
                 var span = $('<span class="pagination-previous">&lt;</span>');
                 div.append(span);
-                if (currentItem <= 10) {
+                if (currentItem <= options.itemsPerPage) {
                     span.addClass("inactive");
                 } else {
                     span.click(function () {
@@ -208,7 +208,7 @@
 
 				span = $('<span class="pagination-next">&gt;</span>');
                 div.append(span);
-                if (options.totalItems == currentItem) {
+                if (options.totalItems - options.itemsPerPage < currentItem ) {
                     span.addClass("inactive");
                 } else {
                     span.click(function () {
