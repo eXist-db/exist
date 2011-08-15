@@ -22,6 +22,7 @@
 package org.exist.security.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
@@ -250,8 +251,14 @@ public class RealmImpl extends AbstractRealm {
 
     @Override
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
-        return new ArrayList<String>();    //at present exist users cannot have personal name details
+        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
     }
+
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
+    }
+    
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
@@ -274,6 +281,19 @@ public class RealmImpl extends AbstractRealm {
 
         for(String groupName : groupsByName.keySet()) {
             if(groupName.startsWith(startsWith)) {
+                groupNames.add(groupName);
+            }
+        }
+
+        return groupNames;
+    }
+    
+    @Override
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+        List<String> groupNames = new ArrayList<String>();
+
+        for(String groupName : groupsByName.keySet()) {
+            if(groupName.indexOf(fragment) > -1) {
                 groupNames.add(groupName);
             }
         }

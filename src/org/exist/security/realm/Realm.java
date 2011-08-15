@@ -59,6 +59,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
     public Group getExternalGroup(Subject invokingUser, String name);
 
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith);
     public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
     public List<String> findAllGroupNames(Subject invokingUser);
     public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
@@ -66,6 +67,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
     public SecurityManager getSecurityManager();
 
     public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith);
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment);
 
 
 }

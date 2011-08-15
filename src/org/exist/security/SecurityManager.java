@@ -170,4 +170,8 @@ public interface SecurityManager extends Configurable {
     * @return Authentication form location
     */
    public String getAuthenticationEntryPoint();
+
+    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment);
+
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith);
 }

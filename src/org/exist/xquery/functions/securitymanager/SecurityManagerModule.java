@@ -44,6 +44,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
     private final static FunctionDef[] functions = {
         new FunctionDef(FindUserFunction.signatures[0], FindUserFunction.class),
         new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
+        new FunctionDef(FindUserFunction.signatures[2], FindUserFunction.class),
 
         new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
@@ -56,6 +57,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
         new FunctionDef(FindGroupFunction.signatures[0], FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.signatures[1], FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.signatures[2], FindGroupFunction.class),
 
         new FunctionDef(PermissionsFunctions.signatures[0], PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.signatures[1], PermissionsFunctions.class),

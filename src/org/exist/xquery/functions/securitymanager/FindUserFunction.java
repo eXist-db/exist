@@ -49,6 +49,7 @@ public class FindUserFunction extends BasicFunction {
 
     private final static QName qnFindUsersByUsername = new QName("find-users-by-username", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindUsersByName = new QName("find-users-by-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnFindUsersByNamePart = new QName("find-users-by-name-part", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -64,6 +65,14 @@ public class FindUserFunction extends BasicFunction {
             "Finds users whoose personal name starts with a matching string",
             new SequenceType[] {
                 new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a personal name")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
+        ),
+        new FunctionSignature(
+            qnFindUsersByNamePart,
+            "Finds users whoose first name or last name starts with a matching string",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a first or last name")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
         )
@@ -91,6 +100,8 @@ public class FindUserFunction extends BasicFunction {
             usernames = securityManager.findUsernamesWhereUsernameStarts(currentUser, startsWith);
         } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
             usernames = securityManager.findUsernamesWhereNameStarts(currentUser, startsWith);
+        } else if(isCalledAs(qnFindUsersByNamePart.getLocalName())) {
+            usernames = securityManager.findUsernamesWhereNamePartStarts(currentUser, startsWith);
         } else {
             throw new XPathException("Unknown function");
         }

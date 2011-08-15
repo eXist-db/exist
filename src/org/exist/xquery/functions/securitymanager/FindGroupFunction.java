@@ -49,6 +49,7 @@ public class FindGroupFunction extends BasicFunction {
 
     private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -63,7 +64,15 @@ public class FindGroupFunction extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match group names")
             },
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
+        ),
+        new FunctionSignature(
+            qnFindGroupsWhereGroupnameContains,
+            "Finds groups whoose group name contains the string fragment",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("fragment", Type.STRING, Cardinality.EXACTLY_ONE, "The fragment against which to match group names")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
         ),
     };
 
@@ -90,6 +99,9 @@ public class FindGroupFunction extends BasicFunction {
         } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
             final String startsWith = args[0].getStringValue();
             groupNames = securityManager.findGroupnamesWhereGroupnameStarts(currentUser, startsWith);
+        } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
+            final String fragment = args[0].getStringValue();
+            groupNames = securityManager.findGroupnamesWhereGroupnameContains(currentUser, fragment);
         } else {
             throw new XPathException("Unknown function");
         }
