@@ -28,10 +28,8 @@
         <section id="versions">
             <title>Versions</title>
             <para>Release <emphasis>1.4.1</emphasis> is our current production quality release. Among other things, it
-                features a faster and more customizable full text indexing by transparently integrating Lucene into the
-                XQuery engine. eXist-db now also provides a lightweight URL rewriting and MVC framework (which in part
-                replaces Cocoon already and will completely replace it in version 1.5), along with support for XProc, XForms and many new XQuery extension modules.</para>
-            <para>1.4.1 replaces the <emphasis>1.4</emphasis> version from 2009. Release <emphasis>1.5</emphasis>
+                features better Referential Integrity, revised Database Shutdown and Crash Protection, a completely new WebDAV implementation based on the Milton WebDAV library. The Lucene Full-Text Indexing has been made more robust and performant. In addition it now also includes configurable analyzers and parameters, better match highlighting and additional functions for working with Lucene document fields. The betterFORM server-side XForms 1.1 engine is integrated and enabled by default.</para>
+            <para>1.4.1 replaces the <emphasis>1.4.0</emphasis> version from 2009. Release <emphasis>1.5</emphasis>
                 is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
                 development release, which will relabeled to 1.6 when ready. New features will be added to this release only.</para>
         </section>
