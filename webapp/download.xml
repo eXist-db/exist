@@ -66,25 +66,25 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.jar/download"
-                                >eXist-setup-1.4.1-revXXXXX.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-rev15155.jar/download"
+                                >eXist-setup-1.4.1-rev15155.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.1-revXXXXX.jar</code></td>
+                                eXist-1.4.1-rev15155.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.exe/download"
-                                >eXist-setup-1.4.1-revXXXXX.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-rev15155.exe/download"
+                                >eXist-setup-1.4.1-rev15155.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-revXXXXX.war/download"
-                                >eXist-setup-1.4.1-revXXXXX.war</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.1-rev15155.war/download"
+                                >eXist-setup-1.4.1-rev15155.war</ulink>
                         </td>
                         <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
