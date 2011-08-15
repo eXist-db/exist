@@ -196,25 +196,7 @@
                         return false;
                     });
                 }
-                
-                var pages = Math.ceil(options.totalItems / options.itemsPerPage);
-                var currentPage = Math.floor(currentItem / options.itemsPerPage);
-                var startPage = currentPage > 2 ? currentPage - 3 : 0;
-                var endPage = 0;
-                if (currentPage + 3 >= pages)
-                    endPage = pages - 1;
-                else if (currentPage < 3)
-                    endPage = pages > 6 ? 6 : pages - 1;
-                else
-                    endPage = currentPage + 3;
-                
-                for (var i = startPage; i <= endPage; i++) {
-                    var end = (i * options.itemsPerPage + options.itemsPerPage);
-                    if (end > options.totalItems)
-                        end = options.totalItems;
-                    appendPageLink(div, (i * options.itemsPerPage + 1), end);
-                }
-                
+                                
                 span = $('<span class="pagination-info"></span>');
                 if (options.totalItems == currentItem)
                 	recordSpan = ('Record ' + currentItem)
@@ -226,7 +208,7 @@
 
 				span = $('<span class="pagination-next">&gt;</span>');
                 div.append(span);
-                if (currentPage == endPage) {
+                if (options.totalItems == currentItem) {
                     span.addClass("inactive");
                 } else {
                     span.click(function () {
