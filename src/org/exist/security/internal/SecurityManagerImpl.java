@@ -692,6 +692,24 @@ public class SecurityManagerImpl implements SecurityManager {
     }
     
     @Override
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+        List<String> userNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            userNames.addAll(realm.findUsernamesWhereNamePartStarts(invokingUser, startsWith));
+        }
+        return userNames;
+    }
+
+    @Override
+    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+        List<String> groupNames = new ArrayList<String>();
+        for(Realm realm : realms) {
+            groupNames.addAll(realm.findGroupnamesWhereGroupnameContains(invokingUser, fragment));
+        }
+        return groupNames;
+    }
+    
+    @Override
     public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
         List<String> groupNames = new ArrayList<String>();
         for(Realm realm : realms) {

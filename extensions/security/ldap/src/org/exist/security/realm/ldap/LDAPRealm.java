@@ -478,7 +478,8 @@ public class LDAPRealm extends AbstractRealm {
         String userName = removeDomainPostfix(accountName);
 
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), userName);
+        SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), userName);
+        String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), sa);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -501,7 +502,8 @@ public class LDAPRealm extends AbstractRealm {
     private String findGroupBySID(DirContext ctx, String sid) throws NamingException {
         
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID), sid);
+        SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID), sid);
+        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -529,7 +531,8 @@ public class LDAPRealm extends AbstractRealm {
         }
         
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), groupName);
+        SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), groupName);
+        String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -584,19 +587,61 @@ public class LDAPRealm extends AbstractRealm {
         return false;
     }
 
-    private String buildSearchFilter(String searchPrefix, String attrName, String attrValue) {
+    private class SearchAttribute {
+        private final String name;
+        private final String value;
+        
+        public SearchAttribute(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    
+    private String buildSearchFilter(String searchPrefix, SearchAttribute sa) {
 
         StringBuilder builder = new StringBuilder();
         builder.append("(");
         builder.append(buildSearchCriteria(searchPrefix));
 
-        if(attrName != null && attrValue != null) {
+        if(sa.getName() != null && sa.getValue() != null) {
             builder.append("(");
-            builder.append(attrName);
+            builder.append(sa.getName());
             builder.append("=");
-            builder.append(attrValue);
+            builder.append(sa.getValue());
             builder.append(")");
         }
+        builder.append(")");
+        return builder.toString();
+    }
+    
+    private String buildSearchFilterUnion(String searchPrefix, List<SearchAttribute> searchAttributes) {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("(");
+        builder.append(buildSearchCriteria(searchPrefix));
+
+        if(!searchAttributes.isEmpty()) {
+            builder.append("(|");
+            
+            for(SearchAttribute sa : searchAttributes) {
+                builder.append("(");
+                builder.append(sa.getName());
+                builder.append("=");
+                builder.append(sa.getValue());
+                builder.append(")");
+            }
+            
+            builder.append(")");
+        }
+        
         builder.append(")");
         return builder.toString();
     }
@@ -617,7 +662,54 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FULLNAME), startsWith + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FULLNAME), startsWith + "*");
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), sa);
+
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+            SearchResult searchResult = null;
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                String username = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
+                if(checkAccountRestrictionList(username)) {
+                    usernames.add(username);
+                }
+            }
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return usernames;
+    }
+    
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+        
+        startsWith = ensureCase(startsWith);
+        
+        List<String> usernames = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            
+            SearchAttribute firstNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FIRSTNAME), startsWith + "*");
+            SearchAttribute lastNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.LASTNAME), startsWith + "*");
+            List<SearchAttribute> sas = new ArrayList<SearchAttribute>();
+            sas.add(firstNameSa);
+            sas.add(lastNameSa);
+            
+            String searchFilter = buildSearchFilterUnion(search.getSearchAccount().getSearchFilterPrefix(), sas);
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -656,7 +748,8 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -695,7 +788,8 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.MEMBER), userDistinguishedName);
+            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.MEMBER), userDistinguishedName);
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -735,7 +829,49 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
+
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            searchControls.setReturningAttributes(new String[] { search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
+
+
+            NamingEnumeration<SearchResult> results = ctx.search(search.getBase(), searchFilter, searchControls);
+
+            SearchResult searchResult = null;
+            while(results.hasMoreElements()) {
+                searchResult = (SearchResult) results.nextElement();
+                String groupname = ensureCase(addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get()));
+                if(checkGroupRestrictionList(groupname)) {
+                    groupnames.add(groupname);
+                }
+            }
+        } catch(NamingException ne) {
+            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+        } finally {
+            if(ctx != null) {
+                LdapUtils.closeContext(ctx);
+            }
+        }
+
+        return groupnames;
+    }
+    
+    @Override
+    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+
+        fragment = ensureCase(fragment);
+        
+        List<String> groupnames = new ArrayList<String>();
+
+        LdapContext ctx = null;
+        try {
+            ctx = getContext(invokingUser);
+
+            LDAPSearchContext search = ensureContextFactory().getSearch();
+            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), "*" + fragment + "*");
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -772,7 +908,8 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(invokingUser);
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), null, null);
+            SearchAttribute sa = new SearchAttribute(null, null);
+            String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -820,7 +957,8 @@ public class LDAPRealm extends AbstractRealm {
             String dnGroup = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
 
             //find all accounts that are a member of the group
-            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.MEMBER_OF), dnGroup);
+            SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.MEMBER_OF), dnGroup);
+            String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), sa);
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             searchControls.setReturningAttributes(new String[] { search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME) });
