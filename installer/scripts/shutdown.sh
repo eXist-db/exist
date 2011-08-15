@@ -20,10 +20,10 @@ fi
 
 case "$0" in
 	/*)
-		SCRIPTPATH=$(dirname "$0")
+		SCRIPTPATH="$(dirname "$0")"
 		;;
 	*)
-		SCRIPTPATH=$(dirname "$PWD/$0")
+		SCRIPTPATH="$(dirname "$PWD/$0")"
 		;;
 esac
 
