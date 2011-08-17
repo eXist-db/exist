@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -113,8 +114,12 @@ public class SendRequestFunction extends BasicFunction {
         switch(getArgumentCount()) {
             case 3:
                 bodies = args[2];
-            case 2:
-                href = args[1].itemAt(0).getStringValue();
+            case 2: {
+                Item i = args[1].itemAt(0);
+                if ( i != null ) {
+                    href = i.getStringValue();
+                }
+            }
             case 1:
                 request = (NodeValue)args[0].itemAt(0);
                 break;
