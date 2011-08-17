@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import javax.xml.transform.Source;
 import org.exist.memtree.DocumentImpl;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.TypeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
@@ -34,6 +36,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.model.Result;
@@ -88,9 +91,11 @@ public class EXistResult implements Result {
     public void add(HttpResponse response) throws HttpClientException {
         EXistTreeBuilder builder = new EXistTreeBuilder(context);
         response.outputResponseElement(builder);
-        DocumentImpl elem = builder.close();
+        DocumentImpl doc = builder.close();
         try {
-            result.add(elem);
+            // we add the root *element* to the result sequence
+            NodeTest kind = new TypeTest(Type.ELEMENT);
+            doc.selectChildren(kind, result);
         } catch (XPathException xpe) {
             throw new HttpClientException("Unable to add HttpResponse to result:" + xpe.getMessage(), xpe);
         }
