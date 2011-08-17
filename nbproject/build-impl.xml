@@ -144,12 +144,13 @@ is divided into following sections:
         <condition property="have.sources">
             <or>
                 <available file="${src.dir}"/>
-                <available file="${src.src14.dir}"/>
                 <available file="${src.src2.dir}"/>
                 <available file="${src.src4.dir}"/>
                 <available file="${src.src9.dir}"/>
                 <available file="${src.src3.dir}"/>
                 <available file="${src.src13.dir}"/>
+                <available file="${src.src14.dir}"/>
+                <available file="${src.src15.dir}"/>
                 <available file="${eXist-1.33.dir}"/>
                 <available file="${src.src.dir}"/>
                 <available file="${src.src10.dir}"/>
@@ -225,12 +226,13 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="src.src14.dir">Must set src.src14.dir</fail>
         <fail unless="src.src2.dir">Must set src.src2.dir</fail>
         <fail unless="src.src4.dir">Must set src.src4.dir</fail>
         <fail unless="src.src9.dir">Must set src.src9.dir</fail>
         <fail unless="src.src3.dir">Must set src.src3.dir</fail>
         <fail unless="src.src13.dir">Must set src.src13.dir</fail>
+        <fail unless="src.src14.dir">Must set src.src14.dir</fail>
+        <fail unless="src.src15.dir">Must set src.src15.dir</fail>
         <fail unless="eXist-1.33.dir">Must set eXist-1.33.dir</fail>
         <fail unless="src.src.dir">Must set src.src.dir</fail>
         <fail unless="src.src10.dir">Must set src.src10.dir</fail>
@@ -265,7 +267,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${src.src14.dir}:${src.src15.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -305,7 +307,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${src.src14.dir}:${src.src15.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -337,7 +339,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${src.src14.dir}:${src.src15.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -623,13 +625,6 @@ is divided into following sections:
         <propertyfile file="${built-jar.properties}">
             <entry key="${basedir}" value=""/>
         </propertyfile>
-        <antcall target="-maybe-call-dep">
-            <param name="call.built.properties" value="${built-jar.properties}"/>
-            <param location="${project.http-client-java}" name="call.subproject"/>
-            <param location="${project.http-client-java}/build.xml" name="call.script"/>
-            <param name="call.target" value="jar"/>
-            <param name="transfer.built-jar.properties" value="${built-jar.properties}"/>
-        </antcall>
     </target>
     <target depends="init,-check-automatic-build,-clean-after-automatic-build" name="-verify-automatic-build"/>
     <target depends="init" name="-check-automatic-build">
@@ -651,18 +646,19 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${src.src14.dir}:${src.src15.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.src14.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src2.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src4.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src9.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src3.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src13.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.src14.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.src15.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${eXist-1.33.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.src10.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -681,29 +677,10 @@ is divided into following sections:
             <fileset dir="${meta.inf.dir}" includes="persistence.xml"/>
         </copy>
     </target>
-    <target name="-post-compile" depends="aspectj">
+    <target name="-post-compile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-        
-    <!-- Add an AspectJ build target -->
-    <taskdef classpath="tools/aspectj/lib/aspectjtools-1.6.11.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
-    <target name="aspectj">
-        <echo level="info">--- aspectj (start) ---</echo>
-        <iajc
-            destdir="${build.classes.dir}"
-            source="${javac.source}"
-            target="${javac.target}"
-            classpath="${javac.classpath}:${j2ee.platform.classpath}"
-            deprecation="${javac.deprecation}"
-            encoding="${source.encoding}"
-            debug="${javac.debug}" showWeaveInfo="true">
-            <inpath>
-                <pathelement location="${build.classes.dir}" />
-            </inpath>
-        </iajc>
-    </target>
-    
     <target depends="init,deps-jar,-verify-automatic-build,-pre-pre-compile,-pre-compile,-do-compile,-post-compile" description="Compile project." name="compile"/>
     <target name="-pre-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -712,7 +689,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${src.src14.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${src.src2.dir}:${src.src4.dir}:${src.src9.dir}:${src.src3.dir}:${src.src13.dir}:${src.src14.dir}:${src.src15.dir}:${eXist-1.33.dir}:${src.src.dir}:${src.src10.dir}:${src.src11.dir}:${src.src5.dir}:${src.src7.dir}:${src.src8.dir}:${src.src12.dir}:${src.src6.dir}:${eXist-1.32.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -932,68 +909,69 @@ is divided into following sections:
             <classpath>
                 <path path="${javac.classpath}"/>
             </classpath>
-            <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src14.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src2.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src2.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src4.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src4.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src9.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src9.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src3.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src3.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src13.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src13.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src14.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${eXist-1.33.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src15.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${eXist-1.33.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src10.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src11.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src10.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src5.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src11.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src7.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src5.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src8.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src7.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src12.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src8.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.src6.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src12.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${eXist-1.32.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.src6.dir}" excludes="*.java,${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${eXist-1.32.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
                 <include name="**/*.java"/>
+                <exclude name="*.java"/>
             </fileset>
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
-            <fileset dir="${src.src14.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
             <fileset dir="${src.src2.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
@@ -1007,6 +985,12 @@ is divided into following sections:
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.src13.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/doc-files/**"/>
+            </fileset>
+            <fileset dir="${src.src14.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/doc-files/**"/>
+            </fileset>
+            <fileset dir="${src.src15.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${eXist-1.33.dir}" excludes="${excludes}" includes="${includes}">
@@ -1203,13 +1187,6 @@ is divided into following sections:
         <propertyfile file="${built-clean.properties}">
             <entry key="${basedir}" value=""/>
         </propertyfile>
-        <antcall target="-maybe-call-dep">
-            <param name="call.built.properties" value="${built-clean.properties}"/>
-            <param location="${project.http-client-java}" name="call.subproject"/>
-            <param location="${project.http-client-java}/build.xml" name="call.script"/>
-            <param name="call.target" value="clean"/>
-            <param name="transfer.built-clean.properties" value="${built-clean.properties}"/>
-        </antcall>
     </target>
     <target depends="init" name="-do-clean">
         <delete dir="${build.dir}"/>
