@@ -32,6 +32,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.SequenceIterator;
 import org.expath.httpclient.HttpClientException;
@@ -63,7 +64,9 @@ public class EXistSequence implements Sequence {
     @Override
     public Sequence next() throws HttpClientException {
         try {
-            return new EXistSequence((NodeValue)sequenceIterator.nextItem(), context);
+            Item item = sequenceIterator.nextItem();
+            org.exist.xquery.value.Sequence singleton = (org.exist.xquery.value.Sequence) item;
+            return new EXistSequence(singleton, context);
         } catch (XPathException xpe) {
             throw new HttpClientException(xpe.getMessage(), xpe);
         }
