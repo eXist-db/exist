@@ -162,8 +162,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		int i = 0;
 		String[] names = new String[groups.size()];
 		for (Group role : groups) {
-			names[i] = role.getName();
-			i++;
+                    names[i++] = role.getName();
 		}
 		
 		return names;
@@ -317,6 +316,13 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         		metadataKeys.add(axKey);
         }
         return metadataKeys;
+    }
+    
+    @Override
+    public void clearMetadata() {
+        if(metadata != null) {
+            this.metadata.clear();
+        }
     }
 
     @Override
