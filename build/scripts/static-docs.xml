@@ -144,6 +144,7 @@
         <get src="${url}/building.xml" dest="${build.docs.html}/building.html"/>
         <get src="${url}/client.xml" dest="${build.docs.html}/client.html"/>
         <get src="${url}/cluster.xml" dest="${build.docs.html}/cluster.html"/>
+        <get src="${url}/community.xml" dest="${build.docs.html}/community.html"/>
         <get src="${url}/config-cache.xml" dest="${build.docs.html}/config-cache.html"/>
         <get src="${url}/config-compression.xml" dest="${build.docs.html}/config-compression.html"/>
         <get src="${url}/config-context.xml" dest="${build.docs.html}/config-context.html"/>
@@ -205,6 +206,7 @@
         <get src="${url}/ubuntu-server.xml" dest="${build.docs.html}/ubuntu-server.html"/>
         <get src="${url}/update_ext.xml" dest="${build.docs.html}/update_ext.html"/>
         <get src="${url}/upgrading.xml" dest="${build.docs.html}/upgrading.html"/>
+        <get src="${url}/urlrewrite.xml" dest="${build.docs.html}/urlrewrite.html"/>
         <get src="${url}/validation.xml" dest="${build.docs.html}/validation.html"/>
         <get src="${url}/versioning.xml" dest="${build.docs.html}/versioning.html"/>
         <get src="${url}/webdav.xml" dest="${build.docs.html}/webdav.html"/>
@@ -213,6 +215,7 @@
         <get src="${url}/xacml-intro.xml" dest="${build.docs.html}/xacml-intro.html"/>
         <get src="${url}/xacml-usage.xml" dest="${build.docs.html}/xacml-usage.html"/>
         <get src="${url}/xacml.xml" dest="${build.docs.html}/xacml.html"/>
+        <get src="${url}/xquery.xml" dest="${build.docs.html}/xquery.html"/>
         <mkdir dir="${build.docs.html}/xforms"/>
         <get src="${url}/xforms/examples.xml" dest="${build.docs.html}/xforms/examples.html"/>
         <get src="${url}/xforms/hello.xml" dest="${build.docs.html}/xforms/hello.html"/>
