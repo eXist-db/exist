@@ -61,7 +61,7 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.jar/download"
                                 >eXist-setup-1.4.1-rev15155.jar</ulink>
                         </td>
-                        <td> Installer based on IzPack. Includes source. Run with <code>java -jar
+                        <td>Stand alone distribution, installer based on IzPack. Includes source. Run with <code>java -jar
                             eXist-1.4.1-rev15155.jar</code></td>
                     </tr>
                     <tr>
@@ -70,7 +70,7 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.exe/download"
                                 >eXist-setup-1.4.1-rev15155.exe</ulink>
                         </td>
-                        <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
+                        <td>Stand alone distribution, installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
@@ -78,7 +78,10 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev15155.war/download"
                                 >exist-1.4.1-rev15155.war</ulink>
                         </td>
-                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
+                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.
+                            Note: We would like to encourage new users to start with the stand alone
+                            distribution. Running eXist within an isolated environment helps to
+                            identify issues and avoid unnecessary problems. </td>
                     </tr>
                     <tr>
                         <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
