@@ -53,44 +53,43 @@
                 <table cellpadding="5" cellspacing="5">
                     <caption/>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4 (Stable
-                            Release)</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4.1 (Stable Release)</th>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.jar/download"
-                                >eXist-setup-1.4.0-rev10440.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.jar/download"
+                                >eXist-setup-1.4.1-rev15155.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.0-rev10440.jar</code></td>
+                            eXist-1.4.1-rev15155.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4/eXist-setup-1.4.0-rev10440.exe/download"
-                                >eXist-setup-1.4.0-rev10440.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.exe/download"
+                                >eXist-setup-1.4.1-rev15155.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
-                        <td colspan="2">We no longer distribute a <filename>.war</filename> package
-                            as we would like to encourage new users to start with the stand alone
-                            distribution. Running eXist within an isolated environment helps to
-                            identify issues and avoid unnecessary problems. However, experienced
-                            users can always <ulink url="building.xml#war">repackage</ulink> the
-                            standard distribution. It only takes seconds.</td>
+                        <td>
+                            <ulink
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev15155.war/download"
+                                >exist-1.4.1-rev15155.war</ulink>
+                        </td>
+                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as
-                            Cocoon block</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2">The 1.4 release still includes Cocoon 2.1.11.
-                            We would like to provide an eXist-as-Cocoon block as we have done in the
-                            past. However, we lacked the manpower to get this ready for 1.4. If you
-                            have experience with Cocoon please drop a message on the developer's
-                            list.</td>
+                        <td align="left" colspan="2">The 1.4.1 release still includes Cocoon 2.1.11.
+                            Starting with release 1.5 cocoon will only available as an optional
+                            block. The development team is looking for a maintainer for this code.
+                            If you have experience with Cocoon please drop us a message on the
+                            developer's list, otherwise this feature will be removed in the
+                            future.</td>
                     </tr>
                 </table>
             </section>
