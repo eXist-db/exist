@@ -265,4 +265,9 @@ public abstract class AbstractSubject implements Subject {
     public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
         account.assertCanModifyAccount(user);
     }
+
+    @Override
+    public void clearMetadata() {
+        account.clearMetadata();
+    }
 }

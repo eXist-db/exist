@@ -224,6 +224,13 @@ public class UserAider implements Account {
         return metadata.keySet();
     }
 
+    @Override
+    public void clearMetadata() {
+        metadata.clear();
+    }
+    
+    
+
 	@Override
 	public Group getDefaultGroup() {
 		return defaultRole;

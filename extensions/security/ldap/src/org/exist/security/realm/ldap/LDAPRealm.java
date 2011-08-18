@@ -21,10 +21,13 @@
  */
 package org.exist.security.realm.ldap;
 
+import java.lang.reflect.Field;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -46,6 +49,7 @@ import org.exist.security.Subject;
 import org.exist.security.AbstractAccount;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Group;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
@@ -137,7 +141,182 @@ public class LDAPRealm extends AbstractRealm {
 
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
+    
+    private List<Group> getGroupMembershipForLdapUser(Subject invokingUser, SearchResult ldapUser) throws NamingException {
+        
+        final List<Group> memberOf_groups = new ArrayList<Group>();
+        
+        final LDAPSearchContext search = ensureContextFactory().getSearch();
+        final String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
+        final List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
+        for(String memberOf_groupName : memberOf_groupNames) {
+            memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
+        }
+        
+        //TODO expand to a general method that rewrites the useraider based on the realTransformation
+        if(ensureContextFactory().getTransformationContext() != null){
+            final List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
+            if(additionalGroupNames != null) {
+                for(String additionalGroupName : additionalGroupNames) {
+                    Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
+                    if(additionalGroup != null) {
+                        memberOf_groups.add(additionalGroup);
+                    }
+                }
+            }
+        }
+        
+        return memberOf_groups;
+    }
+    
+    private List<SimpleEntry<AXSchemaType, String>> getMetadataForLdapUser(SearchResult ldapUser) throws NamingException {
+        
+        final List<SimpleEntry<AXSchemaType, String>> metadata = new ArrayList<SimpleEntry<AXSchemaType, String>>();
+        
+        final LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
+        
+        final Attributes userAttributes = ldapUser.getAttributes();
+        
+        //store any requested metadata
+        for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
+            String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
+            if(userAttributes != null) {
+                Attribute userAttribute = userAttributes.get(searchAttribute);
+                if(userAttribute != null) {
+                    String attributeValue = userAttribute.get().toString();
+                    metadata.add(new SimpleEntry<AXSchemaType, String>(axSchemaType, attributeValue));
+                }
+            }
+        }
+        
+        return metadata;
+    }
+    
+    public Account refreshAccountFromLdap(Subject invokingUser, final Account account) throws PermissionDeniedException, AuthenticationException{
+        
+        final int UPDATE_NONE = 0;
+        final int UPDATE_GROUP = 1;
+        final int UPDATE_METADATA = 2;
+        
+        if(!invokingUser.hasDbaRole() && invokingUser.getId() != account.getId()) {
+            throw new PermissionDeniedException("You do not have permission to modify the account");
+        }
+        
+        try {
+            final LdapContext ctx = getContext(invokingUser);
+            final SearchResult ldapUser = findAccountByAccountName(ctx, account.getName());
+            if(ldapUser == null) {
+                throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Could not find the account in the LDAP");
+            }
+        
+            return executeAsSystemUser(invokingUser, new Unit<Account>(){
+                @Override
+                public Account execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+                    
+                    int update = UPDATE_NONE;
+                    
+                    //1) get the ldap group membership
+                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(invokingUser, ldapUser);
+                    
+                    //2) get the ldap primary group
+                    final String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
+                    
+                    //append the ldap primaryGroup to the head of the ldap group list, and compare
+                    //to the account group list
+                    memberOf_groups.add(0, getGroup(invokingUser, primaryGroup));
 
+                    final String accountGroups[] = account.getGroups();
+                    
+                    if(!accountGroups[0].equals(ensureCase(primaryGroup))) {
+                        update |= UPDATE_GROUP;
+                    } else {
+                        if(accountGroups.length != memberOf_groups.size()) {
+                            update |= UPDATE_GROUP;
+                        } else {
+                            for(int i = 0; i < accountGroups.length; i++) {
+
+                                boolean found = false;
+
+                                for(Group memberOf_group : memberOf_groups) {
+                                    if(accountGroups[i].equals(ensureCase(memberOf_group.getName()))) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if(!found) {
+                                    update |= UPDATE_GROUP;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    //3) check metadata
+                    final List<SimpleEntry<AXSchemaType, String>> ldapMetadatas = getMetadataForLdapUser(ldapUser);
+                    final Set<SchemaType> accountMetadataKeys = account.getMetadataKeys();
+
+                    if(accountMetadataKeys.size() != ldapMetadatas.size()) {
+                        update |= UPDATE_METADATA;
+                    } else {
+                        for(SchemaType accountMetadataKey : accountMetadataKeys) {
+                            final String accountMetadataValue = account.getMetadataValue(accountMetadataKey);
+
+                            boolean found = false;
+
+                            for(SimpleEntry<AXSchemaType, String> ldapMetadata : ldapMetadatas) {
+                                if(accountMetadataKey.equals(ldapMetadata.getKey()) && accountMetadataValue.equals(ldapMetadata.getValue())) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if(!found) {
+                                update |= UPDATE_METADATA;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    //update the groups?
+                    if((update & UPDATE_GROUP) == UPDATE_GROUP) {
+                        try {
+                            Field fld = account.getClass().getSuperclass().getDeclaredField("groups");
+                            fld.setAccessible(true);
+                            fld.set(account, memberOf_groups);
+                        } catch(NoSuchFieldException nsfe) {
+                            throw new EXistException(nsfe.getMessage(), nsfe);
+                        } catch(IllegalAccessException iae) {
+                            throw new EXistException(iae.getMessage(), iae);
+                        }
+                    }
+                    
+                    //update the metdata?
+                    if((update & UPDATE_METADATA) == UPDATE_METADATA) {
+                        account.clearMetadata();
+                        for(SimpleEntry<AXSchemaType, String> ldapMetadata : ldapMetadatas) {
+                            account.setMetadataValue(ldapMetadata.getKey(), ldapMetadata.getValue());
+                        }
+                    }
+                    
+                    if(update != UPDATE_NONE) {
+                        boolean updated = getSecurityManager().updateAccount(invokingUser, account);
+                        if(!updated) {
+                            LOG.error("Could not update account");
+                        }
+                    }
+
+                    return account;
+                }
+            });
+        } catch(NamingException ne) {
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage(), ne);
+        } catch(EXistException ee) {
+            throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ee.getMessage(), ee);
+        }
+        
+    }
+    
     private Account createAccountInDatabase(final Subject invokingUser, final String username, final SearchResult ldapUser, final String primaryGroupName) throws AuthenticationException {
 
         final LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
@@ -147,44 +326,37 @@ public class LDAPRealm extends AbstractRealm {
                 @Override
                 public Account execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
                     //get (or create) the primary group if it doesnt exist
-                    Group primaryGroup = getGroup(invokingUser, primaryGroupName);
+                    final Group primaryGroup = getGroup(invokingUser, primaryGroupName);
 
                     //get (or create) member groups
-                    LDAPSearchContext search = ensureContextFactory().getSearch();
+                    /*LDAPSearchContext search = ensureContextFactory().getSearch();
                     String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
                     List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
 
                     List<Group> memberOf_groups = new ArrayList<Group>();
                     for(String memberOf_groupName : memberOf_groupNames) {
                         memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
-                    }
+                    }*/
 
                     //create the user account
-                    UserAider userAider = new UserAider(ID, username, primaryGroup);
+                    final UserAider userAider = new UserAider(ID, username, primaryGroup);
 
                     //add the member groups
-                    for(Group memberOf_group : memberOf_groups) {
+                    for(Group memberOf_group : getGroupMembershipForLdapUser(invokingUser, ldapUser)) {
                         userAider.addGroup(memberOf_group);
                     }
 
                     //store any requested metadata
-                    for(AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
-                        String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
-                        Attributes userAttributes = ldapUser.getAttributes();
-                        if(userAttributes != null) {
-                            Attribute userAttribute = userAttributes.get(searchAttribute);
-                            if(userAttribute != null) {
-                                String attributeValue = userAttribute.get().toString();
-                                userAider.setMetadataValue(axSchemaType, attributeValue);
-                            }
-                        }
+                    for(SimpleEntry<AXSchemaType, String> metadata : getMetadataForLdapUser(ldapUser)) {
+                        userAider.setMetadataValue(metadata.getKey(), metadata.getValue());
                     }
 
-                    Account account = getSecurityManager().addAccount(userAider);
+                    final Account account = getSecurityManager().addAccount(userAider);
 
                     //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
                     //TODO expand to a general method that rewrites the useraider based on the realTransformation
+                    /*
                     boolean updatedAccount = false;
                     if(ensureContextFactory().getTransformationContext() != null){
                         List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
@@ -203,7 +375,7 @@ public class LDAPRealm extends AbstractRealm {
                         if(!updated) {
                             LOG.error("Could not update account");
                         }
-                    }
+                    }*/
 
                     return account;
                 }

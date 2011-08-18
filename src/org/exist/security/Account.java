@@ -174,4 +174,6 @@ public interface Account extends Principal, User {
     public String getMetadataValue(SchemaType schemaType);
 
     public Set<SchemaType> getMetadataKeys();
+    
+    public void clearMetadata();
 }

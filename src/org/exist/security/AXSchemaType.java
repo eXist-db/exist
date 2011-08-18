@@ -62,10 +62,12 @@ public enum AXSchemaType implements SchemaType {
         return null;
     }
 
+    @Override
     public String getNamespace() {
         return namespace;
     }
 
+    @Override
     public String getAlias() {
         return alias;
     }
