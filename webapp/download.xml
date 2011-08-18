@@ -77,7 +77,7 @@
                         <td>
                             <ulink
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev15155.war/download"
-                                >eXist-setup-1.4.1-rev15155.war</ulink>
+                                >exist-1.4.1-rev15155.war</ulink>
                         </td>
                         <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
