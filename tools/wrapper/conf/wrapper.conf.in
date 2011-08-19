@@ -1,3 +1,11 @@
+#encoding=UTF-8
+# Configuration files must begin with a line specifying the encoding
+#  of the the file.
+
+# Include file problems can be debugged by removing the first '#'
+#  from the following line:
+##include.debug
+
 #********************************************************************
 # Wrapper Properties
 #********************************************************************
@@ -22,6 +30,9 @@ wrapper.java.classpath.3=../../../start.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=../lib
+
+# Java Bits.  On applicable platforms, tells the JVM to run in 32 or 64-bit mode.
+wrapper.java.additional.auto_bits=TRUE
 
 # Java Additional Parameters
 wrapper.java.additional.1=-Djava.endorsed.dirs=../../../lib/endorsed
@@ -74,10 +85,30 @@ wrapper.logfile.maxfiles=0
 wrapper.syslog.loglevel=NONE
 
 #********************************************************************
+# Wrapper General Properties
+#********************************************************************
+# Allow for the use of non-contiguous numbered properties
+wrapper.ignore_sequence_gaps=TRUE
+
+# Title to use when running as a console
+##wrapper.console.title=@app.long.name@
+wrapper.console.title=eXist Server with Jetty
+
+#********************************************************************
+# Wrapper JVM Checks
+#********************************************************************
+# Out Of Memory detection.
+# (Simple match)
+wrapper.filter.trigger.1000=java.lang.OutOfMemoryError
+# (Only match text in stack traces if -XX:+PrintClassHistogram is being used.)
+#wrapper.filter.trigger.1000=Exception in thread "*" java.lang.OutOfMemoryError
+#wrapper.filter.allow_wildcards.1000=TRUE
+wrapper.filter.action.1000=RESTART
+wrapper.filter.message.1000=The JVM has run out of memory.
+
+#********************************************************************
 # Wrapper Windows Properties
 #********************************************************************
-# Title to use when running as a console
-wrapper.console.title=eXist Server with Jetty
 
 #********************************************************************
 # Wrapper Windows NT/2000/XP Service Properties
