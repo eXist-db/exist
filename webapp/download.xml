@@ -20,17 +20,12 @@
         <title>Download</title>
         <section id="versions">
             <title>Versions</title>
-            <para>Release <emphasis>1.4</emphasis> is our current production quality release. Among
-                other things, it improves eXist's XQuery processing thanks to a better and more
-                robust handling of in memory documents. It features faster and customizable full
-                text indexing by transparently integrating Lucene into the XQuery engine. eXist now
-                also provides a lightweight URL rewriting and MVC framework (which in part replaces
-                Cocoon), along with support for XProc, XForms and many new XQuery extension
-                modules.</para>
-            <para>1.4 replaces the <emphasis>1.2</emphasis> series as stable branch. Release
-                    <emphasis>1.5</emphasis> becomes the new <ulink
-                    url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
-                development release. New features will be added to this release only.</para>
+            <para>Release <emphasis>1.4.1</emphasis> is our current production quality release. Among other things, it
+                features better Referential Integrity, revised Database Shutdown and Crash Protection, a completely new WebDAV implementation based on the Milton WebDAV library. The Lucene Full-Text Indexing has been made more robust and performant. In addition it now also includes configurable analyzers and parameters, better match highlighting and additional functions for working with Lucene document fields. The betterFORM server-side XForms 1.1 engine is integrated and enabled by default.</para>
+            <para>1.4.1 replaces the <emphasis>1.4.0</emphasis> version from 2009. Release <emphasis>1.5</emphasis>
+
+                is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
+                development release, which will relabeled to 1.6 when ready. New features will be added to this release only.</para>
         </section>
         <section>
             <title>Donations, Consulting, Training</title>
