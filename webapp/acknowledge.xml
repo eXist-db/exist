@@ -28,7 +28,11 @@
 
             <table cellspacing="0" cellpadding="15">
                 <tr>
-                    <td class="description"> The new indexing engine featured in eXist, since version
+                    <td class="description">The pluggable Security Manager, LDAP authentication and the Access Control List permissions, featured in eXist-db since August 2011, were made possible by sponsorship from the <a href="http://http://www.asia-europe.uni-heidelberg.de/en/home.html" title="The Cluster of Excellence 'Asia and Europe in a Global Context: Shifting Asymmetries in Cultural Flows'">Cluster of Excellence 'Asia and Europe'</a>, <a href="http://www.uni-heidelberg.de/index_e.html" title="Heidelberg University">Heidelberg University</a>.</td>
+                    <td align="center"><img border="0" src="resources/heidelberg_kjc_logo.png"/></td>
+                </tr>
+                <tr>
+                    <td class="description"> The new indexing engine featured in eXist-db, since version
                         1.1, was made possible through the agency of the
                             <a href="http://tapor.uvic.ca/home.php">University of Victoria</a> node
                         of the Canadian TAPoR consortium, who have made it available for general
@@ -41,7 +45,7 @@
                     <td class="description"><a href="http://www.trapezenetworks.com">Trapeze
                             Networks</a>, headquartered in Pleasanton, Calif., has continuously
                         sponsored improvements and new features since 2004 and helped to advance
-                        development by testing and deploying eXist in a production environment.</td>
+                        development by testing and deploying eXist-db in a production environment.</td>
                     <td align="center">
                         <a href="http://www.trapezenetworks.com">
                             <img border="0" src="resources/trapeze.gif"/>
@@ -63,7 +67,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="description">The eXist Wiki, the demo server and other vital parts of
+                    <td class="description">The eXist-db Wiki, the demo server and other vital parts of
                         our project infrastructure are kindly hosted by <a
                             href="http://www.friprogramvarusyndikatet.se/">Fri
                             programvaru-syndikatet / exist-db.se</a> in Sweden.</td>
@@ -86,7 +90,7 @@
                 </tr>
                 <tr>
                     <td class="description"> The versioning extensions, released with
-                        eXist 1.4, were kindly sponsored by the <a href="http://www.telota.de/"
+                        eXist-db 1.4, were kindly sponsored by the <a href="http://www.telota.de/"
                             >Telota Initiative</a> of the <a href="http://www.bbaw.de"
                             >Berlin-Brandenburg Academy of Sciences and Humanities</a>. </td>
                     <td align="center">
@@ -102,10 +106,10 @@
             <title>Tools We Use in Development</title>
             <table>
                 <tr>
-                    <td class="description">XML and non-XML resources of an eXist database can be
+                    <td class="description">XML and non-XML resources of an eXist-db database can be
                         edited and processed with XSLT and XQuery seamlessly in <a
                             href="http://www.oxygenxml.com">&lt;oXygen/> XML Editor/Author</a>
-                        both through an eXist connection and through WebDAV in an integrated
+                        both through an eXist-db connection and through WebDAV in an integrated
                         environment.</td>
                     <td align="center">
                         <a href="http://www.oxygenxml.com">
@@ -116,7 +120,7 @@
                 <tr>
                     <td class="description">Jetbrains' <a
                             href="http://www.jetbrains.com/teamcity/"
-                            >Team City</a> is used to ensures that new changes do not break the eXist codebase and build nightly installer snapshots.</td>
+                            >Team City</a> is used to ensures that new changes do not break the eXist-db codebase and build nightly installer snapshots.</td>
                     <td align="center">
                         <a href="http://www.jetbrains.com/teamcity/">
                             <img border="0" src="resources/teamcity_small.gif"/>
