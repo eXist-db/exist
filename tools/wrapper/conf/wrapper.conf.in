@@ -2,6 +2,8 @@
 # Configuration files must begin with a line specifying the encoding
 #  of the the file.
 
+# $Id$
+
 # Include file problems can be debugged by removing the first '#'
 #  from the following line:
 ##include.debug
