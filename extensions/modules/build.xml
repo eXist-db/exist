@@ -61,6 +61,28 @@
 	    </and>
 	</condition>
 	
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+		<fileset dir="${top.dir}/${lib.endorsed}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${top.dir}/${lib.user}">
+			<include name="*.jar"/>
+		</fileset>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+		<pathelement path="${top.dir}/exist-optional.jar"/>
+    	<pathelement path="${top.dir}/start.jar"/>
+		<pathelement path="${java.class.path}"/>
+    </path>
+	
 	<target name="prepare-libs-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
@@ -137,27 +159,7 @@
     
     <!-- Special targets end -->
     
-    <path id="classpath.core">
-        <fileset dir="${top.dir}/${lib.core}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.optional}">
-            <include name="*.jar"/>
-        </fileset>
-		<fileset dir="${top.dir}/${lib.endorsed}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${top.dir}/${lib.user}">
-			<include name="*.jar"/>
-		</fileset>
-        <fileset dir="${top.dir}/tools/ant/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <pathelement path="${top.dir}/exist.jar"/>
-		<pathelement path="${top.dir}/exist-optional.jar"/>
-    	<pathelement path="${top.dir}/start.jar"/>
-		<pathelement path="${java.class.path}"/>
-    </path>
+
 		
     <target name="prepare" depends="prepare-svn,prepare-libs-xslfo,prepare-simpleql,prepare-jfreechart">
 		<mkdir dir="${classes}"/>
