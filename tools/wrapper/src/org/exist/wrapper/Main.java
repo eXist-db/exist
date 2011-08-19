@@ -50,6 +50,7 @@ public class Main implements WrapperListener, Observer {
 	 * 
 	 * The first argument passed to this method determines the run mode. It should
 	 * be either "jetty" or "standalone".
+     * fixme!- 
 	 * 
 	 * @see org.tanukisoftware.wrapper.WrapperListener#start(java.lang.String[])
 	 */
