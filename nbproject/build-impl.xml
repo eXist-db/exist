@@ -677,27 +677,11 @@ is divided into following sections:
             <fileset dir="${meta.inf.dir}" includes="persistence.xml"/>
         </copy>
     </target>
-    <target name="-post-compile" depends="aspectj">
+    <target name="-post-compile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <!-- Add an AspectJ build target -->
-    <taskdef classpath="tools/aspectj/lib/aspectjtools-1.6.11.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
-    <target name="aspectj">
-        <echo level="info">--- aspectj (start) ---</echo>
-        <iajc
-            destdir="${build.classes.dir}"
-            source="${javac.source}"
-            target="${javac.target}"
-            classpath="${javac.classpath}:${j2ee.platform.classpath}"
-            deprecation="${javac.deprecation}"
-            encoding="${source.encoding}"
-            debug="${javac.debug}" showWeaveInfo="true">
-            <inpath>
-                <pathelement location="${build.classes.dir}" />
-            </inpath>
-        </iajc>
-    </target>
+
     <target depends="init,deps-jar,-verify-automatic-build,-pre-pre-compile,-pre-compile,-do-compile,-post-compile" description="Compile project." name="compile"/>
     <target name="-pre-compile-single">
         <!-- Empty placeholder for easier customization. -->

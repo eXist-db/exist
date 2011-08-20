@@ -72,4 +72,27 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <target name="-post-compile" depends="aspectj">
+        <!-- override from build-impl.xml -->
+    </target>
+    
+    <!-- Add an AspectJ build target -->
+    <taskdef classpath="tools/aspectj/lib/aspectjtools-1.6.11.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
+    <target name="aspectj">
+        <echo level="info">--- aspectj (start) ---</echo>
+        <iajc
+            destdir="${build.classes.dir}"
+            source="${javac.source}"
+            target="${javac.target}"
+            classpath="${javac.classpath}:${j2ee.platform.classpath}"
+            deprecation="${javac.deprecation}"
+            encoding="${source.encoding}"
+            debug="${javac.debug}" showWeaveInfo="true">
+            <inpath>
+                <pathelement location="${build.classes.dir}" />
+            </inpath>
+        </iajc>
+    </target>
+    
 </project>
