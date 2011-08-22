@@ -223,7 +223,7 @@ return (
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
 			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
 			<script type="text/javascript" src="scripts/prettify.js"/>
-			<script type="text/javascript" src="libs/scripts/jquery/jquery-1.4.2.min.js"></script>
+			<script type="text/javascript" src="libs/scripts/jquery/jquery-1.6.2.min.js"></script>
 			<script type="text/javascript" src="scripts/admin.js"></script>
 			{ admin:panel-header() }
         </head>

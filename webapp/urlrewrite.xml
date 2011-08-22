@@ -545,7 +545,7 @@ if (starts-with($exist:path, "/libs/")) then
                 resolved relative to the main context of the servlet engine, usually /exist/. In your HTML, you can now
                 write:</para>
             
-            <synopsis language="xml"><![CDATA[<script type="text/javascript" src="/libs/scripts/jquery/jquery-1.4.2.min.js"></script>]]></synopsis>
+            <synopsis language="xml"><![CDATA[<script type="text/javascript" src="/libs/scripts/jquery/jquery-1.6.2.min.js"></script>]]></synopsis>
             
             <para>This will locate the jquery file in <filename>webapp/scripts/jquery/...</filename>, even if the rest of your
                 application is stored in the db and not on the file system.</para>
