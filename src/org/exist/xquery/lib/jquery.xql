@@ -30,7 +30,7 @@ declare function jquery:header($config as element(jquery:header)) as element()* 
     let $cssbase := if ($config/@cssbase) then $config/@cssbase/string() else $base
     let $hasSource := root($config)//jquery:source
     return (
-        <script type="text/javascript" src="{$base}/jquery-1.4.2.min.js"></script>,
+        <script type="text/javascript" src="{$base}/jquery-1.6.2.min.js"></script>,
         <script type="text/javascript" src="{$base}/jquery-ui-1.8.custom.min.js"></script>,
         <script type="text/javascript" src="{$base}/jquery-utils.js"></script>,
         <link rel="stylesheet" type="text/css" href="{$cssbase}/smoothness/jquery.ui.all.css"/>,
