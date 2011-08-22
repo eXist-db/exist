@@ -661,7 +661,7 @@ public class RESTServer {
 		}
         
 		// content type != application/x-www-form-urlencoded
-		if (!requestType.equals(MimeType.URL_ENCODED_TYPE.getName())) {
+		if (requestType == null || !requestType.equals(MimeType.URL_ENCODED_TYPE.getName())) {
 			// third, normal POST: read the request content and check if
 			// it is an XUpdate or a query request.
 			int howmany = 10;
@@ -1043,8 +1043,10 @@ public class RESTServer {
 				if (mime != null)
 					contentType = mime.getName();
 			}
-			if (mime == null)
+			if (mime == null) {
 				mime = MimeType.BINARY_TYPE;
+				contentType = mime.getName();
+			}
 
 			if (transaction == null) transaction = transact.beginTransaction();
 
