@@ -45,6 +45,9 @@ EXIST_HOME/webapp/WEB-INF/controller-config.xml has a mapping:
 
 <forward pattern="/images" servlet="ScaleImageJAI"/>
 
+Usage
+-----
+
 After restarting eXist, you should be able to access any image stored in the db
 with an URL like this:
 
@@ -52,3 +55,13 @@ http://localhost:8080/exist/images/scale/path/to/image.tif?s=512
 
 Please note that /path/to/image should not include the leading /db for the db
 root collection.
+
+The general structure of the URL is:
+
+/images/action/path?parameters
+
+where action can be either "scale" or "crop". "scale" accepts one parameter: "s=size"
+to specify the desired output size. If you specify 512, the larger side of the output
+image will have 512 pixels.
+
+"crop" takes 4 parameters: "x", "y", "w", "h", which define the bounding box to crop.
