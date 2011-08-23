@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  */
 public class EXistResult implements Result {
 
-    private final Sequence result = new ValueSequence();
+    private Sequence result = new ValueSequence();
     private final XQueryContext context;
 
     public EXistResult(XQueryContext context) {
@@ -95,7 +95,18 @@ public class EXistResult implements Result {
         try {
             // we add the root *element* to the result sequence
             NodeTest kind = new TypeTest(Type.ELEMENT);
-            doc.selectChildren(kind, result);
+            // the elem must always be added at the front, so if there are
+            // already other items, we create a new one, add the elem, then
+            // add the original items after
+            if ( result.isEmpty() ) {
+                doc.selectChildren(kind, result);
+            }
+            else {
+                Sequence buf = result;
+                result = new ValueSequence();
+                doc.selectChildren(kind, result);
+                result.addAll(buf);
+            }
         } catch (XPathException xpe) {
             throw new HttpClientException("Unable to add HttpResponse to result:" + xpe.getMessage(), xpe);
         }
