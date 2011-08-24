@@ -19,9 +19,11 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
  : information between templating instructions.
 :)
 declare function templates:apply($content as node()+, $modules as element(modules), $model as item()*) {
-    let $imports := templates:import-modules($modules)
     let $prefixes := (templates:extract-prefixes($modules), "templates:")
-    let $null := request:set-attribute("$templates:prefixes", $prefixes)
+    let $null := (
+        request:set-attribute("$templates:prefixes", $prefixes),
+        request:set-attribute("$templates:modules", $modules)
+    )
     for $root in $content
     return
         templates:process($root, $prefixes, $model)
@@ -52,7 +54,7 @@ declare function templates:process($node as node(), $prefixes as xs:string*, $mo
                 if ($instructions) then
                     for $instruction in $instructions
                     return
-                        templates:call($instruction, $node, $model)
+                        templates:call($instruction, $node, $model, substring-before($instruction, ":"))
                 else
                     element { node-name($node) } {
                         $node/@*, for $child in $node/node() return templates:process($child, $prefixes, $model)
@@ -68,12 +70,13 @@ declare function templates:get-instructions($class as xs:string?, $prefixes as x
         $name
 };
 
-declare function templates:call($class as xs:string, $node as node(), $model as item()*) {
+declare function templates:call($class as xs:string, $node as node(), $model as item()*, $prefix as xs:string) {
     let $paramStr := substring-after($class, "?")
     let $parameters := templates:parse-parameters($paramStr)
-    let $log := util:log("DEBUG", ("params: ", $parameters))
     let $func := if ($paramStr) then substring-before($class, "?") else $class
-    let $call := concat($func, "($node, $parameters, $model)")
+    let $modules := request:get-attribute("$templates:modules")
+    let $imports := templates:import-module($modules, $prefix)
+    let $call := concat($imports, $func, "($node, $parameters, $model)")
     return
         util:eval($call)
 };
@@ -91,16 +94,19 @@ declare function templates:parse-parameters($paramStr as xs:string?) {
     </parameters>
 };
 
-declare function templates:import-modules($modules as element(modules)?) {
-    for $module in $modules/module
-    return
-        util:import-module($module/@uri, $module/@prefix, $module/@at)
+declare function templates:import-module($modules as element(modules)?, $prefix as xs:string) as xs:string? {
+    if ($prefix ne "templates") then
+        let $module := ($modules/module[@prefix = $prefix])[1]
+        return
+            concat("import module namespace ", $module/@prefix, "='", $module/@uri, "' at '", $module/@at, "';&#10;")
+    else
+        ()
 };
 
-declare function templates:matches-prefix($class as xs:string, $prefixes as xs:string*) {
+declare function templates:matches-prefix($class as xs:string, $prefixes as xs:string*) as xs:string? {
     for $prefix in $prefixes
     return
-        if (starts-with($class, $prefix)) then true()
+        if (starts-with($class, $prefix)) then substring($prefix, 1, string-length($prefix) - 1)
         else ()
 };
 
@@ -148,7 +154,7 @@ declare function templates:if-parameter-set($node as node(), $params as element(
     let $param := request:get-parameter($paramName, ())
     return
         if ($param and string-length($param) gt 0) then
-            templates:process($child/node(), $model)
+            templates:process($node/node(), $model)
         else
             ()
 };

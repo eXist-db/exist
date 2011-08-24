@@ -26,13 +26,13 @@ import module namespace date="http://exist-db.org/xquery/admin-interface/date" a
 
 declare function local:sub-collections($root as xs:string, $children as xs:string*, $user as xs:string) {
         for $child in $children
-		let $processChild := 
+        let $processChild := 
 			local:collections(concat($root, '/', $child), $child, $user)
 		where exists($processChild)
 		order by $child ascending
         return
             <children json:array="true">
-			{ $processChild }
+			    { $processChild }
 			</children>
 };
 
@@ -93,9 +93,9 @@ declare function local:collections($root as xs:string, $child as xs:string,
     let $canWrite := local:canWrite($root, $user)
     return
         if (local:canRead($root, $user)) then (
-            <title>{$child}</title>,
+            <title>{xmldb:decode-uri(xs:anyURI($child))}</title>,
             <isFolder json:literal="true">true</isFolder>,
-            <key>{$root}</key>,
+            <key>{xmldb:decode-uri(xs:anyURI($root))}</key>,
             <writable json:literal="true">{if ($canWrite) then 'true' else 'false'}</writable>,
             <addClass>{if ($canWrite) then 'writable' else 'readable'}</addClass>,
             	if (exists($children)) then
@@ -163,7 +163,7 @@ declare function local:resources($collection as xs:string, $user as xs:string) {
             order by $resource ascending
             return
                 <json:value json:array="true">
-                    <name>{if ($isCollection) then substring-after($resource, "/") else $resource}</name>
+                    <name>{xmldb:decode-uri(if ($isCollection) then substring-after($resource, "/") else $resource)}</name>
                     <permissions>{$permissions}</permissions>
                     <owner>{$owner}</owner>
                     <group>{$group}</group>
@@ -177,7 +177,7 @@ declare function local:resources($collection as xs:string, $user as xs:string) {
 };
 
 declare function local:create-collection($collName as xs:string, $user as xs:string) {
-    let $parent := request:get-parameter("collection", "/db")
+    let $parent := xmldb:encode-uri(request:get-parameter("collection", "/db"))
     return
         if (local:canWrite($parent, $user)) then
             let $null := xmldb:create-collection($parent, $collName)
@@ -185,7 +185,7 @@ declare function local:create-collection($collName as xs:string, $user as xs:str
                 <response status="ok"/>
         else
             <response status="fail">
-                <message>You are not allowed to write to collection {$parent}</message>
+                <message>You are not allowed to write to collection {xmldb:decode-uri(xs:anyURI($parent))}</message>
             </response>
 };
 
@@ -196,7 +196,7 @@ declare function local:delete-collection($collName as xs:string, $user as xs:str
             <response status="ok"/>
     else
         <response status="fail">
-            <message>You are not allowed to write to collection {$collName}</message>
+            <message>You are not allowed to write to collection {xmldb:decode-uri(xs:anyURI($collName))}</message>
         </response>
 };
 
@@ -214,7 +214,7 @@ declare function local:delete-resource($collection as xs:string, $resources as x
             <response status="ok"/>
     else
         <response status="fail">
-            <message>You are not allowed to delete the resources {string-join($resources, ", ")} in collection {$collection}</message>
+            <message>You are not allowed to delete the resources {string-join($resources, ", ")} in collection {xmldb:decode-uri(xs:anyURI($collection))}</message>
         </response>
 };
 
@@ -227,14 +227,14 @@ let $collName := replace($collection, "^.*/([^/]+$)", "$1")
 let $user := if (session:get-attribute('myapp.user')) then session:get-attribute('myapp.user') else "guest"
 return
     if ($deleteCollection) then
-        local:delete-collection($deleteCollection, $user)
+        local:delete-collection(xmldb:encode-uri($deleteCollection), $user)
     else if (exists($deleteResource)) then
-        local:delete-resource($collection, $deleteResource, $user)
+        local:delete-resource(xmldb:encode-uri($collection), xmldb:encode-uri($deleteResource), $user)
     else if ($createCollection) then
-        local:create-collection($createCollection, $user)
+        local:create-collection(xmldb:encode-uri($createCollection), $user)
     else if ($view eq "c") then
         <collection json:array="true">
-        {local:collections($collection, $collName, $user)}
+            {local:collections(xmldb:encode-uri($collection), xmldb:encode-uri($collName), $user)}
         </collection>
     else
-        local:resources($collection, $user)
+        local:resources(xmldb:encode-uri($collection), $user)
