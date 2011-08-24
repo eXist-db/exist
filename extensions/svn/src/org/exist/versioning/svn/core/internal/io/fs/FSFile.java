@@ -388,7 +388,18 @@ public class FSFile {
     	resetInputStream().skip(fromPos);
     	
     	//BUG: buffer limit by int!
-    	byte[] b = new byte[(int) (myFile.length() - fromPos)];
+    	
+    	int bufferSize = 1024 * 100; //100k
+    	if (myFile.length() != -1) {
+    		long longSize = myFile.length() - fromPos;
+    		
+    		if (longSize > Integer.MAX_VALUE)
+    			bufferSize = Integer.MAX_VALUE;
+    		else 
+    			bufferSize = (int)longSize;
+    	}
+    		
+    	byte[] b = new byte[bufferSize];
 		myInputStream.read(b);
 		
 		buffer.put(b);
