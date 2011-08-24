@@ -74,7 +74,7 @@ let $name := request:get-uploaded-file-name("file[]")
 let $data := request:get-uploaded-file-data("file[]")
 return
     util:catch("*",
-        local:upload($collection, xmldb:encode($name), $data),
+        local:upload(xmldb:encode-uri($collection), xmldb:encode-uri($name), $data),
         <result>
            <name>{$name}</name>
            <error>{$util:exception-message}</error>

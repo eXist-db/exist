@@ -32,9 +32,9 @@ return
     util:catch("*",
         let $null :=
             if ($mime) then
-                xmldb:store($collection, $resource, $data, $mime)
+                xmldb:store(xmldb:encode-uri($collection), xmldb:encode-uri($resource), $data, $mime)
             else
-                xmldb:store($collection, $resource, $data)
+                xmldb:store(xmldb:encode-uri($collection), xmldb:encode-uri($resource), $data)
         return
             <message status="ok"/>,
         let $message :=
