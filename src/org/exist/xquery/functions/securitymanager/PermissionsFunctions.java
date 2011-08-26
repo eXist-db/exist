@@ -29,7 +29,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.security.Account;
 import org.exist.security.PermissionFactory;
 import org.exist.security.PermissionFactory.PermissionModifier;
 import org.exist.security.Subject;
@@ -47,6 +46,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *
@@ -251,7 +251,11 @@ public class PermissionsFunctions extends BasicFunction {
     }
 
     private org.exist.memtree.DocumentImpl functionGetPermissions(XmldbURI pathUri) throws XPathException {
-        return permissionsToXml(getPermissions(pathUri));
+        try {
+            return permissionsToXml(getPermissions(pathUri));
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException("Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
+        }
     }
 
     private Sequence functionAddACE(final XmldbURI pathUri, final ACE_TARGET target, final String name, final ACE_ACCESS_TYPE access_type, final String mode) throws PermissionDeniedException {
@@ -374,7 +378,7 @@ public class PermissionsFunctions extends BasicFunction {
         return Sequence.EMPTY_SEQUENCE;
     }
     
-    private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws PermissionDeniedException, XPathException {
+    private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws XPathException {
         if(modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
             throw new XPathException("Mode string must be partial i.e. rwx not rwxrwxrwx");
         }
@@ -391,30 +395,32 @@ public class PermissionsFunctions extends BasicFunction {
         }
         
         Subject currentSubject = context.getBroker().getSubject();
-        boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
-        
-        return BooleanValue.valueOf(hasAccess);
+        try {
+            boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
+            return BooleanValue.valueOf(hasAccess);
+        } catch(XPathException xpe) {
+            LOG.error(xpe.getMessage(), xpe);
+            return BooleanValue.FALSE;
+        } catch(PermissionDeniedException pde) {
+            return BooleanValue.FALSE;
+        }
     }
     
-    private Permission getPermissions(XmldbURI pathUri) throws XPathException {
-        Permission permissions;
-        try {
-            Collection col = context.getBroker().getCollection(pathUri);
-            if(col != null) {
-                permissions = col.getPermissions();
+    private Permission getPermissions(XmldbURI pathUri) throws XPathException, PermissionDeniedException {
+        final Permission permissions;
+        final Collection col = context.getBroker().getCollection(pathUri);
+        if(col != null) {
+            permissions = col.getPermissions();
+        } else {
+            DocumentImpl doc = context.getBroker().getResource(pathUri, Permission.READ);
+            if(doc != null) {
+                permissions = doc.getPermissions();
             } else {
-                DocumentImpl doc = context.getBroker().getResource(pathUri, Permission.READ);
-                if(doc != null) {
-                    permissions = doc.getPermissions();
-                } else {
-                    throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
-                }
+                throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
             }
-
-            return permissions;
-        } catch(PermissionDeniedException pde) {
-            throw new XPathException("Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
         }
+
+        return permissions;
     }
 
     private org.exist.memtree.DocumentImpl permissionsToXml(Permission permission) {
