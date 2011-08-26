@@ -847,29 +847,15 @@
     <!-- Download additional files                                                    -->
     <!-- ============================================================================ -->
     <target name="download-additional-jars" description="Download optional third-party jar files."
-            depends="download-icu4j,download-saxon"/>
+            depends="download-icu4j"/>
 
 
     <target name="download-icu4j" description="Download optional third-party jar files.">
         <!-- International Components for Unicode  http://www.icu-project.org/          -->
         <property name="icu4j.version" value="${lib.user}/saxon.zip"/>
-        <get src="http://download.icu-project.org/files/icu4j/4.4.1/icu4j-4_4_1.jar"
+        <get src="http://download.icu-project.org/files/icu4j/4.8.1.1/icu4j-4_8_1_1.jar"
             dest="${lib.user}" verbose="true" usetimestamp="true"/>
     </target>
 
-    <target name="download-saxon" description="Download optional third-party jar files.">
-        <!-- Saxon XSLT2 Processor http://sourceforge.net/projects/saxon -->
-        <property name="saxon.url" value="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-1-1j.zip/download"/>
-        
-        <!-- fetch dependency saxon TODO: make generic download function -->
-        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
-        <fetch classpathref="classpath.core" dest="${lib.user}" 
-            url="${saxon.url}" classname="net.sf.saxon.Version">
-            <patternset>
-                <include name="**/saxon9he.jar"/>
-            </patternset>
-        </fetch>
-        
-    </target>
 
 </project>
