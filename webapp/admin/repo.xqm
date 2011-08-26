@@ -291,7 +291,7 @@ declare function repomanager:view-installed() {
                                         <input type="hidden" name="package" value="{$pkg-name}"/>
                                         <input type="hidden" name="type" value="{$type}"/>
                                         <button type="submit" name="action" value="deactivate">
-                                            <img src="images/remove.png" alt="Uninstall" title="Uninstall"/>
+                                            <img src="images/remove.png" alt="Uninstall" title="Uninstall { $package//package:title/text() }"/>
                                         </button>
                                     </form>
                                 </td>
@@ -304,7 +304,7 @@ declare function repomanager:view-installed() {
 };
 
 declare function repomanager:show-public() {
-    <div class="public-repo-form">
+    <div class="public-repo-form" id="public">
         <input name="repository-url" size="60" value="{$repomanager:repo-uri}"/>
         <button name="retrieve-repo" id="retrieve-repo">Retrieve packages</button>
         
@@ -327,9 +327,9 @@ declare function repomanager:main() as element() {
             <h1>Package Repository</h1>
             { repomanager:process-action() }
             <ul class="tabs clearfix">
-                <li><a href="">Installed</a></li>
-                <li><a href="">Public Repo</a></li>
-                <li><a href="">Upload</a></li>
+                <li><a href="#installed">Installed</a></li>
+                <li><a href="#public">Public Repo</a></li>
+                <li><a href="#upload">Upload</a></li>
             </ul>
             <div class="tab-container">
                 <div class="content">
@@ -338,7 +338,7 @@ declare function repomanager:main() as element() {
                 <div class="content">
                     { repomanager:show-public() }
                 </div>
-                <div class="content">
+                <div class="content" id="upload">
                     <form method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="panel" value="repo"/>
                         <table>
