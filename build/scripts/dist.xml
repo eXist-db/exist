@@ -31,7 +31,7 @@
     <!-- ================================================================== -->
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
-    <target name="dist-war" depends="webapps" description="Create war file">
+    <target name="dist-war" depends="webapps,svn-prepare" description="Create war file">
         <war destfile="${dist}/exist-${project.version}-rev${svn.revision}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
