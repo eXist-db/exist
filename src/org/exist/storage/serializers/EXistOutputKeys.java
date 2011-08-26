@@ -54,5 +54,10 @@ public class EXistOutputKeys {
      * by replacing ":" with "_", so element foo:bar becomes "foo_bar".
      */
     public final static String JSON_OUTPUT_NS_PREFIX = "preserve-prefix";
+    
+    /**
+     * Applies to JSON serialization only: sets the jsonp callback function
+     */
+    public final static String JSONP = "jsonp";
 	
 }
