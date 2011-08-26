@@ -32,7 +32,7 @@ public abstract class JSONNode {
 	}
 	
 	public boolean isNamed() {
-		return getName() != ANONYMOUS_OBJECT;
+		return !getName().equals(ANONYMOUS_OBJECT);
 	}
 	
 	public boolean isArray() {

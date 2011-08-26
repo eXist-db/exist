@@ -849,13 +849,23 @@ return $w</synopsis>
             <variablelist>
                 <varlistentry>
                     <term>
-                        <option>method= xml | xhtml | text</option>
+                        <option>method= xml | xhtml | json | text</option>
                     </term>
                     <listitem>
-                        <para>determines the serialization method. Should be one of "xml", "xhtml"
-                            or "text". The "xhtml" method makes sure that XHTML elements with an
+                        <para>determines the serialization method. Should be one of "xml", "xhtml",
+                            "json", or "text". The "xhtml" method makes sure that XHTML elements with an
                             empty content model are serialized in the minimized form, i.e. <literal
                                 >img</literal> will be output as <sgmltag>img/</sgmltag>. </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <option>jsonp= myFunctionName</option>
+                    </term>
+                    <listitem>
+                        <para>Only relevant when the serialization method is set to 'json'.
+                            Causes the JSON output to be wrapped in the named JSONP function.
+                        </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>

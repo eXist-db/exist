@@ -53,6 +53,7 @@ public class JSONWriter extends XMLWriter {
 	protected Stack<JSONObject> stack = new Stack<JSONObject>();
 
 	protected boolean useNSPrefix = false;
+        private String jsonp = null;
 	
 	public JSONWriter() {
 		// empty
@@ -72,8 +73,11 @@ public class JSONWriter extends XMLWriter {
 	@Override
 	public void setOutputProperties(Properties properties) {
 		super.setOutputProperties(properties);
-		String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
+                
+		final String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
 		useNSPrefix = useNSProp.equalsIgnoreCase("yes");
+                
+                jsonp = properties.getProperty(EXistOutputKeys.JSONP);
 	}
 
 	@Override
@@ -83,8 +87,18 @@ public class JSONWriter extends XMLWriter {
 	@Override
 	public void endDocument() throws TransformerException {
 		try {
-			if (root != null)
-				root.serialize(writer, true);
+                    if (root != null) {
+                        
+                        if(jsonp != null) {
+                            writer.write(jsonp + "(");
+                        }
+                        
+                        root.serialize(writer, true);
+                        
+                        if(jsonp != null) {
+                            writer.write(")");
+                        }
+                    }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
