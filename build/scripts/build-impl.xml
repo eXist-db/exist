@@ -654,26 +654,8 @@
 
         <!-- International Components for Unicode -->
         <!-- http://www.icu-project.org/          -->
-        <get src="http://download.icu-project.org/files/icu4j/4.2.1/icu4j-4_2_1.jar"
-            dest="${lib.user}/icu4j-4.2.1.jar" verbose="true" usetimestamp="true"/>
-
-        <!-- Saxon XSLT2 Processor                 -->
-        <!-- http://sourceforge.net/projects/saxon -->
-        <property name="saxon.zip" value="${lib.user}/saxon.zip"/>
-        
-        <get src="http://sourceforge.net/projects/saxon/files/Saxon-HE/9.2/saxonhe9-2-0-3j.zip/download"
-            dest="${lib.user}/saxon.zip" verbose="true"/>
-
-        <unzip src="${saxon.zip}" dest="${lib.user}">
-            <patternset>
-                <include name="**/saxon9he.jar"/>
-                <include name="**/saxon9.jar"/>
-                <include name="**/saxon9-dom.jar"/>
-                <include name="**/saxon9-xpath.jar"/>
-            </patternset>
-        </unzip>
-
-        <delete failonerror="no" file="${saxon.zip}"/>
+        <get src="http://download.icu-project.org/files/icu4j/4.8.1.1/icu4j-4_8_1_1.jar"
+            dest="${lib.user}/icu4j-4.8.1.1.jar" verbose="true" usetimestamp="true"/>
 
     </target>
 
