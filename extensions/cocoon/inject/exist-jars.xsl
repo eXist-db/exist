@@ -236,7 +236,7 @@
     </xsl:template>
     
     <xsl:template match="file[contains(title, 'Commons Pool')]/lib">
-        <lib>optional/commons-pool-1.5.4.jar</lib>
+        <lib>optional/commons-pool-1.5.6.jar</lib>
     </xsl:template>
     
     <xsl:template match="file[title = 'Search engine']/lib">
