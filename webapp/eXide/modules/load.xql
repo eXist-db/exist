@@ -20,13 +20,12 @@ xquery version "1.0";
 
 declare option exist:serialize "indent=yes";
 
-let $path := request:get-parameter("path", ())
+let $path := xmldb:encode(request:get-parameter("path", ()))
 let $download := request:get-parameter("download", ())
 let $mime := xmldb:get-mime-type($path)
 let $log := util:log("INFO", ("MIME: ", $mime))
 let $isBinary := util:is-binary-doc($path)
 let $header := response:set-header("Content-Type", if ($mime) then $mime else "application/binary")
-let $log := util:log("DEBUG", ("MIME: ", $mime))
 let $header2 :=
     if ($download) then
         response:set-header("Content-Disposition", concat("attachment; filename=", replace($path, "^.*/([^/]+)$", "$1")))
