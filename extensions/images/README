@@ -18,6 +18,8 @@ http://java.sun.com/products/java-media/jai/downloads/download-1_1_2.html
 Please choose the CLASSPATH installation bundle. Open the downloaded archive and 
 copy the contents of the lib/ folder to $EXIST_HOME/lib/user.
 
+- If you are on MacOSX, you can just extract the jai_codec.jar and jai_core.jar files from the Linux CLASSPATH installation bundle and place these in $EXIST_HOME/lib/user
+
 You should now be able to compile the servlet from EXIST_HOME with
 
 ./build.sh -f extensions/images/build.xml
