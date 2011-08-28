@@ -353,11 +353,12 @@ public class Deploy extends BasicFunction {
 		ctx.declareVariable("dir", tempDir.getAbsolutePath());
 		File home = context.getBroker().getConfiguration().getExistHome();
 		ctx.declareVariable("home", home.getAbsolutePath());
-		if (targetCollection != null)
+		if (targetCollection != null) {
 			ctx.declareVariable("target", targetCollection.toString());
-		else
+			ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
+		} else
 			ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);
-		ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
+		
 		CompiledXQuery compiled;
 		try {
 			compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
