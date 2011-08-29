@@ -71,7 +71,7 @@ public class ExistPkgExtension
         // stuff.  We need to find a proper way to make that at the real install
         // phase though (during the "xrepo install").
         if ( ! info.getJars().isEmpty() ) {
-            StreamSource classpath = pkg.getResolver().resolveResource(".saxon/classpath.txt");
+            StreamSource classpath = pkg.getResolver().resolveResource(".exist/classpath.txt");
             if ( classpath == null ) {
                 setupPackage(pkg, info);
             }
