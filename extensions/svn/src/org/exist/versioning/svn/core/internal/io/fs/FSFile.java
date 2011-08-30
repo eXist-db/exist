@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.apache.commons.io.IOUtils;
 import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNErrorCode;
@@ -387,23 +388,32 @@ public class FSFile {
     	
     	resetInputStream().skip(fromPos);
     	
-    	//BUG: buffer limit by int!
+    	int capacity = buffer.capacity();
+
+    	byte[] b;
     	
-    	int bufferSize = 1024 * 100; //100k
-    	if (myFile.length() != -1) {
-    		long longSize = myFile.length() - fromPos;
+    	if (myFile.length() == -1) {
     		
-    		if (longSize > Integer.MAX_VALUE)
-    			bufferSize = Integer.MAX_VALUE;
-    		else 
-    			bufferSize = (int)longSize;
+        	b = new byte[capacity];
+        	int readed = myInputStream.read(b);
+    		
+    		
+    	} else {
+        	int bufferSize = capacity;
+
+        	//BUG: buffer limit by int!
+			long longSize = myFile.length() - fromPos;
+			
+			if (longSize > capacity)
+				bufferSize = capacity;
+			else 
+				bufferSize = (int)longSize;
+    		
+	    	b = new byte[bufferSize];
+			myInputStream.read(b);
+		
     	}
-    		
-    	byte[] b = new byte[bufferSize];
-		myInputStream.read(b);
-		
 		buffer.put(b);
-		
 		return b.length;
     }
     
