@@ -46,6 +46,8 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class ConverterFrom1_0 {
+    
+        public final static String LEGACY_USERS_DOCUMENT_PATH = "/db/system/users.xml";
 
 	private final static String GROUP = "group";
 	private final static String NAME = "name";

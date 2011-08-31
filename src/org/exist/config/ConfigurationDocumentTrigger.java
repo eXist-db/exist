@@ -61,23 +61,24 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 			conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
 			if (conf != null) {
 				Configurator.unregister(conf);
-				; //XXX: inform object that configuration was deleted
+				//XXX: inform object that configuration was deleted
 			}
 			break;
 
 		default:
 			conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
-			if (conf != null) 
-				conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+			if (conf != null) {
+                            conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+                        }
 			
-			if (documentPath.equals("/db/system/users.xml")) {
-				try {
-					ConverterFrom1_0.convert(broker.getSubject(),
-							broker.getBrokerPool().getSecurityManager(),
-							document);
-				} catch (PermissionDeniedException e) {
-				} catch (EXistException e) {
-				}
+			if(documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+                            try {
+                                ConverterFrom1_0.convert(broker.getSubject(), broker.getBrokerPool().getSecurityManager(), document);
+                            } catch (PermissionDeniedException pde) {
+                                LOG.error(pde.getMessage(), pde);
+                            } catch (EXistException ee) {
+                                LOG.error(ee.getMessage(), ee);
+                            }
 			}
 
 			break;
@@ -85,19 +86,20 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 	}
 	
 	private void checkForUpdates(DBBroker broker, XmldbURI uri, DocumentImpl document) {
-		Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
-		if (conf != null) 
-			conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+            Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+            if(conf != null) {
+                    conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+            }
 		
-		if (uri.equals("/db/system/users.xml")) {
-			try {
-				ConverterFrom1_0.convert(broker.getSubject(),
-						broker.getBrokerPool().getSecurityManager(),
-						document);
-			} catch (PermissionDeniedException e) {
-			} catch (EXistException e) {
-			}
-		}
+            if(uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+                try {
+                    ConverterFrom1_0.convert(broker.getSubject(), broker.getBrokerPool().getSecurityManager(), document);
+                } catch (PermissionDeniedException pde) {
+                    LOG.error(pde.getMessage(), pde);
+                } catch (EXistException ee) {
+                    LOG.error(ee.getMessage(), ee);
+                }
+            }
 	}
 
 	@Override
