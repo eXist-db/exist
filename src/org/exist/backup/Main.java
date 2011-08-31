@@ -311,7 +311,12 @@ public class Main
         }
 
         try {
-            Collection root = DatabaseManager.getCollection( properties.getProperty( "uri", "xmldb:exist://" ) + DBBroker.ROOT_COLLECTION, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
+            String uri = properties.getProperty( "uri", "xmldb:exist://" );
+            if(!(uri.contains(DBBroker.ROOT_COLLECTION) || uri.endsWith( DBBroker.ROOT_COLLECTION))) {
+                uri +=  DBBroker.ROOT_COLLECTION;
+            }
+            
+            Collection root = DatabaseManager.getCollection(uri, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
             shutdown( root );
         }
         catch( Exception e ) {

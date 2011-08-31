@@ -278,16 +278,17 @@ public class RestoreHandler extends DefaultHandler {
         //triggers should NOT be disabled, because it do used by the system tasks (like security manager)
         //UNDERSTAND: split triggers: user & system
         //current.setTriggersEnabled(false);
+        /*
         try {
             if(currentCollection.getName().equals("/db/system") && name.equals("users.xml") && currentCollection.getChildCollection("security") != null) {
-                listener.warn("skip resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.");
+                listener.warn("Skipped resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.");
                 return new SkippedEntryDeferredPermission();
             }
         } catch(XMLDBException xe) {
             LOG.error(xe.getMessage(), xe);
             listener.error(xe.getMessage());
             return new SkippedEntryDeferredPermission();
-        }
+        }*/
 
         final String type;
         if(atts.getValue("type") != null) {
@@ -372,15 +373,15 @@ public class RestoreHandler extends DefaultHandler {
                 if(created != null) {
                     try {
                         date_created = (new DateTimeValue(created)).getDate();
-                    } catch(XPathException e2) {
-                        listener.warn("Illegal creation date. Skipping ...");
+                    } catch(XPathException xpe) {
+                        listener.warn("Illegal creation date. Ignoring date...");
                     }
                 }
                 if(modified != null) {
                     try {
                         date_modified = (Date) (new DateTimeValue(modified)).getDate();
-                    } catch(XPathException e2) {
-                        listener.warn("Illegal modification date. Skipping ...");
+                    } catch(XPathException xpe) {
+                        listener.warn("Illegal modification date. Ignoring date...");
                     }
                 }
 
