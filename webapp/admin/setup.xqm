@@ -78,7 +78,7 @@ declare function setup:importLocal() as element()+
         ) 
         else 
         ( 
-            concat($home, "/extensions/betterform/src/main") 
+            concat($home, "/extensions/betterform/main")
         ),
     
     $betterform-xrx := concat($betterform-home, "/xrx/timetracker/"),

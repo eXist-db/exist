@@ -20,10 +20,10 @@
     </condition>
 
     <property name="betterform.home" value="${exist.rootdir}/extensions/betterform"/>
-    <property name="betterform.etc" value="${betterform.home}/src/main/etc"/>
-    <property name="betterform.xrx" value="${betterform.home}/src/main/xrx"/>
-    <property name="betterform.lib" value="${betterform.home}/src/main/lib"/>
-    <property name="betterform.webapp" value="${betterform.home}/src/main/webapp"/>
+    <property name="betterform.etc" value="${betterform.home}/main/etc"/>
+    <property name="betterform.xrx" value="${betterform.home}/main/xrx"/>
+    <property name="betterform.lib" value="${betterform.home}/main/lib"/>
+    <property name="betterform.webapp" value="${betterform.home}/main/webapp"/>
 
     <macrodef name="xslt-saxon">
         <attribute name="in"/>
