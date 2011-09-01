@@ -20,10 +20,10 @@
     </condition>
 
     <property name="betterform.home" value="${exist.rootdir}/extensions/betterform"/>
-    <property name="betterform.etc" value="${betterform.home}/src/main/etc"/>
-    <property name="betterform.xrx" value="${betterform.home}/src/main/xrx"/>
-    <property name="betterform.lib" value="${betterform.home}/src/main/lib"/>
-    <property name="betterform.webapp" value="${betterform.home}/src/main/webapp"/>
+    <property name="betterform.etc" value="${betterform.home}/main/etc"/>
+    <property name="betterform.xrx" value="${betterform.home}/main/xrx"/>
+    <property name="betterform.lib" value="${betterform.home}/main/lib"/>
+    <property name="betterform.webapp" value="${betterform.home}/main/webapp"/>
 
     <macrodef name="xslt-saxon">
         <attribute name="in"/>
@@ -107,7 +107,7 @@
         <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
 
         <echo>
-            Copying betterFORM error page to webapp.
+            Copying betterFORM error page and dashboard to webapp.
         </echo>
          <copy todir="${exist.rootdir}/webapp/">
             <fileset file="${betterform.webapp}/dashboard.html"/>
