@@ -78,7 +78,7 @@
                 <include name="*.jar"/>
             </lib>
             <!-- Include betterform jars  -->
-            <lib dir="extensions/betterform/src/main/lib">
+            <lib dir="extensions/betterform/main/lib">
                 <include name="*.jar"/>
             </lib>
 
@@ -110,10 +110,10 @@
                 <exclude name="**/*.log*"/>
             </fileset>
 			<!-- Betterform -->
-			<zipfileset dir="extensions/betterform/src/main/xrx/"  prefix="betterform/samples/xrx">
+			<zipfileset dir="extensions/betterform/main/xrx/"  prefix="betterform/samples/xrx">
 			    <include name="**/*"/>
 			</zipfileset>
-            <zipfileset dir="extensions/betterform/src/main/xforms/"  prefix="betterform/samples/xforms">
+            <zipfileset dir="extensions/betterform/main/xforms/"  prefix="betterform/samples/xforms">
                 <include name="**/*"/>
             </zipfileset>
             <zipfileset dir="samples" prefix="samples">
