@@ -35,6 +35,7 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
 @ConfigurationClass("")
@@ -74,6 +75,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, realm.collectionAccounts, id, name);
 	}
 	
+        protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
+		super(broker, realm, realm.collectionAccounts, id, name);
+	}
+        
 	public AbstractAccount(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
 		super(realm, configuration);
 	}

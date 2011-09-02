@@ -406,7 +406,8 @@ public class SecurityManagerImpl implements SecurityManager {
 	
 	@Override
 	public Subject getGuestSubject() {
-		return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
+            return new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
+            //return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
 	}
 	
 	@Override
@@ -537,10 +538,45 @@ public class SecurityManagerImpl implements SecurityManager {
 
 		return new_account;
 	}
+    
+        @Override 
+        public final synchronized Account addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException{
+            if(account.getRealmId() == null) {
+                    throw new ConfigurationException("Account must have realm id.");
+            }
+		
+            if(account.getName() == null || account.getName().isEmpty()) {
+                throw new ConfigurationException("Account must have name.");
+            }
+		
+            AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
+
+            int id = getNextAccountId();
+
+            //A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
+            AccountImpl new_account = new AccountImpl(broker, registeredRealm, id, account);
+
+            usersById.put(id, new_account);
+            registeredRealm.registerAccount(new_account);
+
+            //XXX: one transaction?
+            save(broker);
+            new_account.save(broker);
+
+            createUserHome(broker, new_account);
+
+            return new_account;
+	}
 	
 	private void save() throws PermissionDeniedException, EXistException {
         if (configuration != null) {
             configuration.save();
+        }
+	}
+        
+        private void save(DBBroker broker) throws PermissionDeniedException, EXistException {
+        if (configuration != null) {
+            configuration.save(broker);
         }
 	}
 
@@ -555,14 +591,22 @@ public class SecurityManagerImpl implements SecurityManager {
 	}
 
 	private void createUserHome(Account account) throws EXistException, PermissionDeniedException {
+            DBBroker broker = null;
+            try {
+                broker = getDatabase().get(null);
+                createUserHome(broker, account);	
+            } finally {
+                getDatabase().release(broker);
+            }
+	}
+        
+        private void createUserHome(DBBroker broker, Account account) throws EXistException, PermissionDeniedException {
 		if(account.getHome() == null)
 			return;
 		
-		DBBroker broker = null;
 		TransactionManager transact = getDatabase().getTransactionManager();
 		Txn txn = transact.beginTransaction();
 		try {
-			broker = getDatabase().get(null);
 
 			Subject currentUser = broker.getSubject();
 			
@@ -625,8 +669,6 @@ public class SecurityManagerImpl implements SecurityManager {
 			
 			throw e;
 		
-		} finally {
-			getDatabase().release(broker);
 		}
 	}
 

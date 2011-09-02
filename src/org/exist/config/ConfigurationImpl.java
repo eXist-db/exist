@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -341,6 +342,28 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
                     Configurator.save(
+                        configuredObjectReference.get(), 
+                        getProxyObject().getDocumentAtExist().getURI()
+                    );
+                //Configurator.save(getProxyObject().getDocumentAtExist());
+            } catch (Exception e) {
+               throw new ConfigurationException(e.getMessage(), e);
+            } finally {
+                saving = false;
+            }
+        }
+    }
+    
+    @Override
+    public void save(final DBBroker broker) throws PermissionDeniedException, ConfigurationException {
+        //ignore in-memory nodes
+        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
+            return; 
+        synchronized (this) {
+            try {
+                saving = true;
+                if (configuredObjectReference != null && configuredObjectReference.get() != null)
+                    Configurator.save(broker,
                         configuredObjectReference.get(), 
                         getProxyObject().getDocumentAtExist().getURI()
                     );

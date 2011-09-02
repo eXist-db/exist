@@ -81,6 +81,19 @@ public abstract class AbstractPrincipal implements Principal {
 			}
 		}
 	}
+        
+        protected AbstractPrincipal(DBBroker broker, Realm realm, Collection collection, int id, String name) throws ConfigurationException {
+		this.realm = realm;
+		this.id = id;
+		this.name = name;
+
+                try {
+                        Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
+                        configuration = Configurator.configure(this, _config_);
+                } catch (EXistException e) {
+                        throw new ConfigurationException(e);
+                }
+	}
 	
 	public AbstractPrincipal(AbstractRealm realm, Configuration _config_) throws ConfigurationException {
 		this.realm = realm;
@@ -96,6 +109,13 @@ public abstract class AbstractPrincipal implements Principal {
 	public void save() throws ConfigurationException, PermissionDeniedException {
             if (configuration != null) {
                 configuration.save();
+            }
+	}
+        
+        @Override
+        public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException {
+            if (configuration != null) {
+                configuration.save(broker);
             }
 	}
 	

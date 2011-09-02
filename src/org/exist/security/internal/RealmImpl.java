@@ -38,6 +38,7 @@ import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.security.UUIDGenerator;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -68,12 +69,14 @@ public class RealmImpl extends AbstractRealm {
     public final static int UNKNOWN_GROUP_ID = 1048573;
 
     protected final AccountImpl ACCOUNT_SYSTEM;
-    protected final AccountImpl ACCOUNT_GUEST;
+    protected final AccountImpl ACCOUNT_UNKNOWN;
+    
     protected final GroupImpl GROUP_DBA;
     protected final GroupImpl GROUP_GUEST;
-
-    protected final AccountImpl ACCOUNT_UNKNOWN;
     protected final GroupImpl GROUP_UNKNOWN;
+    
+    private final static String DEFAULT_ADMIN_PASSWORD = "";
+    private final static String DEFAULT_GUEST_PASSWORD = "guest";
 
     //@ConfigurationFieldAsElement("allow-guest-authentication")
     public boolean allowGuestAuthentication = true;
@@ -82,50 +85,74 @@ public class RealmImpl extends AbstractRealm {
 
     	super(sm, config);
 
-        //Build-in accounts
-        GROUP_UNKNOWN = new GroupImpl(this, UNKNOWN_GROUP_ID, "");
-    	ACCOUNT_UNKNOWN = new AccountImpl(this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
-
-    	//DBA group & account
-    	GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
+    	sm.lastUserId = 10;     //TODO this is horrible!
+    	sm.lastGroupId = 10;    //TODO this is horrible!
+        
+        //DBA group
+        GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
     	sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
     	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
-
-    	//System account
+        
+        //System account
     	ACCOUNT_SYSTEM = new AccountImpl(this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
     	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
     	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
-
-    	//Administrator account
-    	AccountImpl ACCOUNT_ADMIN = new AccountImpl(this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
-    	sm.usersById.put(ACCOUNT_ADMIN.getId(), ACCOUNT_ADMIN);
-    	usersByName.put(ACCOUNT_ADMIN.getName(), ACCOUNT_ADMIN);
-
-    	//Guest group & account
-    	GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
+        
+        //guest group
+        GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
     	sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
     	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
-
-    	ACCOUNT_GUEST = new AccountImpl(this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST);
-    	sm.usersById.put(ACCOUNT_GUEST.getId(), ACCOUNT_GUEST);
-    	usersByName.put(ACCOUNT_GUEST.getName(), ACCOUNT_GUEST);
-    	
+        
+        //unknown account and group
+        GROUP_UNKNOWN = new GroupImpl(this, UNKNOWN_GROUP_ID, "");
+    	ACCOUNT_UNKNOWN = new AccountImpl(this, UNKNOWN_ACCOUNT_ID, "", (String)null, GROUP_UNKNOWN);
+        
         //XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
     	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);
-
-    	sm.lastUserId = 10;
-    	sm.lastGroupId = 10;
     }
+
+    @Override
+    public void startUp(DBBroker broker) throws EXistException {
+        super.startUp(broker);
+        try {
+            createAdminAndGuestIfNotExist(broker);
+        } catch(PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        }
+    }
+    
+    private void createAdminAndGuestIfNotExist(DBBroker broker) throws EXistException, PermissionDeniedException {
+    	
+        //Admin account
+        if(getSecurityManager().getAccount(broker.getSubject(), SecurityManager.DBA_USER) == null) {
+            //AccountImpl actAdmin = new AccountImpl(broker, this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
+            UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
+            actAdmin.setPassword(DEFAULT_ADMIN_PASSWORD);
+            actAdmin.addGroup(SecurityManager.DBA_GROUP);
+            getSecurityManager().addAccount(broker, actAdmin);
+        }
+
+        //Guest account
+        if(getSecurityManager().getAccount(broker.getSubject(), SecurityManager.GUEST_USER) == null) {
+            //AccountImpl actGuest = new AccountImpl(broker, this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST, false);
+            UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
+            actGuest.setPassword(DEFAULT_GUEST_PASSWORD);
+            actGuest.addGroup(SecurityManager.GUEST_GROUP);
+            getSecurityManager().addAccount(broker, actGuest);
+        }
+    }
+    
+    
 
 	@Override
 	public String getId() {
 		return ID;
 	}
 
-    @Override
+    /*@Override
 	public void startUp(DBBroker broker) throws EXistException {
 		super.startUp(broker);
-	}
+	}*/
 
     @Override
 	public synchronized boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {

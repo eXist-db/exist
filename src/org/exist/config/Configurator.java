@@ -1006,6 +1006,18 @@ public class Configurator {
         }
     }
     
+    public static DocumentAtExist save(DBBroker broker, Configurable instance, XmldbURI uri) throws IOException {
+        
+        try {
+            Collection collection = broker.getCollection(uri.removeLastSegment());
+            if (collection == null)
+                throw new IOException("Collection URI = "+uri.removeLastSegment()+" not found.");
+            return save(instance, broker, collection, uri.lastSegment());
+        } catch (EXistException e) {
+            throw new IOException(e);
+        }
+    }
+    
     protected static Set<FullXmldbURI> saving = new HashSet<FullXmldbURI>();
 
     public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {

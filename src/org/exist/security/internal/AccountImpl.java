@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
+import org.exist.storage.DBBroker;
 
 /**
  * Represents a user within the database.
@@ -186,7 +187,15 @@ public class AccountImpl extends AbstractAccount {
 //	}
     public AccountImpl(AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
         super(realm, id, from_user.getName());
-
+        instantiate(from_user);
+    }
+    
+    public AccountImpl(DBBroker broker, AbstractRealm realm, int id, Account from_user) throws ConfigurationException, PermissionDeniedException {
+        super(broker, realm, id, from_user.getName());
+        instantiate(from_user);
+    }
+    
+    private void instantiate(Account from_user) throws PermissionDeniedException {
         home = from_user.getHome();
 
         //copy metadata

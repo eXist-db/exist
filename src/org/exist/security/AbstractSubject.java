@@ -24,6 +24,7 @@ package org.exist.security;
 import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.realm.Realm;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -243,6 +244,11 @@ public abstract class AbstractSubject implements Subject {
 
     @Override
     public void save() throws PermissionDeniedException {
+        //do nothing
+    }
+    
+    @Override
+    public void save(DBBroker broker) throws PermissionDeniedException {
         //do nothing
     }
 

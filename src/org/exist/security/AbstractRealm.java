@@ -82,7 +82,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return sm;
     }
     
-    private void initialiseRealmStorage(DBBroker broker) throws EXistException {
+    protected void initialiseRealmStorage(DBBroker broker) throws EXistException {
         
         final XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
         

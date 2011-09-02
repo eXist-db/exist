@@ -34,6 +34,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -317,6 +318,11 @@ public class UserAider implements Account {
 
     @Override
     public void save() throws PermissionDeniedException {
+        //do nothing
+    }
+    
+    @Override
+    public void save(DBBroker broker) throws PermissionDeniedException {
         //do nothing
     }
 
