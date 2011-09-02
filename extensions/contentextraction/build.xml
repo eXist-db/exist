@@ -1,3 +1,8 @@
+<!--
+    Ant build file for the content extraction module (based on tika)
+
+    $Id$
+-->
 <project basedir="." default="jar" name="contentextraction">
 
     <property name="src" value="./src"/>
@@ -45,11 +50,16 @@
     -->
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
-    <target name="prepare" if="include.feature.contentextraction.config">
+    <target name="prepare" if="include.feature.contentextraction.config" xmlns:ivy="antlib:org.apache.ivy.ant">
         <mkdir dir="${classes}"/>
         
-        <fetch classpathref="classpath.core" dest="${top.dir}/extensions/contentextraction/lib" 
-            url="${include.feature.contentextraction.tika.url}" classname="org.apache.tika.Tika"/>
+        <fetch classpathref="classpath.core" dest="${top.dir}/tools/ant/lib/" 
+            url="http://repo1.maven.org/maven2/org/apache/ivy/ivy/2.2.0/ivy-2.2.0.jar" 
+            classname="org.apache.ivy.Main"/>
+        
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
+        
+        <ivy:retrieve/>
     </target> 
 
     <target name="compile" depends="prepare" if="include.feature.contentextraction.config">
