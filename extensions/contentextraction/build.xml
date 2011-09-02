@@ -51,6 +51,8 @@
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
     <target name="prepare" if="include.feature.contentextraction.config" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+        <delete file="tika-app-0.9.jar"/>
         <mkdir dir="${classes}"/>
         
         <fetch classpathref="classpath.core" dest="${top.dir}/tools/ant/lib/" 
