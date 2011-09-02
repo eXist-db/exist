@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.exist.dom.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -70,6 +71,8 @@ public interface Configuration {
 	public void checkForUpdates(ElementAtExist document);
 
 	public void save() throws PermissionDeniedException, ConfigurationException;
+        
+        public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
 
 	public boolean equals(Object obj, String uniqField);
 }

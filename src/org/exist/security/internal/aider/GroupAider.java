@@ -30,6 +30,7 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
+import org.exist.storage.DBBroker;
 
 /**
  * Group details.
@@ -101,6 +102,11 @@ public class GroupAider implements Group {
         //do nothing
     }
 
+    @Override
+    public void save(DBBroker broker) throws PermissionDeniedException {
+        //do nothing
+    }
+    
     @Override
     public boolean isManager(Account account) {
         for(Account manager : managers) {

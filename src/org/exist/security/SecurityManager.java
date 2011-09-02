@@ -71,6 +71,8 @@ public interface SecurityManager extends Configurable {
    boolean hasAccount(String name);
 
    <A extends Account> A addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   
+   <A extends Account> A addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException, ConfigurationException;
 
    void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
    <A extends Account> void deleteAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;

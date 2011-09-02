@@ -24,6 +24,7 @@ package org.exist.security;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
 import org.exist.security.realm.Realm;
+import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -38,4 +39,6 @@ public interface Principal extends java.security.Principal, Configurable {
 	public String getRealmId();
 
         public void save() throws ConfigurationException, PermissionDeniedException;
+        
+        public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException;
 }
