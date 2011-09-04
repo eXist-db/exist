@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import static org.junit.Assert.*;
 
 @RunWith (Parameterized.class)
-public class XMLDBSecurityTest_ignore {
+public class XMLDBSecurityTest {
 
     private static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
@@ -30,7 +30,7 @@ public class XMLDBSecurityTest_ignore {
 
     private static JettyStart server;
 
-    public XMLDBSecurityTest_ignore(String baseUri) {
+    public XMLDBSecurityTest(String baseUri) {
         this.baseUri = baseUri;
     }
 
