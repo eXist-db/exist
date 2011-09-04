@@ -21,6 +21,8 @@
  */
 package org.exist.xmlrpc;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -96,6 +98,7 @@ public class XmlRpcTest {
 	
     @BeforeClass
     public static void setUp() {
+        System.out.println("==================================");
 		//Don't worry about closing the server : the shutdown hook will do the job
 		initServer();		
 	}
@@ -104,6 +107,12 @@ public class XmlRpcTest {
     public static void stopServer() {
 		server.shutdown();
         server = null;
+        System.gc();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 
     protected void tearDown() {
@@ -134,6 +143,7 @@ public class XmlRpcTest {
 
 	@Test
 	public void testStoreAndRetrieve() {
+        System.out.println("---testStoreAndRetrieve");
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
@@ -210,6 +220,7 @@ public class XmlRpcTest {
 	}
 
 	private void storeData() {
+        System.out.println("---storeData");
 		try {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
@@ -250,6 +261,7 @@ public class XmlRpcTest {
 
 	@Test
     public void testRemoveCollection() {
+        System.out.println("---testRemoveCollection");
         storeData();
         XmlRpcClient xmlrpc = getClient();
         try {
@@ -271,6 +283,7 @@ public class XmlRpcTest {
 
 	@Test
     public void testRemoveDoc() {
+        System.out.println("---testRemoveDoc");
         storeData();
         XmlRpcClient xmlrpc = getClient();
         try {
@@ -293,6 +306,7 @@ public class XmlRpcTest {
 
 	@Test
 	public void testRetrieveDoc() {
+        System.out.println("---testRetrieveDoc");
         storeData();
 		System.out.println("Retrieving document " + TARGET_RESOURCE);
 		Hashtable<String, String> options = new Hashtable<String, String>();
@@ -322,6 +336,7 @@ public class XmlRpcTest {
 	
 	@Test
 	public void testCharEncoding() {
+        System.out.println("---testCharEncoding");
         storeData();
 		try {
 			System.out.println("Testing charsets returned by query");
@@ -347,6 +362,7 @@ public class XmlRpcTest {
 	
 	@Test
 	public void testQuery() {
+        System.out.println("---testQuery");
         storeData();
 		try {
 			Vector<Object> params = new Vector<Object>();
@@ -368,6 +384,7 @@ public class XmlRpcTest {
 	
 	@Test
 	public void testQueryWithStylesheet() {
+        System.out.println("---testQueryWithStylesheet");
         storeData();
 		try {
 			HashMap<String, String> options = new HashMap<String, String>();
@@ -401,6 +418,7 @@ public class XmlRpcTest {
 
     @Test
     public void testCompile() {
+        System.out.println("---testCompile");
         storeData();
 		try {
 			Vector<Object> params = new Vector<Object>();
@@ -419,6 +437,7 @@ public class XmlRpcTest {
 
     @Test
     public void testAddAccount() {
+        System.out.println("---testAddAccount");
         try {
             String user = "rudi";
             String passwd = "pass";
@@ -443,6 +462,7 @@ public class XmlRpcTest {
 
 	@Test
 	public void testExecuteQuery() {
+        System.out.println("---testExecuteQuery");
         storeData();
 		try {
 			Vector<Object> params = new Vector<Object>();
@@ -480,6 +500,7 @@ public class XmlRpcTest {
 	
 	@Test
 	public void testQueryModuleExternalVar() {
+        System.out.println("---testQueryModuleExternalVar");
         storeData();
 		try {
 			System.out.println("Quering with external variable definied in module ...");
@@ -518,6 +539,7 @@ public class XmlRpcTest {
 	
 	@Test
 	public void testCollectionWithAccentsAndSpaces() {
+        System.out.println("---testCollectionWithAccentsAndSpaces");
         storeData();
 		try {
 			System.out.println("Creating collection with accents and spaces in name ...");

@@ -61,6 +61,7 @@ public class QuerySessionTest {
 
     @Test (expected=XMLDBException.class)
     public void manualRelease() throws XMLDBException {
+        System.out.println("---manualRelease");
         Collection test = DatabaseManager.getCollection(baseURI + "/db/rpctest", "admin", "");
         XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
         ResourceSet result = service.query("//chapter[@xml:id = 'chapter1']");
@@ -76,8 +77,13 @@ public class QuerySessionTest {
 
     @Test
     public void runTasks() {
+        System.out.println("---runTasks");
         ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         for (int i = 0; i < 1000; i++) {
+            if(i % 10 == 0)
+                System.out.print(".");
+            else
+                System.out.print(".");
             executor.submit(new QueryTask(QUERY));
         }
 
@@ -116,6 +122,9 @@ public class QuerySessionTest {
     @SuppressWarnings("unchecked")
 	@BeforeClass
     public static void startServer() throws Exception {
+        
+        System.out.println("\n\n==================================\n\n");
+        
         server = new JettyStart();
         System.out.println("Starting standalone server...");
         System.out.println("Waiting for server to start...");
@@ -150,6 +159,9 @@ public class QuerySessionTest {
 
     @AfterClass
     public static void stopServer() {
+        
+        System.out.println("\n\nStop server...\n");
+
         try {
             Collection root = DatabaseManager.getCollection(baseURI + "/db", "admin", "");
             CollectionManagementService mgmt =
