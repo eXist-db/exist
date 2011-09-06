@@ -426,6 +426,14 @@ ul.tabs li a {
     padding: 1em 0 0 8px;
 }
 
+.details .download button {
+	border: 0;
+	background-color: white;
+}
+.details .download form {
+	float: left;
+}
+
 .close-details {
     position: absolute;
     top: 0;
