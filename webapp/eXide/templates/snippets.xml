@@ -22,9 +22,15 @@
     </snippet>
     <snippet abbrev="fun">
         <description>Function declaration</description>
-        <code><![CDATA[declare function $name($param) {
+        <code>declare function $name($param) {
     $body
-};]]></code>
+};</code>
+    </snippet>
+    <snippet abbrev="template-fun">
+        <description>HTML templating function</description>
+        <code>declare function $name($node as node(), $params as element(parameters)?, $model as item()*) {
+    $body
+};</code>
     </snippet>
     <snippet abbrev="import">
         <description>Module import</description>
@@ -51,22 +57,22 @@ else
     </snippet>
     <snippet abbrev="typeswitch">
         <description>Typeswitch statement</description>
-        <code><![CDATA[typeswitch ($node)
+        <code>typeswitch ($node)
     case element($name) return
         $node
     default return
-        $node]]></code>
+        $node</code>
     </snippet>
     <snippet abbrev="switch">
         <description>XQuery 3.0 switch statement</description>
-        <code><![CDATA[switch ($item)
+        <code>switch ($item)
     case $value return $block
-    default return $block]]></code>
+    default return $block</code>
     </snippet>
     <snippet abbrev="comment (for function)">
         <description>Insert an XQDoc comment for a function declaration</description>
-        <code><![CDATA[(:~
+        <code>(:~
  :
- :)]]></code>
+ :)</code>
     </snippet>
 </snippets>
