@@ -337,6 +337,47 @@ order by ft:score($sect) descending return $sect</synopsis>
                     tokenizes the text at white space characters, but treats all other characters -
                     including punctuation - as part of the token. The tokens are not converted to
                     lower case and there's no stopword filter applied.</para>
+                <section>
+                    <title>Configuring the Analyzer</title>
+                    <para>We provide the capability for you to send configuration parameters to the instantiation of the Analyzer. These parameters must match a Constructor signature on the underlying Java class of the Analyzer, as such we would first recommend that you review the Javadoc for the Analyzer that you wish to configure.</para>
+                    <para>We currently support passing: String, File, Integer, Boolean and Set&lt;String&gt; value parameters to the Analyzer's constructor. If no type is specified in the parameter configuration, then String is assumed by default.</para>
+                    <example>
+                        <title>Providing a Stop Words file for the Standard Analyzer</title>
+                        <programlisting><markup><![CDATA[
+<analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+    <param name="stopwords" type="java.io.File" value="/tmp/stop.txt"/>
+</analyzer>
+                            ]]></markup></programlisting>
+                    </example>
+                    <example>
+                        <title>Providing a list of Stop Words for the Standard Analyzer</title>
+                        <programlisting><markup><![CDATA[
+<analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+    <param name="stopwords" type="java.util.Set">
+        <value>the</value>
+        <value>this</value>
+        <value>and</value>
+        <value>that</value>
+    </param>
+</analyzer>
+                            ]]></markup></programlisting>
+                    </example>
+                    <example>
+                        <title>Using the Snowball Analyzer</title>
+                        <para>Note that using the Snowball analyzer requires you to add additional libraries to lib/user.</para>
+                        <programlisting><markup><![CDATA[
+<analyzer id="sbstops" class="org.apache.lucene.analysis.snowball.SnowballAnalyzer">
+    <param name="name" value="English"/>
+    <param name="stopwords" type="java.util.Set">
+        <value>the</value>
+        <value>this</value>
+        <value>and</value>
+        <value>that</value>
+    </param>
+</analyzer>
+                            ]]></markup></programlisting>
+                    </example>
+                </section>
                 <para>We will certainly add more features in the future, e.g. a possibility to
                     construct a new analyzer from a set of filters. For the time being, you can
                     always provide your own analyzer or use one of those supplied by Lucene or
