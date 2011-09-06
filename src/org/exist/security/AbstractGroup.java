@@ -53,7 +53,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
 
     public AbstractGroup(AbstractRealm realm, String name) throws ConfigurationException {
-        super(realm, realm.collectionGroups, -1, name);
+        super(realm, realm.collectionGroups, UNDEFINED_ID, name);
     }
 
     public AbstractGroup(AbstractRealm realm, Configuration configuration) throws ConfigurationException {

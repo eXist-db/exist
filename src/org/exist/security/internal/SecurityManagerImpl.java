@@ -522,7 +522,12 @@ public class SecurityManagerImpl implements SecurityManager {
 		
 		AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
 		
-		int id = getNextAccountId();
+		final int id;
+                if(account.getId() != Account.UNDEFINED_ID) {
+                    id = account.getId();
+                } else {
+                    id = getNextAccountId();
+                }
 
 //        A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
 		AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
@@ -542,7 +547,7 @@ public class SecurityManagerImpl implements SecurityManager {
         @Override 
         public final synchronized Account addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException{
             if(account.getRealmId() == null) {
-                    throw new ConfigurationException("Account must have realm id.");
+                throw new ConfigurationException("Account must have realm id.");
             }
 		
             if(account.getName() == null || account.getName().isEmpty()) {
@@ -550,8 +555,13 @@ public class SecurityManagerImpl implements SecurityManager {
             }
 		
             AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-
-            int id = getNextAccountId();
+            
+            final int id;
+            if(account.getId() != Account.UNDEFINED_ID) {
+                id = account.getId();
+            } else {
+                id = getNextAccountId();
+            }
 
             //A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
             AccountImpl new_account = new AccountImpl(broker, registeredRealm, id, account);

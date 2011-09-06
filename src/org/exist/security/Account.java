@@ -28,6 +28,8 @@ import org.exist.xmldb.XmldbURI;
 
 public interface Account extends Principal, User {
 
+    public final static int UNDEFINED_ID = -1;
+    
 	public final static int PLAIN_ENCODING = 0;
 	public final static int SIMPLE_MD5_ENCODING = 1;
 	public final static int MD5_ENCODING = 2;

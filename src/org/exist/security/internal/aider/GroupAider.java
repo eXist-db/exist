@@ -39,31 +39,28 @@ import org.exist.storage.DBBroker;
  */
 public class GroupAider implements Group {
 
-	private String realmId;
-	private String name;
-	private int id;
+	private final String realmId;
+	private final String name;
+	private final int id;
 	
-	private List<Account> managers = new ArrayList<Account>();
+	private final List<Account> managers = new ArrayList<Account>();
 	
 	public GroupAider(int id) {
-		this(id, null, null);
+            this(id, null, null);
 	}
 	
 	public GroupAider(String realmId, String name) {
-		this(-1, realmId, name);
+            this(UNDEFINED_ID, realmId, name);
 	}
 
 	public GroupAider(int id, String realmId, String name) {
-		this.id = id;
-		this.name = name;
-		this.realmId = realmId;
+            this.id = id;
+            this.name = name;
+            this.realmId = realmId;
 	}
 	
 	public GroupAider(String name) {
-		this.id = -1;
-		this.name = name;
-		//XXX: parse name for realmId, use default as workaround
-		this.realmId = RealmImpl.ID;
+            this(RealmImpl.ID, name);
 	}
 
 	/* (non-Javadoc)
