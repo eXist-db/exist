@@ -422,6 +422,15 @@ declare function deploy:package($collection as xs:string, $expathConf as element
         xmldb:store("/db/system/repo", $name, $xar, "application/zip")
 };
 
+declare function deploy:download($collection as xs:string, $expathConf as element()) {
+    let $name := concat($expathConf/@abbrev, "-", $expathConf/@version, ".xar")
+    let $xar := compression:zip(xs:anyURI($collection), true(), $collection)
+    return (
+        response:set-header("Content-Disposition", concat("attachment; filename=", $name)),
+        response:stream-binary($xar, "application/zip", $name)
+    )
+};
+
 declare function deploy:deploy($collection as xs:string, $expathConf as element(),
     $repoConf as element()) {
     let $null := util:declare-option("exist:serialize", "method=json media-type=application/json")
@@ -470,12 +479,15 @@ let $collection :=
         ()
 let $info := request:get-parameter("info", ())
 let $deploy := request:get-parameter("deploy", ())
+let $download := request:get-parameter("download", ())
 let $expathConf := if ($collection) then xcollection($collection)/expath:package else ()
 let $repoConf := if ($collection) then xcollection($collection)/repo:meta else ()
 let $abbrev := request:get-parameter("abbrev", ())
 return
     try {
-        if ($info) then
+        if ($download) then
+            deploy:download($collection, $expathConf)
+        else if ($info) then
             deploy:get-info($info)
         else if ($deploy) then
             deploy:deploy($collection, $expathConf, $repoConf)
