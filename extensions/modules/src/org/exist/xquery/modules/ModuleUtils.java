@@ -357,11 +357,14 @@ public class ModuleUtils {
         contextMapLocks.getWriteLock(contextMapName).lock();
         try {
             // get the existing map from the context
-            final Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
+            Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
             if(map == null) {
-                return;
+                //create a new map if it doesnt exist
+                map = new HashMap<Long, T>();
+                context.setXQueryContextVar(contextMapName, map);
             }
             
+            //modify the map
             modifier.modify(map);
             
         } finally {
@@ -400,7 +403,7 @@ public class ModuleUtils {
         try{
 
             // get the existing map from the context
-            Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+            Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
 
             if(map == null) {
                 // if there is no map, create a new one

@@ -22,6 +22,7 @@
 
 package org.exist.xquery.modules.mail;
 
+import java.util.Map.Entry;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
@@ -29,16 +30,17 @@ import org.exist.xquery.XQueryContext;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
+import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
+import org.exist.xquery.modules.ModuleUtils.ContextMapModifier;
 
 /**
  * eXist Mail Module Extension
@@ -46,558 +48,385 @@ import javax.mail.Store;
  * An extension module for the eXist Native XML Database that allows email to
  * be sent from XQuery using either SMTP or Sendmail.  
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Adam Retter <adam@exist-db.org>
  * @author Andrzej Taramina <andrzej@chaeron.com>
  * @author ljo
  * @author José María Fernández <josemariafg@gmail.com>
- * @serial 2010-03-19
- * @version 1.4
+ * @serial 2011-09-06
+ * @version 1.4.1
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
  */
-public class MailModule extends AbstractInternalModule
-{ 
-	protected final static Logger LOG = Logger.getLogger( MailModule.class );
+public class MailModule extends AbstractInternalModule { 
+    
+    private final static Logger LOG = Logger.getLogger( MailModule.class );
 	
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/mail";
+    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/mail";
 	
-	public final static String PREFIX = "mail";
+    public final static String PREFIX = "mail";
     // JavaMail-based from 2009-03-14
     // makes the need for versioning of the functions obvious too /ljo
     public final static String INCLUSION_DATE = "2005-05-12, 2009-03-14";
     public final static String RELEASED_IN_VERSION = "eXist-1.2 (JavaMail-based in trunk)";
 	
-	private final static FunctionDef[] functions = {
-		
-		new FunctionDef( MailSessionFunctions.signatures[0], MailSessionFunctions.class ),
-		new FunctionDef( MailStoreFunctions.signatures[0],   MailStoreFunctions.class ),
-		new FunctionDef( MailStoreFunctions.signatures[1],   MailStoreFunctions.class ),
-		new FunctionDef( MailFolderFunctions.signatures[0],  MailFolderFunctions.class ),
-		new FunctionDef( MailFolderFunctions.signatures[1],  MailFolderFunctions.class ),
-		new FunctionDef( MessageListFunctions.signatures[0], MessageListFunctions.class ),
-		new FunctionDef( MessageListFunctions.signatures[1], MessageListFunctions.class ),
-		new FunctionDef( MessageListFunctions.signatures[2], MessageListFunctions.class ),
-		new FunctionDef( MessageListFunctions.signatures[3], MessageListFunctions.class ),
-				
-		new FunctionDef( SendEmailFunction.signatures[0], SendEmailFunction.class ),
-		
-		// deprecated functions:
-		new FunctionDef( SendEmailFunction.deprecated, SendEmailFunction.class )
-	};
-	
-	public final static String SESSIONS_CONTEXTVAR 			= "_eXist_mail_sessions";
-	public final static String STORES_CONTEXTVAR 			= "_eXist_mail_stores";
-	public final static String FOLDERS_CONTEXTVAR 			= "_eXist_mail_folders";
-	public final static String FOLDERMSGLISTS_CONTEXTVAR 	= "_eXist_folder_message_lists";
-	public final static String MSGLISTS_CONTEXTVAR 			= "_eXist_mail_message_lists";
+    private final static FunctionDef[] functions = {
+        new FunctionDef(MailSessionFunctions.signatures[0], MailSessionFunctions.class),
+        new FunctionDef(MailStoreFunctions.signatures[0], MailStoreFunctions.class),
+        new FunctionDef(MailStoreFunctions.signatures[1], MailStoreFunctions.class),
+        new FunctionDef(MailFolderFunctions.signatures[0], MailFolderFunctions.class),
+        new FunctionDef(MailFolderFunctions.signatures[1], MailFolderFunctions.class),
+        new FunctionDef(MessageListFunctions.signatures[0], MessageListFunctions.class),
+        new FunctionDef(MessageListFunctions.signatures[1], MessageListFunctions.class),
+        new FunctionDef(MessageListFunctions.signatures[2], MessageListFunctions.class),
+        new FunctionDef(MessageListFunctions.signatures[3], MessageListFunctions.class),
 
-	private static long currentSessionHandle = System.currentTimeMillis();
+        new FunctionDef(SendEmailFunction.signatures[0], SendEmailFunction.class),
+
+        // deprecated functions:
+        new FunctionDef(SendEmailFunction.deprecated, SendEmailFunction.class)
+    };
+	
+    public final static String SESSIONS_CONTEXTVAR = "_eXist_mail_sessions";
+    public final static String STORES_CONTEXTVAR = "_eXist_mail_stores";
+    public final static String FOLDERS_CONTEXTVAR = "_eXist_mail_folders";
+    public final static String FOLDERMSGLISTS_CONTEXTVAR = "_eXist_folder_message_lists";
+    public final static String MSGLISTS_CONTEXTVAR = "_eXist_mail_message_lists";
+
+    private static long currentSessionHandle = System.currentTimeMillis();
 	
 	
-	public MailModule(Map<String, List<? extends Object>> parameters)
-	{
-		super( functions, parameters );
-	}
+    public MailModule(Map<String, List<? extends Object>> parameters) {
+        super(functions, parameters);
+    }
 	
 
-	public String getNamespaceURI()
-	{
-		return( NAMESPACE_URI );
-	}
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 	
 
-	public String getDefaultPrefix()
-	{
-		return( PREFIX );
-	}
+    @Override
+    public String getDefaultPrefix() {
+        return PREFIX;
+    }
 	
 
-	public String getDescription()
-	{
-		return( "A module for performing email related functions" );
-	}
+    @Override
+    public String getDescription() {
+        return "A module for performing email related functions";
+    }
 	
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-
 	
-	//***************************************************************************
-	//*
-	//*    Session Methods
-	//*
-	//***************************************************************************/
+    //***************************************************************************
+    //*
+    //*    Session Methods
+    //*
+    //***************************************************************************/
+
+    /**
+     * Retrieves a previously stored Session from the Context of an XQuery
+     * 
+     * @param context 			The Context of the XQuery containing the Session
+     * @param sessionHandle	 	The handle of the Session to retrieve from the Context of the XQuery
+     */
+    static Session retrieveSession(XQueryContext context, long sessionHandle) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, MailModule.SESSIONS_CONTEXTVAR, sessionHandle);
+    }
+
+    /**
+     * Stores a Session in the Context of an XQuery
+     * 
+     * @param context 	The Context of the XQuery to store the Session in
+     * @param session 	The Session to store
+     * 
+     * @return A unique handle representing the Session
+     */
+    static long storeSession(XQueryContext context, Session session) {
+        return ModuleUtils.storeObjectInContextMap(context, MailModule.SESSIONS_CONTEXTVAR, session);
+    }
 	
-	/**
-	 * Retrieves a previously stored Session from the Context of an XQuery
-	 * 
-	 * @param context 			The Context of the XQuery containing the Session
-	 * @param sessionHandle	 	The handle of the Session to retrieve from the Context of the XQuery
-	 */
-	final static Session retrieveSession( XQueryContext context, long sessionHandle ) 
-	{
-		Session session = null;
-		
-		// get the existing sessions map from the context
-		
-		HashMap<Long, Session> sessions = (HashMap<Long, Session>)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
-		
-		if( sessions != null ) {
-			session = sessions.get( new Long( sessionHandle ) );
-		}
-		
-		return( session );
-	}
+    //***************************************************************************
+    //*
+    //*    Store Methods
+    //*
+    //***************************************************************************/
 
+    /**
+     * Retrieves a previously saved Store from the Context of an XQuery
+     * 
+     * @param context 			The Context of the XQuery containing the Store
+     * @param storeHandle	 	The handle of the Store to retrieve from the Context of the XQuery
+     */
+    static Store retrieveStore(XQueryContext context, long storeHandle) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, MailModule.STORES_CONTEXTVAR, storeHandle);
+    }
 
-	/**
-	 * Stores a Session in the Context of an XQuery
-	 * 
-	 * @param context 	The Context of the XQuery to store the Session in
-	 * @param session 	The Session to store
-	 * 
-	 * @return A unique handle representing the Session
-	 */
-	final static synchronized long storeSession( XQueryContext context, Session session ) 
-	{
-		// get the existing sessions map from the context
-		
-		HashMap<Long, Session> sessions = (HashMap<Long, Session>)context.getXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR );
-		
-		if( sessions == null ) {
-			// if there is no sessions map, create a new one
-			sessions = new HashMap<Long, Session>();
-		}
-
-		// get an handle for the session
-		long sessionHandle = getHandle();
-
-		// place the session in the sessions map
-		sessions.put( new Long( sessionHandle ), session );
-		
-		// store the updated sessions map back in the context
-		context.setXQueryContextVar( MailModule.SESSIONS_CONTEXTVAR, sessions );
-
-		return( sessionHandle );
-	}
+    /**
+     * Saves a Store in the Context of an XQuery
+     * 
+     * @param context 	The Context of the XQuery to save the Store in
+     * @param store 	The Store to store
+     * 
+     * @return A unique handle representing the Store
+     */
+    static long storeStore(XQueryContext context, Store store) {
+        return ModuleUtils.storeObjectInContextMap(context, MailModule.STORES_CONTEXTVAR, store);
+    }
 	
+    /**
+     * Remove the store from the specified XQueryContext
+     * 
+     * @param context The context to remove the store for
+     */
+    static void removeStore(XQueryContext context, final long storeHandle) {
+        
+        ModuleUtils.modifyContextMap(context, MailModule.STORES_CONTEXTVAR, new ContextMapModifier<Store>(){
+            @Override
+            public void modify(Map<Long, Store> map) {
+                map.remove(storeHandle);
+            }
+        });
+        
+        //update the context
+        //context.setXQueryContextVar(MailModule.STORES_CONTEXTVAR, stores);
+    }
 	
-	//***************************************************************************
-	//*
-	//*    Store Methods
-	//*
-	//***************************************************************************/
+    /**
+     * Closes all the open stores for the specified XQueryContext
+     * 
+     * @param context The context to close stores for
+     */
+    private static void closeAllStores(XQueryContext context)  {
+        ModuleUtils.modifyContextMap(context,  MailModule.STORES_CONTEXTVAR, new ContextMapEntryModifier<Store>(){
+            @Override
+            public void modify(Map<Long, Store> map) {
+                super.modify(map);
+                
+                //remove all stores from map
+                map.clear();
+            }
+
+            @Override
+            public void modify(Entry<Long, Store> entry) {
+                final Store store = entry.getValue();
+                try {
+                    // close the store
+                    store.close();
+                }  catch(MessagingException me) {
+                    LOG.warn("Unable to close Mail Store: " + me.getMessage(), me);
+                }
+            }
+        });
+        
+        // update the context
+        //context.setXQueryContextVar(MailModule.STORES_CONTEXTVAR, stores);
+    }
 	
-	/**
-	 * Retrieves a previously saved Store from the Context of an XQuery
-	 * 
-	 * @param context 			The Context of the XQuery containing the Store
-	 * @param storeHandle	 	The handle of the Store to retrieve from the Context of the XQuery
-	 */
-	final static Store retrieveStore( XQueryContext context, long storeHandle ) 
-	{
-		Store store = null;
-		
-		// get the existing stores map from the context
-		
-		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
-		
-		if( stores != null ) {
-			store = stores.get( new Long( storeHandle ) );
-		}
+    //***************************************************************************
+    //*
+    //*    Folder Methods
+    //*
+    //***************************************************************************/
 
-		return( store );
-	}
+    /**
+     * Retrieves a previously saved Folder from the Context of an XQuery
+     * 
+     * @param context 			The Context of the XQuery containing the Folder
+     * @param folderHandle	 	The handle of the Folder to retrieve from the Context of the XQuery
+     */
+    static Folder retrieveFolder(XQueryContext context, long folderHandle) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, MailModule.FOLDERS_CONTEXTVAR, folderHandle);
+    }
 
-
-	/**
-	 * Saves a Store in the Context of an XQuery
-	 * 
-	 * @param context 	The Context of the XQuery to save the Store in
-	 * @param store 	The Store to store
-	 * 
-	 * @return A unique handle representing the Store
-	 */
-	final static synchronized long storeStore( XQueryContext context, Store store ) 
-	{
-		// get the existing stores map from the context
-		
-		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
-		
-		if( stores == null ) {
-			// if there is no stores map, create a new one
-			stores = new HashMap<Long, Store>();
-		}
-
-		// get an handle for the store
-		long storeHandle = getHandle();
-
-		// place the store in the stores map
-		stores.put( new Long( storeHandle ), store );
-
-		// save the updated stores map back in the context
-		context.setXQueryContextVar( MailModule.STORES_CONTEXTVAR, stores );
-
-		return( storeHandle );
-	}
+    /**
+     * Saves a Folder in the Context of an XQuery
+     * 
+     * @param context 	The Context of the XQuery to save the Folder in
+     * @param folder 	The Folder to store
+     * 
+     * @return A unique handle representing the Store
+     */
+    static long storeFolder(XQueryContext context, Folder folder) {
+        return ModuleUtils.storeObjectInContextMap(context,  MailModule.FOLDERS_CONTEXTVAR, folder);
+    }
 	
-	
-	/**
-	 * Remove the store from the specified XQueryContext
-	 * 
-	 * @param context The context to remove the store for
-	 */
-	final static synchronized  void removeStore( XQueryContext context, long storeHandle ) 
-	{
-		// get the existing stores map from the context
-		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
-		
-		if( stores != null ) {
-			stores.remove( new Long( storeHandle ) ) ;
+    /**
+     * Remove the folder from the specified XQueryContext
+     * 
+     * @param context The context to remove the store for
+     */
+    static void removeFolder(final XQueryContext context, final long folderHandle) {
+            
+        ModuleUtils.modifyContextMap(context, MailModule.FOLDERS_CONTEXTVAR, new ContextMapModifier<Folder>(){
+            @Override
+            public void modify(Map<Long, Folder> map) {
 
-			// update the context
-			context.setXQueryContextVar( MailModule.STORES_CONTEXTVAR, stores );
-		}
-	}
-	
-	
-	/**
-	 * Closes all the open stores for the specified XQueryContext
-	 * 
-	 * @param context The context to close stores for
-	 */
-	private final static synchronized void closeAllStores( XQueryContext context ) 
-	{
-		// get the existing stores map from the context
-		HashMap<Long, Store> stores = (HashMap<Long, Store>)context.getXQueryContextVar( MailModule.STORES_CONTEXTVAR );
-		
-		if( stores != null ) {
-			// iterate over each store
-			Set<Long> keys = stores.keySet();
-			for( Iterator<Long> itKeys = keys.iterator(); itKeys.hasNext(); ) {
-				// get the store
-				Long storeHandle = itKeys.next();
-				Store store = stores.get( storeHandle );
-				
-				try {
-					// close the store
-					store.close();
+                //remove the message lists for the folder
+                ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, new ContextMapModifier<Map<Long, Message[]>>(){
+                    @Override
+                    public void modify(Map<Long, Map<Long, Message[]>> map) {
+                        
+                        final Map<Long, Message[]> folderMsgList = map.get(folderHandle);
+                        
+                        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
+                            @Override
+                            public void modify(Map<Long, Message[]> map) {
+                                for(final Long msgListKey : folderMsgList.keySet()){
+                                    map.remove(msgListKey);
+                                }
+                            }
+                        });
+                        
+                        //remove the folder message kist
+                        map.remove(folderHandle);
+                    }
+                });
 
-					// remove it from the stores map
-					stores.remove( storeHandle) ;
-				} 
-				catch( MessagingException me ) {
-					LOG.debug( "Unable to close Mail Store", me );
-				}
-			}
-
-			// update the context
-			context.setXQueryContextVar( MailModule.STORES_CONTEXTVAR, stores );
-		}
-	}
+                //remove the folder
+                map.remove(folderHandle);
+            }
+        });
+    }
 	
 	
-	//***************************************************************************
-	//*
-	//*    Folder Methods
-	//*
-	//***************************************************************************/
-	
-	/**
-	 * Retrieves a previously saved Folder from the Context of an XQuery
-	 * 
-	 * @param context 			The Context of the XQuery containing the Folder
-	 * @param folderHandle	 	The handle of the Folder to retrieve from the Context of the XQuery
-	 */
-	final static Folder retrieveFolder( XQueryContext context, long folderHandle ) 
-	{
-		Folder folder = null;
-		
-		// get the existing folders map from the context
-		
-		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
-		
-		if( folders != null ) {
-			folder = folders.get( new Long( folderHandle ) );
-		}
+    /**
+     * Closes all the open folders for the specified XQueryContext
+     * 
+     * @param context The context to close folders for
+     */
+    private static void closeAllFolders(XQueryContext context) {
+        ModuleUtils.modifyContextMap(context, MailModule.FOLDERS_CONTEXTVAR, new ContextMapEntryModifier<Folder>(){
 
-		return( folder );
-	}
+            @Override
+            public void modify(Map<Long, Folder> map) {
+                super.modify(map);
+                
+                //remove all from the folders map
+                map.clear();
+            }
+            
+            @Override
+            public void modify(Entry<Long, Folder> entry) {
+                final Folder folder = entry.getValue();
 
-
-	/**
-	 * Saves a Folder in the Context of an XQuery
-	 * 
-	 * @param context 	The Context of the XQuery to save the Folder in
-	 * @param folder 	The Folder to store
-	 * 
-	 * @return A unique handle representing the Store
-	 */
-	final static synchronized long storeFolder( XQueryContext context, Folder folder ) 
-	{
-		// get the existing stores map from the context
-		
-		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
-		
-		if( folders == null ) {
-			// if there is no folders map, create a new one
-			folders = new HashMap<Long, Folder>();
-		}
-
-		// get an handle for the folder
-		long folderHandle = getHandle();
-
-		// place the store in the folders map
-		folders.put( new Long( folderHandle ), folder );
-
-		// save the updated folders map back in the context
-		context.setXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR, folders );
-
-		return( folderHandle );
-	}
+                //close the folder
+                try {
+                    folder.close(false);
+                } catch(MessagingException me) {
+                    LOG.warn( "Unable to close Mail Folder: " + me.getMessage(), me);
+                }
+            }
+        });
+        
+        // update the context
+        // context.setXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR, folders );
+    }
 	
 	
-	/**
-	 * Remove the folder from the specified XQueryContext
-	 * 
-	 * @param context The context to remove the store for
-	 */
-	final static synchronized void removeFolder( XQueryContext context, long folderHandle ) 
-	{
-		// get the existing folders map from the context
-		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
-		
-		if( folders != null ) {
-			folders.remove( new Long( folderHandle ) ) ;
+    //***************************************************************************
+    //*
+    //*    Message List Methods
+    //*
+    //***************************************************************************/
 
-			// update the context
-			context.setXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR, folders );
-			
-			// get the existing folderMsgLists map from the context and remove all the folder's message lists
-		
-			HashMap<Long, HashMap<Long, Object>> folderMsgLists = (HashMap<Long, HashMap<Long, Object>>)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
-			HashMap msgLists = (HashMap)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
-		
-			if( folderMsgLists != null ) {
-				// get the folders message list
-				HashMap<Long, Object> folderMsgList = (HashMap<Long, Object>)folderMsgLists.get( new Long( folderHandle ) );
-				
-				if( folderMsgList != null ) {
-					// iterate over each message list in this folder
-					Set<Long> keys = folderMsgList.keySet();
-					for( Iterator<Long> itKeys = keys.iterator(); itKeys.hasNext(); ) {
-						Long msgList = itKeys.next();
-						if( msgLists != null ) {
-							msgLists.remove( msgList ) ;
-						}
-					}
-					
-					folderMsgLists.remove( new Long( folderHandle ) );
-				}
-				
-				// update the context
-				context.setXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR, folderMsgLists );
-			}
-		}	
-	}
-	
-	
-	/**
-	 * Closes all the open folders for the specified XQueryContext
-	 * 
-	 * @param context The context to close folders for
-	 */
-	private final static synchronized void closeAllFolders( XQueryContext context ) 
-	{
-		// get the existing folders map from the context
-		HashMap<Long, Folder> folders = (HashMap<Long, Folder>)context.getXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR );
-		
-		if( folders != null ) {
-			// iterate over each folder
-			Set<Long> keys = folders.keySet();
-			for( Iterator<Long> itKeys = keys.iterator(); itKeys.hasNext(); ) {
-				// get the folder
-				Long folderHandle = itKeys.next();
-				Folder folder = folders.get( folderHandle );
-				
-				try {
-					// close the folder
-					folder.close( false );
-
-					// remove it from the folders map
-					folders.remove( folderHandle ) ;
-				} 
-				catch( MessagingException me ) {
-					LOG.debug( "Unable to close Mail Folder", me );
-				}
-			}
-
-			// update the context
-			context.setXQueryContextVar( MailModule.FOLDERS_CONTEXTVAR, folders );
-		}
-	}
-	
-	
-	//***************************************************************************
-	//*
-	//*    Message List Methods
-	//*
-	//***************************************************************************/
-	
-	/**
-	 * Retrieves a previously saved MessageList from the Context of an XQuery
-	 * 
-	 * @param context 			The Context of the XQuery containing the Message List
-	 * @param msgListHandle	 	The handle of the Message List to retrieve from the Context of the XQuery
-	 */
-	final static Message[] retrieveMessageList( XQueryContext context, long msgListHandle ) 
-	{
-		Message[] msgList = null;
-		
-		// get the existing msgLists map from the context
-		
-		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
-		
-		if( msgLists != null ) {
-			msgList = msgLists.get( new Long( msgListHandle ) );
-		}
-
-		return( msgList );
-	}
+    /**
+     * Retrieves a previously saved MessageList from the Context of an XQuery
+     * 
+     * @param context 			The Context of the XQuery containing the Message List
+     * @param msgListHandle	 	The handle of the Message List to retrieve from the Context of the XQuery
+     */
+    static Message[] retrieveMessageList(XQueryContext context, long msgListHandle) {
+        return ModuleUtils.retrieveObjectFromContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, msgListHandle);
+    }
 
 
-	/**
-	 * Saves a MessageList in the Context of an XQuery
-	 * 
-	 * @param context 	The Context of the XQuery to save the MessageList in
-	 * @param msgList 	The MessageList to store
-	 * 
-	 * @return A unique handle representing the Store
-	 */
-	final static synchronized long storeMessageList( XQueryContext context, Message[] msgList, long folderHandle ) 
-	{
-		// get the existing msgLists map from the context
-		
-		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
-		
-		if( msgLists == null ) {
-			// if there is no msgLists map, create a new one
-			msgLists = new HashMap<Long, Message[]>();
-		}
+    /**
+     * Saves a MessageList in the Context of an XQuery
+     * 
+     * @param context 	The Context of the XQuery to save the MessageList in
+     * @param msgList 	The MessageList to store
+     * 
+     * @return A unique handle representing the Store
+     */
+    static long storeMessageList(XQueryContext context, final Message[] msgList, final long folderHandle) {
+            
+        final long msgListHandle = ModuleUtils.storeObjectInContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, msgList);
 
-		// get an handle for the msgList
-		long msgListHandle = getHandle();
+        ModuleUtils.modifyContextMap(context, MailModule.FOLDERMSGLISTS_CONTEXTVAR, new ContextMapModifier<Map<Long, Message[]>>(){
 
-		// place the msgList in the msgLists map
-		msgLists.put( new Long( msgListHandle ), msgList );
+            @Override
+            public void modify(Map<Long, Map<Long, Message[]>> map) {
+                Map<Long, Message[]> folderMsgList = map.get(folderHandle);
+                if(folderMsgList == null) {
+                    folderMsgList = new HashMap<Long, Message[]>();
+                    map.put(folderHandle, folderMsgList);
+                }
 
-		// save the updated msgLists map back in the context
-		context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
-		
-		// get the existing folderMsgLists map from the context
-		
-		HashMap<Long, HashMap<Long, Message[]>> folderMsgLists = (HashMap<Long, HashMap<Long, Message[]>>)context.getXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR );
-		
-		if( folderMsgLists == null ) {
-			// if there is no folderMsgLists map, create a new one
-			folderMsgLists = new HashMap<Long, HashMap<Long, Message[]>>();
-		}	
-		
-		// get the folders message list
-		HashMap<Long, Message[]> folderMsgList = (HashMap<Long, Message[]>)folderMsgLists.get( new Long( folderHandle ) );
-		
-		if( folderMsgList == null ) {
-			folderMsgList = new HashMap<Long, Message[]>();
-			folderMsgLists.put( new Long( folderHandle ), folderMsgList );
-		}
-		
-		// place the msgList in the folderMsgList map
-		folderMsgList.put( new Long( msgListHandle ), msgList );
+                folderMsgList.put(msgListHandle, msgList);
+            }
+        });
 
-		// save the updated folderMsgLists map back in the context
-		context.setXQueryContextVar( MailModule.FOLDERMSGLISTS_CONTEXTVAR, folderMsgLists );
+        return msgListHandle;
+    }
+	
 
-		return( msgListHandle );
-	}
+    /**
+     * Remove the MessageList from the specified XQueryContext
+     * 
+     * @param context The context to remove the MessageList for
+     */
+    static void removeMessageList(XQueryContext context, final long msgListHandle) {
+        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
+            @Override
+            public void modify(Map<Long, Message[]> map) {
+                map.remove(msgListHandle);
+            }
+        });
+        
+        // update the context
+        //context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
+    }
+	
+    /**
+     * Closes all the open MessageLists for the specified XQueryContext
+     * 
+     * @param context The context to close MessageLists for
+     */
+    private static void closeAllMessageLists(XQueryContext context) {
+        ModuleUtils.modifyContextMap(context, MailModule.MSGLISTS_CONTEXTVAR, new ContextMapModifier<Message[]>(){
+            @Override
+            public void modify(Map<Long, Message[]> map) {
+                map.clear();
+            }
+        });
+        
+        // update the context
+        //context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
+    }
 	
 	
-	/**
-	 * Remove the MessageList from the specified XQueryContext
-	 * 
-	 * @param context The context to remove the MessageList for
-	 */
-	final static synchronized void removeMessageList( XQueryContext context, long msgListHandle ) 
-	{
-		// get the existing msgLists map from the context
-		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
-		
-		if( msgLists != null ) {
-			msgLists.remove( new Long( msgListHandle ) ) ;
+    /**
+     * Resets the Module Context and closes any open mail stores/folders/message lists for the XQueryContext
+     * 
+     * @param context The XQueryContext
+     */
+    @Override
+    public void reset( XQueryContext context ) {
+        // reset the module context
+        super.reset(context);
 
-			// update the context
-			context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
-		}
-	}
-	
-	
-	/**
-	 * Closes all the open MessageLists for the specified XQueryContext
-	 * 
-	 * @param context The context to close MessageLists for
-	 */
-	private final static synchronized void closeAllMessageLists( XQueryContext context ) 
-	{
-		// get the existing msgLists map from the context
-		HashMap<Long, Message[]> msgLists = (HashMap<Long, Message[]>)context.getXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR );
-		
-		if( msgLists != null ) {
-			// iterate over each msgList
-			Set<Long> keys = msgLists.keySet();
-			for( Iterator<Long> itKeys = keys.iterator(); itKeys.hasNext(); ) {
-				msgLists.remove( itKeys.next() ) ;
-			}
+        // close any open MessageLists
+        closeAllMessageLists(context);
 
-			// update the context
-			context.setXQueryContextVar( MailModule.MSGLISTS_CONTEXTVAR, msgLists );
-		}
-	}
-	
-	
-	
-	//***************************************************************************
-	//*
-	//*    Common Methods
-	//*
-	//***************************************************************************/
-	
-	/**
-	 * Returns a Unique handle based on the System Time
-	 * 
-	 * @return The Unique handle
-	 */
-	private static synchronized long getHandle() 
-	{
-		return( currentSessionHandle++ );
-	}
-	
-	
-	/**
-	 * Resets the Module Context and closes any open mail stores/folders/message lists for the XQueryContext
-	 * 
-	 * @param context The XQueryContext
-	 */
-	public void reset( XQueryContext context ) 
-	{
-		// reset the module context
-		super.reset( context );
-		
-		// close any open MessageLists
-		closeAllMessageLists( context );
+        // close any open folders
+        closeAllFolders(context);
 
-		// close any open folders
-		closeAllFolders( context );
-		
-		// close any open stores
-		closeAllStores( context );
-	}
+        // close any open stores
+        closeAllStores(context);
+    }
 }
