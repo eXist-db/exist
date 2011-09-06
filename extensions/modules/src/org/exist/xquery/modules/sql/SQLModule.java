@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
 
 /**
  * eXist SQL Module Extension.
@@ -163,31 +164,30 @@ public class SQLModule extends AbstractInternalModule {
      * @param  xqueryContext  The context to close JDBC Connections for
      */
     private static void closeAllConnections(XQueryContext xqueryContext) {
-        // get the existing Connections map from the context
-        Map<Long, Connection> connections = ModuleUtils.retrieveContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR);
-
-        if(connections != null) {
-
-            // iterate over each Connection
-            for(Entry<Long, Connection> entry : connections.entrySet()) {
-                Long conID = entry.getKey();
-                Connection con = entry.getValue();
-
+        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<Connection>(){
+            
+            @Override 
+            public void modify(Map<Long, Connection> map) {
+                super.modify(map);
+                
+                //empty the map
+                map.clear();
+            }
+            
+            @Override
+            public void modify(Entry<Long, Connection> entry) {
+                final Connection con = entry.getValue();
                 try {
-
                     // close the Connection
                     con.close();
                 } catch(SQLException se) {
-                    LOG.debug("Unable to close JDBC Connection", se);
+                    LOG.warn("Unable to close JDBC Connection: " + se.getMessage(), se);
                 }
             }
-
-            //empty the map
-            connections.clear();
-
-            // update the context
-            ModuleUtils.storeContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, connections);
-        }
+        });
+        
+        // update the context
+        //ModuleUtils.storeContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, connections);
     }
 
     /**
@@ -196,30 +196,29 @@ public class SQLModule extends AbstractInternalModule {
      * @param  xqueryContext  The context to close JDBC PreparedStatements for
      */
     private static void closeAllPreparedStatements(XQueryContext xqueryContext) {
-        // get the existing PreparedStatements map from the context
-        Map<Long, PreparedStatementWithSQL> preparedStatements = ModuleUtils.retrieveContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR);
-
-        if(preparedStatements != null) {
-
-            // iterate over each PreparedStatement
-            for(Entry<Long, PreparedStatementWithSQL> entry : preparedStatements.entrySet()) {
-                Long conID = entry.getKey();
-                PreparedStatementWithSQL stmt = entry.getValue();
-
+        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, new ContextMapEntryModifier<PreparedStatementWithSQL>(){
+            
+            @Override 
+            public void modify(Map<Long, PreparedStatementWithSQL> map) {
+                super.modify(map);
+                
+                //empty the map
+                map.clear();
+            }
+            
+            @Override
+            public void modify(Entry<Long, PreparedStatementWithSQL> entry) {
+                final PreparedStatementWithSQL stmt = entry.getValue();
                 try {
-
                     // close the PreparedStatement
                     stmt.getStmt().close();
                 } catch(SQLException se) {
-                    LOG.debug("Unable to close JDBC PreparedStatement", se);
+                    LOG.warn("Unable to close JDBC PreparedStatement: " + se.getMessage(), se);
                 }
             }
-
-            //empty the map
-            preparedStatements.clear();
-
-            // update the context
-            ModuleUtils.storeContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
-        }
+        });
+        
+        // update the context
+        //ModuleUtils.storeContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
     }
 }
