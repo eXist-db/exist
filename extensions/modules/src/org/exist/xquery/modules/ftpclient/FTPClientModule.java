@@ -11,8 +11,7 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-
-
+import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
 
 /**
  *
@@ -105,15 +104,21 @@ public class FTPClientModule extends AbstractInternalModule {
      * @param  xqueryContext  The context to close JDBC Connections for
      */
     private static void closeAllConnections(XQueryContext xqueryContext) {
-        // get the existing Connections map from the context
-        Map<Long, FTPClient> connections = ModuleUtils.retrieveContextMap(xqueryContext, FTPClientModule.CONNECTIONS_CONTEXTVAR);
-
-        if(connections != null) {
-
-            // iterate over each Connection
-            for(Entry<Long, FTPClient> entry : connections.entrySet()) {
-                Long conID = entry.getKey();
-                FTPClient con = entry.getValue();
+        
+        ModuleUtils.modifyContextMap(xqueryContext, FTPClientModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<FTPClient>(){
+            
+            @Override 
+            public void modify(Map<Long, FTPClient> map) {
+                super.modify(map);
+                
+                //empty the map
+                map.clear();
+            }
+            
+            @Override
+            public void modify(Entry<Long, FTPClient> entry) {
+            
+                final FTPClient con = entry.getValue();
                 
                 try {
                     // close the Connection
@@ -130,12 +135,9 @@ public class FTPClientModule extends AbstractInternalModule {
                     }
                 }
             }
+        });
 
-            //empty the map
-            connections.clear();
-
-            // update the context
-            ModuleUtils.storeContextMap(xqueryContext, FTPClientModule.CONNECTIONS_CONTEXTVAR, connections);
-        }
+        // update the context
+        //ModuleUtils.storeContextMap(xqueryContext, FTPClientModule.CONNECTIONS_CONTEXTVAR, connections);
     }
 }

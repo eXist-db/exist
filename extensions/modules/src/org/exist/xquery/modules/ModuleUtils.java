@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
@@ -298,8 +301,32 @@ public class ModuleUtils {
             }
             return properties;
 	}
+    
         
-        /**
+    private static class ContextMapLocks {
+        private final Map<String, ReentrantReadWriteLock> locks = new HashMap<String, ReentrantReadWriteLock>();
+        
+        private synchronized ReentrantReadWriteLock getLock(String contextMapName) {
+            ReentrantReadWriteLock lock = locks.get(contextMapName);
+            if(lock == null) {
+                lock = new ReentrantReadWriteLock();
+                locks.put(contextMapName, lock);
+            }
+            return lock;
+        }
+        
+        public ReadLock getReadLock(String contextMapName) {
+            return getLock(contextMapName).readLock();
+        }
+
+        public WriteLock getWriteLock(String contextMapName) {
+            return getLock(contextMapName).writeLock();
+        }
+    }    
+    
+    private final static ContextMapLocks contextMapLocks = new ContextMapLocks();
+    
+    /**
      * Retrieves a previously stored Object from the Context of an XQuery.
      *
      * @param   context         The Context of the XQuery containing the Object
@@ -307,29 +334,55 @@ public class ModuleUtils {
      * @param   objectUID       The UID of the Object to retrieve from the Context of the XQuery
      *
      * @return  DOCUMENT ME!
-     */
+     */        
     public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
         
-        // get the existing object map from the context
-        Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+        contextMapLocks.getReadLock(contextMapName).lock();
+        try{
+            // get the existing object map from the context
+            final Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
 
-        if(map == null) {
-            return null;
+            if(map == null) {
+                return null;
+            }
+
+            // get the connection
+            return map.get(objectUID);
+        } finally {
+            contextMapLocks.getReadLock(contextMapName).unlock();
         }
-
-        // get the connection
-        return map.get(objectUID);
     }
     
-    
-    public static <T> Map<Long, T> retrieveContextMap(XQueryContext context, String contextMapName) {
-        // get the existing map from the context
-        return (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+    public static <T> void modifyContextMap(XQueryContext context, String contextMapName, ContextMapModifier<T> modifier) {
+        contextMapLocks.getWriteLock(contextMapName).lock();
+        try {
+            // get the existing map from the context
+            final Map<Long, T> map = (Map<Long, T>)context.getXQueryContextVar(contextMapName);
+            if(map == null) {
+                return;
+            }
+            
+            modifier.modify(map);
+            
+        } finally {
+            contextMapLocks.getWriteLock(contextMapName).unlock();
+        }
     }
     
-    public static <T> void storeContextMap(XQueryContext context, String contextMapName, Map<Long, T> contextMap) {
-        // get the existing map from the context
-        context.setXQueryContextVar(contextMapName, contextMap);
+    public interface ContextMapModifier<T> {
+        public void modify(Map<Long, T> map);
+    }
+    
+    public static abstract class ContextMapEntryModifier<T> implements ContextMapModifier<T> {
+        
+        @Override
+        public void modify(Map<Long, T> map) {
+            for(Entry<Long, T> entry : map.entrySet()) {
+                modify(entry);
+            }
+        }
+        
+        public abstract void modify(Entry<Long, T> entry);
     }
 
     /**
@@ -341,28 +394,35 @@ public class ModuleUtils {
      *
      * @return  A unique ID representing the Object
      */
-    public static synchronized <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
-        // get the existing map from the context
-        Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+    public static <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
+        
+        contextMapLocks.getWriteLock(contextMapName).lock();
+        try{
 
-        if(map == null) {
-            // if there is no map, create a new one
-            map = new HashMap<Long, T>();
+            // get the existing map from the context
+            Map<Long, T> map = (HashMap<Long, T>)context.getXQueryContextVar(contextMapName);
+
+            if(map == null) {
+                // if there is no map, create a new one
+                map = new HashMap<Long, T>();
+            }
+
+            // get an id for the map
+            long uid = 0;
+            while(uid == 0 || map.keySet().contains(uid)) {
+                uid = getUID();
+            }
+
+            // place the object in the map
+            map.put(uid, o);
+
+            // store the map back in the context
+            context.setXQueryContextVar(contextMapName, map);
+
+            return (uid);
+        } finally {
+            contextMapLocks.getWriteLock(contextMapName).unlock();
         }
-
-        // get an id for the map
-        long uid = 0;
-        while(uid == 0 || map.keySet().contains(uid)) {
-            uid = getUID();
-        }
-
-        // place the object in the map
-        map.put(uid, o);
-
-        // store the map back in the context
-        context.setXQueryContextVar(contextMapName, map);
-
-        return (uid);
     }
     
     private final static Random random = new Random();
