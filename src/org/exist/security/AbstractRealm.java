@@ -300,44 +300,27 @@ public abstract class AbstractRealm implements Realm, Configurable {
 		return collectionRealm;
 	}
 
-    private Group _addGroup(String name, List<Account> managers) throws ConfigurationException {
-            if (groupsByName.containsKey(name))
-                    throw new IllegalArgumentException("Group "+name+" exist.");
-
-            Group group = new GroupImpl(this, sm.getNextGroupId(), name, managers);
-//            Group group = instantiateGroup(this, getSecurityManager().getNextGroupId(), name);
-            getSecurityManager().addGroup(group.getId(), group);
-            groupsByName.put(name, group);
-
-            return group;
-    }
-
-    private Group _addGroup(int id, String name, List<Account> managers) throws ConfigurationException {
-        if (groupsByName.containsKey(name))
-                throw new IllegalArgumentException("Group "+name+" exist.");
-
-        if (getSecurityManager().hasGroup(id))
-                throw new IllegalArgumentException("Group id "+id+" allready used.");
-
-        Group group = new GroupImpl(this, id, name, managers);
-//      G group = instantiateGroup(this, id, name, managers);
-        getSecurityManager().addGroup(id, group);
-        groupsByName.put(name, group);
-
-        return group;
-    }
-
-    public synchronized Group addGroup(String name, List<Account> managers) throws PermissionDeniedException, EXistException {
-        Group created_group = _addGroup(name, managers);
-
-        ((AbstractPrincipal)created_group).save();
-
-        return created_group;
-    }
-
     @Override
     public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-        return addGroup(group.getName(), group.getManagers());
+        
+        if(groupsByName.containsKey(group.getName())) {
+            throw new IllegalArgumentException("Group " + group.getName() + " already exists.");
+        }
+
+        final int id;
+        if(group.getId() != Group.UNDEFINED_ID) {
+            id = group.getId();
+        } else {
+            id = sm.getNextGroupId();
+        }
+        
+        final Group createdGroup = new GroupImpl(this, id, group.getName(), group.getManagers());
+        getSecurityManager().addGroup(createdGroup.getId(), createdGroup);
+        groupsByName.put(createdGroup.getName(), createdGroup);
+        
+        ((AbstractPrincipal)createdGroup).save();
+
+        return createdGroup;
     }
 
     @Override

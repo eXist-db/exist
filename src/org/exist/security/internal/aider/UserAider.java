@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.exist.config.Configuration;
-import org.exist.security.AXSchemaType;
 import org.exist.security.Group;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
@@ -43,42 +42,40 @@ import org.exist.xmldb.XmldbURI;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class UserAider implements Account {
-
-	private String realmId;
-	private String name;
-	private int id;
+    
+	private final String realmId;
+	private final String name;
+	private final int id;
 	
 	private Group defaultRole = null;
 	private Map<String, Group> roles = new LinkedHashMap<String, Group>();
 	
 	public UserAider(int id) {
-		this(id, null, null);
+            this(id, null, null);
 	}
 
 	public UserAider(String name) {
-		this.realmId = "exist"; //XXX:parse name for realm id
-		this.name = name;
-		id = -1;
+            this(RealmImpl.ID, name); //XXX:parse name for realm id
 	}
 
 	public UserAider(String realmId, String name) {
-		this(-1, realmId, name);
+            this(UNDEFINED_ID, realmId, name);
 	}
 	
 	public UserAider(int id, String realmId, String name) {
-		this.realmId = realmId;
-		this.name = name;
-		this.id = id;
+            this.realmId = realmId;
+            this.name = name;
+            this.id = id;
 	}
 
 	public UserAider(String realmId, String name, Group group) {
-		this(realmId, name);
-		defaultRole = addGroup(group);
+            this(realmId, name);
+            defaultRole = addGroup(group);
 	}
 
 	public UserAider(String name, Group group) {
-		this(RealmImpl.ID, name); //XXX: parse name for realmId, use default as workaround 
-		defaultRole = addGroup(group);
+            this(name);
+            defaultRole = addGroup(group);
 	}
 
 	/* (non-Javadoc)

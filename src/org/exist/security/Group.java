@@ -25,6 +25,8 @@ import java.util.List;
 
 public interface Group extends Principal {
 
+    public final static int UNDEFINED_ID = -1;
+    
     public boolean isManager(Account account);
 
     public void addManager(Account account) throws PermissionDeniedException;

@@ -169,7 +169,7 @@ public class AccountImpl extends AbstractAccount {
      * @throws ConfigurationException
      */
     public AccountImpl(AbstractRealm realm, String name) throws ConfigurationException {
-        super(realm, -1, name);
+        super(realm, Account.UNDEFINED_ID, name);
     }
 
 //    /**

@@ -124,7 +124,7 @@ public class RealmImpl extends AbstractRealm {
     private void createAdminAndGuestIfNotExist(DBBroker broker) throws EXistException, PermissionDeniedException {
     	
         //Admin account
-        if(getSecurityManager().getAccount(broker.getSubject(), SecurityManager.DBA_USER) == null) {
+        if(getSecurityManager().getAccount(ADMIN_ACCOUNT_ID) == null) {
             //AccountImpl actAdmin = new AccountImpl(broker, this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
             UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
             actAdmin.setPassword(DEFAULT_ADMIN_PASSWORD);
@@ -133,7 +133,7 @@ public class RealmImpl extends AbstractRealm {
         }
 
         //Guest account
-        if(getSecurityManager().getAccount(broker.getSubject(), SecurityManager.GUEST_USER) == null) {
+        if(getSecurityManager().getAccount(GUEST_ACCOUNT_ID) == null) {
             //AccountImpl actGuest = new AccountImpl(broker, this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST, false);
             UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
             actGuest.setPassword(DEFAULT_GUEST_PASSWORD);
