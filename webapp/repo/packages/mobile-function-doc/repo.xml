@@ -5,7 +5,7 @@
   <copyright>true</copyright>
   <description>Mobile Function Documentation (based on jQuery Mobile)</description>
   <type>application</type>
-  <target>/db</target>
+  <target>/db/mobiledocs</target>
   <permissions user="guest" group="guest" mode="0444"/>
   <status>stable</status>
   <finish>post-install.xql</finish>
