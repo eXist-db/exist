@@ -77,6 +77,9 @@
                 <xsl:apply-templates select="newsblock"/>
                 <xsl:apply-templates select="body"/>
                 <xsl:call-template name="analytics"/>
+                
+                <script src="http://demo.exist-db.org/feed.xql" type="text/javascript"></script>
+                <script src="http://demo.exist-db.org/xquery/twitter.xql?mode=json&amp;user=existdb&amp;max=3" type="text/javascript"></script>
             </body>
         </html>
     </xsl:template>
@@ -443,13 +446,11 @@
             <div class="block" id="news-box" style="display: none;">
                 <div class="head rounded-top"><h3><a href="http://atomic.exist-db.org">News Blog</a></h3></div>
                 <div id="news_content" class="news_content">
-                    Loading News ...
                 </div>
             </div>
 			<div class="block" id="twitter-box" style="display: none;">
 				<div class="head rounded-top"><h3><a href="http://twitter.com/existdb">Twitter Feed</a></h3></div>
 				<div id="twitter_content" class="news_content">
-					Loading Twitter Feed ...
 				</div>
 			</div>
             <xsl:apply-templates/>
