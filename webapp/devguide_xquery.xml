@@ -64,16 +64,6 @@
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term>XQueryGenerator</term>
-                        <listitem>
-                            <para>The XQueryGenerator integrates eXist's XQuery capabilities with
-                                Apache's Cocoon framework. As with the servlet, the XQueryGenerator
-                                (usually) reads XQuery scripts from the file system, but instead of
-                                directly returning the query results in the HTTP response, it passes
-                                them to a Cocoon pipeline.</para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
                         <term>REST Server</term>
                         <listitem>
                             <para>The <ulink url="devguide_rest.xml#serialization">REST
@@ -92,19 +82,13 @@
                 </variablelist>
             </section>
             <section>
-                <title>XQueryServlet and XQueryGenerator</title>
-                <note>
-                    <para>TODO: release 1.4.0 limits Cocoon to one directory within the
-                        distribution. All the Cocoon-related documentation should probably go into a
-                        separate document.</para>
-                </note>
-                <para>eXist generates HTML web pages from XQuery files in two ways: the
-                    XQueryServlet and XQueryGenerator. With both the XQueryServlet and
-                    XQueryGenerator the compiled XQuery script is stored in a cache for future use.
+                <title>XQueryServlet </title>
+                <para>eXist generates HTML web pages from XQuery files via the
+                    XQueryServlet. With this Servlet the compiled XQuery script is stored in a cache for future use.
                     For this, eXist compiles XQuery into a tree of expression objects, which can be
                     repeatedly executed. This code will only be recompiled if the source file has
                     changed.</para>
-                <para>Both XQueryServlet and the XQueryGenerator provide initialization parameters
+                <para>The XQueryServlet provides initialization parameters
                     to set the username and password used for requests. However, the code will also
                     check if the current HTTP session contains the session attributes
                         <option>user</option> and <option>password</option>. If so, the session
@@ -168,54 +152,6 @@
                                 configure this parameter to have the servlet access a remote
                                 database, follow instructions provided in the <ulink
                                     url="deployment.xml">deployment docs</ulink>.</para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                        <term>XQueryGenerator (Cocoon)</term>
-                        <listitem>
-                            <para>As with the servlet, the Cocoon generator reads and executes
-                                XQuery scripts. However, unlike the servlet, the generator passes
-                                the results to a Cocoon pipeline for further processing.
-                                Furthermore, the XQueryGenerator has to be configured in the Cocoon
-                                sitemap (<filename>sitemap.xmap</filename>). The sitemap registers
-                                the generator and configures a pipeline to map resources for
-                                different web applications. For more information on configuring and
-                                using sitemaps, consult the documentation provided by <ulink
-                                    url="http://cocoon.apache.org">Cocoon</ulink>.The following is a
-                                basic sitemap:</para>
-                            <para/>
-                            <example>
-                                <title>Cocoon Sitemap</title>
-                                <programlisting><markup><![CDATA[
-<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
-    <map:components>
-        <map:generators default="file">
-            <map:generator name="xquery" 
-                logger="sitemap.generator.xquery"
-                src="org.exist.cocoon.XQueryGenerator"/>
-        </map:generators>
-        <map:readers default="resource"/>
-        <map:serializers default="html"/>
-        <map:selectors default="browser"/>
-        <map:matchers default="wildcard"/>
-        <map:transformers default="xslt">
-        </map:transformers>
-	</map:components>
-    <map:pipelines>
-        <map:pipeline>
-            <map:match pattern="*.xq">
-                <map:generate src="{1}.xq" type="xquery"/>
-                <map:serialize encoding="UTF-8" type="html"/>
-            </map:match>
-        </map:pipeline>
-    </map:pipelines>
-</map:sitemap>]]></markup></programlisting>
-                            </example>
-                            <para>According to the above pipeline definition, any path ending with
-                                the <option>.xq</option> extension is matched and processed by the
-                                pipeline. The pipeline generates results using the XQueryGenerator
-                                defined as type <option> xquery</option> in
-                                    <sgmltag>map:components</sgmltag>.</para>
                         </listitem>
                     </varlistentry>
                 </variablelist>

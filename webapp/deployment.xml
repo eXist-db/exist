@@ -33,7 +33,7 @@
                         <emphasis>In a Servlet Context</emphasis>
                     </para>
                     <para>In this case, the database is deployed as part of a web application. eXist
-                        will happily live together with other servlets, like e.g. Cocoon. This is
+                        will happily live together with other servlets. This is
                         the default mode established when the database has been deployed according
                         to instructions provided in the <ulink url="quickstart.xml">Quick Start
                             Guide</ulink>.</para>
@@ -63,9 +63,8 @@
             </orderedlist>
             <para>Note that all three deployments are thread-safe and allow concurrent operations by
                 multiple users. Also note that servlets running in the same web application context
-                will have direct access to the database - a Cocoon-driven application would be one
-                example of this. External client applications may still use the supplied network
-                interfaces.</para>
+                will have direct access to the database. External client applications may still 
+                use the supplied network interfaces.</para>
             <para>As detailed instructions on how to set up eXist for use with a servlet-engine are
                 provided in the <ulink url="quickstart.xml">Quick Start Guide</ulink>, the sections
                 in this document concern the other two deployment options. In section 2, we
@@ -127,8 +126,7 @@
                 deployed in a servlet container (if you start eXist via <filename
                     >bin/startup.sh</filename> or <filename>bin\startup.bat</filename>). The
                 container used is <ulink url="http://jetty.mortbay.org/">Jetty</ulink>.</para>
-            <para>In this setup, eXist runs together with Cocoon in the same web application. The
-                Jetty configuration can be found in <filename>tools/jetty/etc/jetty.xml</filename>.
+            <para>The Jetty configuration can be found in <filename>tools/jetty/etc/jetty.xml</filename>.
                 It defines a single web application context <command>/exist</command>, mapped to the
                     <filename>webapp</filename> directory.</para>
             <para>We think that Jetty is small, efficient and stable, so there's no need to switch
@@ -175,7 +173,7 @@
                 servlet environment.</para>
             <para>In general, the stand-alone deployment is more reliable and performant than the
                 web application setup, since no other threads (simultaneous tasks) are running. If
-                your application does not need Cocoon or SOAP, you should use the stand-alone
+                your application does not need WebDAV or SOAP, you should use the stand-alone
                 server.</para>
             <para>The stand-alone database server offers XML-RPC, WebDAV and REST-style HTTP
                 interfaces for external client access. Please note that it does not support SOAP.

@@ -83,11 +83,8 @@
                     </tr>
                     <tr>
                         <td align="left" colspan="2">The 1.4.1 release still includes Cocoon 2.1.11.
-                            Starting with release 1.5 cocoon will only available as an optional
-                            block. The development team is looking for a maintainer for this code.
-                            If you have experience with Cocoon please drop us a message on the
-                            developer's list, otherwise this feature will be removed in the
-                            future.</td>
+                            Starting with release 1.5 cocoon has been removed and replaced with
+                            Url rewriting feature.</td>
                     </tr>
                 </table>
             </section>

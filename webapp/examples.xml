@@ -163,7 +163,7 @@
                             decide how a HTTP request is handled. The XML fragment returned by the
                             query determines how the request is processed. This happens transparently
                             to the client. One or more "views" can be applied to a request to further processes it.
-                            This is how most of the pages here are rendered (except the Cocoon examples). 
+                            This is how most of the pages here are rendered. 
                             The <link href="functions/">RESTful functions
 								browser</link> implementation is a good demonstration of how to use
 							URL rewriting and views. Please have a look at the
@@ -192,28 +192,6 @@
                             read from the database and applied to the output. Please note that also
                             the CSS file referenced by the HTML output is loaded from the
                         database.</td>
-                    </tr>
-                </table>
-            </section>
-
-            <section title="Cocoon Examples">
-
-                <p>These are <emphasis>older examples</emphasis> based on different Cocoon features.
-                    Some of the examples have been rewritten in XQuery, so there are now two
-                    versions of these. Please note: the demonstrated features, in particular: XSP
-                    and the XML:DB transformer, are still functional, but not actively
-                        <emphasis>maintained</emphasis>!</p>
-
-                <table border="0" width="100%" cellspacing="10">
-                    <tr>
-                        <th align="left" colspan="2"> Cocoon XML:DB Pseudo-Protocol </th>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="cocoon/xmldb/db/">Cocoon-based Database Browser</link>
-                        </td>
-                        <td width="70%">A database browser which uses Cocoon's <code>xmldb://</code>
-                            pseudo-protocol and XSL stylesheets for the rendering.</td>
                     </tr>
                 </table>
             </section>
