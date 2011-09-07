@@ -96,7 +96,7 @@
 
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xql" value="${demo.host}/xquery/acronyms.xql"/>
-            <replacefilter token="cocoon/biblio.xq" value="${demo.host}/cocoon/biblio.xq"/>
+
             <replacefilter token="xquery/xquery.xql" value="${demo.host}/xquery/xquery.xql"/>
             <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
             <replacefilter token="xquery/search.xql" value="${demo.host}/xquery/search.xql"/>
@@ -123,109 +123,12 @@
     </target>
 
     <target depends="prepare-docs" name="docs">
+        <echo>Removed cocoon</echo>
+        <!--
         <mkdir dir="${build.docs.html}"/>
 
         <delete dir="${build}/work"/>
-
-        <echo message="Calling Cocoon ..."/>
-
-        <cocoon verbose="true"
-                classpathref="classpath.core"
-                precompile-only="false"
-                confirm-extensions="false"
-                context-dir="${build.docs.src}"
-                config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
-                work-dir="${build}/work"
-                dest-dir="${build.docs.html}"
-                extension=".html"
-                accept="*/*">
-            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
-            <uris name="site" follow-links="false">
-                <uri type="append" src="index.xml"/>
-                <uri type="append" src="acknowledge.xml"/>
-                <uri type="append" src="ant-tasks.xml"/>
-                <uri type="append" src="client.xml"/>
-                <uri type="append" src="cluster.xml"/>
-                <uri type="append" src="journal.xml"/>
-                <uri type="append" src="configuration.xml"/>
-                <uri type="append" src="ldap-security.xml"/>
-                <uri type="append" src="atompub.xml"/>
-                <uri type="append" src="credits.xml"/>
-                <uri type="append" src="deployment.xml"/>
-                <uri type="append" src="documentation.xml"/>
-                <uri type="append" src="examples.xml"/>
-                <uri type="append" src="indexing.xml"/>
-            	<uri type="append" src="triggers.xml"/>
-                <uri type="append" src="tuning.xml"/>
-                <uri type="append" src="facts.xml"/>
-                <uri type="append" src="extensions.xml"/>
-                <uri type="append" src="gsoc/2007/summer.xml"/>
-                <uri type="append" src="gsoc/2007/soc-ft.xml"/>
-				<uri type="append" src="gsoc/2007/soc-xqj.xml"/>
-                <uri type="append" src="gsoc/2008/summer.xml"/>
-				<uri type="append" src="gsoc/2008/soc-xslt.xml"/>
-				<uri type="append" src="gsoc/2008/soc-dsrch.xml"/>				
-            </uris>
-        </cocoon>
-
-        <cocoon verbose="true"
-            classpathref="classpath.core"
-            precompile-only="false"
-            confirm-extensions="false"
-            context-dir="${build.docs.src}"
-            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
-            work-dir="${build}/work"
-            dest-dir="${build.docs.html}"
-            extension=".html"
-            accept="*/*">
-            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
-            <uris name="site" follow-links="false">
-                <uri type="append" src="quickstart.xml"/>
-                <uri type="append" src="security.xml"/>
-                <uri type="append" src="xquery.xml"/>
-                <uri type="append" src="xinclude.xml"/>
-                <uri type="append" src="update_ext.xml"/>
-                <uri type="append" src="xacml.xml"/>
-                <uri type="append" src="xacml-features.xml"/>
-                <uri type="append" src="xacml-intro.xml"/>
-                <uri type="append" src="xacml-usage.xml"/>
-                <uri type="append" src="xacml-dev.xml"/>
-                <uri type="append" src="webdav.xml"/>
-                <uri type="append" src="developper.html"/>
-                <uri type="append" src="roadmap.xml"/>
-                <uri type="append" src="backup.xml"/>
-                <uri type="append" src="building.xml"/>
-                <uri type="append" src="xmlprague06.xml"/>
-				<uri type="append" src="validation.xml"/>
-            </uris>
-        </cocoon>
-
-        <cocoon verbose="true"
-            classpathref="classpath.core"
-            precompile-only="false"
-            confirm-extensions="false"
-            context-dir="${build.docs.src}"
-            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
-            work-dir="${build}/work"
-            dest-dir="${build.docs.html}"
-            extension=".html"
-            accept="*/*">
-            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
-            <uris name="site" follow-links="false">
-				<uri type="append" src="lucene.xml"/>
-                <uri type="append" src="devguide.xml"/>	
-				<uri type="append" src="devguide_indexes.xml"/>
-				<uri type="append" src="devguide_soap.xml"/>
-				<uri type="append" src="devguide_xmlrpc.xml"/>
-				<uri type="append" src="devguide_rest.xml"/>
-				<uri type="append" src="devguide_xmldb.xml"/>
-				<uri type="append" src="devguide_xquery.xml"/>
-				<uri type="append" src="jmx.xml"/>
-				<uri type="append" src="download.xml"/>
-				<uri type="append" src="webapp/xquery/exist-articles.xql"/>
-            </uris>
-        </cocoon>
-        
+   
         <echo message="Renaming files ..."/>
         <move todir="${build.docs.html}">
             <fileset dir="${build.docs.html}">
@@ -249,6 +152,8 @@
         <zip basedir="${build.docs.html}" compress="true"
             excludes="docs.zip"
             zipfile="docs.zip"/>
+            
+            -->
     </target>
     
     <target name="demoserver">
@@ -389,15 +294,7 @@
             <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
             <replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
         </replace>
-        <replace dir="${build.docs.src}/cocoon" summary="true">
-            <include name="config.xqm"/>
-            <include name="login.xhtml"/>
-            <include name="mods.xq"/>
-			<include name="biblio.xq"/>
-            <replacefilter token='&lt;a href=".."' value='&lt;a href="${host}"'/>
-            <replacefilter token="../index.xml" value="${host}"/>
-			<replacefilter token='&lt;a href="../download.xml">Download&lt;/a>' value='&lt;a href="${host}/download.html">Download&lt;/a>'/>
-        </replace>
+
     </target>
     
 </project>

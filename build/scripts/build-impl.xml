@@ -121,10 +121,6 @@
         <classpath refid="classpath.core"/>
     </taskdef>
 
-    <!--taskdef name="cocoon" classname="org.apache.cocoon.CocoonTask">
-        <classpath refid="classpath.core"/>
-    </taskdef-->
-
     <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.6.11.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
     <path id="classpath.aspectj">
         <fileset dir="${tools.aspectj}/lib">
@@ -375,12 +371,10 @@
             <exclude name="org/exist/*.xsl"/>
             <exclude name="org/exist/ant/**"/>
             <exclude name="org/exist/atom/**"/>
-            <exclude name="org/exist/cocoon/**"/>
             <exclude name="org/exist/http/**"/>
-			<exclude name="org/exist/jetty/**"/>
+            <exclude name="org/exist/jetty/**"/>
             <exclude name="org/exist/jsp/**"/>
             <exclude name="org/exist/soap/**"/>
-            <exclude name="org/exist/source/CocoonSource.java"/>
             <exclude name="org/exist/start/**"/>
             <exclude name="org/exist/webstart/**"/>
             <exclude name="org/exist/xquery/functions/request/**"/>
@@ -414,12 +408,10 @@
             <include name="org/exist/*.xsl"/>
             <include name="org/exist/ant/**"/>
             <include name="org/exist/atom/**"/>
-            <include name="org/exist/cocoon/**"/>
             <include name="org/exist/http/**"/>
-						<include name="org/exist/jetty/**"/>
+            <include name="org/exist/jetty/**"/>
             <include name="org/exist/jsp/**"/>
             <include name="org/exist/soap/**"/>
-            <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/start/**"/>
             <include name="org/exist/webstart/**"/>
             <include name="org/exist/xquery/functions/request/**"/>
@@ -432,7 +424,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-cocoon,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
+        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -510,7 +502,6 @@
             <link href="http://milton.ettrema.com/reference/milton-api/apidocs/"/> 
             <link href="http://milton.ettrema.com/reference/milton-servlet/apidocs/"/> 
             <link href="http://www.oxygenxml.com/apidoc/saxon-9.2/"/>
-            <link href="http://cocoon.apache.org/2.1/apidocs/"/>
             <link href="http://lucene.apache.org/java/2_9_4/api/all/"/>
         </javadoc>
 
@@ -642,28 +633,27 @@
         </delete>
         <delete failonerror="no" dir="cat"/>
         
-
-        <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/expath" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/cocoon" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/contentextraction" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/exiftool" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/expath" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
+
         <antcall target="extensions-xslt"/>
     </target>
 
@@ -765,11 +755,7 @@
     <target name="extension-xqdoc" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/xqdoc" inheritall="false"/>
     </target>
-    
-    <target name="extension-cocoon" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/cocoon" inheritall="false"/>
-    </target>
-    
+        
     <target name="extension-fluent" depends="jar">
         <ant antfile="build.xml" dir="extensions/fluent" inheritall="false"/>
     </target>

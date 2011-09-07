@@ -73,9 +73,7 @@ highlight-matches=none
   <mkdir dir="${dist.minimal}/logs"/>
   <mkdir dir="${dist.minimal}/lib"/>
   <copy todir="${dist.minimal}/lib">
-    <fileset dir="${src.dir}/lib">
-        <exclude name="**/cocoon/*.jar"/>
-    </fileset>
+    <fileset dir="${src.dir}/lib"/>
   </copy>
   
   <!-- lucence extension is now enabled by default! -->

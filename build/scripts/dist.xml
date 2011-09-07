@@ -72,13 +72,6 @@
                 <include name="*.jar"/>
             </lib>
            
-            <!-- Include cocoon jars -->
-            <!-- 
-            <lib dir="extensions/cocoon/lib">
-                <include name="*.jar"/>
-            </lib>
-            -->
-
             <!-- Include webdav milton jars  -->
             <lib dir="extensions/webdav/lib">
                 <include name="*.jar"/>
@@ -244,9 +237,6 @@
         <copy todir="${dist.dir}/lib/optional">
             <fileset dir="${lib.optional}"/>
         </copy>
-        <!--copy todir="${dist.dir}/lib/cocoon">
-            <fileset dir="${lib.cocoon}"/>
-        </copy-->
         <copy todir="${dist.dir}/lib/endorsed">
             <fileset dir="${lib.endorsed}"/>
         </copy>
