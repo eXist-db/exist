@@ -52,8 +52,7 @@ public class StreamBinary extends BasicFunction {
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
             "Streams the binary data to the current servlet response output stream. The ContentType "
             + "HTTP header is set to the value given in $content-type."
-            + "This function only works within a servlet context, not within "
-            + "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog "
+            + "Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog "
             + "will not be passed.",
             new SequenceType[]{BINARY_DATA_PARAM, CONTENT_TYPE_PARAM, FILENAME_PARAM},
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
