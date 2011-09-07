@@ -76,69 +76,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr bgcolor="#FFFFFF" valign="top">
-                        <td width="20%">Cocoon</td>
-                        <td width="30%">
-                            <para> Apache Cocoon is a Spring-based framework (since version 2.2 of
-                                Cocoon) built around the concepts of separation of concerns and
-                                component-based development. Cocoon implements these concepts around
-                                the notion of component pipelines, each component on the pipeline
-                                specializing on a particular operation. </para>
-                            <para>This feature currently does not have any development support in
-                                eXist.</para>
-                        </td>
-                        <td>
-                            <itemizedlist>
-                                <listitem>extensions/build.properties</listitem>
-                                <listitem>
-                                    <para>webapp/WEB-INF/web.xml</para>
-                                </listitem>
-                                <listitem>
-                                    <para>webapp/WEB-INF/cocoon.xconf</para>
-                                </listitem>
-                                <listitem>
-                                    <para>webapp/WEB-INF/logkit.xconf</para>
-                                </listitem>
-                                <listitem>
-                                    <para>webapp/WEB-INF/instrumentation.xconf</para>
-                                </listitem>
-                            </itemizedlist>
-                        </td>
-                        <td/>
-                        <td width="8%" align="center" bgcolor="#00FF00">On</td>
-                    </tr>
-                    <tr bgcolor="#F6F6F6" valign="top">
-                        <td>clustering</td>
-                        <td>
-                            <para> It is a system that allows XQueries to be distributed across
-                                multiple CPUs. It is currently limited to query and store. XQuery
-                                updates are not supported. </para>
-                            <para>This feature currently does not have any development support and
-                                it has a dependency on the cocoon service.</para>
-                        </td>
-                        <td>
-                            <itemizedlist>
-                                <listitem>
-                                    <para>conf.xml</para>
-                                </listitem>
-                            </itemizedlist>
-                        </td>
-                        <td/>
-                        <td width="8%" align="center" bgcolor="#00FF00">On</td>
-                    </tr>
-                    <tr bgcolor="#FFFFFF" valign="top">
-                        <td/>
-                        <td>
-                            <para> </para>
-                        </td>
-                        <td>
-                            <itemizedlist>
-                                <listitem/>
-                            </itemizedlist>
-                        </td>
-                        <td/>
-                        <td/>
-                    </tr>
                     <tr bgcolor="#F6F6F6" valign="top">
                         <td><ulink url="debugger.xml">debugger</ulink></td>
                         <td>
@@ -1823,57 +1760,6 @@ uri="http://www.json.org"/>]]></synopsis>
                             URIs</ulink> as in an ordinary XQuery import statement.</para>
                 </section>
             </section>
-        </section>
-        <section>
-            <title>Cocoon Sitemap Configuration</title>
-            <para>Cocoon uses a sitemap XML file called <filename moreinfo="none"
-                    >sitemap.xmap</filename> to configure the processing pipelines it uses to
-                process HTTP requests. eXist's integration with Cocoon is completely based on the
-                XML:DB database API, however any XML:DB-enabled database (e.g.
-                    <emphasis>Xindice</emphasis>) can be integrated with Cocoon.</para>
-            <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are
-                supported. Pseudo-protocols allow you to register handlers for special URLs via
-                so-called "source factories". In essence, these protocols specify resources wherever
-                a known protocol such as <filename>http://</filename> or
-                    <filename>file://</filename> is specified in the sitemap. Currently, the
-                distribution defines a pseudo-protocol to access XML:DB-enabled databases. </para>
-            <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file
-                    <filename moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these
-                protocols, simply specify the correct database driver class, as in the following
-                example:</para>
-            <example>
-                <title>Defining the XML:DB Database Driver</title>
-                <programlisting><markup><![CDATA[<source-handler logger="core.source-handler"&gt;
-        <!-- xmldb pseudo protocol -->
-     <protocol 
-            class="org.apache.cocoon.components.source.XMLDBSourceFactory" 
-            name="xmldb">
-        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
-        <!-- Add here other XML:DB compliant databases drivers -->
-      </protocol>
-</source-handler>]]></markup>
-          </programlisting>
-            </example>
-            <para>Once the database driver has been registered with the handler, it is possible to
-                use an XML:DB URI wherever Cocoon expects a URI in its site configuration file
-                    <filename moreinfo="none">sitemap.xmap</filename>. For example, to access our
-                collection of Shakespeare plays from the web-browser, and with a stylesheet applied
-                to each document, we could use the following code fragment in the sitemap's
-                processing pipeline:</para>
-            <example>
-                <title>Using XML:DB URIs in the Sitemap</title>
-                <programlisting><markup><![CDATA[<!-- apply stylesheet shakes.xsl to all XML documents
-in xmldb-collection /db/shakespeare/plays --> 
-<map:match pattern="xmldb/db/shakespeare/plays/**.xml">
-    <map:generate src="xmldb:exist:///db/shakespeare/plays/{1}.xml"/>
-    <map:transform src="xmldb:exist:///db/shakespeare/plays/shakes.xsl"/>
-    <map:serialize type="html"/>
-</map:match>
-</programlisting>]]></markup>
-        </programlisting>
-            </example>
-            <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist also
-                contains more complex examples.</para>
         </section>
     </chapter>
 </book>

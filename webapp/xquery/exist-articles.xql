@@ -155,19 +155,11 @@ declare function mods:list-articles() {
 
     <chapter>
         <title>Articles on eXist</title>
-        
-        {
-            if (empty(collection($mods:MODS_COLLECTION)//mods:mods)) then
+
                 <para>Article references are contained in a MODS document which will be installed
                     with the other sample documents. Please go to the 
                     <ulink url="admin/admin.xql">admin interface</ulink> and launch
                     "Examples Setup".</para>
-            else
-                <para>A collection of articles, blog posts, tutorials and papers which mention eXist. They
-                may help to get started or provide information on special features. The references can
-                also be queried/sorted via the "<ulink url="cocoon/biblio.xq">Bibliographic</ulink>" 
-                demo.</para>
-        }
         
         { mods:list-articles() }
     </chapter>

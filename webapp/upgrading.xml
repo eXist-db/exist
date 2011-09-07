@@ -102,10 +102,8 @@
                                 framework</ulink>.</para>
                             <para>Consequently, we now limit Cocoon to one directory of the web
                                 application (<filename>webapp/cocoon</filename>) and moved all the
-                                Cocoon samples in there. For the 1.4 final, we plan to completely
-                                remove Cocoon from the standard distribution, though we would like
-                                to continue to provide a separate
-                                    <emphasis>eXist-as-Cocoon-block</emphasis> distribution.</para>
+                                Cocoon samples in there. For the 1.5 version we completely
+                                removed Cocoon support.</para>
                         </listitem>
                     </varlistentry>
                 </variablelist>

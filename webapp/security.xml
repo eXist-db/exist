@@ -415,42 +415,6 @@ exist:/db/shakespeare/plays>]]></screen>
             </section>
         </section>
         <section>
-            <title>Authentication and Cocoon</title>
-            <para>Cocoon uses the XML:DB API to access eXist, and so has to authenticate the user
-                like any other XML:DB based application. To make this easier, eXist contains a
-                Cocoon action for this login task called
-                    <classname>XMLDBSessionLoginAction</classname>. The action presents a login
-                interface page, checks the entered username and password against the database, and
-                stores them in a newly created HTTP session variable. As long as the session remains
-                valid, no further login is required. It is recommended you read Cocoon's
-                documentation on actions for detailed information how actions work in this
-                framework. The following snippet shows an example from Cocoon's <filename
-                    >sitemap.xmap</filename> configuration:</para>
-            <example>
-                <title>Snippet from Cocoon's <filename>sitemap.xmap</filename></title>
-                <screen><markup><![CDATA[
-<!-- this is a protected resource: it uses the xmldb-login action
-to authenticate a user against the database -->
-<map:match pattern="xadmin.xsp">
-    <map:act src="xmldb:exist:///db" type="xmldb-login">
-         <map:generate src="xadmin.xsp" type="serverpages"/>
-         <map:transform type="cinclude">
-              <map:parameter name="use-request-parameters" value="true"/>
-         </map:transform>
-         <map:transform src="stylesheets/doc2html-2.xsl">
-              <map:parameter name="use-request-parameters" value="true"/>
-         </map:transform>
-         <map:serialize encoding="UTF-8" type="xhtml"/>
-     </map:act>
-     <!-- no session found: display login form -->
-     <map:generate src="login.xml"/>
-     <map:transform type="cinclude"/>
-     <map:transform src="stylesheets/doc2html-2.xsl"/>
-     <map:serialize type="xhtml"/>
-</map:match>]]></markup></screen>
-            </example>
-        </section>
-        <section>
             <title>Using XQuery Access Control</title>
             <para>Please see separate documentation on <ulink url="xacml.xml">XACML in
                 eXist</ulink>.</para>
