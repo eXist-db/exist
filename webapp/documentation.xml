@@ -146,11 +146,6 @@
                                 <td>How to backup/restore your database contents.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="cluster.xml">Cluster
-                                        configuration</ulink>:</td>
-                                <td>How to configure cluster environment.</td>
-                            </tr>
-                            <tr>
                                 <td class="doclink"><ulink url="triggers.xml">Configuring
                                         Triggers</ulink>:</td>
                                 <td>How to configure triggers.</td>

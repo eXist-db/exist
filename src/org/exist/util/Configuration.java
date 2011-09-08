@@ -37,8 +37,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import org.exist.Indexer;
-import org.exist.cluster.ClusterComunication;
-import org.exist.cluster.journal.JournalManager;
 import org.exist.indexing.IndexManager;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
@@ -261,13 +259,6 @@ public class Configuration implements ErrorHandler
                 configureXACML( (Element)xacml.item( 0 ) );
             }
 
-            //Cluster configuration
-            NodeList clusters = doc.getElementsByTagName( ClusterComunication.CONFIGURATION_ELEMENT_NAME );
-
-            if( clusters.getLength() > 0 ) {
-                configureCluster( (Element)clusters.item( 0 ) );
-            }
-
             //Validation
             NodeList validations = doc.getElementsByTagName( XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME );
 
@@ -290,68 +281,7 @@ public class Configuration implements ErrorHandler
         }
     }
 
-    private void configureCluster( Element cluster )
-    {
-        String protocol = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_PROTOCOL_ATTRIBUTE );
-
-        if( protocol != null ) {
-            config.put( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL, protocol );
-            LOG.debug( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_PROTOCOL ) );
-        }
-        String user = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_USER_ATTRIBUTE );
-
-        if( user != null ) {
-            config.put( ClusterComunication.PROPERTY_CLUSTER_USER, user );
-            LOG.debug( ClusterComunication.PROPERTY_CLUSTER_USER + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_USER ) );
-        }
-        String pwd = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_PWD_ATTRIBUTE );
-
-        if( pwd != null ) {
-            config.put( ClusterComunication.PROPERTY_CLUSTER_PWD, pwd );
-            LOG.debug( ClusterComunication.PROPERTY_CLUSTER_PWD + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_PWD ) );
-        }
-        String dir = getConfigAttributeValue( cluster, JournalManager.JOURNAL_DIR_ATTRIBUTE );
-
-        if( dir != null ) {
-            config.put( JournalManager.PROPERTY_JOURNAL_DIR, dir );
-            LOG.debug( JournalManager.PROPERTY_JOURNAL_DIR + ": " + config.get( JournalManager.PROPERTY_JOURNAL_DIR ) );
-        }
-        String            excludedColl = getConfigAttributeValue( cluster, ClusterComunication.CLUSTER_EXCLUDED_COLLECTIONS_ATTRIBUTE );
-        ArrayList<String> list         = new ArrayList<String>();
-
-        if( excludedColl != null ) {
-            String[] excl = excludedColl.split( "," );
-
-            for( int i = 0; i < excl.length; i++ ) {
-                list.add( excl[i] );
-            }
-        }
-
-        if( !list.contains( XmldbURI.TEMP_COLLECTION ) ) {
-            list.add( XmldbURI.TEMP_COLLECTION );
-        }
-        config.put( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS, list );
-        LOG.debug( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS + ": " + config.get( ClusterComunication.PROPERTY_CLUSTER_EXCLUDED_COLLECTIONS ) );
-
-        /*Cluster parameters for test*/
-        String maxStore = getConfigAttributeValue( cluster, JournalManager.CLUSTER_JOURNAL_MAXSTORE_ATTRIBUTE );
-
-        if( ( maxStore == null ) || ( maxStore.trim().length() == 0 ) ) {
-            maxStore = "65000";
-        }
-        config.put( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE, Integer.valueOf( maxStore ) );
-        LOG.debug( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE + ": " + config.get( JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE ) );
-
-        String shift = getConfigAttributeValue( cluster, JournalManager.CLUSTER_JOURNAL_SHIFT_ATTRIBUTE );
-
-        if( ( shift == null ) || ( shift.trim().length() == 0 ) ) {
-            shift = "100";
-        }
-        config.put( JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT, Integer.valueOf( shift ) );
-        LOG.debug( JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT + ": " + config.get( JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT ) );
-    }
-
-
+   
     private void configureXQuery( Element xquery ) throws DatabaseConfigurationException
     {
         //java binding

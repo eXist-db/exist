@@ -20,7 +20,6 @@ declare variable $local:MAP :=
         <map url='beginners-guide-to-xrx-v4.xml' replace='beginners-guide-to-xrx-v4.html'/>
         <map url='building.xml' replace='building.html'/>
         <map url='client.xml' replace='client.html'/>
-        <map url='cluster.xml' replace='cluster.html'/>
         <map url='community.xml' replace='community.html'/>
         <map url='config-cache.xml' replace='config-cache.html'/>
         <map url='config-compression.xml' replace='config-compression.html'/>

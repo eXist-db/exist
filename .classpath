@@ -63,7 +63,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/jgroups-all-2.2.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>

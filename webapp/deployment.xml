@@ -461,11 +461,6 @@
                         </listitem>
                         <listitem>
                             <para>
-                                <filename>lib/core/jgroups-all.jar</filename>
-                            </para>
-                        </listitem>
-                        <listitem>
-                            <para>
                                 <filename>lib/core/log4j-X.X.X.jar</filename>
                             </para>
                         </listitem>
