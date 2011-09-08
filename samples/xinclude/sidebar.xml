@@ -84,9 +84,6 @@
             <link href="../../../status">Server Status</link>
         </item>
         <item>
-            <link href="../../../cluster">Cluster Status</link>
-        </item>
-        <item>
             <link href="../../../webstart/exist.jnlp">Webstart Client</link>
         </item>
         <item>

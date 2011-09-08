@@ -44,8 +44,6 @@
             <replacefilter token="changes.xml" value="changes.html"/>
             <replacefilter token="extensions.xml" value="extensions.html"/>
             <replacefilter token="client.xml" value="client.html"/>
-            <replacefilter token="cluster.xml" value="cluster.html"/>
-            <replacefilter token="journal.xml" value="journal.html"/>
             <replacefilter token="configuration.xml" value="configuration.html"/>
             <replacefilter token="ldap-security.xml" value="ldap-security.html"/>
             <replacefilter token="atompub.xml" value="atompub.html"/>
@@ -105,7 +103,6 @@
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
             <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
-            <replacefilter token='href="cluster"' value='href="${demo.host}/cluster"'/>
             <replacefilter token="xquery/functions.xql" value="${demo.host}/xquery/functions.xql"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
@@ -220,7 +217,6 @@
             <replacefilter token="changes.xml" value="${host}/changes.html"/>
             <replacefilter token="extensions.xml" value="${host}/extensions.html"/>
             <replacefilter token="client.xml" value="${host}/client.html"/>
-            <replacefilter token="cluster.xml" value="${host}/cluster.html"/>
             <replacefilter token="journal.xml" value="${host}/journal.html"/>
             <replacefilter token="configuration.xml" value="${host}/configuration.html"/>
             <replacefilter token="ldap-security.xml" value="${host}/ldap-security.html"/>

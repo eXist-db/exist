@@ -27,8 +27,6 @@ import java.io.InputStream;
 import java.net.SocketException;
 import java.util.Observer;
 
-import org.exist.cluster.ClusterComunication;
-import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
@@ -60,7 +58,6 @@ import org.exist.SystemProperties;
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
  * handlers to cleanly shut down the database and the webserver.
- * If database is NATIVE-CLUSTER, Clustercomunication is configured and started.
  * 
  * @author wolf
  */
@@ -162,8 +159,6 @@ public class JettyStart implements LifeCycle.Listener {
             Database xmldb = new DatabaseImpl();
             xmldb.setProperty("create-database", "false");
             DatabaseManager.registerDatabase(xmldb);
-
-            configureCluster(config);
 
         } catch (Exception e) {
             logger.error("configuration error: " + e.getMessage(), e);
@@ -344,10 +339,6 @@ public class JettyStart implements LifeCycle.Listener {
                         try {
                             // stop the server
                             server.stop();
-                            ClusterComunication cluster = ClusterComunication.getInstance();
-                            if (cluster != null) {
-                                cluster.stop();
-                            }
                             server.join();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -358,14 +349,6 @@ public class JettyStart implements LifeCycle.Listener {
         }
     }
 
-    private void configureCluster(Configuration c) throws ClusterException {
-        String database = (String) c.getProperty("database");
-        if (!database.equalsIgnoreCase("NATIVE_CLUSTER")) {
-            return;
-        }
-
-        ClusterComunication.configure(c);
-    }
 
     public synchronized boolean isStarted() {
         if (status == STATUS_STARTED || status == STATUS_STARTING)

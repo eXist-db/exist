@@ -8,7 +8,6 @@
     Structure of this xml document:
     
         exist
-            cluster
             db-connection
                 default-permissions
                 pool
@@ -47,7 +46,6 @@
     For detailed and latest information please consult the eXist documentation:
     
         - http://exist-db.org/configuration.html
-        - http://exist-db.org/cluster.html
         - http://exist-db.org/documentation.html
         - http://atomic.exist-db.org/
         
@@ -57,33 +55,6 @@
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
-
-    <!-- 
-        Configures the cluster configuration.
-        
-        - dbaUser:
-            defines the user used by the cluster for the replica.
-        
-        - dbaPassword:
-            defines the user password used by the cluster for the replica.
-        
-        - exclude:
-            some collections should be signed as no-replicated collections i.e.
-            during the replica phase eXist cluster environment doesn't send
-            events based on these collections, colon is the separator char when
-            more than one collection is added.
-        
-        - journalDir:
-            specifies the folder where the eXist cluster node saves its journal
-            file. Directory is automatically created if it doesn't exist. If no
-            journaldir is specified, journal is disabled.
-        
-        - protocol:
-            defines a protocol stack. Refers the jgroups protocol stack.
-   -->
-    <cluster dbaPassword="" dbaUser="admin" exclude="/db/system,/db/system/config"
-        journalDir="webapp/WEB-INF/data/journal"
-        protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)"/>
 
     <!-- 
         Configures the database backend.
@@ -124,8 +95,7 @@
             with this setting.
         
         - database:
-            selects a database backend. Currently, "native" and "native_cluster"
-            are the only valid setting.
+            selects a database backend. Currently, "native" is the only valid setting.
         
         - files:
             path to the directory where database files are stored.

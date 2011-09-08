@@ -43,7 +43,7 @@ public class BrokerFactory {
 	
 	static {
 		plug("NATIVE", NativeBroker.class);
-		plug("NATIVE_CLUSTER", NativeBroker.class);
+		//plug("NATIVE_CLUSTER", NativeBroker.class);
 	}
 
 	public static DBBroker getInstance(BrokerPool database, Configuration conf) throws EXistException {

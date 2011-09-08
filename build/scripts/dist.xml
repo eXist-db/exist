@@ -181,7 +181,6 @@
         <touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
 
-        <!--   <filter token="database" value="native_cluster"/>   -->
         <filter token="database" value="native"/>
 
         <copy todir="${dist.dir}/" filtering="true">

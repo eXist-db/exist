@@ -845,8 +845,7 @@
                             <listitem>
                                 <para>This attribute selects a database system type. Since
                                     relational database back-ends are no longer supported by the
-                                    current release of eXist, only "<option>native</option>" and
-                                        "<option>native_cluster</option>" are available.</para>
+                                    current release of eXist, only "<option>native</option>" is available.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>

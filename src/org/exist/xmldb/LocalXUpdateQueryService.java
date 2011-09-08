@@ -2,7 +2,7 @@ package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.cluster.ClusterComunication;
+
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
@@ -92,12 +92,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			}
             transact.commit(transaction);
 
-            //Cluster event send
-            ClusterComunication clCommunication  = ClusterComunication.getInstance();  //retrieve the cluster communication
-            
-            //TODO: use xmldbURI?
-            if ( clCommunication != null) //if cluster is setting use the cluster communication behaviour
-                clCommunication.update( resource, c.getURI().toString(), xupdate );
+            //Cluster event send (removed)
 
 
             LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +

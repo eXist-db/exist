@@ -111,13 +111,6 @@
 
     </target>
 
-    <!--target depends="prepare-installer" name="cvs-build">
-        <echo message="Calling IzPack to create installer ..."/>
-        <izpack input="installer/install.xml"
-                output="installer/${project.name}-cvs-${DSTAMP}.jar"
-                basedir="." izPackDir="${izpack.dir}"
-                installerType="standard"/>
-    </target-->
 
     <target name="copy_scripts">
         <filter filtersfile="installer/scripts/scripts.properties" />
@@ -126,11 +119,9 @@
             <fileset dir="bin">
                 <include name="*.sh"/>
                 <exclude name="run.sh"/>
-                <exclude name="startupCluster.sh"/>
                 
                 <include name="*.bat"/>
                 <exclude name="run.bat"/>
-                <exclude name="startupCluster.bat"/>
             </fileset>
         </copy>
     </target>

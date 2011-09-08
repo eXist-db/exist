@@ -389,7 +389,7 @@ public class Main {
             System.setProperty("user.dir", _home_dir.getPath());
 
             // try to find Jetty
-            if (_mode.equals("jetty") || _mode.equals("cluster") || _mode.equals("standalone")) {
+            if (_mode.equals("jetty") || _mode.equals("standalone")) {
                 if (System.getProperty("jetty.home") == null) {
 
                     File _tools_dir = new File(_home_dir.getAbsolutePath() + File.separatorChar + "tools");

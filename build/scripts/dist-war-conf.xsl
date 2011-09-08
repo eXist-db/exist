@@ -5,10 +5,6 @@
     <!-- Convert conf.xml for use in war-file -->
     <xsl:output method="xml"/>
 
-    <xsl:template match="cluster/@journalDir">
-        <xsl:attribute name="journalDir">data/journal</xsl:attribute>
-    </xsl:template>
-
     <xsl:template match="db-connection/@files">
         <xsl:attribute name="files">data</xsl:attribute>
     </xsl:template>

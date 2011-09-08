@@ -4,10 +4,6 @@
 
 <xsl:output method="xml"/>
 
-<xsl:template match="cluster/@journalDir">
-<xsl:attribute name="journalDir"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
-</xsl:template>
-
 <xsl:template match="db-connection/@files">
 <xsl:attribute name="files"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
 </xsl:template>

@@ -143,7 +143,6 @@
         <get src="${url}/beginners-guide-to-xrx-v4.xml" dest="${build.docs.html}/beginners-guide-to-xrx-v4.html"/>
         <get src="${url}/building.xml" dest="${build.docs.html}/building.html"/>
         <get src="${url}/client.xml" dest="${build.docs.html}/client.html"/>
-        <get src="${url}/cluster.xml" dest="${build.docs.html}/cluster.html"/>
         <get src="${url}/community.xml" dest="${build.docs.html}/community.html"/>
         <get src="${url}/config-cache.xml" dest="${build.docs.html}/config-cache.html"/>
         <get src="${url}/config-compression.xml" dest="${build.docs.html}/config-compression.html"/>
@@ -185,7 +184,6 @@
         <get src="${url}/indexing.xml" dest="${build.docs.html}/indexing.html"/>
         <get src="${url}/installing-exist-on-amazon-ec2.xml" dest="${build.docs.html}/installing-exist-on-amazon-ec2.html"/>
         <get src="${url}/jmx.xml" dest="${build.docs.html}/jmx.html"/>
-        <get src="${url}/journal.xml" dest="${build.docs.html}/journal.html"/>
         <get src="${url}/kwic.xml" dest="${build.docs.html}/kwic.html"/>
         <get src="${url}/ldap-security.xml" dest="${build.docs.html}/ldap-security.html"/>
         <get src="${url}/lucene.xml" dest="${build.docs.html}/lucene.html"/>
