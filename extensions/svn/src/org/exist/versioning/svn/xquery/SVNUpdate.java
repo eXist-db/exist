@@ -47,7 +47,9 @@ public class SVNUpdate extends AbstractSVNFunction {
 			new QName("update", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Updates a working copy (brings changes from the repository into the working copy). Like 'svn update PATH' command.",
 			new SequenceType[] {
-				DB_PATH
+				DB_PATH,
+                LOGIN,
+                PASSWORD
             },
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "revision to which revision was resolved"));
 
@@ -69,8 +71,10 @@ public class SVNUpdate extends AbstractSVNFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	String uri = args[0].getStringValue();
+        String user = args[1].getStringValue();
+        String password = args[2].getStringValue();
     	
-    	WorkingCopy wc = new WorkingCopy("", "");
+    	WorkingCopy wc = new WorkingCopy(user, password);
     	
     	long update = -1;
     	
