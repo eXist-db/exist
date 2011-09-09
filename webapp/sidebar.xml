@@ -48,7 +48,7 @@
             <link href="examples.xml">All Examples</link>
         </item>
         <item>
-            <link href="library/apps/mods/search/">Bibliographic Demo</link>
+            <link href="http://demo.exist-db.org/apps/library/">Bibliographic Demo</link>
         </item>
         <item>
             <link href="xquery/acronyms.xql">XML Acronyms</link>
