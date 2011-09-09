@@ -109,7 +109,7 @@
                             hints for writing your own single-page applications with eXist and betterFORM.</para>
                     </listitem>
                 </itemizedlist>
-                <para>See the <ulink href="examples.xml">XForms example</ulink> page for more betterFORM demo &amp;
+                <para>See the <ulink href="xforms/examples.xml">XForms example</ulink> page for more betterFORM demo &amp;
                 reference forms.</para>
             </section>
         </section>

@@ -496,7 +496,7 @@
     </xsl:template>
     <xsl:template match="sidebar:link">
         <xsl:choose>
-            <xsl:when test="starts-with(@href, 'http://') or starts-with(@url, 'http://')">
+            <xsl:when test="starts-with(@href, 'http://') or starts-with(@url, 'http://') or $xslt.root = '.'">
                 <a href="{@href|@url}">
                     <xsl:copy-of select="@*[name(.) != 'href' and name(.) != 'url']"/>
                     <xsl:apply-templates/>

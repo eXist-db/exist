@@ -212,7 +212,7 @@
                                 <td>XInclude support in eXist.</td>
                             </tr>
                             <tr>
-                                <td class="doclink"><ulink url="xforms/xforms.xml"
+                                <td class="doclink"><ulink url="xforms.xml"
                                     >XForms</ulink>:</td>
                                 <td>XForms support in eXist (using betterFORM or xsltforms).</td>
                             </tr>
