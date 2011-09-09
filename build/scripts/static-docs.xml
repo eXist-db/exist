@@ -41,20 +41,31 @@
             </fileset>
         </replaceregexp>
         <replace dir="${dir}" summary="true" includes="**/*.html">
-            <!--replacefilter token="../examples.html" value="${demo.host}/examples.xml"/>
-            <replacefilter token="examples.html" value="${demo.host}/examples.xml"/-->
-            <replacefilter token="examples\.html" value="${demo.host}/examples.xml"/>
+            <replacefilter token="/exist/" value="../"/>
+            <replacefilter token="dashboard.html" value="${demo.host}/dashboard.html"/>
+            <replacefilter token="&quot;../examples.html" value="&quot;${demo.host}/examples.xml"/>
+            <replacefilter token="&quot;examples.html" value="&quot;${demo.host}/examples.xml"/>
+            <replacefilter token="&quot;xforms/examples.html" value="&quot;${demo.host}/xforms/examples.xml"/>
             <replacefilter token="../webstart/exist.jnlp" value="${webstart.host}/webstart/exist.jnlp"/>
             <replacefilter token="href=&quot;webstart/exist.jnlp" value="href=&quot;${webstart.host}/webstart/exist.jnlp"/>
             <replacefilter token="href=&quot;articles&quot;" value="href=&quot;${demo.host}/articles&quot;"/>
             <replacefilter token="href=&quot;../articles&quot;" value="href=&quot;${demo.host}/articles&quot;"/>
             <replacefilter token="repo/repo.html" value="${demo.host}/repo/repo.xml"/>
             <replacefilter token="repo/public" value="${demo.host}/repo/public"/>
+            <replacefilter token="../eXide/" value="${demo.host}/eXide/"/>
+            <replacefilter token="&quot;eXide/" value="&quot;${demo.host}/eXide/"/>
         </replace>
-        <replace file="${dir}/scripts/main.js">
+        <replaceregexp flags="g">
+            <regexp pattern="href=&quot;(rest.*)&quot;"/>
+            <substitution expression="href=&quot;${demo.host}/\1&quot;"/>
+            <fileset dir="${dir}">
+                <include name="xforms.html"/>
+            </fileset>
+        </replaceregexp>
+        <!--replace file="${dir}/scripts/main.js">
             <replacefilter token="xquery/twitter.xql" value="${demo.host}/xquery/twitter.xql"/>
             <replacefilter token="feed.xql" value="${demo.host}/feed.xql"/>
-        </replace>
+        </replace-->
         <replaceregexp flags="g">
             <regexp pattern="action=&quot;(.*)\.xql"/>
             <substitution expression="action=&quot;${demo.host}/\1.xql"/>
@@ -69,14 +80,14 @@
                 <include name="*.html"/>
             </fileset>
         </replaceregexp>
-        <replace file="${dir}/xforms/xforms.html">
-            <replacefilter token="scripts/" value="../scripts/"/>
-            <replacefilter token="styles/" value="../styles/"/>
-        </replace>
-        <!--replace file="${dir}/xproc/xproc.html">
+        <!--replace file="${dir}/xforms/xforms.html">
             <replacefilter token="scripts/" value="../scripts/"/>
             <replacefilter token="styles/" value="../styles/"/>
         </replace-->
+        <!--replace file="${dir}/xproc/xproc.html">
+            <replacefilter token="scripts/" value="../scripts/"/>
+            <replacefilter token="styles/" value="../styles/"/>
+        </replace>
         <replaceregexp flags="g">
             <regexp pattern="href=&quot;(?!http)../([^&quot;]*\.xql?)"/>
             <substitution expression="href=&quot;${demo.host}/\1"/>
@@ -86,10 +97,7 @@
             <fileset dir="${dir}/xproc">
                 <include name="*.html"/>
             </fileset>
-            <!--fileset dir="${dir}/repo">
-                <include name="*.html"/>
-            </fileset-->
-        </replaceregexp>
+        </replaceregexp-->
         <!--replace file="${dir}/repo/repo.html">
             <replacefilter token="/\.\./" value="../"/>
             <replacefilter token="scripts/" value="../scripts/"/>
@@ -213,16 +221,8 @@
         <get src="${url}/xacml-intro.xml" dest="${build.docs.html}/xacml-intro.html"/>
         <get src="${url}/xacml-usage.xml" dest="${build.docs.html}/xacml-usage.html"/>
         <get src="${url}/xacml.xml" dest="${build.docs.html}/xacml.html"/>
+        <get src="${url}/xforms.xml" dest="${build.docs.html}/xforms.html"/>
         <get src="${url}/xquery.xml" dest="${build.docs.html}/xquery.html"/>
-        <mkdir dir="${build.docs.html}/xforms"/>
-        <get src="${url}/xforms/examples.xml" dest="${build.docs.html}/xforms/examples.html"/>
-        <get src="${url}/xforms/hello.xml" dest="${build.docs.html}/xforms/hello.html"/>
-        <get src="${url}/xforms/hello2.xml" dest="${build.docs.html}/xforms/hello2.html"/>
-        <get src="${url}/xforms/shakespeare.xml" dest="${build.docs.html}/xforms/shakespeare.html"/>
-        <!--get src="${url}/xforms/tasks/sidebar.xml" dest="${build.docs.html}/xforms/tasks/sidebar.html"/-->
-        <!--get src="${url}/xforms/tasks/todo-list.xml" dest="${build.docs.html}/xforms/tasks/todo-list.html"/>
-        <get src="${url}/xforms/tasks/todo-projects.xml" dest="${build.docs.html}/xforms/tasks/todo-projects.html"/-->
-        <get src="${url}/xforms/xforms.xml" dest="${build.docs.html}/xforms/xforms.html"/>
         <get src="${url}/xinclude.xml" dest="${build.docs.html}/xinclude.html"/>
         <get src="${url}/xmlprague06.xml" dest="${build.docs.html}/xmlprague06.html"/>
         
