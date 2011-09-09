@@ -76,7 +76,7 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="library/apps/library/">Bibliography</link>
+                            <link href="http://demo.exist-db.org/apps/library/">Bibliography</link>
                         </td>
                         <td width="70%"> A bibliographic demo, based on the MODS bibliographic
                             format, which is maintained by the Library of Congress.
