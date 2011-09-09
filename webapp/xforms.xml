@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <book>
     <bookinfo>
-        <graphic fileref="../logo.jpg"/>
+        <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>XForms Introduction</title>
         <author>
@@ -17,7 +17,7 @@
         </author>
     </bookinfo>
     
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="../sidebar.xml"/>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
         <section>
             <title>XForms Support in eXist</title>
@@ -86,16 +86,16 @@
                 <para>To ease the work with betterFORM it is highly recommended to install the betterFROM dashboard 
                     along with the FeatureExplorer and the demo application. Before the betterFORM add-ons can be 
                     used the examples (eXist-db-shipped files) must be installed via the 
-                    <ulink href="../admin/admin.xql?panel=setup">Admin panel</ulink></para>
+                    <ulink href="admin/admin.xql?panel=setup">Admin panel</ulink></para>
                 <itemizedlist>
                     <listitem>
-                        <para><ulink href="../dashboard.html"><emphasis role="bold">Dashboard</emphasis></ulink> 
+                        <para><ulink href="dashboard.html"><emphasis role="bold">Dashboard</emphasis></ulink> 
                             is a simple browser to your database. It allows to navigate the collections and shows all 
                             the containing files. It has a source code view and allows to upload a file into the 
                             database and to create collections.</para>
                     </listitem>
                     <listitem>
-                        <para><ulink href="../rest/db/betterform/forms/reference/FeatureExplorer.xhtml">
+                        <para><ulink href="rest/db/betterform/forms/reference/FeatureExplorer.xhtml">
                             <emphasis role="bold">FeatureExplorer</emphasis></ulink> is the live documentation of 
                             betterFORM. It is itself a XForms document that offers a navigation menu with links to
                             many sample XForms that show working examples along with the relevant links to the Spec. 
@@ -103,7 +103,7 @@
                             FeatureExplorer will be enhanced continuously as the feature-set grows.</para>
                     </listitem>
                     <listitem>
-                        <para><ulink href="../rest/db/betterform/apps/timetracker/index.xql">
+                        <para><ulink href="rest/db/betterform/apps/timetracker/index.xql">
                             <emphasis role="bold">Timetracker</emphasis></ulink> is a small but complete demo application. It
                             shows a basic <emphasis role="bold">XRX application</emphasis> and can give some 
                             hints for writing your own single-page applications with eXist and betterFORM.</para>
@@ -148,11 +148,11 @@
     </html>
     ]]></markup></programlisting>
                 </example>
-                <para>Please have a look at <ulink url="hello.xml">hello.xml</ulink> for a very basic
+                <para>Please have a look at <ulink url="xforms/hello.xml">hello.xml</ulink> for a very basic
                     example using client-side transformation.</para>
                 <para>When applying the stylesheet server-side, you need to make sure serialization
                     parameters are correctly set. For example, you can apply the stylesheet within an
-                    <ulink url="../urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
+                    <ulink url="urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
                 <example>
                     <title>Applying the stylesheet server-side via controller.xql</title>
                     <programlisting><markup><![CDATA[<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -177,10 +177,6 @@
                     apply the stylesheet server-side, make sure you removed the processing instruction
                     from the source file or the browser will try to run the stylesheet as well (which
                     most likely leads to errors).</para>
-                <para>The <ulink url="tasks/todo-list.xml">"task manager"</ulink> and <ulink
-                    url="shakespeare.xml">Shakespeare</ulink> examples are both using a server-side
-                    transformation. Please have a look at the corresponding controller.xql in <filename
-                        >webapp/xforms/controller.xql</filename> to see how it is done.</para>
             </section>
             <section>
                 <title>Known Issues</title>
@@ -201,7 +197,7 @@
                 <itemizedlist>
                     <listitem>
                         <para>XSLT &amp; betterFORM XForms 
-                            <ulink url="examples.xml">Examples</ulink></para>
+                            <ulink url="xforms/examples.xml">Examples</ulink></para>
                     </listitem>            
                 </itemizedlist>
             </section>

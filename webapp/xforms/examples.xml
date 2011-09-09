@@ -25,7 +25,7 @@
                 <ulink href="http://www.betterform.de">betterFORM</ulink> XForms processors,
                 which are both included in the eXist distribution. XSLTForms implements the XForms
                 standard within the browser while betterFORM runs on the server. Have a look at the
-                <ulink url="xforms.xml">XForms documentation</ulink> for more information.</para>
+                <ulink url="../xforms.xml">XForms documentation</ulink> for more information.</para>
             
             <para>However, eXist will also work with other XForms processors, like 
                 <ulink url="http://www.orbeon.com">Orbeon</ulink> or <ulink url="http://chiba-project.org">Chiba</ulink> (the ancestor of betterFORM).</para>            
@@ -119,21 +119,6 @@
                         </listitem>
                     </varlistentry>
                 </variablelist>
-            </section>
-            <section>
-                <title>Advanced Example: Task Manager</title>
-                <para>The following example implements a simple, but functional task manager in XForms.
-                    It demonstrates features like switch/case and showing/hiding parts of a form,
-                    working with helper instances or communicating with an XQuery backend:</para>
-                <itemizedlist>
-                    <listitem>
-                        <para><ulink url="tasks/todo-list.xml">Task Manager</ulink></para>
-                    </listitem>
-                    <listitem>
-                        <para>Search <ulink url="shakespeare.xml">Shakespeare's plays</ulink> using
-                            XForms and the KWIC module</para>
-                    </listitem>
-                </itemizedlist>
             </section>
         </section>
     </chapter>
