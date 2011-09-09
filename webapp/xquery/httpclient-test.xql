@@ -23,7 +23,7 @@ let $method := request:get-method()
 
 return
     if( $method eq "POST" or $method eq "PUT" ) then (
-        let $payload := request:get-data()
+        let $payload := request:get-data()/element()
         let $temp := response:set-header( "X-Test-Method", $method )
         return
             if( $payload )then (

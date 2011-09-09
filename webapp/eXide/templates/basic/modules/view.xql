@@ -20,6 +20,6 @@ declare function t:transform($node as node()) {
         $node
 };
 
-let $input := request:get-data()
+let $input := request:get-data()/element()
 return
     t:transform($input)

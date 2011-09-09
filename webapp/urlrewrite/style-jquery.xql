@@ -6,6 +6,6 @@ import module namespace jquery="http://exist-db.org/xquery/jquery" at "resource:
 declare option exist:serialize "method=xhtml";
 
 (: We receive an HTML template as input :)
-let $input := request:get-data()
+let $input := request:get-data()/element()
 return
     jquery:process($input)

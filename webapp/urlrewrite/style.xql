@@ -77,7 +77,7 @@ declare function style:transform($node) {
             $node
 };
 
-let $input := request:get-data()
+let $input := request:get-data()/element()
 let $output :=
     style:transform(util:expand($input))
 return

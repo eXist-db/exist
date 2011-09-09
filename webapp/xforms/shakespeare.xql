@@ -57,7 +57,7 @@ declare function q:query($input as element()) {
         </search>
 };
 
-let $input := request:get-data()
+let $input := request:get-data()/element()
 return
     q:query($input)
     
