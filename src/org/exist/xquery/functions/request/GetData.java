@@ -225,7 +225,7 @@ public class GetData extends BasicFunction {
             reader.parse(src);
             Document doc = receiver.getDocument();
 
-            result = (NodeValue)doc.getDocumentElement();
+            result = (NodeValue)doc;
         } catch(SAXException saxe) {
             //do nothing, we will default to trying to return a string below
         } catch(IOException ioe) {

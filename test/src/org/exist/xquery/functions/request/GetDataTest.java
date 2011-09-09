@@ -79,19 +79,17 @@ public class GetDataTest extends RESTTest {
         testRequest(post, wrapInElement(encodeBase64String(testData.getBytes()).trim()).getBytes());
     }
 
-    //TODO need parameter for request:get-data() to control indenting etc - declare option exist:output perhaps?
-    /*
     @Test
     public void retrieveXml() {
         PostMethod post = new PostMethod(COLLECTION_ROOT_URL + "/" + XQUERY_FILENAME);
 
-        final String testData = "<a/>";
+        final String testData = "<a><b><c>hello</c></b></a>";
 
         post.setRequestHeader("Content-Type", "text/xml");
         post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
 
-        testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes());
-    }*/
+        testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+    }
 
     @Test
     public void retrieveMalformedXmlFallbackToString() {
@@ -117,10 +115,15 @@ public class GetDataTest extends RESTTest {
     }
     
     private void testRequest(HttpMethod method, byte expectedResponse[]) {
-
+        testRequest(method, expectedResponse, false);
+    }
+    
+    private void testRequest(HttpMethod method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) {
         try {
             int httpResult = client.executeMethod(method);
 
+            assertEquals(HttpStatus.SC_OK, httpResult);
+            
             byte buf[] = new byte[1024];
             int read = -1;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -128,11 +131,16 @@ public class GetDataTest extends RESTTest {
             while((read = is.read(buf)) > -1) {
                 baos.write(buf, 0, read);
             }
-
-            assertEquals(HttpStatus.SC_OK, httpResult);
-
-            assertArrayEquals(expectedResponse, baos.toByteArray());
-
+            
+            byte actualResponse[] = baos.toByteArray();
+            
+            if(stripWhitespaceAndFormatting) {
+                expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes();
+                actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes();
+            }
+            
+            assertArrayEquals(expectedResponse, actualResponse);
+            
         } catch(HttpException he) {
             fail(he.getMessage());
         } catch(IOException ioe) {

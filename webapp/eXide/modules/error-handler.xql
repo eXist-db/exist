@@ -2,7 +2,7 @@ xquery version "1.0";
 
 declare option exist:serialize "method=xml media-type=text/xml";
 
-let $input := request:get-data()
+let $input := request:get-data()/element()
 return
     <div>
         <h3>Request failed!</h3>

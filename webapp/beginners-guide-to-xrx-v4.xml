@@ -1035,7 +1035,7 @@ let $item := request:get-data()
 let $login := xmldb:login($data-collection, 'admin', 'myadminpassword')
 
 (: get the id out of the posted document :)
-let $id := $item/id/text() 
+let $id := $item/term/id/text() 
 
 let $file := concat($id, '.xml') 
  

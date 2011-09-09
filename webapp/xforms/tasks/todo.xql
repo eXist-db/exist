@@ -33,7 +33,7 @@ declare function todo:load-instance() {
             </items>
 };
  
-let $posted := request:get-data()
+let $posted := request:get-data()/element()
 return
     if (not($posted)) then
         todo:load-instance()
