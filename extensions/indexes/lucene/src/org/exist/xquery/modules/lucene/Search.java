@@ -35,6 +35,7 @@ import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -100,6 +101,9 @@ public class Search extends BasicFunction {
             List<String> toBeMatchedURIs = new ArrayList<String>();
 
             Sequence pathSeq = getArgumentCount() == 2 ? args[0] : contextSequence;
+            if (pathSeq == null)
+            	return Sequence.EMPTY_SEQUENCE;
+            
             // Get first agument, these are the documents / collections to search in
             for (SequenceIterator i = pathSeq.iterate(); i.hasNext();) {
             	String path;
@@ -139,5 +143,9 @@ public class Search extends BasicFunction {
 
         // Return list of matching files.
         return report;
+    }
+    
+    public int getDependencies() {
+    	return Dependency.CONTEXT_SET;
     }
 }

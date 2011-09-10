@@ -847,16 +847,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         
         for(String doc : toBeMatchedUris){
-            if(doc.endsWith("/")){
-                // When collection matches, return true, else continue
-                if( docUri.startsWith(doc) ){
-                    return true;
-                }
-            } else {
-                // When document matches, return true, else continue
-                if( docUri.equals(doc) ){
-                    return true;
-                }
+            if( docUri.startsWith(doc) ){
+                return true;
             }       
         }
         return false;
