@@ -10,6 +10,6 @@ declare variable $modules :=
         <module prefix="app" uri="http://exist-db.org/xquery/app" at="app.xql"/>
     </modules>;
 
-let $content := request:get-data()/element()
+let $content := request:get-data()
 return
     templates:apply($content, $modules, ())
