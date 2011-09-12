@@ -542,7 +542,7 @@ public class LDAPRealm extends AbstractRealm {
         
         name = ensureCase(name);
         
-        Group grp = groupsByName.get(name);
+        Group grp = getGroup(name);
         if(grp != null) {
             return grp;
         } else {

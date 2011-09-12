@@ -21,6 +21,8 @@
  */
 package org.exist.security.realm.ldap.xquery;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
@@ -62,18 +64,12 @@ public class AccountFunctions extends BasicFunction {
     
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        
         final SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
-        final Realm realm = sm.getRealm("LDAP");
-        if(realm == null) {
-            throw new XPathException("The LDAP Realm is not in use!");
-        }
-        final LDAPRealm ldapRealm = (LDAPRealm)realm;
-        
+        final LDAPRealm ldapRealm = getLdapRealm(sm);
         final String accountName = args[0].itemAt(0).getStringValue();
         
-        
         final Subject invokingUser = context.getSubject();
+        
         final Account ldapAccount = sm.getAccount(invokingUser, accountName);
         if(ldapAccount == null) {
             throw new XPathException("The Account '" + accountName + "' does not exist!");
@@ -88,5 +84,28 @@ public class AccountFunctions extends BasicFunction {
         }
         
         return Sequence.EMPTY_SEQUENCE;
+    }
+    
+    private LDAPRealm getLdapRealm(SecurityManager sm) throws XPathException {
+        try {
+            Method mFindRealm = sm.getClass().getDeclaredMethod("findRealmForRealmId", String.class);
+            mFindRealm.setAccessible(true);
+            Realm realm = (Realm)mFindRealm.invoke(sm, LDAPRealm.ID);
+            if(realm == null) {
+                throw new XPathException("The LDAP Realm is not in use!");
+            }
+            return (LDAPRealm)realm;
+            
+        } catch (NoSuchMethodException ex) {
+            throw new XPathException("The LDAP Realm is not in use!", ex);
+        } catch (SecurityException se) {
+            throw new XPathException("Permission to access the LDAP Realm is denied: " + se.getMessage(), se);
+        } catch (IllegalArgumentException iae) {
+            throw new XPathException("Permission to access the LDAP Realm is denied: " + iae.getMessage(), iae);
+        } catch (IllegalAccessException iae) {
+            throw new XPathException("Permission to access the LDAP Realm is denied: " + iae.getMessage(), iae);
+        } catch (InvocationTargetException ite) {
+            throw new XPathException("An error occured whilst accessing the LDAP Realm: " + ite.getMessage(), ite);
+        }
     }
 }
