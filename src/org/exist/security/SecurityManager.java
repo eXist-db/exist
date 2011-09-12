@@ -112,7 +112,7 @@ public interface SecurityManager extends Configurable {
    @Deprecated //use realm's method
    <G extends Group> java.util.Collection<G> getGroups();
 
-   Realm getRealm(String iD);
+   //Realm getRealm(String iD);
 
    //session manager part
    void registerSession(Session session);
@@ -126,12 +126,6 @@ public interface SecurityManager extends Configurable {
    boolean hasGroup(int id);
 
    boolean hasUser(int id);
-
-   /**
-    * @deprecated Will be removed, should be private to the SecurityManagerImpl
-    */
-   @Deprecated
-   public int getNextGroupId();
 
    /**
     * Find users by their personal name

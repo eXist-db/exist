@@ -21,11 +21,12 @@
  */
 package org.exist.security.internal;
 
+import java.util.Map;
+import org.exist.security.AbstractRealm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.exist.security.AbstractAccount;
-import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractPrincipal;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -56,7 +57,7 @@ public class RealmImpl extends AbstractRealm {
     private final static Logger LOG = Logger.getLogger(Realm.class);
 
     static public void setPasswordRealm(String value) {
-            ID = value;
+        ID = value;
     }
 
     public final static int SYSTEM_ACCOUNT_ID = 1048575;
@@ -90,18 +91,24 @@ public class RealmImpl extends AbstractRealm {
         
         //DBA group
         GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
-    	sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
-    	groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
+    	sm.addGroup(GROUP_DBA.getId(), GROUP_DBA);
+        registerGroup(GROUP_DBA);
+        //sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
+    	//groupsByName.put(GROUP_DBA.getName(), GROUP_DBA);
         
         //System account
     	ACCOUNT_SYSTEM = new AccountImpl(this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
-    	sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
-    	usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
+        sm.addUser(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
+        registerAccount(ACCOUNT_SYSTEM);
+    	//sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
+    	//usersByName.put(ACCOUNT_SYSTEM.getName(), ACCOUNT_SYSTEM);
         
         //guest group
         GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
-    	sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
-    	groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
+        sm.addGroup(GROUP_GUEST.getId(), GROUP_GUEST);
+        registerGroup(GROUP_GUEST);
+    	//sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
+    	//groupsByName.put(GROUP_GUEST.getName(), GROUP_GUEST);
         
         //unknown account and group
         GROUP_UNKNOWN = new GroupImpl(this, UNKNOWN_GROUP_ID, "");
@@ -144,137 +151,138 @@ public class RealmImpl extends AbstractRealm {
     
     
 
-	@Override
-	public String getId() {
-		return ID;
-	}
-
-    /*@Override
-	public void startUp(DBBroker broker) throws EXistException {
-		super.startUp(broker);
-	}*/
+    @Override
+    public String getId() {
+        return ID;
+    }
 
     @Override
-	public synchronized boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
-		if(account == null)
-			return false;
-		
-		AbstractAccount remove_account = (AbstractAccount)usersByName.get(account.getName());
-		if (remove_account == null) return false;
+    public boolean deleteAccount(final Account account) throws PermissionDeniedException, EXistException {
+        if(account == null) {
+            return false;
+        }
+        
+        usersByName.modify2E(new PrincipalDbModify2E<Account, PermissionDeniedException, EXistException>(){
+            @Override
+            public void execute(Map<String, Account> principalDb) throws PermissionDeniedException, EXistException {
+                AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
+                if(remove_account == null){
+                    throw new IllegalArgumentException("No such account exists!");
+                }
+
+                DBBroker broker = null;
+                try {
+                    broker = getDatabase().get(null);
+                    Account user = broker.getSubject();
+
+                    if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
+                        throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
+                    }
+
+                    remove_account.setRemoved(true);
+                    remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
+
+                    TransactionManager transaction = getDatabase().getTransactionManager();
+                    Txn txn = null;
+                    try {
+                        txn = transaction.beginTransaction();
+
+                        collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
+
+                        transaction.commit(txn);
+                    } catch(Exception e) {
+                        transaction.abort(txn);
+                        e.printStackTrace();
+                        LOG.debug("loading configuration failed: " + e.getMessage());
+                    }
+
+                    getSecurityManager().addUser(remove_account.getId(), remove_account);
+                    principalDb.remove(remove_account.getName());
+                } finally {
+                    getDatabase().release(broker);
+                }
+            }
+        });
+        
+        return true;
+    }
+
+    @Override
+    public boolean deleteGroup(final Group group) throws PermissionDeniedException, EXistException {
+        if(group == null) {
+            return false;
+        }
+        
+        groupsByName.modify2E(new PrincipalDbModify2E<Group, PermissionDeniedException, EXistException>(){
+            @Override
+            public void execute(Map<String, Group> principalDb) throws PermissionDeniedException, EXistException {
+        
+		AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
+		if(remove_group == null) {
+                    throw new IllegalArgumentException("Group does not exist!");
+                }
 		
 		DBBroker broker = null;
 		try {
-			broker = getDatabase().get(null);
-			Account user = broker.getSubject();
+                    broker = getDatabase().get(null);
+                    Subject subject = broker.getSubject();
 			
-			if ( ! (account.getName().equals(user.getName()) || user.hasDbaRole()) )
-					throw new PermissionDeniedException(
-						" you are not allowed to delete '"+account.getName()+"' user");
+                    if(!( subject.hasDbaRole())) {
+                        throw new PermissionDeniedException("You are not allowed to delete '" + remove_group.getName() + "' group");
+                    }
 
-			remove_account.setRemoved(true);
-			remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
+                    remove_group.setRemoved(true);
+                    remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
 			
-	        TransactionManager transaction = getDatabase().getTransactionManager();
-	        Txn txn = null;
-	        try {
-				txn = transaction.beginTransaction();
+                    TransactionManager transaction = getDatabase().getTransactionManager();
+                    Txn txn = null;
+                    try {
+                        txn = transaction.beginTransaction();
 	
-				collectionAccounts.removeXMLResource(
-						txn, 
-						broker, 
-						XmldbURI.create( remove_account.getName()+".xml" ) );
+                        collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
 
-				transaction.commit(txn);
-	        } catch (Exception e) {
-				transaction.abort(txn);
-				e.printStackTrace();
-				LOG.debug("loading configuration failed: " + e.getMessage());
-			}
+                        transaction.commit(txn);
+                    } catch (Exception e) {
+                        transaction.abort(txn);
+                        e.printStackTrace();
+                        LOG.debug("loading configuration failed: " + e.getMessage());
+                    }
 			
-			getSecurityManager().addUser(remove_account.getId(), remove_account);
-			usersByName.remove(remove_account.getName());
+                    getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
+                    principalDb.remove(remove_group.getName());
 
-			return true;
 		} finally {
-			getDatabase().release(broker);
+                    getDatabase().release(broker);
 		}
-	}
+            }
+        });
+        
+        return true;
+    }
 
     @Override
-	public synchronized boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
-		if(group == null)
-			return false;
-		
-		AbstractPrincipal remove_group = (AbstractPrincipal)groupsByName.get(group.getName());
-		if (remove_group == null) return false;
-		
-		DBBroker broker = null;
-		try {
-			broker = getDatabase().get(null);
-			Subject subject = broker.getSubject();
-			
-			if ( ! ( subject.hasDbaRole() ) )
-					throw new PermissionDeniedException(
-						" you ["+subject.getName()+"] are not allowed to delete '"+remove_group.getName()+"' group");
-
-			remove_group.setRemoved(true);
-			remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
-			
-	        TransactionManager transaction = getDatabase().getTransactionManager();
-	        Txn txn = null;
-	        try {
-				txn = transaction.beginTransaction();
-	
-				collectionGroups.removeXMLResource(
-						txn, 
-						broker, 
-						XmldbURI.create( remove_group.getName()+".xml" ) );
-
-				transaction.commit(txn);
-	        } catch (Exception e) {
-				transaction.abort(txn);
-				e.printStackTrace();
-				LOG.debug("loading configuration failed: " + e.getMessage());
-			}
-			
-			getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
-			groupsByName.remove(remove_group.getName());
-
-			return true;
-		} finally {
-			getDatabase().release(broker);
-		}
-	}
-
-	@Override
-	public synchronized Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
-		Account account = getAccount(null, accountName);
-		if (account == null)
-			throw new AuthenticationException(
-					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Acount '" + accountName + "' not found.");
-			
-		if ("SYSTEM".equals(accountName) || (!allowGuestAuthentication && "guest".equals(accountName))) 
-			throw new AuthenticationException(
-					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Acount '" + accountName + "' can not be used.");
-		
-		if (!account.isEnabled()) {
-			throw new AuthenticationException(
-					AuthenticationException.ACCOUNT_LOCKED,
-					"Acount '" + accountName + "' is dissabled.");
-		}
-
-		Subject subject = new SubjectImpl((AccountImpl) account, credentials);
-			
-		if (subject.isAuthenticated()) {
-			return subject;
+    public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
+        final Account account = getAccount(accountName);
+        
+        if(account == null) {
+            throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Account '" + accountName + "' not found.");
+        }
+        
+        if("SYSTEM".equals(accountName) || (!allowGuestAuthentication && "guest".equals(accountName))) {
+            throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Account '" + accountName + "' can not be used.");
         }
 
-		throw new AuthenticationException(
-				AuthenticationException.WRONG_PASSWORD,
-				"Wrong password for user [" + accountName + "] ");
-	}
+        if(!account.isEnabled()) {
+            throw new AuthenticationException(AuthenticationException.ACCOUNT_LOCKED, "Account '" + accountName + "' is dissabled.");
+        }
+
+        final Subject subject = new SubjectImpl((AccountImpl) account, credentials);
+        if(!subject.isAuthenticated()) {
+            throw new AuthenticationException(AuthenticationException.WRONG_PASSWORD, "Wrong password for user [" + accountName + "] ");
+        }
+            
+        return subject;
+    }
 
     @Override
     public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
@@ -288,110 +296,78 @@ public class RealmImpl extends AbstractRealm {
     
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, final String startsWith) {
 
-        List<String> userNames = new ArrayList<String>();
-
-        for(String userName : usersByName.keySet()) {
-            if(userName.startsWith(startsWith)) {
-                userNames.add(userName);
+        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Account> principalDb) {
+                final List<String> userNames = new ArrayList<String>();
+                for(String userName : principalDb.keySet()) {
+                    if(userName.startsWith(startsWith)) {
+                        userNames.add(userName);
+                    }
+                }
+                return userNames;
             }
-        }
-
-        return userNames;
+        });
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, final String startsWith) {
 
-        List<String> groupNames = new ArrayList<String>();
-
-        for(String groupName : groupsByName.keySet()) {
-            if(groupName.startsWith(startsWith)) {
-                groupNames.add(groupName);
+        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Group> principalDb) {
+                final List<String> groupNames = new ArrayList<String>();
+                for(String groupName : principalDb.keySet()) {
+                    if(groupName.startsWith(startsWith)) {
+                        groupNames.add(groupName);
+                    }
+                }
+                return groupNames;
             }
-        }
-
-        return groupNames;
+        });
     }
     
     @Override
-    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
-        List<String> groupNames = new ArrayList<String>();
-
-        for(String groupName : groupsByName.keySet()) {
-            if(groupName.indexOf(fragment) > -1) {
-                groupNames.add(groupName);
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, final String fragment) {
+        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Group> principalDb) {
+                final List<String> groupNames = new ArrayList<String>();
+                for(String groupName : principalDb.keySet()) {
+                    if(groupName.indexOf(fragment) > -1) {
+                        groupNames.add(groupName);
+                    }
+                }
+                return groupNames;
             }
-        }
-
-        return groupNames;
+        });
     }
 
     @Override
     public List<String> findAllGroupNames(Subject invokingUser) {
-        List<String> groupNames = new ArrayList<String>();
-
-        for(Group group : getGroups()) {
-            groupNames.add(group.getName());
-        }
-
-        return groupNames;
+        return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Group> principalDb) {
+                return new ArrayList<String>(principalDb.keySet());
+            }
+        });
     }
 
     @Override
-    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
-        List<String> groupMembers = new ArrayList<String>();
-        for(Account account : getAccounts()) {
-            if(account.hasGroup(groupName)) {
-                groupMembers.add(account.getName());
+    public List<String> findAllGroupMembers(Subject invokingUser, final String groupName) {
+        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Account> principalDb) {
+                final List<String> groupMembers = new ArrayList<String>();
+                for(Account account : principalDb.values()) {
+                    if(account.hasGroup(groupName)) {
+                        groupMembers.add(account.getName());
+                    }
+                }
+                return groupMembers;
             }
-        }
-
-        return groupMembers;
+        });
     }
-
-
-
-
-
-//    @Override
-//    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
-//        return new GroupImpl(realm, config);
-//    }
-//
-//    @Override
-//    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
-//        return new AccountImpl(realm, config);
-//    }
-//
-//    @Override
-//    public GroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-//        return new GroupImpl(realm, config, true);
-//    }
-//
-//    @Override
-//    public AccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-//        return new AccountImpl(realm, config, true);
-//    }
-//
-//    @Override
-//    public GroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
-//        return new GroupImpl(realm, id, name);
-//    }
-//
-//    @Override
-//    public GroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
-//        return new GroupImpl(realm, name);
-//    }
-//
-//    @Override
-//    public AccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
-//        return new AccountImpl(realm, id, from_account);
-//    }
-//
-//    @Override
-//    public AccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
-//        return new AccountImpl(realm, username);
-//    }
 }

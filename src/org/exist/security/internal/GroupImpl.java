@@ -21,9 +21,9 @@
  */
 package org.exist.security.internal;
 
+import org.exist.security.AbstractRealm;
 import java.util.List;
 
-import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractGroup;
 import org.exist.security.Account;
 import org.exist.config.Configuration;

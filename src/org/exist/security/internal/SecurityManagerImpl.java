@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -47,6 +50,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Session;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.Principal;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
@@ -73,39 +77,46 @@ import org.exist.xmldb.XmldbURI;
 public class SecurityManagerImpl implements SecurityManager {
 
 
-        public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
-        public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
+    public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
+    public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
 
-	public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
-	public static final String COLLECTION_ATTRIBUTE = "collection";
-	public static final String RESOURCE_ATTRIBUTE = "resource";
-	
-	public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
-	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
+    public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
+    public static final String COLLECTION_ATTRIBUTE = "collection";
+    public static final String RESOURCE_ATTRIBUTE = "resource";
 
-	private final static Logger LOG = Logger.getLogger(SecurityManager.class);
+    public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
+    public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 
-	private Database pool;
+    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
-	protected Int2ObjectHashMap<Group> groupsById = new Int2ObjectHashMap<Group>(65);
-	protected Int2ObjectHashMap<Account> usersById = new Int2ObjectHashMap<Account>(65);
-	
-	@ConfigurationFieldAsAttribute("last-account-id")
-	protected int lastUserId = 0;
+    private Database pool;
 
-	@ConfigurationFieldAsAttribute("last-group-id")
-	protected int lastGroupId = 0;
+    protected PrincipalDbById<Group> groupsById = new PrincipalDbById<Group>();
+    protected PrincipalDbById<Account> usersById = new PrincipalDbById<Account>();
 
-	@ConfigurationFieldAsAttribute("version")
-	private String version = "2.0";
+    private final PrincipalLocks<Account> accountLocks = new PrincipalLocks<Account>();
+    private final PrincipalLocks<Group> groupLocks = new PrincipalLocks<Group>();
+
+    //TODO: validate & remove if session timeout
+    private SessionDb sessions = new SessionDb();
+
+
+    @ConfigurationFieldAsAttribute("last-account-id")
+    protected int lastUserId = 0;
+
+    @ConfigurationFieldAsAttribute("last-group-id")
+    protected int lastGroupId = 0;
+
+    @ConfigurationFieldAsAttribute("version")
+    private String version = "2.0";
 
     @ConfigurationFieldAsElement("Authentication-Entry-Point")
     public final static String authenticationEntryPoint = "/authentication/login";
     
-	//@ConfigurationField("enableXACML")
-	private Boolean enableXACML = false;
+    //@ConfigurationField("enableXACML")
+    private Boolean enableXACML = false;
 
-	private ExistPDP pdp;
+    private ExistPDP pdp;
     
     private RealmImpl defaultRealm;
     
@@ -127,14 +138,14 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     /**
-	 * Initialize the security manager.
-	 * 
-	 * Checks if the file users.xml exists in the system collection of the database.
-	 * If not, it is created with two default users: admin and guest.
-	 *  
-	 * @param pool
-	 * @param broker
-	 */
+     * Initialize the security manager.
+     * 
+     * Checks if the file users.xml exists in the system collection of the database.
+     * If not, it is created with two default users: admin and guest.
+     *  
+     * @param pool
+     * @param broker
+     */
     @Override
     public void attach(BrokerPool pool, DBBroker broker) throws EXistException {
 //    	groups = new Int2ObjectHashMap<Group>(65);
@@ -148,68 +159,71 @@ public class SecurityManagerImpl implements SecurityManager {
         Collection systemCollection = null;
         try {
 	        systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-			if (systemCollection == null) {
-				txn = transaction.beginTransaction();
-				systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-				if (systemCollection == null)
-					return;
-				systemCollection.setPermissions(0770);
-				broker.saveCollection(txn, systemCollection);
+                if(systemCollection == null) {
+                    txn = transaction.beginTransaction();
+                    systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+                    if (systemCollection == null)
+                            return;
+                    systemCollection.setPermissions(0770);
+                    broker.saveCollection(txn, systemCollection);
 
-				transaction.commit(txn);
-			}
+                    transaction.commit(txn);
+                }
         } catch (Exception e) {
-			transaction.abort(txn);
-			e.printStackTrace();
-			LOG.debug("loading acl failed: " + e.getMessage());
-		}
+            transaction.abort(txn);
+            e.printStackTrace();
+            LOG.debug("loading acl failed: " + e.getMessage());
+        }
 
         try {
-	        collection = broker.getCollection(SECURITY_COLLECTION_URI);
-			if (collection == null) {
-				txn = transaction.beginTransaction();
-				collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
-				if (collection == null) return;
-					//if db corrupted it can lead to unrunnable issue
-					//throw new ConfigurationException("Collection '/db/system/security' can't be created.");
-
-				collection.setPermissions(0770);
-				broker.saveCollection(txn, collection);
-
-				transaction.commit(txn);
-			} 
-        } catch (Exception e) {
-			transaction.abort(txn);
-			e.printStackTrace();
-			LOG.debug("loading configuration failed: " + e.getMessage());
-		}
-			
-		Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
-		configuration = Configurator.configure(this, _config_);
-
-
-		for (Realm realm : realms) {
-                    realm.startUp(broker);
+            collection = broker.getCollection(SECURITY_COLLECTION_URI);
+            if (collection == null) {
+                txn = transaction.beginTransaction();
+                collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
+                if (collection == null){
+                    return;
                 }
+                //if db corrupted it can lead to unrunnable issue
+                //throw new ConfigurationException("Collection '/db/system/security' can't be created.");
+
+                collection.setPermissions(0770);
+                broker.saveCollection(txn, collection);
+
+                transaction.commit(txn);
+            } 
+        } catch (Exception e) {
+            transaction.abort(txn);
+            e.printStackTrace();
+            LOG.debug("loading configuration failed: " + e.getMessage());
+        }
+			
+        Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+        configuration = Configurator.configure(this, _config_);
+
+
+        for (Realm realm : realms) {
+            realm.startUp(broker);
+        }
 		   
-		enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
-		if(enableXACML != null && enableXACML.booleanValue()) {
-			pdp = new ExistPDP(pool);
-			LOG.debug("XACML enabled");
-		}
+        enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
+        if(enableXACML != null && enableXACML.booleanValue()) {
+            pdp = new ExistPDP(pool);
+            LOG.debug("XACML enabled");
+        }
     }
     
     @Override
-	public boolean isXACMLEnabled() {
-		return pdp != null;
-	}
+    public boolean isXACMLEnabled() {
+        return pdp != null;
+    }
+    
     @Override
-	public ExistPDP getPDP() {
-		return pdp;
-	}
+    public ExistPDP getPDP() {
+        return pdp;
+    }
 	
     @Override
-    public synchronized <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+    public <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
         if(account == null){
             return false;
         }
@@ -217,14 +231,17 @@ public class SecurityManagerImpl implements SecurityManager {
         if(account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
         }
-
-        Realm registeredRealm = findRealmForRealmId(account.getRealmId());
-
-        return registeredRealm.updateAccount(invokingUser, account);
+        
+        accountLocks.getWriteLock(account).lock();
+        try {
+            return findRealmForRealmId(account.getRealmId()).updateAccount(invokingUser, account);
+        } finally {
+            accountLocks.getWriteLock(account).unlock();
+        }
     }
 
     @Override
-    public synchronized <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException {
+    public <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException {
         if(group == null){
             return false;
         }
@@ -233,14 +250,18 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have realm id.");
         }
 
-        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
-
-        return registeredRealm.updateGroup(invokingUser, group);
+        groupLocks.getWriteLock(group).lock();
+        try {
+            return findRealmForRealmId(group.getRealmId()).updateGroup(invokingUser, group);
+        } finally {
+            groupLocks.getWriteLock(group).unlock();
+        }
+        
     }
 
 
     @Override
-	public synchronized void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
+    public void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
 
         Group group = getGroup(invokingUser, name);
         if(group == null){
@@ -250,19 +271,22 @@ public class SecurityManagerImpl implements SecurityManager {
         if(group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
         }
-
-        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
-
-        registeredRealm.deleteGroup(group);
-	}
+        
+        groupLocks.getWriteLock(group).lock();
+        try {
+            findRealmForRealmId(group.getRealmId()).deleteGroup(group);
+        } finally {
+            groupLocks.getWriteLock(group).unlock();
+        }
+    }
 
     @Override
-	public synchronized void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
-		deleteAccount(getAccount(invokingUser, name));
-	}
+    public void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
+        deleteAccount(getAccount(invokingUser, name));
+    }
 	
     @Override
-    public synchronized <A extends Account> void deleteAccount(A account) throws PermissionDeniedException, EXistException {
+    public <A extends Account> void deleteAccount(A account) throws PermissionDeniedException, EXistException {
 
         if(account == null){
             return;
@@ -271,38 +295,48 @@ public class SecurityManagerImpl implements SecurityManager {
         if(account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
         }
-
-        Realm registeredRealm = findRealmForRealmId(account.getRealmId());
-
-        registeredRealm.deleteAccount(account);
+        
+        accountLocks.getWriteLock(account).lock();
+        try {
+            findRealmForRealmId(account.getRealmId()).deleteAccount(account);
+        } finally {
+            accountLocks.getWriteLock(account).unlock();
+        }
     }
 
-	public Account getAccount(String name) {
-		return getAccount(null, name);
-	}
+    @Override
+    public Account getAccount(Subject invokingUser, String name) {
+        for(Realm realm : realms) {
+            Account account = realm.getAccount(invokingUser, name);
+            if (account != null) {
+                return account;
+            }
+        }
+        
+        LOG.debug("Account for '" + name + "' not found!");
+        return null;
+    }
 
     @Override
-	public synchronized Account getAccount(Subject invokingUser, String name) {
-		for (Realm realm : realms) {
-			Account account = realm.getAccount(invokingUser, name);
-			if (account != null) return account;
-		}
-		LOG.debug("user " + name + " not found");
-		return null;
-	}
+    public final Account getAccount(final int id) {
+
+        return usersById.read(new PrincipalDbRead<Account, Account>(){
+            @Override
+            public Account execute(final Int2ObjectHashMap<Account> principalDb) {
+                return principalDb.get(id);
+            }
+        });
+    }
 
     @Override
-	public final synchronized Account getAccount(int id) {
-		return usersById.get(id);
-	}
-
-    @Override
-    public synchronized boolean hasGroup(String name) {
+    public boolean hasGroup(String name) {
     	for (Realm realm : realms) {
-    		if (realm.hasGroup(name)) return true;
+            if(realm.hasGroup(name)) {
+                return true;
+            }
     	}
     	return false;
-	}
+    }
 
     @Override
     public boolean hasGroup(Group group) {
@@ -310,121 +344,112 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public synchronized Group getGroup(Subject invokingUser, String name) {
-    	for (Realm realm : realms) {
-    		Group group = realm.getGroup(invokingUser, name);
-    		if (group != null) return group;
+    public Group getGroup(Subject invokingUser, String name) {
+    	for(Realm realm : realms) {
+            Group group = realm.getGroup(invokingUser, name);
+            if(group != null){
+                return group;
+            }
     	}
-		return null;
-	}
+        return null;
+    }
 
     @Override
-	public final synchronized Group getGroup(int id) {
-		return groupsById.get(id);
-	}
+    public final Group getGroup(final int id) {
+        return groupsById.read(new PrincipalDbRead<Group, Group>(){
+            @Override
+            public Group execute(final Int2ObjectHashMap<Group> principalDb) {
+                return principalDb.get(id);
+            }
+        });
+    }
 	
     @Override
-	public synchronized boolean hasAdminPrivileges(Account user) {
-		return user.hasDbaRole();
-	}
+    public boolean hasAdminPrivileges(Account user) {
+        
+        accountLocks.getReadLock(user).lock();
+        try {
+            return user.hasDbaRole();
+        } finally {
+            accountLocks.getReadLock(user).unlock();
+        }
+    }
 
     @Override
-	public synchronized boolean hasAccount(String name) {
-    	for (Realm realm : realms) {
-    		if (realm.hasAccount(name)) return true;
+    public boolean hasAccount(String name) {
+    	for(Realm realm : realms) {
+            if(realm.hasAccount(name)) {
+                return true;
+            }
     	}
     	return false;
-	}
-
-	private void createUserHome(DBBroker broker, Txn transaction, Account user) throws EXistException, PermissionDeniedException, IOException, TriggerException {
-		if(user.getHome() == null)
-			return;
-		
-		Subject currentUser = broker.getSubject();
-		
-		try {
-			broker.setSubject(getSystemSubject());
-			Collection home = broker.getOrCreateCollection(transaction, user.getHome());
-			home.getPermissions().setOwner(user.getName());
-			
-			CollectionConfiguration config = home.getConfiguration(broker);
-			String group = (config!=null) ? config.getDefCollGroup(user) : user.getPrimaryGroup();
-			
-			//home.getMode().setGroup(group);
-			home.getPermissions().setGroup(group);
-			
-			broker.saveCollection(transaction, home);
-		} finally {
-			broker.setSubject(currentUser);
-		}
-	}
+    }
 
     @Override
-	public synchronized Subject authenticate(String username, Object credentials) throws AuthenticationException {
-		if ("jsessionid".equals(username)) {
-			Subject subject = sessions.get(credentials).getSubject();
-			
-			if (subject == null)
-				throw new AuthenticationException(
-						AuthenticationException.SESSION_NOT_FOUND,
-						"Session [" + credentials + "] not found");
-				
-			//TODO: validate session
-			
-			return subject;
-		}
-		
-		for (Realm realm : realms) {
-			
-			//if (LOG.isDebugEnabled())
-			//	LOG.debug("authenticating '"+username+"' with realm '"+realm.getId()+"'...");
-			
-			try {
-				return realm.authenticate(username, credentials);
-			} catch (AuthenticationException e) {
-				if (e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
-					if (LOG.isDebugEnabled())
-						LOG.debug("Realm '"+realm.getId()+"' threw exception for account '"+username+"'. ["+e.getMessage()+"]");
+    public Subject authenticate(String username, final Object credentials) throws AuthenticationException {
+        if("jsessionid".equals(username)) {
 
-					throw e;
-				}
-			}
-		}
-		
-		if (LOG.isDebugEnabled())
-			LOG.debug("Account '"+username+"' not found, throw error");
+            Subject subject = sessions.read(new SessionDbRead<Subject>(){
+                @Override
+                public Subject execute(final Map<String, Session> db) {
+                    return db.get((String)credentials).getSubject();
+                }
+            });
 
-		throw new AuthenticationException(
-				AuthenticationException.ACCOUNT_NOT_FOUND,
-				"User [" + username + "] not found");
-	}
+            if(subject == null) {
+                throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");
+
+            }
+
+            //TODO: validate session
+            return subject;
+        }
+
+        for(Realm realm : realms) {
+            try {
+                return realm.authenticate(username, credentials);
+            } catch(AuthenticationException e) {
+                if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Realm '"+realm.getId()+"' threw exception for account '"+username+"'. ["+e.getMessage()+"]");
+                    }
+
+                    throw e;
+                }
+            }
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Account '"+username+"' not found, throw error");
+        }
+
+        throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "User [" + username + "] not found");
+    }
 	
-	@Override
-	public Subject getSystemSubject() {
-		return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
-	}
-	
-	@Override
-	public Subject getGuestSubject() {
-            return new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
-            //return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
-	}
-	
-	@Override
-	public Group getDBAGroup() {
-		return defaultRealm.GROUP_DBA;
-	}
-
-	@Override
-	public Database getDatabase() {
-		return pool;
-	}
-
-        //TODO should be private !!!!
     @Override
-    public synchronized int getNextGroupId() {
+    public Subject getSystemSubject() {
+        return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
+    }
+
+    @Override
+    public Subject getGuestSubject() {
+        return new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
+        //return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
+    }
+
+    @Override
+    public Group getDBAGroup() {
+        return defaultRealm.GROUP_DBA;
+    }
+
+    @Override
+    public Database getDatabase() {
+        return pool;
+    }
+
+    private synchronized int getNextGroupId() {
         if(lastGroupId + 1 == MAX_GROUP_ID) {
-            throw new RuntimeException("System has no more group-ids available");
+            throw new RuntimeException("System has no more group-ids available");            
         }
         return ++lastGroupId;
     }
@@ -439,7 +464,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public List<Account> getGroupMembers(String groupName) {
 
-        List<Account> groupMembers = new ArrayList<Account>();
+        final List<Account> groupMembers = new ArrayList<Account>();
 
         for(Realm realm : realms) {
             for(Account account : realm.getAccounts()) {
@@ -454,7 +479,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
-        List<String> userNames = new ArrayList<String>();
+        final List<String> userNames = new ArrayList<String>();
         for(Realm realm : realms) {
             userNames.addAll(realm.findAllGroupMembers(invokingUser, groupName));
         }
@@ -462,30 +487,27 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Deprecated
-	@Override
-	public <A extends Account> java.util.Collection<A> getUsers() {
-            return (java.util.Collection<A>)defaultRealm.getAccounts();
-
-                //TODO should be refactored to get users from all realms
-	}
+    @Override
+    public <A extends Account> java.util.Collection<A> getUsers() {
+        return (java.util.Collection<A>)defaultRealm.getAccounts();
+        //TODO should be refactored to get users from all realms
+    }
 
     @Deprecated
-	@Override
-	public <G extends Group> java.util.Collection<G> getGroups() {
-		return (java.util.Collection<G>)defaultRealm.getRoles();
-
-                //TODO should be refactored to get groups from all realms
-	}
-
-	@Override
-	public void addGroup(String name) throws PermissionDeniedException, EXistException {
-		addGroup(new GroupAider(name));
-	}
+    @Override
+    public <G extends Group> java.util.Collection<G> getGroups() {
+        return (java.util.Collection<G>)defaultRealm.getRoles();
+        //TODO should be refactored to get groups from all realms
+    }
+    
+    @Override
+    public void addGroup(String name) throws PermissionDeniedException, EXistException {
+        addGroup(new GroupAider(name));
+    }
 
     @Override
-    public synchronized Group addGroup(Group group) throws PermissionDeniedException, EXistException {
-
-        if (group.getRealmId() == null) {
+    public Group addGroup(Group group) throws PermissionDeniedException, EXistException {
+        if(group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
         }
 
@@ -493,14 +515,245 @@ public class SecurityManagerImpl implements SecurityManager {
             throw new ConfigurationException("Group must have name.");
         }
 
-        Realm registeredRealm = findRealmForRealmId(group.getRealmId());
+        final int id;
+        if(group.getId() != Group.UNDEFINED_ID) {
+            id = group.getId();
+        } else {
+            id = getNextGroupId();
+        }
+        
+        final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
+        final GroupImpl newGroup = new GroupImpl(registeredRealm, id, group.getName(), group.getManagers());
+        
+        groupLocks.getWriteLock(newGroup).lock();
+        try {
+            groupsById.modify(new PrincipalDbModify<Group>(){
+                @Override
+                public void execute(final Int2ObjectHashMap<Group> principalDb) {
+                    principalDb.put(id, newGroup);
+                }
+            });
+            
+            registeredRealm.registerGroup(newGroup);
 
-        Group newGroup = registeredRealm.addGroup(group);
-        save();
-        return newGroup;
-        //return defaultRealm.addGroup(group.getName());
+            save();
+            newGroup.save();
+
+            return newGroup;
+        } finally {
+            groupLocks.getWriteLock(newGroup).unlock();
+        }
     }
 
+    @Override
+    public final Account addAccount(Account account) throws  PermissionDeniedException, EXistException{
+        if(account.getRealmId() == null) {
+            throw new ConfigurationException("Account must have realm id.");
+        }
+		
+        if(account.getName() == null || account.getName().isEmpty()) {
+            throw new ConfigurationException("Account must have name.");
+        }
+		
+        final int id;
+        if(account.getId() != Account.UNDEFINED_ID) {
+            id = account.getId();
+        } else {
+            id = getNextAccountId();
+        }
+
+	final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
+	final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
+	
+        accountLocks.getWriteLock(newAccount).lock();
+        try {
+            usersById.modify(new PrincipalDbModify<Account>(){
+                @Override
+                public void execute(final Int2ObjectHashMap<Account> principalDb) {
+                    principalDb.put(id, newAccount);
+                }
+            });
+            
+            registeredRealm.registerAccount(newAccount);
+
+            //XXX: one transaction?
+            save();
+            newAccount.save();
+
+            createUserHome(newAccount);
+
+            return newAccount;
+        } finally {
+            accountLocks.getWriteLock(newAccount).unlock();
+        }
+    }
+    
+    @Override 
+    public final Account addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException{
+        if(account.getRealmId() == null) {
+            throw new ConfigurationException("Account must have realm id.");
+        }
+		
+        if(account.getName() == null || account.getName().isEmpty()) {
+            throw new ConfigurationException("Account must have name.");
+        }
+		
+        final int id;
+        if(account.getId() != Account.UNDEFINED_ID) {
+            id = account.getId();
+        } else {
+            id = getNextAccountId();
+        }
+
+        final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
+        final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
+
+        accountLocks.getWriteLock(newAccount).lock();
+        try {
+            usersById.modify(new PrincipalDbModify<Account>(){
+                @Override
+                public void execute(final Int2ObjectHashMap<Account> principalDb) {
+                    principalDb.put(id, newAccount);
+                }
+            });
+            
+            registeredRealm.registerAccount(newAccount);
+
+            //XXX: one transaction?
+            save(broker);
+            newAccount.save(broker);
+
+            createUserHome(broker, newAccount);
+
+            return newAccount;
+        } finally {
+            accountLocks.getWriteLock(newAccount).unlock();
+        }
+    }
+	
+    private void save() throws PermissionDeniedException, EXistException {
+        if (configuration != null) {
+            configuration.save();
+        }
+    }
+        
+    private void save(DBBroker broker) throws PermissionDeniedException, EXistException {
+        if (configuration != null) {
+            configuration.save(broker);
+        }
+    }
+
+    @Override
+    public boolean isConfigured() {
+            return configuration != null;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+		return configuration;
+    }
+
+    private void createUserHome(Account account) throws EXistException, PermissionDeniedException {
+        DBBroker broker = null;
+        try {
+            broker = getDatabase().get(null);
+            createUserHome(broker, account);	
+        } finally {
+            getDatabase().release(broker);
+        }
+    }
+        
+    private void createUserHome(DBBroker broker, Account account) throws EXistException, PermissionDeniedException {
+        if(account.getHome() == null) {
+                return;
+        }
+
+        TransactionManager transact = getDatabase().getTransactionManager();
+        Txn txn = transact.beginTransaction();
+        try {
+
+            Subject currentUser = broker.getSubject();
+
+            try {
+                broker.setUser(getSystemSubject());
+
+                Collection home = broker.getOrCreateCollection(txn, account.getHome());
+
+                home.getPermissions().setOwner(account);
+                CollectionConfiguration config = home.getConfiguration(broker);
+                String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
+                home.getPermissions().setGroup(group);
+
+                broker.saveCollection(txn, home);
+
+                transact.commit(txn);
+            } finally {
+                broker.setUser(currentUser);
+            }
+        } catch (IOException e) {
+            transact.abort(txn);
+
+            if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+            }
+            e.printStackTrace();
+
+            throw new EXistException(e);
+
+        } catch (TriggerException e) {
+            transact.abort(txn);
+
+            if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+            }
+            e.printStackTrace();
+
+            throw new EXistException(e);
+
+        } catch (PermissionDeniedException e) {
+            transact.abort(txn);
+
+            if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+            }
+            e.printStackTrace();
+
+            throw e;
+
+        } catch (EXistException e) {
+            transact.abort(txn);
+
+            if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+            }
+            e.printStackTrace();
+
+            throw e;
+
+        }
+    }
+    
+    //Session management part	
+    @Override
+    public void registerSession(final Session session) {
+        sessions.modify(new SessionDbModify(){
+            @Override
+            public void execute(final Map<String, Session> db) {
+                db.put(session.getId(), session);
+            }
+        });
+    }
+
+    @Override
+    public Subject getSubjectBySessionId(final String sessionId) {
+        return sessions.read(new SessionDbRead<Subject>(){
+            @Override
+            public Subject execute(final Map<String, Session> db) {
+                return db.get(sessionId).getSubject();
+            }
+        });
+    }
+        
     private Realm findRealmForRealmId(String realmId) throws ConfigurationException {
         for(Realm realm : realms) {
             if(realm.getId().equals(realmId)) {
@@ -509,220 +762,45 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         throw new ConfigurationException("The realm id = '" + realmId + "' not found.");
     }
-
-    @Override
-	public final synchronized Account addAccount(Account account) throws  PermissionDeniedException, EXistException{
-		if(account.getRealmId() == null) {
-            throw new ConfigurationException("Account must have realm id.");
-        }
-		
-		if(account.getName() == null || account.getName().isEmpty()) {
-            throw new ConfigurationException("Account must have name.");
-        }
-		
-		AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-		
-		final int id;
-                if(account.getId() != Account.UNDEFINED_ID) {
-                    id = account.getId();
-                } else {
-                    id = getNextAccountId();
-                }
-
-//        A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
-		AccountImpl new_account = new AccountImpl(registeredRealm, id, account);
-		
-		usersById.put(id, new_account);
-		registeredRealm.registerAccount(new_account);
-		
-		//XXX: one transaction?
-		save();
-        new_account.save();
-		
-		createUserHome(new_account);
-
-		return new_account;
-	}
     
-        @Override 
-        public final synchronized Account addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException{
-            if(account.getRealmId() == null) {
-                throw new ConfigurationException("Account must have realm id.");
-            }
-		
-            if(account.getName() == null || account.getName().isEmpty()) {
-                throw new ConfigurationException("Account must have name.");
-            }
-		
-            AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-            
-            final int id;
-            if(account.getId() != Account.UNDEFINED_ID) {
-                id = account.getId();
-            } else {
-                id = getNextAccountId();
-            }
-
-            //A new_account = registeredRealm.instantiateAccount(registeredRealm, id, account);
-            AccountImpl new_account = new AccountImpl(broker, registeredRealm, id, account);
-
-            usersById.put(id, new_account);
-            registeredRealm.registerAccount(new_account);
-
-            //XXX: one transaction?
-            save(broker);
-            new_account.save(broker);
-
-            createUserHome(broker, new_account);
-
-            return new_account;
-	}
-	
-	private void save() throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save();
-        }
-	}
-        
-        private void save(DBBroker broker) throws PermissionDeniedException, EXistException {
-        if (configuration != null) {
-            configuration.save(broker);
-        }
-	}
-
-	@Override
-	public boolean isConfigured() {
-		return configuration != null;
-	}
-
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
-	private void createUserHome(Account account) throws EXistException, PermissionDeniedException {
-            DBBroker broker = null;
-            try {
-                broker = getDatabase().get(null);
-                createUserHome(broker, account);	
-            } finally {
-                getDatabase().release(broker);
-            }
-	}
-        
-        private void createUserHome(DBBroker broker, Account account) throws EXistException, PermissionDeniedException {
-		if(account.getHome() == null)
-			return;
-		
-		TransactionManager transact = getDatabase().getTransactionManager();
-		Txn txn = transact.beginTransaction();
-		try {
-
-			Subject currentUser = broker.getSubject();
-			
-			try {
-		
-				broker.setUser(getSystemSubject());
-	
-				Collection home = broker.getOrCreateCollection(txn, account.getHome());
-				
-				home.getPermissions().setOwner(account);
-				CollectionConfiguration config = home.getConfiguration(broker);
-				String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-				home.getPermissions().setGroup(group);
-				
-				broker.saveCollection(txn, home);
-				
-				transact.commit(txn);
-			
-			} finally {
-				broker.setUser(currentUser);
-			}
-		
-		} catch (IOException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw new EXistException(e);
-		
-		} catch (TriggerException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw new EXistException(e);
-		
-		} catch (PermissionDeniedException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw e;
-		
-		} catch (EXistException e) {
-			transact.abort(txn);
-			
-			if (LOG.isDebugEnabled()) {
-				LOG.debug(e.getMessage());
-			}
-			e.printStackTrace();
-			
-			throw e;
-		
-		}
-	}
-
-	@Override
-	public Realm getRealm(String id) {
-		for (Realm realm : realms) {
-			if (id.equals(realm.getId())) return realm;
-		}
-		return null;
-	}
-
-	//Session management part
-	
-	//TODO: validate & remove if session timeout
-	Map<String, Session> sessions = new HashMap<String, Session>();
-	
-	@Override
-	public void registerSession(Session session) {
-		sessions.put(session.getId(), session);
-	}
-
-	@Override
-	public Subject getSubjectBySessionId(String sessionid) {
-		return sessions.get(sessionid).getSubject();
-	}
-
     @Override
-    public void addGroup(int id, Group group) {
-        groupsById.put(id, group);
+    public void addGroup(final int id, final Group group) {
+        groupsById.modify(new PrincipalDbModify<Group>(){
+            @Override
+            public void execute(final Int2ObjectHashMap<Group> principalDb) {
+               principalDb.put(id, group);
+            }
+        });
     }
 
     @Override
-    public void addUser(int id, Account account) {
-        usersById.put(id, account);
+    public void addUser(final int id, final Account account) {
+        usersById.modify(new PrincipalDbModify<Account>(){
+            @Override
+            public void execute(final Int2ObjectHashMap<Account> principalDb) {
+               principalDb.put(id, account);
+            }
+        });
     }
 
     @Override
-    public boolean hasGroup(int id) {
-        return groupsById.containsKey(id);
+    public boolean hasGroup(final int id) {
+        return groupsById.read(new PrincipalDbRead<Group, Boolean>(){
+            @Override
+            public Boolean execute(Int2ObjectHashMap<Group> principalDb) {
+                return principalDb.containsKey(id);
+            }
+        });
     }
 
     @Override
-    public boolean hasUser(int id) {
-        return usersById.containsKey(id);
+    public boolean hasUser(final int id) {
+        return usersById.read(new PrincipalDbRead<Account, Boolean>(){
+            @Override
+            public Boolean execute(Int2ObjectHashMap<Account> principalDb) {
+                return principalDb.containsKey(id);
+            }
+        });
     }
 
     @Override
@@ -778,86 +856,182 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         return groupNames;
     }
+    
+    @Override
+    public void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException {
 
-	@Override
-	public void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException {
+        XmldbURI uri = document.getCollection().getURI();
 
-		XmldbURI uri = document.getCollection().getURI();
+        boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
+        if(isRemoved) {
+            uri = uri.removeLastSegment();
+        }
 		
-		boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
-		if (isRemoved)
-			uri = uri.removeLastSegment();
+        boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
+        boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
 		
-		boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
-		boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
-		
-		if (isAccount || isGroup) {
-			uri = uri.removeLastSegment();
-			
-			String realmId = uri.lastSegment().toString();
-			SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-			
-			AbstractRealm realm = (AbstractRealm) sm.getRealm(realmId);
-			if (realm == null) {
-				//XXX: deleted realm's objects
-//				Configuration conf = Configurator.parse(document);
-//				if (isAccount) {
-//	            	Integer id = conf.getPropertyInteger("id");
-//	            	if (id != null && !getSecurityManager().hasUser(id)) {
-//						AccountImpl account = new AccountImpl( null, conf );
-//	            		account.removed = true;
-//		            	addUser(account.getId(), account);
-//	            	}
-//				} else if (isGroup) {
-//	            	Integer id = conf.getPropertyInteger("id");
-//	            	if (id != null && !getSecurityManager().hasGroup(id)) {
-//	                    GroupImpl group = new GroupImpl(null, conf);
-//	                    group.removed = true;
-//	            		addGroup(group.getId(), group);
-//	            	}
-//				}
-			} else {
-				Configuration conf = Configurator.parse(document);
+        if(isAccount || isGroup) {
+            uri = uri.removeLastSegment();
 
-				Integer id = -1;
-				if (isRemoved) id = conf.getPropertyInteger("id");
-				
-            	String name = conf.getProperty("name");
-
-            	if (isAccount) {
-            		if (isRemoved && id > 2 && !hasUser(id)) {
-            			AccountImpl account = new AccountImpl( realm, conf );
-            			account.removed = true;
-		            	addUser(account.getId(), account);
-            		} else if (name != null && !realm.usersByName.containsKey(name)) {
-	            		Account account = new AccountImpl( realm, conf );
-		            	addUser(account.getId(), account);
-		            	realm.usersByName.put(account.getName(), account);
-	            	} else {
-	            		//this can't be! log any way
-	            		LOG.error("Account '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
-	            	}
-				} else if (isGroup) {
-            		if (isRemoved && id > 2 && !hasGroup(id)) {
-	            		GroupImpl group = new GroupImpl( realm, conf );
-	            		group.removed = true;
-	            		addGroup(group.getId(), group);
-            		} else if (name != null && !realm.groupsByName.containsKey(name)) {
-	            		GroupImpl group = new GroupImpl( realm, conf );
-	            		addGroup(group.getId(), group);
-	            		realm.groupsByName.put(group.getName(), group);
-	            	} else {
-	            		//this can't be! log any way
-	            		LOG.error("Group '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
-	            	}
-				}
-			}
+            String realmId = uri.lastSegment().toString();
 			
-		}
-	}
+            AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
+            Configuration conf = Configurator.parse(document);
 
-	@Override
-	public String getAuthenticationEntryPoint() {
-		return authenticationEntryPoint;
-	}
+            Integer id = -1;
+            if(isRemoved) {
+                id = conf.getPropertyInteger("id");
+            }
+
+            String name = conf.getProperty("name");
+
+            if(isAccount) {
+                if (isRemoved && id > 2 && !hasUser(id)) {
+                    AccountImpl account = new AccountImpl( realm, conf );
+                    account.removed = true;
+                    addUser(account.getId(), account);
+                } else if(name != null && !realm.hasAccount(name)) {
+                    Account account = new AccountImpl( realm, conf );
+                    addUser(account.getId(), account);
+                    realm.registerAccount(account);
+                } else {
+                    //this can't be! log any way
+                    LOG.error("Account '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+                }
+            
+            } else if(isGroup) {
+                if (isRemoved && id > 2 && !hasGroup(id)) {
+                    GroupImpl group = new GroupImpl( realm, conf );
+                    group.removed = true;
+                    addGroup(group.getId(), group);
+                } else if (name != null && !realm.hasGroup(name)) {
+                    GroupImpl group = new GroupImpl( realm, conf );
+                    addGroup(group.getId(), group);
+                    realm.registerGroup(group);
+                } else {
+                    //this can't be! log any way
+                    LOG.error("Group '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
+                }
+                            
+            }
+        }
+    }
+
+    @Override
+    public String getAuthenticationEntryPoint() {
+            return authenticationEntryPoint;
+    }
+
+    private class PrincipalLocks<T extends Principal> {
+        private final Map<Integer, ReentrantReadWriteLock> locks = new HashMap<Integer, ReentrantReadWriteLock>();
+        private synchronized ReentrantReadWriteLock getLock(T principal) {
+            ReentrantReadWriteLock lock = locks.get(principal.getId());
+            if(lock == null) {
+                lock = new ReentrantReadWriteLock();
+                locks.put(principal.getId(), lock);
+            }
+            return lock;
+        }
+
+        public ReadLock getReadLock(T principal) {
+            return getLock(principal).readLock();
+        }
+
+        public WriteLock getWriteLock(T principal) {
+            return getLock(principal).writeLock();
+        }
+    }
+   
+    protected class SessionDb {
+        private final Map<String, Session> db = new HashMap<String, Session>();
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final ReadLock readLock = lock.readLock();
+        private final WriteLock writeLock = lock.writeLock();
+
+        public <R> R read(final SessionDbRead<R> readOp) {
+            readLock.lock();
+            try {
+                return readOp.execute(db);
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        public final void modify(final SessionDbModify writeOp) {
+            writeLock.lock();
+            try {
+                writeOp.execute(db);
+            } finally {
+                writeLock.unlock();
+            }
+        }
+    }
+    
+    protected interface SessionDbRead<R> {
+       public R execute(final Map<String, Session> db);
+    }
+
+    protected interface SessionDbModify {
+        public void execute(final Map<String, Session> db);
+    }
+   
+    protected class PrincipalDbById<V extends Principal> {
+    
+        private final Int2ObjectHashMap<V> db = new Int2ObjectHashMap<V>(65);
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final ReadLock readLock = lock.readLock();
+        private final WriteLock writeLock = lock.writeLock();
+
+        public <R> R read(final PrincipalDbRead<V, R> readOp) {
+            readLock.lock();
+            try {
+                return readOp.execute(db);
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        public final void modify(final PrincipalDbModify<V> writeOp) {
+            writeLock.lock();
+            try {
+                writeOp.execute(db);
+            } finally {
+                writeLock.unlock();
+            }
+        }
+
+        public final <E extends Exception> void modifyE(final PrincipalDbModifyE<V, E> writeOp) throws E {
+            writeLock.lock();
+            try {
+                writeOp.execute(db);
+            } finally {
+                writeLock.unlock();
+            }
+        }
+
+        public final <E extends Exception, E2 extends Exception> void modify2E(final PrincipalDbModify2E<V, E, E2> writeOp) throws E, E2 {
+            writeLock.lock();
+            try {
+                writeOp.execute(db);
+            } finally {
+                writeLock.unlock();
+            }
+        }
+    }
+    
+    protected interface PrincipalDbRead<V extends Principal, R> {
+       public R execute(final Int2ObjectHashMap<V> principalDb);
+    }
+
+    protected interface PrincipalDbModify<V extends Principal> {
+        public void execute(final Int2ObjectHashMap<V> principalDb);
+    }
+
+    protected interface PrincipalDbModifyE<V extends Principal, E extends Exception> {
+        public void execute(final Int2ObjectHashMap<V> principalDb) throws E;
+    }
+
+    protected interface PrincipalDbModify2E<V extends Principal, E extends Exception, E2 extends Exception> {
+        public void execute(final Int2ObjectHashMap<V> principalDb) throws E, E2;
+    }
 }

@@ -92,11 +92,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	public Group addGroup(String name) throws PermissionDeniedException {
         Group group = getRealm().getGroup(null, name);
 
-        //if we cant find the group in our own realm, try the default realm
+        //if we cant find the group in our own realm, try other realms
         if(group == null) {
-            Realm internalRealm = getRealm().getSecurityManager().getRealm(RealmImpl.ID);
-            group = internalRealm.getGroup(null, name);
+            group = getRealm().getSecurityManager().getGroup(null, name);
         }
+        
         return addGroup(group);
 	}
 

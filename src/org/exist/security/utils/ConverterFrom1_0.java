@@ -31,7 +31,6 @@ import org.exist.security.Subject;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.realm.Realm;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
@@ -65,7 +64,7 @@ public class ConverterFrom1_0 {
 			docElement = acl.getDocumentElement();
 		if (docElement == null) {
 		} else {
-			Realm realm = sm.getRealm(RealmImpl.ID);
+			//Realm realm = sm.getRealm(RealmImpl.ID);
 			
 //			int nextGroupId = -1;
 //			int nextUserId = -1;
@@ -102,10 +101,10 @@ public class ConverterFrom1_0 {
 						if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals("user")) {
 							account = createAccount(major, minor, (Element) node);
 							
-							if (realm.hasAccount(account.getName())) {
-								realm.updateAccount(invokingUser, account);
+							if (sm.hasAccount(account.getName())) {
+                                                            sm.updateAccount(invokingUser, account);
 							} else {
-								realm.addAccount(account);
+                                                            sm.addAccount(account);
 							}
 						}
 					}
@@ -121,10 +120,10 @@ public class ConverterFrom1_0 {
 						if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals("group")) {
 							group = createGroup((Element) node);
 
-							if (realm.hasGroup(group.getName())) {
-								realm.updateGroup(invokingUser, group);
+							if (sm.hasGroup(group.getName())) {
+								sm.updateGroup(invokingUser, group);
 							} else {
-								realm.addGroup(group);
+								sm.addGroup(group);
 							}
 						}
 					}
