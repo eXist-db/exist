@@ -975,6 +975,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Node#getNodeValue()
      */
+    
+    //TODO getNodeValue() on org.exist.dom.ElementImpl should return null according to W3C spec, and getTextContent() should be implemented!
     @Override
     public String getNodeValue() /*throws DOMException*/ {
         //TODO : parametrize the boolean value ?

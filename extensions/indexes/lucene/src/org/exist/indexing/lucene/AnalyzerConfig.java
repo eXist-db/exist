@@ -165,7 +165,13 @@ public class AnalyzerConfig {
         final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, "value");
         for(int i = 0; i < values.getLength(); i++) {
             final Element value = (Element)values.item(i);
-            set.add(value.getTextContent());
+            
+            //TODO getNodeValue() on org.exist.dom.ElementImpl should return null according to W3C spec!
+            if(value instanceof org.exist.dom.ElementImpl) {
+               set.add(value.getNodeValue());
+            } else {
+                set.add(value.getTextContent());
+            }
         }
         
         return set;
