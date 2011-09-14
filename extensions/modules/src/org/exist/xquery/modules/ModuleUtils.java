@@ -110,13 +110,19 @@ public class ModuleUtils {
 	 * @return The NodeValue of XML
 	 */
         public static NodeValue sourceToXML(XQueryContext context, Source src) throws SAXException, IOException {
-            InputSource inputSource = SAXSource.sourceToInputSource(src);
-        
-            if(inputSource == null){
-                throw new IOException(src.getClass().getName() + " is unsupported.");
+            if(src instanceof SAXSource && ((SAXSource)src).getXMLReader() != null) {
+                //Handles the case where a SAXSource may already have an
+                //XMLReader allocated, for example EXPath httpclient
+                //where it wants to tidy html using TagSoup
+                return inputSourceToXML(context, (SAXSource)src);
+            } else {
+                final InputSource inputSource = SAXSource.sourceToInputSource(src);
+                if(inputSource == null){
+                    throw new IOException(src.getClass().getName() + " is unsupported.");
+                }
+
+                return inputSourceToXML(context, inputSource);
             }
-            
-            return inputSourceToXML(context, inputSource);
         }
 	
 
@@ -155,6 +161,41 @@ public class ModuleUtils {
                 if(reader != null){
                     context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
                 }
+            }
+	}
+        
+        /**
+	 * Takes a InputSource of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param xml
+	 *            The InputSource of XML
+	 * 
+	 * @return The NodeValue of XML
+	 */
+	private static NodeValue inputSourceToXML(XQueryContext context, SAXSource src) throws SAXException, IOException  {
+            if(src.getXMLReader() == null) {
+                throw new SAXException("No XML Reader specified.");
+            }
+            final XMLReader reader = src.getXMLReader();
+            
+            context.pushDocumentContext();
+
+            try {
+                // try and construct xml document from input stream, we use eXist's
+                // in-memory DOM implementation
+
+                // TODO : we should be able to cope with context.getBaseURI()
+                MemTreeBuilder builder = context.getDocumentBuilder();
+                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+                reader.setContentHandler(receiver);
+                reader.parse(src.getInputSource());
+                Document doc = receiver.getDocument();
+                return((NodeValue)doc);
+            }  finally {
+                context.popDocumentContext();
             }
 	}
         
