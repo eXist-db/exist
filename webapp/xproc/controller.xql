@@ -33,6 +33,7 @@ return
                 	    value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
                 	<set-attribute name="xslt.output.doctype-system"
                 	    value="resources/xhtml1-transitional.dtd"/>
+                	<set-attribute name="xslt.root" value="."/>
 				</forward>
 			</view>
             <cache-control cache="no"/>
