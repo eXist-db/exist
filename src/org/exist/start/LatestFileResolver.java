@@ -79,7 +79,7 @@ public class LatestFileResolver {
         String patternString = uptoToken.substring(
             uptoToken.lastIndexOf(File.separatorChar) + 1
         ) + "([\\d\\.\\-_]+)" + fileinfo[1];
-        final Pattern pattern = Pattern.compile(patternString);
+        final Pattern pattern = Pattern.compile("^" + patternString + "$");
 
         File[] jars = containerDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
