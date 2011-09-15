@@ -115,7 +115,7 @@ declare function indexes:xconf-to-table($xconfs as node()*) as item()* {
         return
             <tr>
                 <th>{$count}. {$data-collection-name} {if (xmldb:collection-available($data-collection-name)) then () else ' (no data)'}
-                    (<a href="{concat(request:get-context-path(), '/rest', $xconf-collection-name, '/', xmldb:get-child-resources($xconf-collection-name)[ends-with(., '.xconf')])}">View xconf file</a>)
+                    (<a href="{concat(request:get-context-path(), '/eXide/index.html?open=', $xconf-collection-name, '/', xmldb:get-child-resources($xconf-collection-name)[ends-with(., '.xconf')])}">View xconf file</a>)
                 </th>
                 <tr><td><table class="browse" cellpadding="2">
                     <tr>
