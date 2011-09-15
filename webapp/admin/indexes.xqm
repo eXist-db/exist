@@ -528,7 +528,12 @@ declare function indexes:get-xconf($collection as xs:string) as document-node() 
     Helper function: Looks in the collection.xconf's collection and index elements for namespace URIs for a given node name
 :)
 declare function indexes:get-namespace-uri-from-node-name($node-name, $collection) {
-    let $name := substring-before($node-name, ':')
+
+    let $name := if (starts-with($node-name,'@')) then
+                    substring-after( substring-before($node-name, ':'), '@' )
+                else
+                    substring-before($node-name, ':')
+    
     let $xconf := indexes:get-xconf($collection)
     let $uri := (namespace-uri-for-prefix($name, $xconf/cc:collection), namespace-uri-for-prefix($name, $xconf//cc:index))
     return
@@ -540,7 +545,12 @@ declare function indexes:get-namespace-uri-from-node-name($node-name, $collectio
 :)
 declare function indexes:get-namespace-decaration-from-node-name($node-name as xs:string, $collection as xs:string) as xs:string* {
     if (not(matches($node-name, 'xml:')) and contains($node-name, ':')) then
-        let $name := substring-before($node-name, ':')
+    
+        let $name := if (starts-with($node-name,'@')) then
+                        substring-after( substring-before($node-name, ':'), '@' )
+                    else
+                        substring-before($node-name, ':')
+            
         let $uri := indexes:get-namespace-uri-from-node-name($node-name, $collection)
         return
             concat('declare namespace ', $name, '="', $uri, '"; ') 
