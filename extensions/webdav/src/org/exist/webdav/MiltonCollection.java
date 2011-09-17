@@ -162,7 +162,7 @@ public class MiltonCollection extends MiltonResource
         for (XmldbURI path : existCollection.getDocumentURIs()) {
             MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
             // Show (restimated) size for PROPFIND only
-            mdoc.setReturnContentLenghtAsNull(false);
+            mdoc.setIsPropFind(true);
             allResources.add(mdoc);
         }
         return allResources;
