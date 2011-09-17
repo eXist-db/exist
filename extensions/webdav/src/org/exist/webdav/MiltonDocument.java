@@ -82,14 +82,14 @@ public class MiltonDocument extends MiltonResource
     private VirtualTempFile vtf = null;;
 
     // Only for PROPFIND the estimate size for an XML document must be shown
-    private boolean returnContentLenghtAsNull=true;
+    private boolean isPropFind=false;
 
     /**
      * Set to TRUE if for an XML document an estimated document must be returned. Otherwise
      * for content length NULL is returned.
      */
-    public void setReturnContentLenghtAsNull(boolean returnContentLenghtAsNull) {
-        this.returnContentLenghtAsNull = returnContentLenghtAsNull;
+    public void setIsPropFind(boolean isPropFind) {
+        this.isPropFind = isPropFind;
     }
 
     /**
@@ -151,12 +151,11 @@ public class MiltonDocument extends MiltonResource
                 // Experimental. Does not work right, the virtual file
                 // Often does not contain the right amount of bytes.
                 
-                LOG.debug("Serializing from virtual file" + vtf.length());
+                LOG.debug("Serializing from buffer");
                 InputStream is = vtf.getByteStream();
                 IOUtils.copy(is, out);
                 out.flush();
                 IOUtils.closeQuietly(is);
-                IOUtils.closeQuietly(out);
                 vtf.delete();
                 vtf=null;
             }
@@ -164,6 +163,9 @@ public class MiltonDocument extends MiltonResource
         } catch (PermissionDeniedException e) {
             LOG.debug(e.getMessage());
             throw new NotAuthorizedException(this);
+            
+        } finally {
+            IOUtils.closeQuietly(out);
         }
     }
 
@@ -180,47 +182,53 @@ public class MiltonDocument extends MiltonResource
     @Override
     public Long getContentLength() {
         
-        Long size=0L;
+        Long size=null;
         
-//        // Only for PROPFIND the estimate size for an XML document must be shown
-//        if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
-//           
-//            try {
-//                LOG.info("Serializing to virtual file");
-//                vtf = new VirtualTempFile();
-//                existDocument.stream(vtf);
-//                vtf.flush();
-//                vtf.close();
-//                
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//                LOG.error(ex);
-//                
-//            } catch (PermissionDeniedException ex) {
-//                LOG.error(ex);
-//            }
-//            size = vtf.length();
         
         if(existDocument.isXmlDocument()){
             
-            // Note... this is rather inefficient; for a 'GET' this will
-            // be triggered at least TWICE
-            
-            
-            // Stream document to /dev/null and count bytes
-            CountingOutputStream counter 
-                    = new CountingOutputStream( new NullOutputStream() );
-            try {
-                existDocument.stream(counter);
+            if (isPropFind) {
                 
-            } catch (IOException ex) {
-                LOG.error(ex);
+                // For PROPFIND the actual size must be calculated
+                // by serializing the document.
+
+                LOG.debug("Serializing XML to /dev/null to determine size"
+                        + " (" + resourceXmldbUri + ")");
+
+                // Stream document to /dev/null and count bytes
+                CountingOutputStream counter = new CountingOutputStream(new NullOutputStream());
+                try {
+                    existDocument.stream(counter);
+
+                } catch (IOException ex) {
+                    LOG.error(ex);
+
+                } catch (PermissionDeniedException ex) {
+                    LOG.error(ex);
+                }
+
+                size = counter.getByteCount();
                 
-            } catch (PermissionDeniedException ex) {
-                LOG.error(ex);
+            } else {
+                
+                // Serialize to virtual file for re-use by sendContent() 
+
+                try {
+                    LOG.debug("Serializing XML to virtual file"
+                            + " (" + resourceXmldbUri + ")");
+                    
+                    vtf = new VirtualTempFile();
+                    existDocument.stream(vtf);
+                    vtf.close();
+
+                } catch (IOException ex) {
+                    LOG.error(ex);
+
+                } catch (PermissionDeniedException ex) {
+                    LOG.error(ex);
+                }
+                size = vtf.length();
             }
-            
-            size=counter.getByteCount();
             
             
         } else {
@@ -228,7 +236,7 @@ public class MiltonDocument extends MiltonResource
             size = existDocument.getContentLength();
         }
         
-        LOG.debug("Size of resource=" + size);
+        LOG.debug("Size=" + size + " (" + resourceXmldbUri + ")");
         return size;
         
     }

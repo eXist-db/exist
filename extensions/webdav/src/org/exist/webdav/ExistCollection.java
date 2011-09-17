@@ -64,8 +64,8 @@ public class ExistCollection extends ExistResource {
 
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("New collection object for " + uri);
+        if(LOG.isTraceEnabled())
+            LOG.trace("New collection object for " + uri);
 
         brokerPool = pool;
         this.xmldbUri = uri;
