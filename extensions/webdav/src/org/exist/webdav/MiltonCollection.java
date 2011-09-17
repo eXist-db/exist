@@ -195,8 +195,8 @@ public class MiltonCollection extends MiltonResource
             createDate = new Date(time);
         }
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("Create date=" + createDate);
+        if(LOG.isTraceEnabled())
+            LOG.trace("Create date=" + createDate);
 
         return createDate;
     }
@@ -220,8 +220,8 @@ public class MiltonCollection extends MiltonResource
     public CollectionResource createCollection(String name)
             throws NotAuthorizedException, ConflictException {
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("Create collection '" + name + "' in '" + resourceXmldbUri + "'.");
+        if(LOG.isTraceEnabled())
+            LOG.trace("Create collection '" + name + "' in '" + resourceXmldbUri + "'.");
 
         CollectionResource collection = null;
         try {
@@ -252,8 +252,8 @@ public class MiltonCollection extends MiltonResource
     public Resource createNew(String newName, InputStream is, Long length, String contentType)
             throws IOException, ConflictException {
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("Create '" + newName + "' in '" + resourceXmldbUri + "'");
+        if(LOG.isTraceEnabled())
+            LOG.trace("Create '" + newName + "' in '" + resourceXmldbUri + "'");
 
         Resource resource = null;
         try {

@@ -43,17 +43,25 @@ import com.bradmcevoy.http.exceptions.NotAuthorizedException;
 import com.bradmcevoy.http.exceptions.PreConditionFailedException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
+import org.exist.util.VirtualTempFile;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
@@ -70,6 +78,8 @@ public class MiltonDocument extends MiltonResource
         DeletableResource, LockableResource, MoveableResource, CopyableResource {
 
     private ExistDocument existDocument;
+    
+    private VirtualTempFile vtf = null;;
 
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean returnContentLenghtAsNull=true;
@@ -107,8 +117,8 @@ public class MiltonDocument extends MiltonResource
 
         super();
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("DOCUMENT:" + uri.toString());
+        if(LOG.isTraceEnabled())
+            LOG.trace("DOCUMENT:" + uri.toString());
         
         resourceXmldbUri = uri;
         brokerPool = pool;
@@ -133,8 +143,24 @@ public class MiltonDocument extends MiltonResource
     public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
             throws IOException, NotAuthorizedException, BadRequestException {
         try {
-            existDocument.stream(out);
-
+            if(vtf==null){
+                LOG.debug("Serializing from database");
+                existDocument.stream(out);
+                
+            } else {
+                // Experimental. Does not work right, the virtual file
+                // Often does not contain the right amount of bytes.
+                
+                LOG.debug("Serializing from virtual file" + vtf.length());
+                InputStream is = vtf.getByteStream();
+                IOUtils.copy(is, out);
+                out.flush();
+                IOUtils.closeQuietly(is);
+                IOUtils.closeQuietly(out);
+                vtf.delete();
+                vtf=null;
+            }
+            
         } catch (PermissionDeniedException e) {
             LOG.debug(e.getMessage());
             throw new NotAuthorizedException(this);
@@ -153,13 +179,58 @@ public class MiltonDocument extends MiltonResource
 
     @Override
     public Long getContentLength() {
-        // Only for PROPFIND the estimate size for an XML document must be shown
-        if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
-            if(LOG.isDebugEnabled())
-                LOG.debug("Returning NULL for content length XML resource.");
-            return null;
+        
+        Long size=0L;
+        
+//        // Only for PROPFIND the estimate size for an XML document must be shown
+//        if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
+//           
+//            try {
+//                LOG.info("Serializing to virtual file");
+//                vtf = new VirtualTempFile();
+//                existDocument.stream(vtf);
+//                vtf.flush();
+//                vtf.close();
+//                
+//            } catch (IOException ex) {
+//                ex.printStackTrace();
+//                LOG.error(ex);
+//                
+//            } catch (PermissionDeniedException ex) {
+//                LOG.error(ex);
+//            }
+//            size = vtf.length();
+        
+        if(existDocument.isXmlDocument()){
+            
+            // Note... this is rather inefficient; for a 'GET' this will
+            // be triggered at least TWICE
+            
+            
+            // Stream document to /dev/null and count bytes
+            CountingOutputStream counter 
+                    = new CountingOutputStream( new NullOutputStream() );
+            try {
+                existDocument.stream(counter);
+                
+            } catch (IOException ex) {
+                LOG.error(ex);
+                
+            } catch (PermissionDeniedException ex) {
+                LOG.error(ex);
+            }
+            
+            size=counter.getByteCount();
+            
+            
+        } else {
+            // Actual size is known
+            size = existDocument.getContentLength();
         }
-        return 0L + existDocument.getContentLength();
+        
+        LOG.debug("Size of resource=" + size);
+        return size;
+        
     }
 
     /* ====================
@@ -174,9 +245,6 @@ public class MiltonDocument extends MiltonResource
         if (time != null) {
             createDate = new Date(time);
         }
-
-        if(LOG.isDebugEnabled())
-            LOG.debug("Create date=" + createDate);
 
         return createDate;
     }
