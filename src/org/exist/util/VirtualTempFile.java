@@ -21,7 +21,7 @@ package org.exist.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,7 +30,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * 
@@ -488,16 +491,19 @@ public class VirtualTempFile
 	{
 		InputStream result = null;
 		if(tempFile!=null) {
-			byte[] writeBuffer=new byte[65536];
-			InputStream input = new BufferedInputStream(new FileInputStream(tempFile),655360);
-			try {
-				int readBytes;
-				while((readBytes = input.read(writeBuffer,0,writeBuffer.length))!=-1) {
-					out.write(writeBuffer,0,readBytes);
-				}
-			} finally {
-				input.close();
-			}
+//			byte[] writeBuffer=new byte[65536];
+			InputStream input = new BufferedInputStream(new FileInputStream(tempFile));
+            IOUtils.copy(input, out);
+            IOUtils.closeQuietly(input);
+
+//			try {
+//				int readBytes;
+//				while((readBytes = input.read(writeBuffer,0,writeBuffer.length))!=-1) {
+//					out.write(writeBuffer,0,readBytes);
+//				}
+//			} finally {
+//				input.close();
+//			}
 		} else if(tempBuffer!=null) {
 			out.write(tempBuffer);
 		}

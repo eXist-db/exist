@@ -340,7 +340,7 @@ public class MiltonResource implements Resource {
     @Override
     public boolean authorise(Request request, Method method, Auth auth) {
 
-        LOG.info("" + method.toString() + "  " + method.isWrite + " for " + resourceXmldbUri);
+        LOG.info(method.toString() + " " + resourceXmldbUri + " (write="+ method.isWrite+")");
 
         /*
          * First perform checks on Milton authentication
@@ -398,8 +398,8 @@ public class MiltonResource implements Resource {
         }
 
         if(auth.getUri()==null){
-            if(LOG.isDebugEnabled())
-                LOG.debug("URI is null");
+            if(LOG.isTraceEnabled())
+                LOG.trace("URI is null");
             // not sure why the null value can be there
         }
 
@@ -426,8 +426,8 @@ public class MiltonResource implements Resource {
             modifiedDate = new Date(time);
         }
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("Modified date=" + modifiedDate);
+//        if(LOG.isDebugEnabled())
+//            LOG.debug("Modified date=" + modifiedDate);
 
         return modifiedDate;
     }

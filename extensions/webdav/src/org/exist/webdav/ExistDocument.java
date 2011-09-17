@@ -45,6 +45,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.VirtualTempFile;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
 import org.exist.webdav.exceptions.DocumentNotLockedException;
 import org.exist.xmldb.XmldbURI;
@@ -60,8 +61,8 @@ public class ExistDocument extends ExistResource {
 
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
-        if(LOG.isDebugEnabled())
-            LOG.debug("New document object for " + uri);
+//        if(LOG.isDebugEnabled())
+//            LOG.debug("New document object for " + uri);
         
         brokerPool = pool;
         this.xmldbUri = uri;
@@ -183,7 +184,10 @@ public class ExistDocument extends ExistResource {
                     serializer.serialize(document, w);
                     w.flush();
                     w.close();
-                    os.flush();
+                    
+                    // don;t flush
+                    if(! (os instanceof VirtualTempFile))
+                        os.flush();
 
                 } catch (SAXException e) {
                     LOG.error(e);
