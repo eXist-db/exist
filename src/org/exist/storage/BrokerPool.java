@@ -1594,7 +1594,7 @@ public class BrokerPool extends Observable implements Database {
             	notificationService.debug();
         } else {
             cacheManager.checkDistribution();
-            LOG.debug("Minor sync");
+//            LOG.debug("Minor sync");
         }
         //TODO : touch this.syncEvent and syncRequired ?
 	
