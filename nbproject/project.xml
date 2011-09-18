@@ -5,6 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>eXist-1.4</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
+            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.dir"/>
                 <root id="src.src.dir" name="Extension Modules"/>
@@ -13,7 +14,7 @@
                 <root id="src.src4.dir" name="Extension Index Lucene"/>
                 <root id="src.src5.dir" name="Extension Versioning"/>
                 <root id="eXist-1.33.dir" name="Extension Fluent"/>
-                <root id="src.src6.dir" name="Extension webdav"/>
+                <root id="src.src6.dir" name="Extension WebDAV"/>
                 <root id="eXist-1.32.dir" name="Samples"/>
             </source-roots>
             <test-roots>

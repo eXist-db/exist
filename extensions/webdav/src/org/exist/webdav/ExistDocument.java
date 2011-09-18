@@ -191,7 +191,7 @@ public class ExistDocument extends ExistResource {
 
                 } catch (SAXException e) {
                     LOG.error(e);
-                    throw new IOException("Error while serializing XML document: " + e.getMessage(), e);
+                    throw new IOException("Error while serializing XML document: " + e.getMessage());
                 }
 
             } else {
