@@ -43,15 +43,23 @@ import com.bradmcevoy.http.exceptions.NotAuthorizedException;
 import com.bradmcevoy.http.exceptions.PreConditionFailedException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
+
 import javax.xml.transform.TransformerException;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.util.VirtualTempFile;
 import org.exist.util.serializer.XMLWriter;
 import org.exist.webdav.ExistResource.Mode;
 import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
@@ -69,16 +77,17 @@ public class MiltonDocument extends MiltonResource
         DeletableResource, LockableResource, MoveableResource, CopyableResource {
 
     private ExistDocument existDocument;
+    
+    private VirtualTempFile vtf = null;;
 
     // Only for PROPFIND the estimate size for an XML document must be shown
-    private boolean returnContentLenghtAsNull=true;
+    private boolean isPropFind=false;
 
     /**
-     * Set to TRUE if for an XML document an estimated document must be returned. Otherwise
-     * for content length NULL is returned.
+     * Set to TRUE if getContentLength is used for PROPFIND.
      */
-    public void setReturnContentLenghtAsNull(boolean returnContentLenghtAsNull) {
-        this.returnContentLenghtAsNull = returnContentLenghtAsNull;
+    public void setIsPropFind(boolean isPropFind) {
+        this.isPropFind = isPropFind;
     }
 
     /**
@@ -106,7 +115,9 @@ public class MiltonDocument extends MiltonResource
 
         super();
 
-        LOG.debug("DOCUMENT:" + uri.toString());
+        if(LOG.isTraceEnabled())
+            LOG.trace("DOCUMENT:" + uri.toString());
+        
         resourceXmldbUri = uri;
         brokerPool = pool;
         this.host = host;
@@ -130,11 +141,29 @@ public class MiltonDocument extends MiltonResource
     public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
             throws IOException, NotAuthorizedException, BadRequestException {
         try {
-            existDocument.stream(out);
-
+            if(vtf==null){
+                LOG.debug("Serializing from database");
+                existDocument.stream(out);
+                
+            } else {
+                // Experimental. Does not work right, the virtual file
+                // Often does not contain the right amount of bytes.
+                
+                LOG.debug("Serializing from buffer");
+                InputStream is = vtf.getByteStream();
+                IOUtils.copy(is, out);
+                out.flush();
+                IOUtils.closeQuietly(is);
+                vtf.delete();
+                vtf=null;
+            }
+            
         } catch (PermissionDeniedException e) {
             LOG.debug(e.getMessage());
             throw new NotAuthorizedException(this);
+            
+        } finally {
+            IOUtils.closeQuietly(out);
         }
     }
 
@@ -150,12 +179,64 @@ public class MiltonDocument extends MiltonResource
 
     //@Override
     public Long getContentLength() {
-        // Only for PROPFIND the estimate size for an XML document must be shown
-        if(returnContentLenghtAsNull && existDocument.isXmlDocument()){
-            LOG.debug("Returning NULL for content length XML resource.");
-            return null;
+        
+        Long size=null;
+        
+        
+        if(existDocument.isXmlDocument()){
+            
+            if (isPropFind) {
+                
+                // For PROPFIND the actual size must be calculated
+                // by serializing the document.
+
+                LOG.debug("Serializing XML to /dev/null to determine size"
+                        + " (" + resourceXmldbUri + ")");
+
+                // Stream document to /dev/null and count bytes
+                CountingOutputStream counter = new CountingOutputStream(new NullOutputStream());
+                try {
+                    existDocument.stream(counter);
+
+                } catch (IOException ex) {
+                    LOG.error(ex);
+
+                } catch (PermissionDeniedException ex) {
+                    LOG.error(ex);
+                }
+
+                size = counter.getByteCount();
+                
+            } else {
+                
+                // Serialize to virtual file for re-use by sendContent() 
+
+                try {
+                    LOG.debug("Serializing XML to virtual file"
+                            + " (" + resourceXmldbUri + ")");
+                    
+                    vtf = new VirtualTempFile();
+                    existDocument.stream(vtf);
+                    vtf.close();
+
+                } catch (IOException ex) {
+                    LOG.error(ex);
+
+                } catch (PermissionDeniedException ex) {
+                    LOG.error(ex);
+                }
+                size = vtf.length();
+            }
+            
+            
+        } else {
+            // Actual size is known
+            size = 0L + existDocument.getContentLength();
         }
-        return 0L + existDocument.getContentLength();
+        
+        LOG.debug("Size=" + size + " (" + resourceXmldbUri + ")");
+        return size;
+        
     }
 
     /* ====================
@@ -170,8 +251,6 @@ public class MiltonDocument extends MiltonResource
         if (time != null) {
             createDate = new Date(time);
         }
-
-        LOG.debug("Create date=" + createDate);
 
         return createDate;
     }
@@ -196,7 +275,9 @@ public class MiltonDocument extends MiltonResource
 
         org.exist.dom.LockToken inputToken = convertToken(timeout, lockInfo);
 
-        LOG.debug("Lock: " + resourceXmldbUri);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Lock: " + resourceXmldbUri);
+        
         LockResult lr = null;
         try {
             org.exist.dom.LockToken existLT = existDocument.lock(inputToken);
@@ -225,7 +306,8 @@ public class MiltonDocument extends MiltonResource
     //@Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         
-        LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
 
         LockResult lr = null;
         try {
@@ -259,7 +341,9 @@ public class MiltonDocument extends MiltonResource
     //@Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
-        LOG.debug("Unlock: " + resourceXmldbUri);
+        if(LOG.isDebugEnabled())
+            LOG.debug("Unlock: " + resourceXmldbUri);
+        
         try {
             existDocument.unlock();
         } catch (PermissionDeniedException ex) {
@@ -278,7 +362,10 @@ public class MiltonDocument extends MiltonResource
 
     //@Override
     public LockToken getCurrentLock() {
-        LOG.debug("getLock: " + resourceXmldbUri);
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("getLock: " + resourceXmldbUri);
+        
         org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
 
         if (existLT == null) {
@@ -300,6 +387,10 @@ public class MiltonDocument extends MiltonResource
 
     //@Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("moveTo: " + resourceXmldbUri + " newName=" + newName);
+
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.MOVE);
@@ -316,6 +407,10 @@ public class MiltonDocument extends MiltonResource
 
     //@Override
     public void copyTo(CollectionResource rDest, String newName) {
+
+        if(LOG.isDebugEnabled())
+            LOG.debug("copyTo: " + resourceXmldbUri + " newName=" + newName);
+        
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.COPY);
