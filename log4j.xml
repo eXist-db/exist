@@ -182,7 +182,7 @@
     <!-- Milton WebDAV framework -->
     <category name="com.bradmcevoy" additivity="false">
         <priority value="info"/>
-        <appender-ref ref="console"/>
+        <appender-ref ref="exist.core"/>
     </category>
     
     <!-- Apache Axis: 'debug' produces a large amount of debugging output -->
