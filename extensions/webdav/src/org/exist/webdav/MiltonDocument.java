@@ -49,14 +49,13 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
+
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.security.PermissionDeniedException;
@@ -85,8 +84,7 @@ public class MiltonDocument extends MiltonResource
     private boolean isPropFind=false;
 
     /**
-     * Set to TRUE if for an XML document an estimated document must be returned. Otherwise
-     * for content length NULL is returned.
+     * Set to TRUE if getContentLength is used for PROPFIND.
      */
     public void setIsPropFind(boolean isPropFind) {
         this.isPropFind = isPropFind;
