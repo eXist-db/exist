@@ -61,8 +61,8 @@ public class ExistDocument extends ExistResource {
 
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
-//        if(LOG.isDebugEnabled())
-//            LOG.debug("New document object for " + uri);
+        if(LOG.isTraceEnabled())
+            LOG.trace("New document object for " + uri);
         
         brokerPool = pool;
         this.xmldbUri = uri;
@@ -248,7 +248,7 @@ public class ExistDocument extends ExistResource {
             // Open collection if possible, else abort
             collection = broker.openCollection(collName, Lock.WRITE_LOCK);
             if (collection == null) {
-                LOG.debug("Collection does not exist");              
+                LOG.debug("Collection does not exist");
                 transact.abort(txn);
                 return;
             }
