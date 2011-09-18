@@ -170,26 +170,23 @@
         <priority value="info"/>
         <appender-ref ref="console"/>
     </category>
-    
-    <!--category name="org.exist.validation" additivity="false">
-        <priority value="debug"/>
-        <appender-ref ref="exist.validation"/>
-    </category-->
-    
-    <!--category name="org.exist.http.webdav" additivity="false">
-        <priority value="debug"/>
-        <appender-ref ref="exist.webdav"/>
-    </category-->
-    
+            
     <category name="net.sf.ehcache" additivity="false">
         <priority value="info"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
     
+    <!-- Milton WebDAV framework -->
     <category name="com.bradmcevoy" additivity="false">
-        <priority value="off"/>
+        <priority value="warn"/>
         <appender-ref ref="exist.core"/>
     </category>
+
+    <category name="com.ettrema" additivity="false">
+        <priority value="warn"/>
+        <appender-ref ref="exist.core"/>
+    </category>
+
     
     <!--
         Axis and other apache.org libs produce a large amount of debugging output 
@@ -197,7 +194,6 @@
     -->
     <category name="org.apache" additivity="false">
         <priority value="info"/>
-        <!--appender-ref ref="console"/-->
         <appender-ref ref="exist.core"/>
     </category>
     
@@ -213,9 +209,6 @@
     <category name="de.betterform" additivity="false">
         <priority value="warn"/>
         <appender-ref ref="exist.betterform"/>
-        <!--
-        <appender-ref ref="console"/>
-        -->
     </category>
 
 
