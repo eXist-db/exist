@@ -79,7 +79,7 @@ public class ExistResourceFactory implements ResourceFactory {
         }
 
         // Construct path as eXist-db XmldbURI
-        XmldbURI uri = null;
+        XmldbURI xmldbUri = null;
         try {
             // Strip preceding path, all up to /db
             path = path.substring(path.indexOf("/db"));
@@ -89,15 +89,16 @@ public class ExistResourceFactory implements ResourceFactory {
                 path = path.substring(0, path.lastIndexOf("/"));
             }
 
-            LOG.debug("host='" + host + "' path='" + path + "'");
-          
+            if(LOG.isDebugEnabled())
+                LOG.debug("host='" + host + "' path='" + path + "'");
+
             // Create uri inside database
-            uri = XmldbURI.xmldbUriFor(path);
+            xmldbUri = XmldbURI.xmldbUriFor(path);
 
             // MacOsX finder specific files
-            String documentSeqment = uri.lastSegment().toString();
+            String documentSeqment = xmldbUri.lastSegment().toString();
             if(documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")){
-                LOG.debug("skipping MacOsX file '"+uri.lastSegment().toString()+"'");
+                LOG.debug("skipping MacOsX file '"+xmldbUri.lastSegment().toString()+"'");
             }
 
         } catch (URISyntaxException e) {
@@ -106,19 +107,25 @@ public class ExistResourceFactory implements ResourceFactory {
         }
 
         // Return appropriate resource
-        switch (getResourceType(brokerPool, uri)) {
+        switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT:
-                return new MiltonDocument(host, uri, brokerPool);
+                return new MiltonDocument(host, xmldbUri, brokerPool);
 
             case COLLECTION:
-                return new MiltonCollection(host, uri, brokerPool);
+                return new MiltonCollection(host, xmldbUri, brokerPool);
 
             case IGNORABLE:
-                LOG.debug("ignoring file");
+                if(LOG.isDebugEnabled())
+                    LOG.debug("ignoring file");
+                return null;
+
+            case NOT_EXISTING:
+                if(LOG.isDebugEnabled())
+                    LOG.debug("Resource does not exist: '" + xmldbUri + "'");
                 return null;
 
             default:
-                LOG.error("Unkown resource type for " + uri);
+                LOG.error("Unkown resource type for " + xmldbUri);
                 return null;
         }
     }
@@ -126,7 +133,7 @@ public class ExistResourceFactory implements ResourceFactory {
     /*
      * Returns the resource type indicated by the path: either COLLECTION, DOCUMENT or NOT_EXISTING.
      */
-    private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI uri) {
+    private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI xmldbUri) {
 
         DBBroker broker = null;
         Collection collection = null;
@@ -134,7 +141,8 @@ public class ExistResourceFactory implements ResourceFactory {
         ResourceType type = ResourceType.NOT_EXISTING;
 
         try {
-            LOG.debug("Path: " + uri.toString());
+            if(LOG.isDebugEnabled())
+                LOG.debug("Path: " + xmldbUri.toString());
             
             // Try to read as system user. Note that the actual user is not know
             // yet. In MiltonResource the actual authentication and authorization
@@ -143,7 +151,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
             
             // First check if resource is a collection
-            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
             if (collection != null) {
                 type = ResourceType.COLLECTION;
                 collection.release(Lock.READ_LOCK);
@@ -151,7 +159,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
             } else {
                 // If it is not a collection, check if it is a document
-                document = broker.getXMLResource(uri, Lock.READ_LOCK);
+                document = broker.getXMLResource(xmldbUri, Lock.READ_LOCK);
 
                 if (document != null) {
                     // Document is found
@@ -167,7 +175,7 @@ public class ExistResourceFactory implements ResourceFactory {
            
 
         } catch (Exception ex) {
-            LOG.error("Error determining nature of resource " + uri.toString(), ex);
+            LOG.error("Error determining nature of resource " + xmldbUri.toString(), ex);
             type = ResourceType.NOT_EXISTING;
 
         } finally {
@@ -186,8 +194,10 @@ public class ExistResourceFactory implements ResourceFactory {
             brokerPool.release(broker);
         }
 
-        LOG.debug("Resource type=" + type.toString());
+        if(LOG.isDebugEnabled())
+            LOG.debug("Resource type=" + type.toString());
+        
         return type;
     }
-
+    
 }
