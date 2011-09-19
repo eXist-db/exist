@@ -21,12 +21,15 @@ package org.exist.xquery.modules.exi;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.exist.dom.QName;
 import org.exist.util.serializer.EXISerializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -54,13 +57,24 @@ import com.siemens.ct.exi.exceptions.EXIException;
  */
 public class EncodeExiFunction extends BasicFunction {
 
-    public final static FunctionSignature signature = 
+    public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 				new QName("encode-from-xml", ExiModule.NAMESPACE_URI, ExiModule.PREFIX),
 				"A function which returns encoded EXI from an XML source.",
 				new SequenceType[] {
 					new FunctionParameterSequenceType("source-xml", Type.NODE, Cardinality.EXACTLY_ONE, "the XML source")},
-				new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary EXI result document"));
+				new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary EXI result document")
+		),
+		new FunctionSignature(
+				new QName("encode-from-xml", ExiModule.NAMESPACE_URI, ExiModule.PREFIX),
+				"A function which returns schema encoded EXI from an XML source.",
+				new SequenceType[] {
+					new FunctionParameterSequenceType("source-xml", Type.NODE, Cardinality.EXACTLY_ONE, "the XML source"),
+					new FunctionParameterSequenceType("schema-location", Type.ITEM, Cardinality.EXACTLY_ONE, "the XSD schema location")
+				},
+				new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the binary EXI result document")
+		)
+    };
 
     public EncodeExiFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -73,13 +87,30 @@ public class EncodeExiFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 		try {
-			Item inputNode = args[0].itemAt(0);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			EXISerializer exiSerializer = new EXISerializer(baos);
+			EXISerializer exiSerializer = null;
+			if(args.length > 1) {
+				if(!args[1].isEmpty()) {
+					Item xsdItem = args[1].itemAt(0);
+					InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context);
+					exiSerializer = new EXISerializer(baos, xsdInputStream);
+				}
+				else {
+					exiSerializer = new EXISerializer(baos);
+				}
+			}
+			else {
+				exiSerializer = new EXISerializer(baos);
+			}
+			Item inputNode = args[0].itemAt(0);
 			exiSerializer.startDocument();
 	        inputNode.toSAX(context.getBroker(), exiSerializer, new Properties());
 	        exiSerializer.endDocument();
 	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
+		}
+		catch(IOException ioex) {
+			// TODO - test!
+			throw new XPathException(this, ErrorCodes.FODC0002, ioex.getMessage());
 		}
 		catch(EXIException exie) {
 			throw new XPathException(this, new JavaErrorCode(exie.getCause()), exie.getMessage());
@@ -88,5 +119,5 @@ public class EncodeExiFunction extends BasicFunction {
 			throw new XPathException(this, new JavaErrorCode(saxe.getCause()), saxe.getMessage());
 		}
 	}
-
+	
 }
