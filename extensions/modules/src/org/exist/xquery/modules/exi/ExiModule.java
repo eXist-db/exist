@@ -39,10 +39,11 @@ public class ExiModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2011-06-09";
     public final static String RELEASED_IN_VERSION = "eXist-1.5";
     
-    // TODO add functions for schema encoding/decoding
     private final static FunctionDef[] functions = {
-		new FunctionDef(EncodeExiFunction.signature, EncodeExiFunction.class),
-		new FunctionDef(DecodeExiFunction.signature, DecodeExiFunction.class)
+		new FunctionDef(EncodeExiFunction.signatures[0], EncodeExiFunction.class),
+		new FunctionDef(EncodeExiFunction.signatures[1], EncodeExiFunction.class),
+		new FunctionDef(DecodeExiFunction.signatures[0], DecodeExiFunction.class),
+		new FunctionDef(DecodeExiFunction.signatures[1], DecodeExiFunction.class)
 	};
 	
 	public ExiModule(Map<String, List<? extends Object>> parameters) {
