@@ -19,6 +19,7 @@
  */
 package org.exist.util.serializer;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.exist.dom.QName;
@@ -31,8 +32,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.siemens.ct.exi.EXIFactory;
+import com.siemens.ct.exi.GrammarFactory;
 import com.siemens.ct.exi.api.sax.SAXEncoder;
 import com.siemens.ct.exi.exceptions.EXIException;
+import com.siemens.ct.exi.grammar.Grammar;
 import com.siemens.ct.exi.helpers.DefaultEXIFactory;
 
 public class EXISerializer implements ContentHandler, Receiver {
@@ -41,9 +44,17 @@ public class EXISerializer implements ContentHandler, Receiver {
 	
 	private SAXEncoder encoder;
 	
-	public EXISerializer(OutputStream outputStream) throws EXIException {
+	public EXISerializer(OutputStream exiOutputStream) throws EXIException {
 		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-		encoder = new SAXEncoder(exiFactory, outputStream);
+		encoder = new SAXEncoder(exiFactory, exiOutputStream);
+	}
+	
+	public EXISerializer(OutputStream exiOutputStream, InputStream xsdInputStream) throws EXIException {
+		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
+		GrammarFactory grammarFactory = GrammarFactory.newInstance();
+		Grammar g = grammarFactory.createGrammar(xsdInputStream);
+		exiFactory.setGrammar(g);
+		encoder = new SAXEncoder(exiFactory, exiOutputStream);
 	}
 	
 	public void startDocument() throws SAXException {
