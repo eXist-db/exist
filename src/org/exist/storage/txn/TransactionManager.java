@@ -31,8 +31,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.SystemTaskManager;
 import org.exist.storage.SystemTask;
+import org.exist.storage.SystemTaskManager;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.ReadOnlyException;
@@ -74,6 +74,8 @@ public class TransactionManager {
 
     private Lock lock = new ReentrantLock();
 
+    private BrokerPool pool;
+    
     /**
      * Manages all system tasks
      */
@@ -86,6 +88,7 @@ public class TransactionManager {
      * @throws EXistException
      */
     public TransactionManager(BrokerPool pool, File dataDir, boolean transactionsEnabled) throws EXistException {
+    	this.pool = pool;
         enabled = transactionsEnabled;
         if (enabled)
             journal = new Journal(pool, dataDir);
@@ -138,19 +141,20 @@ public class TransactionManager {
         if (!enabled)
             return null;
 
-        try {
-            lock.lock();
-            long txnId = nextTxnId++;
-            try {
-                journal.writeToLog(new TxnStart(txnId));
-            } catch (TransactionException e) {
-                LOG.warn("Failed to create transaction. Error writing to log file.", e);
-            }
-            ++activeTransactions;
-            return new Txn(txnId);
-        } finally {
-            lock.unlock();
-        }
+        return new RunWithLock<Txn>() {
+
+			public Txn execute() {
+				long txnId = nextTxnId++;
+	            try {
+	                journal.writeToLog(new TxnStart(txnId));
+	            } catch (TransactionException e) {
+	                LOG.warn("Failed to create transaction. Error writing to log file.", e);
+	            }
+	            ++activeTransactions;
+	            return new Txn(txnId);
+			}
+        	
+        }.run();
     }
     
     /**
@@ -159,44 +163,48 @@ public class TransactionManager {
      * @param txn
      * @throws TransactionException
      */
-    public void commit(Txn txn) throws TransactionException {
+    public void commit(final Txn txn) throws TransactionException {
         if (!enabled)
             return;
 
-        try {
-            lock.lock();
-            --activeTransactions;
-            if (enabled) {
-                journal.writeToLog(new TxnCommit(txn.getId()));
-                if (!groupCommit)
-                    journal.flushToLog(true);
-            }
-            txn.releaseAll();
-            processSystemTasks();
-        } finally {
-            lock.unlock();
-        }    
+        new RunWithLock<Object>() {
+        	public Object execute() {
+        		--activeTransactions;
+                if (enabled) {
+                    try {
+						journal.writeToLog(new TxnCommit(txn.getId()));
+					} catch (TransactionException e) {
+						LOG.error("transaction manager caught exception while committing", e);
+					}
+                    if (!groupCommit)
+                        journal.flushToLog(true);
+                }
+                txn.releaseAll();
+                processSystemTasks();
+                return null;
+        	}
+        }.run();
     }
 	
-    public void abort(Txn txn) {
+    public void abort(final Txn txn) {
         if (!enabled || txn == null)
             return;
 
-        try {
-            lock.lock();
-            --activeTransactions;
-            try {
-                journal.writeToLog(new TxnAbort(txn.getId()));
-            } catch (TransactionException e) {
-                LOG.warn("Failed to write abort record to journal: " + e.getMessage());
-            }
-            if (!groupCommit)
-                journal.flushToLog(true);
-            txn.releaseAll();
-            processSystemTasks();
-        } finally {
-            lock.unlock();
-        }
+        new RunWithLock<Object>() {
+        	public Object execute() {
+        		--activeTransactions;
+                try {
+                    journal.writeToLog(new TxnAbort(txn.getId()));
+                } catch (TransactionException e) {
+                    LOG.warn("Failed to write abort record to journal: " + e.getMessage());
+                }
+                if (!groupCommit)
+                    journal.flushToLog(true);
+                txn.releaseAll();
+                processSystemTasks();
+                return null;
+        	}
+        }.run();
     }
 
     public Lock getLock() {
@@ -242,22 +250,56 @@ public class TransactionManager {
         }
     }
 
-    public void triggerSystemTask(SystemTask task) {
-        try {
-            lock.lock();
-            taskManager.triggerSystemTask(task);
-        } finally {
-            lock.unlock();
-        }
+    public void triggerSystemTask(final SystemTask task) {
+    	new RunWithLock<Object>() {
+			public Object execute() {
+				taskManager.triggerSystemTask(task);
+				return null;
+			}
+    	}.run();
     }
 
     public void processSystemTasks() {
-        try {
-            lock.lock();
-            if (activeTransactions == 0)
-                taskManager.processTasks();
-        } finally {
-            lock.unlock();
-        }
+    	new RunWithLock<Object>() {
+    		public Object execute() {
+    			if (activeTransactions == 0)
+                    taskManager.processTasks();
+    			return null;
+    		}
+    	}.run();
+    }
+    
+    /**
+     * Run code block with a lock on the transaction manager.
+     * Make sure locks are acquired in the right order.
+     * 
+     * @author wolf
+     *
+     */
+    private abstract class RunWithLock<T> {
+    	
+    	public T run() {
+    		DBBroker broker = null;
+    		try {
+    			// we first need to get a broker for the current thread
+    			// before we acquire the transaction manager lock. Otherwise
+    			// a deadlock may occur.
+    			broker = pool.get(null);
+    			
+    			try {
+    				lock.lock();
+    				return execute();
+    			} finally {
+    				lock.unlock();
+    			}
+    		} catch (EXistException e) {
+				LOG.warn("Transaction manager failed to acquire broker for running system tasks");
+				return null;
+			} finally {
+    			pool.release(broker);
+    		}
+    	}
+    	
+    	public abstract T execute();
     }
 }
