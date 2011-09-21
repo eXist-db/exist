@@ -160,7 +160,7 @@ public class GetFragmentBetween extends BasicFunction {
         StoredNode docChildStoredNode = (StoredNode) children.item(i);
         int docChildStoredNodeType = docChildStoredNode.getNodeType();
         reader = dbBroker.getXMLStreamReader(docChildStoredNode, false);
-        while (reader.hasNext() && ! node2NodeId.equals(actualNodeId) && docChildStoredNodeType != Node.PROCESSING_INSTRUCTION_NODE) {
+        while (reader.hasNext() && ! node2NodeId.equals(actualNodeId) && docChildStoredNodeType != Node.PROCESSING_INSTRUCTION_NODE && docChildStoredNodeType != Node.COMMENT_NODE) {
           int status = reader.next();
           switch (status) {
             case XMLStreamReader.START_DOCUMENT:
