@@ -15,15 +15,12 @@
 				height:300px;
 			}
         </style>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -47,8 +44,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d36e180" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
-                     <div dojoType="dijit.Tooltip" connectId="d36e180">matches any Element that represents a XForms
+                  <td id="d42e180" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d42e180">matches any Element that represents a XForms
                         group
                         |
                         repeat
@@ -60,8 +57,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d36e198" onmouseover="showClass('xfSwitch');" onmouseout="hideClass('xfSwitch');">xfSwitch
-                     <div dojoType="dijit.Tooltip" connectId="d36e198">matches an Element that represents a XForms
+                  <td id="d42e198" onmouseover="showClass('xfSwitch');" onmouseout="hideClass('xfSwitch');">xfSwitch
+                     <div dojoType="dijit.Tooltip" connectId="d42e198">matches an Element that represents a XForms
                         switch
                         element
                         
@@ -69,8 +66,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d36e210" onmouseover="showClass('xfCase');" onmouseout="hideClass('xfCase');">xfCase
-                     <div dojoType="dijit.Tooltip" connectId="d36e210">matches an Element that represents a XForms
+                  <td id="d42e210" onmouseover="showClass('xfCase');" onmouseout="hideClass('xfCase');">xfCase
+                     <div dojoType="dijit.Tooltip" connectId="d42e210">matches an Element that represents a XForms
                         case
                         element
                         
@@ -78,8 +75,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d36e222" onmouseover="showClass('bfTabContainer');" onmouseout="hideClass('bfTabContainer');">bfTabContainer
-                     <div dojoType="dijit.Tooltip" connectId="d36e222">matches an Element that represents a XForms
+                  <td id="d42e222" onmouseover="showClass('bfTabContainer');" onmouseout="hideClass('bfTabContainer');">bfTabContainer
+                     <div dojoType="dijit.Tooltip" connectId="d42e222">matches an Element that represents a XForms
                         switch
                         element and is rendered as a Dojo TabContainer
                         
@@ -353,7 +350,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

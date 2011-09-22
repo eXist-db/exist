@@ -5,9 +5,9 @@
       
       <title>AVT Theme Switcher</title>
       <style type="text/css">
-            @import "/betterform/bfResources/scripts/dijit/themes/tundra/tundra.css";
-            @import "/betterform/bfResources/scripts/dijit/themes/soria/soria.css";
-            @import "/betterform/bfResources/scripts/dijit/themes/claro/claro.css";
+            @import "../../bfResources/scripts/dijit/themes/tundra/tundra.css";
+            @import "../../bfResources/scripts/dijit/themes/soria/soria.css";
+            @import "../../bfResources/scripts/dijit/themes/claro/claro.css";
 
             .tundra h1, .soria h1, .claro h1 {
                 font-size: 20pt;
@@ -26,15 +26,12 @@
 			.bfVerticalTableInfo{display:none;}
             .claro .xfInput .xfValue{height:1.6em;}
         </style>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="{theme} InlineAlert bf" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model id="model-1">
                
@@ -66,6 +63,13 @@
                <p>
                   AVTs can be used to dynamically style a page dependent on some instance data. The example below switches
                   between the main Dojo themes available.
+                  
+               </p>
+               
+               <p>
+                  AVTs in betterFORM are operating on the host document, this means that classes added in XSLt or JavaScript
+                  will be lost if the AVT changes during runtime (due to the host document does not know about CSS classes
+                  added later on)
                   
                </p>
                
@@ -185,7 +189,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

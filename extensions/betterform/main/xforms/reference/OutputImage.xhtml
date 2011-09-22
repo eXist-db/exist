@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Image output control</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -24,7 +21,7 @@
                      
                      <output1 constraint="true" readonly="false" required="false" relevant="true">
                         
-                        <value>../../images/bf_logo_482x195.png</value>
+                        <value>images/bf_logo_482x195.png</value>
                         
                      </output1>
                      
@@ -60,8 +57,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d21e133" onmouseover="showClass('xfOutput');" onmouseout="hideClass('xfOutput');">xfOutput
-                     <div dojoType="dijit.Tooltip" connectId="d21e133">matches an Element that represents a XForms
+                  <td id="d26e133" onmouseover="showClass('xfOutput');" onmouseout="hideClass('xfOutput');">xfOutput
+                     <div dojoType="dijit.Tooltip" connectId="d26e133">matches an Element that represents a XForms
                         output
                         element
                         
@@ -270,7 +267,7 @@
          <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:instance&gt;
     &lt;data&gt;
         &lt;output1 constraint="true" readonly="false" required="false" relevant="true"&gt;
-            &lt;value&gt;../../images/bf_logo_482x195.png&lt;/value&gt;
+            &lt;value&gt;images/bf_logo_482x195.png&lt;/value&gt;
         &lt;/output1&gt;
     &lt;/data&gt;
 &lt;/xf:instance&gt;
@@ -314,7 +311,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>
