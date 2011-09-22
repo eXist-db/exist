@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Model-to-Model Submission</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="betterform/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model id="m-model-1">
                
@@ -51,6 +48,12 @@
                      
                   </xf:action>
                   
+                  <xf:action ev:event="xforms-submit-error">
+                     
+                     <xf:message>Submitted data from model-2 to model-1 failed</xf:message>
+                     
+                  </xf:action>
+                  
                </xf:submission>
                
                
@@ -59,6 +62,12 @@
                   <xf:action ev:event="xforms-submit-done">
                      
                      <xf:message level="ephemeral">Submitted data from model-1 to model-2</xf:message>
+                     
+                  </xf:action>
+                  
+                  <xf:action ev:event="xforms-submit-error">
+                     
+                     <xf:message>Submitted data from model-1 to model-2 failed.</xf:message>
                      
                   </xf:action>
                   
@@ -141,11 +150,17 @@
     &lt;xf:action ev:event="xforms-submit-done"&gt;
         &lt;xf:message level="ephemeral"&gt;Submitted data from model-2 to model-1&lt;/xf:message&gt;
     &lt;/xf:action&gt;
+    &lt;xf:action ev:event="xforms-submit-error"&gt;
+        &lt;xf:message&gt;Submitted data from model-2 to model-1 failed&lt;/xf:message&gt;
+    &lt;/xf:action&gt;
 &lt;/xf:submission&gt;
 
 &lt;xf:submission id="s-model-1-to-model-2" validate="false" replace="instance" method="get" resource="model:m-model-1#instance('i-instance-1')/data"&gt;
     &lt;xf:action ev:event="xforms-submit-done"&gt;
         &lt;xf:message level="ephemeral"&gt;Submitted data from model-1 to model-2&lt;/xf:message&gt;
+    &lt;/xf:action&gt;
+    &lt;xf:action ev:event="xforms-submit-error"&gt;
+        &lt;xf:message&gt;Submitted data from model-1 to model-2 failed.&lt;/xf:message&gt;
     &lt;/xf:action&gt;
 &lt;/xf:submission&gt;
 &lt;/xf:model&gt;
@@ -182,7 +197,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

@@ -4,18 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>select1 control rendered as combobox control</title>
-      <script type="text/javascript">
-            dojo.require("dijit.form.Button");
-        </script>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model id="model-1">
                
@@ -25,7 +20,7 @@
                      
                      <select1 constraint="true" readonly="false" required="true" relevant="true">
                         
-                        <value>AX DZ</value>
+                        <value>AX</value>
                         
                      </select1>
                      
@@ -111,8 +106,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d29e179" onmouseover="showClass('xfSelect1');" onmouseout="hideClass('xfSelect1');">xfSelect1
-                     <div dojoType="dijit.Tooltip" connectId="d29e179">matches an Element that represents a XForms
+                  <td id="d34e176" onmouseover="showClass('xfSelect1');" onmouseout="hideClass('xfSelect1');">xfSelect1
+                     <div dojoType="dijit.Tooltip" connectId="d34e176">matches an Element that represents a XForms
                         select1
                         element
                         
@@ -120,8 +115,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d29e191" onmouseover="showClass('xfSelectorItem');" onmouseout="hideClass('xfSelectorItem');">xfSelectorItem
-                     <div dojoType="dijit.Tooltip" connectId="d29e191">matches an item of a XForms 
+                  <td id="d34e188" onmouseover="showClass('xfSelectorItem');" onmouseout="hideClass('xfSelectorItem');">xfSelectorItem
+                     <div dojoType="dijit.Tooltip" connectId="d34e188">matches an item of a XForms 
                         select1
                         element
                         
@@ -242,7 +237,7 @@
             <div class="description">
                
                <p>
-                  This form control allows the user to make multiple selections from a set of choices.
+                  This form control allows the user to make a selection from a set of choices.
                   
                   
                </p>
@@ -359,7 +354,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

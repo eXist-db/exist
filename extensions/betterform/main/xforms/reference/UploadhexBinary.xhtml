@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Text input control</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -58,13 +55,13 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d47e124" onmouseover="showClass('xfUpload');" onmouseout="hideClass('xfUpload');">xfUpload
-                     <div dojoType="dijit.Tooltip" connectId="d47e124">matches an Element that represents a XForms input element</div>
+                  <td id="d53e124" onmouseover="showClass('xfUpload');" onmouseout="hideClass('xfUpload');">xfUpload
+                     <div dojoType="dijit.Tooltip" connectId="d53e124">matches an Element that represents a XForms input element</div>
                   </td>
                </tr>
                <tr>
-                  <td id="d47e133" onmouseover="showClass('xsdHexBinary');" onmouseout="hideClass('xsdHexBinary');">xsdHexBinary
-                     <div dojoType="dijit.Tooltip" connectId="d47e133">matches an Element that is bound to a node with datatype
+                  <td id="d53e133" onmouseover="showClass('xsdHexBinary');" onmouseout="hideClass('xsdHexBinary');">xsdHexBinary
+                     <div dojoType="dijit.Tooltip" connectId="d53e133">matches an Element that is bound to a node with datatype
                         hexBinary
                         
                      </div>
@@ -296,7 +293,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>
