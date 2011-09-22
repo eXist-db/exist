@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>group with appearance 'full'</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -21,7 +18,7 @@
                   
                   <data xmlns="">
                      
-                     <repeat>
+                     <repeat readonly="false" relevant="true">
                         
                         <items>
                            
@@ -72,17 +69,23 @@
                   
                </xf:instance>
                
-               
-               <xf:bind nodeset="repeat/items">
+               <xf:bind nodeset="repeat">
                   
-                  <xf:bind nodeset="item[1]" type="xf:string"></xf:bind>
+                  <xf:bind nodeset="@readonly" type="boolean"></xf:bind>
                   
-                  <xf:bind nodeset="item[2]" type="xf:date"></xf:bind>
+                  <xf:bind nodeset="@relevant" type="boolean"></xf:bind>
                   
-                  <xf:bind nodeset="item[3]" type="xf:boolean"></xf:bind>
+                  <xf:bind nodeset="items" readonly="boolean-from-string(../@readonly)" relevant="boolean-from-string(../@relevant)">
+                     
+                     <xf:bind nodeset="item[1]" type="xf:string"></xf:bind>
+                     
+                     <xf:bind nodeset="item[2]" type="xf:date"></xf:bind>
+                     
+                     <xf:bind nodeset="item[3]" type="xf:boolean"></xf:bind>
+                     
+                  </xf:bind>
                   
                </xf:bind>
-               
                
             </xf:model>
          </div>
@@ -96,8 +99,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d26e140" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
-                     <div dojoType="dijit.Tooltip" connectId="d26e140">matches any Element that represents a XForms
+                  <td id="d31e167" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d31e167">matches any Element that represents a XForms
                         group
                         |
                         repeat
@@ -109,8 +112,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d26e158" onmouseover="showClass('xfFullRepeat');" onmouseout="hideClass('xfFullRepeat');">xfFullRepeat
-                     <div dojoType="dijit.Tooltip" connectId="d26e158">matches an Element that represents a XForms
+                  <td id="d31e185" onmouseover="showClass('xfFullRepeat');" onmouseout="hideClass('xfFullRepeat');">xfFullRepeat
+                     <div dojoType="dijit.Tooltip" connectId="d31e185">matches an Element that represents a XForms
                         repeat
                         element
                         
@@ -118,15 +121,15 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d26e170" onmouseover="showClass('xfRepeatItem');" onmouseout="hideClass('xfRepeatItem');">xfRepeatItem
-                     <div dojoType="dijit.Tooltip" connectId="d26e170">matches all repeat items
+                  <td id="d31e197" onmouseover="showClass('xfRepeatItem');" onmouseout="hideClass('xfRepeatItem');">xfRepeatItem
+                     <div dojoType="dijit.Tooltip" connectId="d31e197">matches all repeat items
                         
                      </div>
                   </td>
                </tr>
                <tr>
-                  <td id="d26e182" onmouseover="showClass('xfRepeatIndex');" onmouseout="hideClass('xfRepeatIndex');">xfRepeatIndex
-                     <div dojoType="dijit.Tooltip" connectId="d26e182">matches the currently selected repeat item
+                  <td id="d31e209" onmouseover="showClass('xfRepeatIndex');" onmouseout="hideClass('xfRepeatIndex');">xfRepeatIndex
+                     <div dojoType="dijit.Tooltip" connectId="d31e209">matches the currently selected repeat item
                         
                      </div>
                   </td>
@@ -154,6 +157,86 @@
                      
                      <div dojoType="dijit.Tooltip" connectId="xfvalue">
                         matches the widget part of an XForms control
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadonly" onmouseover="showClass('xfReadOnly');" onmouseout="hideClass('xfReadOnly');">
+                     xfReadOnly
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadonly">
+                        matches a xforms control that is currently readonly
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfreadwrite" onmouseover="showClass('xfReadWrite');" onmouseout="hideClass('xfReadWrite');">
+                     xfReadWrite
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfreadwrite">
+                        matches a xforms control that is currently writable
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfrequired" onmouseover="showClass('xfRequired');" onmouseout="hideClass('xfRequired');">
+                     xfRequired
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfrequired">
+                        matches a xforms control that is currently required
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfoptional" onmouseover="showClass('xfOptional');" onmouseout="hideClass('xfOptional');">
+                     xfOptional
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfoptional">
+                        matches a xforms control that is currently optional
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfenabled" onmouseover="showClass('xfEnabled');" onmouseout="hideClass('xfEnabled');">
+                     xfEnabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfenabled">
+                        matches a xforms control that is currently relevant (enabled)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfdisabled" onmouseover="showClass('xfDisabled');" onmouseout="hideClass('xfDisabled');">
+                     xfDisabled
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfdisabled">
+                        matches a xforms control that is currently disabled (can't be visualized here as the control gets hidden)
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfvalid" onmouseover="showClass('xfValid');" onmouseout="hideClass('xfValid');">
+                     xfValid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfvalid">
+                        matches a xforms control that is currently valid
+                        
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td id="xfinvalid" onmouseover="showClass('xfInvalid');" onmouseout="hideClass('xfInvalid');">
+                     xfInvalid
+                     
+                     <div dojoType="dijit.Tooltip" connectId="xfinvalid">
+                        matches a xforms control that is currently invalid
                         
                      </div>
                   </td>
@@ -218,6 +301,27 @@
                
             </xf:repeat>
          </div>
+         <div class="MIPS">
+            
+            <xf:group appearance="full">
+               
+               <xf:label></xf:label>
+               
+               <xf:input id="repeat2-readonly" ref="repeat/@readonly" incremental="true">
+                  
+                  <xf:label>readonly</xf:label>
+                  
+               </xf:input>
+               
+               <xf:input id="repeat2-relevant" ref="repeat/@relevant" incremental="true">
+                  
+                  <xf:label>relevant</xf:label>
+                  
+               </xf:input>
+               
+            </xf:group>
+            
+         </div>
          <h2>XForms Markup</h2>
          <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:repeat id="repeat1" nodeset="repeat/items" appearance="full"&gt;
     &lt;xf:input ref="item[1]"&gt;
@@ -243,7 +347,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

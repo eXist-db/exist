@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Trigger control with nested image output</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -41,11 +38,11 @@
                   
                   <xf:bind nodeset="value" constraint="boolean-from-string(../@constraint)" readonly="boolean-from-string(../@readonly)" required="boolean-from-string(../@required)" relevant="boolean-from-string(../@relevant)" type="string"></xf:bind>
                   
-                  <xf:bind nodeset="@constraint" type="boolean"></xf:bind>
+                  <xf:bind nodeset="@constraint" type="boolean" readonly="true()"></xf:bind>
                   
                   <xf:bind nodeset="@readonly" type="boolean"></xf:bind>
                   
-                  <xf:bind nodeset="@required" type="boolean"></xf:bind>
+                  <xf:bind nodeset="@required" type="boolean" readonly="true()"></xf:bind>
                   
                   <xf:bind nodeset="@relevant" type="boolean"></xf:bind>
                   
@@ -64,8 +61,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d44e128" onmouseover="showClass('xfTrigger');" onmouseout="hideClass('xfTrigger');">xfTrigger
-                     <div dojoType="dijit.Tooltip" connectId="d44e128">matches an Element that represents a XForms input element</div>
+                  <td id="d50e128" onmouseover="showClass('xfTrigger');" onmouseout="hideClass('xfTrigger');">xfTrigger
+                     <div dojoType="dijit.Tooltip" connectId="d50e128">matches an Element that represents a XForms input element</div>
                   </td>
                </tr>
                <tr>
@@ -296,7 +293,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

@@ -4,18 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>select control allowing users to type in a value</title>
-      <script type="text/javascript">
-            dojo.require("dijit.Tooltip");
-        </script>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model id="model-1">
                
@@ -111,8 +106,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d34e182" onmouseover="showClass('xfMinimalSelect');" onmouseout="hideClass('xfMinimalSelect');">xfMinimalSelect
-                     <div dojoType="dijit.Tooltip" connectId="d34e182">matches an Element that represents a XForms
+                  <td id="d40e179" onmouseover="showClass('xfMinimalSelect');" onmouseout="hideClass('xfMinimalSelect');">xfMinimalSelect
+                     <div dojoType="dijit.Tooltip" connectId="d40e179">matches an Element that represents a XForms
                         select
                         element
                         
@@ -120,8 +115,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d34e194" onmouseover="showClass('xfSelectorItem');" onmouseout="hideClass('xfSelectorItem');">xfSelectorItem
-                     <div dojoType="dijit.Tooltip" connectId="d34e194">matches all list entries of the Element that represents a XForms
+                  <td id="d40e191" onmouseover="showClass('xfSelectorItem');" onmouseout="hideClass('xfSelectorItem');">xfSelectorItem
+                     <div dojoType="dijit.Tooltip" connectId="d40e191">matches all list entries of the Element that represents a XForms
                         select
                         element
                         
@@ -350,22 +345,7 @@
         &lt;xf:value ref="code"&gt;&lt;/xf:value&gt;
     &lt;/xf:itemset&gt;
 &lt;/xf:select&gt;
-</code></pre></div>
-         <h2>XForms Instance</h2>
-         <div class="Other" title="XForms Instance">
-            <button id="printInstance" dojotype="dijit.form.Button" onclick="fluxProcessor.getInstanceDocument('model-1','instance-1');" type="button">
-               <label>print instance on console</label>
-               </button>
-            
-            
-            <div dojotype="dijit.Tooltip" connectid="printInstance" position="above">
-               This button prints the current instance data to the console. Works with Firebug in FF or Chrome and Safari
-               with developer tools activated.
-               
-            </div>
-            
-            
-         </div><script type="text/javascript">
+</code></pre></div><script type="text/javascript">
                     function showClass(cssClass){
                         dojo.query('.sample .'+ cssClass).forEach(function(item){
                             dojo.addClass(item,'showClass');
@@ -376,7 +356,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

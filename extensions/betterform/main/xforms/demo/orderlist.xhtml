@@ -16,25 +16,20 @@
     <meta name="description" content="XForms demo of a simple order list"/>
 
 
-    <link rel="stylesheet" type="text/css" href="bfResources/styles/dashboard.css" />
+    <!--<link rel="stylesheet" type="text/css" href="bfResources/styles/dashboard.css" />-->
     <link rel="stylesheet" type="text/css" href="styles/demo.css"/>
+    <style type="text/css">
+        .soria #xforms {
+            overflow: hidden;
+        }
+    </style>
 
-    <script type="text/javascript">
-        dojo.require("dijit.Dialog");
-    </script>
 </head>
 <body class="soria" style="margin:30px;">
 <div id="xforms">
 <div style="display:none">
     <xf:model>
-        <xf:instance id="orderlist" xmlns="">
-            <order>
-                <item amount="1" price="0.50" taxValue="0" sum="0">eraser</item>
-                <item amount="1" price="2.50" taxValue="0" sum="">ballpoint_pen</item>
-                <item amount="1" price="50.00" taxValue="0" sum="0">fountain_pen</item>
-                <item amount="1" price="0" taxValue="0" sum="0"/>
-            </order>
-        </xf:instance>
+        <xf:instance id="orderlist" xmlns="" src="orderlist.xml"/>
 
         <xf:bind id="items" nodeset="item[position()!=last()]">
             <xf:bind id="article" nodeset="." required="true()"/>

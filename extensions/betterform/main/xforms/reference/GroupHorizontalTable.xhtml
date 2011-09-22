@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Group with 'bf:horizontalTable' appearance</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -68,8 +65,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d9e148" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
-                     <div dojoType="dijit.Tooltip" connectId="d9e148">matches any Element that represents a XForms
+                  <td id="d11e148" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d11e148">matches any Element that represents a XForms
                         group
                         |
                         repeat
@@ -81,8 +78,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d9e166" onmouseover="showClass('bfHorizontalTable');" onmouseout="hideClass('bfHorizontalTable');">bfHorizontalTable
-                     <div dojoType="dijit.Tooltip" connectId="d9e166">matches an Element that represents a XForms
+                  <td id="d11e166" onmouseover="showClass('bfHorizontalTable');" onmouseout="hideClass('bfHorizontalTable');">bfHorizontalTable
+                     <div dojoType="dijit.Tooltip" connectId="d11e166">matches an Element that represents a XForms
                         group
                         element with
                         'bf:horizontalTable'
@@ -92,25 +89,25 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d9e181" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
-                     <div dojoType="dijit.Tooltip" connectId="d9e181">matches the  label of a group</div>
+                  <td id="d11e181" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
+                     <div dojoType="dijit.Tooltip" connectId="d11e181">matches the  label of a group</div>
                   </td>
                </tr>
                <tr>
-                  <td id="d9e195" onmouseover="showClass('bfHorizontalTableLabel');" onmouseout="hideClass('bfHorizontalTableLabel');">bfHorizontalTableLabel
-                     <div dojoType="dijit.Tooltip" connectId="d9e195">matches the  label of a control used as table header</div>
+                  <td id="d11e195" onmouseover="showClass('bfHorizontalTableLabel');" onmouseout="hideClass('bfHorizontalTableLabel');">bfHorizontalTableLabel
+                     <div dojoType="dijit.Tooltip" connectId="d11e195">matches the  label of a control used as table header</div>
                   </td>
                </tr>
                <tr>
-                  <td id="d9e207" onmouseover="showClass('bfTableCol1');" onmouseout="hideClass('bfTableCol1');">bfTableCol1
-                     <div dojoType="dijit.Tooltip" connectId="d9e207">matches the first column of the table. Subsequent columns have the same class but with their respective column number (counted
+                  <td id="d11e207" onmouseover="showClass('bfTableCol1');" onmouseout="hideClass('bfTableCol1');">bfTableCol1
+                     <div dojoType="dijit.Tooltip" connectId="d11e207">matches the first column of the table. Subsequent columns have the same class but with their respective column number (counted
                         from left to right)
                      </div>
                   </td>
                </tr>
                <tr>
-                  <td id="d9e217" onmouseover="showClass('bfTableLabel');" onmouseout="hideClass('bfTableLabel');">bfTableLabel
-                     <div dojoType="dijit.Tooltip" connectId="d9e217">matches a label of a nested group</div>
+                  <td id="d11e217" onmouseover="showClass('bfTableLabel');" onmouseout="hideClass('bfTableLabel');">bfTableLabel
+                     <div dojoType="dijit.Tooltip" connectId="d11e217">matches a label of a nested group</div>
                   </td>
                </tr>
                <tr>
@@ -348,7 +345,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>
