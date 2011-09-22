@@ -189,7 +189,7 @@
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
-    <target name="compile" depends="prepare" description="Compiles the source code">
+    <target name="compile" description="Compiles the source code">
 
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
@@ -233,7 +233,7 @@
     <!-- =================================================================== -->
     <!-- Compiles the aspects                                                -->
     <!-- =================================================================== -->
-    <target name="compile-aspectj" depends="prepare,compile,compile-tomcat-realm" description="Compiles the aspects">
+    <target name="compile-aspectj" depends="compile,compile-tomcat-realm" description="Compiles the aspects">
 
         <echo
             message="Compiling aspects with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
@@ -424,7 +424,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -438,7 +438,7 @@
     <!-- ================================================================== -->
     <!-- Create javadoc                                                     -->
     <!-- ================================================================== -->
-    <target depends="prepare" name="javadocs" description="Create javadoc">
+    <target name="javadocs" description="Create javadoc">
         <mkdir dir="${build.src}"/>
 
         <!--delete dir="webapp/api"/>
@@ -468,6 +468,7 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
+                <path refid="classpath.aspectj"/>                
                 <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
             </classpath>
             <link href="http://xmldb.exist-db.org/javadoc/"/>
