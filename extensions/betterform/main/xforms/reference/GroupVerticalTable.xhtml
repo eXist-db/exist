@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>group rendered as vertical table</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -68,8 +65,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d11e145" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
-                     <div dojoType="dijit.Tooltip" connectId="d11e145">matches any Element that represents a XForms
+                  <td id="d13e148" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d13e148">matches any Element that represents a XForms
                         group
                         |
                         repeat
@@ -81,8 +78,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d11e163" onmouseover="showClass('bfVerticalTable');" onmouseout="hideClass('bfVerticalTable');">bfVerticalTable
-                     <div dojoType="dijit.Tooltip" connectId="d11e163">matches an Element that represents a XForms
+                  <td id="d13e166" onmouseover="showClass('bfVerticalTable');" onmouseout="hideClass('bfVerticalTable');">bfVerticalTable
+                     <div dojoType="dijit.Tooltip" connectId="d13e166">matches an Element that represents a XForms
                         group
                         element with
                         'bf:verticalTable'
@@ -92,8 +89,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d11e178" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
-                     <div dojoType="dijit.Tooltip" connectId="d11e178">matches the  label of a group</div>
+                  <td id="d13e181" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
+                     <div dojoType="dijit.Tooltip" connectId="d13e181">matches the  label of a group</div>
                   </td>
                </tr>
                <tr>
@@ -253,6 +250,8 @@
                   
                   <xf:label>A-label</xf:label>
                   
+                  <xf:hint>a hint to A-label</xf:hint>
+                  
                </xf:input>
                
                <xf:input ref="b">
@@ -313,6 +312,7 @@
     &lt;xf:label&gt;Group with 'verticalTable' appearance&lt;/xf:label&gt;
     &lt;xf:input ref="a"&gt;
         &lt;xf:label&gt;A-label&lt;/xf:label&gt;
+        &lt;xf:hint&gt;a hint to A-label&lt;/xf:hint&gt;
     &lt;/xf:input&gt;
     &lt;xf:input ref="b"&gt;
         &lt;xf:label&gt;Bb-label&lt;/xf:label&gt;
@@ -335,7 +335,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

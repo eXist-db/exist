@@ -1,0 +1,38 @@
+<data>
+    <address id="1">
+        <title>Herr</title>
+        <firstNames>Max</firstNames>
+        <name>Mustermann</name>
+        <street>Goethestr. 47</street>
+        <city>Hamburg</city>
+        <zip>223456</zip>
+        <country>Germany</country>
+    </address>
+    <address id="2">
+        <title>Frau</title>
+        <firstNames>Maxi</firstNames>
+        <name>Musterfrau</name>
+        <street>Schillerstr. 42</street>
+        <city>Berlin</city>
+        <zip>12234</zip>
+        <country>Germany</country>
+    </address>
+    <address id="3">
+        <title>Prof. Dr.</title>
+        <firstNames>Mäxle</firstNames>
+        <name>Mustermann</name>
+        <street>Passeig de Gràcia 12</street>
+        <city>Barcelona</city>
+        <zip>08008</zip>
+        <country>Spain</country>
+    </address>
+    <address id="4">
+        <title>Dipl. Inf</title>
+        <firstNames>Max</firstNames>
+        <name>Power</name>
+        <street>Hegelweg. 23</street>
+        <city>Dresden</city>
+        <zip>01326</zip>
+        <country>Germany</country>
+    </address>
+</data>

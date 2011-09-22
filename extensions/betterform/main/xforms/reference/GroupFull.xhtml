@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Full group</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -68,8 +65,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d8e142" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
-                     <div dojoType="dijit.Tooltip" connectId="d8e142">matches any Element that represents a XForms
+                  <td id="d10e142" onmouseover="showClass('xfContainer');" onmouseout="hideClass('xfContainer');">xfContainer
+                     <div dojoType="dijit.Tooltip" connectId="d10e142">matches any Element that represents a XForms
                         group
                         |
                         repeat
@@ -81,8 +78,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d8e160" onmouseover="showClass('xfFullGroup');" onmouseout="hideClass('xfFullGroup');">xfFullGroup
-                     <div dojoType="dijit.Tooltip" connectId="d8e160">matches an Element that represents a XForms
+                  <td id="d10e160" onmouseover="showClass('xfFullGroup');" onmouseout="hideClass('xfFullGroup');">xfFullGroup
+                     <div dojoType="dijit.Tooltip" connectId="d10e160">matches an Element that represents a XForms
                         group
                         element with
                         'full'
@@ -92,8 +89,8 @@
                   </td>
                </tr>
                <tr>
-                  <td id="d8e175" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
-                     <div dojoType="dijit.Tooltip" connectId="d8e175">matches the  label of a group</div>
+                  <td id="d10e175" onmouseover="showClass('xfGroupLabel');" onmouseout="hideClass('xfGroupLabel');">xfGroupLabel
+                     <div dojoType="dijit.Tooltip" connectId="d10e175">matches the  label of a group</div>
                   </td>
                </tr>
                <tr>
@@ -319,7 +316,7 @@
          <h2>Limitations</h2>
          <div class="Limitations">
             
-            <p>There is no way to show the invalidity of a compact <span class="keyword">group</span> currently as the <span class="keyword">xfInvalid</span> class sits
+            <p>There is no way to show the invalidity of a <span class="keyword">group</span> currently as the <span class="keyword">xfInvalid</span> class sits
                on the <span class="keyword">group</span> element itself.
             </p>
             
@@ -334,7 +331,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

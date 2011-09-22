@@ -4,16 +4,13 @@
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       
       <title>Checkbox input control</title>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -59,13 +56,13 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d16e117" onmouseover="showClass('xfInput');" onmouseout="hideClass('xfInput');">xfInput
-                     <div dojoType="dijit.Tooltip" connectId="d16e117">matches an Element that represents a XForms input element</div>
+                  <td id="d18e117" onmouseover="showClass('xfInput');" onmouseout="hideClass('xfInput');">xfInput
+                     <div dojoType="dijit.Tooltip" connectId="d18e117">matches an Element that represents a XForms input element</div>
                   </td>
                </tr>
                <tr>
-                  <td id="d16e126" onmouseover="showClass('xsdBoolean');" onmouseout="hideClass('xsdBoolean');">xsdBoolean
-                     <div dojoType="dijit.Tooltip" connectId="d16e126">matches an Element that is bound to a node with datatype
+                  <td id="d18e126" onmouseover="showClass('xsdBoolean');" onmouseout="hideClass('xsdBoolean');">xsdBoolean
+                     <div dojoType="dijit.Tooltip" connectId="d18e126">matches an Element that is bound to a node with datatype
                         boolean
                         
                      </div>
@@ -287,7 +284,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>

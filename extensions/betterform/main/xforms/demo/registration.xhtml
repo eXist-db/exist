@@ -22,17 +22,7 @@
     <div id="registration" class="InlineRoundBordersAlert">
     <div style="display:none" id="xf1">
         <xf:model id="m-registration">
-            <xf:instance>
-                <data xmlns="">
-                    <firstname/>
-                    <lastname/>
-                    <alias/>
-                    <email/>
-                    <pass1/>
-                    <pass2/>
-                    <agreement>true</agreement>
-                </data>
-            </xf:instance>
+            <xf:instance src="registration.xml" xmlns=""/>
 
             <xf:bind nodeset="alias" constraint="string-length(.) &gt; 3" required="true()"/>
             <xf:bind nodeset="email" type="email" constraint="string-length(.) &gt; 3" required="true()"/>

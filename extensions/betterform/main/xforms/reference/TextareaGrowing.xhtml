@@ -10,15 +10,12 @@
 				display:inline-block;
 			}
         </style>
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"<link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="${app.name}/bfResources/scripts/dojox/highlight/resources/highlight.css" />
-      <link xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" rel="stylesheet" type="text/css" href="reference.css" /><script xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" type="text/javascript">
-                dojo.subscribe("/xf/ready", function(){
-                    fluxProcessor.skipshutdown=true;
-                });
-            </script></head>
+      <link rel="stylesheet" type="text/css" href="../../bfResources/scripts/dojox/highlight/resources/highlight.css" />
+      <link rel="stylesheet" type="text/css" href="reference.css" />
+   </head>
    
    <body class="soria InlineAlert" style="margin:30px">
-      <div xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="xforms" class="InlineAlert">
+      <div id="xforms" class="InlineAlert">
          <div style="display:none">
             <xf:model>
                
@@ -63,8 +60,8 @@
                   </th>
                </tr>
                <tr>
-                  <td id="d37e123" onmouseover="showClass('xfTextarea');" onmouseout="hideClass('xfTextarea');">xfTextarea
-                     <div dojoType="dijit.Tooltip" connectId="d37e123">matches an Element that represents a XForms input element</div>
+                  <td id="d43e123" onmouseover="showClass('xfTextarea');" onmouseout="hideClass('xfTextarea');">xfTextarea
+                     <div dojoType="dijit.Tooltip" connectId="d43e123">matches an Element that represents a XForms input element</div>
                   </td>
                </tr>
                <tr>
@@ -218,7 +215,7 @@
          </div>
          <h2>Example</h2>
          <div class="Section sample">
-            <xf:textarea id="textarea1" ref="textarea1/value" mediatype="dojo" incremental="true">
+            <xf:textarea id="textarea1" ref="textarea1/value" appearance="growing" incremental="true">
                
                <xf:label>a growing textarea</xf:label>
                
@@ -264,7 +261,7 @@
             
          </div>
          <h2>XForms Markup</h2>
-         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:textarea id="textarea1" ref="textarea1/value" mediatype="dojo" incremental="true"&gt;
+         <div class="Section markup"><pre><code class="xml" dojoType="dojox.highlight.Code">&lt;xf:textarea id="textarea1" ref="textarea1/value" appearance="growing" incremental="true"&gt;
     &lt;xf:label&gt;a growing textarea&lt;/xf:label&gt;
     &lt;xf:hint&gt;a Hint for this control&lt;/xf:hint&gt;
     &lt;xf:help&gt;help for textarea1&lt;/xf:help&gt;
@@ -281,7 +278,10 @@
                             dojo.removeClass(item,'showClass');
                         });
                     }                    
-                </script></div>
-   </body>
+                </script></div><script type="text/javascript">
+                dojo.subscribe("/xf/ready", function(){
+                    fluxProcessor.skipshutdown=true;
+                });
+            </script></body>
    
 </html>
