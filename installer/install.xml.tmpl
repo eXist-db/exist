@@ -209,9 +209,26 @@
             <executable targetfile="$INSTALL_PATH/bin/functions.d/jmx-settings.sh" stage="never"
                 os="unix"/>
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never"
-                os="unix"/>
+	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-32" stage="never" os="unix"/>
+	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ia-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never" os="unix"/>
         </pack>
 
         <pack name="sources" required="no">
