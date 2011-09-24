@@ -1,0 +1,130 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2011 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+package org.exist.util;
+
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.log4j.Logger;
+
+/**
+ *  Helper class for accepting self-signed SSL certificates.
+ * 
+ * @author Dannes Wessels
+ */
+public class SSLHelper {
+
+    private final static Logger LOG = Logger.getLogger(SSLHelper.class);
+    private TrustManager[] nonvalidatingTrustManager = null;
+    private HostnameVerifier dummyHostnameVerifier = null;
+
+    /**
+     * Initializing constructor.
+     */
+    public SSLHelper() {
+
+        LOG.debug("Initialize");
+
+        // Create trust manager that does not validate certificate chains
+        nonvalidatingTrustManager = new TrustManager[]{
+            new X509TrustManager() {
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    // Always trust
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    // Alway trust
+                }
+            }
+        };
+
+        // Create dummy HostnameVerifier
+        dummyHostnameVerifier = new HostnameVerifier() {
+
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+    }
+
+    /**
+     *  Initialize HttpsURLConnection with a non validating SSL trust manager and a
+     * dummy hostname verifier.
+     * 
+     * @param sslAllowSelfsigned    Set to TRUE to allow selfsigned certificates
+     * @param sslVerifyHostname     Set to FALSE for not verifying hostnames.
+     * @return 
+     */
+    public boolean initialize(boolean sslAllowSelfsigned, boolean sslVerifyHostname) {
+
+        SSLContext sc = null;
+        try {
+            sc = SSLContext.getInstance("SSL");
+        } catch (NoSuchAlgorithmException ex) {
+            LOG.error("Unable to initialize SSL.", ex);
+            return false;
+        }
+
+
+        // Set accept of selfsigned certificates
+        if (sslAllowSelfsigned) {
+            try {
+                // Install the all-trusting trust manager
+                LOG.debug("Installing SSL trust manager");
+                sc.init(null, nonvalidatingTrustManager, new java.security.SecureRandom());
+
+            } catch (KeyManagementException ex) {
+                LOG.error("Unable to initialize keychain validation.", ex);
+                return false;
+            }
+        }
+
+        // 
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+        // Set dummy hostname verifier
+        if (!sslVerifyHostname) {
+            LOG.debug("Registering hostname verifier");
+            HttpsURLConnection.setDefaultHostnameVerifier(dummyHostnameVerifier);
+        }
+
+        return true;
+
+    }
+}

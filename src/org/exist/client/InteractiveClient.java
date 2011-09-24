@@ -66,15 +66,14 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
@@ -83,26 +82,25 @@ import org.apache.log4j.Logger;
 import org.exist.SystemProperties;
 import org.exist.dom.XMLUtil;
 import org.exist.security.ACLPermission;
+import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
-import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.CollectionScanner;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DirectoryScanner;
+import org.exist.util.GZIPInputSource;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
 import org.exist.util.ProgressBar;
 import org.exist.util.ProgressIndicator;
-import org.exist.util.GZIPInputSource;
 import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
-
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -149,6 +147,7 @@ public class InteractiveClient {
     public static final String URI="uri";
     public static final String CONFIGURATION="configuration";
     public static final String DRIVER="driver";
+    public static final String SSL="ssl";
     
     // values
     protected static String EDIT_CMD = "xemacs $file";
@@ -295,9 +294,15 @@ public class InteractiveClient {
     protected void connect() throws Exception {
         if (startGUI && frame != null)
             frame.setStatus("connecting to " + properties.getProperty("uri"));
+        
+        // Create database
         Class<?> cl = Class.forName(properties.getProperty(DRIVER));
         Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
+        
+        // Configure database
+        database.setProperty("create-database", "true");       
+        database.setProperty("ssl-enable", properties.getProperty(SSL));       
+        
         // secure empty configuration
         String configuration=properties.getProperty("configuration");
         if (configuration != null && !"".equals(configuration)) database.setProperty("configuration", configuration);
