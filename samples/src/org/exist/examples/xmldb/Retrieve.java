@@ -39,7 +39,14 @@ public class Retrieve {
 		// initialize database drivers
 		Class<?> cl = Class.forName(driver);
 		Database database = (Database) cl.newInstance();
+        
+        // Set to TRUE to connectect over HTTPS-uri 
+        // like 'xmldb:exist://localhost:8443/exist/xmlrpc' (port changed 8080->8443)
+        database.setProperty("ssl-enable", "false");
+        
 		DatabaseManager.registerDatabase(database);
+        
+        
 
 		// get the collection
 		Collection col = DatabaseManager.getCollection(URI + collection);

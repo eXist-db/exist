@@ -27,6 +27,7 @@ import java.net.URL;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.exist.util.SSLHelper;
 
 /**
  *  Retrieve a document from the database using XMLRPC.
@@ -49,6 +50,13 @@ public class Retrieve {
         if ( args.length < 1 ) {
             usage();
         }
+        
+        // Initialize HTTPS connection to accept selfsigned certificates
+        // and the Hostname is not validated 
+        SSLHelper sh = new SSLHelper();
+        sh.initialize();
+        
+        
         XmlRpcClient client = new XmlRpcClient();
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL(uri));
