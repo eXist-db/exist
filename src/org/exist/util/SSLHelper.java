@@ -84,12 +84,12 @@ public class SSLHelper {
     }
 
     /**
-     *  Initialize HttpsURLConnection with a non validating SSL trust manager and a
-     * dummy hostname verifier.
+     *  Initialize HttpsURLConnection with (optionally) a non validating SSL 
+     * trust manager and (optionally) a dummy hostname verifier.
      * 
      * @param sslAllowSelfsigned    Set to TRUE to allow selfsigned certificates
      * @param sslVerifyHostname     Set to FALSE for not verifying hostnames.
-     * @return 
+     * @return TRUE if initialization was OK, else FALSE
      */
     public boolean initialize(boolean sslAllowSelfsigned, boolean sslVerifyHostname) {
 
@@ -126,5 +126,16 @@ public class SSLHelper {
 
         return true;
 
+    }
+
+    /**
+     *  Initialize HttpsURLConnection with  a non validating SSL 
+     * trust manager and a dummy hostname verifier. Note that this makes
+     * the SSL connection less secure!
+     * 
+     * @return TRUE if initialization was OK, else FALSE
+     */
+    public boolean initialize() {
+        return initialize(true, false);
     }
 }
