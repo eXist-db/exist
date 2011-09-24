@@ -38,6 +38,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -74,7 +75,7 @@ public class LoginPanel extends JPanel {
     public static final String URI_EMBEDDED = XmldbURI.EMBEDDED_SERVER_URI.toString();
     
     /** Default uri for remote connections */
-    public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc"; //$NON-NLS-1$
+    public static final String URI_REMOTE = "xmldb:exist://localhost:8443/exist/xmlrpc"; //$NON-NLS-1$
     
     /** Name of Preference node containing favourites */
     public static final String FAVOURITES_NODE = Messages.getString("LoginPanel.1"); //$NON-NLS-1$
@@ -87,6 +88,7 @@ public class LoginPanel extends JPanel {
     JTextField username;
     JPasswordField password;
     JTextField cur_url;
+    JCheckBox enableSSL;
     JTextField configuration;
     JButton selectConf;
     
@@ -195,12 +197,14 @@ public class LoginPanel extends JPanel {
                     case TYPE_EMBEDDED:
                         cur_url.setText(URI_EMBEDDED);
                         cur_url.setEnabled(false);
+                        enableSSL.setEnabled(false);
                         configuration.setEnabled(true);
                         selectConf.setEnabled(true);
                         break;
                     case TYPE_REMOTE:
                         cur_url.setText(!uri.equals(URI_EMBEDDED) ? uri : URI_REMOTE);
                         cur_url.setEnabled(true);
+                        enableSSL.setEnabled(true);
                         configuration.setEnabled(false);
                         selectConf.setEnabled(false);
                         break;
@@ -278,8 +282,48 @@ public class LoginPanel extends JPanel {
         add(cur_url);
         
         gridy++;
+        
+        // DW: add SSL , enable SSL plus text (+ change 8443)
+        label = new JLabel(Messages.getString("LoginPanel.47")); //$NON-NLS-1$
+        c.gridx = 0;
+        c.gridy = gridy;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(label, c);
+        add(label);
+        
+        enableSSL = new JCheckBox(Messages.getString("LoginPanel.48")); 
+        enableSSL.setSelected(true);
+        enableSSL.setToolTipText(Messages.getString("LoginPanel.49"));
+        enableSSL.setEnabled(!uri.equals(URI_EMBEDDED));
+        enableSSL.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                String URL=cur_url.getText();
+                if(enableSSL.isSelected()){
+                    URL=URL.replace(":8080", ":8443");
+                } else {
+                    URL=URL.replace(":8443", ":8080");
+                }
+                cur_url.setText(URL);
+            }
+        });
+        
+        c.gridx = 1;
+        c.gridy = gridy;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(enableSSL, c);
+        add(enableSSL);
+        
+        gridy++;
         gridy++;
         
+        
+        
+        
+        // Title
         label = new JLabel(Messages.getString("LoginPanel.13")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
@@ -346,6 +390,7 @@ public class LoginPanel extends JPanel {
                     configuration.setText(f.getConfiguration());
                     type.setSelectedIndex(URI_EMBEDDED.equals(f.getUrl()) ? TYPE_EMBEDDED : TYPE_REMOTE);
                     cur_url.setText(f.getUrl());
+                     enableSSL.setSelected(Boolean.valueOf(f.getEnableSSL()));
                 }
             }
         });
@@ -374,6 +419,7 @@ public class LoginPanel extends JPanel {
                 configuration.setText(f.getConfiguration());
                 type.setSelectedIndex(URI_EMBEDDED.equals(f.getUrl()) ? TYPE_EMBEDDED : TYPE_REMOTE);
                 cur_url.setText(f.getUrl());
+                enableSSL.setSelected(Boolean.valueOf(f.getEnableSSL()));
             }
         });
         c.gridx = 2;
@@ -388,6 +434,7 @@ public class LoginPanel extends JPanel {
         
         gridy++;
         
+        // Save
         btnAddFavourite = new JButton(Messages.getString("LoginPanel.17")); //$NON-NLS-1$
         btnAddFavourite.setToolTipText(Messages.getString("LoginPanel.18")); //$NON-NLS-1$
         btnAddFavourite.setEnabled(false);
@@ -410,6 +457,7 @@ public class LoginPanel extends JPanel {
                         , new String(password.getPassword())
                         , cur_url.getText()
                         , configuration.getText() 
+                        , (""+enableSSL.isSelected()).toUpperCase()
                 );
                 favouritesModel.addElement(f);
                 storeFavourites(favouritesModel);
@@ -549,6 +597,7 @@ public class LoginPanel extends JPanel {
         this.properties.setProperty(InteractiveClient.URI , cur_url.getText());
         this.properties.setProperty(InteractiveClient.USER , username.getText());
         this.properties.setProperty(InteractiveClient.CONFIGURATION , configuration.getText());
+        this.properties.setProperty(InteractiveClient.SSL , ""+enableSSL.isSelected());
         return this.properties;
     }
     
@@ -597,6 +646,7 @@ public class LoginPanel extends JPanel {
                   , node.get(Favourite.PASSWORD, "") //$NON-NLS-1$
                   , node.get(Favourite.URL, "") //$NON-NLS-1$
                   , node.get(Favourite.CONFIGURATION, "") //$NON-NLS-1$
+                  , node.get(Favourite.SSL, "FALSE") // old connection no https
             );
             
             favourites[i]=favourite;
@@ -635,6 +685,7 @@ public class LoginPanel extends JPanel {
                 favouriteNode.put(Favourite.PASSWORD, favs[i].getPassword());
                 favouriteNode.put(Favourite.URL, favs[i].getUrl());
                 favouriteNode.put(Favourite.CONFIGURATION, favs[i].getConfiguration());
+                favouriteNode.put(Favourite.SSL, favs[i].getEnableSSL().toUpperCase());
             }
         }
     }
@@ -705,6 +756,7 @@ public class LoginPanel extends JPanel {
         public static final String PASSWORD=Messages.getString("LoginPanel.44"); //$NON-NLS-1$
         public static final String URL=Messages.getString("LoginPanel.45"); //$NON-NLS-1$
         public static final String CONFIGURATION=Messages.getString("LoginPanel.46"); //$NON-NLS-1$
+        public static final String SSL=Messages.getString("LoginPanel.47");
         
         private String name;
         private String username;
@@ -712,6 +764,8 @@ public class LoginPanel extends JPanel {
         private String url;
         /** path to an alternate configuration file for emebeded mode */
         private String configuration;
+        private String enableSSL;
+
         
         /**
          * Creates a new connection favourite from the given parameters.
@@ -721,12 +775,13 @@ public class LoginPanel extends JPanel {
          * @param password the password
          * @param url the url
          */
-        public Favourite(String name, String username, String password, String url, String configuration) {
+        public Favourite(String name, String username, String password, String url, String configuration, String enableSSL) {
             this.name = name;
             this.username = username;
             this.password = password;
             this.url = url;
             this.configuration = configuration;
+            this.enableSSL = enableSSL;
         }
         
         /**
@@ -811,6 +866,16 @@ public class LoginPanel extends JPanel {
         public String toString() {
             return name;
         }
+        
+        /**
+         *  Returns whether to use SSL or not
+         * 
+         * @return TRUE is SSL should be enabled.
+         */
+        public String getEnableSSL() {
+            return enableSSL;
+        }
+
     }
     
 }

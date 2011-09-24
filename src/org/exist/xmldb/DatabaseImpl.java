@@ -24,6 +24,7 @@ package org.exist.xmldb;
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
@@ -31,6 +32,8 @@ import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.SSLHelper;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ErrorCodes;
@@ -82,6 +85,10 @@ public class DatabaseImpl implements Database {
   private HashMap<String, XmlRpcClient> rpcClients = new HashMap<String, XmlRpcClient>();
   protected ShutdownListener shutdown = null;
   protected int mode = UNKNOWN_CONNECTION;
+    
+  private Boolean ssl_enable=false;
+  private Boolean ssl_allow_self_signed=true;
+  private Boolean ssl_verify_hostname=false;
 
   public DatabaseImpl() {
     	String initdb = System.getProperty( "exist.initdb" );
@@ -220,9 +227,18 @@ public class DatabaseImpl implements Database {
         if(password == null)
             password = "";
     try {
-      URL url = new URL("http", xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
-      XmlRpcClient rpcClient = getRpcClient(user, password, url);
-      return readCollection(xmldbURI.getRawCollectionPath(), rpcClient);
+            String protocol = ssl_enable ? "https" : "http";
+
+            SSLHelper sh = new SSLHelper();
+            if(ssl_enable){
+                sh.initialize(ssl_allow_self_signed, ssl_verify_hostname);
+            }
+
+            URL url = new URL(protocol, xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
+
+            XmlRpcClient rpcClient = getRpcClient(user, password, url);
+            return readCollection(xmldbURI.getRawCollectionPath(), rpcClient);
+
     } catch (MalformedURLException e) {
             //Should never happen
       throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
@@ -321,29 +337,66 @@ public class DatabaseImpl implements Database {
     return new String[] { (currentInstanceName != null) ? currentInstanceName : "exist" };
   }
 
-  public String getProperty(String property) throws XMLDBException {
-        if (property.equals("create-database"))
+    public String getProperty(String property) throws XMLDBException {
+        
+        if (property.equals("create-database")) {
+            //TODO : rename ?
             return Boolean.valueOf(autoCreate).toString();
-        //TODO : rename ?
-    if (property.equals("database-id"))
+        }
+        
+        if (property.equals("database-id")) 
+        {
             //TODO : consider multivalued property
-      return currentInstanceName;
-        if (property.equals("configuration"))
-        	return configuration;
-    return null;
-  }
+            return currentInstanceName;
+        }
 
-  public void setProperty(String property, String value) throws XMLDBException {
-        if (property.equals("create-database"))
+        if (property.equals("configuration")) {
+            return configuration;
+        }
+
+        if (property.equals("ssl-enable")) {
+            return "" + ssl_enable;
+        }
+        
+        if (property.equals("ssl-allow-self-signed")) {
+            return "" + ssl_allow_self_signed;
+        }
+        
+        if (property.equals("ssl-verify-hostname")) {
+            return "" + ssl_allow_self_signed;
+        }
+        
+        return null;
+    }
+
+    public void setProperty(String property, String value) throws XMLDBException {
+
+        if (property.equals("create-database")) {
             autoCreate = value.equals("true");
+        }
+        
         //TODO : rename ?
-    if (property.equals("database-id"))
-		    //TODO : consider multivalued property
-      currentInstanceName = value;
-		if (property.equals("configuration"))
-			configuration = value;
-  }
+        if (property.equals("database-id")) 
+        {
+            //TODO : consider multivalued property
+            currentInstanceName = value;
+        }
 
+        if (property.equals("configuration")) {
+            configuration = value;
+        }
+
+        if (property.equals("ssl-enable")) {
+            ssl_enable = Boolean.valueOf(value);
+        }
+
+        if (property.equals("ssl-allow-self-signed")) {
+            ssl_allow_self_signed = Boolean.valueOf(value);
+        }
+
+        if (property.equals("ssl-verify-hostname")) {
+            ssl_verify_hostname = Boolean.valueOf(value);
+        }
+
+    }
 }
-
-
