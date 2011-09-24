@@ -147,13 +147,13 @@ public class InteractiveClient {
     public static final String URI="uri";
     public static final String CONFIGURATION="configuration";
     public static final String DRIVER="driver";
-    public static final String SSL="ssl";
+    public static final String ENABLE_SSL="ssl";
     
     // values
     protected static String EDIT_CMD = "xemacs $file";
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
-    protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String URI_DEFAULT = "xmldb:exist://localhost:8443/exist/xmlrpc";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
@@ -168,6 +168,7 @@ public class InteractiveClient {
         defaultProps.setProperty("colors", "false");
         defaultProps.setProperty("permissions", "false");
         defaultProps.setProperty("expand-xincludes", "true");
+        defaultProps.setProperty(ENABLE_SSL, "true");
     }
     
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
@@ -301,7 +302,7 @@ public class InteractiveClient {
         
         // Configure database
         database.setProperty("create-database", "true");       
-        database.setProperty("ssl-enable", properties.getProperty(SSL));       
+        database.setProperty("ssl-enable", properties.getProperty(ENABLE_SSL));       
         
         // secure empty configuration
         String configuration=properties.getProperty("configuration");
