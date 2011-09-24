@@ -33,7 +33,7 @@ import java.io.RandomAccessFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;;
 
 /**
  * 

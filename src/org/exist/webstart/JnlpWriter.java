@@ -82,7 +82,8 @@ public class JnlpWriter {
 
 
         // Find URL to connect to with client
-        String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:").replaceAll("-", "%2D") + "/xmlrpc";
+        String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:")
+                .replaceFirst("https:", "xmldb:exist:").replaceAll("-", "%2D") + "/xmlrpc";
 
 //        response.setDateHeader("Last-Modified", mainJar.lastModified());
         response.setContentType("application/x-java-jnlp-file");
