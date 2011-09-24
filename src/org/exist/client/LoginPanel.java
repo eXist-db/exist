@@ -294,7 +294,8 @@ public class LoginPanel extends JPanel {
         add(label);
         
         enableSSL = new JCheckBox(Messages.getString("LoginPanel.48")); 
-        enableSSL.setSelected(true);
+        // only enable if prefened SSL port is present
+        enableSSL.setSelected( uri.contains(":8443") ); 
         enableSSL.setToolTipText(Messages.getString("LoginPanel.49"));
         enableSSL.setEnabled(!uri.equals(URI_EMBEDDED));
         enableSSL.addActionListener(new ActionListener() {
@@ -597,7 +598,7 @@ public class LoginPanel extends JPanel {
         this.properties.setProperty(InteractiveClient.URI , cur_url.getText());
         this.properties.setProperty(InteractiveClient.USER , username.getText());
         this.properties.setProperty(InteractiveClient.CONFIGURATION , configuration.getText());
-        this.properties.setProperty(InteractiveClient.SSL , ""+enableSSL.isSelected());
+        this.properties.setProperty(InteractiveClient.ENABLE_SSL , ""+enableSSL.isSelected());
         return this.properties;
     }
     
