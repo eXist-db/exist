@@ -31,6 +31,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.transform.TransformerException;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.Properties;
 
 public abstract class AbstractAction implements Action {
@@ -69,6 +70,10 @@ public abstract class AbstractAction implements Action {
         return null;
     }
 
+    public Map<String, String> getNamespaces() {
+    	return null;
+    }
+    
     public static boolean getBooleanValue(Element config, String name, boolean defaultValue) {
         if (config.hasAttribute(name)) {
             String val = config.getAttribute(name);
