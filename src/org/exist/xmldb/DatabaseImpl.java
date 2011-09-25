@@ -224,14 +224,15 @@ public class DatabaseImpl implements Database {
       user = SecurityManager.GUEST_USER;
       password = SecurityManager.GUEST_USER;
     }
-        if(password == null)
-            password = "";
+    
+    if(password == null)
+        password = "";
+        
     try {
             String protocol = ssl_enable ? "https" : "http";
 
-            SSLHelper sh = new SSLHelper();
             if(ssl_enable){
-                sh.initialize(ssl_allow_self_signed, ssl_verify_hostname);
+                SSLHelper.initialize(ssl_allow_self_signed, ssl_verify_hostname);
             }
 
             URL url = new URL(protocol, xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
@@ -242,6 +243,7 @@ public class DatabaseImpl implements Database {
     } catch (MalformedURLException e) {
             //Should never happen
       throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
+      
     } catch (XMLDBException e) {
             return null; }
     }
