@@ -301,11 +301,18 @@ public class LoginPanel extends JPanel {
         enableSSL.addActionListener(new ActionListener() {
              public void actionPerformed(ActionEvent e) {
                 String URL=cur_url.getText();
+                
+                // Replace default ports if available
                 if(enableSSL.isSelected()){
                     URL=URL.replace(":8080", ":8443");
                 } else {
                     URL=URL.replace(":8443", ":8080");
                 }
+                
+                // Force URLs to start with "xmldb:exist:"
+                URL=URL.replace("http:", "xmldb:exist:");
+                URL=URL.replace("https:", "xmldb:exist:");
+                
                 cur_url.setText(URL);
             }
         });
