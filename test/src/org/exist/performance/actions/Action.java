@@ -22,6 +22,8 @@
 
 package org.exist.performance.actions;
 
+import java.util.Map;
+
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
 import org.exist.EXistException;
@@ -41,4 +43,6 @@ public interface Action {
     Action getParent();
 
     String getLastResult();
+    
+    Map<String, String> getNamespaces();
 }

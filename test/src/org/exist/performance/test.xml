@@ -11,68 +11,6 @@
         <action name="generate" class="org.exist.performance.actions.DataGenerator"/>
         <action name="xquery" class="org.exist.performance.actions.XQuery"/>
     </configuration>
-    <group name="simple">
-        <setup connection="con">
-            <create-collection parent="/db" name="test"/>
-            <create-collection parent="/db/test" name="shakespeare"/>
-            <store-files dir="samples/shakespeare" includes="*.xml" collection="/db/test/shakespeare"/>
-            <create-collection parent="/db/system/config" name="db"/>
-            <store collection="/db/system/config/db" name="collection.xconf">
-                <collection xmlns="http://exist-db.org/collection-config/1.0">
-                    <index>
-                        <fulltext default="all" attributes="false">
-                        </fulltext>
-                        
-                        <create path="//book/@id" type="xs:string"/>
-                        <create path="//book/@n" type="xs:integer"/>
-                        <create path="//section/@id" type="xs:string"/>
-                    </index>
-                </collection>
-            </store>
-            <generate count="1000" todir="test/benchmark/temp" prefix="book">
-                <book xmlns="" id="{$filename}" n="{$count}">
-                    <chapter>
-                        <title>{pt:random-text(7)}</title>
-                        
-                        {
-                        for $section in 1 to 8 return
-                        <section id="sect{$section}">
-                            <title>{pt:random-text(7)}</title>
-                            {
-                            for $para in 1 to 10 return
-                            <para>{pt:random-text(40)}</para>
-                            }
-                        </section>
-                        }
-                    </chapter>
-                </book>
-            </generate>
-        </setup>
-        <thread name="thread1" connection="con">
-            <store-files dir="test/benchmark/temp" includes="**/*.xml" collection="/db/test"/>
-            <sequence repeat="20" description="query resources">
-                <xquery collection="/db" query="//book[@id = 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@id &lt; 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@id &gt; 'book100.xml']"/>
-                <xquery collection="/db" query="//book[@n = 100]"/>
-                <xquery collection="/db" query="//book[@n &lt; 100]"/>
-                <xquery collection="/db" query="//book[@n &gt; 100]"/>
-                <xquery collection="/db" query="//chapter[title &amp;= 'k*']"/>
-                <xquery collection="/db" query="//chapter[.//para &amp;= 'is']"/>
-                <xquery collection="/db">
-                    for $chapter in //chapter[.//para &amp;= 'is'] order by $chapter/title
-                    return $chapter/title
-                </xquery>
-            </sequence>
-            <xquery collection="/db/test">
-                for $doc in xmldb:get-child-resources("/db/test")
-                return xmldb:remove("/db/test", $doc)
-            </xquery>
-        </thread>
-        <!--tear-down connection="con">
-            <remove-collection parent="/db" collection="test" description="remove /db/test"/>
-        </tear-down-->
-    </group>
     <group name="ft-tests">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
@@ -82,14 +20,6 @@
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
                     <index>
                         <fulltext default="none" attributes="false">
-                            <create qname="p"/>
-                            <create qname="l"/>
-                            <create qname="head"/>
-                            <create qname="cell"/>
-                            <include path="//p"/>
-                            <include path="//l"/>
-                            <include path="//head"/>
-                            <include path="//cell"/>
                         </fulltext>
 						<lucene>
 							<text qname="p"/>
@@ -105,79 +35,7 @@
             <create-collection parent="/db" name="jgoethe"/>
             <store-files dir="test/benchmark/data/jgoethe" includes="*.xml" collection="/db/jgoethe"
                 description="storing Goethe data" overwrite="no"/>
-            <sequence repeat="10">
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe']"/>
-                <xquery collection="/db/jgoethe"><![CDATA[
-                    let $t := "liebe"
-                    return
-                            //((#exist:optimize#) { p[. &= $t] }) |
-                            //((#exist:optimize#) { l[. &= $t] }) |
-                            //((#exist:optimize#) { head[. &= $t] }) |
-                            //((#exist:optimize#) { cell[. &= $t] })
-                ]]></xquery>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlichkeit']"/>
-                <xquery collection="/db/jgoethe"><![CDATA[
-                    let $t := "liebe sinnlichkeit"
-                    return
-                            //((#exist:optimize#) { p[. &= $t] }) |
-                            //((#exist:optimize#) { l[. &= $t] }) |
-                            //((#exist:optimize#) { head[. &= $t] }) |
-                            //((#exist:optimize#) { cell[. &= $t] })
-                ]]></xquery>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'sinnlich*']"/>
-                <xquery collection="/db/jgoethe"><![CDATA[
-                    let $t := "sinnlich*"
-                    return
-                            //((#exist:optimize#) { p[. &= $t] }) |
-                            //((#exist:optimize#) { l[. &= $t] }) |
-                            //((#exist:optimize#) { head[. &= $t] }) |
-                            //((#exist:optimize#) { cell[. &= $t] })
-                ]]></xquery>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlich*']"/>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'schmerz* herz']"/>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'himmel hölle']"/>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. |= 'liebe sinnlich*']"/>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. |= 'himmel hölle']"/>
-                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[match-all(., 'himme?l.*')]"/>
-                
-                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe'] })"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe sinnlichkeit']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe sinnlichkeit'] })"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe sinnlich*']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe sinnlich*'] })"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'schmerz* herz']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'schmerz* herz'] })"/>
-                
-                <xquery collection="/db/jgoethe" query="/TEI.2//div3[p &amp;= 'schmerz* herz']/head"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { div3[p &amp;= 'schmerz* herz'] })/head"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//div3[p &amp;= 'liebe sinnlich*']/head"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { div3[p &amp;= 'liebe sinnlich*'] })/head"/>
-                
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']"/>
-                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']"/>
-                
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'berlichingen'][p &amp;= 'volck?']"/>
-                <xquery collection="/db/jgoethe"><![CDATA[
-                    //((#exist:optimize#) { div3[head &= 'berlichingen'] })/((#exist:optimize#) { .[p &= 'volck?'] })
-                ]]></xquery>
-                
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
-                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'tod*']"/>
-                
-                <xquery collection="/db/jgoethe" query="//div3[p &amp;= 'liebe']"/>
-                <xquery collection="/db/jgoethe" query="//((#exist:optimize#) { div3[p &amp;= 'liebe'] })"/>
-                <xquery collection="/db/jgoethe" query="//div3[p &amp;= 'liebe sinnlich*']"/>
-                <xquery collection="/db/jgoethe" query="//((#exist:optimize#) { div3[p &amp;= 'liebe sinnlich*'] })"/>
-            </sequence>
-            <sequence repeat="10">
+            <sequence repeat="5">
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[ft:query(., 'liebe')]"/>
                 <xquery collection="/db/jgoethe"><![CDATA[
                     let $t := "liebe"
@@ -240,7 +98,91 @@
             <!--remove-collection parent="/db" collection="jgoethe" description="remove /db/jgoethe"/-->
         </tear-down>
     </group>
-    <group name="large-documents">
+    <group name="bibliographic-tests">
+        <setup connection="con">
+            <create-collection parent="/db/system/config" name="db"/>
+            <create-collection parent="/db/system/config/db" name="mods"/>
+            <store collection="/db/system/config/db/mods" name="collection.xconf"
+                overwrite="yes">
+                <collection xmlns="http://exist-db.org/collection-config/1.0"
+                    xmlns:mods="http://www.loc.gov/mods/v3">
+                    <index>
+                        <fulltext default="none" attributes="false">
+                        </fulltext>
+                        <lucene>
+                            <text qname="mods:mods"/>
+                            
+                            <!--top level elements-->
+                            <text qname="mods:titleInfo"/>
+                            <!--<text qname="mods:language"/>-->
+                            <text qname="mods:note"/>
+                            <!--<text qname="mods:location"/>-->
+                            <text qname="mods:name"/>
+                            <!--<text qname="mods:physicalDescription"/>-->
+                            <text qname="mods:subject"/>
+                            <!--<text qname="mods:accessCondition"/>-->
+                            <!--<text qname="mods:typeOfResource"/>-->
+                            <text qname="mods:abstract"/>
+                            <!--<text qname="mods:classification"/>-->
+                            <!--<text qname="mods:part"/>-->
+                            <!--<text qname="mods:genre"/>-->
+                            <!--<text qname="mods:tableOfContents"/>-->
+                            <text qname="mods:relatedItem"/>
+                            <!--<text qname="mods:extension"/>-->
+                            <!--<text qname="mods:originInfo"/>-->
+                            <!--<text qname="mods:targetAudience"/>-->
+                            <text qname="mods:identifier"/>
+                            <!--<text qname="mods:recordInfo"/>-->
+                            
+                            <!--deeper elements accessed by search module-->
+                            <text qname="mods:dateCreated"/>
+                            <text qname="mods:dateIssued"/>
+                            <text qname="mods:dateCaptured"/>
+                            <text qname="mods:copyrightDate"/>
+                        </lucene>
+                        <create qname="@ID" type="xs:string"/>
+                        <create qname="@type" type="xs:string"/>
+                        <create qname="@authority" type="xs:string"/>
+                        <create qname="@lang" type="xs:string"/>
+                    </index>
+                </collection>
+            </store>
+        </setup>
+        <thread name="thread2" connection="con">
+            <create-collection parent="/db" name="mods"/>
+            <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/mods"
+                description="storing DBLP data" overwrite="no"/>
+            <sequence repeat="5">
+                <map prefix="mods" uri="http://www.loc.gov/mods/v3"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, 'xml')]"/>
+                <xquery collection="/db/mods" query="//*[ft:query(mods:titleInfo, 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:*[ft:query(mods:titleInfo, 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:titleInfo[ft:query(., 'xml')]/parent::mods:mods"/>
+                <xquery collection="/db/mods" query="doc('/db/mods/mods1207.xml')//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
+                <xquery collection="/db/mods" query="collection('/db/mods')//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(.//mods:titleInfo, 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, '&quot;xpath xquery&quot;')]"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:name, 'bjarne')][ft:query(mods:name, 'stroustrup')]"/>
+                <xquery collection="/db/mods" query="//mods:modsCollection/*[ft:query(mods:name, 'bjarne')]"/>
+                <xquery collection="/db/mods" query="//mods:name[ft:query(., 'bjarne')][@type = 'personal']"/>
+                
+                <xquery collection="/db/mods" query="//*[ft:query(mods:dateIssued, '1998')]/ancestor::mods:mods"/>
+
+                <!--xquery collection="/db/mods"><![CDATA[
+                    for $mods in //*[ft:query(., "xml")]
+                    return
+                        <record id="{$mods/@ID}"/>
+                ]]></xquery-->
+                <!-- Slow:
+                    //mods:name[ft:query(., 'bjarne')][@type = "personal"]
+                    //mods:mods[ft:query(mods:originInfo/mods:dateIssued, "1998")]
+                <xquery collection="/db/mods" query="//mods:mods[mods:name[@type = 'personal'][ft:query(., 'bjarne')]]"/>
+                -->
+            </sequence>
+        </thread>
+    </group>
+    <!--<group name="large-documents">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>
             <create-collection parent="/db/system/config/db" name="library"/>
@@ -285,8 +227,8 @@
                 <xquery collection="/db/library" query="//inproceedings[ends-with(author, 'strup')]"/>
 
                 <xquery collection="/db/library" query="//inproceedings[matches(author, '^Bjarne.*')]"/>
-                <!--xquery collection="/db/library" query="//inproceedings[matches(title, 'xml', 'i')]"/-->
-                <!--xquery collection="/db/library" query="//*[matches(title, 'xml', 'i')]"/-->
+                <!-\-xquery collection="/db/library" query="//inproceedings[matches(title, 'xml', 'i')]"/-\->
+                <!-\-xquery collection="/db/library" query="//*[matches(title, 'xml', 'i')]"/-\->
                 <xquery collection="/db/library" query="//*[matches(title, '^XML')]"/>
 
                 <xquery collection="/db/library" query="//inproceedings[year = 2002] "/>
@@ -329,7 +271,7 @@
                 <xquery collection="/db/library" query="//*[ft:query(title, 'xml')][year = 2005]"/>
             </sequence>
         </thread>
-    </group>
+    </group>-->
     <group name="updates">
         <setup connection="con">
             <create-collection parent="/db/system/config" name="db"/>

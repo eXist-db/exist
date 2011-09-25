@@ -21,6 +21,8 @@
  */
 package org.exist.performance.actions;
 
+import java.util.Map;
+
 import org.exist.performance.AbstractAction;
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
@@ -37,7 +39,7 @@ import org.w3c.dom.Node;
 public class XQuery extends AbstractAction {
 
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';\n";
-
+    
     private String query = null;
     private String collectionPath;
     private boolean retrieve = false;
@@ -62,6 +64,7 @@ public class XQuery extends AbstractAction {
             }
             query = buf.toString();
         }
+        
         if (!config.hasAttribute("collection"))
             throw new EXistException(StoreFromFile.class.getName() + " requires an attribute 'collection'");
         collectionPath = config.getAttribute("collection");
@@ -76,6 +79,11 @@ public class XQuery extends AbstractAction {
         if (collection == null)
             throw new EXistException("collection " + collectionPath + " not found");
         XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+        if (getParent().getNamespaces() != null) {
+        	for (Map.Entry<String, String> entry : getParent().getNamespaces().entrySet()) {
+        		service.setNamespace(entry.getKey(), entry.getValue());
+        	}
+        }
         ResourceSet result = service.query(forceOptimize ? OPTIMIZE + query : query);
         lastResult = (int) result.getSize();
         if (retrieve) {

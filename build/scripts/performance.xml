@@ -19,13 +19,17 @@
     <available property="benchmark.jgoethe.available"
         file="jgoethe.xml" filepath="${benchmark.data}/jgoethe"/>
     <available property="benchmark.dblp.available"
-        file="dblp.xml" filepath="${benchmark.data}/dblp"/>
+        file="mods0.xml" filepath="${benchmark.data}/dblp"/>
     <available property="benchmark.imdi.available"
         file="01_Content.imdi" filepath="${benchmark.data}/imdi"/>
 
+    <path id="aspectj">
+        <pathelement path="${tools.aspectj}/lib/aspectjrt-1.6.11.jar"/>
+    </path>
+    
     <target name="benchmark" depends="run-benchmark"/>
 
-    <target name="run-benchmark" depends="test-compile, install-data-goethe, install-data-dblp, install-data-imdi">
+    <target name="run-benchmark" depends="test-compile, install-data-dblp, install-data-goethe, install-data-imdi">
         <delete dir="${benchmark.output}/temp" failonerror="false"/>
         <mkdir dir="${benchmark.output}"/>
         <mkdir dir="${benchmark.output}/temp"/>
@@ -36,10 +40,11 @@
 	        <sysproperty key="log4j.configuration" value="file:log4j.xml"/>
 	        <classpath refid="classpath.core"/>
 	        <classpath refid="classpath.junit"/>
+	        <classpath refid="aspectj"/>
             <arg value="-d ${benchmark.output}"/>
 	        <arg value="-f ${benchmark.src}/org/exist/performance/test.xml"/>
 	        <arg value="-r"/>
-	        <arg value="large-documents"/>
+	        <arg value="bibliographic-tests"/>
 	        <arg value="ft-tests"/>
 	        <arg value="imdi-tests"/>
         </java>
@@ -65,15 +70,13 @@
         <echo>Downloading XML data: this may take a few minutes ...</echo>
         <mkdir dir="${benchmark.data}"/>
         <mkdir dir="${benchmark.data}/dblp"/>
-        <get src="http://dblp.uni-trier.de/xml/dblp.dtd"
-            dest="${benchmark.data}/dblp/dblp.dtd" verbose="on"/>
-        <get src="http://dblp.uni-trier.de/xml/dblp.xml.gz"
-            dest="${benchmark.data}/dblp.xml.gz" verbose="on"/>
-        <gunzip src="${benchmark.data}/dblp.xml.gz"
-            dest="${benchmark.data}/dblp/dblp.xml"/>
-        <delete file="${benchmark.data}/dblp.xml.gz" failonerror="false"/>
+        <get src="http://data.exist-db.org/testdata/dblp-mods.zip"
+            dest="${benchmark.data}/dblp-mods.zip" verbose="on"/>
+        <unzip src="${benchmark.data}/dblp-mods.zip"
+            dest="${benchmark.data}/dblp"/>
+        <delete file="${benchmark.data}/dblp-mods.zip" failonerror="false"/>
         <available property="benchmark.dblp.available"
-            file="dblp.xml" filepath="${benchmark.data}/dblp"/>
+            file="mods0.xml" filepath="${benchmark.data}/dblp"/>
     </target>
 
     <target name="install-data-imdi" unless="benchmark.imdi.available">
