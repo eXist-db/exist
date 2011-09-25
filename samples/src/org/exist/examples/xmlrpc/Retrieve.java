@@ -53,8 +53,7 @@ public class Retrieve {
         
         // Initialize HTTPS connection to accept selfsigned certificates
         // and the Hostname is not validated 
-        SSLHelper sh = new SSLHelper();
-        sh.initialize();
+        SSLHelper.initialize();
         
         
         XmlRpcClient client = new XmlRpcClient();

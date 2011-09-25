@@ -42,45 +42,54 @@ import org.apache.log4j.Logger;
 public class SSLHelper {
 
     private final static Logger LOG = Logger.getLogger(SSLHelper.class);
-    private TrustManager[] nonvalidatingTrustManager = null;
-    private HostnameVerifier dummyHostnameVerifier = null;
+    private static TrustManager[] nonvalidatingTrustManager = null;
+    private static HostnameVerifier dummyHostnameVerifier = null;
 
-    /**
-     * Initializing constructor.
-     */
-    public SSLHelper() {
+    private SSLHelper() {
+        // No
+    }
 
-        LOG.debug("Initialize");
+    private static void createTrustManager() {
 
-        // Create trust manager that does not validate certificate chains
-        nonvalidatingTrustManager = new TrustManager[]{
-            new X509TrustManager() {
+        if (nonvalidatingTrustManager == null) {
+            
+            // Create trust manager that does not validate certificate chains
+            nonvalidatingTrustManager = new TrustManager[]{
+                new X509TrustManager() {
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        // Always trust
+                    }
+
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        // Alway trust
+                    }
+                }
+            };
+
+        }
+    }
+
+    private static void createHostnameVerifier() {
+
+        if (dummyHostnameVerifier == null) {
+            
+            // Create dummy HostnameVerifier
+            dummyHostnameVerifier = new HostnameVerifier() {
 
                 @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
                 }
-
-                @Override
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    // Always trust
-                }
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    // Alway trust
-                }
-            }
-        };
-
-        // Create dummy HostnameVerifier
-        dummyHostnameVerifier = new HostnameVerifier() {
-
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
+            };
+        }
     }
 
     /**
@@ -91,7 +100,11 @@ public class SSLHelper {
      * @param sslVerifyHostname     Set to FALSE for not verifying hostnames.
      * @return TRUE if initialization was OK, else FALSE
      */
-    public boolean initialize(boolean sslAllowSelfsigned, boolean sslVerifyHostname) {
+    public static boolean initialize(boolean sslAllowSelfsigned, boolean sslVerifyHostname) {
+
+        // Set it up
+        createTrustManager();
+        createHostnameVerifier();
 
         SSLContext sc = null;
         try {
@@ -115,7 +128,7 @@ public class SSLHelper {
             }
         }
 
-        // 
+
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
         // Set dummy hostname verifier
@@ -135,7 +148,7 @@ public class SSLHelper {
      * 
      * @return TRUE if initialization was OK, else FALSE
      */
-    public boolean initialize() {
+    public static boolean initialize() {
         return initialize(true, false);
     }
 }
