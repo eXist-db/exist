@@ -394,8 +394,8 @@ public class InteractiveClient {
             if (perm == null)
                 System.out.println("null");
             if (properties.getProperty("permissions").equals("true")) {
-                resources[i] = '-' + perm.toString() + '\t' + perm.getOwner()
-                + '\t' + perm.getGroup() + '\t'
+                resources[i] = '-' + perm.toString() + '\t' + perm.getOwner().getName()
+                + '\t' + perm.getGroup().getName() + '\t'
                         + URIUtils.urlDecodeUtf8(childResources[j]);
             } else
                 resources[i] = URIUtils.urlDecodeUtf8(childResources[j]);
