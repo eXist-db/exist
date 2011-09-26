@@ -45,7 +45,6 @@ import com.bradmcevoy.http.exceptions.PreConditionFailedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
@@ -53,8 +52,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
@@ -194,7 +191,7 @@ public class MiltonDocument extends MiltonResource
                         + " (" + resourceXmldbUri + ")");
 
                 // Stream document to /dev/null and count bytes
-                CountingOutputStream counter = new CountingOutputStream(new NullOutputStream());
+                ByteCountOutputStream counter = new ByteCountOutputStream();
                 try {
                     existDocument.stream(counter);
 
