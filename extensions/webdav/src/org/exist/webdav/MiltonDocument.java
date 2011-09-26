@@ -134,7 +134,7 @@ public class MiltonDocument extends MiltonResource
         }
         
         if(propfindMethod==null){
-            propfindMethod = System.getProperty("org.exist.webdav.GUESTIMATE_XML_SIZE", METHOD_EXACT);
+            propfindMethod = System.getProperty("org.exist.webdav.METHOD_XML_SIZE", METHOD_EXACT);
         }
     }
 
