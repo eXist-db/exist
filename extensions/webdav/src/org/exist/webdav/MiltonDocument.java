@@ -79,6 +79,10 @@ public class MiltonDocument extends MiltonResource
 
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean isPropFind=false;
+    
+    private static final String METHOD_EXACT="exact";
+    private static final String METHOD_GUESS="approximate";
+    private static String propfindMethod=null;
 
     /**
      * Set to TRUE if getContentLength is used for PROPFIND.
@@ -127,6 +131,10 @@ public class MiltonDocument extends MiltonResource
         if (subject != null) {
             existDocument.setUser(subject);
             existDocument.initMetadata();
+        }
+        
+        if(propfindMethod==null){
+            propfindMethod = System.getProperty("org.exist.webdav.GUESTIMATE_XML_SIZE", METHOD_EXACT);
         }
     }
 
@@ -184,25 +192,34 @@ public class MiltonDocument extends MiltonResource
             
             if (isPropFind) {
                 
-                // For PROPFIND the actual size must be calculated
-                // by serializing the document.
+                // PROPFIND
+                
+                if(METHOD_EXACT.equals(propfindMethod)){
+                
+                    // For PROPFIND the actual size must be calculated
+                    // by serializing the document.
 
-                LOG.debug("Serializing XML to /dev/null to determine size"
-                        + " (" + resourceXmldbUri + ")");
+                    LOG.debug("Serializing XML to /dev/null to determine size"
+                            + " (" + resourceXmldbUri + ")");
 
-                // Stream document to /dev/null and count bytes
-                ByteCountOutputStream counter = new ByteCountOutputStream();
-                try {
-                    existDocument.stream(counter);
+                    // Stream document to /dev/null and count bytes
+                    ByteCountOutputStream counter = new ByteCountOutputStream();
+                    try {
+                        existDocument.stream(counter);
 
-                } catch (IOException ex) {
-                    LOG.error(ex);
+                    } catch (IOException ex) {
+                        LOG.error(ex);
 
-                } catch (PermissionDeniedException ex) {
-                    LOG.error(ex);
+                    } catch (PermissionDeniedException ex) {
+                        LOG.error(ex);
+                    }
+
+                    size = counter.getByteCount();
+                
+                } else {
+                    // Use estimated document size
+                    size = existDocument.getContentLength();
                 }
-
-                size = counter.getByteCount();
                 
             } else {
                 
@@ -227,6 +244,7 @@ public class MiltonDocument extends MiltonResource
             
             
         } else {
+            // Non XML document 
             // Actual size is known
             size = existDocument.getContentLength();
         }
