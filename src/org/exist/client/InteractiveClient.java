@@ -147,7 +147,7 @@ public class InteractiveClient {
     public static final String URI="uri";
     public static final String CONFIGURATION="configuration";
     public static final String DRIVER="driver";
-    public static final String ENABLE_SSL="ssl";
+    public static final String SSL_ENABLE="ssl-enable";
     
     // values
     protected static String EDIT_CMD = "xemacs $file";
@@ -168,7 +168,7 @@ public class InteractiveClient {
         defaultProps.setProperty("colors", "false");
         defaultProps.setProperty("permissions", "false");
         defaultProps.setProperty("expand-xincludes", "true");
-        defaultProps.setProperty(ENABLE_SSL, "true");
+        defaultProps.setProperty(SSL_ENABLE, "false");
     }
     
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
@@ -302,7 +302,7 @@ public class InteractiveClient {
         
         // Configure database
         database.setProperty("create-database", "true");       
-        database.setProperty("ssl-enable", properties.getProperty(ENABLE_SSL));       
+        database.setProperty("ssl-enable", properties.getProperty(SSL_ENABLE));       
         
         // secure empty configuration
         String configuration=properties.getProperty("configuration");

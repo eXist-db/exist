@@ -605,7 +605,7 @@ public class LoginPanel extends JPanel {
         this.properties.setProperty(InteractiveClient.URI , cur_url.getText());
         this.properties.setProperty(InteractiveClient.USER , username.getText());
         this.properties.setProperty(InteractiveClient.CONFIGURATION , configuration.getText());
-        this.properties.setProperty(InteractiveClient.ENABLE_SSL , ""+enableSSL.isSelected());
+        this.properties.setProperty(InteractiveClient.SSL_ENABLE , ""+enableSSL.isSelected());
         return this.properties;
     }
     
