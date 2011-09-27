@@ -80,6 +80,7 @@ public class MiltonDocument extends MiltonResource
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean isPropFind=false;
     
+    private static final String METHOD_NULL="null";
     private static final String METHOD_EXACT="exact";
     private static final String METHOD_GUESS="approximate";
     private static String propfindMethod=null;
@@ -215,9 +216,13 @@ public class MiltonDocument extends MiltonResource
                     }
 
                     size = counter.getByteCount();
+                    
+                } else if (METHOD_NULL.equals(propfindMethod)) {
                 
-                } else {
-                    // Use estimated document size
+                    size = null;
+                
+                } else { 
+                    // Use estimated document size (METHOD_GUESS)
                     size = existDocument.getContentLength();
                 }
                 
