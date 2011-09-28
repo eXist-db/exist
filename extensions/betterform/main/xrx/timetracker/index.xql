@@ -11,91 +11,6 @@ return
         <title>betterFORM Demo XForms: Address, Registration, FeatureExplorer</title>
         <link rel="stylesheet" type="text/css" href="./resources/InlineRoundBordersAlert.css"/>
         <link rel="stylesheet" type="text/css" href="./resources/timetracker.css"/>
-
-        <script type="text/javascript" src="{$contextPath}/bfResources/scripts/betterform/betterform-TimeTracker.js"> </script>
-
-        <script type="text/javascript">
-            <!--
-            var xfReadySubscribers;
-
-            function embed(targetTrigger,targetMount){
-                console.debug("embed",targetTrigger,targetMount);
-                if(targetMount == "embedDialog"){
-                    dijit.byId("taskDialog").show();
-                }
-
-                var targetMount =  dojo.byId(targetMount);
-
-                fluxProcessor.dispatchEvent(targetTrigger);
-
-                if(xfReadySubscribers != undefined) {
-                    dojo.unsubscribe(xfReadySubscribers);
-                    xfReadySubscribers = null;
-                }
-
-                xfReadySubscribers = dojo.subscribe("/xf/ready", function(data) {
-                    dojo.fadeIn({
-                        node: targetMount,
-                        duration:100
-                    }).play();
-                });
-                dojo.fadeOut({
-                    node: targetMount,
-                    duration:100,
-                    onBegin: function() {
-                        fluxProcessor.dispatchEvent(targetTrigger);
-                    }
-                }).play();
-
-            }
-
-            var editSubcriber = dojo.subscribe("/task/edit", function(data){
-                fluxProcessor.setControlValue("currentTask",data);
-                embed('editTask','embedDialog');
-
-            });
-
-            var deleteSubscriber = dojo.subscribe("/task/delete", function(data){
-                var check = confirm("Really delete this entry?");
-                if (check == true){
-                    fluxProcessor.setControlValue("currentTask",data);
-                    fluxProcessor.dispatchEvent("deleteTask");
-                }
-            });
-
-            var refreshSubcriber = dojo.subscribe("/task/refresh", function(){
-                fluxProcessor.dispatchEvent("overviewTrigger");
-            });
-
-            function selectAll(){
-                dojo.query("input",dojo.byId("taskTable")).forEach(
-                function (node){
-                    dijit.byId(node.id).setChecked(true);
-                });
-            }
-
-            function selectNone(){
-                dojo.query("input",dojo.byId("taskTable")).forEach(
-                function (node){
-                    dijit.byId(node.id).setChecked(false);
-                });
-            }
-
-            function passValuesToXForms(){
-                var result="";
-                dojo.query("input",dojo.byId("taskTable")).forEach(
-                function (node){
-                    if(dijit.byId(node.id).checked && node.value != undefined){
-                        result = result + " " + node.value;
-                    }
-                });
-                fluxProcessor.setControlValue("selectedTaskIds",result);
-            }
-
-            // -->
-        </script>
-
-
     </head>
     <body id="timetracker" class="tundra InlineRoundBordersAlert">
 
@@ -391,5 +306,87 @@ return
         <!-- ######################### Content end ################################## -->
         <!-- ######################### Content end ################################## -->
 
+        <script type="text/javascript" src="{$contextPath}/bfResources/scripts/betterform/betterform-TimeTracker.js" defer="defer"> </script>
+
+        <script type="text/javascript" defer="defer">
+            <!--
+            var xfReadySubscribers;
+
+            function embed(targetTrigger,targetMount){
+                console.debug("embed",targetTrigger,targetMount);
+                if(targetMount == "embedDialog"){
+                    dijit.byId("taskDialog").show();
+                }
+
+                var targetMount =  dojo.byId(targetMount);
+
+                fluxProcessor.dispatchEvent(targetTrigger);
+
+                if(xfReadySubscribers != undefined) {
+                    dojo.unsubscribe(xfReadySubscribers);
+                    xfReadySubscribers = null;
+                }
+
+                xfReadySubscribers = dojo.subscribe("/xf/ready", function(data) {
+                    dojo.fadeIn({
+                        node: targetMount,
+                        duration:100
+                    }).play();
+                });
+                dojo.fadeOut({
+                    node: targetMount,
+                    duration:100,
+                    onBegin: function() {
+                        fluxProcessor.dispatchEvent(targetTrigger);
+                    }
+                }).play();
+
+            }
+
+            var editSubcriber = dojo.subscribe("/task/edit", function(data){
+                fluxProcessor.setControlValue("currentTask",data);
+                embed('editTask','embedDialog');
+
+            });
+
+            var deleteSubscriber = dojo.subscribe("/task/delete", function(data){
+                var check = confirm("Really delete this entry?");
+                if (check == true){
+                    fluxProcessor.setControlValue("currentTask",data);
+                    fluxProcessor.dispatchEvent("deleteTask");
+                }
+            });
+
+            var refreshSubcriber = dojo.subscribe("/task/refresh", function(){
+                fluxProcessor.dispatchEvent("overviewTrigger");
+            });
+
+            function selectAll(){
+                dojo.query("input",dojo.byId("taskTable")).forEach(
+                function (node){
+                    dijit.byId(node.id).setChecked(true);
+                });
+            }
+
+            function selectNone(){
+                dojo.query("input",dojo.byId("taskTable")).forEach(
+                function (node){
+                    dijit.byId(node.id).setChecked(false);
+                });
+            }
+
+            function passValuesToXForms(){
+                var result="";
+                dojo.query("input",dojo.byId("taskTable")).forEach(
+                function (node){
+                    if(dijit.byId(node.id).checked && node.value != undefined){
+                        result = result + " " + node.value;
+                    }
+                });
+                fluxProcessor.setControlValue("selectedTaskIds",result);
+            }
+
+            // -->
+        </script>
     </body>
 </html>
