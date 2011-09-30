@@ -22,8 +22,12 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
@@ -68,9 +72,12 @@ public class Directory extends BasicFunction {
         new QName("list", NAMESPACE_URI, PREFIX),
         "List all files and directories under the specified directory. This method is only available to the DBA role.",
         new SequenceType[]{
-            new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory path in the file system."),
+            new FunctionParameterSequenceType("directory", 
+                    Type.STRING, Cardinality.EXACTLY_ONE, 
+                    "The directory path in the file system."),
         },
-        new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a node describing file and directory names and meta data."))
+        new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, 
+                "a node describing file and directory names and meta data."))
     };
 
     /**
@@ -93,14 +100,33 @@ public class Directory extends BasicFunction {
             throw xPathException;
         }
 
-        File baseDir = new File(args[0].getStringValue());
+        
+        // Verify input
+        String path = args[0].getStringValue();
+        File baseDir = null;
+        if(path.startsWith("file:")){
+            try {
+                baseDir = new File( new URI(path) );
+            } catch (Exception ex) { // catch all (URISyntaxException)
+                throw new XPathException(path + " is not a valid URI: '"+ ex.getMessage() +"'");
+            }
+        } else {
+            baseDir = new File(path);
+        }
+        
+
 		
         if (logger.isDebugEnabled()) {
             logger.debug("Listing matching files in directory: " + baseDir);
         }
 
         File[] scannedFiles = baseDir.listFiles();
-        if (logger.isDebugEnabled()) {
+        
+        if(scannedFiles==null){
+            throw new XPathException("'" + path + "' does not point to a valid directory.");
+        }
+        
+        if (logger.isDebugEnabled() ) {
             logger.debug("Found: " + scannedFiles.length);
         }
 
