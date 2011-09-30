@@ -81,12 +81,14 @@ public class Sync extends BasicFunction {
 			DateTimeValue dtv = (DateTimeValue) args[2].itemAt(0);
 			startDate = dtv.getDate();
 		}
+        
 		String target = args[1].getStringValue();
+        File targetDir = FileModuleHelper.getFile(target);
+        
 		
 		context.pushDocumentContext();
 		MemTreeBuilder output = context.getDocumentBuilder();
 		try {
-			File targetDir = new File(target);
 			if (!targetDir.isAbsolute()) {
 				File home = context.getBroker().getConfiguration().getExistHome();
 				targetDir = new File(home, target);
@@ -101,6 +103,7 @@ public class Sync extends BasicFunction {
 			
 			output.endElement();
 			output.endDocument();
+            
 		} finally {
 			context.popDocumentContext();
 		}

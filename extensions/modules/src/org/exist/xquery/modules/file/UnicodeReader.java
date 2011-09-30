@@ -22,7 +22,13 @@
 
 package org.exist.xquery.modules.file;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.io.Reader;
+
+
 
 /**
  * Generic unicode textreader, which will use BOM mark

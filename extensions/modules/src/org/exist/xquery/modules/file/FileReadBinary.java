@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -81,27 +82,17 @@ public class FileReadBinary extends BasicFunction {
 			throw xPathException;
 		}
 
-		String arg 		= args[0].itemAt(0).getStringValue();
-		//byte[] buffer;
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
 		
 		try {
-			URL 			url  	= new URL( arg );	
-			File 			file 	= new File( url.toURI() );
-
-			//DataInputStream in 	 	= new DataInputStream( new FileInputStream( file ) );
-			
-			//buffer 	= new byte[ (int)file.length() ];
-			
-			//in.readFully( buffer );
-
             new FileInputStream(file).getFD();
 
             return(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(),file));
             
 		} catch( MalformedURLException e ) {
 			throw new XPathException(this, e );	
-		} catch( URISyntaxException e ) {
-			throw new XPathException(this, e );	
+            
 		} catch( IOException e ) {
 			throw new XPathException(this, e );	
 		}
