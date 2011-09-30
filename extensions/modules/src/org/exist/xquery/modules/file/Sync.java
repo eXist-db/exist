@@ -1,7 +1,6 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +27,9 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -40,8 +37,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 public class Sync extends BasicFunction {
 
@@ -52,9 +47,12 @@ public class Sync extends BasicFunction {
             "If $dateTime is given, only resources modified after this time stamp are taken into account. " +
     		"This method is only available to the DBA role.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection to sync."),
-                new FunctionParameterSequenceType("targetPath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the directory"),
-                new FunctionParameterSequenceType("dateTime", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, 
+            	new FunctionParameterSequenceType("collection", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The collection to sync."),
+                new FunctionParameterSequenceType("targetPath", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
+                new FunctionParameterSequenceType("dateTime", Type.DATE_TIME, 
+                        Cardinality.ZERO_OR_ONE, 
                 		"Optional: only resources modified after the given date/time will be synchronized.")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
@@ -72,6 +70,7 @@ public class Sync extends BasicFunction {
 
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        
 		if (!context.getSubject().hasDbaRole())
 			throw new XPathException(this, "Function file:sync is only available to the DBA role");
 		

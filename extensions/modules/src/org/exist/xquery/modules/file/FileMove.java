@@ -54,10 +54,13 @@ public class FileMove extends BasicFunction {
 			"Move (rename) a file or directory. Exact operation is platform dependent. This " +
             "method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "original", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" ),
-				new FunctionParameterSequenceType( "destination", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
+				new FunctionParameterSequenceType( "original", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" ),
+				new FunctionParameterSequenceType( "destination", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" )
 				},				
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
 		};
 	
 

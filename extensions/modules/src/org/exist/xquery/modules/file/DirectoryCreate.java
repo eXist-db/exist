@@ -53,18 +53,22 @@ public class DirectoryCreate extends BasicFunction {
                 new QName("mkdir", FileModule.NAMESPACE_URI, FileModule.PREFIX),
                 "Create a directory.  This method is only available to the DBA role.",
                 new SequenceType[]{
-                    new FunctionParameterSequenceType("filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the directory")
+                    new FunctionParameterSequenceType("path", Type.ITEM, 
+                            Cardinality.EXACTLY_ONE, "The full path or URI to the directory")
                 },
-                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
+                new FunctionReturnSequenceType(Type.BOOLEAN, 
+                        Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
             ),
         new FunctionSignature(
                 new QName("mkdirs", FileModule.NAMESPACE_URI, FileModule.PREFIX),
                 "Create a directory including any necessary but nonexistent parent directories. " +
                 "This method is only available to the DBA role.",
                 new SequenceType[]{
-                    new FunctionParameterSequenceType("filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the directory")
+                    new FunctionParameterSequenceType("path", Type.ITEM, 
+                            Cardinality.EXACTLY_ONE, "The full path or URI to the directory")
                 },
-                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
+                new FunctionReturnSequenceType(Type.BOOLEAN, 
+                        Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
             )
     };
 

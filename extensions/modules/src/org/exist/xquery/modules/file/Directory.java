@@ -22,7 +22,6 @@
 package org.exist.xquery.modules.file;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -66,14 +65,15 @@ public class Directory extends BasicFunction {
     
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
-        new QName("list", NAMESPACE_URI, PREFIX),
-        "List all files and directories under the specified directory. This method is only available to the DBA role.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType("directory", 
-                    Type.STRING, Cardinality.EXACTLY_ONE, 
-                    "The directory path in the file system."),
-        },
-        new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, 
+            new QName("list", NAMESPACE_URI, PREFIX),
+            "List all files and directories under the specified directory. "
+                + "This method is only available to the DBA role.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("path", 
+                        Type.ITEM, Cardinality.EXACTLY_ONE, 
+                        "The directory path or URI in the file system."),
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, 
                 "a node describing file and directory names and meta data."))
     };
 

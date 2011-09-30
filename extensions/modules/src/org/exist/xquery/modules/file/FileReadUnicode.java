@@ -26,11 +26,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
 
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -56,19 +55,27 @@ public class FileReadUnicode extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped " +
+            "off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." )
 				},				
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
+			new FunctionReturnSequenceType( Type.STRING, 
+                    Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
+        
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped " +
+            "off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." ),
-				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
 				},
-				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
+				new FunctionReturnSequenceType( Type.STRING, 
+                        Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
 		};
 	
 	/**

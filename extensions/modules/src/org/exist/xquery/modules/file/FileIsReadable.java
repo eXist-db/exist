@@ -53,9 +53,11 @@ public class FileIsReadable extends BasicFunction {
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a file is readable.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" )
 				},				
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if file can be read" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "true if file can be read" ) )
 		};
 	
 	/**
