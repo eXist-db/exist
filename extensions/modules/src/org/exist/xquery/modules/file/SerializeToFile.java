@@ -34,6 +34,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -71,12 +72,18 @@ public class SerializeToFile extends BasicFunction
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
 			"called from.  This method is only available to the DBA role.",
 			new SequenceType[] { 
-				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
-				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file" ),
-				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" )
-                        },
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
+				new FunctionParameterSequenceType( "node-set", Type.NODE, 
+                        Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" ),
+				new FunctionParameterSequenceType( "parameters", Type.STRING, 
+                        Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" )
+            },
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be "
+                    + "created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
                 ),
+        
 		new FunctionSignature(
 			new QName( FN_SERIALIZE_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Writes the node set into a file on the file system, optionally appending to it. " +
@@ -86,31 +93,45 @@ public class SerializeToFile extends BasicFunction
 			"The function does NOT automatically inherit the serialization options of the XQuery it is " +
 			"called from.  This method is only available to the DBA role.",
 			new SequenceType[] { 
-				new FunctionParameterSequenceType( "node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
-				new FunctionParameterSequenceType( "filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file" ),
-				new FunctionParameterSequenceType( "parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" ),
-				new FunctionParameterSequenceType( "append", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Should content be appended?")
+				new FunctionParameterSequenceType( "node-set", Type.NODE, 
+                        Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" ),
+				new FunctionParameterSequenceType( "parameters", Type.STRING, 
+                        Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" ),
+				new FunctionParameterSequenceType( "append", Type.BOOLEAN, 
+                        Cardinality.EXACTLY_ONE, "Should content be appended?")
                         },
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can "
+                    + "not be created or is not writable.  The empty sequence is returned if the argument sequence is empty." )
                 ),
-                new FunctionSignature(
+        
+        new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
 			"Writes binary data into a file on the file system.  This method is only available to the DBA role.",
 			new SequenceType[]{
-				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
-				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file")
+				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, 
+                        Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
+				new FunctionParameterSequenceType("path", Type.NODE, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file")
                         },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
                 ),
-                new FunctionSignature(
+        
+        new FunctionSignature(
 			new QName(FN_SERIALIZE_BINARY_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX),
 			"Writes binary data into a file on the file system, optionally appending the content.  This method is only available to the DBA role.",
 			new SequenceType[]{
-				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
-				new FunctionParameterSequenceType("filepath", Type.STRING, Cardinality.EXACTLY_ONE, "The full path to the file"),
-				new FunctionParameterSequenceType("append", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Should content be appended?")
+				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, 
+                        Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
+				new FunctionParameterSequenceType("path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file"),
+				new FunctionParameterSequenceType("append", Type.BOOLEAN, 
+                        Cardinality.EXACTLY_ONE, "Should content be appended?")
                         },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, 
+                    "true on success - false if the specified file can not be created or is not writable")
                 )
         };
 	

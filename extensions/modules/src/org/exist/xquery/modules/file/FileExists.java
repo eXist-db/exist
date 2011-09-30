@@ -53,9 +53,11 @@ public class FileExists extends BasicFunction {
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a file or directory exists.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file in the file system" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file in the file system" )
 				},				
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the boolean value true if the file exists, false otherwise" ) )
+			new FunctionReturnSequenceType(Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "the boolean value true if the file exists, false otherwise" ) )
 		};
 	
 	/**

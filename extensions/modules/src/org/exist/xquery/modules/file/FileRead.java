@@ -27,11 +27,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
 
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -59,17 +58,23 @@ public class FileRead extends BasicFunction {
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." )
 				},				
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) ),
+			new FunctionReturnSequenceType( Type.STRING, 
+                    Cardinality.ZERO_OR_ONE, "the file contents" ) ),
+        
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." ),
-				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type for the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The encoding type for the file" )
 				},
-				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) )
+				new FunctionReturnSequenceType( Type.STRING, 
+                        Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
 	
 	/**

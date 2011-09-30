@@ -53,9 +53,11 @@ public class FileIsWriteable extends BasicFunction {
 			new QName( "is-writeable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a file is writeable.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" )
 				},				
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the file has write permissions" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "true if the file has write permissions" ) )
 		};
 	
 	/**

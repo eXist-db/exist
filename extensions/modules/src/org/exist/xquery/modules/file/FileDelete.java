@@ -53,9 +53,11 @@ public class FileDelete extends BasicFunction {
 			new QName( "delete", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Delete a file or directory.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" )
 				},				
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
 		};
 	
 	/**
