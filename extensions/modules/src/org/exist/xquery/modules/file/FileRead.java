@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -90,27 +92,31 @@ public class FileRead extends BasicFunction {
 			throw xPathException;
 		}
 
-		String arg = args[0].itemAt(0).getStringValue();
-		StringWriter sw;
+        String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
+        
+		StringWriter sw = new StringWriter();
 		
 		try {
-			URL url = new URL( arg );
+			FileInputStream fis = new FileInputStream(file);
+            
 			InputStreamReader reader;
 			
 			if( args.length > 1 ) {			
-				reader = new InputStreamReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+				reader = new InputStreamReader( fis, args[1].getStringValue() );
 			} else {
-				reader = new InputStreamReader( url.openStream() );
+				reader = new InputStreamReader( fis );
 			}
 			
-			sw = new StringWriter();
 			char[] buf = new char[1024];
 			int len;
 			while( ( len = reader.read( buf ) ) > 0 ) {
 				sw.write( buf, 0, len) ;
 			}
+            
 			reader.close();
 			sw.close();
+            
 		} catch( MalformedURLException e ) {
 			throw new XPathException(this, e);	
 		} catch( IOException e ) {

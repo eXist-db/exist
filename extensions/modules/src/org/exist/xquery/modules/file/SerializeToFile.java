@@ -135,8 +135,8 @@ public class SerializeToFile extends BasicFunction
 
 
             //check the file output path
-            String path = args[1].itemAt(0).getStringValue();
-            File file = new File( path );
+            String inputPath = args[1].getStringValue();
+            File file = FileModuleHelper.getFile(inputPath);
 
             if(file.isDirectory())
             {

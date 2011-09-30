@@ -23,11 +23,8 @@ package org.exist.xquery.modules.file;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Date;
 
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
@@ -93,6 +90,7 @@ public class Directory extends BasicFunction {
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        
         if (!context.getSubject().hasDbaRole()) {
             XPathException xPathException = new XPathException(this, "Permission denied, calling user '"
                     + context.getSubject().getName() + "' must be a DBA to call this function.");
@@ -101,29 +99,20 @@ public class Directory extends BasicFunction {
         }
 
         
-        // Verify input
-        String path = args[0].getStringValue();
-        File baseDir = null;
-        if(path.startsWith("file:")){
-            try {
-                baseDir = new File( new URI(path) );
-            } catch (Exception ex) { // catch all (URISyntaxException)
-                throw new XPathException(path + " is not a valid URI: '"+ ex.getMessage() +"'");
-            }
-        } else {
-            baseDir = new File(path);
-        }
+        String inputPath = args[0].getStringValue();
+        File directoryPath = FileModuleHelper.getFile(inputPath);
         
-
 		
         if (logger.isDebugEnabled()) {
-            logger.debug("Listing matching files in directory: " + baseDir);
+            logger.debug("Listing matching files in directory: " + directoryPath);
         }
 
-        File[] scannedFiles = baseDir.listFiles();
+        
+        // Get list of files, null if baseDir does not point to a directory
+        File[] scannedFiles = directoryPath.listFiles();
         
         if(scannedFiles==null){
-            throw new XPathException("'" + path + "' does not point to a valid directory.");
+            throw new XPathException("'" + inputPath + "' does not point to a valid directory.");
         }
         
         if (logger.isDebugEnabled() ) {

@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.DirectoryScanner;
@@ -113,7 +114,9 @@ public class DirectoryList extends BasicFunction {
 			throw xPathException;
 		}
 
-		File baseDir = new File( args[0].getStringValue() );
+        String inputPath = args[0].getStringValue();
+        File baseDir = FileModuleHelper.getFile(inputPath);
+        
 		Sequence patterns = args[1];
 		
 		if( logger.isDebugEnabled() ) {

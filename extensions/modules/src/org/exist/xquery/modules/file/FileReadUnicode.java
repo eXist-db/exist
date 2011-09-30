@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -89,17 +91,20 @@ public class FileReadUnicode extends BasicFunction {
 			throw xPathException;
 		}
 
-		String arg = args[0].itemAt(0).getStringValue();
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
+        
+        
 		StringWriter sw;
 		
 		try {
-			URL url = new URL( arg );
-			UnicodeReader reader;
-			
+			FileInputStream fis = new FileInputStream(file);
+            
+			UnicodeReader reader;			
 			if( args.length > 1 ) {			
-				reader = new UnicodeReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+				reader = new UnicodeReader( fis, args[1].getStringValue() );
 			} else {
-				reader = new UnicodeReader( url.openStream() );
+				reader = new UnicodeReader( fis );
 			}
 			
 			sw = new StringWriter();

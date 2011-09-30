@@ -79,11 +79,11 @@ public class FileMove extends BasicFunction {
 
 		Sequence moved 	= BooleanValue.FALSE;
 
-		String originalPath = args[0].itemAt(0).getStringValue();
-		File original   	= new File( originalPath );
+		String inputPath1 = args[0].getStringValue();
+        File original = FileModuleHelper.getFile(inputPath1);
 
-		String destinationPath = args[1].itemAt(0).getStringValue();
-		File destination   	= new File( destinationPath );
+		String inputPath2 = args[1].getStringValue();
+        File destination = FileModuleHelper.getFile(inputPath2);
 		
 		if( original.renameTo(destination) ) {
 			moved = BooleanValue.TRUE;

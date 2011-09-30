@@ -24,6 +24,7 @@ package org.exist.xquery.modules.file;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -78,8 +79,9 @@ public class FileExists extends BasicFunction {
 		}
 
 		Sequence exists = BooleanValue.FALSE;
-		String path 	= args[0].itemAt(0).getStringValue();
-		File file   	= new File( path );
+        
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
 		
 		if( file.exists() ) {
 			exists = BooleanValue.TRUE;
