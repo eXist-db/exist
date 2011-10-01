@@ -691,11 +691,15 @@
             <!-- FTPClient Module -->
             <!--module uri="http://exist-db.org/xquery/ftpclient" class="org.exist.xquery.modules.ftpclient.FTPClientModule" /-->
  
+            <!-- EXPath ZIP Module -->
             <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" />
 
             <!-- EXPathrepo module: required for managing external dependencies -->
             <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
-                        
+
+            <!-- EXPath Cryptographic Module -->
+            <module uri="http://kuberam.ro/ns/x-crypt" class="ro.kuberam.xcrypt.XcryptModule" />
+            
             <!-- 
                 Modules written in XQuery
                 resource: loads module from classpath (jar files)
