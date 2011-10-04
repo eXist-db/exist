@@ -1178,8 +1178,8 @@ public class SendEmailFunction extends BasicFunction
         String tzHours = new String();
         String tzMinutes = new String();
 
-        final TimeZone thisTZ = TimeZone.getDefault();
-        int tzOffset = thisTZ.getOffset(rightNow.get(Calendar.DATE)); //get timezone offset in milliseconds
+        final TimeZone thisTZ = rightNow.getTimeZone();
+        int tzOffset = thisTZ.getOffset(rightNow.getTime().getTime()); //get timezone offset in milliseconds
         tzOffset = (tzOffset / 1000); //convert to seconds
         tzOffset = (tzOffset / 60); //convert to minutes
         
