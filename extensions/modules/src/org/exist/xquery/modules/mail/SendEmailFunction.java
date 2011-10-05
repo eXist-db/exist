@@ -702,7 +702,7 @@ public class SendEmailFunction extends BasicFunction
                 out.println("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"");
                 out.println("Content-Transfer-Encoding: base64");
                 out.println("Content-Description: " + ma.getFilename());
-                out.println("Content-Disposition: attachment; filname=\"" + ma.getFilename() + "\"");
+                out.println("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"");
                 out.println();
                 out.println(ma.getData());
 
