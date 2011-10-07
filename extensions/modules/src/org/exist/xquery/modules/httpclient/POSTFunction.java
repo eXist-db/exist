@@ -226,7 +226,7 @@ public class POSTFunction extends BaseHTTPClientFunction
     			try {
     				String url = field.getAttribute( "value" );
 					if (url.startsWith("xmldb:exist://")) {
-						parts[i] = new FilePart( field.getAttribute( "name" ), new DBFile( url.substring(13) ) );
+						parts[i] = new FilePart( field.getAttribute( "name" ), new DBFile( url ) );
 					} else {
 						parts[i] = new FilePart( field.getAttribute( "name" ), new File( url ) );
 					}

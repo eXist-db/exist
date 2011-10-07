@@ -61,7 +61,6 @@ public class DBFile implements PartSource {
 	/* (non-Javadoc)
 	 * @see org.apache.commons.httpclient.methods.multipart.PartSource#createInputStream()
 	 */
-	@Override
 	public InputStream createInputStream() throws IOException {
     	return getConnection().getInputStream();
 	}
@@ -69,7 +68,6 @@ public class DBFile implements PartSource {
 	/* (non-Javadoc)
 	 * @see org.apache.commons.httpclient.methods.multipart.PartSource#getFileName()
 	 */
-	@Override
 	public String getFileName() {
 		return uri.lastSegment().toString();
 	}
@@ -77,7 +75,6 @@ public class DBFile implements PartSource {
 	/* (non-Javadoc)
 	 * @see org.apache.commons.httpclient.methods.multipart.PartSource#getLength()
 	 */
-	@Override
 	public long getLength() {
 		try {
 			return getConnection().getContentLength();
@@ -85,5 +82,4 @@ public class DBFile implements PartSource {
 			return 0;
 		}
 	}
-
 }
