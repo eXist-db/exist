@@ -27,6 +27,8 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -101,6 +103,8 @@ this function may have issues on non-Windows platforms
 public class SendEmailFunction extends BasicFunction
 {
     protected static final Logger logger = Logger.getLogger(SendEmailFunction.class);
+    
+    private final int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
 	
     private String charset;
 	
@@ -704,7 +708,14 @@ public class SendEmailFunction extends BasicFunction
                 out.println("Content-Description: " + ma.getFilename());
                 out.println("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"");
                 out.println();
-                out.println(ma.getData());
+                
+                //write out the attachment encoded data in fixed width lines
+                final char buf[] = new char[MIME_BASE64_MAX_LINE_LENGTH];
+                int read = -1;
+                final Reader attachmentDataReader = new StringReader(ma.getData());
+                while((read = attachmentDataReader.read(buf, 0, MIME_BASE64_MAX_LINE_LENGTH)) > -1) {
+                    out.println(String.valueOf(buf, 0, read));
+                }
 
                 if(itAttachment.hasNext())
                 {
