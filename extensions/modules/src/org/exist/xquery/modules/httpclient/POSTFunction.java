@@ -223,11 +223,16 @@ public class POSTFunction extends BaseHTTPClientFunction
     		Element field = (Element)nlField.item(i);
     		
     		if (field.hasAttribute("type") && field.getAttribute("type").equals("file")) {
-    			File file = new File(field.getAttribute("value"));
     			try {
-					parts[i] = new FilePart(field.getAttribute("name"), file);
+    				String url = field.getAttribute( "value" );
+					if (url.startsWith("xmldb:exist://")) {
+						parts[i] = new FilePart( field.getAttribute( "name" ), new DBFile( url.substring(13) ) );
+					} else {
+						parts[i] = new FilePart( field.getAttribute( "name" ), new File( url ) );
+					}
 				} catch (FileNotFoundException e) {
-					throw new XPathException(e);				}
+					throw new XPathException(e);
+				}
     		} else
     			parts[i] = new StringPart(field.getAttribute("name"), field.getAttribute("value"));
     		
