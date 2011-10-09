@@ -5,6 +5,9 @@
     <system systemId="play.dtd" uri="entities/play.dtd"/>
     <system systemId="mondial.dtd" uri="entities/mondial.dtd"/> 
 	
+	<!-- eXist-db internals entries -->
+    <uri name="http://exist-db.org/collection-config/1.0" uri="../../../schema/collection.xconf.xsd"/>
+	
 	<!-- W3C XHTML DTD entries --> 
 	
 	<public publicId="-//W3C//DTD XHTML 1.0 Strict//EN" uri="entities/xhtml1-strict.dtd"/> 
