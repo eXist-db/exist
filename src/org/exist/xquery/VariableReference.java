@@ -46,7 +46,13 @@ public class VariableReference extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        Variable var = getVariable();
+        Variable var = null;
+        try {
+            var = getVariable();
+        } catch (XPathException e) {
+            // ignore: variable might not be known yet
+            return;
+        }
         if (var == null)
             throw new XPathException(this, "XPDY0002 : variable '$" + qname + "' is not set.");
         if (!var.isInitialized())

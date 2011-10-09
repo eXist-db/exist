@@ -34,6 +34,8 @@ import org.exist.storage.DBBroker;
  */
 public interface ExternalModule extends Module {
 
+    public void setNamespace(String prefix, String namespace);
+
 	/**
 	 * Declare a new function. Called by the XQuery compiler
 	 * when parsing a library module for every function declaration.

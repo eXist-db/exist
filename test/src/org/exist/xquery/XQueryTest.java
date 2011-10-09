@@ -1222,15 +1222,15 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
 
-            System.out.println("testModule 2: ========");
-            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
-            try {
-                message = "";
-                result = service.query(query);
-            } catch (XMLDBException e) {
-                message = e.getMessage();
-            }
-            assertTrue(message.indexOf("XQST0049") > -1);
+//            System.out.println("testModule 2: ========");
+//            query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine variable ::)\n" + "declare variable $blah:param  {\"value-2\"};\n" + "$blah:param";
+//            try {
+//                message = "";
+//                result = service.query(query);
+//            } catch (XMLDBException e) {
+//                message = e.getMessage();
+//            }
+//            assertTrue(message.indexOf("XQST0049") > -1);
 
             System.out.println("testModule 3: ========");
             query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare namespace blah2=\"blah\";\n" + "$blah2:param";
