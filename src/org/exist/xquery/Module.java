@@ -108,4 +108,12 @@ public interface Module {
 	 *
 	 */
 	public void reset(XQueryContext xqueryContext);
+
+    /**
+     * Check if this module has been fully loaded
+     * and is ready for use.
+     *
+     * @return false while the module is being compiled.
+     */
+    public boolean isReady();
 }

@@ -1206,6 +1206,9 @@ public class XQueryContext {
 
         for(Iterator i = modules.values().iterator(); i.hasNext();) {
             Module module = (Module) i.next();
+            if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
+                continue;
+            }
             module.reset(this);
         }
         
@@ -1326,8 +1329,8 @@ public class XQueryContext {
             modules.remove(namespaceURI);   // unbind the module
         } else {
             modules.put(namespaceURI, module);
-            if (!module.isInternalModule()) {
-                ((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(this);
+            if( !module.isInternalModule() && module.isReady() ) {
+                ( (ModuleContext)( (ExternalModule)module ).getContext() ).setParentContext( this );
             }
         }
 		setRootModule(namespaceURI, module);
@@ -2342,10 +2345,13 @@ public class XQueryContext {
         } catch (IOException e) {
         	throw new XPathException("IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e);
         }
+        ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
+        setModule(namespaceURI, modExternal);
         XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
+        modExternal.setContext( modContext );
         XQueryLexer lexer = new XQueryLexer(modContext, reader);
         XQueryParser parser = new XQueryParser(lexer);
-        XQueryTreeParser astParser = new XQueryTreeParser(modContext);
+        XQueryTreeParser astParser = new XQueryTreeParser(modContext, modExternal);
         try {
         	parser.xpath();
         	if (parser.foundErrors()) {
@@ -2367,7 +2373,6 @@ public class XQueryContext {
             
            
         	path.analyze(new AnalyzeContextInfo());
-        	ExternalModule modExternal = astParser.getModule();
         	if(modExternal == null)
         		throw new XPathException("source at " + location + " is not a valid module");  
             
@@ -2385,6 +2390,7 @@ public class XQueryContext {
             
             modExternal.setSource(source);
         	modExternal.setContext(modContext);
+        	modExternal.setIsReady(true);
         	return modExternal;
         } catch (RecognitionException e) {
         	throw new XPathException(e.getLine(), e.getColumn(),
@@ -2437,7 +2443,7 @@ public class XQueryContext {
 	public void resolveForwardReferences() throws XPathException {
 		while(!forwardReferences.empty()) {
 			FunctionCall call = (FunctionCall)forwardReferences.pop();
-			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
+			UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 			if(func == null)
 				throw new XPathException(call, 
 					"Call to undeclared function: " + call.getQName().getStringValue());

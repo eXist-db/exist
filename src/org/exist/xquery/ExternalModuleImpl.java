@@ -38,8 +38,10 @@ import org.exist.storage.DBBroker;
  */
 public class ExternalModuleImpl implements ExternalModule {
 
-	final private String mNamespaceURI;
-	final private String mPrefix;
+	private String mNamespaceURI;
+	private String mPrefix;
+
+    private boolean isReady = false;
 
 	final private TreeMap mFunctionMap = new TreeMap();
 	final private TreeMap mGlobalVariables = new TreeMap();
@@ -54,7 +56,20 @@ public class ExternalModuleImpl implements ExternalModule {
 		mPrefix = prefix;
 	}
 
-	/* (non-Javadoc)
+    public void setNamespace(String prefix, String namespace) {
+        this.mPrefix = prefix;
+        this.mNamespaceURI = namespace;
+    }
+
+    public void setIsReady(boolean ready) {
+        this.isReady = ready;
+    }
+    
+    public boolean isReady() {
+        return false;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getDescription()
 	 */
 	public String getDescription() {

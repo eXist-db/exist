@@ -247,13 +247,29 @@ public class FunctionFactory {
 				} else {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
-					if(func == null)
-						throw new XPathException(ast.getLine(), ast.getColumn(), "Function " + qname.getStringValue() +
-                                "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
-					FunctionCall call = new FunctionCall(context, func);
-					call.setArguments(params);
-                    call.setLocation(ast.getLine(), ast.getColumn());
-					step = call;
+					if(func == null) {
+			            // check if the module has been compiled already
+			            if(module.isReady()) {
+			                throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function " + qname.getStringValue() + "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
+			            } // if not, postpone the function resolution
+			            // register a forward reference with the root module, so it gets resolved
+			            // when the main query has been compiled.
+			            else {
+			                FunctionCall fc = new FunctionCall(((ExternalModule) module).getContext(), qname, params);
+			                fc.setLocation(ast.getLine(), ast.getColumn());
+			                if(((ExternalModule) module).getContext() == context) {
+			                    context.addForwardReference(fc);
+			                } else {
+			                    context.getRootContext().addForwardReference(fc);
+			                }
+			                step = fc;
+			            }
+			        } else {
+			            FunctionCall fc = new FunctionCall(context, func);
+			            fc.setArguments(params);
+			            fc.setLocation(ast.getLine(), ast.getColumn());
+			            step = fc;
+			        }
 				}
 			} else {
 				UserDefinedFunction func = context.resolveFunction(qname, params.size());
