@@ -1,109 +1,249 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- 
-    Schema for eXist Collection Configuration files /db/system/config/db/**/collection.xconf
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns="http://exist-db.org/collection-config/1.0"
+    targetNamespace="http://exist-db.org/collection-config/1.0"
+    version="1.1">
     
-    TODO: Remove optional attributes in favour of well defined/named parent elements
--->
-
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
-    targetNamespace="http://exist-db.org/collection-config/1.0">
-    <xs:element name="collection">
-        <xs:complexType>
+    <xs:annotation>
+        <xs:documentation>Schema for eXist-db Collection Configuration files /db/system/config/db/**/collection.xconf</xs:documentation>
+        <xs:appinfo>
+            <dcterms:title>Schema for eXist-db Collection Configuration Files</dcterms:title>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2011-10-09T17:04:30.915+01:00</dcterms:created>
+            <dcterms:creator>Adam Retter</dcterms:creator>
+        </xs:appinfo>
+    </xs:annotation>
+    
+    <xs:element name="collection" type="collectionType"/>
+    
+    <xs:complexType name="collectionType">
+        <xs:choice>
+            <xs:annotation>
+                <xs:documentation>Following structure ensures that at least one of index, triggers or validation is present and that each may only appear once</xs:documentation>
+            </xs:annotation>
             <xs:sequence>
-                <xs:element name="index" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation>Index Configuration</xs:documentation>
-                    </xs:annotation>
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="fulltext">
-                                <xs:annotation>
-                                    <xs:documentation>Full Text Indexes</xs:documentation>
-                                </xs:annotation>
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="include" minOccurs="0"
-                                            maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:attribute name="path" type="xs:string"/>
-                                            </xs:complexType>
-                                        </xs:element>
-                                        <xs:element name="exclude" minOccurs="0"
-                                            maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:attribute name="path" type="xs:string"/>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                    <xs:attribute name="default" default="all">
-                                        <xs:simpleType>
-                                            <xs:restriction base="xs:string">
-                                                <xs:enumeration value="all"/>
-                                                <xs:enumeration value="none"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:attribute>
-                                    <xs:attribute name="attributes" type="xs:boolean" default="true"/>
-                                    <xs:attribute name="alphanum" type="xs:boolean" default="true"/>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="create" minOccurs="0" maxOccurs="unbounded">
-                                <xs:annotation>
-                                    <xs:documentation>Range/QName Indexes</xs:documentation>
-                                </xs:annotation>
-                                <xs:complexType>
-                                    <xs:attribute name="path" type="xs:string" use="optional"/>
-                                    <xs:attribute name="qname" type="xs:string" use="optional"/>
-                                    <xs:attribute name="type" type="xs:anySimpleType"/>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-                
-                <xs:element name="triggers" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation>Trigger Configuration</xs:documentation>
-                    </xs:annotation>
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="trigger" minOccurs="1" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="parameter" minOccurs="0"
-                                            maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:attribute name="name" type="xs:string"/>
-                                                <xs:attribute name="value" type="xs:string"/>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                    <xs:attribute name="class" type="xs:string"/>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-
-                <xs:element name="validation" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation>Per collection validation-switch
-                        configuration</xs:documentation>
-                    </xs:annotation>
-                    <xs:complexType>
-                        <xs:attribute name="mode">
-                            <xs:simpleType>
-                                <xs:restriction base="xs:string">
-                                    <xs:enumeration value="auto"/>
-                                    <xs:enumeration value="no"/>
-                                    <xs:enumeration value="yes"/>
-                                </xs:restriction>
-                            </xs:simpleType>
-                        </xs:attribute>
-                    </xs:complexType>
-                </xs:element>
+                <xs:element ref="index"/>
+                <xs:element ref="triggers" minOccurs="0"/>
+                <xs:element name="validation" minOccurs="0"/>
             </xs:sequence>
-        </xs:complexType>
-    </xs:element>
+            <xs:sequence>
+                <xs:element name="triggers"/>
+                <xs:element name="validation" minOccurs="0"/>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element name="validation"/>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+    
+    <xs:element name="index" type="indexType"/>
+    
+    <xs:complexType name="indexType">
+        <xs:annotation>
+            <xs:documentation>Index Configuration</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="fulltext"/>
+            <xs:element ref="lucene" minOccurs="0"/>
+            <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="gml" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="fulltext" type="fulltextType"/>
+    
+    <xs:complexType name="fulltextType">
+        <xs:annotation>
+            <xs:documentation>Full Text Indexes</xs:documentation>
+        </xs:annotation>
+            <xs:sequence minOccurs="0">
+                <xs:group ref="fulltextDirectives"/>
+            </xs:sequence>
+            <xs:attribute name="default" default="all">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="none"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="attributes" type="xs:boolean" default="true"/>
+            <xs:attribute name="alphanum" type="xs:boolean" default="true"/>        
+    </xs:complexType>
+    
+    <xs:group name="fulltextDirectives">
+        <xs:sequence>
+            <xs:element name="create" minOccurs="0" maxOccurs="unbounded" type="fulltextCreateType"/>
+            <xs:element name="include" minOccurs="0" maxOccurs="unbounded" type="pathType"/>
+            <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded" type="pathType"/>
+        </xs:sequence>
+    </xs:group>
+    
+    <xs:complexType name="pathType">
+        <xs:attribute ref="path" use="required"/>
+    </xs:complexType>
+    
+    <xs:attribute name="path" type="xs:string"/>
+    
+    <xs:attribute name="qname">
+        <xs:simpleType>
+            <xs:restriction base="xs:QName"/>
+        </xs:simpleType>
+    </xs:attribute>
+    
+    <xs:complexType name="fulltextCreateType">
+        <xs:attribute ref="qname" use="required"/>
+        <xs:attribute name="content" use="optional" type="xs:string" fixed="mixed"/>
+    </xs:complexType>
+    
+    <xs:group name="rangeIndex">
+        <xs:choice>
+            <xs:element name="create" type="rangeIndexType"/>
+        </xs:choice>
+    </xs:group>
+    
+    <xs:complexType name="rangeIndexType">
+        <xs:annotation>
+            <xs:documentation>Either @qname or @path must be specified. Not both!</xs:documentation>
+        </xs:annotation>
+        <xs:attribute ref="path" use="optional"/>
+        <xs:attribute ref="qname" use="optional"/>
+        <xs:attribute name="type" use="required" type="xs:QName"/>
+    </xs:complexType>
+    
+    <xs:element name="lucene" type="luceneType"/>
+
+    <xs:complexType name="luceneType">
+        <xs:sequence>
+            <xs:element ref="analyzer" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="text" maxOccurs="unbounded"/>
+            <xs:group ref="textInstruction" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="analyzer" type="analyzerType"/>
+    
+    <xs:complexType name="analyzerType">
+        <xs:sequence minOccurs="0">
+            <xs:element ref="param" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" use="optional" type="xs:ID"/>
+        <xs:attribute ref="class" use="required"/>
+    </xs:complexType>
+    
+    <xs:attribute name="class" type="xs:string"/>
+    
+    <xs:element name="param" type="paramType"/>
+    
+    <xs:complexType name="paramType">
+        <xs:sequence minOccurs="0">
+            <xs:element name="value" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute ref="name" use="required"/>
+        <xs:attribute name="type" type="xs:string" use="optional" default="java.lang.String"/>
+        <xs:attribute ref="value" use="optional"/>
+    </xs:complexType>
+    
+    <xs:attribute name="name" type="xs:NCName"/>
+    <xs:attribute name="value" type="xs:string"/>
+    
+    <xs:element name="inline" type="singleQnameAttrType"/>
+    <xs:element name="ignore" type="singleQnameAttrType"/>
+    
+    <xs:group name="textInstruction">
+        <xs:sequence>
+            <xs:element ref="inline" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="ignore" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:group>
+    
+    <xs:element name="text" type="textType"/>
+        
+    <xs:complexType name="textType">
+        <xs:annotation>
+            <xs:documentation>Either @qname or @match must be specified. Not both!</xs:documentation>
+        </xs:annotation>
+        <xs:sequence minOccurs="0">
+            <xs:group ref="textInstruction"/>
+        </xs:sequence>
+        <xs:attribute ref="qname" use="optional"/>
+        <xs:attribute name="match" use="optional" type="xs:string"/>
+        <xs:attribute name="analyzer" use="optional" type="xs:IDREF"/>
+        <xs:attribute name="boost" use="optional" type="xs:double"/>
+    </xs:complexType>
+    
+    <xs:complexType name="singleQnameAttrType">
+        <xs:attribute ref="qname" use="required"/>
+    </xs:complexType>
+    
+    <xs:element name="ngram" type="singleQnameAttrType"/>
+    
+    <xs:element name="gml" type="gmlIndexType"/>
+    
+    <xs:complexType name="gmlIndexType">
+        <xs:attribute name="flushAfter" use="required" type="xs:positiveInteger"/>
+    </xs:complexType>
+    
+    <xs:element name="triggers" type="triggersType"/>
+    
+    <xs:complexType name="triggersType">
+        <xs:annotation>
+            <xs:documentation>Trigger Configuration</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="trigger" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="trigger" type="triggerType"/>
+    
+    <xs:complexType name="triggerType">
+        <xs:sequence minOccurs="0">
+            <xs:element ref="parameter" maxOccurs="unbounded"/>
+        </xs:sequence>
+       <xs:attribute name="event" use="optional" type="eventType">
+           <xs:annotation>
+               <xs:documentation>This is deprecated, triggers should now code functions for each event</xs:documentation>
+           </xs:annotation>
+       </xs:attribute>
+       <xs:attribute ref="class" use="required"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="eventType">
+        <xs:restriction base="xs:NCName">
+            <xs:enumeration value="create"/>
+            <xs:enumeration value="update"/>
+            <xs:enumeration value="copy"/>
+            <xs:enumeration value="move"/>
+            <xs:enumeration value="delete"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="parameter" type="parameterType"/>
+    
+    <xs:complexType name="parameterType">
+        <xs:attribute ref="name" use="required"/>
+        <xs:attribute ref="value" use="required"/>
+    </xs:complexType>
+    
+    <xs:element name="validation" type="validationType"/>
+    
+    <xs:complexType name="validationType">
+        <xs:annotation>
+            <xs:documentation>Per collection validation-switch configuration</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="mode" use="required" type="modeType"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="modeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="auto"/>
+            <xs:enumeration value="no"/>
+            <xs:enumeration value="yes"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
 </xs:schema>
