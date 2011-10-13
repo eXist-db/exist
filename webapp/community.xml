@@ -31,7 +31,14 @@
                 <tgroup cols="2">
                     <tbody>
 
-                        
+                        <tr>
+                            <td class="doclink"><ulink url="http://code.google.com/p/atombeat/wiki/AtomBeat">AtomBeat</ulink></td>
+                            <td>AtomBeat is an implementation of the Atom Publishing Protocol, with a number of extended features including support for versioning, access control and link expansion.
+                                AtomBeat can be used off-the-shelf as a generic content and data server.
+                                AtomBeat also has a plug-in framework which can be used to develop application-specific web services based on the Atom Protocol and following the REST style.
+                                AtomBeat is built atop eXist-db.
+                            </td>
+                        </tr>
                         <tr>
                             <td class="doclink"><ulink url="ttps://github.com/emory-libraries/eulexistdb">EULexistdb</ulink></td>
                             <td>EULexistdb is a Python module that provides utilities and classes for interacting with 
