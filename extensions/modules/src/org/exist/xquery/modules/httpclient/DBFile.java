@@ -50,9 +50,9 @@ public class DBFile implements PartSource {
 				URL url = new URL(uri.toString());
 				connection = url.openConnection();
 			} catch (IllegalArgumentException e) {
-				throw new IOException(e); 
+				throw new IOException(e.getMessage()); 
 			} catch (MalformedURLException e) {
-				throw new IOException(e); 
+				throw new IOException(e.getMessage()); 
 			}
     	}
     	return connection;
