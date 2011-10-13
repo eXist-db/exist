@@ -159,6 +159,8 @@
                 <xquery collection="/db/mods" query="//mods:*[ft:query(mods:titleInfo, 'xml')]"/>
                 <xquery collection="/db/mods" query="//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
                 <xquery collection="/db/mods" query="//mods:titleInfo[ft:query(., 'xml')]/parent::mods:mods"/>
+                <xquery collection="/db/mods" query="/mods:modsCollection//mods:titleInfo[ft:query(., 'xml')]"/>
+                <xquery collection="/db/mods" query="/mods:modsCollection/mods:mods[ft:query(mods:titleInfo, 'xml')]"/>
                 <xquery collection="/db/mods" query="doc('/db/mods/mods1207.xml')//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
                 <xquery collection="/db/mods" query="collection('/db/mods')//mods:mods/mods:titleInfo[ft:query(., 'xml')]"/>
                 <xquery collection="/db/mods" query="//mods:mods[ft:query(.//mods:titleInfo, 'xml')]"/>
@@ -169,11 +171,18 @@
                 
                 <xquery collection="/db/mods" query="//*[ft:query(mods:dateIssued, '1998')]/ancestor::mods:mods"/>
 
+                <xquery collection="/db/mods" query="/mods:modsCollection/mods:mods[@ID = 'books/ap/MarshallO79']"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, 'xml')][ft:query(mods:originInfo/mods:dateIssued, '2007')]"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:originInfo/mods:dateIssued, '2007')][ft:query(mods:titleInfo, 'xml')]"/>
+                <xquery collection="/db/mods" query="//mods:mods[mods:name[@type = 'personal'][ft:query(., 'alfred aho')]]"/>
+                <xquery collection="/db/mods" query="//mods:mods[mods:name[ft:query(., 'alfred aho')][@type = 'personal']]"/>
+                
                 <!--xquery collection="/db/mods"><![CDATA[
-                    for $mods in //*[ft:query(., "xml")]
+                    for $mods in //*[ft:query(mods:titleInfo, "xml")]
                     return
                         <record id="{$mods/@ID}"/>
                 ]]></xquery-->
+                
                 <!-- Slow:
                     //mods:name[ft:query(., 'bjarne')][@type = "personal"]
                     //mods:mods[ft:query(mods:originInfo/mods:dateIssued, "1998")]
@@ -383,7 +392,7 @@
             <store-files dir="test/benchmark/data/imdi" includes="*.imdi" collection="/db/imdi"/>
         </setup>
         <thread name="thread1" connection="con">
-            <sequence repeat="20" description="query imdi resources (no index)">
+            <sequence repeat="5" description="query imdi resources (no index)">
 	      <!-- Number 1: 375 -->
 	      <xquery collection="/db">
 		declare namespace imdi="http://www.mpi.nl/IMDI/Schema/IMDI";
