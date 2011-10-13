@@ -448,6 +448,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if (p == this)
             return;
         Match m = p.getMatches();
+        if (Match.matchListEquals(m, this.match))
+        	return;
         while (m != null) {
             addMatch(m.newCopy());
             m = m.nextMatch;
