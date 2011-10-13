@@ -183,12 +183,35 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 		return expression;
 	}
 	
-	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+	/* RewritableExpression API */
+    
+	public void replace(Expression oldExpr, Expression newExpr) {
 		if (expression == oldExpr) {
 			expression = newExpr;
 		}
 	}
 
+	@Override
+	public Expression getPrevious(Expression current) {
+		return null;
+	}
+	
+	@Override
+	public Expression getFirst() {
+		return null;
+	}
+	
+	@Override
+	public void remove(Expression oldExpr) throws XPathException {
+	}
+	
+	@Override
+	public void insertAfter(Expression exprBefore, Expression newExpr)
+			throws XPathException {
+	}
+	
+	/* END RewritableExpression API */
+	
 	@Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visitVariableDeclaration(this);

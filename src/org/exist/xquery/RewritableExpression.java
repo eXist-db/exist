@@ -23,5 +23,13 @@ package org.exist.xquery;
 
 public interface RewritableExpression {
 
-	public void replaceExpression(Expression oldExpr, Expression newExpr);
+	public void replace(Expression oldExpr, Expression newExpr);
+	
+	public void remove(Expression oldExpr) throws XPathException;
+	
+	public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException;
+	
+	public Expression getPrevious(Expression current);
+
+	public Expression getFirst();
 }

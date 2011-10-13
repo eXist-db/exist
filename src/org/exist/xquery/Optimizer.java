@@ -93,8 +93,6 @@ public class Optimizer extends DefaultExpressionVisitor {
             		LOG.trace("Parent expression of step is not a PathExpr: " + parent);
                 return;
             }
-            if (LOG.isTraceEnabled())
-                LOG.trace("Rewriting expression: " + ExpressionDumper.dump(locationStep));
             hasOptimized = true;
             RewritableExpression path = (RewritableExpression) parent;
             try {
@@ -102,8 +100,34 @@ public class Optimizer extends DefaultExpressionVisitor {
                 ExtensionExpression extension = new ExtensionExpression(context);
                 extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(locationStep);
+                
                 // Replace the old expression with the pragma
-                path.replaceExpression(locationStep, extension);
+                path.replace(locationStep, extension);
+                
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Rewritten expression: " + ExpressionDumper.dump(parent));
+                
+                Expression previous = path.getPrevious(extension);
+//                if (previous != null && previous != path.getFirst() && previous instanceof Step) {
+//                	Step prevStep = (Step) previous;
+//                	int reverseAxis = reverseAxis(locationStep.getAxis());
+//                	if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
+//                			!prevStep.getTest().isWildcardTest()) {
+//                		if (LOG.isTraceEnabled())
+//                			LOG.trace("Rewriting step " + ExpressionDumper.dump(prevStep) + " to use ancestor axis");
+//                		path.remove(prevStep);
+//                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
+//                		prevStep.setAxis(reverseAxis);
+//                		
+//                		Predicate predicate = new Predicate(context);
+//                		predicate.add(prevStep);
+//                		locationStep.addPredicate(predicate);
+//                		
+//                	}
+//                }
+                
+                if (LOG.isTraceEnabled() && previous != null)
+                    LOG.trace("Previous expression: " + ExpressionDumper.dump(previous));
             } catch (XPathException e) {
                 LOG.warn("Failed to optimize expression: " + locationStep + ": " + e.getMessage(), e);
             }
@@ -145,7 +169,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(filtered);
                 // Replace the old expression with the pragma
-                path.replaceExpression(filtered, extension);
+                path.replace(filtered, extension);
             } catch (XPathException e) {
                 LOG.warn("Failed to optimize expression: " + filtered + ": " + e.getMessage(), e);
             }
@@ -181,7 +205,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             Predicate newPred = new Predicate(context);
             newPred.add(and.getRight());
             step.insertPredicate(predicate, newPred);
-            path.replaceExpression(and, and.getLeft());
+            path.replace(and, and.getLeft());
         } else if (and.isRewritable()) {
         	and.getLeft().accept(this);
 			and.getRight().accept(this);
@@ -214,6 +238,18 @@ public class Optimizer extends DefaultExpressionVisitor {
         return true;
     }
 
+    private int reverseAxis(int axis) {
+    	switch (axis) {
+    	case Constants.CHILD_AXIS:
+    		return Constants.PARENT_AXIS;
+    	case Constants.DESCENDANT_AXIS:
+    		return Constants.ANCESTOR_AXIS;
+    	case Constants.DESCENDANT_SELF_AXIS:
+    		return Constants.ANCESTOR_SELF_AXIS;
+    	}
+    	return Constants.UNKNOWN_AXIS;
+    }
+    
     /**
      * Try to find an expression object implementing interface Optimizable.
      */
