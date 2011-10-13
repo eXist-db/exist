@@ -327,8 +327,10 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 		return returnExpr.getDependencies();
 	}
 	
+	/* RewritableExpression API */
+	
 	@Override
-	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+	public void replace(Expression oldExpr, Expression newExpr) {
 		if (inputSequence == oldExpr)
 			inputSequence = newExpr;
 		else if (whereExpr == oldExpr)
@@ -336,4 +338,25 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 		else if (returnExpr == oldExpr)
 			returnExpr = newExpr;
 	}
+	
+	@Override
+	public Expression getPrevious(Expression current) {
+		return null;
+	}
+	
+	@Override
+	public Expression getFirst() {
+		return null;
+	}
+	
+	@Override
+	public void remove(Expression oldExpr) throws XPathException {
+	}
+	
+	@Override
+	public void insertAfter(Expression exprBefore, Expression newExpr)
+			throws XPathException {
+	}
+	
+	/* END RewritableExpression API */
 }

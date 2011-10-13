@@ -168,8 +168,10 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         visitor.visitConditional(this);
     }
 
+    /* RewritableExpression API */
+    
 	@Override
-	public void replaceExpression(Expression oldExpr, Expression newExpr) {
+	public void replace(Expression oldExpr, Expression newExpr) {
 		if (testExpr == oldExpr)
 			testExpr = newExpr;
 		else if (thenExpr == oldExpr)
@@ -177,4 +179,25 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
 		else if (elseExpr == oldExpr)
 			elseExpr = newExpr;
 	}
+	
+	@Override
+	public Expression getPrevious(Expression current) {
+		return null;
+	}
+	
+	@Override
+	public Expression getFirst() {
+		return null;
+	}
+	
+	@Override
+	public void remove(Expression oldExpr) throws XPathException {
+	}
+	
+	@Override
+	public void insertAfter(Expression exprBefore, Expression newExpr)
+			throws XPathException {
+	}
+	
+	/* END RewritableExpression API */
 }

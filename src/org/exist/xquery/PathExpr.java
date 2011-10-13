@@ -107,13 +107,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (e instanceof Step) ((Step) e).addPredicate(pred);
     }
 
+    /* RewritableExpression API */
+    
     /**
      * Replace the given expression by a new expression.
      *
      * @param oldExpr the old expression
      * @param newExpr the new expression to replace the old
      */
-    public void replaceExpression(Expression oldExpr, Expression newExpr) {
+    public void replace(Expression oldExpr, Expression newExpr) {
         int idx = steps.indexOf(oldExpr);
         if (idx < 0) {
             LOG.warn("Expression not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
@@ -122,6 +124,37 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         steps.set(idx, newExpr);
     }
 
+    @Override
+    public Expression getPrevious(Expression current) {
+    	int idx = steps.indexOf(current);
+    	if (idx > 1)
+    		return steps.get(idx - 1);
+    	return null;
+    }
+    
+    @Override
+    public Expression getFirst() {
+    	return steps.get(0);
+    }
+    
+    @Override
+    public void remove(Expression oldExpr) throws XPathException {
+    	int idx = steps.indexOf(oldExpr);
+    	if (idx < 0)
+    		throw new XPathException(this, "Internal optimizer error: step to remove was not found");
+    	steps.remove(idx);
+    }
+    
+    @Override
+    public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException {
+    	int idx = steps.indexOf(exprBefore);
+    	if (idx < 0)
+    		throw new XPathException(this, "Internal optimizer error: step to remove was not found");
+    	steps.add(idx + 1, newExpr);
+    }
+    
+    /* END RewritableExpression API */
+    
     public Expression getParent() {
         return this.parent;
     }
