@@ -7,7 +7,7 @@
     <property name="top.dir" value="../.."/>
     <property name="classes" value="${top.dir}/extensions/modules/classes"/>
     
-    <target name="xar" depends="xar-math,xar-functx,xar-json,xar-myapp,xar-admin,xar-mobiledocs"/>
+    <target name="xar" depends="xar-math,xar-functx,xar-admin,xar-mobiledocs"/>
     
     <target name="xar-math">
         <echo message="Creating exist-math.xar example for package manager ..."/>
@@ -27,18 +27,6 @@
         <echo message="Creating functx-1.0.xar example for package manager ..."/>
         <zip destfile="packages/functx-1.0.xar"
             basedir="packages/functx-example"/>
-    </target>
-    
-    <target name="xar-json">
-        <echo message="Creating xquery-json-0.1.xar example for package manager ..."/>
-        <zip destfile="packages/xquery-json-0.1.xar"
-            basedir="packages/json-example"/>
-    </target>
-    
-    <target name="xar-myapp">
-        <echo message="Creating myapp-0.1.xar example for package manager ..."/>
-        <zip destfile="packages/myapp-0.1.xar"
-            basedir="packages/app-example"/>
     </target>
     
     <target name="xar-admin">
