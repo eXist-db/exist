@@ -426,6 +426,18 @@ public abstract class Match implements Comparable<Match> {
 		return nextMatch;
 	}
 
+    public static boolean matchListEquals(Match m1, Match m2) {
+    	Match n1 = m1;
+    	Match n2 = m2;
+    	while (n1 != null) {
+    		if (n2 == null || n1 != n2)
+    			return false;
+    		n1 = n1.nextMatch;
+    		n2 = n2.nextMatch;
+    	}
+    	return true;
+    }
+    
     @Override
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
