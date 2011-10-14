@@ -665,7 +665,7 @@ public class SecurityManagerImpl implements SecurityManager {
         
     private void createUserHome(DBBroker broker, Account account) throws EXistException, PermissionDeniedException {
         if(account.getHome() == null) {
-                return;
+        	return;
         }
 
         TransactionManager transact = getDatabase().getTransactionManager();
@@ -675,28 +675,32 @@ public class SecurityManagerImpl implements SecurityManager {
             Subject currentUser = broker.getSubject();
 
             try {
-                broker.setUser(getSystemSubject());
+                broker.setSubject(getSystemSubject());
 
-                Collection home = broker.getOrCreateCollection(txn, account.getHome());
+                Collection home = broker.getCollection(account.getHome());
+                if (home == null) {
+                	home = broker.getOrCreateCollection(txn, account.getHome());
 
-                home.getPermissions().setOwner(account);
-                CollectionConfiguration config = home.getConfiguration(broker);
-                String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-                home.getPermissions().setGroup(group);
+                	home.getPermissions().setOwner(account);
+                	CollectionConfiguration config = home.getConfiguration(broker);
+                	String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
+                	home.getPermissions().setGroup(group);
+                	home.getPermissions().setMode(0700);
 
-                broker.saveCollection(txn, home);
+                	broker.saveCollection(txn, home);
+                }
 
                 transact.commit(txn);
             } finally {
-                broker.setUser(currentUser);
+                broker.setSubject(currentUser);
             }
         } catch (IOException e) {
             transact.abort(txn);
 
             if (LOG.isDebugEnabled()) {
-                    LOG.debug(e.getMessage());
+            	LOG.debug(e.getMessage());
             }
-            e.printStackTrace();
+            //e.printStackTrace();
 
             throw new EXistException(e);
 
@@ -704,9 +708,9 @@ public class SecurityManagerImpl implements SecurityManager {
             transact.abort(txn);
 
             if (LOG.isDebugEnabled()) {
-                    LOG.debug(e.getMessage());
+            	LOG.debug(e.getMessage());
             }
-            e.printStackTrace();
+            //e.printStackTrace();
 
             throw new EXistException(e);
 
@@ -714,9 +718,9 @@ public class SecurityManagerImpl implements SecurityManager {
             transact.abort(txn);
 
             if (LOG.isDebugEnabled()) {
-                    LOG.debug(e.getMessage());
+            	LOG.debug(e.getMessage());
             }
-            e.printStackTrace();
+            //e.printStackTrace();
 
             throw e;
 
@@ -724,12 +728,11 @@ public class SecurityManagerImpl implements SecurityManager {
             transact.abort(txn);
 
             if (LOG.isDebugEnabled()) {
-                    LOG.debug(e.getMessage());
+            	LOG.debug(e.getMessage());
             }
-            e.printStackTrace();
+            //e.printStackTrace();
 
             throw e;
-
         }
     }
     
