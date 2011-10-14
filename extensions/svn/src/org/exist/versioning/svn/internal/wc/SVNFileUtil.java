@@ -1428,7 +1428,7 @@ public class SVNFileUtil {
     }
 
     public static File getSystemConfigurationDirectory() {
-        return new Resource("/config/subversion");
+        return new Resource("/system/etc/subversion");
     }
 
     public static String readSingleLine(File file) throws IOException {
