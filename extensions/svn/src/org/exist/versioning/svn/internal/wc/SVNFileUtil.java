@@ -185,7 +185,7 @@ public class SVNFileUtil {
         for(int i = 0; i < up; i++) {
             path = SVNPathUtil.removeTail(path);
         }
-        path = path.replace('/', File.separatorChar);
+        path = path.replace('/', Resource.separatorChar);
         file = new Resource(path);
         return file.getParentFile();
     }
