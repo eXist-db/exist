@@ -1558,9 +1558,9 @@ public class SVNAdminArea14 extends SVNAdminArea {
 
         File[] tmp = {
                 createMyself ? getAdminFile("tmp") : new Resource(adminDir, "tmp"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "props") : new Resource(adminDir, "tmp" + File.separatorChar + "props"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "prop-base") : new Resource(adminDir, "tmp" + File.separatorChar + "prop-base"),
-                createMyself ? getAdminFile("tmp" + File.separatorChar + "text-base") : new Resource(adminDir, "tmp" + File.separatorChar + "text-base"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "props") : new Resource(adminDir, "tmp" + Resource.separatorChar + "props"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "prop-base") : new Resource(adminDir, "tmp" + Resource.separatorChar + "prop-base"),
+                createMyself ? getAdminFile("tmp" + Resource.separatorChar + "text-base") : new Resource(adminDir, "tmp" + Resource.separatorChar + "text-base"),
                 createMyself ? getAdminFile("props") : new Resource(adminDir, "props"), 
                 createMyself ? getAdminFile("prop-base") : new Resource(adminDir, "prop-base"),
                 createMyself ? getAdminFile("text-base") : new Resource(adminDir, "text-base")

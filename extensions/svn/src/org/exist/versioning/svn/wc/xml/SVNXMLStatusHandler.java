@@ -13,6 +13,7 @@ package org.exist.versioning.svn.wc.xml;
 
 import java.io.File;
 
+import org.exist.versioning.svn.Resource;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;
@@ -284,7 +285,7 @@ public class SVNXMLStatusHandler extends AbstractXMLHandler implements ISVNStatu
         }
         StringBuffer relativePath = new StringBuffer();
         // collect path till target is met, then prepend target.
-        char pathSeparator = File.separatorChar;
+        char pathSeparator = Resource.separatorChar;
         boolean targetMeet = false;
         if (!path.getAbsoluteFile().equals(myTargetPath.getAbsoluteFile())) {
             do {
