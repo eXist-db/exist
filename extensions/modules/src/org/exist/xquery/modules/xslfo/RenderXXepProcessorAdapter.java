@@ -17,7 +17,7 @@ import org.xml.sax.SAXException;
  *
  * @author Adam Retter <adam@exist-db.org>
  */
-public class RenderHouseXepProcessorAdapter implements ProcessorAdapter {
+public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
     private Object formatter = null;
 
