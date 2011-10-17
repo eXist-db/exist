@@ -58,6 +58,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     private boolean processInReverseOrder = false;
 
+    private boolean trackMatches = true;
+    
     protected AbstractNodeSet() {
         isEmpty = true;
     }
@@ -636,6 +638,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return false;
     }
 
+    @Override
+    public void setTrackMatches(boolean track) {
+    	this.trackMatches = track;
+    }
+    
+    @Override
+    public boolean getTrackMatches() {
+    	return trackMatches;
+    }
+    
     /**
      * If all nodes in this set have an index, returns the common
      * supertype used to build the index, e.g. xs:integer or xs:string.

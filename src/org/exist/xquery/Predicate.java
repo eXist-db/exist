@@ -482,7 +482,8 @@ public class Predicate extends PathExpr {
 		NewArrayNodeSet result = new NewArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
-
+		contextSet.setTrackMatches(false);
+		
 		/*
 		 * //Uncomment the lines below which are intended to work around a
 		 * VirtualNodeSet bug //No need to say that performance can suffer !
@@ -537,7 +538,8 @@ public class Predicate extends PathExpr {
 
 		if (contextSequence.isCacheable())
 			cached = new CachedResult(contextSequence, null, result);
-
+		contextSet.setTrackMatches(true);
+		
 		return result;
 	}
 

@@ -405,6 +405,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 	    return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
+    @Override
+    public void setTrackMatches(boolean track) {    	
+    }
+    
+    @Override
+    public boolean getTrackMatches() {
+    	return true;
+    }
+    
     public Match getMatches() {
 	    return match;
     }
