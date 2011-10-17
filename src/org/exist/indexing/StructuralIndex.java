@@ -5,6 +5,7 @@ import org.exist.dom.ExtNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.NodeSelector;
+import org.exist.xquery.NodeTest;
 
 /**
  * Core interface for structural indexes. The structural index provides access to elements and attributes
@@ -27,4 +28,11 @@ public interface StructuralIndex {
         DocumentSet docs, NodeSet contextSet,  int contextId);
 
     public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId);
+    
+    /**
+     * Find all nodes matching a given node test, axis and type. Used to evaluate wildcard
+     * expressions like //*, //pfx:*.
+     */
+    public NodeSet scanByType(byte type, int axis, NodeTest test, boolean useSelfAsContext, 
+    		DocumentSet docs, NodeSet contextSet, int contextId);
 }

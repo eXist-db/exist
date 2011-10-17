@@ -48,6 +48,17 @@ public class NameTest extends TypeTest {
 		return matchesName(other);
 	}
 
+	public boolean matches(QName name) {
+		if (nodeName.getNamespaceURI() != null) {
+            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI()))
+				return false;
+		}
+		if (nodeName.getLocalName() != null) {
+			return nodeName.getLocalName().equals(name.getLocalName());
+		}
+		return true;
+	}
+	
     public boolean matchesName(Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
             return matchesName(((ReferenceNode)other).getReference().getNode());

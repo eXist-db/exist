@@ -118,6 +118,11 @@ public class TypeTest implements NodeTest {
         return isOfEventType(reader.getEventType());
     }
 
+    public boolean matches(QName name) {
+    	// always false because there's no name
+    	return false;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.NodeTest#isWildcardTest()
      */

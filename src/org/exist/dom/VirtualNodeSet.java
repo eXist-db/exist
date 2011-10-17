@@ -28,10 +28,12 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.collections.Collection;
+import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
@@ -320,9 +322,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
     }
 
     /**
-     * The method <code>getNodes</code>
-     *
-     * @return a <code>NodeSet</code> value
+     * Realize the node set by recursively scanning the
+     * DOM.
      */
     private final NodeSet getNodes() {
         NewArrayNodeSet result = new NewArrayNodeSet();
@@ -452,6 +453,19 @@ public class VirtualNodeSet extends AbstractNodeSet {
     }
 
     /**
+     * Realize the node set by scanning the structural index.
+     * This is usually cheaper than calling {@link #getNodes()}.
+     */
+    private NodeSet getNodesFromIndex() {
+    	StructuralIndex index = broker.getStructuralIndex();
+    	byte type = test.getType() == Type.ELEMENT ? ElementValue.ELEMENT : ElementValue.ATTRIBUTE;
+    	NodeSet result = index.scanByType(type, axis, test, useSelfAsContext && inPredicate, 
+    			context.getDocumentSet(), context, contextId);
+    	realDocumentSet = result.getDocumentSet();
+    	return result;
+    }
+    
+    /**
      * recursively adds child nodes
      * @param contextNode a <code>NodeProxy</code> value
      * @param result a <code>NodeSet</code> value
@@ -558,13 +572,22 @@ public class VirtualNodeSet extends AbstractNodeSet {
     }
 
     /**
-     * The method <code>realize</code>
+     * Realize the node set. This should only be done if the
+     * wildcard step is the last step in a path expression.
      *
      */
     public final void realize() {
         if (realSet != null && realSetIsComplete)
             return;
-        realSet = getNodes();
+        // check if we can use the structural index or need to do a scan over the nodes
+        if (test.getType() == Type.ELEMENT && 
+        		(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+        		axis == Constants.DESCENDANT_SELF_AXIS)) {
+        	realSet = getNodesFromIndex();
+        } else {
+        	realSet = getNodes();
+        }
+        
         knownIsEmptyCardinality = true;
         knownHasOneCardinality = true;
         knownHasManyCardinality = true;
