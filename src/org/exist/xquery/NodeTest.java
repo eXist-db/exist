@@ -65,6 +65,8 @@ public interface NodeTest {
 
     public boolean matches(XMLStreamReader reader);
     
+    public boolean matches(QName name);
+    
     /**
      * The method <code>isWildcardTest</code>
      *

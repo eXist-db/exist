@@ -15,6 +15,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
+import org.exist.xquery.NodeTest;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -113,7 +114,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             this.end = start;
         }
     }
-
+    
     /**
      * Find all descendants (or children) of the specified node set matching the given QName.
      *
@@ -179,7 +180,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                             storedNode.deepCopyContext(descendant, contextId);
                         } else
                             storedNode.copyContext(descendant);
-                        storedNode.addMatches(descendant);
+                        if (contextSet.getTrackMatches())
+                        	storedNode.addMatches(descendant);
                     }
                     // stop after first iteration if we are on the self axis
                     if (axis == Constants.SELF_AXIS || axis == Constants.PARENT_AXIS)
@@ -199,6 +201,46 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return result;
     }
 
+    public NodeSet scanByType(byte type, int axis, NodeTest test, boolean useSelfAsContext, DocumentSet docs, 
+    		NodeSet contextSet, int contextId) {
+        final Lock lock = index.btree.getLock();
+        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result);
+        for (NodeProxy ancestor : contextSet) {
+            DocumentImpl doc = ancestor.getDocument();
+            NodeId ancestorId = ancestor.getNodeId();
+            List<QName> qnames = getQNamesForDoc(doc);
+            try {
+	            lock.acquire(Lock.READ_LOCK);
+	            for (QName qname : qnames) {
+	            	if (test.getName() == null || test.matches(qname)) {
+	            		callback.setAncestor(doc, ancestor);
+	            		byte[] fromKey, toKey;
+	                    if (ancestorId == NodeId.DOCUMENT_NODE) {
+	                        fromKey = computeKey(type, qname, doc.getDocId());
+	                        toKey = computeKey(type, qname, doc.getDocId() + 1);
+	                    } else {
+	                        fromKey = computeKey(type, qname, doc.getDocId(), ancestorId);
+	                        toKey = computeKey(type, qname, doc.getDocId(), ancestorId.nextSibling());
+	                    }
+	                    IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+	                    try {
+	                        index.btree.query(query, callback);
+	                    } catch (Exception e) {
+	                        NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+	                    }
+	            	}
+	            }
+            } catch (LockException e) {
+                NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+            } finally {
+                lock.release(Lock.READ_LOCK);
+            }
+        }
+//        result.updateNoSort();
+        return result;
+    }
+    
     private class FindElementsCallback implements BTreeCallback {
         byte type;
         DocumentSet docs;
@@ -241,12 +283,18 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         DocumentImpl doc;
         int contextId;
         NewArrayNodeSet result;
+        boolean selfAsContext = false;
 
         FindDescendantsCallback(byte type, int axis, int contextId, NewArrayNodeSet result) {
+        	this(type, axis, contextId, false, result);
+        };
+        
+        FindDescendantsCallback(byte type, int axis, int contextId, boolean selfAsContext, NewArrayNodeSet result) {
             this.type = type;
             this.axis = axis;
             this.contextId = contextId;
             this.result = result;
+            this.selfAsContext = selfAsContext;
         }
 
         void setAncestor(DocumentImpl doc, NodeProxy ancestor) {
@@ -268,15 +316,19 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     new NodeProxy(doc, nodeId, type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
                 result.add(storedNode);
                 if (Expression.NO_CONTEXT_ID != contextId) {
-                    storedNode.deepCopyContext(ancestor, contextId);
-                } else
-                    storedNode.copyContext(ancestor);
+                	if (selfAsContext)
+                		storedNode.addContextNode(contextId, storedNode);
+                	else
+                		storedNode.deepCopyContext(ancestor, contextId);
+                } else {
+            		storedNode.copyContext(ancestor);
+                }
                 storedNode.addMatches(ancestor);
             }
             return true;
         }
     }
-
+    
     public String getIndexId() {
         return NativeStructuralIndex.ID;
     }
@@ -533,6 +585,14 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return data;
     }
 
+    private byte[] computeKey(byte type, int documentId) {
+    	byte[] data = new byte[5];
+
+        data[0] = type;
+        ByteConversion.intToByteH(documentId, data, 1);
+        return data;
+    }
+    
     private byte[] computeDocKey(byte type, int documentId, QName qname) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
         short sym = symbols.getSymbol(qname.getLocalName());

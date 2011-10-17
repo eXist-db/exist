@@ -79,6 +79,10 @@ public class AnyNodeTest implements NodeTest {
         return reader.getEventType() != XMLStreamReader.ATTRIBUTE;
     }
 
+    public boolean matches(QName name) {
+    	return false;
+    }
+    
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1) {            
             dumper.display("node()"); 

@@ -152,6 +152,7 @@
             <create-collection parent="/db" name="mods"/>
             <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/mods"
                 description="storing DBLP data" overwrite="no"/>
+            <xquery collection="/db" query="ft:optimize()"/>
             <sequence repeat="5">
                 <map prefix="mods" uri="http://www.loc.gov/mods/v3"/>
                 <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, 'xml')]"/>
@@ -167,15 +168,33 @@
                 <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, '&quot;xpath xquery&quot;')]"/>
                 <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:name, 'bjarne')][ft:query(mods:name, 'stroustrup')]"/>
                 <xquery collection="/db/mods" query="//mods:modsCollection/*[ft:query(mods:name, 'bjarne')]"/>
-                <xquery collection="/db/mods" query="//mods:name[ft:query(., 'bjarne')][@type = 'personal']"/>
+                <xquery collection="/db/mods" query="//mods:modsCollection/mods:*[ft:query(mods:name, 'bjarne')]"/>
+                <xquery collection="/db/mods" query="//mods:name[ft:query(., 'bjarne')][@type = 'personal']/parent::mods:mods"/>
                 
                 <xquery collection="/db/mods" query="//*[ft:query(mods:dateIssued, '1998')]/ancestor::mods:mods"/>
 
                 <xquery collection="/db/mods" query="/mods:modsCollection/mods:mods[@ID = 'books/ap/MarshallO79']"/>
                 <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, 'xml')][ft:query(mods:originInfo/mods:dateIssued, '2007')]"/>
-                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:originInfo/mods:dateIssued, '2007')][ft:query(mods:titleInfo, 'xml')]"/>
-                <xquery collection="/db/mods" query="//mods:mods[mods:name[@type = 'personal'][ft:query(., 'alfred aho')]]"/>
-                <xquery collection="/db/mods" query="//mods:mods[mods:name[ft:query(., 'alfred aho')][@type = 'personal']]"/>
+                <xquery collection="/db/mods" query="//mods:mods[ft:query(mods:titleInfo, 'xquery')][ft:query(mods:originInfo/mods:dateIssued, '2009')]"/>
+
+				<xquery collection="/db/mods"><![CDATA[
+				for $mods in //mods:mods[ft:query(mods:titleInfo, "xquery")]
+				return
+				    <hit doc="{util:document-name($mods)}">
+					{ $mods/mods:* }
+				    </hit>
+				]]></xquery>
+		
+				<xquery collection="/db/mods"><![CDATA[
+				for $mods in //mods:mods[ft:query(mods:titleInfo, "xquery")]
+				return
+				    <title>
+					{ $mods/mods:titleInfo/mods:* }
+				    </title>
+				]]></xquery>
+		
+                <!--xquery collection="/db/mods" query="//mods:mods[mods:name[@type = 'personal'][ft:query(., 'alfred aho')]]"/>
+                <xquery collection="/db/mods" query="//mods:mods[mods:name[ft:query(., 'alfred aho')][@type = 'personal']]"/-->
                 
                 <!--xquery collection="/db/mods"><![CDATA[
                     for $mods in //*[ft:query(mods:titleInfo, "xml")]
