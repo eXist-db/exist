@@ -107,24 +107,27 @@ public class Optimizer extends DefaultExpressionVisitor {
                 if (LOG.isTraceEnabled())
                     LOG.trace("Rewritten expression: " + ExpressionDumper.dump(parent));
                 
+                // Check if there's an additional step before the optimizable expression and
+                // rewrite it to use the ancestor axis. This will change //a/b[c = "d"] into
+                // //b[c = "d"][ancestor::a].
                 Expression previous = path.getPrevious(extension);
-//                if (previous != null && previous != path.getFirst() && previous instanceof Step) {
-//                	Step prevStep = (Step) previous;
-//                	int reverseAxis = reverseAxis(locationStep.getAxis());
-//                	if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
-//                			!prevStep.getTest().isWildcardTest()) {
-//                		if (LOG.isTraceEnabled())
-//                			LOG.trace("Rewriting step " + ExpressionDumper.dump(prevStep) + " to use ancestor axis");
-//                		path.remove(prevStep);
-//                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
-//                		prevStep.setAxis(reverseAxis);
-//                		
-//                		Predicate predicate = new Predicate(context);
-//                		predicate.add(prevStep);
-//                		locationStep.addPredicate(predicate);
-//                		
-//                	}
-//                }
+                if (previous != null && previous != path.getFirst() && previous instanceof Step) {
+                	Step prevStep = (Step) previous;
+                	int reverseAxis = reverseAxis(locationStep.getAxis());
+                	if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
+                			!prevStep.getTest().isWildcardTest()) {
+                		if (LOG.isTraceEnabled())
+                			LOG.trace("Rewriting step " + ExpressionDumper.dump(prevStep) + " to use ancestor axis");
+                		path.remove(prevStep);
+                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
+                		prevStep.setAxis(reverseAxis);
+                		
+                		Predicate predicate = new Predicate(context);
+                		predicate.add(prevStep);
+                		locationStep.addPredicate(predicate);
+                		
+                	}
+                }
                 
                 if (LOG.isTraceEnabled() && previous != null)
                     LOG.trace("Previous expression: " + ExpressionDumper.dump(previous));
