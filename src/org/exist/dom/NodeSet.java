@@ -353,5 +353,9 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 	
 	public boolean hasChanged(int previousState);
 	
+	public boolean getTrackMatches();
+	
+	public void setTrackMatches(boolean track);
+	
 	public int getState();
 }
