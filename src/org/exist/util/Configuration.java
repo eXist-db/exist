@@ -43,7 +43,6 @@ import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
@@ -63,7 +62,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.DatabaseImpl;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryContext;
@@ -988,12 +986,6 @@ public class Configuration implements ErrorHandler
         if( recoveries.getLength() > 0 ) {
             configureRecovery( dbHome, (Element)recoveries.item( 0 ) );
         }
-
-        NodeList defaultPermissions = con.getElementsByTagName( SecurityManagerImpl.CONFIGURATION_ELEMENT_NAME );
-
-        if( defaultPermissions.getLength() > 0 ) {
-            configurePermissions( (Element)defaultPermissions.item( 0 ) );
-        }
     }
 
 
@@ -1061,39 +1053,6 @@ public class Configuration implements ErrorHandler
         setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, new Boolean( value ) );
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_CHECK + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_CHECK ) );
     }
-
-
-    private void configurePermissions( Element defaultPermission ) throws DatabaseConfigurationException
-    {
-        String option = getConfigAttributeValue( defaultPermission, SecurityManagerImpl.COLLECTION_ATTRIBUTE );
-
-        if( ( option != null ) && ( option.length() > 0 ) ) {
-
-            try {
-                Integer perms = new Integer( Integer.parseInt( option, 8 ) );
-                setProperty( SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS, perms );
-                LOG.debug( SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS + ": " + config.get( SecurityManagerImpl.PROPERTY_PERMISSIONS_COLLECTIONS ) );
-            }
-            catch( NumberFormatException e ) {
-                throw( new DatabaseConfigurationException( "collection attribute in default-permissions section needs " + "to be an octal number" ) );
-            }
-        }
-
-        option = getConfigAttributeValue( defaultPermission, SecurityManagerImpl.RESOURCE_ATTRIBUTE );
-
-        if( ( option != null ) && ( option.length() > 0 ) ) {
-
-            try {
-                Integer perms = new Integer( Integer.parseInt( option, 8 ) );
-                setProperty( SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES, perms );
-                LOG.debug( SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES + ": " + config.get( SecurityManagerImpl.PROPERTY_PERMISSIONS_RESOURCES ) );
-            }
-            catch( NumberFormatException e ) {
-                throw( new DatabaseConfigurationException( "resource attribute in default-permissions section needs " + "to be an octal number" ) );
-            }
-        }
-    }
-
 
     /**
      * DOCUMENT ME!
