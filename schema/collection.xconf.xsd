@@ -153,13 +153,10 @@
         <xs:sequence minOccurs="0">
             <xs:element name="value" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
         </xs:sequence>
-        <xs:attribute ref="name" use="required"/>
+        <xs:attributeGroup ref="name"/>
         <xs:attribute name="type" type="xs:string" use="optional" default="java.lang.String"/>
-        <xs:attribute ref="value" use="optional"/>
+        <xs:attributeGroup ref="valueOpt"/>
     </xs:complexType>
-    
-    <xs:attribute name="name" type="xs:NCName"/>
-    <xs:attribute name="value" type="xs:string"/>
     
     <xs:element name="inline" type="singleQnameAttrType"/>
     <xs:element name="ignore" type="singleQnameAttrType"/>
@@ -236,8 +233,8 @@
     <xs:element name="parameter" type="parameterType"/>
     
     <xs:complexType name="parameterType">
-        <xs:attribute ref="name" use="required"/>
-        <xs:attribute ref="value" use="required"/>
+        <xs:attributeGroup ref="name"/>
+        <xs:attributeGroup ref="valueReq"/>
     </xs:complexType>
     
     <xs:element name="validation" type="validationType"/>
@@ -264,7 +261,16 @@
     </xs:attributeGroup>
     
     <!-- ideally we would have just one of each attribute - but due do the form restrictions in XML Schema
-        we need both -->
+    we need both -->
+    <xs:attributeGroup name="name">
+        <xs:attribute name="name" type="xs:NCName" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="valueReq">
+        <xs:attribute name="value" type="xs:string" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="valueOpt">
+        <xs:attribute name="value" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
     <xs:attributeGroup name="qnameReq">
         <xs:attribute name="qname" type="xs:QName" use="required" form="unqualified"/>
     </xs:attributeGroup>
