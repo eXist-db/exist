@@ -80,10 +80,6 @@ public class SecurityManagerImpl implements SecurityManager {
     public final static int MAX_USER_ID = 1048571;  //1 less than RealmImpl.UNKNOWN_ACCOUNT_ID
     public final static int MAX_GROUP_ID = 1048572; //1 less than RealmImpl.UNKNOWN_GROUP_ID
 
-    public static final String CONFIGURATION_ELEMENT_NAME = "default-permissions";
-    public static final String COLLECTION_ATTRIBUTE = "collection";
-    public static final String RESOURCE_ATTRIBUTE = "resource";
-
     public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
     public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 

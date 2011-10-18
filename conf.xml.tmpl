@@ -9,7 +9,6 @@
     
         exist
             db-connection
-                default-permissions
                 pool
                 recovery
                 security
@@ -149,19 +148,6 @@
     <db-connection cacheSize="48M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
 		doc-ids="default">
-
-        <!--
-            Specifies the default permissions for all resources and collections
-            in eXist (see  User Authentication and Access Control). When this is
-            not configured, the default "mod" (similar to the Unix "chmod" 
-            command) is set to 0775 in the resources and collections attributes.
-            
-            A different default value may be set for a database instance, and 
-            local overrides are also possible.
-        -->
-        <!--
-        <default-permissions collection="0775" resource="0775" />
-        -->
 
         <!-- 
             Settings for the database connection pool:
