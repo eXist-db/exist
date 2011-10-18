@@ -64,20 +64,20 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
-        if(afterTag)
+        if (afterTag && !isInlineTag(namespaceURI, localName))
             indent();
         super.startElement(namespaceURI, localName, qname);
         level++;
         afterTag = true;
         sameline = true;
     }
-
+    
     /* (non-Javadoc)
      * @see org.exist.util.serializer.XMLWriter#startElement(org.exist.dom.QName)
      */
     @Override
     public void startElement(QName qname) throws TransformerException {
-        if(afterTag)
+        if (afterTag && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName()))
             indent();
         super.startElement(qname);
         level++;
@@ -91,7 +91,7 @@ public class IndentingXMLWriter extends XMLWriter {
     @Override
     public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
         level--;
-        if (afterTag && !sameline) indent();
+        if (afterTag && !sameline && !isInlineTag(namespaceURI, localName)) indent();
         super.endElement(namespaceURI, localName, qname);
         sameline = false;
         afterTag = true;
@@ -103,7 +103,7 @@ public class IndentingXMLWriter extends XMLWriter {
     @Override
     public void endElement(QName qname) throws TransformerException {
         level--;
-        if (afterTag && !sameline) indent();
+        if (afterTag && !sameline && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName())) indent();
         super.endElement(qname);
         sameline = false;
         afterTag = true;
@@ -179,6 +179,10 @@ public class IndentingXMLWriter extends XMLWriter {
         indent = outputProperties.getProperty(OutputKeys.INDENT, "no").equals("yes");
     }
 
+    protected boolean isInlineTag(String namespaceURI, String localName) {
+    	return false;
+    }
+    
     protected void indent() throws TransformerException {
         if(!indent)
             return;
