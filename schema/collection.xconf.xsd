@@ -272,10 +272,10 @@
         <xs:attribute name="value" type="xs:string" use="optional" form="unqualified"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="qnameReq">
-        <xs:attribute name="qname" type="xs:QName" use="required" form="unqualified"/>
+        <xs:attribute name="qname" type="xs:string" use="required" form="unqualified"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="qnameOpt">
-        <xs:attribute name="qname" type="xs:QName" use="optional" form="unqualified"/>
+        <xs:attribute name="qname" type="xs:string" use="optional" form="unqualified"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="pathReq">
         <xs:attribute name="path" type="xs:string" use="required" form="unqualified"/>
