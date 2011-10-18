@@ -5,13 +5,13 @@
     xmlns:dcterms="http://purl.org/dc/terms/"
     xmlns="http://exist-db.org/collection-config/1.0"
     targetNamespace="http://exist-db.org/collection-config/1.0"
-    version="1.1">
+    elementFormDefault="qualified">
     
     <xs:annotation>
         <xs:documentation>Schema for eXist-db Collection Configuration files /db/system/config/db/**/collection.xconf</xs:documentation>
         <xs:appinfo>
             <dcterms:title>Schema for eXist-db Collection Configuration Files</dcterms:title>
-            <dcterms:created xsi:type="dcterms:W3CDTF">2011-10-09T17:04:30.915+01:00</dcterms:created>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2011-10-09T18:47:21.319+01:00</dcterms:created>
             <dcterms:creator>Adam Retter</dcterms:creator>
         </xs:appinfo>
     </xs:annotation>
@@ -26,14 +26,14 @@
             <xs:sequence>
                 <xs:element ref="index"/>
                 <xs:element ref="triggers" minOccurs="0"/>
-                <xs:element name="validation" minOccurs="0"/>
+                <xs:element ref="validation" minOccurs="0"/>
             </xs:sequence>
             <xs:sequence>
-                <xs:element name="triggers"/>
-                <xs:element name="validation" minOccurs="0"/>
+                <xs:element ref="triggers"/>
+                <xs:element ref="validation" minOccurs="0"/>
             </xs:sequence>
             <xs:sequence>
-                <xs:element name="validation"/>
+                <xs:element ref="validation"/>
             </xs:sequence>
         </xs:choice>
     </xs:complexType>
@@ -44,13 +44,34 @@
         <xs:annotation>
             <xs:documentation>Index Configuration</xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element ref="fulltext"/>
-            <xs:element ref="lucene" minOccurs="0"/>
-            <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="gml" minOccurs="0"/>
-        </xs:sequence>
+        <xs:choice>
+            <xs:sequence>
+                <xs:element ref="fulltext"/>
+                <xs:element ref="lucene" minOccurs="0"/>
+                <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="gml" minOccurs="0"/>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element ref="lucene"/>
+                <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="gml" minOccurs="0"/>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:group ref="rangeIndex" maxOccurs="unbounded"/>
+                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="gml" minOccurs="0"/>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element ref="ngram" maxOccurs="unbounded"/>
+                <xs:element ref="gml" minOccurs="0"/>
+            </xs:sequence>
+            <xs:sequence>
+                <xs:element ref="gml"/>
+            </xs:sequence>
+        </xs:choice>
+        
     </xs:complexType>
     
     <xs:element name="fulltext" type="fulltextType"/>
@@ -83,19 +104,11 @@
     </xs:group>
     
     <xs:complexType name="pathType">
-        <xs:attribute ref="path" use="required"/>
+        <xs:attributeGroup ref="pathReq"/>
     </xs:complexType>
     
-    <xs:attribute name="path" type="xs:string"/>
-    
-    <xs:attribute name="qname">
-        <xs:simpleType>
-            <xs:restriction base="xs:QName"/>
-        </xs:simpleType>
-    </xs:attribute>
-    
     <xs:complexType name="fulltextCreateType">
-        <xs:attribute ref="qname" use="required"/>
+        <xs:attributeGroup ref="qnameReq"/>
         <xs:attribute name="content" use="optional" type="xs:string" fixed="mixed"/>
     </xs:complexType>
     
@@ -109,8 +122,8 @@
         <xs:annotation>
             <xs:documentation>Either @qname or @path must be specified. Not both!</xs:documentation>
         </xs:annotation>
-        <xs:attribute ref="path" use="optional"/>
-        <xs:attribute ref="qname" use="optional"/>
+        <xs:attributeGroup ref="pathOpt"/>
+        <xs:attributeGroup ref="qnameOpt"/>
         <xs:attribute name="type" use="required" type="xs:QName"/>
     </xs:complexType>
     
@@ -131,10 +144,8 @@
             <xs:element ref="param" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="id" use="optional" type="xs:ID"/>
-        <xs:attribute ref="class" use="required"/>
+        <xs:attributeGroup ref="class"/>
     </xs:complexType>
-    
-    <xs:attribute name="class" type="xs:string"/>
     
     <xs:element name="param" type="paramType"/>
     
@@ -169,14 +180,14 @@
         <xs:sequence minOccurs="0">
             <xs:group ref="textInstruction"/>
         </xs:sequence>
-        <xs:attribute ref="qname" use="optional"/>
+        <xs:attributeGroup ref="qnameOpt"/>
         <xs:attribute name="match" use="optional" type="xs:string"/>
         <xs:attribute name="analyzer" use="optional" type="xs:IDREF"/>
         <xs:attribute name="boost" use="optional" type="xs:double"/>
     </xs:complexType>
     
     <xs:complexType name="singleQnameAttrType">
-        <xs:attribute ref="qname" use="required"/>
+        <xs:attributeGroup ref="qnameReq"/>
     </xs:complexType>
     
     <xs:element name="ngram" type="singleQnameAttrType"/>
@@ -204,12 +215,12 @@
         <xs:sequence minOccurs="0">
             <xs:element ref="parameter" maxOccurs="unbounded"/>
         </xs:sequence>
-       <xs:attribute name="event" use="optional" type="eventType">
+        <xs:attribute name="event" use="optional" type="eventType">
            <xs:annotation>
                <xs:documentation>This is deprecated, triggers should now code functions for each event</xs:documentation>
            </xs:annotation>
        </xs:attribute>
-       <xs:attribute ref="class" use="required"/>
+       <xs:attributeGroup ref="class"/>
     </xs:complexType>
     
     <xs:simpleType name="eventType">
@@ -245,5 +256,26 @@
             <xs:enumeration value="yes"/>
         </xs:restriction>
     </xs:simpleType>
+    
+    <!-- we are hiding attributes in attributeGroup to manage their
+        namespaces as described here: http://docstore.mik.ua/orelly/xml/schema/ch10_04.htm -->
+    <xs:attributeGroup name="class">
+        <xs:attribute name="class" type="xs:string" use="required" form="unqualified" />
+    </xs:attributeGroup>
+    
+    <!-- ideally we would have just one of each attribute - but due do the form restrictions in XML Schema
+        we need both -->
+    <xs:attributeGroup name="qnameReq">
+        <xs:attribute name="qname" type="xs:QName" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="qnameOpt">
+        <xs:attribute name="qname" type="xs:QName" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="pathReq">
+        <xs:attribute name="path" type="xs:string" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="pathOpt">
+        <xs:attribute name="path" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
     
 </xs:schema>
