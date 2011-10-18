@@ -54,6 +54,40 @@ public class XHTMLWriter extends IndentingXMLWriter {
         emptyTags.add("param");
     }
     
+    private final static ObjectHashSet<String> inlineTags = new ObjectHashSet<String>(31);
+    
+    static {
+    	inlineTags.add("a");
+    	inlineTags.add("abbr");
+    	inlineTags.add("acronym");
+    	inlineTags.add("b");
+    	inlineTags.add("bdo");
+    	inlineTags.add("big");
+    	inlineTags.add("br");
+    	inlineTags.add("button");
+    	inlineTags.add("cite");
+    	inlineTags.add("code");
+    	inlineTags.add("del");
+    	inlineTags.add("dfn");
+    	inlineTags.add("em");
+    	inlineTags.add("i");
+    	inlineTags.add("img");
+    	inlineTags.add("input");
+    	inlineTags.add("kbd");
+    	inlineTags.add("label");
+    	inlineTags.add("q");
+    	inlineTags.add("samp");
+    	inlineTags.add("select");
+    	inlineTags.add("small");
+    	inlineTags.add("span");
+    	inlineTags.add("strong");
+    	inlineTags.add("sub");
+    	inlineTags.add("sup");
+    	inlineTags.add("textarea");
+    	inlineTags.add("tt");
+    	inlineTags.add("var");
+    }
+    
     private static boolean isEmptyTag(String tag) {
         return emptyTags.contains(tag);
     }
@@ -166,5 +200,11 @@ public class XHTMLWriter extends IndentingXMLWriter {
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
+    }
+    
+    @Override
+    protected boolean isInlineTag(String namespaceURI, String localName) {
+    	return (namespaceURI == null || "".equals(namespaceURI) || Namespaces.XHTML_NS.equals(namespaceURI))
+    			&& inlineTags.contains(localName);
     }
 }
