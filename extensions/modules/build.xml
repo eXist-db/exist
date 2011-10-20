@@ -126,11 +126,17 @@
         <fileset dir="${top.dir}/tools/ant/lib">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${top.dir}/extensions/modules/lib">
+            <include name="*.jar"/>
+        </fileset>
         <pathelement path="${top.dir}/exist.jar"/>
         <pathelement path="${top.dir}/exist-optional.jar"/>
         <pathelement path="${top.dir}/start.jar"/>
         <pathelement path="${java.class.path}"/>
     </path>
+
+
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
 
     <!-- 
         Special targets for XSLFO module 
@@ -269,8 +275,17 @@
         Below this line only generic build items
         ========================================
     -->
+    <target name="prepare-ivy">
+       <fetch classpathref="classpath.core" dest="${top.dir}/tools/ant/lib/" 
+            url="http://repo1.maven.org/maven2/org/apache/ivy/ivy/2.2.0/ivy-2.2.0.jar" 
+            classname="org.apache.ivy.Main"/>
+        
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
+        
+        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant"/>
+    </target>
 
-    <target name="prepare" depends="prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
+    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
         <mkdir dir="${classes}"/>
     </target>
 
