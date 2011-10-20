@@ -1,0 +1,11 @@
+<!--
+    Ivy module to retrieve the tika jar, including dependancies, excluding duplicate jars
+
+    $Id$
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="cssparser"/>
+    <dependencies>
+        <dependency org="net.sourceforge.cssparser" name="cssparser" rev="0.9.5" conf="*->*,!sources,!javadoc"/>  
+    </dependencies>
+</ivy-module>
