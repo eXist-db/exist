@@ -1597,7 +1597,7 @@ public  class Collection extends Observable implements Comparable, Cacheable
             return null;
 
         //System collection has no configuration
-        if (DBBroker.SYSTEM_COLLECTION.equals(getURI().getRawCollectionPath()))
+        if (getURI().getRawCollectionPath().startsWith(DBBroker.SYSTEM_COLLECTION))
             return null;
 
         CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
