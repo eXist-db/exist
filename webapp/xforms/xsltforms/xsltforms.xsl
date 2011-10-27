@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<!-- Rev. 506
+<!-- Rev. 511
 Copyright (C) 2008-2011 agenceXML - Alain COUTHURES
 Contact at : info@agencexml.com
 
@@ -20,7 +20,17 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	-->
-<xsl:stylesheet xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ajx="http://www.ajaxforms.net/2006/ajx" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:exslt="http://exslt.org/common" xmlns:txs="http://www.agencexml.com/txs" xmlns:default="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" exclude-result-prefixes="xhtml xforms ev exslt msxsl"><xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+<xsl:stylesheet xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ajx="http://www.ajaxforms.net/2006/ajx" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:exslt="http://exslt.org/common" xmlns:txs="http://www.agencexml.com/txs" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:default="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xsltforms="http://www.agencexml.com/xsltforms" version="1.0" exclude-result-prefixes="xhtml xforms ev exslt msxsl"><rdf:RDF>
+		<rdf:Description rdf:about="http://www.agencexml.com/xsltforms/xsltforms.xsl">
+			<dcterms:title>XSLT 1.0 Stylesheet for XSLTForms</dcterms:title>
+			<dcterms:hasVersion>Rev. 511</dcterms:hasVersion>
+			<dcterms:creator>Alain Couthures - agenceXML</dcterms:creator>
+			<dcterms:conformsTo>XForms 1.1</dcterms:conformsTo>
+			<dcterms:created>2011-10-24</dcterms:created>
+			<dcterms:description>Converts well-formed HTML+XForms page into HTML+Javascript page</dcterms:description>
+			<dcterms:format>text/xsl</dcterms:format>
+		</rdf:Description>
+	</rdf:RDF><xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 		
 		
 		<xsl:param xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="baseuri"/>
@@ -69,17 +79,131 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="piform" select="processing-instruction('xml-form')"/>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="piforminstanceid">
+			<xsl:if test="contains($piform, ' instance=&quot;')">
+				<xsl:value-of select="substring-before(substring-after($piform, ' instance=&quot;'), '&quot;')"/>
+			</xsl:if>
+		</xsl:variable>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="piforminstance" select="/"/>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="piformhref"><xsl:if test="contains($piform, ' href=&quot;')"><xsl:value-of select="substring-before(substring-after($piform, ' href=&quot;'), '&quot;')"/></xsl:if></xsl:variable>
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="piformdoc" select="document($piformhref)"/>
 		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="main" select="/"/>
-		<!--
-		<msxsl:script xmlns:exslt="http://exslt.org/common" xmlns:msxsl="urn:schemas-microsoft-com:xslt" language="JScript" implements-prefix="exslt">
-			this['node-set'] =  function (x) {
-			return x;
-			}
-		</msxsl:script>
-		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" name="config" select="exslt:node-set($config0)/*"/>
-		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="confignodes"><xsl:call-template name="config"/></xsl:variable>
-		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" name="config" select="exslt:node-set($confignodes)"/>
-		-->
+		<xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="profiler">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsltforms="http://www.agencexml.com/xsltforms">
+	<head>
+		<title>XSLTForms Profiler</title>
+		<xforms:model>
+			<xforms:instance id="profile">
+				<xsltforms:dump/>
+			</xforms:instance>
+		</xforms:model>
+	</head>
+	<body>
+		<xforms:group ref=".[not(*)]">
+			<p>This profiler is accessible when pressing F1 key then activating the corresponding trigger.</p>
+		</xforms:group>
+		<xforms:group ref=".[*]">
+			<h2>XSLTForms Profiler</h2>
+			<p>
+				<xforms:output value="xsltforms:date">
+					<xforms:label>TimeStamp: </xforms:label>
+				</xforms:output>
+			</p>
+			<h3><xforms:output value="xsltforms:location"/></h3>
+			<p>Environment:
+				<ul>
+					<li>Browser: <xforms:output value="xsltforms:appname"/>&#xA0;<xforms:output value="xsltforms:appcodename"/>&#xA0;<xforms:output value="xsltforms:appversion"/></li>
+					<li>User-Agent: <xforms:output value="xsltforms:useragent"/></li>
+					<li>Initial XSLT Engine: <xforms:output value="xsltforms:xsltengine"/></li>
+					<li>Current XSLT Engine: <xforms:output value="xsltforms:xsltengine2"/></li>
+					<li>XSLTForms Version: <xforms:output value="xsltforms:version"/></li>
+				</ul>
+			</p>
+			<table>
+				<tr>
+					<td>Instances:</td>
+					<td>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</td>
+					<td>Controls:</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<ul>
+							<xforms:repeat nodeset="xsltforms:instances/xsltforms:instance">
+								<li>"<xforms:output value="@id"/>": <xforms:output value="concat(., ' node', choose(. &gt; 1,'s',''))"/></li>
+							</xforms:repeat>
+						</ul>
+					</td>
+					<td>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</td>
+					<td>
+						<ul>
+							<xforms:repeat nodeset="xsltforms:controls/xsltforms:control">
+								<li>xforms:<xforms:output value="@type"/>: <xforms:output value="concat(., ' item', choose(. &gt; 1,'s',''))"/></li>
+							</xforms:repeat>
+						</ul>
+					</td>
+				</tr>
+			</table>
+			<table>
+				<tr>
+					<td>HTML Elements Count: <xforms:output value="xsltforms:htmlelements"/><br/>
+						HTML Parsing Time: <xforms:output value="xsltforms:htmltime"/>ms<br/>
+						HTML Creation Time: <xforms:output value="xsltforms:creatingtime"/>ms
+					</td>
+					<td>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</td>
+					<td>XForms Init Time: <xforms:output value="xsltforms:inittime"/>ms<br/>
+						XForms Refresh Count: <xforms:output value="xsltforms:refreshcount"/><br/>
+						XForms Cumulative Refresh Time: <xforms:output value="xsltforms:refreshtime"/>ms
+					</td>
+				</tr>
+			</table>
+			<xforms:group ref=".[xsltforms:xpaths/xsltforms:xpath]">
+				<p>XPath Expressions Cumulative Evaluation Time:
+					<ul>
+						<xforms:repeat nodeset="xsltforms:xpaths/xsltforms:xpath | xsltforms:xpaths/xsltforms:others">
+							<li><xforms:output value="choose(local-name()='others', 'Others', concat('&quot;',@expr,'&quot;'))"/>: <xforms:output value="."/>ms</li>
+						</xforms:repeat>
+						<li>Total: <xforms:output value="xsltforms:xpaths/xsltforms:total"/>ms</li>
+					</ul>
+				</p>
+			</xforms:group>
+		</xforms:group>
+	</body>
+</html>
+		</xsl:variable>
+		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xalan" match="/">
+			<xsl:choose>
+				<xsl:when test="$piform != ''">
+					<xsl:choose>
+						<xsl:when test="count($piformdoc/*) != 0">
+							<xsl:apply-templates select="$piformdoc/*"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:choose>
+								<xsl:when test="function-available('xalan:nodeset')">
+									<xsl:apply-templates select="xalan:nodeset($profiler)/*"/>
+								</xsl:when>
+								<xsl:when test="function-available('exslt:node-set')">
+									<xsl:apply-templates select="exslt:node-set($profiler)/*"/>
+								</xsl:when>
+								<xsl:when test="function-available('msxsl:node-set')">
+									<xsl:apply-templates select="msxsl:node-set($profiler)/*"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:variable name="profiler0" select="$profiler"/>
+									<xsl:apply-templates select="$profiler0/*"/>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:template>
+	
+		
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xalan" match="xhtml:html | html">
 			<xsl:choose>
 				<xsl:when test="function-available('xalan:nodeset')">
@@ -136,7 +260,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			</xsl:variable>
 			<html xmlns="http://www.w3.org/1999/xhtml">
 				<xsl:copy-of select="@*"/>
-				<xsl:comment>HTML elements and Javascript instructions generated by XSLTForms r506 - Copyright (C) 2008-2011 &lt;agenceXML&gt; - Alain COUTHURES - http://www.agencexml.com</xsl:comment>
+				<xsl:comment>HTML elements and Javascript instructions generated by XSLTForms r511 - Copyright (C) 2008-2011 &lt;agenceXML&gt; - Alain COUTHURES - http://www.agencexml.com</xsl:comment>
 				<xsl:variable name="option"> debug="yes" </xsl:variable>
 				<xsl:variable name="displaydebug">
 					<xsl:choose>
@@ -171,10 +295,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					</xsl:if>
 					<xsl:copy-of select="$config/extensions/beforeInit/*"/>
 					<script type="text/javascript">
-						<xsl:text>xforms.debugMode = </xsl:text>
-						<xsl:value-of select="$displaydebug"/>
-						<xsl:text>;
-</xsl:text>
 						<xsl:text>var Language = "</xsl:text>
 						<xsl:choose>
 							<xsl:when test="$lang != ''">
@@ -188,11 +308,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						<xsl:value-of select="$config/properties/status"/>
 						<xsl:text>";
 </xsl:text>
+						<xsl:text>var valuesSeparator = "</xsl:text>
+						<xsl:variable name="vsep" select="$config/properties/valuesseparator"/>
+						<xsl:choose>
+							<xsl:when test="$vsep != ''">
+								<xsl:value-of select="$vsep"/>
+							</xsl:when>
+							<xsl:otherwise><xsl:text> </xsl:text></xsl:otherwise>
+						</xsl:choose>
+						<xsl:text>";
+</xsl:text>
 						<xsl:text>function initImpl() {
 </xsl:text>
 						<xsl:text>var d1 = new Date();
 </xsl:text>
 						<xsl:text>xforms.htmltime = d1 - d0;
+</xsl:text>
+						<xsl:text>xforms.debugMode = </xsl:text>
+						<xsl:value-of select="$displaydebug"/>
+						<xsl:text>;
+</xsl:text>
+						<xsl:variable name="xsltversion">
+							<xsl:if test="system-property('xsl:vendor')='Microsoft'">
+								<xsl:value-of select="system-property('msxsl:version')"/>
+							</xsl:if>
+						</xsl:variable>
+						<xsl:text>xforms.xsltEngine = "</xsl:text>
+						<xsl:value-of select="concat(system-property('xsl:vendor'),' ',system-property('xsl:vendor-url'),' ',$xsltversion)"/>
+						<xsl:text>";
 </xsl:text>
 						<xsl:text>Core.fileName='xsltforms.js';
 </xsl:text>
@@ -221,9 +364,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 										<xsl:when test="//*[starts-with(name(),concat($nstype,':'))]"><xsl:value-of select="namespace-uri(//*[starts-with(name(),concat($nstype,':'))][1])"/></xsl:when>
 										<xsl:when test="//@*[starts-with(name(),concat($nstype,':'))]"><xsl:value-of select="namespace-uri(//@*[starts-with(name(),concat($nstype,':'))][1])"/></xsl:when>
 										<xsl:when test="//xsd:schema[descendant::*[@name = $typename]]"><xsl:value-of select="//xsd:schema[descendant::*[@name = $typename]]/@targetNamespace"/></xsl:when>
+										<xsl:when test="//@*[name() = concat('xmlns:',$nstype)]"><xsl:value-of select="//@*[name() = concat('xmlns:',$nstype)]"/></xsl:when>
 										<xsl:when test="$nsmodel != ''"><xsl:value-of select="$nsmodel"/></xsl:when>
 										<xsl:when test="$nstype = 'xs' or $nstype = 'xsd'">http://www.w3.org/2001/XMLSchema</xsl:when>
-										<xsl:when test="$nstype = 'xf'">http://www.w3.org/2002/xforms</xsl:when>
+										<xsl:when test="$nstype = 'xf' or $nstype = 'xform'">http://www.w3.org/2002/xforms</xsl:when>
 										<xsl:when test="$nstype = 'xsltforms'">http://www.agencexml.com/xsltforms</xsl:when>
 										<xsl:otherwise>unknown (prefix:<xsl:value-of select="$nstype"/>)</xsl:otherwise>
 									</xsl:choose>
@@ -243,6 +387,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 										<xsl:when test="//@*[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat(translate($nstype,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),':'))]"><xsl:value-of select="namespace-uri(//@*[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat(translate($nstype,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),':'))][1])"/></xsl:when>
 										<xsl:when test="//xsd:schema[descendant::*[@name = $typename]]"><xsl:value-of select="//xsd:schema[descendant::*[@name = $typename]]/@targetNamespace"/></xsl:when>
 										<xsl:when test="//xforms:model[@schema]"><xsl:for-each select="//xforms:model[@schema]"><xsl:value-of select="document(@schema,/)/*[descendant::*[@name = $typename]]/@targetNamespace"/></xsl:for-each></xsl:when>
+										<xsl:when test="//@*[name() = concat('xmlns:',$nstype)]"><xsl:value-of select="//@*[name() = concat('xmlns:',$nstype)]"/></xsl:when>
 										<xsl:when test="$nstype = 'xs' or $nstype = 'xsd'">http://www.w3.org/2001/XMLSchema</xsl:when>
 										<xsl:when test="$nstype = 'xsltforms'">http://www.agencexml.com/xsltforms</xsl:when>
 										<xsl:otherwise>unknown</xsl:otherwise>
@@ -254,7 +399,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						</xsl:for-each>
 						<xsl:variable name="xexprs">
 							<xexprs xmlns="">
-								<xsl:for-each select="//xforms:*/@at | //xforms:*/@calculate | //xforms:*/@constraint | //xforms:*/@context | //xforms:*/@if | //xforms:*/@index | //xforms:*/@nodeset | //xforms:*/@origin | //xforms:*/@readonly | //xforms:*/@ref | //xforms:*/@relevant | //xforms:*/@required | //xforms:*/@target | //xforms:*/@value | //xforms:*/@while | //xforms:script[@type = 'application/xquery']">
+								<xsl:for-each select="//xforms:*/@at | //xforms:*/@calculate | //xforms:*/@constraint | //xforms:*/@context | //xforms:*/@if | //xforms:*/@index | //xforms:*/@iterate | //xforms:*/@nodeset | //xforms:*/@origin | //xforms:*/@readonly | //xforms:*/@ref | //xforms:*/@relevant | //xforms:*/@required | //xforms:*/@target | //xforms:*/@targetref | //xforms:*/@value | //xforms:*/@while | //xforms:script[@type = 'application/xquery']">
 									<xsl:sort select="."/>
 									<xexpr><xsl:value-of select="."/></xexpr>
 								</xsl:for-each>
@@ -454,8 +599,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="processing-instruction()"/>
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="comment()"/>
-		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus" priority="2"/>
-		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:reset|xforms:refresh|xforms:rebuild|xforms:recalculate|xforms:revalidate" priority="2"/>
+		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:load|xforms:toggle|xforms:send|xforms:setfocus" priority="2"/>
+		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:setindex|xforms:reset|xforms:refresh|xforms:rebuild|xforms:recalculate|xforms:revalidate" priority="2"/>
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:show|xforms:hide" priority="2"/>
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:*" priority="1">
 			<script>
@@ -546,7 +691,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	
 		
 		<xsl:template xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" match="xforms:label" priority="2">
-			<xsl:param name="appearance" select="false()"/>
+			<xsl:param name="appearance" select="'undefined'"/>
 			<xsl:choose>
 				<xsl:when test="$appearance = 'groupTitle'">
 					<div>
@@ -988,110 +1133,102 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<xsl:call-template name="style">
 					<xsl:with-param name="class">xforms-control xforms-<xsl:value-of select="local-name()"/><xsl:choose><xsl:when test="local-name()='trigger' or local-name()='submit' or string(xforms:label)=''"> xforms-appearance-minimal</xsl:when><xsl:when test="@appearance"> xforms-appearance-<xsl:value-of select="@appearance"/></xsl:when><xsl:otherwise> xforms-appearance</xsl:otherwise></xsl:choose></xsl:with-param>
 				</xsl:call-template>
-				<span>
-					<span>
-						<xsl:if test="local-name() != 'trigger' and local-name() != 'submit' and local-name() != 'reset' and local-name() != 'output' and xforms:label/node() and string($appearance) != 'none'">
-							<span class="focus">&#xA0;<xsl:text/></span>
-						</xsl:if>
-						<xsl:if test="local-name() != 'trigger' and local-name() != 'submit' and local-name() != 'reset' and xforms:label/node() and string($appearance) != 'none'">
-							<span>
-								<xsl:choose>
-									<xsl:when test="$appearance = 'minimal'">
-										<xsl:apply-templates select="xforms:label">
-											<xsl:with-param name="appearance">field-minimal</xsl:with-param>
-										</xsl:apply-templates>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:apply-templates select="xforms:label"/>
-									</xsl:otherwise>
-								</xsl:choose>
-							</span>
-						</xsl:if>
-						<span class="value">
-							<xsl:copy-of select="$body"/>
-						</span>
-						<span>
-							<xsl:if test="@ajx:aid-button = 'true'">
-								<button class="aid-button">...</button>
-							</xsl:if>
-							<xsl:if test="local-name() != 'output'">
-								<span class="xforms-required-icon">*</span>
-							</xsl:if>
-							<span class="xforms-alert">
-								<span class="xforms-alert-icon">
-									<xsl:if test="xforms:alert">
-										<xsl:attribute name="onmouseover">show(this, null, true)</xsl:attribute>
-										<xsl:attribute name="onmouseout">show(this, null, false)</xsl:attribute>
-									</xsl:if>
-									<xsl:text>&#xA0;</xsl:text>
-								</span>
-								<xsl:if test="xforms:alert">
-									<xsl:variable name="aid">
-										<xsl:choose>
-											<xsl:when test="xforms:alert/@id"><xsl:value-of select="xforms:alert/@id"/></xsl:when>
-											<xsl:otherwise>
-												<xsl:for-each select="xforms:alert[1]">
-													<xsl:variable name="lname" select="local-name()"/>
-													<xsl:text>xf-</xsl:text>
-													<xsl:value-of select="$lname"/>
-													<xsl:text>-</xsl:text>
-													<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
-												</xsl:for-each>
-											</xsl:otherwise>
-										</xsl:choose>
-									</xsl:variable>
-									<div class="xforms-alert-value" id="{$aid}">
-										<xsl:apply-templates select="xforms:alert/node()"/>
-									</div>
-								</xsl:if>
-							</span>
-							<xsl:if test="xforms:hint">
-								<span class="xforms-hint">
-									<span class="xforms-hint-icon" onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)">&#xA0;<xsl:text/></span>
-									<xsl:variable name="hid">
-										<xsl:choose>
-											<xsl:when test="xforms:hint/@id"><xsl:value-of select="xforms:hint/@id"/></xsl:when>
-											<xsl:otherwise>
-												<xsl:for-each select="xforms:hint[1]">
-													<xsl:variable name="lname" select="local-name()"/>
-													<xsl:text>xf-</xsl:text>
-													<xsl:value-of select="$lname"/>
-													<xsl:text>-</xsl:text>
-													<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
-												</xsl:for-each>
-											</xsl:otherwise>
-										</xsl:choose>
-									</xsl:variable>
-									<div class="xforms-hint-value" id="{$hid}">
-										<xsl:apply-templates select="xforms:hint/node()"/>
-									</div>
-								</span>
-							</xsl:if>
-							<xsl:if test="xforms:help[not(@appearance='minimal')]">
-								<span class="xforms-help">
-								<span class="xforms-help-icon" onmouseover="show(this, 'help', true)" onmouseout="show(this, 'help', false)">&#xA0;<xsl:text/></span>
-									<xsl:variable name="hid">
-										<xsl:choose>
-											<xsl:when test="xforms:help/@id"><xsl:value-of select="xforms:help/@id"/></xsl:when>
-											<xsl:otherwise>
-												<xsl:for-each select="xforms:help[1]">
-													<xsl:variable name="lname" select="local-name()"/>
-													<xsl:text>xf-</xsl:text>
-													<xsl:value-of select="$lname"/>
-													<xsl:text>-</xsl:text>
-													<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
-												</xsl:for-each>
-											</xsl:otherwise>
-										</xsl:choose>
-									</xsl:variable>
-									<div class="xforms-help-value" id="{$hid}">
-										<xsl:apply-templates select="xforms:help/node()"/>
-									</div>
-								</span>
-							</xsl:if>
-						</span>
-					</span>
+				<xsl:if test="local-name() != 'trigger' and local-name() != 'submit' and local-name() != 'reset' and local-name() != 'output' and xforms:label/node() and string($appearance) != 'none'">
+					<span class="focus">&#xA0;<xsl:text/></span>
+				</xsl:if>
+				<xsl:if test="local-name() != 'trigger' and local-name() != 'submit' and local-name() != 'reset' and xforms:label/node() and string($appearance) != 'none'">
+					<xsl:choose>
+						<xsl:when test="$appearance = 'minimal'">
+							<xsl:apply-templates select="xforms:label">
+								<xsl:with-param name="appearance">field-minimal</xsl:with-param>
+							</xsl:apply-templates>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:apply-templates select="xforms:label"/>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:if>
+				<span class="value">
+					<xsl:copy-of select="$body"/>
 				</span>
+				<xsl:if test="@ajx:aid-button = 'true'">
+					<button class="aid-button">...</button>
+				</xsl:if>
+				<xsl:if test="local-name() != 'output'">
+					<span class="xforms-required-icon">*</span>
+				</xsl:if>
+				<span class="xforms-alert">
+					<span class="xforms-alert-icon">
+						<xsl:if test="xforms:alert">
+							<xsl:attribute name="onmouseover">show(this, null, true)</xsl:attribute>
+							<xsl:attribute name="onmouseout">show(this, null, false)</xsl:attribute>
+						</xsl:if>
+						<xsl:text>&#xA0;</xsl:text>
+					</span>
+					<xsl:if test="xforms:alert">
+						<xsl:variable name="aid">
+							<xsl:choose>
+								<xsl:when test="xforms:alert/@id"><xsl:value-of select="xforms:alert/@id"/></xsl:when>
+								<xsl:otherwise>
+									<xsl:for-each select="xforms:alert[1]">
+										<xsl:variable name="lname" select="local-name()"/>
+										<xsl:text>xf-</xsl:text>
+										<xsl:value-of select="$lname"/>
+										<xsl:text>-</xsl:text>
+										<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
+									</xsl:for-each>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<div class="xforms-alert-value" id="{$aid}">
+							<xsl:apply-templates select="xforms:alert/node()"/>
+						</div>
+					</xsl:if>
+				</span>
+				<xsl:if test="xforms:hint">
+					<span class="xforms-hint">
+						<span class="xforms-hint-icon" onmouseover="show(this, 'hint', true)" onmouseout="show(this, 'hint', false)">&#xA0;<xsl:text/></span>
+						<xsl:variable name="hid">
+							<xsl:choose>
+								<xsl:when test="xforms:hint/@id"><xsl:value-of select="xforms:hint/@id"/></xsl:when>
+								<xsl:otherwise>
+									<xsl:for-each select="xforms:hint[1]">
+										<xsl:variable name="lname" select="local-name()"/>
+										<xsl:text>xf-</xsl:text>
+										<xsl:value-of select="$lname"/>
+										<xsl:text>-</xsl:text>
+										<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
+									</xsl:for-each>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<div class="xforms-hint-value" id="{$hid}">
+							<xsl:apply-templates select="xforms:hint/node()"/>
+						</div>
+					</span>
+				</xsl:if>
+				<xsl:if test="xforms:help[not(@appearance='minimal')]">
+					<span class="xforms-help">
+						<span class="xforms-help-icon" onmouseover="show(this, 'help', true)" onmouseout="show(this, 'help', false)">&#xA0;<xsl:text/></span>
+						<xsl:variable name="hid">
+							<xsl:choose>
+								<xsl:when test="xforms:help/@id"><xsl:value-of select="xforms:help/@id"/></xsl:when>
+								<xsl:otherwise>
+									<xsl:for-each select="xforms:help[1]">
+										<xsl:variable name="lname" select="local-name()"/>
+										<xsl:text>xf-</xsl:text>
+										<xsl:value-of select="$lname"/>
+										<xsl:text>-</xsl:text>
+										<xsl:value-of select="count(preceding::*[local-name()=$lname]|ancestor::*[local-name()=$lname])"/>
+									</xsl:for-each>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<div class="xforms-help-value" id="{$hid}">
+							<xsl:apply-templates select="xforms:help/node()"/>
+						</div>
+					</span>
+				</xsl:if>
 			</span>
 		</xsl:template>
 	
@@ -1172,36 +1309,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 								<xsl:with-param name="appearance" select="'caption'"/>
 							</xsl:apply-templates>
 						</xsl:if>
-						<span>
+						<xsl:for-each select="xforms:*">
+							<xsl:choose>
+								<xsl:when test="(not(xforms:label) and local-name() != 'label') or local-name() = 'trigger' or local-name() = 'submit'">
+									<span class="xforms-label">&#xA0;</span>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:apply-templates select="xforms:label">
+										<xsl:with-param name="appearance" select="'table'"/>
+									</xsl:apply-templates>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:for-each>
+						<xsl:if test="$type = 'repeat'">
+							<xsl:attribute name="class">xforms-repeat-item</xsl:attribute>
+						</xsl:if>
+						<xsl:for-each select="xforms:input|xforms:output|xforms:select|xforms:select1|xforms:textarea|xforms:secret|xforms:group|xforms:repeat|xforms:switch|xforms:trigger|xforms:submit">
 							<span>
-								<xsl:for-each select="xforms:*">
-									<xsl:choose>
-										<xsl:when test="(not(xforms:label) and local-name() != 'label') or local-name() = 'trigger' or local-name() = 'submit'">
-											<span scope="col" class="xforms-label"/>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:apply-templates select="xforms:label">
-												<xsl:with-param name="appearance" select="'table'"/>
-											</xsl:apply-templates>
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:for-each>
+								<xsl:apply-templates select=".">
+									<xsl:with-param name="appearance" select="'none'"/>
+								</xsl:apply-templates>
 							</span>
-						</span>
-						<span>
-							<span>
-								<xsl:if test="$type = 'repeat'">
-									<xsl:attribute name="class">xforms-repeat-item</xsl:attribute>
-								</xsl:if>
-								<xsl:for-each select="xforms:input|xforms:output|xforms:select|xforms:select1|xforms:textarea|xforms:secret|xforms:group|xforms:repeat|xforms:switch|xforms:trigger|xforms:submit">
-									<span class="td-cell">
-										<xsl:apply-templates select=".">
-											<xsl:with-param name="appearance" select="'none'"/>
-										</xsl:apply-templates>
-									</span>
-								</xsl:for-each>
-							</span>
-						</span>
+						</xsl:for-each>
 					</span>
 				</xsl:when>
 				<xsl:when test="$appearance = 'minimal'">
@@ -1294,22 +1423,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="toScriptBinding">
 			<xsl:param name="p"/>
 			<xsl:param name="model" select="string(@model)"/>
+			<xsl:param name="type" select="'null'"/>
+			<xsl:param name="mip"/>
 			<xsl:variable name="xpath">
 				<xsl:choose>
 					<xsl:when test="$p"><xsl:value-of select="$p"/></xsl:when>
 					<xsl:otherwise><xsl:value-of select="@value"/></xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
-			<xsl:variable name="isvalue">
+			<xsl:variable name="type2">
 				<xsl:choose>
-					<xsl:when test="$p">false</xsl:when>
-					<xsl:otherwise>true</xsl:otherwise>
+					<xsl:when test="$type != 'null'">"<xsl:value-of select="$type"/>"</xsl:when>
+					<xsl:when test="$p">null</xsl:when>
+					<xsl:otherwise>"xsd:string"</xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
 			<xsl:choose>
-				<xsl:when test="@bind">new Binding(false, null, null, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="@bind"/></xsl:call-template>")</xsl:when>
-				<xsl:when test="$xpath != '' and $model != ''">new Binding(<xsl:value-of select="$isvalue"/>, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xpath"/></xsl:call-template>", "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$model"/></xsl:call-template>")</xsl:when>
-				<xsl:when test="$xpath != ''">new Binding(<xsl:value-of select="$isvalue"/>, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xpath"/></xsl:call-template>")</xsl:when>
+				<xsl:when test="@bind">new <xsl:value-of select="$mip"/>Binding(null, null, null, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="@bind"/></xsl:call-template>")</xsl:when>
+				<xsl:when test="$xpath != '' and $model != ''">new <xsl:value-of select="$mip"/>Binding(<xsl:value-of select="$type2"/>, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xpath"/></xsl:call-template>", "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$model"/></xsl:call-template>")</xsl:when>
+				<xsl:when test="$xpath != ''">new <xsl:value-of select="$mip"/>Binding(<xsl:value-of select="$type2"/>, "<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xpath"/></xsl:call-template>")</xsl:when>
 				<xsl:otherwise>null</xsl:otherwise>
 			</xsl:choose>
 		</xsl:template>
@@ -1345,10 +1477,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:otherwise>"Unrecognized expression '<xsl:value-of select="$xp"/>'"</xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
-			<xsl:variable name="result">XPath.create("<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xp"/></xsl:call-template>",<xsl:value-of select="$xp2jsres2"/><xsl:call-template name="js2ns"><xsl:with-param name="js" select="$xp2jsres"/></xsl:call-template>);</xsl:variable>
+			<xsl:variable name="result">XPath.create("<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="$xp"/></xsl:call-template>",<xsl:call-template name="unordered"><xsl:with-param name="js" select="$xp2jsres"/></xsl:call-template>,<xsl:value-of select="$xp2jsres2"/><xsl:call-template name="js2ns"><xsl:with-param name="js" select="$xp2jsres"/></xsl:call-template>);</xsl:variable>
 			<xsl:value-of select="$result"/><xsl:text>
 </xsl:text>
 	  </xsl:template>
+	
+		
+		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="unordered">
+			<xsl:param name="js"/>
+			<xsl:variable name="pipe">,'|',</xsl:variable>
+			<xsl:variable name="ancestor">new StepExpr('ancestor',</xsl:variable>
+			<xsl:variable name="ancestororself">new StepExpr('ancestor-or-self',</xsl:variable>
+			<xsl:variable name="preceding">new StepExpr('preceding',</xsl:variable>
+			<xsl:variable name="precedingsibling">new StepExpr('preceding-sibling',</xsl:variable>
+			<xsl:choose>
+				<xsl:when test="contains($js,'new BinaryExpr(') and contains($js,$pipe)">true</xsl:when>
+				<xsl:when test="contains($js,$ancestor) or contains($js,$ancestororself) or contains($js,$preceding) or contains($js,$precedingsibling)">true</xsl:when>
+				<xsl:otherwise>false</xsl:otherwise>
+			</xsl:choose>
+		</xsl:template>
 	
 		
 		<xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="js2ns">
@@ -1360,12 +1507,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:value-of select="substring-before($js2,',')"/>
 					<xsl:text>,'</xsl:text>
 					<xsl:variable name="p" select="substring-before(substring($js2,2),&quot;'&quot;)"/>
+					<xsl:variable name="pmin" select="translate($p,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')"/>
 					<xsl:choose>
 						<xsl:when test="($main/descendant::*|$main/descendant::*/@*)/namespace::*[name()=$p]">
 							<xsl:value-of select="(($main/descendant::*|$main/descendant::*/@*)/namespace::*[name()=$p])[1]"/>
 						</xsl:when>
-						<xsl:when test="($main/descendant::*|$main/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat(translate($p,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),':'))]">
-							<xsl:value-of select="namespace-uri(($main/descendant::*|$main/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat(translate($p,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),':'))][1])"/>
+						<xsl:when test="($main/descendant::*|$main/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat($pmin,':'))]">
+							<xsl:value-of select="namespace-uri(($main/descendant::*|$main/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat($pmin,':'))][1])"/>
+						</xsl:when>
+						<xsl:when test="$main/descendant::*/@*[translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz') = concat('xmlns:',$pmin)]">
+							<xsl:value-of select="$main/descendant::*/@*[translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz') = concat('xmlns:',$pmin)]"/>
+						</xsl:when>
+						<xsl:when test="($piformdoc/descendant::*|$piformdoc/descendant::*/@*)/namespace::*[name()=$p]">
+							<xsl:value-of select="(($piformdoc/descendant::*|$piformdoc/descendant::*/@*)/namespace::*[name()=$p])[1]"/>
+						</xsl:when>
+						<xsl:when test="($piformdoc/descendant::*|$piformdoc/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat($pmin,':'))]">
+							<xsl:value-of select="namespace-uri(($piformdoc/descendant::*|$piformdoc/descendant::*/@*)[starts-with(translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),concat($pmin,':'))][1])"/>
+						</xsl:when>
+						<xsl:when test="$piformdoc/descendant::*/@*[translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz') = concat('xmlns:',$pmin)]">
+							<xsl:value-of select="$piformdoc/descendant::*/@*[translate(name(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz') = concat('xmlns:',$pmin)]"/>
 						</xsl:when>
 						<xsl:otherwise>notfound</xsl:otherwise>
 					</xsl:choose>
@@ -1373,7 +1533,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				</xsl:if>
 				<xsl:call-template name="js2ns">
 					<xsl:with-param name="js" select="substring-after($js2,')')"/>
-					<xsl:with-param name="main" select="$main"/>
 				</xsl:call-template>
 			</xsl:if>
 		</xsl:template>
@@ -1758,6 +1917,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							<xsl:when test="starts-with($s2,'//')">2.,new StepExpr('descendant-or-self',new NodeTestAny()</xsl:when>
 							<xsl:when test="starts-with($s2,'../')">3.,new StepExpr('parent',new NodeTestAny()</xsl:when>
 							<xsl:when test="starts-with($s2,'..')">2.,new StepExpr('parent',new NodeTestAny()</xsl:when>
+							<xsl:when test="starts-with($s2,'text()')">6.,new StepExpr('child',new NodeTestType(3)</xsl:when>
 							<xsl:when test="$c = '*' and substring($s2,2,1) != ':'"><xsl:value-of select="$axislength + 1"/>.,new StepExpr('<xsl:value-of select="$axis2"/>',new NodeTestType(NodeType.ELEMENT)</xsl:when>
 							<xsl:when test="$c = '/'">1.</xsl:when>
 							<xsl:when test="starts-with($s2,'@*')">2.,new StepExpr('attribute',new NodeTestAny()</xsl:when>
@@ -1865,7 +2025,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:choose>
 						<xsl:when test="($main/descendant::*|$main/descendant::*/@*)/namespace::*[name()=$ns]"><xsl:value-of select="($main/descendant::*|$main/descendant::*/@*)/namespace::*[name()=$ns][1]"/></xsl:when>
 						<xsl:when test="($main/descendant::*|$main/descendant::*/@*)[starts-with(name(),concat($ns,':'))]"><xsl:value-of select="namespace-uri(($main/descendant::*|$main/descendant::*/@*)[starts-with(name(),concat($ns,':'))][1])"/></xsl:when>
-						<xsl:when test="$ns = 'xf' or $ns = 'xforms'">http://www.w3.org/2002/xforms</xsl:when>
+						<xsl:when test="($piformdoc/descendant::*|$piformdoc/descendant::*/@*)/namespace::*[name()=$ns]"><xsl:value-of select="($piformdoc/descendant::*|$piformdoc/descendant::*/@*)/namespace::*[name()=$ns][1]"/></xsl:when>
+						<xsl:when test="($piformdoc/descendant::*|$piformdoc/descendant::*/@*)[starts-with(name(),concat($ns,':'))]"><xsl:value-of select="namespace-uri(($piformdoc/descendant::*|$piformdoc/descendant::*/@*)[starts-with(name(),concat($ns,':'))][1])"/></xsl:when>
+						<xsl:when test="$ns = 'xf' or $ns = 'xform' or $ns = 'xforms'">http://www.w3.org/2002/xforms</xsl:when>
 						<xsl:when test="$ns = 'math'">http://exslt.org/math</xsl:when>
 						<xsl:otherwise>http://www.w3.org/2005/xpath-functions</xsl:otherwise>
 					</xsl:choose>
@@ -2130,9 +2292,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:for-each select="xsd:pattern">
 				<xsl:text>.put("</xsl:text>
 				<xsl:value-of select="local-name()"/>
-				<xsl:text>", /^</xsl:text>
+				<xsl:text>", /^(</xsl:text>
 				<xsl:value-of select="@value"/>
-				<xsl:text>$/)</xsl:text>
+				<xsl:text>)$/)</xsl:text>
 			</xsl:for-each>
 			<xsl:if test="local-name(../..) = 'schema'">
 				<xsl:text>;
@@ -2179,6 +2341,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<xsl:value-of select="../@name"/>
 				<xsl:text>")</xsl:text>
 			</xsl:if>
+			<xsl:text>.addTypes()</xsl:text>
 			<xsl:for-each select="xsd:simpleType">
 				<xsl:text>.addType(</xsl:text>
 				<xsl:apply-templates select="."/>
@@ -2230,8 +2393,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>)</xsl:text>
-			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:load|xforms:message|xforms:dispatch|xforms:reset|xforms:show|xforms:hide|xforms:script">
+			<xsl:for-each select="xforms:setvalue|xforms:insert|xforms:delete|xforms:action|xforms:toggle|xforms:send|xforms:setfocus|xforms:setindex|xforms:load|xforms:message|xforms:dispatch|xforms:reset|xforms:show|xforms:hide|xforms:script">
 				<xsl:text>.add(xf_</xsl:text>
 				<xsl:variable name="lname" select="local-name()"/>
 				<xsl:variable name="nsuri" select="namespace-uri()"/>
@@ -2276,15 +2441,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:text>",</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@type"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
-			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@readonly"/></xsl:call-template>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@readonly"/><xsl:with-param name="type" select="'xsd:boolean'"/><xsl:with-param name="mip" select="'MIP'"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
-			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@required"/></xsl:call-template>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@required"/><xsl:with-param name="type" select="'xsd:boolean'"/><xsl:with-param name="mip" select="'MIP'"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
-			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@relevant"/></xsl:call-template>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@relevant"/><xsl:with-param name="type" select="'xsd:boolean'"/><xsl:with-param name="mip" select="'MIP'"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
-			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@calculate"/></xsl:call-template>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@calculate"/><xsl:with-param name="type" select="'xsd:string'"/><xsl:with-param name="mip" select="'MIP'"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
-			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@constraint"/></xsl:call-template>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@constraint"/><xsl:with-param name="type" select="'xsd:boolean'"/><xsl:with-param name="mip" select="'MIP'"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2315,6 +2480,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2333,11 +2500,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:if test="@delay | xforms:delay">
 				<xsl:text>,</xsl:text>
 				<xsl:choose>
 					<xsl:when test="xforms:delay/@value">
-						<xsl:text>new Binding(true, "</xsl:text>
+						<xsl:text>new Binding("xsd:string", "</xsl:text>
 						<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="xforms:delay/@value"/></xsl:call-template>
 						<xsl:text>")</xsl:text>
 					</xsl:when>
@@ -2394,7 +2563,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:value-of select="$idinput"/>
 				</xsl:otherwise>
 			</xsl:choose>
-			<xsl:text>","</xsl:text>
+			<xsl:text>",</xsl:text>
+			<xsl:choose>
+				<xsl:when test="xforms:label/node()">2</xsl:when>
+				<xsl:otherwise>0</xsl:otherwise>
+			</xsl:choose>
+			<xsl:text>,"</xsl:text>
 			<xsl:choose>
 				<xsl:when test="$lname = 'input'">text</xsl:when>
 				<xsl:when test="$lname = 'secret'">password</xsl:when>
@@ -2439,6 +2613,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2495,6 +2671,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 								<xsl:with-param name="text" select="."/>
 								<xsl:with-param name="trtext" select="translate(.,'&#10;&#13;&#9;','&#10;&#10;&#10;')"/>
 							</xsl:call-template>
+						</xsl:when>
+						<xsl:when test="$piform != '' and @id = $piforminstanceid">
+							<xsl:apply-templates select="$piforminstance/*" mode="xml2string">
+								<xsl:with-param name="root" select="true()"/>
+							</xsl:apply-templates>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:apply-templates select="*" mode="xml2string">
@@ -2617,6 +2798,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2643,6 +2826,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2685,6 +2870,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				</xsl:otherwise>
 			</xsl:choose>
 			<xsl:text>",</xsl:text>
+			<xsl:choose>
+				<xsl:when test="xforms:label/node()">1</xsl:when>
+				<xsl:otherwise>0</xsl:otherwise>
+			</xsl:choose>
+			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@ref"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@mediatype"/></xsl:call-template>
@@ -2728,6 +2918,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 					<xsl:text>,</xsl:text>
 					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+					<xsl:text>,</xsl:text>
+					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 					<xsl:text>);
 </xsl:text>
 				</xsl:when>
@@ -2756,6 +2948,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 					<xsl:text>,</xsl:text>
 					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+					<xsl:text>,</xsl:text>
+					<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 					<xsl:text>),"</xsl:text>
 					<xsl:value-of select="$parentid"/>
 					<xsl:text>",evt,false,true)});
@@ -2826,6 +3020,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2842,6 +3038,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2860,6 +3058,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -2877,9 +3077,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="normalize-space(text())"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@context"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -3001,6 +3205,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@replace"/><xsl:with-param name="default">"all"</xsl:with-param></xsl:call-template>
 			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptBinding"><xsl:with-param name="p" select="@targetref"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@instance"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@separator"/><xsl:with-param name="default">"&amp;"</xsl:with-param></xsl:call-template>
@@ -3028,7 +3234,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<xsl:text>,</xsl:text>
 				<xsl:choose>
 					<xsl:when test="xforms:name/@value">
-						<xsl:text>new Binding(true, "</xsl:text>
+						<xsl:text>new Binding("xsd:string", "</xsl:text>
 						<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="xforms:name/@value"/></xsl:call-template>
 						<xsl:text>")</xsl:text>
 					</xsl:when>
@@ -3040,7 +3246,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				<xsl:for-each select="xforms:value">
 					<xsl:choose>
 						<xsl:when test="@value">
-							<xsl:text>new Binding(true, "</xsl:text>
+							<xsl:text>new Binding("xsd:string", "</xsl:text>
 							<xsl:call-template name="toXPathExpr"><xsl:with-param name="p" select="@value"/></xsl:call-template>
 							<xsl:text>")</xsl:text>
 						</xsl:when>
@@ -3091,6 +3297,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>),"</xsl:text>
 			<xsl:choose>
 				<xsl:when test="@id"><xsl:value-of select="@id"/></xsl:when>
@@ -3151,6 +3359,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
@@ -3203,6 +3413,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@if"/></xsl:call-template>
 			<xsl:text>,</xsl:text>
 			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@while"/></xsl:call-template>
+			<xsl:text>,</xsl:text>
+			<xsl:call-template name="toScriptParam"><xsl:with-param name="p" select="@iterate"/></xsl:call-template>
 			<xsl:text>);
 </xsl:text>
 			<xsl:apply-templates select="*" mode="script"/>
