@@ -135,7 +135,8 @@ public class MiltonDocument extends MiltonResource
         }
         
         if(propfindMethod==null){
-            propfindMethod = System.getProperty("org.exist.webdav.METHOD_XML_SIZE", METHOD_EXACT);
+            // GUESS works for all except Finder
+            propfindMethod = System.getProperty("org.exist.webdav.METHOD_XML_SIZE", METHOD_GUESS);
         }
     }
 
