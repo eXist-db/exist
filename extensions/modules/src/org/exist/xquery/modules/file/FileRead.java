@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,15 +21,16 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
 
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -57,17 +58,23 @@ public class FileRead extends BasicFunction {
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." )
 				},				
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) ),
+			new FunctionReturnSequenceType( Type.STRING, 
+                    Cardinality.ZERO_OR_ONE, "the file contents" ) ),
+        
 		new FunctionSignature(
 			new QName( "read", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Reads the content of file.  This method is only available to the DBA role.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "A string representing a URL, eg file://etc." ),
-				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding type for the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The encoding type for the file" )
 				},
-				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the file contents" ) )
+				new FunctionReturnSequenceType( Type.STRING, 
+                        Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
 	
 	/**
@@ -90,39 +97,39 @@ public class FileRead extends BasicFunction {
 			throw xPathException;
 		}
 
-		String arg = args[0].itemAt(0).getStringValue();
-		StringWriter sw;
+        String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
+        
+		StringWriter sw = new StringWriter();
 		
 		try {
-			URL url = new URL( arg );
+			FileInputStream fis = new FileInputStream(file);
+            
 			InputStreamReader reader;
 			
 			if( args.length > 1 ) {			
-				reader = new InputStreamReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+				reader = new InputStreamReader( fis, args[1].getStringValue() );
 			} else {
-				reader = new InputStreamReader( url.openStream() );
+				reader = new InputStreamReader( fis );
 			}
 			
-			sw = new StringWriter();
 			char[] buf = new char[1024];
 			int len;
 			while( ( len = reader.read( buf ) ) > 0 ) {
 				sw.write( buf, 0, len) ;
 			}
+            
 			reader.close();
 			sw.close();
-		} 
-		
-		catch( MalformedURLException e ) {
-			throw(new XPathException(this, e.getMessage()));	
-		} 
-		
-		catch( IOException e ) {
-			throw(new XPathException(this, e.getMessage()));	
+            
+		} catch( MalformedURLException e ) {
+			throw new XPathException(e);	
+		} catch( IOException e ) {
+			throw new XPathException(e);	
 		}
 		
 		//TODO : return an *Item* built with sw.toString()
 		
-		return( new StringValue( sw.toString() ) );
+		return new StringValue( sw.toString() );
 	}
 }

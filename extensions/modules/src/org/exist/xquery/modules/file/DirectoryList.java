@@ -1,23 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2008-2009 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2010 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id: DirectoryList.java 15423 2011-09-30 20:50:11Z dizzzz $
  */
 package org.exist.xquery.modules.file;
 
@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.DirectoryScanner;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.Type;
 
 
 /**
- * eXist File Module Extension DirectoryListFunction 
+ * eXist File Module Extension DirectoryList
  * 
  * Enumerate a list of files, including their size and modification time, found in a specified directory, using a pattern
  * 
@@ -56,9 +57,9 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 
-public class DirectoryListFunction extends BasicFunction {	
+public class DirectoryList extends BasicFunction {
 	
-	private final static Logger logger = Logger.getLogger(DirectoryListFunction.class);
+	private final static Logger logger = Logger.getLogger(DirectoryList.class);
 	
 	final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
 	final static String PREFIX = FileModule.PREFIX;
@@ -68,28 +69,34 @@ public class DirectoryListFunction extends BasicFunction {
 	{
 		new FunctionSignature(
 			new QName("directory-list", NAMESPACE_URI, PREFIX),
-			"List all files, including their file size and modification time, found in or below a directory, $directory. Files are located in the server's " +
+			"List all files, including their file size and modification time, " +
+            "found in or below a directory, $directory. Files are located in the server's " +
 			"file system, using filename patterns, $pattern.  File pattern matching is based " +
 			"on code from Apache's Ant, thus following the same conventions. For example:\n\n" +
 			"'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files " +
 			"in any directory below the specified directory.  This method is only available to the DBA role.",
 			new SequenceType[]
 			{
-			    new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The base directory path in the file system where the files are located."),
-			    new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The file name pattern")
+			    new FunctionParameterSequenceType("path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The base directory path or URI in the file system where the files are located."),
+			    new FunctionParameterSequenceType("pattern", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The file name pattern")
 				},
-			new FunctionReturnSequenceType( Type.NODE, Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching filenames, including their file size and modification time, and the subdirectory they were found in" )
+			new FunctionReturnSequenceType( Type.NODE, 
+                    Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching "
+                    + "filenames, including their file size and modification time, and "
+                    + "the subdirectory they were found in" )
 			)
 		};
 	
 	
 	/**
-	 * DirectoryListFunction Constructor
+	 * DirectoryList Constructor
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
 	
-	public DirectoryListFunction( XQueryContext context, FunctionSignature signature )
+	public DirectoryList( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
 	}
@@ -113,10 +120,14 @@ public class DirectoryListFunction extends BasicFunction {
 			throw xPathException;
 		}
 
-		File baseDir = new File( args[0].getStringValue() );
+        String inputPath = args[0].getStringValue();
+        File baseDir = FileModuleHelper.getFile(inputPath);
+        
 		Sequence patterns = args[1];
 		
-		logger.info("Listing matching files in directory: " + baseDir);
+		if( logger.isDebugEnabled() ) {
+			logger.debug("Listing matching files in directory: " + baseDir);
+		}
 		
 		Sequence xmlResponse = null;
 		
@@ -128,15 +139,19 @@ public class DirectoryListFunction extends BasicFunction {
 		
 		for( SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
 			String pattern 	= i.nextItem().getStringValue();
-			File[] files 	= DirectoryScanner.scanDir( baseDir, pattern );
+			File[] scannedFiles	= DirectoryScanner.scanDir( baseDir, pattern );
 			String relDir 	= null;
 			
-			logger.info("Found: " + files.length);
+			if( logger.isDebugEnabled() ) {
+				logger.debug("Found: " + scannedFiles.length);
+			}
 			
-			for (int j = 0; j < files.length; j++) {
-				logger.info("Found: " + files[j].getAbsolutePath());
+			for (File file : scannedFiles) {
+				if( logger.isDebugEnabled() ) {
+					logger.debug("Found: " + file.getAbsolutePath());
+				}
 				
-				String relPath = files[j].toString().substring(baseDir.toString().length() + 1);
+				String relPath = file.toString().substring(baseDir.toString().length() + 1);
 				
 				int p = relPath.lastIndexOf(File.separatorChar);
 				
@@ -147,15 +162,15 @@ public class DirectoryListFunction extends BasicFunction {
 				
 				builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
 				
-				builder.addAttribute(new QName("name", null, null), files[j].getName());
+				builder.addAttribute(new QName("name", null, null), file.getName());
 
-                Long sizeLong = files[j].length();
+                Long sizeLong = file.length();
                 String sizeString = Long.toString(sizeLong);
                 String humanSize = getHumanSize(sizeLong, sizeString);
                 
 				builder.addAttribute(new QName("size", null, null), sizeString);
                 builder.addAttribute(new QName("human-size", null, null), humanSize);
-                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(files[j].lastModified())).getStringValue());
+                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(file.lastModified())).getStringValue());
 
 				if (relDir != null && relDir.length() > 0) {
 					builder.addAttribute(new QName("subdir", null, null), relDir);
@@ -176,19 +191,31 @@ public class DirectoryListFunction extends BasicFunction {
     private String getHumanSize(final Long sizeLong, final String sizeString) {
         String humanSize = "n/a";
         int sizeDigits = sizeString.length();
+
         if (sizeDigits < 4) {
             humanSize = Long.toString(Math.abs(sizeLong));
-        } else if (sizeDigits >= 4 && sizeDigits <= 5) {
+
+        } else if (sizeDigits >= 4 && sizeDigits <= 6) {
             if (sizeLong < 1024) {
                 // We don't want 0KB för e.g. 1006 Bytes.
                 humanSize = Long.toString(Math.abs(sizeLong));
             } else {
-                humanSize = Math.abs((sizeLong / 1024)) + "KB";
+                humanSize = Math.abs(sizeLong / 1024) + "KB";
             }
-        } else if(sizeDigits >= 6 && sizeDigits <= 8) {
-            humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
-        } else if (sizeDigits >= 9) {
-            humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
+
+        } else if(sizeDigits >= 7 && sizeDigits <= 9) {
+            if (sizeLong < 1048576) {
+                humanSize = Math.abs(sizeLong / 1024) + "KB";
+            } else {
+                humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
+            }
+
+        } else if (sizeDigits > 9) {
+            if (sizeLong < 1073741824) {
+                humanSize = Math.abs((sizeLong / (1024 * 1024))) +"MB";
+            } else {
+                humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) +"GB";
+            }
         }
         return humanSize;
     }

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,14 +21,15 @@
  */
 package org.exist.xquery.modules.file;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
 
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -54,19 +55,27 @@ public class FileReadUnicode extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped " +
+            "off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." )
 				},				
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
+			new FunctionReturnSequenceType( Type.STRING, 
+                    Cardinality.ZERO_OR_ONE, "the contents of the file" ) ),
+        
 		new FunctionSignature(
 			new QName( "read-unicode", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped off if found.  This method is only available to the DBA role.",
+			"Reads the contents of a file.  Unicode BOM (Byte Order Marker) will be stripped " +
+            "off if found.  This method is only available to the DBA role.",
 			new SequenceType[] {
-				new FunctionParameterSequenceType( "url", Type.ITEM, Cardinality.EXACTLY_ONE, "The URL to the file, e.g. file://etc." ),
-				new FunctionParameterSequenceType( "encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The directory path or URI in the file system." ),
+				new FunctionParameterSequenceType( "encoding", Type.STRING, 
+                        Cardinality.EXACTLY_ONE, "The file is read with the encoding specified." )
 				},
-				new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
+				new FunctionReturnSequenceType( Type.STRING, 
+                        Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
 		};
 	
 	/**
@@ -89,17 +98,20 @@ public class FileReadUnicode extends BasicFunction {
 			throw xPathException;
 		}
 
-		String arg = args[0].itemAt(0).getStringValue();
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
+        
+        
 		StringWriter sw;
 		
 		try {
-			URL url = new URL( arg );
-			UnicodeReader reader;
-			
+			FileInputStream fis = new FileInputStream(file);
+            
+			UnicodeReader reader;			
 			if( args.length > 1 ) {			
-				reader = new UnicodeReader( url.openStream(), arg = args[1].itemAt(0).getStringValue() );
+				reader = new UnicodeReader( fis, args[1].getStringValue() );
 			} else {
-				reader = new UnicodeReader( url.openStream() );
+				reader = new UnicodeReader( fis );
 			}
 			
 			sw = new StringWriter();
@@ -113,11 +125,9 @@ public class FileReadUnicode extends BasicFunction {
 		} 
 		
 		catch( MalformedURLException e ) {
-			throw(new XPathException(this, e.getMessage()));	
-		} 
-		
-		catch( IOException e ) {
-			throw(new XPathException(this, e.getMessage()));	
+			throw new XPathException( e);	
+		} catch( IOException e ) {
+			throw new XPathException( e );	
 		}
 		
 		//TODO : return an *Item* built with sw.toString()

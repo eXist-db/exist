@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-09 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@ package org.exist.xquery.modules.file;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -38,6 +39,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * @see java.io.File#exists() 
+ *
  * @author Andrzej Taramina
  *
  */
@@ -48,11 +51,13 @@ public class FileExists extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName( "exists", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
-			"Tests if a file exists.  This method is only available to the DBA role.",
+			"Tests if a file or directory exists.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file in the file system" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file in the file system" )
 				},				
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the boolean value true if the file exists, false otherwise" ) )
+			new FunctionReturnSequenceType(Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "the boolean value true if the file exists, false otherwise" ) )
 		};
 	
 	/**
@@ -76,8 +81,9 @@ public class FileExists extends BasicFunction {
 		}
 
 		Sequence exists = BooleanValue.FALSE;
-		String path 	= args[0].itemAt(0).getStringValue();
-		File file   	= new File( path );
+        
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
 		
 		if( file.exists() ) {
 			exists = BooleanValue.TRUE;
