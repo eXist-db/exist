@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2010 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,6 +24,7 @@ package org.exist.xquery.modules.file;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -38,6 +39,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * @see java.io.File#canRead() 
  * @author Andrzej Taramina
  * @author Loren Cahlander
  *
@@ -51,9 +53,11 @@ public class FileIsReadable extends BasicFunction {
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a file is readable.  This method is only available to the DBA role.",
 			new SequenceType[] {				
-				new FunctionParameterSequenceType( "filepath", Type.ITEM, Cardinality.EXACTLY_ONE, "The full path to the file" )
+				new FunctionParameterSequenceType( "path", Type.ITEM, 
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the file" )
 				},				
-			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if file can be read" ) )
+			new FunctionReturnSequenceType( Type.BOOLEAN, 
+                    Cardinality.EXACTLY_ONE, "true if file can be read" ) )
 		};
 	
 	/**
@@ -77,8 +81,9 @@ public class FileIsReadable extends BasicFunction {
 		}
 
 		Sequence readable 	= BooleanValue.FALSE;
-		String path 		= args[0].itemAt(0).getStringValue();
-		File file   		= new File( path );
+        
+		String inputPath = args[0].getStringValue();
+        File file = FileModuleHelper.getFile(inputPath);
 		
 		if( file.canRead() ) {
 			readable = BooleanValue.TRUE;
