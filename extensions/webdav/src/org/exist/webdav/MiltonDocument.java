@@ -21,10 +21,8 @@
  */
 package org.exist.webdav;
 
-import com.bradmcevoy.http.CollectionResource;
-
-
 import com.bradmcevoy.http.Auth;
+import com.bradmcevoy.http.CollectionResource;
 import com.bradmcevoy.http.CopyableResource;
 import com.bradmcevoy.http.DeletableResource;
 import com.bradmcevoy.http.GetableResource;
@@ -45,15 +43,12 @@ import com.bradmcevoy.http.exceptions.PreConditionFailedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
@@ -82,6 +77,12 @@ public class MiltonDocument extends MiltonResource
 
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean isPropFind=false;
+
+    private static final String METHOD_NULL="null";
+    private static final String METHOD_EXACT="exact";
+    private static final String METHOD_GUESS="approximate";
+    
+    private static String propfindMethod=null;
 
     /**
      * Set to TRUE if getContentLength is used for PROPFIND.
@@ -130,6 +131,10 @@ public class MiltonDocument extends MiltonResource
         if (user != null) {
             existDocument.setUser(user);
             existDocument.initMetadata();
+        }
+        
+        if(propfindMethod==null){
+            propfindMethod = System.getProperty("org.exist.webdav.METHOD_XML_SIZE", METHOD_GUESS);
         }
     }
 
@@ -187,25 +192,46 @@ public class MiltonDocument extends MiltonResource
             
             if (isPropFind) {
                 
-                // For PROPFIND the actual size must be calculated
-                // by serializing the document.
+                // PROPFIND
+                
+                if(METHOD_EXACT.equals(propfindMethod)){
+                
+                    // For PROPFIND the actual size must be calculated
+                    // by serializing the document.
 
-                LOG.debug("Serializing XML to /dev/null to determine size"
-                        + " (" + resourceXmldbUri + ")");
+                    LOG.debug("Serializing XML to /dev/null to determine size"
+                            + " (" + resourceXmldbUri + ")");
 
-                // Stream document to /dev/null and count bytes
-                CountingOutputStream counter = new CountingOutputStream(new NullOutputStream());
-                try {
-                    existDocument.stream(counter);
+                    // Stream document to /dev/null and count bytes
+                    ByteCountOutputStream counter = new ByteCountOutputStream();
+                    try {
+                        existDocument.stream(counter);
 
-                } catch (IOException ex) {
-                    LOG.error(ex);
+                    } catch (IOException ex) {
+                        LOG.error(ex);
 
-                } catch (PermissionDeniedException ex) {
-                    LOG.error(ex);
+                    } catch (PermissionDeniedException ex) {
+                        LOG.error(ex);
+                    }
+
+                    size = counter.getByteCount();
+                    
+                    try {
+                        counter.close();
+                    } catch (IOException ex) {
+                        // ignores
+                    }
+
+                } else if (METHOD_NULL.equals(propfindMethod)) {
+                
+                    // return null, menaing unknowns
+                    size = null;
+                
+                } else {
+                    
+                    // Use estimated document size (METHOD_GUESS) (default)
+                    size = 0L + existDocument.getContentLength();
                 }
-
-                size = counter.getByteCount();
                 
             } else {
                 
@@ -230,6 +256,7 @@ public class MiltonDocument extends MiltonResource
             
             
         } else {
+            // Non XML document 
             // Actual size is known
             size = 0L + existDocument.getContentLength();
         }
