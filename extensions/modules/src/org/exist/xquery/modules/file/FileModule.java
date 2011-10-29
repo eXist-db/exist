@@ -51,7 +51,7 @@ public class FileModule extends AbstractInternalModule
 	
 	private final static FunctionDef[] functions = {
         new FunctionDef( Directory.signatures[0],               Directory.class ),
-		//snew FunctionDef( DirectoryList.signatures[0],           DirectoryList.class ),
+		//new FunctionDef( DirectoryList.signatures[0],           DirectoryList.class ),
 		new FunctionDef( FileRead.signatures[0], 				FileRead.class ),
 		new FunctionDef( FileRead.signatures[1], 				FileRead.class ),
 		new FunctionDef( FileReadBinary.signatures[0], 			FileReadBinary.class ), 
@@ -59,8 +59,8 @@ public class FileModule extends AbstractInternalModule
 		new FunctionDef( FileReadUnicode.signatures[1], 		FileReadUnicode.class ),
 		new FunctionDef( SerializeToFile.signatures[0], 		SerializeToFile.class ),
         new FunctionDef( SerializeToFile.signatures[1],         SerializeToFile.class ),
-		new FunctionDef( SerializeToFile.signatures[2], 		SerializeToFile.class ),
-        new FunctionDef( SerializeToFile.signatures[3],         SerializeToFile.class ),
+		//new FunctionDef( SerializeToFile.signatures[2], 		SerializeToFile.class ),
+        //new FunctionDef( SerializeToFile.signatures[3],         SerializeToFile.class ),
 		new FunctionDef( FileExists.signatures[0], 				FileExists.class ),
 		new FunctionDef( FileIsReadable.signatures[0], 			FileIsReadable.class ),
 		new FunctionDef( FileIsWriteable.signatures[0], 		FileIsWriteable.class ),
