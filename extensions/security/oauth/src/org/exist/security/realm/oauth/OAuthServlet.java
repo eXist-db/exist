@@ -22,7 +22,6 @@
 package org.exist.security.realm.oauth;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.servlet.RequestDispatcher;

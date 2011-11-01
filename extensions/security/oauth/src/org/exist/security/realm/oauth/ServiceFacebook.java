@@ -40,8 +40,8 @@ import org.exist.security.AXSchemaType;
 import org.exist.security.AbstractAccount;
 import org.exist.security.Account;
 import org.exist.security.SchemaType;
+import org.exist.security.internal.HttpSessionAuthentication;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.realm.openid.SessionAuthentication;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -126,8 +126,8 @@ public class ServiceFacebook extends OAuth2Service {
 			DefaultIdentityService _identityService = new DefaultIdentityService();
 			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
             
-			Authentication cached=new SessionAuthentication(session, user);
-            session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
+			Authentication cached=new HttpSessionAuthentication(session, user);
+            session.setAttribute(HttpSessionAuthentication.__J_AUTHENTICATED, cached);
 			//*******************************************************
 			
 			
