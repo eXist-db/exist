@@ -17,9 +17,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id: SessionAuthentication.java 13799 2011-02-20 19:39:39Z shabanovd $
  */
-package org.exist.security.realm.openid;
+package org.exist.security.internal;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
@@ -33,13 +33,13 @@ import org.eclipse.jetty.server.UserIdentity;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class SessionAuthentication extends UserAuthentication implements HttpSessionAttributeListener {
+public class HttpSessionAuthentication extends UserAuthentication implements HttpSessionAttributeListener {
 
 	public static String __J_AUTHENTICATED = "org.eclipse.jetty.security.UserIdentity";
     
 	HttpSession _session;
     
-    public SessionAuthentication(HttpSession session, UserIdentity userIdentity) {
+    public HttpSessionAuthentication(HttpSession session, UserIdentity userIdentity) {
         super(Constraint.__FORM_AUTH, userIdentity);
         _session=session;
     }
@@ -61,7 +61,7 @@ public class SessionAuthentication extends UserAuthentication implements HttpSes
 
     @Override
     public void logout() {    
-        _session.removeAttribute(SessionAuthentication.__J_AUTHENTICATED);
+        _session.removeAttribute(HttpSessionAuthentication.__J_AUTHENTICATED);
     }
     
     @Override
