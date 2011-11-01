@@ -22,6 +22,8 @@
 package org.exist.security.realm.oauth;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -29,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.oauth.consumer.OAuth2Consumer;
 import net.oauth.enums.ResponseType;
 import net.oauth.exception.OAuthException;
 
@@ -101,8 +104,8 @@ public class OAuthServlet extends HttpServlet {
             	if (service instanceof OAuth2Service) {
             		OAuth2Service s2 = (OAuth2Service)service; 
 					response.sendRedirect(
-							s2.getConsumer().generateRequestAuthorizationUrl(
-							ResponseType.CODE, s2.getRedirectUri(), null, (String[])null)
+							getConsumer(s2).generateRequestAuthorizationUrl(
+							ResponseType.CODE, getRedirectUri(s2), null, (String[])null)
 					);
 					return;
 				} else
@@ -123,5 +126,17 @@ public class OAuthServlet extends HttpServlet {
         } catch (Exception e) {
 			throw new ServletException(e.getMessage(), e);
 		}
+    }
+    
+    private OAuth2Consumer getConsumer(OAuth2Service s2) throws Exception {
+    	Method method = s2.getClass().getMethod("getConsumer");
+    	method.setAccessible(true);
+    	return (OAuth2Consumer) method.invoke(s2);
+    }
+
+    private String getRedirectUri(OAuth2Service s2) throws Exception {
+    	Method method = s2.getClass().getMethod("getRedirectUri");
+    	method.setAccessible(true);
+    	return (String) method.invoke(s2);
     }
 }
