@@ -424,7 +424,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -645,6 +645,7 @@
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/security/oauth"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
@@ -744,7 +745,11 @@
         <ant antfile="build.xml" dir="extensions/security/openid" inheritall="false"/>
     </target>
     
-    <target name="extension-security-ldap" depends="jar">
+    <target name="extension-security-oauth" depends="jar">
+        <ant antfile="build.xml" dir="extensions/security/oauth" inheritall="false"/>
+    </target>
+
+	<target name="extension-security-ldap" depends="jar">
         <ant antfile="build.xml" dir="extensions/security/ldap" inheritall="false"/>
     </target>
 
