@@ -478,7 +478,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return getSecurityManager().getGroup(invokingUser, name);
     }
 
-    /*
     protected interface Unit<R> {
         public R execute(DBBroker broker) throws EXistException, PermissionDeniedException;
     }
@@ -498,7 +497,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 getDatabase().release(broker);
             }
         }
-    }*/
+    }
     
     //configuration methods
     @Override
