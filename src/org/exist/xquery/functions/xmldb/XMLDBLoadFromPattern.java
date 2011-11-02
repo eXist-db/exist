@@ -24,6 +24,8 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.util.DirectoryScanner;
@@ -69,7 +71,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     protected final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
     protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.ZERO_OR_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
 	protected static final SequenceType PARAM_PRESERVE_STRUCTURE = new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.");
-
+	protected final static SequenceType PARAM_EXCLUDES = new FunctionParameterSequenceType("exclude", Type.STRING, Cardinality.ZERO_OR_MORE, "A sequence of file patterns to exclude");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of document paths");
 
 
@@ -91,6 +93,12 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 FUNCTION_NAME,
                 FUNCTION_DESCRIPTION,
                 new SequenceType[] { PARAM_COLLECTION, PARAM_FS_DIRECTORY, PARAM_FS_PATTERN, PARAM_MIME_TYPE, PARAM_PRESERVE_STRUCTURE },
+                RETURN_TYPE
+        ),
+        new FunctionSignature(
+                FUNCTION_NAME,
+                FUNCTION_DESCRIPTION,
+                new SequenceType[] { PARAM_COLLECTION, PARAM_FS_DIRECTORY, PARAM_FS_PATTERN, PARAM_MIME_TYPE, PARAM_PRESERVE_STRUCTURE, PARAM_EXCLUDES },
                 RETURN_TYPE
         )
     };
@@ -119,8 +127,15 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 
         //keep the directory structure?
         boolean keepDirStructure = false;
-        if(getSignature().getArgumentCount() == 5)
+        if(getSignature().getArgumentCount() >= 5)
             keepDirStructure = args[4].effectiveBooleanValue();
+        
+        List<String> excludes = new ArrayList<String>();
+        if (getSignature().getArgumentCount() == 6) {
+        	for (SequenceIterator i = args[5].iterate(); i.hasNext(); ) {
+        		excludes.add(i.nextItem().getStringValue());
+        	}
+        }
         
         ValueSequence stored = new ValueSequence();
 
@@ -142,6 +157,9 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                     String relPath = files[j].toString().substring(baseDir.toString().length());
                     int p = relPath.lastIndexOf(File.separatorChar);
 					
+                    if (checkExcludes(excludes, relPath))
+                    	continue;
+                    
                     if(p >= 0) {
                         relDir = relPath.substring(0, p);
                         relDir = relDir.replace(File.separatorChar, '/');
@@ -177,5 +195,27 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
             }
         }
         return stored;
+    }
+    
+    /**
+     * Check if path matches any of the exclude patterns.
+     * 
+     * @param excludes
+     * @param path
+     * @return
+     */
+    private static boolean checkExcludes(List<String> excludes, String path) {
+    	if (excludes == null || excludes.isEmpty())
+    		return false;
+    	if (path.charAt(0) == File.pathSeparatorChar)
+    		path = path.substring(1);
+    	boolean skip = false;
+        for (String exclude : excludes) {
+        	if (DirectoryScanner.match(exclude, path)) {
+        		skip = true;
+        		break;
+        	}
+        }
+        return skip;
     }
 }
