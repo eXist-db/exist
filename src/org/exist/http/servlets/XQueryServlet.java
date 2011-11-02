@@ -512,6 +512,7 @@ public class XQueryServlet extends HttpServlet {
                 resultSequence = xquery.execute(query, null, outputProperties);
                 
             } finally {
+                context.cleanupBinaryValueInstances();
                 xquery.getXQueryPool().returnCompiledXQuery(source, query);
             }
 
