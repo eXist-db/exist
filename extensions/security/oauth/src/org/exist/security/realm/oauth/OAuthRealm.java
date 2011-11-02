@@ -108,61 +108,61 @@ public class OAuthRealm extends AbstractRealm {
 
 	@Override
 	public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> findAllGroupNames(Subject invokingUser) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
     @Override
     public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
-        // TODO Auto-generated method stub
+        // Auto-generated method stub
         return null;
     }
 
     @Override
     public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
-        // TODO Auto-generated method stub
+        // Auto-generated method stub
         return null;
     }
         
 	@Override
 	public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return false;
 	}
 
@@ -220,8 +220,14 @@ public class OAuthRealm extends AbstractRealm {
                 return service;
             }
         }
+        
+		StringBuilder b = new StringBuilder();
+        for (ServiceConfig service : serviceConfigList) {
+        	b.append(service.getPath());
+        	b.append(" ");
+        }
     
-		throw new Exception("No <service> defined for path='" + path + "'.");
+		throw new Exception("No <service> defined for path='" + path + "', configurated services: ["+b.toString()+"].");
     }
 
 	public OAuthConfig getOAuthConfigByName(String oauthName) throws Exception {
