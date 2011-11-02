@@ -22,6 +22,7 @@
 package org.exist.security.realm.oauth;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import javax.servlet.RequestDispatcher;
@@ -128,9 +129,9 @@ public class OAuthServlet extends HttpServlet {
     }
     
     private OAuth2Consumer getConsumer(OAuth2Service s2) throws Exception {
-    	Method method = s2.getClass().getMethod("getConsumer");
-    	method.setAccessible(true);
-    	return (OAuth2Consumer) method.invoke(s2);
+    	Field field = OAuth2Service.class.getDeclaredField("consumer");
+    	field.setAccessible(true);
+    	return (OAuth2Consumer) field.get(s2);
     }
 
     private String getRedirectUri(OAuth2Service s2) throws Exception {
