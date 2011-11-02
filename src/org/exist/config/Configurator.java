@@ -743,6 +743,11 @@ public class Configurator {
                     if(!field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
                         continue;
                     }
+                    
+                    //ignore mapped fields for now, TODO: need to code back mapping.
+                    if(field.isAnnotationPresent(NewClass.class)) {
+                        continue;
+                    }
 
                     String referenceBy = null;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {

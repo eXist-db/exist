@@ -130,17 +130,17 @@ public class OAuthRealm extends AbstractRealm {
 		return null;
 	}
 
-        @Override
-        public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
-            // TODO Auto-generated method stub
-            return null;
-        }
+    @Override
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-        @Override
-        public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
-            // TODO Auto-generated method stub
-            return null;
-        }
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+        // TODO Auto-generated method stub
+        return null;
+    }
         
 	@Override
 	public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
@@ -212,6 +212,9 @@ public class OAuthRealm extends AbstractRealm {
     private List<ServiceConfig> serviceConfigList = new ArrayList<ServiceConfig>();
 
 	public ServiceConfig getServiceConfigByPath(String path) throws Exception {
+		if (path == null)
+			throw new Exception("Path does not defined.");
+		
         for (ServiceConfig service : serviceConfigList) {
             if (path.equals(service.getPath())) {
                 return service;
