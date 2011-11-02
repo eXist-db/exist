@@ -697,6 +697,7 @@ public class XQueryURLRewrite implements Filter {
         try {
 			return xquery.execute(compiled, null, outputProperties);
 		} finally {
+                        queryContext.cleanupBinaryValueInstances();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
 		}
     }
