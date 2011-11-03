@@ -46,8 +46,9 @@ public class ExportMain
     private final static int                  OUTPUT_DIR_OPT    = 'd';
     private final static int                  CONFIG_OPT        = 'c';
     private final static int                  INCREMENTAL_OPT   = 'i';
+    private final static int                  NO_CHECK_OPT      = 'n';
     private final static int                  DIRECT_ACCESS_OPT = 'D';
-    private final static int                  ZIP_OPT 			= 'z';
+    private final static int                  ZIP_OPT           = 'z';
 
     private final static CLOptionDescriptor[] OPTIONS           = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
@@ -56,6 +57,7 @@ public class ExportMain
         new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures" ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
         new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
+        new CLOptionDescriptor( "nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data." ),
         new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" )
     };
 
@@ -69,6 +71,7 @@ public class ExportMain
             } else {
                 config = new Configuration( configFile, null );
             }
+            config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
             BrokerPool.configure( 1, 5, config );
             return( BrokerPool.getInstance() );
         }
@@ -94,7 +97,8 @@ public class ExportMain
         boolean        export       = false;
         boolean        incremental  = false;
         boolean        direct       = false;
-        boolean		   zip			= false;
+        boolean        zip          = false;
+        boolean        nocheck      = false;
         String         exportTarget = "export/";
         String         dbConfig     = null;
 
@@ -140,6 +144,10 @@ public class ExportMain
                     zip = true;
                     break;
                 }
+                case NO_CHECK_OPT: {
+                    nocheck = true;
+                    break;
+                }
             }
         }
 
@@ -152,11 +160,15 @@ public class ExportMain
         DBBroker broker = null;
 
         try {
-            broker = pool.get( pool.getSecurityManager().getSystemSubject() );
-            ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
-            List<ErrorReport> errors  = checker.checkAll( new CheckCallback() );
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            List<ErrorReport> errors  = null;
+            
+            if(!nocheck) {
+                ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
+                errors = checker.checkAll( new CheckCallback() );
+            }
 
-            if( errors.size() > 0 ) {
+            if( errors != null && errors.size() > 0 ) {
                 System.err.println( "ERRORS FOUND." );
                 retval = 1;
             } else {

@@ -256,7 +256,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>XmldbURI</code> value
      */
     public XmldbURI getURI() {
-        return collection.getURI().append(fileURI);
+        if(collection == null) {
+            return fileURI;
+        } else {
+            return collection.getURI().append(fileURI);
+        }
     }
     
     public boolean isCollectionConfig() {
