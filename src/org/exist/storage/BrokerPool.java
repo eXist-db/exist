@@ -145,6 +145,7 @@ public class BrokerPool extends Observable implements Database {
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
     public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
     public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
+    public static final String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
 
     public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
     
@@ -764,6 +765,8 @@ public class BrokerPool extends Observable implements Database {
         status = INITIALIZING;
 
         signalSystemStatus(SIGNAL_STARTUP);
+        
+        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY);
 
         //create the security manager
         securityManager = new SecurityManagerImpl(this);
@@ -850,7 +853,9 @@ public class BrokerPool extends Observable implements Database {
         }
 
         /* initialise required collections if they dont exist yet */
-        initialiseSystemCollections(broker);
+        if(!exportOnly) {
+            initialiseSystemCollections(broker);
+        }
         
         //TODO : from there, rethink the sequence of calls.
         // WM: attention: a small change in the sequence of calls can break
