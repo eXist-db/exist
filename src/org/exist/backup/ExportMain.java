@@ -27,7 +27,6 @@ import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 
 import org.exist.EXistException;
-import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -47,6 +46,7 @@ public class ExportMain
     private final static int                  OUTPUT_DIR_OPT    = 'd';
     private final static int                  CONFIG_OPT        = 'c';
     private final static int                  INCREMENTAL_OPT   = 'i';
+    private final static int				  NO_CHECK_OPT 		= 'n';
     private final static int                  DIRECT_ACCESS_OPT = 'D';
     private final static int                  ZIP_OPT 			= 'z';
 
@@ -55,6 +55,7 @@ public class ExportMain
         new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
         new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db." ),
         new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures" ),
+        new CLOptionDescriptor( "nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data." ),
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
         new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
         new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" )
@@ -70,6 +71,7 @@ public class ExportMain
             } else {
                 config = new Configuration( configFile, null );
             }
+            config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
             BrokerPool.configure( 1, 5, config );
             return( BrokerPool.getInstance() );
         }
@@ -96,6 +98,7 @@ public class ExportMain
         boolean        incremental  = false;
         boolean        direct       = false;
         boolean		   zip			= false;
+        boolean		   nocheck		= false;
         String         exportTarget = "export/";
         String         dbConfig     = null;
 
@@ -141,6 +144,11 @@ public class ExportMain
                     zip = true;
                     break;
                 }
+                
+                case NO_CHECK_OPT: {
+                	nocheck = true;
+                	break;
+                }
             }
         }
 
@@ -153,11 +161,14 @@ public class ExportMain
         DBBroker broker = null;
 
         try {
-            broker = pool.get( SecurityManager.SYSTEM_USER );
-            ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
-            List<ErrorReport> errors  = checker.checkAll( new CheckCallback() );
+            broker = pool.get( org.exist.security.SecurityManager.SYSTEM_USER );
+            List<ErrorReport> errors = null;
+            if (!nocheck) {
+	            ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
+	            errors  = checker.checkAll( new CheckCallback() );
+            }
 
-            if( errors.size() > 0 ) {
+            if( errors != null && errors.size() > 0 ) {
                 System.err.println( "ERRORS FOUND." );
                 retval = 1;
             } else {

@@ -245,6 +245,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * @return a <code>XmldbURI</code> value
      */
     public XmldbURI getURI() {
+    	if (collection == null)
+    		return fileURI;
         return collection.getURI().append(fileURI);
     }
     
