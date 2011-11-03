@@ -125,7 +125,7 @@ public class BrokerPool extends Observable {
     public final static String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
 	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
     public static final String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
-    
+    public static final String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
     public static final String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
 	
 	public static final String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
@@ -735,6 +735,8 @@ public class BrokerPool extends Observable {
 
         signalSystemStatus(SIGNAL_STARTUP);
 
+        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY);
+        		
 		//REFACTOR : construct then configure
         cacheManager = new DefaultCacheManager(this);
 
@@ -814,7 +816,8 @@ public class BrokerPool extends Observable {
         }
 
         /* initialise required collections if they dont exist yet */
-        initialiseSystemCollections(broker);
+		if (!exportOnly)
+			initialiseSystemCollections(broker);
 
         //TODO : from there, rethink the sequence of calls.
         // WM: attention: a small change in the sequence of calls can break
