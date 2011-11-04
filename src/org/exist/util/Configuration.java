@@ -1495,6 +1495,15 @@ public class Configuration implements ErrorHandler
         return( config.get( name ) );
     }
 
+    public Object getProperty( String name, Object defaultValue )
+    {
+    	Object value = config.get( name );
+    	
+    	if (value == null)
+    		return defaultValue;
+        
+    	return value;
+    }
 
     public boolean hasProperty( String name )
     {

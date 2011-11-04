@@ -766,7 +766,7 @@ public class BrokerPool extends Observable implements Database {
 
         signalSystemStatus(SIGNAL_STARTUP);
         
-        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY);
+        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
         //create the security manager
         securityManager = new SecurityManagerImpl(this);
