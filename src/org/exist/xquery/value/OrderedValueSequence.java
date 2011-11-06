@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.value;
 
+import java.util.Arrays;
+
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
@@ -106,7 +108,7 @@ public class OrderedValueSequence extends AbstractSequence {
 			System.arraycopy(items, 0, newItems, 0, count);
 			items = newItems;
 		}
-		items[count++] = new Entry(item);
+		items[count] = new Entry(item, count++);
 		checkItemType(item.getType());
         setHasChanged();
     }
@@ -258,6 +260,14 @@ public class OrderedValueSequence extends AbstractSequence {
         return new ValueSequence(this);
     }
 
+    public String toString() {
+    	StringBuilder builder = new StringBuilder();
+    	for (int i = 0; i < count; i++) {
+    		builder.append(items[i].toString());
+    	}
+    	return builder.toString();
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
@@ -285,9 +295,16 @@ public class OrderedValueSequence extends AbstractSequence {
 		
 		Item item;
 		AtomicValue values[];
+		int pos;
 		
-		public Entry(Item item) throws XPathException {
+		/**
+		 * @param item the item in the sequence
+		 * @param position the original position of the item in the result sequence
+		 * @throws XPathException
+		 */
+		public Entry(Item item, int position) throws XPathException {
 			this.item = item;
+			this.pos = position;
 			values = new AtomicValue[orderSpecs.length];
 			for(int i = 0; i < orderSpecs.length; i++) {
 				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
@@ -346,7 +363,23 @@ public class OrderedValueSequence extends AbstractSequence {
 				} catch (XPathException e) {
 				}
 			}
+			// if the sort keys are equal, we need to order by the original position in the result sequence
+			if (cmp == Constants.EQUAL)
+				cmp = (pos > other.pos ? Constants.SUPERIOR : (pos == other.pos ? Constants.EQUAL : Constants.INFERIOR));
 			return cmp;
+		}
+		
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append(item);
+    		builder.append(" [");
+    		for (int i = 0; i < values.length; i++) {
+    			if (i > 0)
+    				builder.append(", ");
+    			builder.append(values[i].toString());
+    		}
+    		builder.append("]");
+    		return builder.toString();
 		}
 	}
 	
