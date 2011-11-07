@@ -74,7 +74,7 @@ public class LocationStep extends Step {
 
 	protected boolean inUpdate = false;
 
-	protected boolean useDirectAttrSelect = true;
+	protected boolean useDirectAttrSelect = false;
 
 	protected boolean useDirectChildSelect = false;
 
