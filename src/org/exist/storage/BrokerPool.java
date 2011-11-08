@@ -735,7 +735,7 @@ public class BrokerPool extends Observable {
 
         signalSystemStatus(SIGNAL_STARTUP);
 
-        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY);
+        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
         		
 		//REFACTOR : construct then configure
         cacheManager = new DefaultCacheManager(this);
