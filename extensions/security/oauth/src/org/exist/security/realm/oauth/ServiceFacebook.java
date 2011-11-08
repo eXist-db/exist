@@ -51,16 +51,16 @@ import net.oauth.util.OAuthUtil;
 
 import com.neurologic.http.HttpClient;
 import com.neurologic.http.impl.ApacheHttpClient;
+import com.neurologic.oauth.config.ServiceConfig;
 import com.neurologic.oauth.service.impl.OAuth2Service;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-public class ServiceFacebook extends OAuth2Service {
+public class ServiceFacebook extends OAuth2Service implements OAuth2ServiceAtEXist {
 
 	public static final String FACEBOOK_ACCESS_TOKEN_SESSION = "FACEBOOK_ACCESS_TOKEN_SESSION";
-	private static final String REDIRECT_URL = "http://localhost:8080/exist/oauth/cook";
 
 	@Override
 	public void saveAccessToken(HttpServletRequest request, AccessToken accessToken) {
@@ -138,9 +138,27 @@ public class ServiceFacebook extends OAuth2Service {
 		request.getSession().setAttribute(FACEBOOK_ACCESS_TOKEN_SESSION, accessToken);
 	}
 
+	ServiceConfig config = null;
+	
+	@Override
+	public void setServiceConfig(ServiceConfig serviceConfig) {
+		config = serviceConfig; 
+	}
+	
+	@Override
+	public ServiceConfig getServiceConfig() {
+		return config;
+	}
+	
+	String redirectUri = null;
+	
 	@Override
 	public String getRedirectUri() {
-		return REDIRECT_URL;
+		return redirectUri;
+	}
+
+	public void setRedirectUri(String uri) {
+		redirectUri = uri;
 	}
 
 	@Override

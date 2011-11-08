@@ -99,6 +99,10 @@ public class OAuthServlet extends HttpServlet {
 	            throw new Exception("No <consumer> defined under <oauth>. Cannot create OAuth Consumer.");
 	        
 	        OAuthService service = OAuthServiceAbstractFactory.getOAuthServiceFactory(oauthConfig.getVersion()).createOAuthService(clazz, providerConfig, consumerConfig);
+	        if (service instanceof OAuth2ServiceAtEXist) {
+				((OAuth2ServiceAtEXist) service).setServiceConfig(serviceConfig);
+				((OAuth2ServiceAtEXist) service).setRedirectUri(request.getRequestURL().toString());
+			}
 
 			if (request.getParameterMap().containsKey("auth")) {
             	if (service instanceof OAuth2Service) {
