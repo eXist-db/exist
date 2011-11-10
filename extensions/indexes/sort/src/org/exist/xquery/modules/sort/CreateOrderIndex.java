@@ -99,15 +99,22 @@ public class CreateOrderIndex extends BasicFunction {
             valuesIter = args[2].iterate();
 	    int c = 0;
         int len = args[1].getItemCount();
-        int logChunk = len / 20;
+        
+        int logChunk = 1 + (len / 20);
+        
         for (SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
             NodeValue nv = (NodeValue) nodesIter.nextItem();
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException(this, "Cannot create order-index on an in-memory node");
             NodeProxy node = (NodeProxy) nv;
             SortItem si = new SortItemImpl(node);
-	        if (LOG.isDebugEnabled() && ++c % logChunk == 0)
+	        
+            
+            
+            if (LOG.isDebugEnabled() && ++c % logChunk == 0) {
 		        LOG.debug("Storing item " + c + " out of " + len + " to sort index.");
+            }
+            
             if (call != null) {
                 // call the callback function to get value
                 params[0] = node;
