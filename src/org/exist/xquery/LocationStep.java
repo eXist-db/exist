@@ -740,7 +740,8 @@ public class LocationStep extends Step {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
 						"Using structural index '" + index.toString() + "'");
-			if (!contextSet.getProcessInReverseOrder() && (contextSet instanceof VirtualNodeSet || contextSet.getLength() < INDEX_SCAN_THRESHOLD)) {
+			if (!contextSet.getProcessInReverseOrder() && !(contextSet instanceof VirtualNodeSet) &&
+					contextSet.getLength() < INDEX_SCAN_THRESHOLD) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
 						test.getName(), axis, docs, contextSet,
 						contextId);
