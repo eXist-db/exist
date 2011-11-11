@@ -79,20 +79,23 @@ public class ServiceFacebook  {
 			contentType = contentType.substring(0, semicolonPos);
 		}
 			
-			Map<String, String> responseAttributes = null;
-			String response = _response.getBody();
-			if ("application/json".equals(contentType) || (response.startsWith("{") && response.endsWith("}"))) {
-				JSONObject jsonResponse = new JSONObject(response);
-				if (jsonResponse != null) {
-					if (jsonResponse.has("error")) {
-						throw new OAuthException("Error getting access token: " + System.getProperty("line.separator") + jsonResponse.toString());
-					}
-					
-					responseAttributes = parseJSONObject(jsonResponse);
+		Map<String, String> responseAttributes = null;
+		String response = _response.getBody();
+		if ("application/json".equals(contentType) || (response.startsWith("{") && response.endsWith("}"))) {
+			JSONObject jsonResponse = new JSONObject(response);
+			if (jsonResponse != null) {
+				if (jsonResponse.has("error")) {
+					throw new OAuthException("Error getting access token: " + System.getProperty("line.separator") + jsonResponse.toString());
 				}
-			} else if ("text/plain".equals(contentType) || (response.contains("=") && response.contains("&"))) {
-				//responseAttributes = OAuthUtil.parseQueryString(response);
+				
+				responseAttributes = parseJSONObject(jsonResponse);
 			}
+		} else if ("text/plain".equals(contentType) || (response.contains("=") && response.contains("&"))) {
+			//responseAttributes = OAuthUtil.parseQueryString(response);
+		}
+		
+		if (responseAttributes == null)
+        	throw new OAuthException("Get response, but no account information.");
 			
 		String id = responseAttributes.get("id");
 		
