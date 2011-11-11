@@ -242,7 +242,11 @@ public class Configurator {
             Object value = null;
             String typeName = field.getType().getName();
             try {
-                if (typeName.equals("java.lang.String")) {
+                NewClass newClass = getAnnotation(field, NewClass.class);
+                if (newClass != null) {
+                	value = org.exist.config.mapper.Constructor.load(newClass, instance, configuration.getConfiguration(property));
+
+                } else if (typeName.equals("java.lang.String")) {
                     value = configuration.getProperty(property);
                 } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
                     if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
