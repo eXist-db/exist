@@ -31,6 +31,7 @@
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
+	<classpathentry kind="src" path="extensions/security/oauth/src"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
@@ -141,5 +142,14 @@
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.11.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.11.jar"/>
 	<classpathentry kind="lib" path="lib/user/exificient-0.7.jar"/>
+	<classpathentry kind="lib" path="lib/user/icu4j-4_8_1_1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpclient-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpclient-cache-4.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpcore-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/httpmime-4.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
+	<classpathentry kind="lib" path="lib/optional/xqjapi-1.0-fr.jar"/>
+	<classpathentry kind="lib" path="extensions/security/oauth/lib/scribe-1.2.3.jar"/>
+	<classpathentry kind="lib" path="extensions/security/oauth/lib/org.json.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
