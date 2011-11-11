@@ -37,13 +37,14 @@ import org.exist.dom.StoredNode;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -59,10 +60,10 @@ import org.w3c.dom.NodeList;
  * It leads to more performance for most XML documents because it
  * determines the fragment directly by the EmbeddedXmlReader and not by 
  * XQL operators.
- * @author Josef Willenborg, Max Planck Institute for the History of Science,
+ * @author Josef Willenborg, Max Planck Institute for the history of science,
  * http://www.mpiwg-berlin.mpg.de, jwillenborg@mpiwg-berlin.mpg.de 
  */
-public class GetFragmentBetween extends BasicFunction {
+public class GetFragmentBetween extends Function {
 	
 	protected static final Logger logger = Logger.getLogger(GetFragmentBetween.class);
 
@@ -70,18 +71,23 @@ public class GetFragmentBetween extends BasicFunction {
     new FunctionSignature(
       new QName("get-fragment-between", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
         "Returns an xml fragment or a sequence of nodes between two elements (normally milestone elements). " +
+        "This function works only on documents which are stored in eXist DB." + 
         "The $beginning-node represents the first node/milestone element, $ending-node, the second one. " +
         "The third argument, $make-fragment, is " +
         "a boolean value for the path completion. If it is set to true() the " +
         "result sequence is wrapped into a parent element node. " +
+        "The fourth argument, display-root-namespace, is " +
+        "a boolean value for displaying the root node namespace. If it is set to true() the " +
+        "attribute \"xmlns\" in the root node of the result sequence is determined explicitely from the $beginning-node. " +
         "Example call of the function for getting the fragment between two TEI page break element nodes: " +
-        "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true())" ,
+        "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true(), true())" ,
         new SequenceType[] { 
                              new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The first node/milestone element"),
                              new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The second node/milestone element"),
-                             new FunctionParameterSequenceType("make-fragment", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag make a fragment.")
+                             new FunctionParameterSequenceType("make-fragment", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag make a fragment."),
+                             new FunctionParameterSequenceType("display-root-namespace", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "Display the namespace of the root node of the fragment.")
                            },
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the string containing the fragments between the two node/milestone elements."));
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the string containing the fragment between the two node/milestone elements."), true);
 
   public GetFragmentBetween(XQueryContext context) {
     super(context, signature);
@@ -90,14 +96,19 @@ public class GetFragmentBetween extends BasicFunction {
   /**
    * Get the fragment between two elements (normally milestone elements) of a document 
    * @param args 1. first node (e.g. pb[10])  2. second node (e.g.: pb[11]) 3. pathCompletion:
-   * open and closing tags before and after the fragment are appended (Default: true)  
+   * open and closing tags before and after the fragment are appended (Default: true) 
+   * 4. Display the namespace of the root node of the fragment (Default: false)
    * @return the fragment between the two nodes
    * @throws XPathException
    */
-  public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-
-    Sequence ms1 = args[0];
-    Sequence ms2 = args[1];
+  public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    int argumentCount = getArgumentCount();
+    if (argumentCount < 2) {
+      logger.error("requires at least 2 arguments");
+      throw new XPathException (this, "requires at least 2 arguments");
+    }
+    Sequence ms1 = getArgument(0).eval(contextSequence, contextItem);    
+    Sequence ms2 = getArgument(1).eval(contextSequence, contextItem);    
     if (ms1.isEmpty()) {
       throw new XPathException(this, "your first argument delivers an empty node (no valid node position in document)");
     }
@@ -107,19 +118,24 @@ public class GetFragmentBetween extends BasicFunction {
     Node ms2Node = null;
     if (! (ms2.itemAt(0) == null)) 
       ms2Node = ((NodeValue) ms2.itemAt(0)).getNode();
-    Sequence seqPathCompletion = args[2];
     boolean pathCompletion = true;  // default
-    if (! (seqPathCompletion.itemAt(0) == null)) {
+    if (argumentCount > 2) {
+      Sequence seqPathCompletion = getArgument(2).eval(contextSequence, contextItem);    
       pathCompletion = seqPathCompletion.effectiveBooleanValue();
+    }
+    boolean displayRootNamespace = false;  // default
+    if (argumentCount > 3) {
+      Sequence seqDisplayRootNamespace = getArgument(3).eval(contextSequence, contextItem);    
+      displayRootNamespace = seqDisplayRootNamespace.effectiveBooleanValue();
     }
     // fetch the fragment between the two milestones
     StringBuilder fragment = getFragmentBetween(ms1Node, ms2Node);
     if (pathCompletion) {
-      String msFromPathName = getNodeXPath(ms1Node.getParentNode());
+      String msFromPathName = getNodeXPath(ms1Node.getParentNode(), displayRootNamespace);
       String openElementsOfMsFrom = pathName2XmlTags(msFromPathName, "open");    
       String closingElementsOfMsTo = "";
       if (!(ms2Node == null)) {
-        String msToPathName = getNodeXPath(ms2Node.getParentNode());
+        String msToPathName = getNodeXPath(ms2Node.getParentNode(), displayRootNamespace);
         closingElementsOfMsTo = pathName2XmlTags(msToPathName, "close");  
       }
       fragment.insert(0, openElementsOfMsFrom);
@@ -130,7 +146,7 @@ public class GetFragmentBetween extends BasicFunction {
     resultFragment.add(strValFragment);
     return resultFragment;
   }
-
+  
   /**
    * Fetch the fragment between two nodes (normally milestones) in an XML document
    * @param node1 first node from which down to the node node2 the XML fragment is delivered as a string
@@ -372,7 +388,7 @@ public class GetFragmentBetween extends BasicFunction {
     return result;
   }
   
-  private String getNodeXPath(Node n) {
+  private String getNodeXPath(Node n, boolean setRootNamespace) {
     //if at the document level just return /
     if(n.getNodeType() == Node.DOCUMENT_NODE)
       return "/";
@@ -380,10 +396,10 @@ public class GetFragmentBetween extends BasicFunction {
      * - node names become path names 
      * - attributes become predicates
      */
-    StringBuilder buf = new StringBuilder(nodeToXPath(n));
+    StringBuilder buf = new StringBuilder(nodeToXPath(n, setRootNamespace));
     while((n = n.getParentNode()) != null) {
       if(n.getNodeType() == Node.ELEMENT_NODE) {
-        buf.insert(0, nodeToXPath(n));
+        buf.insert(0, nodeToXPath(n, setRootNamespace));
       }
     }
     return buf.toString();
@@ -396,8 +412,19 @@ public class GetFragmentBetween extends BasicFunction {
    * @param n The Node to generate an XPath for
    * @return StringBuilder containing the XPath
    */
-  private StringBuilder nodeToXPath(Node n) {
+  private StringBuilder nodeToXPath(Node n, boolean setRootNamespace) {
     StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
+    if (setRootNamespace) {
+      // set namespace only if node is root node
+      Node parentNode = n.getParentNode();
+      short parentNodeType = parentNode.getNodeType();
+      if (parentNodeType == Node.DOCUMENT_NODE) {
+        String nsUri = n.getNamespaceURI();
+        if (nsUri != null) {
+          xpath.append("[@" + "xmlns" + " eq \"" + nsUri + "\"]");
+        }
+      }
+    }
     NamedNodeMap attrs = n.getAttributes();
     for(int i = 0; i < attrs.getLength(); i++) {
       Node attr = attrs.item(i);
