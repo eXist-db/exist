@@ -44,9 +44,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
-
-import com.neurologic.oauth.config.OAuthConfig;
-import com.neurologic.oauth.config.ServiceConfig;
+import org.scribe.exceptions.OAuthException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -66,6 +64,11 @@ public class OAuthRealm extends AbstractRealm {
     @ConfigurationFieldAsAttribute("version")
     public final static String version = "1.0";
     
+    //@ConfigurationReferenceBy("name")
+    @ConfigurationFieldAsElement("service")
+    @ConfigurationFieldClassMask("org.exist.security.realm.oauth.Service")
+    List<Service> services; 
+
     private Group primaryGroup = null;
 
     public OAuthRealm(final SecurityManagerImpl sm, Configuration config) throws ConfigurationException {
@@ -166,80 +169,6 @@ public class OAuthRealm extends AbstractRealm {
 		return false;
 	}
 
-	//OAuth servlet's methods
-	
-	/*
-	 * <server name="twitter" oauth-version="1">
-	 *  <consumer key="TWITTER_KEY" secret="TWITTER_SECRET" />
-	 *  <provider 
-	 *    requestTokenUrl="https://api.twitter.com/oauth/request_token" 
-	 *    authorizationUrl="https://api.twitter.com/oauth/authorize" 
-	 *    accessTokenUrl="https://api.twitter.com/oauth/access_token" />
-	 * 
-	 * </server>
-	 * 
-	 * <server name="facebook" oauth-version="2">
-	 *  <consumer key="APP_ID" secret="APP_SECRET" />
-	 *  <provider 
-	 *    authorizationUrl="https://graph.facebook.com/oauth/authorize" 
-	 *    accessTokenUrl="https://graph.facebook.com/oauth/access_token" />
-	 * </server>
-	 */
-	@ConfigurationFieldAsElement("server")
-	@NewClass(
-		name = "com.neurologic.oauth.config.OAuthConfig",
-		mapper = "org/exist/security/realm/oauth/OAuthConfig.xml")
-	private List<OAuthConfig> oauthConfigList = new ArrayList<OAuthConfig>();
-	
-	/*
-	 * <service 
-	 *   path="/request_token_ready" 
-	 *   class="org.exist.security.realm.oauth.TwitterOAuthService" 
-	 *   server="twitter">
-	 *  
-	 *  <success path="/start.htm" />
-	 * 
-	 * </service>
-	 * 
-	 * <service path="/oauth_redirect" class="com.neurologic.example.FacebookOAuthService" server="facebook">
-	 *  <success path="/start.htm" />
-	 * </service>
-	 */
-	@ConfigurationFieldAsElement("service")
-	@NewClass(
-		name = "com.neurologic.oauth.config.ServiceConfig", 
-		mapper = "org/exist/security/realm/oauth/ServiceConfig.xml")
-    private List<ServiceConfig> serviceConfigList = new ArrayList<ServiceConfig>();
-
-	public ServiceConfig getServiceConfigByPath(String path) throws Exception {
-		if (path == null)
-			throw new Exception("Path does not defined.");
-		
-        for (ServiceConfig service : serviceConfigList) {
-            if (path.equals(service.getPath())) {
-                return service;
-            }
-        }
-        
-		StringBuilder b = new StringBuilder();
-        for (ServiceConfig service : serviceConfigList) {
-        	b.append(service.getPath());
-        	b.append(" ");
-        }
-    
-		throw new Exception("No <service> defined for path='" + path + "', configurated services: ["+b.toString()+"].");
-    }
-
-	public OAuthConfig getOAuthConfigByName(String oauthName) throws Exception {
-        for (OAuthConfig oauth : oauthConfigList) {
-            if (oauthName.equals(oauth.getName())) {
-            	return oauth;
-            }
-        }
-    
-        throw new Exception("No <server> defined with name='" + oauthName + "'.");
-    }
-	
     protected Account createAccountInDatabase(final String username, final Map<SchemaType, String> metadata) throws AuthenticationException {
 
         try {
@@ -262,5 +191,15 @@ public class OAuthRealm extends AbstractRealm {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
         }
     }
+    
+	public Service getServiceBulderByPath(String name) {
+		for (Service service : services) {
+			if (service.getName().equals(name)) {
+				return service;
+			}
+		}
+		
+		throw new OAuthException("Service no found by name '"+name+"'.");
+	}
 
 }

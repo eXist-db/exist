@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class name="com.neurologic.oauth.config.OAuthConfig">
+	
+	<!-- 
+	@ConfigurationFieldAsElement("server")
+	@NewClass(
+		name = "com.neurologic.oauth.config.OAuthConfig",
+		mapper = "org/exist/security/realm/oauth/OAuthConfig.xml")
+	-->
+	
 	<callMethod name="setName" attribute="name"/>
 	<callMethod name="setVersion" attribute="oauth-version"/>
 
