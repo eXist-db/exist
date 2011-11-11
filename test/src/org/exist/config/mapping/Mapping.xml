@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class name="org.exist.config.mapping.MappedСlass">
+	
+	<callMethod name="setName" attribute="name"/>
+	<callMethod name="setVersion" attribute="version"/>
+
+	<callMethod name="setSubclass" element="subconfig">
+		<class name="org.exist.config.mapping.SubConfig">
+			<callMethod name="setKey" attribute="key"/>
+			<callMethod name="setSecret" attribute="secret"/>
+		</class>
+	</callMethod>
+</class>

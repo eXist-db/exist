@@ -39,7 +39,7 @@ public class ConfigurableObject implements Configurable {
 	@NewClass(
 		name = "org.exist.config.mapping.MappedСlass",
 		mapper = "org/exist/config/mapping/MappedСlass.xml")
-	protected MappedСlass subclasses;
+	protected MappedClass subclasses;
 
 	private Configuration configuration;
 	
