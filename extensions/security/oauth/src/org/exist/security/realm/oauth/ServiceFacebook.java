@@ -21,9 +21,6 @@
  */
 package org.exist.security.realm.oauth;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -44,47 +41,46 @@ import org.exist.security.internal.HttpSessionAuthentication;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import net.oauth.exception.OAuthException;
-import net.oauth.token.v2.AccessToken;
-import net.oauth.util.OAuthUtil;
-
-import com.neurologic.http.HttpClient;
-import com.neurologic.http.impl.ApacheHttpClient;
-import com.neurologic.oauth.config.ServiceConfig;
-import com.neurologic.oauth.service.impl.OAuth2Service;
+import org.scribe.exceptions.OAuthException;
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.oauth.OAuthService;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * 
  */
-public class ServiceFacebook extends OAuth2Service implements OAuth2ServiceAtEXist {
+public class ServiceFacebook  {
 
+    private static final String PROTECTED_RESOURCE_URL = "https://graph.facebook.com/me";
 	public static final String FACEBOOK_ACCESS_TOKEN_SESSION = "FACEBOOK_ACCESS_TOKEN_SESSION";
 
-	@Override
-	public void saveAccessToken(HttpServletRequest request, AccessToken accessToken) {
+	public static void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
 		
-		HttpClient client = new ApacheHttpClient();
-		try {
-			InputStream in = client.connect("GET", "https://graph.facebook.com/me?access_token="+accessToken.getAccessToken());
+        OAuthRequest _request = new OAuthRequest(Verb.GET, PROTECTED_RESOURCE_URL);
+        service.signRequest(accessToken, _request);
+        Response _response = _request.send();
+        if (_response.getCode() != 200)
+        	throw new OAuthException("Can query account information.");
+
+        String contentType = _response.getHeader("Content-Type");
+		if (contentType == null) contentType = "";
 			
-			String contentType = client.getResponseHeaderValue("Content-Type");
-			if (contentType == null) contentType = "";
+		String charset = "";
+		int semicolonPos = contentType.indexOf(';');
 			
-			String charset = "";
-			int semicolonPos = contentType.indexOf(';');
-			
-			if (semicolonPos > 0) {
-				String _charset = contentType.substring(semicolonPos + 1).trim();
-				if (_charset.startsWith("charset")) {
-					charset = _charset.substring(_charset.indexOf('=') + 1);
-				}
-				contentType = contentType.substring(0, semicolonPos);
+		if (semicolonPos > 0) {
+			String _charset = contentType.substring(semicolonPos + 1).trim();
+			if (_charset.startsWith("charset")) {
+				charset = _charset.substring(_charset.indexOf('=') + 1);
 			}
+			contentType = contentType.substring(0, semicolonPos);
+		}
 			
 			Map<String, String> responseAttributes = null;
-			String response = streamToString(in, charset);
+			String response = _response.getBody();
 			if ("application/json".equals(contentType) || (response.startsWith("{") && response.endsWith("}"))) {
 				JSONObject jsonResponse = new JSONObject(response);
 				if (jsonResponse != null) {
@@ -95,106 +91,46 @@ public class ServiceFacebook extends OAuth2Service implements OAuth2ServiceAtEXi
 					responseAttributes = parseJSONObject(jsonResponse);
 				}
 			} else if ("text/plain".equals(contentType) || (response.contains("=") && response.contains("&"))) {
-				responseAttributes = OAuthUtil.parseQueryString(response);
+				//responseAttributes = OAuthUtil.parseQueryString(response);
 			}
 			
-			String id = responseAttributes.get("id");
-			
-			String accountName = id + "@facebook.com";
+		String id = responseAttributes.get("id");
+		
+		String accountName = id + "@facebook.com";
 
-			Account found = OAuthRealm._.getAccount(accountName);
+		Account found = OAuthRealm._.getAccount(accountName);
+		
+		if (found == null) {
+			Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
+			metadata.put(FBSchemaType.ID, responseAttributes.get("id"));
+			metadata.put(AXSchemaType.FIRSTNAME, responseAttributes.get("first_name"));
+			metadata.put(AXSchemaType.LASTNAME, responseAttributes.get("last_name"));
+			metadata.put(AXSchemaType.FULLNAME, responseAttributes.get("name"));
+			metadata.put(AXSchemaType.TIMEZONE, responseAttributes.get("timezone"));
 			
-			if (found == null) {
-				Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
-				metadata.put(FBSchemaType.ID, responseAttributes.get("id"));
-				metadata.put(AXSchemaType.FIRSTNAME, responseAttributes.get("first_name"));
-				metadata.put(AXSchemaType.LASTNAME, responseAttributes.get("last_name"));
-				metadata.put(AXSchemaType.FULLNAME, responseAttributes.get("name"));
-				metadata.put(AXSchemaType.TIMEZONE, responseAttributes.get("timezone"));
-				
-				found = OAuthRealm._.createAccountInDatabase(accountName, metadata);
-			}
-			
-			Account principal = new SubjectAccreditedImpl((AbstractAccount) found, accessToken);
-			
-	        HttpSession session = request.getSession(true);
-
-			Subject subject = new Subject();
-
-			//TODO: hardcoded to jetty - rewrite
-			//*******************************************************
-			DefaultIdentityService _identityService = new DefaultIdentityService();
-			UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
-            
-			Authentication cached=new HttpSessionAuthentication(session, user);
-            session.setAttribute(HttpSessionAuthentication.__J_AUTHENTICATED, cached);
-			//*******************************************************
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			request.setAttribute("exception", e);
+			found = OAuthRealm._.createAccountInDatabase(accountName, metadata);
 		}
+		
+		Account principal = new SubjectAccreditedImpl((AbstractAccount) found, accessToken);
+		
+        HttpSession session = request.getSession(true);
+
+		Subject subject = new Subject();
+
+		//TODO: hardcoded to jetty - rewrite
+		//*******************************************************
+		DefaultIdentityService _identityService = new DefaultIdentityService();
+		UserIdentity user = _identityService.newUserIdentity(subject, principal, new String[0]);
+        
+		Authentication cached=new HttpSessionAuthentication(session, user);
+        session.setAttribute(HttpSessionAuthentication.__J_AUTHENTICATED, cached);
+		//*******************************************************
+			
+			
 		request.getSession().setAttribute(FACEBOOK_ACCESS_TOKEN_SESSION, accessToken);
 	}
 
-	ServiceConfig config = null;
-	
-	@Override
-	public void setServiceConfig(ServiceConfig serviceConfig) {
-		config = serviceConfig; 
-	}
-	
-	@Override
-	public ServiceConfig getServiceConfig() {
-		return config;
-	}
-	
-	String redirectUri = null;
-	
-	@Override
-	public String getRedirectUri() {
-		return redirectUri;
-	}
-
-	public void setRedirectUri(String uri) {
-		redirectUri = uri;
-	}
-
-	@Override
-	protected String[] getScope() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected String getScopeDelimiter() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected String getState() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private String streamToString(InputStream stream, String charset) throws IOException {
-		if (stream == null) {
-			return null;
-		}
-		
-		ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-		int c;
-		
-		while ((c = stream.read()) != -1) {
-			byteArray.write(c);
-		}
-
-		return new String(byteArray.toByteArray(), charset);
-	}
-
-	private synchronized Map<String, String> parseJSONObject(JSONObject json) throws JSONException {
+	private static Map<String, String> parseJSONObject(JSONObject json) throws JSONException {
 		Map<String, String> parameters = null;
 		
 		if (json != null && json.length() > 0) {
