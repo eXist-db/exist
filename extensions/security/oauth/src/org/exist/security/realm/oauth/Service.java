@@ -22,7 +22,6 @@
 package org.exist.security.realm.oauth;
 
 import org.exist.config.Configurable;
-import org.exist.config.ConfigurableObject;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
@@ -42,13 +41,13 @@ public class Service implements Configurable {
 	private Configuration configuration = null;
 	
 	@ConfigurationFieldAsAttribute("name")
-	String name = null;
+	String name;
 
 	@ConfigurationFieldAsAttribute("key")
-	String apiKey = null;//"137486769663489";
+	String apiKey;
     
     @ConfigurationFieldAsAttribute("secret")
-    String apiSecret = null;//"aa5bcbe021ba65c4eaaf8fc29f5aa434";
+    String apiSecret;
 
 	public Service(OAuthRealm realm, Configuration config) {
 
