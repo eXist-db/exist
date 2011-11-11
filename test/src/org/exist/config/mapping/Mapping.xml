@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<class name="org.exist.config.mapping.MappedСlass">
+<class name="org.exist.config.mapping.MappedClass">
 	
 	<callMethod name="setName" attribute="name"/>
 	<callMethod name="setVersion" attribute="version"/>
