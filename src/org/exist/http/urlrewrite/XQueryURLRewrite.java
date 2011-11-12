@@ -391,6 +391,7 @@ public class XQueryURLRewrite implements Filter {
 			RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
 			wrappedReq.allowCaching(false);
 			wrappedReq.setMethod("POST");
+			wrappedReq.setBasePath(modifiedRequest.getBasePath());
 			wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
 			wrappedReq.setContentType(wrappedResponse.getContentType());
 			byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
