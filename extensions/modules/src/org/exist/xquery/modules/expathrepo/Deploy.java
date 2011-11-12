@@ -110,6 +110,7 @@ public class Deploy extends BasicFunction {
 	private static final QName STATUS_ELEMENT = new QName("status", ExpathPackageModule.NAMESPACE_URI);
 
 	private static final QName CLEANUP_ELEMENT = new QName("cleanup", ExpathPackageModule.NAMESPACE_URI);
+	private static final QName DEPLOYED_ELEMENT = new QName("deployed", ExpathPackageModule.NAMESPACE_URI);
 
 	private String user = null;
 	private String password = null;
@@ -561,50 +562,59 @@ public class Deploy extends BasicFunction {
 		
 		@Override
 		public void startElement(QName qname, AttrList attribs) {
-			super.startElement(qname, attribs);
 			stack.push(qname.getLocalName());
+			if (!"deployed".equals(qname.getLocalName()))
+				super.startElement(qname, attribs);
 		}
 		
 		@Override
 		public void startElement(String namespaceURI, String localName,
 				String qName, Attributes attrs) throws SAXException {
-			super.startElement(namespaceURI, localName, qName, attrs);
 			stack.push(localName);
+			if (!"deployed".equals(localName))
+				super.startElement(namespaceURI, localName, qName, attrs);
 		}
 		
 		@Override
 		public void endElement(QName qname) throws SAXException {
 			stack.pop();
-			super.endElement(qname);
+			if ("meta".equals(qname.getLocalName())) {
+				addDeployTime();
+			}
+			if (!"deployed".equals(qname.getLocalName()))
+				super.endElement(qname);
 		}
 		
 		@Override
 		public void endElement(String uri, String localName, String qName)
 				throws SAXException {
 			stack.pop();
-			super.endElement(uri, localName, qName);
+			if ("meta".equals(localName)) {
+				addDeployTime();
+			}
+			if (!"deployed".equals(localName))
+				super.endElement(uri, localName, qName);
 		}
 		
 		@Override
 		public void characters(char[] ch, int start, int len)
 				throws SAXException {
-			if (!deployTime())
+			String current = stack.peek();
+			if (!current.equals("deployed"))
 				super.characters(ch, start, len);
 		}
 		
 		@Override
 		public void characters(CharSequence seq) throws SAXException {
-			if (!deployTime())
+			String current = stack.peek();
+			if (!current.equals("deployed"))
 				super.characters(seq);
 		}
 		
-		private boolean deployTime() throws SAXException {
-			String current = stack.peek();
-			if (current.equals("deployed")) {
-				super.characters(time);
-				return true;
-			}
-			return false;
+		private void addDeployTime() throws SAXException {
+			super.startElement(DEPLOYED_ELEMENT, null);
+			super.characters(time);
+			super.endElement(DEPLOYED_ELEMENT);
 		}
 	}
 }
