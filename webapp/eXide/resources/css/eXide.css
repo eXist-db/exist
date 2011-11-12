@@ -47,6 +47,7 @@ a:link,a:visited {
 }
 
 #editor {
+    font-family: 'Ubuntu Mono', 'Monaco','Menlo','Droid Sans Mono','Courier New',monospace;
 	height: 200px;
 	margin: 0 4px;
 	background-color: #E8E8E8;
@@ -302,7 +303,6 @@ Sub level menu list items (undo style from Top level List Items)
 }
 
 ul.dynatree-container {
-	height: 200px;
 	border: 0;
 }
 

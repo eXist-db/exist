@@ -144,9 +144,10 @@ declare function sandbox:retrieve($num as xs:integer) as element() {
 (:~ Take the query results and store them into the HTTP session. :)
 declare function sandbox:store-in-session($results as item()*) as element(result) {
 	let $null := session:set-attribute('cached', $results)
-	let $elapsed := request:get-attribute("elapsed")
+    let $startTime := request:get-attribute("start-time")
+    let $elapsed := if ($startTime) then seconds-from-duration(current-time() - xs:time($startTime)) else 0
 	return
-		<result hits="{count($results)}" elapsed="{if ($elapsed) then $elapsed else 0}"/>
+		<result hits="{count($results)}" elapsed="{$elapsed}"/>
 };
 
 (: 	When a query has been executed, its results will be passed into

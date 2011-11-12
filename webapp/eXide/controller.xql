@@ -92,10 +92,11 @@ else if ($exist:resource eq 'execute') then
                 <set-attribute name="xquery.source" value="{$query}"/>
                 <!-- Results should be written into attribute 'results' -->
                 <set-attribute name="xquery.attribute" value="results"/>
-		<set-attribute name="xquery.module-load-path" value="{$base}"/>
+		        <set-attribute name="xquery.module-load-path" value="{$base}"/>
                 <clear-attribute name="results"/>
                 <!-- Errors should be passed through instead of terminating the request -->
                 <set-attribute name="xquery.report-errors" value="yes"/>
+                <set-attribute name="start-time" value="{util:system-time()}"/>
             </forward>
             <view>
             <!-- Post process the result: store it into the HTTP session
