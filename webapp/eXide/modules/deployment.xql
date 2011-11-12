@@ -223,7 +223,7 @@ declare function deploy:store-templates-from-fs($target as xs:string, $base as x
     let $template := request:get-parameter("template", "basic")
     let $templatesDir := concat($base, $pathSep, "templates", $pathSep, $template)
     return (
-        xmldb:store-files-from-pattern($target, $templatesDir, "**/*", (), true()),
+        xmldb:store-files-from-pattern($target, $templatesDir, "**/*", (), true(), "**/.svn/**"),
         deploy:chmod($target, $userData, $permissions)
     )
 };

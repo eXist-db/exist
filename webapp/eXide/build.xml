@@ -38,6 +38,7 @@
             <sources dir="${basedir}/src">
                 <file name="ace-modes.js"/>
                 <file name="util.js"/>
+                <file name="events.js"/>
                 <file name="commands.js"/>
                 <file name="mode-helper.js"/>
                 <file name="xquery-helper.js"/>
@@ -48,6 +49,7 @@
                 <file name="deployment.js"/>
                 <file name="templates.js"/>
                 <file name="resources.js"/>
+                <file name="find.js"/>
             </sources>
         </jscomp>
         <jscomp compilationLevel="simple" debug="false" output="${scripts}/jquery/jquery.plugins.min.js">
@@ -75,7 +77,7 @@
                 <include name="modules/**"/>
                 <include name="resources/**"/>
                 <include name="templates/**"/>
-                <include name="src/**"/>
+                <exclude name="src/**"/>
                 <exclude name=".git*"/>
             </fileset>
         </zip>
