@@ -154,7 +154,7 @@ public class Deploy extends BasicFunction {
 				ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
 				ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
 				if (cleanup != null) {
-					runQuery(null, packageDir, cleanup.getStringValue());
+					runQuery(null, packageDir, cleanup.getStringValue(), false);
 				}
 				if (target != null) {
 					uninstall(args, target);
@@ -165,7 +165,7 @@ public class Deploy extends BasicFunction {
 				ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
 				String path = setup == null ? null : setup.getStringValue();
 				if (path != null && path.length() > 0) {
-					runQuery(null, packageDir, path);
+					runQuery(null, packageDir, path, true);
 					return statusReport(null);
 				} else {
 					// otherwise copy all child directories to the target collection
@@ -207,7 +207,7 @@ public class Deploy extends BasicFunction {
 					if (preSetup != null) {
 						path = preSetup.getStringValue();
 						if (path.length() > 0)
-							runQuery(targetCollection, packageDir, path);
+							runQuery(targetCollection, packageDir, path, true);
 					}
 
 					// any required users and group should have been created by the pre-setup query.
@@ -222,7 +222,7 @@ public class Deploy extends BasicFunction {
 					if (postSetup != null) {
 						path = postSetup.getStringValue();
 						if (path.length() > 0)
-							runQuery(targetCollection, packageDir, path);
+							runQuery(targetCollection, packageDir, path, false);
 					}
 					
 					storeRepoXML(repoXML, targetCollection);
@@ -343,7 +343,7 @@ public class Deploy extends BasicFunction {
 		}
 	}
 
-	private Sequence runQuery(XmldbURI targetCollection, File tempDir, String fileName)
+	private Sequence runQuery(XmldbURI targetCollection, File tempDir, String fileName, boolean preInstall)
 			throws XPathException, IOException {
 		File xquery = new File(tempDir, fileName);
 		if (!xquery.canRead())
@@ -359,6 +359,10 @@ public class Deploy extends BasicFunction {
 			ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
 		} else
 			ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);
+		if (preInstall)
+			// when running pre-setup scripts, base path should point to directory
+			// because the target collection does not yet exist
+			ctx.setModuleLoadPath(tempDir.getAbsolutePath());
 		
 		CompiledXQuery compiled;
 		try {
