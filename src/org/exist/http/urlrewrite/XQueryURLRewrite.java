@@ -388,13 +388,21 @@ public class XQueryURLRewrite implements Filter {
 		for (int i = 0; i < views.size(); i++) {
 			URLRewrite view = (URLRewrite) views.get(i);
 			
+			// get data returned from last action
+			byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+			// determine request method to use for calling view
+			String method = view.getMethod();
+			if (method == null) {
+				method = "POST";	// default is POST
+			}
+			
 			RequestWrapper wrappedReq = new RequestWrapper(modifiedRequest);
 			wrappedReq.allowCaching(false);
-			wrappedReq.setMethod("POST");
+			wrappedReq.setMethod(method);
 			wrappedReq.setBasePath(modifiedRequest.getBasePath());
 			wrappedReq.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
 			wrappedReq.setContentType(wrappedResponse.getContentType());
-			byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+
 			if (data != null)
 				wrappedReq.setData(data);
 			
