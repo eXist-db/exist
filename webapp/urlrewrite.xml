@@ -453,6 +453,16 @@ return
                                         example.</para>
                                 </listitem>
                             </varlistentry>
+                            <varlistentry>
+                                <term>method</term>
+                                <listitem>
+                                    <para>The HTTP method (POST, GET, PUT ...) to use when passing
+                                        the request to the pipeline step (does not apply to the
+                                        first step). This is important if the servlet or URL does
+                                        not support all methods. The default method for pipeline
+                                        steps in the view section is always POST.</para>
+                                </listitem>
+                            </varlistentry>
                         </variablelist>
                     </listitem>
                 </varlistentry>
