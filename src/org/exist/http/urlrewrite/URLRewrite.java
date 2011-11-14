@@ -51,6 +51,7 @@ public abstract class URLRewrite {
     protected String uri;
     protected String target;
     protected String prefix = null;
+    protected String method = null;
     protected Map<String, String> attributes = null;
     protected Map<String, List<String>> parameters = null;
     protected Map<String, String> headers = null;
@@ -60,6 +61,8 @@ public abstract class URLRewrite {
         this.uri = uri;
         if (config != null && config.hasAttribute("absolute"))
         	absolute = config.getAttribute("absolute").equals("yes");
+        if (config != null && config.hasAttribute("method"))
+        	method = config.getAttribute("method").toUpperCase();
         // Check for add-parameter elements etc.
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
@@ -92,6 +95,10 @@ public abstract class URLRewrite {
 
     protected void setAbsolutePath(XQueryURLRewrite.RequestWrapper request) {
     	request.setPaths(target, null);
+    }
+
+    protected String getMethod() {
+    	return method;
     }
     
     protected boolean doResolve() {
