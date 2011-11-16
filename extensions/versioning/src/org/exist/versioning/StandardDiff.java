@@ -164,7 +164,24 @@ public class StandardDiff implements org.exist.versioning.Diff {
                 diff.addNodes(nodes);
             }
             if (next.deleted > 0) {
-                if (LOG.isTraceEnabled())
+            	// This is a simple test to correct an issue when two nodes of the same 
+            	// node-name are siblings and the first is deleted. What happens is the first
+            	// element doesn't get it's start node deleted and the second does. So 
+            	// the second element basically ends up with the first one's start element.
+            	// Which causes problems for the second element's attributes.
+            	DiffNode beforeElement = nodesA[start0 - 1];
+            	DiffNode lastElement = nodesA[lastDeleted - 1];
+
+            	if(beforeElement.qname != null 
+            			&& lastElement.qname != null 
+            			&& beforeElement.qname.equals(lastElement.qname) 
+            			&& beforeElement.nodeType == XMLStreamReader.START_ELEMENT 
+            			&& lastElement.nodeType == XMLStreamReader.START_ELEMENT) {
+            		start0--;
+            		lastDeleted--;
+            	}
+
+            	if (LOG.isTraceEnabled())
                     LOG.trace("Deleted: " + start0 + " last: " + lastDeleted);
                 for (int i = start0; i < lastDeleted; i++) {
                     boolean elementDeleted = false;
