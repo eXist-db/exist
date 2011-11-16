@@ -52,6 +52,8 @@
               file="${junit.reports}/src/org/exist/performance/ant/antlib.xml"/>
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
+        <copy todir="${junit.reports}/classes/org/exist/config/mapping"
+            file="${junit.reports}/src/org/exist/config/mapping/Mapping.xml"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
         <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/>
         <ant antfile="build.xml" dir="extensions/xslt" target="compile-tests"/>
