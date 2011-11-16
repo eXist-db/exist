@@ -25,6 +25,7 @@ package org.exist.xquery.value;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.GroupSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -82,9 +83,14 @@ public class GroupedValueSequenceTable extends
 
 		for (int i = 0; i < groupSpecs.length; i++) {
 			// evaluates the values of the grouping keys
-			specEvaluation[i] = groupSpecs[i].getGroupExpression().eval(
-					item.toSequence()); // TODO : too early evaluation !
-			keySequence.add(specEvaluation[i].itemAt(0));
+			specEvaluation[i] = groupSpecs[i].getGroupExpression().eval(item.toSequence()); // TODO : too early evaluation !
+			
+			if (specEvaluation[i].isEmpty())
+				keySequence.add(AtomicValue.EMPTY_VALUE);
+			else if (specEvaluation[i].hasOne())
+				keySequence.add(specEvaluation[i].itemAt(0));
+			else
+				throw new XPathException(groupSpecs[i].getGroupExpression(), ErrorCodes.XPTY0004, "More that one key values", specEvaluation[i]);
 		}
 
 		String hashKey = keySequence.getHashKey();
