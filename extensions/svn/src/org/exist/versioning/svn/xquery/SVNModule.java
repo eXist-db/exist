@@ -48,6 +48,7 @@ public class SVNModule extends AbstractInternalModule {
             new FunctionDef(SVNCheckOut.signature[0], SVNCheckOut.class),
             new FunctionDef(SVNCheckOut.signature[1], SVNCheckOut.class),
             new FunctionDef(SVNCommit.signature, SVNCommit.class),
+            new FunctionDef(SVNDelete.signature, SVNDelete.class),
             new FunctionDef(SVNInfo.signature, SVNInfo.class),
             new FunctionDef(SVNLatestRevision.signature, SVNLatestRevision.class),
             new FunctionDef(SVNList.signature, SVNList.class),
