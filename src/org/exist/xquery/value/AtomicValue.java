@@ -399,7 +399,11 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     private final static class EmptyValue extends AtomicValue {
 		
-		public boolean isEmpty() {
+    	public boolean hasOne() {
+    		return false;
+    	}
+
+    	public boolean isEmpty() {
 			return true;
 		}
 

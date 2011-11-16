@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Arrays;
-
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
