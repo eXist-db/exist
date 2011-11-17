@@ -30,6 +30,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.util.Properties;
+import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 
 
 /**
@@ -65,10 +67,10 @@ public class FileSystemWriter implements BackupWriter
     public void newCollection( String name )
     {
     	File file;
-    	if (new File(name).isAbsolute()) {
-    		file = new File( rootDir, name );
+        if (XmldbURI.createInternal(name).isAbsolute()) {
+            file = new File( rootDir, name );
     	} else {
-    		file = new File( currentDir, name );
+            file = new File( currentDir, name );
     	}
 
         if( file.exists() ) {
