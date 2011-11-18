@@ -146,7 +146,7 @@ public class XSLTServlet extends HttpServlet {
 					ValueSequence seq = (ValueSequence) sourceObj;
 					
 					if (seq.size() == 1) {
-						sourceObj = seq.get(0);
+						sourceObj = seq.itemAt(0);
                     }
 				}
             	
