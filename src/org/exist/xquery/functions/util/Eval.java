@@ -138,7 +138,7 @@ public class Eval extends BasicFunction {
     private static class AsyncQueryThreadFactory implements ThreadFactory {
         private int id = 0;
 
-        @Override
+        //@Override
         public Thread newThread(Runnable r) {
             return new Thread(r, "AsynchronousEval-" + getId());
         }
@@ -231,7 +231,7 @@ public class Eval extends BasicFunction {
             this.args = args;
         }
 
-        @Override
+        //@Override
         public Sequence call() throws XPathException {
         	
         	BrokerPool db = null;
