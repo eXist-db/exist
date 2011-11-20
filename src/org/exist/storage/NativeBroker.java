@@ -31,7 +31,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
@@ -89,7 +89,6 @@ import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.dom.RawNodeIterator;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
-import org.exist.storage.index.CollectionStore.CollectionKey;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.journal.Journal;
@@ -109,7 +108,6 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -1675,9 +1673,73 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    @Override
+    public DocumentImpl getResourceById(int collectionId, byte resourceType, int documentId) throws PermissionDeniedException {
+        XmldbURI uri = null;
+        Lock lock = collectionsDb.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            //final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
+            //doc.write(ostream);
+            //Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
+            //collectionsDb.put(transaction, key, ostream.data(), true);
+        
+            //Value collectionKey = new CollectionStore.CollectionKey
+            //collectionsDb.get(Value.EMPTY_VALUE)
+            
+            //get the collection uri
+            String collectionUri = null;
+            if(collectionId == 0) {
+                collectionUri = "/db";
+            } else {
+                for(Value collectionDbKey : collectionsDb.getKeys()) {
+                    if(collectionDbKey.data()[0] == CollectionStore.KEY_TYPE_COLLECTION) {
+                        //Value collectionDbValue = collectionsDb.get(collectionDbKey);
+
+                        VariableByteInput vbi = collectionsDb.getAsStream(collectionDbKey);
+                        int id = vbi.readInt();
+                        //check if the collection id matches (first 4 bytes)
+                        if(collectionId == id) {
+                            collectionUri = new String(Arrays.copyOfRange(collectionDbKey.data(), 1, collectionDbKey.data().length));
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            //get the resource uri
+            Value key = new CollectionStore.DocumentKey(collectionId, resourceType, documentId);
+            VariableByteInput vbi = collectionsDb.getAsStream(key);
+            vbi.readInt(); //skip doc id
+            final String resourceUri = vbi.readUTF();
+            
+            //get the resource
+            uri = XmldbURI.createInternal(collectionUri + "/" + resourceUri);
+            
+        } catch (TerminatedException te) {
+            LOG.error("Query Terminated", te);
+            return null;
+        } catch (BTreeException bte) {
+            LOG.error("Problem reading btree", bte);
+            return null;
+        } catch (LockException e) {
+            LOG.error("Failed to acquire lock on " + collectionsDb.getFile().getName());
+            return null;
+        } catch (IOException e) {
+            LOG.error("IOException while reading recource data", e);
+            return null;
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+        
+        return getResource(uri, Permission.READ);
+    }
+    
     /** store Document entry into its collection. */
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
+        
+        
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
@@ -1824,14 +1886,21 @@ public class NativeBroker extends DBBroker {
             LOG.debug("collection '" + collUri + "' not found!");
             return null;
         }
-        if (!collection.getPermissions().validate(getSubject(), Permission.READ))
+        
+        if(!collection.getPermissions().validate(getSubject(), Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "'");
+        }
         
         DocumentImpl doc = collection.getDocument(this, docUri);
         if (doc == null) {
             LOG.debug("document '" + fileName + "' not found!");
             return null;
         }
+        
+        if(!doc.getPermissions().validate(getSubject(), accessType)) {
+            throw new PermissionDeniedException("not allowed to read document '"+fileName+"'");
+        }
+        
        if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
            BinaryDocument bin = (BinaryDocument)doc;
            try {
@@ -1840,8 +1909,6 @@ public class NativeBroker extends DBBroker {
               LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
            }
        }
-       if (!doc.getPermissions().validate(getSubject(), accessType))
-    		   throw new PermissionDeniedException("not allowed to read document '"+fileName+"'");
        return doc;
     }
 

@@ -394,6 +394,8 @@ public abstract class DBBroker extends Observable {
      */
     public abstract DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
 
+    public abstract DocumentImpl getResourceById(int collectionId, byte resourceType, int documentId) throws PermissionDeniedException;
+    
     /**
      * deprecated Use XmldbURI instead!
      * 
@@ -601,7 +603,7 @@ public abstract class DBBroker extends Observable {
            throws IOException;
 
     public abstract void getResourceMetadata(DocumentImpl doc);
-
+    
     /**
      * Completely delete this binary document (descriptor and binary data).
      * 

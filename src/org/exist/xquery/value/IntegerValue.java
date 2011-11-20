@@ -513,13 +513,15 @@ public class IntegerValue extends NumericValue {
 		} else if(target == Float.class || target == float.class) {
 			FloatValue v = (FloatValue)convertTo(Type.FLOAT);
 			return new Float(v.value);
-		} else if(target == Boolean.class || target == boolean.class)
+		} else if(target == Boolean.class || target == boolean.class) {
 			return new BooleanValue(effectiveBooleanValue());
-		else if(target == String.class)
-			// return Long.toString(value);
+                } else if(target == String.class) {
 			return value.toString();
-		else if(target == Object.class)
+                } else if(target == BigInteger.class) {
+                    return new BigInteger(value.toByteArray());
+                } else if(target == Object.class) {
 			return value; // Long(value);
+                }
 		
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
 			" to Java object of type " + target.getName());
