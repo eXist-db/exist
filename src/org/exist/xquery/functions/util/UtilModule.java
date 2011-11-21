@@ -78,7 +78,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( DocumentNameOrId.docNameSignature, DocumentNameOrId.class ),
         new FunctionDef( DocumentNameOrId.absoluteResourceIdSignature, DocumentNameOrId.class ),
         new FunctionDef( DocumentNameOrId.resourceByAbsoluteIdSignature, DocumentNameOrId.class ),
-        new FunctionDef( CollectionNameOrId.collectionNameSignature, CollectionNameOrId.class ),
+        new FunctionDef( CollectionName.signature, CollectionName.class ),
         new FunctionDef( LogFunction.signatures[0], LogFunction.class ),
         new FunctionDef( LogFunction.signatures[1], LogFunction.class ),
         new FunctionDef( LogFunction.signatures[2], LogFunction.class ),
