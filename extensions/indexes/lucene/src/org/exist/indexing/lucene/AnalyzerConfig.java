@@ -63,12 +63,13 @@ public class AnalyzerConfig {
                     return null;
                 }
                 
-                final List<KeyValue> cParams = getConstructorParameters(config);
+                final List<KeyTypedValue> cParams = getConstructorParameters(config);
                 final Class<?>[] cParamClasses = new Class<?>[cParams.size()];
                 final Object[] cParamValues = new Object[cParams.size()];
                 for(int i = 0; i < cParams.size(); i++) {
-                    cParamClasses[i] = cParams.get(i).getValue().getClass();
-                    cParamValues[i] = cParams.get(i).getValue();
+                    KeyTypedValue ktv = cParams.get(i);
+                    cParamClasses[i] = ktv.getValueClass();
+                    cParamValues[i] = ktv.getValue();
                 }
                 
                 final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
@@ -92,8 +93,8 @@ public class AnalyzerConfig {
         return null;
     }
     
-    private static List<KeyValue> getConstructorParameters(Element config) throws ParameterException {
-        final List<KeyValue> parameters = new ArrayList<KeyValue>();
+    private static List<KeyTypedValue> getConstructorParameters(Element config) throws ParameterException {
+        final List<KeyTypedValue> parameters = new ArrayList<KeyTypedValue>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, "param");
         
         for(int i = 0; i < params.getLength(); i++) {
@@ -103,7 +104,7 @@ public class AnalyzerConfig {
         return parameters;
     }
     
-    private static KeyValue getConstructorParameter(Element param) throws ParameterException {
+    private static KeyTypedValue getConstructorParameter(Element param) throws ParameterException {
         final NamedNodeMap attrs = param.getAttributes();
         final String name = attrs.getNamedItem("name").getNodeValue();
 
@@ -121,7 +122,7 @@ public class AnalyzerConfig {
             value = null;
         }
         
-        final KeyValue parameter;
+        final KeyTypedValue parameter;
         if(type != null && type.equals("java.lang.reflect.Field")){
             final String clazzName = value.substring(0, value.lastIndexOf("."));
             final String fieldName = value.substring(value.indexOf(".") + 1);
@@ -130,7 +131,7 @@ public class AnalyzerConfig {
                 final Class fieldClazz = Class.forName(clazzName);
                 final Field field = fieldClazz.getField(fieldName);
                 final Object fValue = field.get(fieldClazz.newInstance());
-                parameter = new KeyValue(name, fValue);
+                parameter = new KeyTypedValue(name, fValue);
             } catch(NoSuchFieldException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
             } catch(ClassNotFoundException nsfe) {
@@ -142,19 +143,19 @@ public class AnalyzerConfig {
             }
         } else if(type != null && type.equals("java.io.File")) {
             final File f = new File(value);
-            parameter = new KeyValue(name, f);
+            parameter = new KeyTypedValue(name, f, File.class);
         } else if(type != null && type.equals("java.util.Set")) {
             final Set s = getConstructorParameterSetValues(param);
-            parameter = new KeyValue(name, s);
+            parameter = new KeyTypedValue(name, s, Set.class);
         } else if(type != null && (type.equals("java.lang.Integer") || type.equals("int"))) {
             final Integer n = Integer.parseInt(value);
-            parameter = new KeyValue(name, n);
+            parameter = new KeyTypedValue(name, n);
         } else if(type != null && (type.equals("java.lang.Boolean") || type.equals("boolean"))) {
             final boolean b = Boolean.parseBoolean(value);
-            parameter = new KeyValue(name, b);
+            parameter = new KeyTypedValue(name, b);
         } else {
             //assume java.lang.String
-            parameter = new KeyValue(name, value);
+            parameter = new KeyTypedValue(name, value);
         }
         
         return parameter;
@@ -177,13 +178,19 @@ public class AnalyzerConfig {
         return set;
     }
 
-    private static class KeyValue {
+    private static class KeyTypedValue {
         private final String key;
         private final Object value;
+        private final Class<?> valueClass;
         
-        public KeyValue(String key, Object value) {
+        public KeyTypedValue(String key, Object value) {
+            this(key, value, value.getClass());
+        }
+        
+        public KeyTypedValue(String key, Object value, Class<?> valueClass) {
             this.key = key;
             this.value = value;
+            this.valueClass = valueClass;
         }
         
         public String getKey() {
@@ -192,6 +199,10 @@ public class AnalyzerConfig {
 
         public Object getValue() {
             return value;
+        }
+        
+        public Class<?> getValueClass() {
+            return valueClass;
         }
     }
 
