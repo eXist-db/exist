@@ -46,6 +46,5 @@ let $startTime := if (empty($startParam) or $startParam eq "") then () else $sta
 let $collection := request:get-parameter("collection", ())
 let $dir := request:get-parameter("dir", ())
 let $output := file:sync($collection, $dir, $startTime)
-let $log := util:log("DEBUG", ("OUT: ", $output))
 return
     local:format-output($output)

@@ -18,6 +18,8 @@
  :)
 xquery version "3.0";
 
+import module namespace tmpl="http://exist-db.org/xquery/template" at "tmpl.xql";
+
 (:~ 
     Edit the expath and repo app descriptors.
     Functions to read, update the descriptors and deploy an app.
@@ -28,6 +30,15 @@ declare namespace repo="http://exist-db.org/xquery/repo";
 
 declare variable $app-root := request:get-attribute("app-root");
 
+declare variable $deploy:ANT_FILE :=
+    <project default="xar" name="$$app$$">
+        <property name="build.dir" value="build"/>
+        <target name="xar">
+            <mkdir dir="${{build.dir}}"/>
+            <zip basedir="." destfile="${{build.dir}}/$$app$$-$$version$$.xar" excludes="${{build.dir}}/*"/>
+        </target>
+    </project>;
+    
 declare function deploy:select-option($value as xs:string, $current as xs:string?, $label as xs:string) {
     <option value="{$value}">
     { if (exists($current) and $value eq $current) then attribute selected { "selected" } else (), $label }
@@ -218,6 +229,19 @@ declare function deploy:chmod($collection as xs:string, $userData as xs:string+,
     )
 };
 
+declare function deploy:store-ant($target as xs:string, $permissions as xs:int) {
+    let $abbrev := request:get-parameter("abbrev", "")
+    let $version := request:get-parameter("version", "1.0")
+    let $parameters :=
+        <parameters>
+            <param name="app" value="{$abbrev}"/>
+            <param name="version" value="{$version}"/>
+        </parameters>
+    let $antXML := tmpl:expand-template($deploy:ANT_FILE, $parameters)
+    return
+        xmldb:store($target, "build.xml", $antXML)
+};
+
 declare function deploy:store-templates-from-fs($target as xs:string, $base as xs:string, $userData as xs:string+, $permissions as xs:int) {
     let $pathSep := util:system-property("file.separator")
     let $template := request:get-parameter("template", "basic")
@@ -249,9 +273,10 @@ declare function deploy:store($collection as xs:string?, $expathConf as element(
             let $null := (
                 deploy:store-expath($collection, $userData, $permissions), 
                 deploy:store-repo($repoConf, $collection, $userData, $permissions),
-                if (empty($expathConf)) then
-                    deploy:store-templates($collection, $userData, $permissions)
-                else
+                if (empty($expathConf)) then (
+                    deploy:store-templates($collection, $userData, $permissions),
+                    deploy:store-ant($collection, $permissions)
+                ) else
                     ()
             )
             return
@@ -290,7 +315,8 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                             <li>
                                 <div class="hint">The source collection for the application's code. For testing purposes, this
                                 should be different from the target collection.</div>
-                                <input type="text" name="collection" size="40"/>
+                                <input type="text" name="collection" placeholder="/db/source/yourapp" 
+                                    size="40"/>
                                 <label for="collection">Source Collection:</label>
                             </li>
                         else
@@ -299,28 +325,32 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                     <li>
                         <div class="hint">The collection where the app will be installed. Should normally be different from 
                         the source collection.</div>
-                        <input type="text" name="target" value="{$repoConf/repo:target}" size="40"/>
+                        <input type="text" name="target" value="{$repoConf/repo:target}" 
+                            placeholder="/db/yourapp" size="40" required="required"/>
                         <label for="target">Target collection:</label>
                     </li>
                     <li><hr/></li>
                     <li>
                         <div class="hint">The name of the package. This must be a URI.</div>
-                        <input type="text" name="name" value="{if ($expathConf) then $expathConf/@name else 'http://exist-db.org/apps/'}" size="40"/>
+                        <input type="url" name="name" placeholder="http://exist-db.org/apps/yourapp" required="required"
+                            value="{if ($expathConf) then $expathConf/@name else ''}" size="40"/>
                         <label for="name">Name:</label>
                     </li>
                     <li>
                         <div class="hint">A short name for the app. This will be the name of the collection into which
                         the app is installed.</div>
-                        <input type="text" name="abbrev" value="{$expathConf/@abbrev}" size="25"/>
+                        <input type="text" name="abbrev" placeholder="Short name" 
+                            value="{$expathConf/@abbrev}" size="25" required="required"/>
                         <label for="abbrev">Abbreviation:</label>
                     </li>
                     <li>
                         <div class="hint">A descriptive title for the application.</div>
-                        <input type="text" name="title" value="{$expathConf/expath:title}" size="40"/>
+                        <input type="text" name="title" value="{$expathConf/expath:title}" size="40" required="required"/>
                         <label for="title">Title:</label>
                     </li>
                     <li>
-                        <input type="text" name="version" value="{if ($expathConf) then $expathConf/@version else '0.1'}" size="10"/>
+                        <input type="text" name="version" value="{if ($expathConf) then $expathConf/@version else '0.1'}" 
+                            size="10" required="required"/>
                         <label for="version">Version:</label>
                     </li>
                     <li>
@@ -339,13 +369,15 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                     <li>
                         <div class="hint">Optional: name of an XQuery script which will be run <b>before</b> the
                         application is installed. Use this to create users, index configurations and the like.</div>
-                        <input type="text" name="prepare" value="{if ($repoConf) then $repoConf/repo:prepare else 'pre-install.xql'}" size="40"/>
+                        <input type="text" name="prepare" value="{if ($repoConf) then $repoConf/repo:prepare else 'pre-install.xql'}" 
+                            placeholder="pre-install.xql" size="40"/>
                         <label for="prepare">Pre-install XQuery:</label>
                     </li>
                     <li>
                         <div class="hint">Optional: name of an XQuery script which will be run <b>after</b> the
                         application was installed.</div>
-                        <input type="text" name="finish" value="{$repoConf/repo:finish}" size="40"/>
+                        <input type="text" name="finish" value="{$repoConf/repo:finish}" size="40"
+                            placeholder="post-install.xql"/>
                         <label for="finish">Post-install XQuery:</label>
                     </li>
                 </ol>
@@ -375,7 +407,7 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                     </li>
                     <li>
                         <div class="hint">Link to the author's website.</div>
-                        <input type="text" name="website" value="{$repoConf/repo:website}" size="40"/>
+                        <input type="url" name="website" value="{$repoConf/repo:website}" size="40"/>
                         <label for="website">Website:</label>
                     </li>
                 </ol>

@@ -18,25 +18,43 @@
  :)
 xquery version "1.0";
 
+
 declare option exist:serialize "method=json media-type=text/javascript";
+
+declare function local:fix-permissions($collection as xs:string, $resource as xs:string) as empty() {
+    let $path := concat($collection, "/", $resource)
+    let $mime := xmldb:get-mime-type($path)
+    return
+        if ($mime eq "application/xquery") then
+            let $mode := sm:get-permissions($path)/sm:permission/@mode
+            let $permissions := xmldb:string-to-permissions(replace($mode, "(..).(..).(..).", "$1u$2u$3u"))
+            let $user := xmldb:get-current-user()
+            let $group := xmldb:get-user-groups($user)[1]
+            return
+                xmldb:set-resource-permissions($collection, $resource, $user, $group, $permissions)
+        else
+            ()
+};
 
 (:~ Called by the editor to store a document :)
 
 let $path := request:get-parameter("path", ())
 let $split := text:groups($path, "^(.*)/([^/]+)$")
-let $collection := $split[2]
-let $resource := $split[3]
+let $collection := xmldb:encode-uri($split[2])
+let $resource := xmldb:encode-uri($split[3])
 let $mime := request:get-parameter("mime", ())
 let $data := request:get-parameter("data", ())
 return
     util:catch("*",
-        let $null :=
+        let $path :=
             if ($mime) then
-                xmldb:store(xmldb:encode-uri($collection), xmldb:encode-uri($resource), $data, $mime)
+                xmldb:store($collection, $resource, $data, $mime)
             else
-                xmldb:store(xmldb:encode-uri($collection), xmldb:encode-uri($resource), $data)
-        return
-            <message status="ok"/>,
+                xmldb:store($collection, $resource, $data)
+        return (
+            local:fix-permissions($collection, $resource),
+            <message status="ok"/>
+        ),
         let $message :=
             replace(
                 replace($util:exception-message, "^.*XMLDBException:", ""),
