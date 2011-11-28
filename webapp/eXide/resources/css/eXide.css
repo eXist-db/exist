@@ -103,9 +103,10 @@ a:link,a:visited {
 	box-shadow: 10px 10px 5px #888;
 }
 
-.menu ul li:hover ul {
+/*.menu ul li:hover ul {
     visibility: visible;
-}
+}*/
+
 /*
 Sub level menu list items (undo style from Top level List Items)
 .menu ul li ul li {
@@ -144,6 +145,11 @@ Sub level menu list items (undo style from Top level List Items)
 #error-status {
 	font-size: 85%;
 	color: red;
+}
+
+#search-box {
+    width: 100%;
+    background: #D8D8D8;
 }
 
 #toolbar .options {
@@ -512,6 +518,20 @@ fieldset .hint {
 
 fieldset li:hover .hint {
 	display: block;
+}
+
+fieldset input:required:invalid, fieldset input:focus:invalid { 
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFvy8atzQfvzEWvDEXuzEZujIbuzEdvzAZvTAbvjAcvDAdvTIdrzcnszQisTQltTIitzQgtjUhsTssuDEguTIgujQgvD0nqkAutkM2tko5u0c4ul5Qwi8Zwy8awC8bxS4ZxiwcwTEZwDEawTAbwDAcwDEdwzIexjAaxTIZyDAbyjAcyTMdzzEazjEbzzAe0TIb0zMd0zQb1DIc1TQb1TQc1jYc1jYd1zgc2jQb2DUd2TQe2zYc3DUc3jgbxzYh1j4m4DYZ5jcZ5zYb5jYc5Dga5Dgd6TYf7Dcd7zce6zgZ6Dga7Dse7j0e8jcd8zYe8DYf8Tkb8zgd8joc8Toe8Dwf9jkb9Doc4zki5j4n6T0h7jghxkIsx0MuzUUt00Ep2kIt1kg13VE97EEm6Ugu4E064FQ98UIn8kMo80Mp90Ep9UMq3VpD3F1KxmdZw2haw2hbxGhaxGhbwW1hwHdpxndp2H1u4FlH4mVT63Jb9mZO92ZP9WhN+GVN+2RQ4HVlvIB13odx4oNv5IZy54h29o55+4p6+4t7+Y14/Yl6yI+Ew5aPxpuTxqCXyaWe3baq5JSI65CB7pKC9JKK66WX6rGb57ut6rOo7res5b6767yz+62i+q6j/qug/a2i87Cl9rGh9rOq8b+19L+z+L2x48G48MO68sa/8ci96tDK8sbB/crE/crF/srG+87K/svJ/M3I99bR99fS+9bV+93Z8ebe+OHd+eXd/OTd8ebh9e3m9u3r+ufl/eXj/ubg/ufh/efi/ufj/uXk+ujj++nl+uvl+urm/ejh++7q+u/r+vDu+vLt/PDv/fPv/vTy+/j3/Pj0//j2//n3/vv0/vr1/vv2/fr3+/39+/79/vr4/vv6/v37/f77/v38/v39/f78/f79AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOe7jtQAAABl0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuODc7gF0AAAEbSURBVChTARAB7/4A1rmNdG5xb3BwcG5tc4y43QC6isjT0NDR1djY1NLTzIu4AImVvL/Gxsa+vr7BwL29qX8AGp6rqrPDsqyurbu8r6ujFwALg5ybotjLoJqw37GfnZEOAAlsiIaEp9qmk8/FkoWHdw8AIj98eX14tc601ZB7eXpfEQAjNGJoaWd+z9uWY2pmZjYQACEzQlJUVWvK149MVlNKORUAIzFDSFBYodnJx3ZRTkEzAQAkLUBHS4HYmXXVpVhPPS8NAAInNUVkwsRlWZfVgEQ6KA8AFh0uN5TNgk1aYba3YCwHDAByAyArW11XRklGXlw+HwAbAKgSBRwpMDo8OzgyKh4EFaQA3pgZEwYIJCYmJQgKFBiO3JMVcr8Z+l4TAAAAAElFTkSuQmCC'); 
+    background-position:right; 
+    background-repeat:no-repeat; 
+    -moz-box-shadow:none; 
+} 
+
+fieldset input:required:valid { 
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFU6E8UqA9U6A+U6A/VaA+VqA/V6I+WKM7WKA/WaI8WqI9WaQ+XaQ6XKQ8Zac9Z6w2Y6k6Z6w6aKo8bK45bq46d7M5fbU6fLY6frY8f7k5U59AU59BVJ9AU6BAUaBBVaBAVKFBVKBCX6JNXqZOYalRZqhSa6pfbapcb6pdbKpfcalbc6pbdKpccqdieKxofK9vf69xgLc5gLY9hrw3gLg4gLg5g7o4g7o5hLs4hLo5hLo6hbs8iL46jb1Ti7d+kMM0k8UwksU0lsQ2nskwnsgynsgzpswvqc8voMc8oMkyocozo8wzpMowpcs7rM8wrtEwrtA1ss8+sNIvtNMtttUuttYtt9Yvu9cuutgrvdkqvdksvNgtvdkvv9svsNM1ttI2utY0vdkxvtowvtsyv9ozvtg1vdwzv9k4vtg6lMRTrs5HtNNMps53rNN+wdhJwtlNw9hWyNxVx9tszd9iyuJPxeBRxuJQyuFTyuJQyuNRyuBW0eNz1OR91eR/1ut31+p41+p62Ot22Op42Op6lb6InsKRnsSUocKVrseir82mr82nrc6kr82oscWltMeusMiisM2msMyoss6r2+mNw+KgyueiyeSy1eq34/Gd4/Ce4/Cf4vKe4+2l5e6j4Oys5u+44/Cg5fCr5vGt6PC16fO26vO87ve/7fi87vi97vi/0uHO2+jW2unX6/TD7vfA7/jH8PbB8vbH8PbK9/rT9vrY9vrc9/vd+/3c+P7c+f7d+P7e6PDk6fTm6/Xo7/fr9ffh+vvl+P3g+f3h+fzi/f7m+/zq/f7s8vrx+f3x+v7w/f7x/v7y/v/z/v/0/v73/v75/v38/f7+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAnz0KZQAAABl0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuODc7gF0AAAEbSURBVChTARAB7/4A0aqNkImJioyMjImLkY6r0QCsj8nLzMzMzMzMzczLyIi7AD6Xwbe5urq6urq4wsHAlocAIpWwp6apqa6urqiyw6+ULgAhbZibmpqZmqCgorakmWwmAARpf4B/f4OBg5O0oYJ+PScACjt2eXR4eHhzsaN6d3UyKgALOF5mYl1jZ5yzb2JkUDUsAAs3RmBxZVx7xnxhWVZMMSsABhdKcsSdcLWyaFpYUkQVKAAgFEJrn8q/zn1aW1RHPxEpAB8MNklRns/FbldVT0U0BykAJQISPEVqraVfU05DMw4AMACFGwUPOkBITUtEQRkQHBqSAL0tHQEMFBg5NxYTDQEeL8cA0LyEIx4DCAoJHxwdJIa+0S+PbKi6PdJ5AAAAAElFTkSuQmCC'); 
+    background-position:right; 
+    background-repeat:no-repeat; 
+    -moz-box-shadow:none; 
 }
 
 .eXist_wizard_buttons {

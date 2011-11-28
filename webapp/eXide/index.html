@@ -33,20 +33,20 @@
         <script src="resources/scripts/ace/mode-css.js" type="text/javascript" charset="utf-8"/>
 
     <!--  Uncompressed Javascript files. Uncomment for development/debugging. -->
-        <!--script type="text/javascript" src="src/ace-modes.js"/>
-        <script type="text/javascript" src="src/util.js"/>
-        <script type="text/javascript" src="src/events.js"/>
-        <script type="text/javascript" src="src/commands.js"/>
-        <script type="text/javascript" src="src/mode-helper.js"/>
-        <script type="text/javascript" src="src/xquery-helper.js"/>
-        <script type="text/javascript" src="src/xml-helper.js"/>
-        <script type="text/javascript" src="src/outline.js"/>
-        <script type="text/javascript" src="src/editor.js"/>
-        <script type="text/javascript" src="src/deployment.js"/>
-        <script type="text/javascript" src="src/eXide.js"/>
-        <script type="text/javascript" src="src/templates.js"/>
-        <script type="text/javascript" src="src/resources.js"/>
-        <script type="text/javascript" src="src/find.js"/-->
+<!--        <script type="text/javascript" src="src/ace-modes.js"/>-->
+<!--        <script type="text/javascript" src="src/util.js"/>-->
+<!--        <script type="text/javascript" src="src/events.js"/>-->
+<!--        <script type="text/javascript" src="src/commands.js"/>-->
+<!--        <script type="text/javascript" src="src/mode-helper.js"/>-->
+<!--        <script type="text/javascript" src="src/xquery-helper.js"/>-->
+<!--        <script type="text/javascript" src="src/xml-helper.js"/>-->
+<!--        <script type="text/javascript" src="src/outline.js"/>-->
+<!--        <script type="text/javascript" src="src/editor.js"/>-->
+<!--        <script type="text/javascript" src="src/deployment.js"/>-->
+<!--        <script type="text/javascript" src="src/eXide.js"/>-->
+<!--        <script type="text/javascript" src="src/templates.js"/>-->
+<!--        <script type="text/javascript" src="src/resources.js"/>-->
+<!--        <script type="text/javascript" src="src/find.js"/>-->
     
     <!-- Compressed version -->
         <script type="text/javascript" src="resources/scripts/eXide-1.0.min.js"/>
@@ -77,6 +77,9 @@
                                     <a href="#" id="menu-file-save">Save</a>
                                 </li>
                                 <li>
+                                    <a href="#" id="menu-file-save-as">Save As</a>
+                                </li>
+                                <li>
                                     <a href="#" id="menu-file-download">Download</a>
                                 </li>
                                 <li>
@@ -92,6 +95,9 @@
                                 </li>
                                 <li>
                                     <a href="#" id="menu-edit-redo">Redo</a>
+                                </li>
+                                <li>
+                                    <a href="#" id="menu-edit-toggle-comment">Toggle comment line</a>
                                 </li>
                                 <li>
                                     <a href="#" id="menu-edit-preferences">Preferences</a>
@@ -171,6 +177,7 @@
             </div>
             <pre class="content" id="editor"/>
             <div id="status-bar">
+                <input id="search-box" type="text"/>
                 <a href="#" id="error-status"/>
             </div>
         </div>
@@ -253,6 +260,8 @@
             <table id="keybindings"/>
         </div>
         <div id="synchronize-dialog">
+            <h3>Project: <span class="project-name">Unknown</span>
+            </h3>
             <p>Synchronize the current application to a directory on the server. Compares last modification times
       to determine the files to be synchronized. If a start time is given, only resources updated since
       that time stamp are taken into account.</p>
@@ -263,16 +272,23 @@
                             <div class="hint">Start date/time in xs:dateTime notation. Only resources modified after this date will
               be synchronized. This field is filled automatically from the application descriptor
               (if available).</div>
-                            <input type="dateTime" name="date" size="40"/>
-                            <label for="date">Start time:</label>
+                            <input type="dateTime" name="start" size="40"/>
+                            <label for="start">Start time:</label>
                         </li>
                         <li>
                             <div class="hint">Path to a directory <b>on the server</b>.</div>
                             <input type="text" name="dir" size="40"/>
                             <label for="dir">Target directory:</label>
                         </li>
+                        <li>
+                            <div class="hint">If checked, the application will be synchronized with the directory automatically
+                            whenever you save a resource.</div>
+                            <input type="checkbox" name="auto"/>
+                            <label for="auto">Synchronize automatically:</label>
+                        </li>
                     </ol>
                 </fieldset>
+                <input type="hidden" name="collection" value=""/>
                 <div id="synchronize-report"/>
             </form>
         </div>

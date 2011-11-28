@@ -74,6 +74,7 @@ else if ($exist:resource eq "logout") then
 
 else if ($exist:resource eq "index.html") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <set-header name="Cache-Control" value="max-age=3600"/>
         <view>
             <forward url="modules/view.xql"/>
         </view>
@@ -88,6 +89,7 @@ else if ($exist:resource eq 'execute') then
 	<!-- Query is executed by XQueryServlet -->
             <forward servlet="XQueryServlet">
                 {local:set-user()}
+                <set-header name="Cache-Control" value="no-cache"/>
                 <!-- Query is passed via the attribute 'xquery.source' -->
                 <set-attribute name="xquery.source" value="{$query}"/>
                 <!-- Results should be written into attribute 'results' -->
@@ -117,6 +119,7 @@ else if (starts-with($exist:path, '/results/')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="../modules/session.xql">
             {local:set-user()}
+            <set-header name="Cache-Control" value="no-cache"/>
             <add-parameter name="num" value="{$exist:resource}"/>
         </forward>
     </dispatch>
@@ -129,13 +132,15 @@ else if ($exist:resource eq "outline") then
 	        <!-- Query is executed by XQueryServlet -->
             <forward url="modules/outline.xql">
                 {local:set-user()}
-	        <set-attribute name="xquery.module-load-path" value="{$base}"/>
+                <set-header name="Cache-Control" value="no-cache"/>
+	            <set-attribute name="xquery.module-load-path" value="{$base}"/>
             </forward>
     </dispatch>
 
 else if (ends-with($exist:path, ".xql")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         { local:set-user() }
+        <set-header name="Cache-Control" value="no-cache"/>
         <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
     </dispatch>
     

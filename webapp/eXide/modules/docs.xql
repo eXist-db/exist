@@ -18,10 +18,12 @@
  :)
 xquery version "1.0";
 
+declare namespace xqdoc="http://www.xqdoc.org/1.0";
+declare namespace json="http://json.org/";
+
 declare option exist:serialize "method=json media-type=application/json";
 
-<functions xmlns:json="http://json.org/">
-{
+declare function local:builtin-modules($xqdocs as element()*) {
     let $prefix := request:get-parameter("prefix", ())
     let $funcs := util:registered-functions()
     let $matches := for $func in $funcs where matches($func, concat("^(\w+:)?", $prefix)) return $func
@@ -30,12 +32,36 @@ declare option exist:serialize "method=json media-type=application/json";
     order by $func
     return
         for $proto in $desc/prototype
+        let $signature := $proto/signature/string()
         let $help := $proto/description/string()
+        let $xqdoc := $xqdocs/json:value[signature = $signature]
         return
-            <json:value json:array="true">
-                <signature>{$proto/signature/string()}</signature>
-                <help>{$help}</help>
-                <type>function</type>
-            </json:value>
-}
-</functions>
+            if ($xqdoc) then
+                $xqdoc
+            else
+                <json:value json:array="true">
+                    <signature>{$signature}</signature>
+                    <help>{$help}</help>
+                    <type>function</type>
+                </json:value>
+};
+
+declare function local:xqdoc-modules() {
+    let $prefix := request:get-parameter("prefix", ())
+    for $fun in collection("/db")//xqdoc:function[matches(xqdoc:signature, concat("^(\w+:)?", $prefix))]
+    order by $fun/xqdoc:signature
+    return
+        <json:value json:array="true">
+            <signature>{$fun/xqdoc:signature/string()}</signature>
+            <help>{$fun/xqdoc:comment/xqdoc:description/node()}</help>
+            <type>function</type>
+        </json:value>
+};
+
+let $xqdocs := local:xqdoc-modules()
+return
+    <functions xmlns:json="http://json.org/">
+    {
+        local:builtin-modules($xqdocs)
+    }
+    </functions>

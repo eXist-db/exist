@@ -30,5 +30,5 @@ declare function find:modules($root as xs:string) {
 };
 
 <json:value xmlns:json="http://www.json.org">
-{ for $module in find:modules("/db") order by $module/@prefix return $module }
+{ for $module in find:modules("/db") order by $module/@at return $module }
 </json:value>
