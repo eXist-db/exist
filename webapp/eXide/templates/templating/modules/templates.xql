@@ -215,3 +215,19 @@ declare function templates:form-control($node as node(), $params as element(para
         default return
             $node
 };
+
+(:~
+ : Retrieve error description - if any - from HTTP request. Use within an error handler page in
+ : combination with an <error-handler> in controller.xql
+:)
+declare function templates:error-description($node as node(), $params as element(parameters)?, $model as item()*) {
+    let $input := request:get-attribute("org.exist.forward.error")
+    return
+        if (exists($input)) then
+            element { node-name($node) } {
+                $node/@*,
+                util:parse($input)//message/string()
+            }
+        else
+            ()
+};
