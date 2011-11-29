@@ -130,6 +130,7 @@ public class XQueryURLRewrite implements Filter {
     public final static String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
     public final static String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
     public final static String RQ_ATTR_RESULT = "org.exist.forward.result";
+    public final static String RQ_ATTR_ERROR = "org.exist.forward.error";
     
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
@@ -345,13 +346,15 @@ public class XQueryURLRewrite implements Filter {
                 	response.flushBuffer();
                 } else if (status < 400) {
                 	if (modelView.hasViews())
-                		applyViews(modelView.views, response, modifiedRequest, wrappedResponse);
+                		applyViews(modelView, modelView.views, response, modifiedRequest, wrappedResponse);
                 	else
                 		((CachingResponseWrapper) wrappedResponse).flush();
                 } else {
                 	// HTTP response code indicates an error
                 	if (modelView.hasErrorHandlers()) {
-                		applyViews(modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
+                        byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+                        modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));
+                		applyViews(modelView, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
                 	} else {
                 		flushError(response, wrappedResponse);
                 	}
@@ -381,10 +384,11 @@ public class XQueryURLRewrite implements Filter {
         }
     }
     
-	private void applyViews(List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
-			HttpServletResponse wrappedResponse)
+	private void applyViews(ModelAndView modelView, List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
+			HttpServletResponse currentResponse)
 			throws UnsupportedEncodingException, IOException, ServletException {
 		int status;
+        HttpServletResponse wrappedResponse = currentResponse;
 		for (int i = 0; i < views.size(); i++) {
 			URLRewrite view = (URLRewrite) views.get(i);
 			
@@ -406,16 +410,23 @@ public class XQueryURLRewrite implements Filter {
 			if (data != null)
 				wrappedReq.setData(data);
 			
-			wrappedResponse = new CachingResponseWrapper(response, i < views.size() - 1);
+			wrappedResponse = new CachingResponseWrapper(response, true);
 			doRewrite(view, wrappedReq, wrappedResponse, null);
-			wrappedResponse.flushBuffer();
 
 			// catch errors in the view
 			status = ((CachingResponseWrapper) wrappedResponse).getStatus();
-			if (status >= 400) {
-				flushError(response, wrappedResponse);
+            if (status >= 400) {
+                if (modelView != null && modelView.hasErrorHandlers()) {
+                    data = ((CachingResponseWrapper) wrappedResponse).getData();
+                    modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));
+                    applyViews(null, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
+                    break;
+                } else {
+                    flushError(response, wrappedResponse);
+                }
 				break;
-			}
+			} else if (i == views.size() - 1)
+                ((CachingResponseWrapper)wrappedResponse).flush();
 		}
 	}
 
