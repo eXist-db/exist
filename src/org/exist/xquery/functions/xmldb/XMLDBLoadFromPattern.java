@@ -207,7 +207,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     private static boolean checkExcludes(List<String> excludes, String path) {
     	if (excludes == null || excludes.isEmpty())
     		return false;
-    	if (path.charAt(0) == File.pathSeparatorChar)
+    	if (path.charAt(0) == File.separatorChar)
     		path = path.substring(1);
     	boolean skip = false;
         for (String exclude : excludes) {
