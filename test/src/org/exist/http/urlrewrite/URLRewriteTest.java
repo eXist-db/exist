@@ -38,6 +38,7 @@ public class URLRewriteTest {
         Element mockParameter2 = EasyMock.createMock(Element.class);
 
         expect(mockConfig.hasAttribute("absolute")).andReturn(false);
+        expect(mockConfig.hasAttribute("method")).andReturn(false);
 
         expect(mockConfig.hasChildNodes()).andReturn(true);
         expect(mockConfig.getFirstChild()).andReturn(mockParameter1);
