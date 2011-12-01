@@ -484,7 +484,7 @@ declare function indexes:analyze-ngram-indexes($xconf) {
 declare function indexes:get-nodeset-from-qname($collection as xs:string, $node-name as xs:string) as node()* {
     let $nodeset-expression := 
         concat(
-            indexes:get-namespace-decaration-from-node-name($node-name, $collection)
+            indexes:get-namespace-declaration-from-node-name($node-name, $collection)
             ,
             'collection("', $collection, '")//', $node-name
         )
@@ -500,12 +500,13 @@ declare function indexes:get-nodeset-from-match($collection as xs:string, $match
     let $nodeset-expression := 
         concat(
             string-join(
+                distinct-values(
                 let $node-names := tokenize(replace($match, '//', '/'), '/')
-                return 
+                return
                     for $node-name in $node-names
                     return
-                        indexes:get-namespace-decaration-from-node-name($node-name, $collection)
-                , ' ')
+                        indexes:get-namespace-declaration-from-node-name($node-name, $collection)
+                ), ' ')
             ,
             'collection("', $collection, '")', $match, if (contains($match, '@')) then () else ()
         )
@@ -543,14 +544,14 @@ declare function indexes:get-namespace-uri-from-node-name($node-name, $collectio
 (:
     Helper function: Constructs a namespace declaration for use in util:eval()
 :)
-declare function indexes:get-namespace-decaration-from-node-name($node-name as xs:string, $collection as xs:string) as xs:string* {
+declare function indexes:get-namespace-declaration-from-node-name($node-name as xs:string, $collection as xs:string) as xs:string? {
     if (not(matches($node-name, 'xml:')) and contains($node-name, ':')) then
     
         let $name := if (starts-with($node-name,'@')) then
                         substring-after( substring-before($node-name, ':'), '@' )
                     else
                         substring-before($node-name, ':')
-            
+        
         let $uri := indexes:get-namespace-uri-from-node-name($node-name, $collection)
         return
             concat('declare namespace ', $name, '="', $uri, '"; ') 
