@@ -1061,7 +1061,15 @@ public class XQueryURLRewrite implements Filter {
         
         @Override
         public String getRequestURI() {
-            return inContextPath == null ? super.getRequestURI() : getContextPath() + inContextPath;
+            String uri = inContextPath == null ? super.getRequestURI() : getContextPath() + inContextPath;
+            
+            // Strip jsessionid from uris. New behavior of jetty
+            // see jira.codehaus.org/browse/JETTY-1146
+            int pos = uri.indexOf(";jsessionid=");
+            if(pos>0)
+                uri=uri.substring(0, pos);
+            
+            return uri;
         }
 
         public String getInContextPath() {
