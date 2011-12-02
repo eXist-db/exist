@@ -81,7 +81,7 @@ declare function local:render-function( $functionNode as element(xq:function)+, 
             <div class="sees">{
                 for $see in $functionSees
                 return
-                    <div class="see">See {$see}</div>
+                    <div class="see">See <a href="{$see}">{$see/text()}</a></div>
             }</div>
             <div class="parameters">
                 <table class="f-params">{
@@ -112,6 +112,7 @@ declare function local:render-module($moduleURIs as xs:string+, $functionName as
 	let $moduleDocs := /xq:xqdoc[xq:module/xq:uri eq $moduleURI]
 	let $moduleName := if ($moduleURI = 'http://www.w3.org/2005/xpath-functions') then 'fn' else $moduleDocs/xq:module/xq:name/text()
 	let $moduleDescription := $moduleDocs/xq:module/xq:comment/xq:description/node()
+    let $moduleSees := $moduleDocs/xq:module/xq:comment/xq:see
 	order by $moduleURI
 	return 
 	   <div class="module">
@@ -125,6 +126,11 @@ declare function local:render-module($moduleURIs as xs:string+, $functionName as
                <hr/>
     	       <div class="uri">{$moduleURI}</div>
     	       <div class="description">{$moduleDescription}</div>
+    	       <div class="sees">{
+                    for $see in $moduleSees
+                    return
+                        <div class="see">See <a href="{$see}">{$see/text()}</a></div>
+               }</div>
 	       </div>
 	       <div class="functions">{
 	           (: Decide whether to render a single function or to render them all :)
@@ -337,6 +343,8 @@ declare function local:main() {
             .signature {margin-left: 50px; font-style: italic;}
             .description {margin-left: 20px; padding: 5px;}
             .f-description-para {margin-bottom: 8px; white-space: pre-wrap;}
+            .sees {margin-left: 20px; padding: 5px;}
+            .see {margin-bottom: 8px; white-space: pre-wrap;}
             .authors {display:none;}
             .parameters {margin-left: 100px;}
             .mod-entry {vertical-align:top;}
