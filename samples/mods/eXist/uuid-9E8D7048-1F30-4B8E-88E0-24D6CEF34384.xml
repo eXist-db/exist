@@ -4,6 +4,7 @@
     <titleInfo>
         <title>New Full Text Index is Based on Lucene</title>
     </titleInfo>
+    <typeOfResource>text</typeOfResource>
     <name type="personal">
         <namePart type="family">Meier</namePart>
         <namePart type="given">Wolfgang</namePart>

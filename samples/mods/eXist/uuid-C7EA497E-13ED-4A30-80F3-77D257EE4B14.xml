@@ -5,6 +5,7 @@
         <title>eXist</title>
         <subTitle>An Open Source Native XML Database</subTitle>
     </titleInfo>
+    <typeOfResource>text</typeOfResource>
     <name type="personal">
         <namePart type="family">Meier</namePart>
         <namePart type="given">Wolfgang</namePart>
