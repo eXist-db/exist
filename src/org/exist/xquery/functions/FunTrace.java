@@ -21,7 +21,11 @@
  */
 package org.exist.xquery.functions;
 
+import java.io.StringWriter;
+import java.io.Writer;
+
 import org.exist.dom.QName;
+import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
@@ -31,11 +35,15 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+
+import org.xml.sax.SAXException;
 
 /**
  * @author Dannes Wessels
@@ -68,32 +76,68 @@ public class FunTrace extends BasicFunction {
  */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         
-        // TODO Add TRACE log statements using log4j
+      // TODO Add TRACE log statements using log4j
         // TODO Figure out why XQTS still does not work
         // TODO Remove unneeded comments
         
-        LOG.debug("start");
-        LOG.debug("string="+args[1].getStringValue());
+        String label = args[1].getStringValue();
+        if(label==null){
+            label="";
+        }
+        
+        Serializer serializer= context.getBroker().getSerializer();
         
         Sequence result ;
         
         if(args[0].isEmpty()){
-            LOG.debug("empty sequence");
             result = Sequence.EMPTY_SEQUENCE;
             
         } else {
             // Copy all Items from input to output sequence
-            LOG.debug("create sequence");
-            result = new ValueSequence(); 
-            for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+            result = new ValueSequence();
+            
+            int position = 0;
+
+            for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+
+                // Get item
                 Item next = i.nextItem();
-                
-                LOG.debug("Add item '" + next.getStringValue() + "'");
+
+                // Only write if debug mode
+                if (LOG.isDebugEnabled()) {
+                    
+                    String value = null;
+                    position++;
+
+                    int type = next.getType();
+                    
+                    // Serialize an element type
+                    if (Type.ELEMENT == type) {
+                        Writer sw = new StringWriter();
+                        try {
+                            serializer.serialize((NodeValue) next, sw);
+
+                        } catch (SAXException ex) {
+                            LOG.error(ex.getMessage());
+                        }
+                        value = sw.toString();
+
+                    // Get string value for other types
+                    } else {
+                        value = next.getStringValue();
+
+                    }
+                    
+                    // Write to log
+                    LOG.debug(label + " [" + position + "]: "
+                            + Type.getTypeName(type) + ": " + value);
+                }
+
+                // Add to result
                 result.add(next);
             }
         }
-        
-        LOG.debug("end");
+
         return result;
     }
 }
