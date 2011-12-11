@@ -76,7 +76,8 @@ public class MiltonDocument extends MiltonResource
         implements GetableResource, PropFindableResource,
         DeletableResource, LockableResource, MoveableResource, CopyableResource {
     
-    public static final String METHOD_XML_SIZE = "org.exist.webdav.METHOD_XML_SIZE";
+    public static final String PROPFIND_METHOD_XML_SIZE = "org.exist.webdav.PROPFIND_METHOD_XML_SIZE";
+    public static final String GET_METHOD_XML_SIZE = "org.exist.webdav.GET_METHOD_XML_SIZE";
 
     private ExistDocument existDocument;
     
@@ -87,7 +88,8 @@ public class MiltonDocument extends MiltonResource
     
     private enum SIZE_METHOD { NULL, EXACT, APPROXIMATE }; 
     
-    private static SIZE_METHOD sizeMethod=null;
+    private static SIZE_METHOD propfindSizeMethod=null;
+    private static SIZE_METHOD getSizeMethod=null;
     
     private static UserAgentHelper userAgentHelper = null;
 
@@ -145,26 +147,50 @@ public class MiltonDocument extends MiltonResource
         }
         
    
-        if (sizeMethod == null) {
+        // PROPFIND method 
+        if (propfindSizeMethod == null) {
             // get user supplied preferred size determination approach
-            String systemProp = System.getProperty(METHOD_XML_SIZE);
+            String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
             
             if (systemProp == null) {
-                // Default method
-                sizeMethod = SIZE_METHOD.APPROXIMATE;
+                // Default method is approximate
+                propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
 
             } else {
                 // Try to parse from environment property
                 try {
-                    sizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
+                    propfindSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
                     
                 } catch (IllegalArgumentException ex) {
                     LOG.debug(ex.getMessage());
                     // Set preffered default
-                    sizeMethod = SIZE_METHOD.APPROXIMATE;
+                    propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
                 }
-            }
+             }
         }
+        
+        // GET method
+        if (getSizeMethod == null) {
+            // get user supplied preferred size determination approach
+            String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
+            
+            if (systemProp == null) {
+                // Default method is NULL
+                getSizeMethod = SIZE_METHOD.NULL;
+
+            } else {
+                // Try to parse from environment property
+                try {
+                    getSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
+                    
+                } catch (IllegalArgumentException ex) {
+                    LOG.debug(ex.getMessage());
+                    // Set preffered default
+                    getSizeMethod = SIZE_METHOD.APPROXIMATE;
+                }
+             }
+        }
+
         
     }
 
@@ -215,46 +241,78 @@ public class MiltonDocument extends MiltonResource
     @Override
     public Long getContentLength() {
         
-        Long size=null;        
+        
+        // Note
+        // Whilst for non-XML documents the exact size of the documents can
+        // be determined by checking the administration, this is not possible
+        // for XML documents.
+        //
+        // For XML documents by default the 'approximate' size is available
+        // which can be sufficient (pagesize * nr of pages). Exact size
+        // is dependant on many factors, the serialization parameters.
+        //
+        // The approximate size is a good indication of the size of document
+        // but some WebDAV client, mainly the MacOsX Finder version, can
+        // not deal with this guesstimate, resulting in incomplete or overcomplete
+        // documents.
+        //
+        // Special for this, two system variables can be set to change the
+        // way the size is calculated. Supported values are
+        // NULL, EXACT, APPROXIMATE
+        //
+        // PROPFIND: Unfortunately both NULL and APPROXIMATE do not work for 
+        // MacOsX Finder. The default behaviour for the Finder 'user-agent' is 
+        // exact, for the others it is approximate. 
+        // This behaviour is swiched by the system properties.
+        //
+        // GET: the NULL value seems to be working well for macosx too.
+        
+        Long size=null;       
+        
+        // MacOsX has a bad reputation
+        boolean isMacFinder = userAgentHelper.isMacFinder( HttpManager.request().getUserAgentHeader() );
         
         if(existDocument.isXmlDocument()){
-            
-            // For PROPFIND it is performance wise a bad idea to pre-serialize
-            // all documents just to determine the file size. For finder there
-            // is just no choice.
+            // XML document, exact size is not (directly) known)
+
             if (isPropFind) {
                 
-                // MacOsX has a bad reputation
-                boolean isMacFinder = userAgentHelper.isMacFinder( HttpManager.request().getUserAgentHeader() );
+                // PROPFIND
+                // In this scensario the XML document is not actually
+                // downloaded, only the size needs to be known.
+                // This is the most expensive scenario
                 
-                if(isMacFinder || SIZE_METHOD.EXACT==sizeMethod) {
-                
+                if(isMacFinder || SIZE_METHOD.EXACT==propfindSizeMethod) {
+                    
+                    // Returns the exact size, default behaviour for Finder, 
+                    // or when set by a system property
+                    
                     LOG.debug("Serializing XML to /dev/null to determine size"
                             + " (" + resourceXmldbUri + ") MacFinder="+isMacFinder );
 
-                    // Stream document to /dev/null and count bytes
+                    // Stream document to '/dev/null' and count bytes
                     ByteCountOutputStream counter = new ByteCountOutputStream();
                     try {
                         existDocument.stream(counter);
 
-                    } catch (IOException ex) {
-                        LOG.error(ex);
-
-                    } catch (PermissionDeniedException ex) {
+                    } catch (Exception ex) {
                         LOG.error(ex);
                     }
 
                     size = counter.getByteCount();
                     
                     
-                } else if (SIZE_METHOD.NULL==sizeMethod) {
-                
+                } else if (SIZE_METHOD.NULL==propfindSizeMethod) {
+                    
+                    // Returns size unknown. This is not supported
+                    // by MacOsX finder
+           
                     size = null;
                     
                 
                 } else { 
-                    // Use estimated document size (Approximate)
-                    // this is the default method
+                    // Returns the estimated document size. This is the
+                    // default value, but not suitable for MacOsX Finder.
                     size = existDocument.getContentLength();
                 }
                 
@@ -262,30 +320,49 @@ public class MiltonDocument extends MiltonResource
             } else {
                 
                 // GET
-                // Serialize to virtual file for re-use by sendContent() 
-                // Serialization has to be done anyway, do it immediately
+                // In this scenario, the document will actually be downloaded
+                // in the next step.
+                
+                if (SIZE_METHOD.EXACT == getSizeMethod) {
 
-                try {
-                    LOG.debug("Serializing XML to virtual file"
-                            + " (" + resourceXmldbUri + ")");
+                    // Return the exact size by pre-serializing the document
+                    // to a buffer first. isMacFinder is not needed
+
+                    try {
+                        LOG.debug("Serializing XML to virtual file"
+                                + " (" + resourceXmldbUri + ")");
+
+                        vtf = new VirtualTempFile();
+                        existDocument.stream(vtf);
+                        vtf.close();
+
+                    } catch (Exception ex) {
+                        LOG.error(ex);
+                    }
+
+                    size = vtf.length();
                     
-                    vtf = new VirtualTempFile();
-                    existDocument.stream(vtf);
-                    vtf.close();
-
-                } catch (IOException ex) {
-                    LOG.error(ex);
-
-                } catch (PermissionDeniedException ex) {
-                    LOG.error(ex);
+                    
+                } else if (SIZE_METHOD.APPROXIMATE == getSizeMethod) {
+                    
+                    // Return approximate size, be warned to use this
+                    
+                    size = existDocument.getContentLength();
+                    vtf = null; // force live serialization
+                    
+                } else {
+                    
+                    // Return no size, the whole file will be downloaded
+                    // Works well for macosx finder
+                    
+                    size = null;
+                    vtf = null; // force live serialization
                 }
-                size = vtf.length();
             }
             
             
         } else {
-            // Non XML document 
-            // Actual size is known
+            // Non XML document, actual size is known
             size = existDocument.getContentLength();
         }
         
