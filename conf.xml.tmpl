@@ -428,6 +428,11 @@
             use this attribute otherwise for a periodic job use the period
             attribute. Not applicable to startup jobs.
             
+            - unschedule-on-exception:
+            Boolean: yes/true, no/false. Default: true. If true and an exception is
+            encountered then the job is unscheduled for further execution until a
+            restart; otherwise, the exception is ignored.
+            
             - period:
             Can be used to define an explicit period for firing the job instead
             of a Cron style syntax. The period should be in milliseconds.
