@@ -81,7 +81,7 @@ public class SVNUpdate extends AbstractSVNFunction {
     	try {
     		update = wc.update(new Resource(uri), SVNRevision.HEAD, true);
     	} catch (SVNException e) {
-			e.printStackTrace();
+            throw new XPathException(this, e.getMessage(), e);
 		}
 		
     	return new IntegerValue(update);
