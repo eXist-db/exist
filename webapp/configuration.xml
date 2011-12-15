@@ -1504,6 +1504,14 @@
                             </listitem>
                         </varlistentry>
                         <varlistentry>
+                            <term>unschedule-on-exception</term>
+                            <listitem>
+                                <para>Boolean: yes/true, no/false. Default: true. If true and an exception is
+                                    encountered then the job is unscheduled for further execution until a
+                                    restart; otherwise, the exception is ignored.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
                             <term>period</term>
                             <listitem>
                                 <para>Can be used to define an explicit period for firing the job
