@@ -679,6 +679,10 @@ public class RemoteUserManagementService implements UserManagementService {
 	/**
 	 * Update the specified account without update user's password
 	 * Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 * 
+	 * modified by Chris Tomlinson to remove handling of home which
+	 * breaks the call on updateAccount in RpcConnection since there is
+	 * no parameter to receive it
 	 *
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
@@ -689,8 +693,6 @@ public class RemoteUserManagementService implements UserManagementService {
 			params.add(user.getName());
 			String[] gl = user.getGroups();
 			params.add(gl);
-			if (user.getHome() != null)
-				params.add(user.getHome());
 			parent.getClient().execute("updateAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -700,6 +702,10 @@ public class RemoteUserManagementService implements UserManagementService {
 	/**
 	 *  Update the specified user removing a group from user's group
 	 *  method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 * 
+	 * modified by Chris Tomlinson to remove handling of home which
+	 * breaks the call on updateAccount in RpcConnection since there is
+	 * no parameter to receive it
 	 *
 	 *@param  user                Description of the Parameter
 	 *@param  rmgroup             Description of group to remove 
@@ -707,14 +713,12 @@ public class RemoteUserManagementService implements UserManagementService {
 	 */
 	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            List<Object> params = new ArrayList<Object>(3);
 			params.add(user.getName());
 			String[] gl = user.getGroups();
 			params.add(gl);
-			if (user.getHome() != null)
-				params.add(user.getHome());
 			params.add(rmgroup);
-			parent.getClient().execute("setUser", params);
+			parent.getClient().execute("updateAccount", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
