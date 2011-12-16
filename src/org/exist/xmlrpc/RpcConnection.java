@@ -3700,68 +3700,81 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+     * 
+     * modified by Chris Tomlinson based on above updateAccount - it appears that this
+     * code can rely on the SecurityManager to enforce policy about whether user
+     * is or is not permitted to update the Account with name.
+     * 
+     * This is called via RemoteUserManagementService.addUserGroup(Account)
      */
     public boolean updateAccount(String name, Vector<String> groups) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-    	
-    	Account u;
-    	if (!manager.hasAccount(name)) {
-    		if (!manager.hasAdminPrivileges(user))
-    			throw new PermissionDeniedException(
-                	"not allowed to create user");
-    		u = new UserAider(name);
-    	} else {
-    		u = manager.getAccount(user, name);
-    		if (!(u.getName().equals(user.getName()) || manager
-    			.hasAdminPrivileges(user)))
-    			throw new PermissionDeniedException(
-                	"you are not allowed to change this user");
-    	}
+        DBBroker broker = null;
 
-    	for (String g : groups) {
-    		if (!u.hasGroup(g)) {
-    			if(!manager.hasAdminPrivileges(user))
-    				throw new PermissionDeniedException(
-                    	"User is not allowed to add groups");
-    			u.addGroup(g);
-    		}
-    	}
-    	
-    	manager.addAccount(u);
-    	return true;
+        try {
+        	broker = factory.getBrokerPool().get(user);
+        	
+        	Account u;
+
+        	if (!manager.hasAccount(name)) {
+        		u = new UserAider(name);
+        	} else {
+        		u = manager.getAccount(user, name);
+        	}
+
+        	for (String g : groups) {
+        		if (!u.hasGroup(g)) {
+        			u.addGroup(g);
+        		}
+        	}
+
+        	return manager.updateAccount(user, u);
+        	
+        } catch (Exception ex) {
+        	LOG.debug("addUserGroup encountered error", ex);
+        	return false;
+        } finally {
+        	factory.getBrokerPool().release(broker);
+        }
     }
     
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+     * 
+     * modified by Chris Tomlinson based on above updateAccount - it appears that this
+     * code can rely on the SecurityManager to enforce policy about whether user
+     * is or is not permitted to update the Account with name.
+     * 
+     * This is called via RemoteUserManagementService.removeGroup(Account, String)
      */
     public boolean updateAccount(String name, Vector<String> groups, String rgroup) throws EXistException,
     PermissionDeniedException {
 
     	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
     	
-    	Account u;
-    	if (!manager.hasAccount(name)) {
-    		if (!manager.hasAdminPrivileges(user))
-    			throw new PermissionDeniedException(
-                	"not allowed to create user");
-    		u = new UserAider(name);
-    	} else {
-    		u = manager.getAccount(user, name);
-    		if (!(u.getName().equals(user.getName()) || manager
-    				.hasAdminPrivileges(user)))
-    			throw new PermissionDeniedException(
-                	"you are not allowed to change this user");
-    	}
+    	DBBroker broker = null;
 
-    	for (String g : groups) {
-    		if (g.equals(rgroup)) {
-                    u.remGroup(g);
+    	try {
+    		broker = factory.getBrokerPool().get(user);
+
+    		Account u = manager.getAccount(user, name);
+    		
+    		for (String g : groups) {
+    			if (g.equals(rgroup)) {
+    				u.remGroup(g);
+    			}
     		}
-    	}
-    	manager.addAccount(u);
-    	return true;
+    		
+    		return manager.updateAccount(user, u);
+
+    	} catch (Exception ex) {
+    		LOG.debug("removeGroup encountered error", ex);
+    		return false;
+    	} finally {
+    		factory.getBrokerPool().release(broker);
+        }
     }
     
     /**
