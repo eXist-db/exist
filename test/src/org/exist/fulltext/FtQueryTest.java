@@ -650,13 +650,16 @@ public class FtQueryTest extends XMLTestCase {
                 }
             }
 
-            File modsFile = new File(MODS_DIR, "eXist/exist-articles.xml");
-            XMLResource doc =
-                (XMLResource) testCollection.createResource(
-                        modsFile.getName(), "XMLResource" );
-            doc.setContent(modsFile);
-            testCollection.storeResource(doc);
-            assertNotNull(testCollection.getResource(modsFile.getName()));
+				
+			// File has been removed
+            // File modsFile = new File(MODS_DIR, "eXist/exist-articles.xml");
+            //       XMLResource doc =
+            //           (XMLResource) testCollection.createResource(
+            //                   modsFile.getName(), "XMLResource" );
+            //       doc.setContent(modsFile);
+            //       testCollection.storeResource(doc);
+            //       assertNotNull(testCollection.getResource(modsFile.getName()));
+
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
