@@ -1,0 +1,89 @@
+<TestSet>
+    <testName>XPath rewriting tests</testName>
+    <description>
+        <p>XPath rewriting tests</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="test1.xml">
+            <test>
+                <a>
+                    <b>
+                        <c>
+                            <d>D</d>
+                        </c>
+                        <e>
+                            <c>
+                                <d>D</d>
+                            </c>
+                        </e>
+                    </b>
+                </a>
+            </test>
+        </store>
+    </setup>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b/c[d = "D"]</code>
+        <expected>
+            <c>
+                <d>D</d>
+            </c>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>count(doc("/db/test/test1.xml")//a/b//c[d = "D"])</code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")/test/a/b/c[d = "D"]</code>
+        <expected>
+            <c>
+                <d>D</d>
+            </c>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b/e/c[d = "D"]</code>
+        <expected>
+            <c>
+                <d>D</d>
+            </c>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b/e[c/d = "D"]</code>
+        <expected>
+            <e>
+                <c>
+                    <d>D</d>
+                </c>
+            </e>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b[1]/e/c[d = "D"]</code>
+        <expected>
+            <c>
+                <d>D</d>
+            </c>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b/e[c[d = "D"]]</code>
+        <expected>
+            <e>
+                <c>
+                    <d>D</d>
+                </c>
+            </e>
+        </expected>
+    </test>
+</TestSet>
