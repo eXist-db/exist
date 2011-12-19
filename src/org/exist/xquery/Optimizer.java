@@ -113,7 +113,8 @@ public class Optimizer extends DefaultExpressionVisitor {
                 	List<Step> prevSteps = new ArrayList<Step>();
                 	while (previous != null && previous != path.getFirst() && previous instanceof Step) {
                 		Step prevStep = (Step) previous;
-                		if (!prevStep.hasPredicates() &&
+                		reverseAxis = reverseAxis(prevStep.getAxis());
+                		if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
                 			!prevStep.getTest().isWildcardTest()) {
                 			prevSteps.add(prevStep);
                 			previous = path.getPrevious(prevStep);
