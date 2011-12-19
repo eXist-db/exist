@@ -104,33 +104,39 @@ public class Optimizer extends DefaultExpressionVisitor {
                 // Replace the old expression with the pragma
                 path.replace(locationStep, extension);
                 
-                if (LOG.isTraceEnabled())
-                    LOG.trace("Rewritten expression: " + ExpressionDumper.dump(parent));
-                
-                // Check if there's an additional step before the optimizable expression and
-                // rewrite it to use the ancestor axis. This will change //a/b[c = "d"] into
-                // //b[c = "d"][ancestor::a].
+                // Check if there are additional steps before the optimizable expression and
+                // rewrite them to use the ancestor axis. This will change //a/b//c[d = "D"] into
+                // //c[d = "D"][ancestor::b/parent::a]
+                int reverseAxis = reverseAxis(locationStep.getAxis());
                 Expression previous = path.getPrevious(extension);
-                if (previous != null && previous != path.getFirst() && previous instanceof Step) {
-                	Step prevStep = (Step) previous;
-                	int reverseAxis = reverseAxis(locationStep.getAxis());
-                	if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
+                if (previous != null && reverseAxis != Constants.UNKNOWN_AXIS) {
+                	List<Step> prevSteps = new ArrayList<Step>();
+                	while (previous != null && previous != path.getFirst() && previous instanceof Step) {
+                		Step prevStep = (Step) previous;
+                		if (!prevStep.hasPredicates() &&
                 			!prevStep.getTest().isWildcardTest()) {
-                		if (LOG.isTraceEnabled())
-                			LOG.trace("Rewriting step " + ExpressionDumper.dump(prevStep) + " to use ancestor axis");
-                		path.remove(prevStep);
-                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
-                		prevStep.setAxis(reverseAxis);
-                		
+                			prevSteps.add(prevStep);
+                			previous = path.getPrevious(prevStep);
+                			path.remove(prevStep);
+                		} else
+                			break;
+                	}
+                	
+                	if (prevSteps.size() > 0) {
+                		reverseAxis = reverseAxis(locationStep.getAxis());
                 		Predicate predicate = new Predicate(context);
-                		predicate.add(prevStep);
+                		for (Step expr : prevSteps) {
+                			int axis = expr.getAxis();
+                			expr.setAxis(reverseAxis);
+                			reverseAxis = reverseAxis(axis);
+                			predicate.add(expr);
+                		}
+                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
                 		locationStep.addPredicate(predicate);
-                		
                 	}
                 }
-                
-                if (LOG.isTraceEnabled() && previous != null)
-                    LOG.trace("Previous expression: " + ExpressionDumper.dump(previous));
+                if (LOG.isTraceEnabled())
+                    LOG.trace("Rewritten expression: " + ExpressionDumper.dump(parent));
             } catch (XPathException e) {
                 LOG.warn("Failed to optimize expression: " + locationStep + ": " + e.getMessage(), e);
             }
