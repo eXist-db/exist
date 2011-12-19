@@ -46,6 +46,7 @@ public class LuceneModule extends AbstractInternalModule {
 
     public final static ErrorCode EXXQDYFT0001 = new LuceneErrorCode("EXXQDYFT0001", "Permission denied.");
     public final static ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
+    public final static ErrorCode EXXQDYFT0003 = new LuceneErrorCode("EXXQDYFT0003", "Document not found.");
     
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
@@ -57,6 +58,7 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Index.signatures[0], Index.class),
         new FunctionDef(Index.signatures[1], Index.class),
         new FunctionDef(Index.signatures[2], Index.class),
+        new FunctionDef(InspectIndex.signatures[0], InspectIndex.class),
         new FunctionDef(RemoveIndex.signature, RemoveIndex.class),
         new FunctionDef(Search.signatures[0], Search.class),
         new FunctionDef(Search.signatures[1], Search.class),
