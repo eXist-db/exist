@@ -826,6 +826,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
     
+    public boolean hasIndex(int docId) throws IOException {
+    	Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
+    	IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            TermDocs td = reader.termDocs(dt);
+            boolean found = td.next();
+            td.close();
+            return found;
+        } finally {
+        	index.releaseReader(reader);
+        }
+    }
+    
     /**
      *  Check if Lucene found document matches specified documents or collections.
      * Collections should end with "/".
