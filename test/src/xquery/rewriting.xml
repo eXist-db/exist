@@ -18,6 +18,7 @@
                                 <d>D</d>
                             </c>
                         </e>
+                        <f>F</f>
                     </b>
                 </a>
             </test>
@@ -84,6 +85,37 @@
                     <d>D</d>
                 </c>
             </e>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b//c[d = "D"]/parent::e</code>
+        <expected>
+            <e>
+                <c>
+                    <d>D</d>
+                </c>
+            </e>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a//c/parent::b/c[d = "D"]</code>
+        <expected>
+            <e>
+                <c>
+                    <d>D</d>
+                </c>
+            </e>
+        </expected>
+    </test>
+    <test output="text">
+        <task>XPath rewriting test</task>
+        <code>doc("/db/test/test1.xml")//a/b[f = "F"]/e/c[d = "D"]</code>
+        <expected>
+            <c>
+                <d>D</d>
+            </c>
         </expected>
     </test>
 </TestSet>
