@@ -46,9 +46,21 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = Logger.getLogger(XMLDBHasLock.class);
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signature[] = {
 		new FunctionSignature(
 			new QName("document-has-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Returns the user-id of the user that holds a write lock on the " + 
+	            "resource $resource in the collection $collection-uri.  " +
+				"If no lock is in place, the empty sequence is returned. " +
+	            XMLDBModule.COLLECTION_URI,
+				new SequenceType[] {
+	                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+	                new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
+				},
+				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id of the lock owner, otherwise if not locked the empty sequence")
+        ),
+        new FunctionSignature(
+			new QName("clear-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the user-id of the user that holds a write lock on the " + 
             "resource $resource in the collection $collection-uri.  " +
 			"If no lock is in place, the empty sequence is returned. " +
@@ -58,9 +70,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the user id of the lock owner, otherwise if not locked the empty sequence")
-            );
+        )
+	};
 	
-	public XMLDBHasLock(XQueryContext context) {
+	public XMLDBHasLock(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -78,7 +91,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			if (res != null) {
-			    String lockUser = ums.hasUserLock(res);
+				String lockUser = ums.hasUserLock(res);
+				if (lockUser != null && isCalledAs("clear-lock")) {
+					ums.unlockResource(res);
+				}
                 return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
 			} else {
                 logger.error("Unable to locate resource " + args[1].getStringValue());
