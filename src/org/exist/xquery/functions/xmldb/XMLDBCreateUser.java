@@ -43,31 +43,30 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author wolf
  * @author Luigi P. Bai, finder@users.sf.net, 2004
- *
+ * 
  */
 public class XMLDBCreateUser extends BasicFunction {
-	
-	protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
+
+	protected static final Logger logger = Logger
+			.getLogger(XMLDBCreateUser.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("create-user", XMLDBModule.NAMESPACE_URI,
-					XMLDBModule.PREFIX),
-			"Create a new user, $user-id, in the database. " +
-            XMLDBModule.NEED_PRIV_USER +
-            " $user-id is the username, $password is the password, " +
-			"$groups is the sequence of group memberships. " +
-            "The first group in the sequence is the primary group." +
-			"$home-collection-uri is the home collection URI." +
-            XMLDBModule.COLLECTION_URI,
-			new SequenceType[]{
-					new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
-					new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
-                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
-					new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI")
-            },
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)
-           );
-	
+			new QName("create-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Create a new user, $user-id, in the database. "
+					+ XMLDBModule.NEED_PRIV_USER
+					+ " $user-id is the username, $password is the password, "
+					+ "$groups is the sequence of group memberships. "
+					+ "The first group in the sequence is the primary group."
+					+ "$home-collection-uri is the home collection URI."
+					+ XMLDBModule.COLLECTION_URI, 
+			new SequenceType[] {
+				new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
+				new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
+				new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI") 
+			}, 
+			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+
 	/**
 	 * @param context
 	 */
@@ -79,55 +78,70 @@ public class XMLDBCreateUser extends BasicFunction {
 	 * (non-Javadoc)
 	 * 
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
-	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
-		
+
 		if (!context.getSubject().hasDbaRole()) {
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to call this function.");
+			XPathException xPathException = new XPathException(this,
+					"Permission denied, calling user '"
+							+ context.getUser().getName()
+							+ "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}
 
-        String user = args[0].getStringValue();
-        String pass = args[1].getStringValue();
+		String user = args[0].getStringValue();
+		String pass = args[1].getStringValue();
 
-        logger.info("Attempting to create user " + user);
-        
-        UserAider userObj = new UserAider(user);
-        userObj.setPassword(pass);
-        
-        // changed by wolf: the first group is always the primary group, so we don't need
-        // an additional argument
-        Sequence groups = args[2];
-        int len = groups.getItemCount();
-        for (int x = 0; x < len; x++)
-            userObj.addGroup(groups.itemAt(x).getStringValue());
-        
-        if(!"".equals(args[3].getStringValue())) {
-	    try {
-        	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
-	    } catch(XPathException e) {
-		logger.error("Invalid home collection-uri for user " + user);
-		
-        	throw new XPathException(this,"Invalid home collection URI", e);
-	    }
-	}
-        Collection collection = null;
-	try {
-            collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-	    ums.addAccount(userObj);
-			
-	} catch (XMLDBException xe) {
-	    logger.error("Failed to create user: " + user);
+		logger.info("Attempting to create user " + user);
 
-	    throw new XPathException(this, "Failed to create new user " + user, xe);
-        } finally {
-            if (null != collection)
-                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+		UserAider userObj = new UserAider(user);
+		userObj.setPassword(pass);
+
+		// changed by wolf: the first group is always the primary group, so we
+		// don't need
+		// an additional argument
+		Sequence groups = args[2];
+		int len = groups.getItemCount();
+		for (int x = 0; x < len; x++)
+			userObj.addGroup(groups.itemAt(x).getStringValue());
+
+		if (!"".equals(args[3].getStringValue())) {
+			try {
+				userObj.setHome(
+					new AnyURIValue(args[3].getStringValue()).toXmldbURI()
+				);
+			} catch (XPathException e) {
+				logger.error("Invalid home collection-uri for user " + user);
+
+				throw new XPathException(this, "Invalid home collection URI", e);
+			}
+		}
+		Collection collection = null;
+		try {
+			collection = new LocalCollection(
+					context.getSubject(), 
+					context.getBroker().getBrokerPool(), 
+					XmldbURI.ROOT_COLLECTION_URI,
+					context.getAccessContext());
+			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			ums.addAccount(userObj);
+
+		} catch (XMLDBException xe) {
+			logger.error("Failed to create user: " + user);
+			if (logger.isDebugEnabled())
+				logger.debug("Failed to create user: " + user, xe);
+
+			throw new XPathException(this, "Failed to create new user '" + user + "' by "+context.getSubject().getName(), xe);
+		} finally {
+			if (null != collection)
+				try {
+					collection.close();
+				} catch (XMLDBException e) { /* ignore */
+				}
+		}
+		return Sequence.EMPTY_SEQUENCE;
 	}
-        return Sequence.EMPTY_SEQUENCE;
-    }
 }
