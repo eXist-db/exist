@@ -28,6 +28,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 
+import java.util.Properties;
+import javax.xml.transform.OutputKeys;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.util.LockException;
@@ -35,13 +37,13 @@ import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
-import org.exist.atom.http.webdav.WebDAV;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -58,6 +60,17 @@ import org.xml.sax.SAXException;
  * @author Dannes Wessels (dizzzz_at_exist-db.org)
  */
 public class ExistDocument extends ExistResource {
+    
+    //	default output properties for the XML serialization
+    public final static Properties WEBDAV_OUTPUT_PROPERTIES = new Properties();
+    static {
+        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "yes");
+        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.ENCODING, "UTF-8");
+        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        WEBDAV_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        WEBDAV_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+    }
+    
 
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
@@ -178,7 +191,7 @@ public class ExistDocument extends ExistResource {
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
                 try {
-                    serializer.setProperties(WebDAV.OUTPUT_PROPERTIES);
+                    serializer.setProperties(WEBDAV_OUTPUT_PROPERTIES);
 
                     Writer w = new OutputStreamWriter(os, "UTF-8");
                     serializer.serialize(document, w);
