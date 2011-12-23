@@ -53,7 +53,7 @@ import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
-import org.exist.http.webdav.WebDAV;
+import org.exist.atom.http.webdav.WebDAV;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;

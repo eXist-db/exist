@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.http.webdav;
+package org.exist.atom.http.webdav;
 
 import java.io.IOException;
 

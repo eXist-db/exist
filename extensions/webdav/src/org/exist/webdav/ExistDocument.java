@@ -35,7 +35,7 @@ import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
-import org.exist.http.webdav.WebDAV;
+import org.exist.atom.http.webdav.WebDAV;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;

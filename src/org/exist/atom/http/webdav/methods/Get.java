@@ -20,7 +20,7 @@
  *
  *  $Id$
  */
-package org.exist.http.webdav.methods;
+package org.exist.atom.http.webdav.methods;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -37,7 +37,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.LockToken;
-import org.exist.http.webdav.WebDAV;
+import org.exist.atom.http.webdav.WebDAV;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;

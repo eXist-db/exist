@@ -18,10 +18,10 @@
  * 
  *  $Id$
  */
-package org.exist.http.webdav.methods;
+package org.exist.atom.http.webdav.methods;
 
 import org.apache.log4j.Logger;
-import org.exist.http.webdav.WebDAVMethod;
+import org.exist.atom.http.webdav.WebDAVMethod;
 import org.exist.storage.BrokerPool;
 
 /**

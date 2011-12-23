@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.http.webdav.methods;
+package org.exist.atom.http.webdav.methods;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -27,8 +27,8 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.LockToken;
 import org.exist.dom.QName;
-import org.exist.http.webdav.WebDAV;
-import org.exist.http.webdav.WebDAVUtil;
+import org.exist.atom.http.webdav.WebDAV;
+import org.exist.atom.http.webdav.WebDAVUtil;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
