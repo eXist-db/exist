@@ -19,19 +19,19 @@
  *
  *  $Id$
  */
-package org.exist.http.webdav;
+package org.exist.atom.http.webdav;
 
-import org.exist.http.webdav.methods.Copy;
-import org.exist.http.webdav.methods.Delete;
-import org.exist.http.webdav.methods.Get;
-import org.exist.http.webdav.methods.Head;
-import org.exist.http.webdav.methods.Lock;
-import org.exist.http.webdav.methods.Mkcol;
-import org.exist.http.webdav.methods.Move;
-import org.exist.http.webdav.methods.Options;
-import org.exist.http.webdav.methods.Propfind;
-import org.exist.http.webdav.methods.Put;
-import org.exist.http.webdav.methods.Unlock;
+import org.exist.atom.http.webdav.methods.Copy;
+import org.exist.atom.http.webdav.methods.Delete;
+import org.exist.atom.http.webdav.methods.Get;
+import org.exist.atom.http.webdav.methods.Head;
+import org.exist.atom.http.webdav.methods.Lock;
+import org.exist.atom.http.webdav.methods.Mkcol;
+import org.exist.atom.http.webdav.methods.Move;
+import org.exist.atom.http.webdav.methods.Options;
+import org.exist.atom.http.webdav.methods.Propfind;
+import org.exist.atom.http.webdav.methods.Put;
+import org.exist.atom.http.webdav.methods.Unlock;
 import org.exist.storage.BrokerPool;
 
 

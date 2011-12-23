@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.http.webdav.methods;
+package org.exist.atom.http.webdav.methods;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.exist.http.webdav.WebDAVMethod;
+import org.exist.atom.http.webdav.WebDAVMethod;
 import org.exist.security.Subject;
 import org.exist.xmldb.XmldbURI;
 
