@@ -67,7 +67,7 @@ public class Get extends AbstractWebDAVMethod {
             = "Error while serializing document: ";
     
     private final static String COLLECTION_XQ
-            = "org/exist/http/webdav/methods/collection.xq";
+            = "org/exist/atom/http/webdav/methods/collection.xq";
     
     // We use an XQuery to list collection contents
     private CompiledXQuery compiled = null;
