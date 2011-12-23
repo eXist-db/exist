@@ -139,6 +139,7 @@ public class WebDAVServlet extends HttpServlet {
 		public void process(Subject user, HttpServletRequest request,
 				HttpServletResponse response, XmldbURI path)
 				throws ServletException, IOException {
+            
 			XmldbURI filename = path.lastSegment();
 			XmldbURI collUri = path.removeLastSegment();
 			DBBroker broker = null;
@@ -227,6 +228,7 @@ public class WebDAVServlet extends HttpServlet {
 				DOMDB.appendChild(transaction, feedRoot, mediaEntry);
 				broker.storeXMLResource(transaction, feedDoc);
 				transact.commit(transaction);
+                
 			} catch (TransactionException ex) {
 				transact.abort(transaction);
 				throw new ServletException("Cannot commit transaction.", ex);
@@ -237,6 +239,7 @@ public class WebDAVServlet extends HttpServlet {
 			} catch (LockException ex) {
 				transact.abort(transaction);
 				throw new ServletException("Cannot acquire write lock.", ex);
+                
 			} finally {
 				if (feedDoc != null) {
 					feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -270,8 +273,7 @@ public class WebDAVServlet extends HttpServlet {
 				XmldbURI filename = path.lastSegment();
 				XmldbURI collUri = path.removeLastSegment();
 
-				LOG.debug("Atom DELETE collUri='" + collUri + "';  path="
-						+ filename + "';");
+				LOG.debug("Atom DELETE collUri='" + collUri + "';  path=" + filename + "';");
 
 				collection = broker.openCollection(collUri, Lock.READ_LOCK);
 				if (collection == null
@@ -294,13 +296,11 @@ public class WebDAVServlet extends HttpServlet {
 
 				if (entry != null) {
 					// Remove the entry
-					ElementImpl feedRoot = (ElementImpl) feedDoc
-							.getDocumentElement();
+					ElementImpl feedRoot = (ElementImpl) feedDoc.getDocumentElement();
 					feedRoot.removeChild(transaction, entry);
 
 					// Update the feed time
-					String currentDateTime = DateFormatter
-							.toXSDDateTime(new Date());
+					String currentDateTime = DateFormatter.toXSDDateTime(new Date());
 					DOMDB.replaceTextElement(transaction, feedRoot,
 							Atom.NAMESPACE_STRING, "updated", currentDateTime,
 							true);
@@ -372,20 +372,17 @@ public class WebDAVServlet extends HttpServlet {
 				pool.release(broker);
 				return;
 			}
-			DocumentImpl feedDoc = null;
+			//DocumentImpl feedDoc = null;
 			TransactionManager transact = broker.getBrokerPool()
 					.getTransactionManager();
 			Txn transaction = transact.beginTransaction();
 			try {
 				String id = UUIDGenerator.getUUID();
-				String currentDateTime = DateFormatter
-						.toXSDDateTime(new Date());
-				DocumentBuilderFactory docFactory = DocumentBuilderFactory
-						.newInstance();
+				String currentDateTime = DateFormatter.toXSDDateTime(new Date());
+				DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 				docFactory.setNamespaceAware(true);
 				Document doc = docFactory.newDocumentBuilder()
-						.getDOMImplementation().createDocument(
-								Atom.NAMESPACE_STRING, "feed", null);
+						.getDOMImplementation().createDocument(Atom.NAMESPACE_STRING, "feed", null);
 				Element root = doc.getDocumentElement();
 				DOM.replaceTextElement(root, Atom.NAMESPACE_STRING, "id",
 						"urn:uuid:" + id, false);
@@ -404,13 +401,13 @@ public class WebDAVServlet extends HttpServlet {
 				// TODO : we should probably unlock the collection here
 				collection.store(transaction, broker, info, doc, false);
 				transact.commit(transaction);
+                
 			} catch (ParserConfigurationException ex) {
 				transact.abort(transaction);
 				throw new ServletException("SAX error: " + ex.getMessage(), ex);
 			} catch (TriggerException ex) {
 				transact.abort(transaction);
-				throw new ServletException(
-						"Trigger failed: " + ex.getMessage(), ex);
+				throw new ServletException("Trigger failed: " + ex.getMessage(), ex);
 			} catch (SAXException ex) {
 				transact.abort(transaction);
 				throw new ServletException("SAX error: " + ex.getMessage(), ex);
@@ -423,6 +420,7 @@ public class WebDAVServlet extends HttpServlet {
 			} catch (EXistException ex) {
 				transact.abort(transaction);
 				throw new ServletException("Database exception", ex);
+                
 			} finally {
 				collection.release(Lock.READ_LOCK);
 				pool.release(broker);
