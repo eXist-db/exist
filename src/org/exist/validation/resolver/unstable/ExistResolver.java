@@ -21,6 +21,7 @@
  */
 package org.exist.validation.resolver.unstable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -95,10 +96,14 @@ public class ExistResolver implements EntityResolver2, URIResolver {
         LOG.debug("href=" + href + " base=" + base);
 
         if(base!=null){
-            int pos = base.lastIndexOf('/');
+        	String sep = "/"; 
+        	if (base.startsWith("file:")) {
+        		sep = File.separator;
+        	}
+            int pos = base.lastIndexOf(sep);
             if(pos!=-1){
                 base=base.substring(0, pos);
-                href=base+"/"+href;
+                href=base + sep + href;
             }
         }
 
