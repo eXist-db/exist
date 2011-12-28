@@ -8,6 +8,19 @@
 
 package org.exist.atom.modules;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
@@ -39,15 +52,10 @@ import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
+
 import org.xml.sax.SAXException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+
 
 /**
  *
@@ -127,6 +135,7 @@ public class Query extends AtomModuleBase implements Atom {
          super.doGet(broker,request,response);
       }
    }
+   
    public void doPut(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -137,6 +146,7 @@ public class Query extends AtomModuleBase implements Atom {
          super.doGet(broker,request,response);
       }
    }
+   
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -146,6 +156,7 @@ public class Query extends AtomModuleBase implements Atom {
          super.doGet(broker,request,response);
       }
    }
+   
    public void doHead(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -155,6 +166,7 @@ public class Query extends AtomModuleBase implements Atom {
          super.doGet(broker,request,response);
       }
    }
+   
    public void doPost(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
@@ -249,6 +261,8 @@ public class Query extends AtomModuleBase implements Atom {
          } catch (XPathException ex) {
             throw new EXistException("Cannot execute xquery.",ex);
          }
+         
+         
       } else {
          super.doPost(broker,request,response);
       }

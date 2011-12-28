@@ -48,7 +48,6 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
 import org.exist.atom.AtomModule;
-import org.exist.atom.http.webdav.WebDAV;
 import org.exist.atom.modules.AtomFeeds;
 import org.exist.atom.modules.AtomProtocol;
 import org.exist.atom.modules.Query;
@@ -90,6 +89,10 @@ public class AtomServlet extends HttpServlet {
 	
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	public final static String CONF_NS = "http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0";
+    
+    // authentication methods ; copied from original webdav classes
+    public final static int WEBDAV_BASIC_AUTH = 0;
+    public final static int WEBDAV_DIGEST_AUTH = 1;
 
 	protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
 
@@ -111,8 +114,9 @@ public class AtomServlet extends HttpServlet {
 
 		@Deprecated
 		public String getPassword() {
-			return authMethod == WebDAV.BASIC_AUTH ? user.getPassword() : user
-					.getDigestPassword();
+			return authMethod == WEBDAV_BASIC_AUTH 
+                    ? user.getPassword() 
+                    : user.getDigestPassword();
 		}
 
 		public boolean hasRole(String role) {
@@ -318,11 +322,9 @@ public class AtomServlet extends HttpServlet {
 					if (className != null && className.length() > 0) {
 						try {
 							Class<?> moduleClass = Class.forName(className);
-							AtomModule amodule = (AtomModule) moduleClass
-									.newInstance();
+							AtomModule amodule = (AtomModule) moduleClass.newInstance();
 							modules.put(name, amodule);
-							amodule.init(new ModuleContext(config, name,
-									atomConf.getParent()));
+							amodule.init(new ModuleContext(config, name, atomConf.getParent()));
                             
 						} catch (Exception ex) {
 							throw new ServletException("Cannot instantiate class " + className
@@ -496,7 +498,7 @@ public class AtomServlet extends HttpServlet {
 				}
 			}
 
-			final Principal principal = new UserXmldbPrincipal(WebDAV.BASIC_AUTH, user);
+			final Principal principal = new UserXmldbPrincipal(WEBDAV_BASIC_AUTH, user);
 			HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
 				public Principal getUserPrincipal() {
 					return principal;

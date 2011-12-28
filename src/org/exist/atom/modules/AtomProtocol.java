@@ -28,6 +28,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.atom.Atom;
@@ -60,10 +61,12 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -83,20 +86,20 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    //private static final String ENTRY_XPOINTER = "xpointer(/entry)";
    
    final static class NodeListener implements NodeIndexListener {
-      
-      StoredNode node;
-      
-      public NodeListener(StoredNode node) {
-         this.node = node;
-      }
-      
-        @Override
-      public void nodeChanged(StoredNode newNode) {
-         final long address = newNode.getInternalAddress();
-         if (StorageAddress.equals(node.getInternalAddress(), address)) {
-            node = newNode;
-         }
-      }
+     
+       StoredNode node;
+
+       public NodeListener(StoredNode node) {
+           this.node = node;
+       }
+
+       @Override
+       public void nodeChanged(StoredNode newNode) {
+           final long address = newNode.getInternalAddress();
+           if (StorageAddress.equals(node.getInternalAddress(), address)) {
+               node = newNode;
+           }
+       }
    }
    
    /** Creates a new instance of AtomProtocol */
@@ -153,11 +156,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             LOG.warn(e);
             throw new BadRequestException(e.getMessage());
          }
+         
          Element root = doc.getDocumentElement();
          String ns = root.getNamespaceURI();
          if (ns==null || !ns.equals(Atom.NAMESPACE_STRING)) {
             throw new BadRequestException("Any content posted with the Atom mime type must be in the Atom namespace.");
          }
+         
          if (root.getLocalName().equals("feed")) {
              DocumentImpl feedDoc = null;
              TransactionManager transact = broker.getBrokerPool().getTransactionManager();
@@ -173,6 +178,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                    setPermissions(broker, root, collection);
                    broker.saveCollection(transaction, collection);
                 }
+                
                 String id = UUIDGenerator.getUUID();
                 DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
                 DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id","urn:uuid:"+id,true);
@@ -185,6 +191,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                 editLink.setAttribute("type",Atom.MIME_TYPE);
                 editLink.setAttribute("href","#");
                 root.appendChild(editLink);
+                
                 Element selfLink = findLink(root,"self");
                 if (selfLink!=null) {
                    throw new BadRequestException("A self link relation cannot be specified in the feed.");
@@ -194,6 +201,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                 selfLink.setAttribute("type",Atom.MIME_TYPE);
                 selfLink.setAttribute("href","#");
                 root.appendChild(selfLink);
+                
                 IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
                 setPermissions(broker, root, info.getDocument());
                 //TODO : We should probably unlock the collection here
@@ -201,6 +209,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                 transact.commit(transaction);
                 response.setStatusCode(204);
                 response.setHeader("Location",request.getModuleBase()+request.getPath());
+                
              } catch (IOException ex) {
                  transact.abort(transaction);
                  throw new EXistException("IO error: "+ex.getMessage(),ex);
@@ -215,14 +224,17 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                 throw new EXistException("Cannot acquire write lock.",ex);
              }
          } else if (root.getLocalName().equals("entry")) {
+             
              if (collection == null) {
                  throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
               }
+             
               LOG.debug("Adding entry to " + request.getPath());
               DocumentImpl feedDoc = null;
               feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
               if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
                   throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
+              
               TransactionManager transact = broker.getBrokerPool().getTransactionManager();
               Txn transaction = transact.beginTransaction();
               String uuid = UUIDGenerator.getUUID();
@@ -230,6 +242,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
               Element publishedE = DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"published",currentDateTime,true,true);
               DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true,true);
               DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id",id,true,true);
+              
               Element editLink = findLink(root,"edit");
               Element editLinkSrc = findLink(root,"edit-media");
               if (editLink!=null || editLinkSrc!=null) {
@@ -245,6 +258,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
               } else {
                  root.insertBefore(editLink,next);
               }
+              
               try {
                  // get the feed
                  LOG.debug("Acquiring lock on feed document...");
@@ -314,16 +328,20 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          } else {
             throw new BadRequestException("Unexpected element: {http://www.w3.org/2005/Atom}"+root.getLocalName());
          }
+         
       } else {
          if (collection == null) {
             throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
          }
+         
          DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
          if (feedDoc==null) {
             throw new BadRequestException("Feed at "+request.getPath()+" does not exist.");
          }
+         
          if (!feedDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
              throw new PermissionDeniedException("Permission denied to update feed " + collection.getURI());
+         
          String filename = request.getHeader("Slug");
          if (filename==null) {
             String ext = MimeTable.getInstance().getPreferredExtension(mime);
@@ -336,6 +354,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                count++;
             }
          }
+         
          TransactionManager transact = broker.getBrokerPool().getTransactionManager();
          Txn transaction = transact.beginTransaction();
          try {
@@ -360,6 +379,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                collection.addBinaryResource(transaction, broker, docUri, is, contentType, tempFile.length());
                is.close();
             }
+            
             try {
                LOG.debug("Acquiring lock on feed document...");
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
@@ -398,6 +418,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                identity.transform(new DOMSource(mediaEntry),new StreamResult(w));
                w.flush();
                w.close();
+               
             } catch (ParserConfigurationException ex) {
                transact.abort(transaction);
                throw new EXistException("DOM implementation is misconfigured.",ex);
@@ -411,6 +432,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
                }
             }
+            
          } catch (IOException ex) {
             transact.abort(transaction);
             throw new EXistException("I/O error while handling temporary files.",ex);
@@ -450,10 +472,12 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          if (semicolon>0) {
             contentType = contentType.substring(0,semicolon).trim();
          }
+         
          mime = MimeTable.getInstance().getContentType(contentType);
          if (mime==null) {
             mime = MimeType.BINARY_TYPE;
          }
+         
          int equals = contentType.indexOf('=',semicolon);
          if (equals>0) {
             String param = contentType.substring(semicolon+1,equals).trim();
@@ -486,11 +510,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             LOG.warn(e);
             throw new BadRequestException(e.getMessage());
          }
+         
          Element root = doc.getDocumentElement();
          String ns = root.getNamespaceURI();
          if (ns==null || !ns.equals(Atom.NAMESPACE_STRING)) {
             throw new BadRequestException("Any content posted with the Atom mime type must be in the Atom namespace.");
          }
+         
          if (root.getLocalName().equals("feed")) {
             DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
             if (feedDoc==null) {
@@ -520,6 +546,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
                response.setStatusCode(204);
+               
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
@@ -531,19 +558,23 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
                }
             }
+            
          } else if (root.getLocalName().equals("entry")) {
             if (collection == null) {
                throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
             }
+            
             String id = request.getParameter("id");
             if (id==null) {
                throw new BadRequestException("The 'id' parameter for the entry is missing.");
             }
+            
             LOG.debug("Updating entry "+id+" in collection "+request.getPath());
             DocumentImpl feedDoc = null;
             DocumentImpl entryDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
+            
             try {
                // Get the feed
                LOG.debug("Acquiring lock on feed document...");
@@ -605,9 +636,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                     entryDoc.getUpdateLock().release(Lock.WRITE_LOCK);
                }
             }
+            
          } else {
             throw new BadRequestException("Unexpected element: {http://www.w3.org/2005/Atom}"+root.getLocalName());
          }
+         
       } else {
          TransactionManager transact = broker.getBrokerPool().getTransactionManager();
          Txn transaction = transact.beginTransaction();
@@ -619,11 +652,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                transact.abort(transaction);
                throw new BadRequestException("The path is not valid: " + request.getPath());
             }
+            
             collection = broker.getCollection(collUri);
             if (collection == null) {
                transact.abort(transaction);
                throw new BadRequestException("The collection does not exist: " + collUri);
             }
+            
             if (collection.getDocument(broker,docUri)==null) {
                transact.abort(transaction);
                throw new BadRequestException("Resource "+docUri+" does not exist in collection "+collUri);
@@ -644,6 +679,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                collection.addBinaryResource(transaction, broker, docUri, is, contentType, tempFile.length());
                is.close();
             }
+            
             transact.commit(transaction);
             
             // TODO: Change the entry updated and send back the change?
@@ -756,6 +792,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          transact.commit(transaction);
          LOG.debug("Done!");
          response.setStatusCode(204);
+         
       } catch (TriggerException ex) {
          transact.abort(transaction);
          throw new EXistException("Cannot delete media resource "+srcUri,ex);
