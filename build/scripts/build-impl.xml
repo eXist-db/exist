@@ -342,11 +342,6 @@
         <copy file="${src}/org/exist/system.properties" todir="${build.classes}/org/exist"
             filtering="true" overwrite="true"/>
         <copy file="${src}/org/exist/util/mime-types.xml" todir="${build.classes}/org/exist/util"/>
-        <copy todir="${build.classes}/org/exist/atom/http/webdav/methods">
-            <fileset dir="${src}/org/exist/atom/http/webdav/methods">
-                <include name="**.xq"/>
-            </fileset>
-        </copy>
         <copy todir="${build.classes}/org/exist/validation/internal/query">
             <fileset dir="${src}/org/exist/validation/internal/query">
                 <include name="**.xq"/>
