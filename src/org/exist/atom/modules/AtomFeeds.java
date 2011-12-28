@@ -15,6 +15,7 @@ import java.io.Writer;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.atom.Atom;
 import org.exist.atom.IncomingMessage;
@@ -39,6 +40,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+
 import org.xml.sax.SAXException;
 
 
@@ -90,12 +92,14 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                   id = null;
                }
             }
+            
             // Must be a collection
             Collection collection = broker.getCollection(pathUri);
             if (collection != null) {
                if (!collection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
                   throw new PermissionDeniedException("Not allowed to read collection");
                }
+               
                DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
                if (feedDoc==null) {
                   throw new BadRequestException("Collection "+request.getPath()+" is not an Atom feed.");
@@ -114,9 +118,11 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                } else {
                   response.setStatusCode(204);
                }
+               
             } else {
                throw new NotFoundException("Resource " + request.getPath() + " not found");
             }
+            
          } else {
             //Do we have permission to read the resource
             if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
@@ -156,10 +162,12 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                      throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
                   }
                }
+               
             } else {
                response.setStatusCode(204);
             }
          }
+         
       } finally {
          if (resource != null) {
             resource.getUpdateLock().release(Lock.READ_LOCK);
@@ -194,6 +202,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
       if (resultSequence.isEmpty()) {
          throw new BadRequestException("No topic was found.");
       }
+      
       String charset = getContext().getDefaultCharset();
       response.setContentType("application/atom+xml; charset="+charset);
       Serializer serializer = broker.getSerializer();
@@ -219,8 +228,10 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
          throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
       }
       resultSequence.itemAt(0);
+      
    } catch (XPathException ex) {
       throw new EXistException("Cannot execute xquery "+entryByIdSource.getURL(),ex);
+      
    } finally {
       xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
    }
@@ -253,10 +264,12 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
       if (resultSequence.isEmpty()) {
          throw new BadRequestException("No feed was found.");
       }
+      
       String charset = getContext().getDefaultCharset();
       response.setContentType("application/atom+xml; charset="+charset);
       Serializer serializer = broker.getSerializer();
       serializer.reset();
+      
       try {
          Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
          SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -270,6 +283,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
          SerializerPool.getInstance().returnObject(sax);
          w.flush();
          w.close();
+         
       } catch (IOException ex) {
          LOG.fatal("Cannot read resource "+path,ex);
          throw new EXistException("I/O error on read of resource "+path,ex);
@@ -278,8 +292,10 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
          throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
       }
       resultSequence.itemAt(0);
+      
    } catch (XPathException ex) {
       throw new EXistException("Cannot execute xquery "+getFeedSource.getURL(),ex);
+      
    } finally {
       xquery.getXQueryPool().returnCompiledXQuery(getFeedSource, feedQuery);
    }

@@ -48,43 +48,52 @@ public class AtomModuleBase implements AtomModule {
    
    public void process(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException, TriggerException
-   {
-      String method = request.getMethod();
-      if (method.equals("GET")) {
-         doGet(broker,request,response);
-      } else if (method.equals("POST")) {
-         doPost(broker,request,response);
-      } else if (method.equals("PUT")) {
-         doPut(broker,request,response);
-      } else if (method.equals("HEAD")) {
-         doHead(broker,request,response);
-      } else if (method.equals("DELETE")) {
-         doDelete(broker,request,response);
-      } else {
-         throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
-      }
-   }
+    {
+        String method = request.getMethod();
+        if (method.equals("GET")) {
+            doGet(broker, request, response);
+            
+        } else if (method.equals("POST")) {
+            doPost(broker, request, response);
+            
+        } else if (method.equals("PUT")) {
+            doPut(broker, request, response);
+            
+        } else if (method.equals("HEAD")) {
+            doHead(broker, request, response);
+            
+        } else if (method.equals("DELETE")) {
+            doDelete(broker, request, response);
+            
+        } else {
+            throw new BadRequestException("Method " + request.getMethod() + " is not supported by this module.");
+        }
+    }
    
    public void doGet(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
+   
    public void doHead(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
+   
    public void doPost(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
+   
    public void doPut(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
+   
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException, IOException, TriggerException
    {
@@ -94,19 +103,20 @@ public class AtomModuleBase implements AtomModule {
    protected File storeInTemporaryFile(InputStream is,long len)
       throws IOException
    {
-      File tempFile = File.createTempFile("atom", ".tmp");
-      OutputStream os = new FileOutputStream(tempFile);
-      byte[] buffer = new byte[4096];
-      int count = 0;
-      long l = 0;
-      do {
-         count = is.read(buffer);
-         if (count > 0) {
-            os.write(buffer, 0, count);
-         }
-         l += count;
-      } while ((len<0 && count>=0) || l < len);
-      os.close();   
-      return tempFile;
+       File tempFile = File.createTempFile("atom", ".tmp");
+       OutputStream os = new FileOutputStream(tempFile);
+       byte[] buffer = new byte[4096];
+       int count = 0;
+       long l = 0;
+       do {
+           count = is.read(buffer);
+           if (count > 0) {
+               os.write(buffer, 0, count);
+           }
+           l += count;
+       } while ((len < 0 && count >= 0) || l < len);
+       
+       os.close();
+       return tempFile;
    }
 }
