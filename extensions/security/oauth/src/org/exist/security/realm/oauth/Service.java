@@ -27,6 +27,7 @@ import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.scribe.builder.ServiceBuilder;
+import org.scribe.builder.api.Api;
 import org.scribe.builder.api.FacebookApi;
 
 /**
@@ -49,7 +50,10 @@ public class Service implements Configurable {
     @ConfigurationFieldAsAttribute("secret")
     String apiSecret;
 
-	public Service(OAuthRealm realm, Configuration config) {
+    @ConfigurationFieldAsAttribute("provider")
+    String provider;
+
+    public Service(OAuthRealm realm, Configuration config) {
 
 		configuration = Configurator.configure(this, config);
 	}
@@ -60,9 +64,18 @@ public class Service implements Configurable {
 
 	public ServiceBuilder getServiceBuilder() {
         return new ServiceBuilder()
-        		.provider(FacebookApi.class)
+        		.provider(getProviderClass())
         		.apiKey(apiKey)
         		.apiSecret(apiSecret);
+	}
+	
+	private Class<? extends Api> getProviderClass() {
+		if (provider.equalsIgnoreCase("facebook"))
+			return FacebookApi.class;
+		else if (provider.equalsIgnoreCase("google"))
+			return Google2Api.class;
+		
+		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
 	}
 
 	public boolean isConfigured() {
