@@ -21,6 +21,8 @@
  */
 package org.exist.security.realm.oauth;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -29,6 +31,8 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.FacebookApi;
+import org.scribe.model.Token;
+import org.scribe.oauth.OAuthService;
 
 /**
  * <service name="app" key="APP_ID" secret="APP_SECRET" />
@@ -76,6 +80,23 @@ public class Service implements Configurable {
 			return Google2Api.class;
 		
 		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
+	}
+
+	public void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
+		if (provider.equalsIgnoreCase("facebook"))
+			ServiceFacebook.saveAccessToken(request, service, accessToken);
+		else if (provider.equalsIgnoreCase("google"))
+			ServiceGoogle.saveAccessToken(request, service, accessToken);
+		
+		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
+	}
+	
+	public String getApiKey() {
+		return apiKey;
+	}
+
+	public String getApiSecret() {
+		return apiSecret;
 	}
 
 	public boolean isConfigured() {

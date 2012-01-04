@@ -28,9 +28,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.scribe.model.OAuthConstants;
+import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
+import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
+import org.scribe.utils.OAuthEncoder;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -64,6 +68,8 @@ public class OAuthServlet extends HttpServlet {
     }
     
     private void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	if (request.getPathInfo() == null) return;
+    	
         String path = request.getPathInfo().replace("/", "");
         
         if (OAuthRealm.LOG.isTraceEnabled())
@@ -88,10 +94,25 @@ public class OAuthServlet extends HttpServlet {
         String verification = request.getParameter("code");
         
         Verifier verifier = new Verifier(verification);
-        Token accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
+        Token accessToken = null;
+        //workaround google API
+        if (OAuthRealm._.getServiceBulderByPath(path).provider.equalsIgnoreCase("google")) {
+        	Google2Api api = new Google2Api();
+        	
+        	Service config = OAuthRealm._.getServiceBulderByPath(path);
+
+	        OAuthRequest req = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
+	        req.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
+	        req.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
+	        req.addBodyParameter(OAuthConstants.CODE, verification);
+        	req.addBodyParameter(OAuthConstants.REDIRECT_URI, "http://localhost:8080/oauth/cook2gl");
+	        req.addBodyParameter("grant_type", "authorization_code");
+	        accessToken = api.getAccessTokenExtractor().extract(req.send().getBody());
+        } else
+        	accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
         
         try {
-			ServiceFacebook.saveAccessToken(request, service, accessToken);
+        	OAuthRealm._.getServiceBulderByPath(path).saveAccessToken(request, service, accessToken);
 		} catch (Exception e) {
 			throw new ServletException(e);
 		}
