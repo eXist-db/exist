@@ -692,7 +692,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             reader = index.getReader();
             for (QName qname : qnames) {
-            	System.out.println("QNAME: " + qname.toString());
                 String field = encodeQName(qname);
                 TermEnum terms;
                 if (start == null)
