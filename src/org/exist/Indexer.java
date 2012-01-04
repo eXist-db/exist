@@ -515,6 +515,14 @@ public class Indexer extends Observable implements ContentHandler,
             elementCnt = 0;
         }
         docSize = 0;
+
+        /* 
+         * Reset node id count
+         * 
+         * We set this to 1 instead of 0 to match the InMemmory serializer which
+         * considers the Document to be the first node with an id.
+         */
+        nodeFactoryInstanceCnt = 1;
     }
 
     public void startElement(String namespace, String name, String qname,
