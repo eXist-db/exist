@@ -135,9 +135,10 @@ public class LDAPRealm extends AbstractRealm {
         }
 
         AbstractAccount account = (AbstractAccount) getAccount(null, username);
-        /*if(account == null) {
-            account = (AbstractAccount) createAccountInDatabase(null, username);
-        }*/
+        if (account == null)
+			throw new AuthenticationException(
+					AuthenticationException.ACCOUNT_NOT_FOUND,
+					"Account '"+username+"' can not be found.");
 
         return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
@@ -469,7 +470,7 @@ public class LDAPRealm extends AbstractRealm {
                 }
             } catch(NamingException ne) {
                 LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
-                            return null;
+                return null;
             } finally {
                 if(ctx != null){
                     LdapUtils.closeContext(ctx);
