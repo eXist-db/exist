@@ -220,6 +220,11 @@ public class SecurityManagerImpl implements SecurityManager {
 	
     @Override
     public <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
+    	return updateAccount(account);
+    }
+
+    @Override
+    public <A extends Account> boolean updateAccount(A account) throws PermissionDeniedException, EXistException {
         if(account == null){
             return false;
         }
@@ -230,7 +235,7 @@ public class SecurityManagerImpl implements SecurityManager {
         
         accountLocks.getWriteLock(account).lock();
         try {
-            return findRealmForRealmId(account.getRealmId()).updateAccount(invokingUser, account);
+            return findRealmForRealmId(account.getRealmId()).updateAccount(account);
         } finally {
             accountLocks.getWriteLock(account).unlock();
         }
@@ -302,8 +307,13 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Account getAccount(Subject invokingUser, String name) {
+    	return getAccount(name);
+    }
+
+    @Override
+    public Account getAccount(String name) {
         for(Realm realm : realms) {
-            Account account = realm.getAccount(invokingUser, name);
+            Account account = realm.getAccount(name);
             if (account != null) {
                 return account;
             }
@@ -340,9 +350,21 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
+    @Deprecated
     public Group getGroup(Subject invokingUser, String name) {
     	for(Realm realm : realms) {
             Group group = realm.getGroup(invokingUser, name);
+            if(group != null){
+                return group;
+            }
+    	}
+        return null;
+    }
+
+    @Override
+    public Group getGroup(String name) {
+    	for(Realm realm : realms) {
+            Group group = realm.getGroup(name);
             if(group != null){
                 return group;
             }

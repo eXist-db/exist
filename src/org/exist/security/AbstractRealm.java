@@ -24,7 +24,6 @@ package org.exist.security;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -55,9 +54,6 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractRealm implements Realm, Configurable {
 
-    
-    
-    
     //XXX: this class must be under org.exist.security.internal to be protected
     //public final Map<String, Account> usersByName = new HashMap<String, Account>(65);
     //public final Map<String, Group> groupsByName = new HashMap<String, Group>(65);
@@ -284,12 +280,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    @Deprecated
-    public Account getAccount(Subject invokingUser, String name) {
-        return getAccount(name);
-    }
-
-    @Override
     public final boolean hasAccount(final String accountName) {
         return usersByName.read(new PrincipalDbRead<Account, Boolean>(){
             @Override
@@ -395,18 +385,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     @Override
     public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-    	return updateAccount(null, account);
-    }
-    
-    @Override
-    public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
         
         //make sure we have permission to modify this account
         Account user = getDatabase().getSubject();
         account.assertCanModifyAccount(user);
         
         //modify the account
-        Account updatingAccount = getAccount(invokingUser, account.getName());
+        Account updatingAccount = getAccount(account.getName());
         if(updatingAccount == null) {
             throw new PermissionDeniedException("account " + account.getName() + " does not exist");
         }

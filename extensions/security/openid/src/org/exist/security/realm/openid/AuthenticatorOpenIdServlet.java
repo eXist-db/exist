@@ -329,7 +329,7 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 				// success
 				
 				String accountName = AccountImpl.escape(verified.getIdentifier());
-				AbstractAccount account = (AbstractAccount) OpenIDRealm.instance.getAccount(null, accountName);
+				AbstractAccount account = (AbstractAccount) OpenIDRealm.instance.getAccount(accountName);
 				if (account == null) {
 					Database db = OpenIDRealm.instance.getDatabase();
 					org.exist.security.Subject currentSubject = db.getSubject();
