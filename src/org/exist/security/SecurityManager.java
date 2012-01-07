@@ -27,7 +27,6 @@ import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.DocumentImpl;
-import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -77,11 +76,15 @@ public interface SecurityManager extends Configurable {
    void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
    <A extends Account> void deleteAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;
 
+   @Deprecated
    <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+   <A extends Account> boolean updateAccount(A account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
    <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
+   @Deprecated
    Account getAccount(Subject invokingUser, String name);
+   Account getAccount(String name);
 
    <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    
@@ -91,7 +94,9 @@ public interface SecurityManager extends Configurable {
    boolean hasGroup(String name);
    boolean hasGroup(Group group);
 
+   @Deprecated
    Group getGroup(Subject invokingUser, String name);
+   Group getGroup(String name);
    Group getGroup(int gid);
 
    void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException;

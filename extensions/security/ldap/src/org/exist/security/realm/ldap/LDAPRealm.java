@@ -123,6 +123,14 @@ public class LDAPRealm extends AbstractRealm {
         try {
             ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
 
+            AbstractAccount account = (AbstractAccount) getAccount(ctx, username);
+            if (account == null)
+    			throw new AuthenticationException(
+    					AuthenticationException.ACCOUNT_NOT_FOUND,
+    					"Account '"+username+"' can not be found.");
+
+            return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
+
         } catch(NamingException e) {
         	LOG.debug(e.getMessage(), e);
             if(e instanceof javax.naming.AuthenticationException) {
@@ -134,25 +142,17 @@ public class LDAPRealm extends AbstractRealm {
         } finally {
             LdapUtils.closeContext(ctx);
         }
-
-        AbstractAccount account = (AbstractAccount) getAccount(null, username);
-        if (account == null)
-			throw new AuthenticationException(
-					AuthenticationException.ACCOUNT_NOT_FOUND,
-					"Account '"+username+"' can not be found.");
-
-        return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
     }
     
-    private List<Group> getGroupMembershipForLdapUser(Subject invokingUser, SearchResult ldapUser) throws NamingException {
+    private List<Group> getGroupMembershipForLdapUser(LdapContext ctx, SearchResult ldapUser) throws NamingException {
         
         final List<Group> memberOf_groups = new ArrayList<Group>();
         
         final LDAPSearchContext search = ensureContextFactory().getSearch();
         final String userDistinguishedName = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
-        final List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(invokingUser, userDistinguishedName);
+        final List<String> memberOf_groupNames = findGroupnamesForUserDistinguishedName(ctx, userDistinguishedName);
         for(String memberOf_groupName : memberOf_groupNames) {
-            memberOf_groups.add(getGroup(invokingUser, memberOf_groupName));
+            memberOf_groups.add(getGroup(ctx, memberOf_groupName));
         }
         
         //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -160,7 +160,7 @@ public class LDAPRealm extends AbstractRealm {
             final List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
             if(additionalGroupNames != null) {
                 for(String additionalGroupName : additionalGroupNames) {
-                    Group additionalGroup = getSecurityManager().getGroup(invokingUser, additionalGroupName);
+                    Group additionalGroup = getSecurityManager().getGroup(additionalGroupName);
                     if(additionalGroup != null) {
                         memberOf_groups.add(additionalGroup);
                     }
@@ -211,21 +211,21 @@ public class LDAPRealm extends AbstractRealm {
                 throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "Could not find the account in the LDAP");
             }
         
-            return executeAsSystemUser(invokingUser, new Unit<Account>(){
+            return executeAsSystemUser(ctx, new Unit<Account>(){
                 @Override
-                public Account execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+                public Account execute(LdapContext ctx, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
                     
                     int update = UPDATE_NONE;
                     
                     //1) get the ldap group membership
-                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(invokingUser, ldapUser);
+                    final List<Group> memberOf_groups = getGroupMembershipForLdapUser(ctx, ldapUser);
                     
                     //2) get the ldap primary group
                     final String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
                     
                     //append the ldap primaryGroup to the head of the ldap group list, and compare
                     //to the account group list
-                    memberOf_groups.add(0, getGroup(invokingUser, primaryGroup));
+                    memberOf_groups.add(0, getGroup(ctx, primaryGroup));
 
                     final String accountGroups[] = account.getGroups();
                     
@@ -302,7 +302,7 @@ public class LDAPRealm extends AbstractRealm {
                     }
                     
                     if(update != UPDATE_NONE) {
-                        boolean updated = getSecurityManager().updateAccount(invokingUser, account);
+                        boolean updated = getSecurityManager().updateAccount(account);
                         if(!updated) {
                             LOG.error("Could not update account");
                         }
@@ -319,16 +319,16 @@ public class LDAPRealm extends AbstractRealm {
         
     }
     
-    private Account createAccountInDatabase(final Subject invokingUser, final String username, final SearchResult ldapUser, final String primaryGroupName) throws AuthenticationException {
+    private Account createAccountInDatabase(final LdapContext ctx, final String username, final SearchResult ldapUser, final String primaryGroupName) throws AuthenticationException {
 
         final LDAPSearchAccount searchAccount = ensureContextFactory().getSearch().getSearchAccount();
 
         try {
-            return executeAsSystemUser(invokingUser, new Unit<Account>(){
+            return executeAsSystemUser(ctx, new Unit<Account>(){
                 @Override
-                public Account execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+                public Account execute(LdapContext ctx, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
                     //get (or create) the primary group if it doesnt exist
-                    final Group primaryGroup = getGroup(invokingUser, primaryGroupName);
+                    final Group primaryGroup = getGroup(ctx, primaryGroupName);
 
                     //get (or create) member groups
                     /*LDAPSearchContext search = ensureContextFactory().getSearch();
@@ -344,7 +344,7 @@ public class LDAPRealm extends AbstractRealm {
                     final UserAider userAider = new UserAider(ID, username, primaryGroup);
 
                     //add the member groups
-                    for(Group memberOf_group : getGroupMembershipForLdapUser(invokingUser, ldapUser)) {
+                    for(Group memberOf_group : getGroupMembershipForLdapUser(ctx, ldapUser)) {
                         userAider.addGroup(memberOf_group);
                     }
 
@@ -388,10 +388,10 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     private interface Unit<R> {
-        public R execute(Subject invokingUser, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException;
+        public R execute(LdapContext ctx, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException;
     }
     
-    private <R> R executeAsSystemUser(Subject invokingUser, Unit<R> unit) throws EXistException, PermissionDeniedException, NamingException {
+    private <R> R executeAsSystemUser(LdapContext ctx, Unit<R> unit) throws EXistException, PermissionDeniedException, NamingException {
         
         DBBroker broker = null;
         Subject currentSubject = getDatabase().getSubject();
@@ -399,7 +399,7 @@ public class LDAPRealm extends AbstractRealm {
             //elevate to system privs
             broker = getDatabase().get(getSecurityManager().getSystemSubject());
                     
-            return unit.execute(invokingUser, broker);
+            return unit.execute(ctx, broker);
         } finally {
             if(broker != null) {
                 broker.setSubject(currentSubject);
@@ -408,15 +408,11 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
     
-    private Group createGroupInDatabase(Subject invokingUser, final String groupname) throws AuthenticationException {
+    private Group createGroupInDatabase(final String groupname) throws AuthenticationException {
         try {
-            return executeAsSystemUser(invokingUser, new Unit<Group>(){
-                @Override
-                public Group execute(Subject invokingUser, DBBroker broker) throws PermissionDeniedException, EXistException {
-                    //return sm.addGroup(instantiateGroup(this, groupname));
-                    return getSecurityManager().addGroup(new GroupAider(ID, groupname));
-                }
-            });
+            //return sm.addGroup(instantiateGroup(this, groupname));
+            return getSecurityManager().addGroup(new GroupAider(ID, groupname));
+
         } catch(Exception e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
         }
@@ -439,21 +435,44 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public final synchronized Account getAccount(Subject invokingUser, String name) {
+    public final synchronized Account getAccount(String name) {
+        name = ensureCase(name);
+        
+        //first attempt to get the cached account
+        Account acct = super.getAccount(name);
+
+        if(acct != null) {
+            return acct;
+        } else {
+        	LdapContext ctx = null;
+        	try {
+        		ctx = getContext(getSecurityManager().getDatabase().getSubject());
+        		
+        		return getAccount(ctx, name);
+            } catch(NamingException ne) {
+            	LOG.debug(ne.getMessage(), ne);
+            	LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+                return null;
+	        } finally {
+	            if(ctx != null){
+	                LdapUtils.closeContext(ctx);
+	            }
+	        }
+        }
+    }
+
+    public final synchronized Account getAccount(LdapContext ctx, String name) {
 
         name = ensureCase(name);
         
         //first attempt to get the cached account
-        Account acct = super.getAccount(invokingUser, name);
+        Account acct = super.getAccount(name);
 
         if(acct != null) {
             return acct;
         } else {
             //if the account is not cached, we should try and find it in LDAP and cache it if it exists
-            LdapContext ctx = null;
             try{
-                ctx = getContext(invokingUser);
-
                 //do the lookup
                 SearchResult ldapUser = findAccountByAccountName(ctx, name);
                 if(ldapUser == null) {
@@ -462,7 +481,7 @@ public class LDAPRealm extends AbstractRealm {
                     //found a user from ldap so cache them and return
                     try {
                         String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
-                        return createAccountInDatabase(invokingUser, name, ldapUser, ensureCase(primaryGroup));
+                        return createAccountInDatabase(ctx, name, ldapUser, ensureCase(primaryGroup));
                         //registerAccount(acct); //TODO do we need this
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -540,9 +559,7 @@ public class LDAPRealm extends AbstractRealm {
         return strObjectSid.substring(0, strObjectSid.lastIndexOf('-') + 1) + strPrimaryGroupID;
     }
     
-    @Override
     public final synchronized Group getGroup(Subject invokingUser, String name) {
-        
         name = ensureCase(name);
         
         Group grp = getGroup(name);
@@ -553,7 +570,29 @@ public class LDAPRealm extends AbstractRealm {
             LdapContext ctx = null;
             try {
                 ctx = getContext(invokingUser);
+                
+                return getGroup(ctx, name);
+            } catch(NamingException ne) {
+                LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+                return null;
+            } finally {
+                if(ctx != null) {
+                    LdapUtils.closeContext(ctx);
+                }
+            }
+        }
+    }
 
+    public final synchronized Group getGroup(LdapContext ctx, String name) {
+        
+        name = ensureCase(name);
+        
+        Group grp = getGroup(name);
+        if(grp != null) {
+            return grp;
+        } else {
+            //if the group is not cached, we should try and find it in LDAP and cache it if it exists
+            try {
                 //do the lookup
                 SearchResult ldapGroup = findGroupByGroupName(ctx, removeDomainPostfix(name));
                 if(ldapGroup == null) {
@@ -561,7 +600,7 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a group from ldap so cache them and return
                     try {
-                        return createGroupInDatabase(invokingUser, name);
+                        return createGroupInDatabase(name);
                         //registerGroup(grp); //TODO do we need to do this?
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -740,14 +779,14 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
-        return super.updateAccount(invokingUser, account);
+    public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+        return super.updateAccount(account);
     }
 
     @Override
     public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
         // TODO we dont support writting to LDAP
+    	//XXX: delete local cache?
         return false;
     }
 
@@ -954,14 +993,11 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     
-    private List<String> findGroupnamesForUserDistinguishedName(Subject invokingUser, String userDistinguishedName) {
+    private List<String> findGroupnamesForUserDistinguishedName(LdapContext ctx, String userDistinguishedName) {
 
         List<String> groupnames = new ArrayList<String>();
 
-        LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
-
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.MEMBER), userDistinguishedName);
             String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);

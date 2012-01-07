@@ -140,7 +140,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 		}
 
 		if (ldapUser) {
-			AbstractAccount account = (AbstractAccount) getAccount(null, username);
+			AbstractAccount account = (AbstractAccount) getAccount(username);
 			if (account == null) {
 				Subject currentSubject = getDatabase().getSubject();
                 DBBroker broker = null;

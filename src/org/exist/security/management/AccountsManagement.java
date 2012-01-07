@@ -25,7 +25,6 @@ import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Account;
-import org.exist.security.Subject;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -36,15 +35,11 @@ public interface AccountsManagement {
 	public Account addAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public Account getAccount(String name);
-	@Deprecated //use getAccount(String name)
-	public Account getAccount(Subject invokingUser, String name);
 
 	public boolean hasAccount(Account account);
 	public boolean hasAccount(String name);
 
 	public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
-	@Deprecated //use updateAccount(Account account)
-	public boolean updateAccount(Subject invokingUser, Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 	
 	public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 }
