@@ -81,22 +81,22 @@ public class Service implements Configurable {
 	}
 
 	private Class<? extends Api> getProviderClass() {
-		String provider = getProvider();
+		String provider = getProvider().toLowerCase();
 
-		if (provider.equalsIgnoreCase("facebook"))
+		if (provider.equals("facebook"))
 			return FacebookApi.class;
-		else if (provider.equalsIgnoreCase("google"))
+		else if (provider.equals("google"))
 			return Google2Api.class;
 		
 		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
 	}
 
 	public void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
-		String provider = getProvider();
+		String provider = getProvider().toLowerCase();
 
-		if (provider.equalsIgnoreCase("facebook"))
+		if (provider.equals("facebook"))
 			ServiceFacebook.saveAccessToken(request, service, accessToken);
-		else if (provider.equalsIgnoreCase("google"))
+		else if (provider.equals("google"))
 			ServiceGoogle.saveAccessToken(request, service, accessToken);
 		
 		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
