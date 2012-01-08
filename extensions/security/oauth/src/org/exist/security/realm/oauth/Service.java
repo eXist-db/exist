@@ -73,7 +73,16 @@ public class Service implements Configurable {
         		.apiSecret(apiSecret);
 	}
 	
+	private String getProvider() {
+		if (provider == null)
+			throw new IllegalArgumentException("Provider was not set.");
+		
+		return provider; 
+	}
+
 	private Class<? extends Api> getProviderClass() {
+		String provider = getProvider();
+
 		if (provider.equalsIgnoreCase("facebook"))
 			return FacebookApi.class;
 		else if (provider.equalsIgnoreCase("google"))
@@ -83,6 +92,8 @@ public class Service implements Configurable {
 	}
 
 	public void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
+		String provider = getProvider();
+
 		if (provider.equalsIgnoreCase("facebook"))
 			ServiceFacebook.saveAccessToken(request, service, accessToken);
 		else if (provider.equalsIgnoreCase("google"))
