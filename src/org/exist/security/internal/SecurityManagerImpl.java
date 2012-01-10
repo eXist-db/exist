@@ -428,7 +428,12 @@ public class SecurityManagerImpl implements SecurityManager {
 
         for(Realm realm : realms) {
             try {
-                return realm.authenticate(username, credentials);
+            	Subject subject = realm.authenticate(username, credentials);
+            	
+                if (LOG.isDebugEnabled())
+                	LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");
+                
+                return subject;
             } catch(AuthenticationException e) {
                 if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
                     if (LOG.isDebugEnabled()) {
