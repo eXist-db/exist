@@ -327,6 +327,10 @@ public class LDAPRealm extends AbstractRealm {
             return executeAsSystemUser(ctx, new Unit<Account>(){
                 @Override
                 public Account execute(LdapContext ctx, DBBroker broker) throws EXistException, PermissionDeniedException, NamingException {
+                	
+                	if (LOG.isDebugEnabled())
+                		LOG.debug("Saving account '"+username+"'.");
+                	
                     //get (or create) the primary group if it doesnt exist
                     final Group primaryGroup = getGroup(ctx, primaryGroupName);
 
@@ -383,6 +387,7 @@ public class LDAPRealm extends AbstractRealm {
                 }
             });
         } catch(Exception e) {
+        	LOG.debug(e);
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
         }
     }
@@ -465,16 +470,23 @@ public class LDAPRealm extends AbstractRealm {
 
         name = ensureCase(name);
         
+        if (LOG.isDebugEnabled())
+        	LOG.debug("Get request for account '"+name+"'.");
+        
         //first attempt to get the cached account
         Account acct = super.getAccount(name);
 
         if(acct != null) {
+    		LOG.debug("Cached used.");
             return acct;
         } else {
             //if the account is not cached, we should try and find it in LDAP and cache it if it exists
             try{
                 //do the lookup
                 SearchResult ldapUser = findAccountByAccountName(ctx, name);
+
+                LOG.debug("LDAP search return '"+ldapUser+"'.");
+
                 if(ldapUser == null) {
                     return null;
                 } else {
@@ -490,7 +502,7 @@ public class LDAPRealm extends AbstractRealm {
                 }
             } catch(NamingException ne) {
             	LOG.debug(ne.getMessage(), ne);
-            	LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+            	//LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
                 return null;
             } finally {
                 if(ctx != null){
