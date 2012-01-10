@@ -262,6 +262,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"isnot\"",
 		"fulltext operator '&='",
 		"fulltext operator '|='",
+		"||",
 		"\"to\"",
 		"-",
 		"\"div\"",

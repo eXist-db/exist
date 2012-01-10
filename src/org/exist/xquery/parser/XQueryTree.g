@@ -873,6 +873,23 @@ throws PermissionDeniedException, EXistException, XPathException
    }
 	)
 	|
+	// string concatenation
+	#(
+		CONCAT
+		{ ConcatExpr concat = new ConcatExpr(context); }
+		(
+			{ PathExpr strPath = new PathExpr(context); }
+			step = expr [strPath ]
+			{
+				concat.add(strPath);
+			}
+		)*
+		{
+			path.addPath(concat);
+			step = concat;
+		}
+	)
+	|
 	// sequence constructor:
 	#(
 		c:COMMA

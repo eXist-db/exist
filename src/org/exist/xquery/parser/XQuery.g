@@ -780,17 +780,29 @@ castExpr throws XPathException
 
 comparisonExpr throws XPathException
 :
-	r1:rangeExpr (
-		( BEFORE ) => BEFORE^ rangeExpr 
+	r1:stringConcatExpr (
+		( BEFORE ) => BEFORE^ stringConcatExpr 
 		|
-		( AFTER ) => AFTER^ rangeExpr
-		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) rangeExpr )
+		( AFTER ) => AFTER^ stringConcatExpr
+		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) stringConcatExpr )
 		| ( GT EQ ) => GT^ EQ^ r2:rangeExpr
 			{ #comparisonExpr = #(#[GTEQ, ">="], #r1, #r2); }
-		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) rangeExpr )
-		| ( ( "is"^ | "isnot"^ ) rangeExpr )
-		| ( ( ANDEQ^ | OREQ^ ) rangeExpr )
+		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) stringConcatExpr )
+		| ( ( "is"^ | "isnot"^ ) stringConcatExpr )
+		| ( ( ANDEQ^ | OREQ^ ) stringConcatExpr )
 	)?
+	;
+
+stringConcatExpr throws XPathException
+{ boolean isConcat = false; }
+:
+	r1:rangeExpr (
+		CONCAT^ rangeExpr { isConcat = true; }
+	)*
+	{
+		if (isConcat)
+			#stringConcatExpr = #(#[CONCAT, "||"], #stringConcatExpr);
+	}
 	;
 
 rangeExpr throws XPathException
@@ -1750,6 +1762,7 @@ protected RPAREN options { paraphrase="closing parenthesis ')'"; } : ')' ;
 protected SELF options { paraphrase="."; }: '.' ;
 protected PARENT options { paraphrase=".."; }: ".." ;
 protected UNION options { paraphrase="union"; }: '|' ;
+protected CONCAT options { paraphrase="||"; }: '|' '|';
 protected AT options { paraphrase="@ char"; }: '@' ;
 protected DOLLAR options { paraphrase="dollar sign '$'"; }: '$' ;
 protected ANDEQ options { paraphrase="fulltext operator '&='"; }: "&=" ;
@@ -2060,6 +2073,11 @@ options {
 	{ parseStringLiterals && !inElementContent }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
 	|
+	( '|' '|' ) =>
+	CONCAT { $setType(CONCAT); }
+	|
+	UNION { $setType(UNION); }
+	|
 	( '.' '.' ) =>
 	{ !(inAttributeContent || inElementContent) }?
 	PARENT { $setType(PARENT); }
@@ -2109,8 +2127,6 @@ options {
 	LPAREN { $setType(LPAREN); }
 	|
 	RPAREN { $setType(RPAREN); }
-	|
-	UNION { $setType(UNION); }
 	|
 	AT { $setType(AT); }
 	|
