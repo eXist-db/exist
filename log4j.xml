@@ -155,6 +155,11 @@
         <appender-ref ref="exist.xmldb"/>
     </category>
     
+    <category name="org.exist.xmlrpc" additivity="false">
+        <priority value="debug"/>
+        <appender-ref ref="exist.core"/>
+    </category>
+
 	<category name="org.exist.http.urlrewrite" additivity="false">
 		<!-- set to "trace" to get detailed info on URL rewriting -->
         <priority value="info"/>
