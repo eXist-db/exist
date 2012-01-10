@@ -88,9 +88,9 @@ public class LdapContextFactory implements Configurable {
 		return getLdapContext(systemUsername, systemPassword);
 	}
         
-        public LdapContext getLdapContext(String username, String password) throws NamingException {
-            return getLdapContext(username, password, null);
-        }
+    public LdapContext getLdapContext(String username, String password) throws NamingException {
+        return getLdapContext(username, password, null);
+    }
         
 	public LdapContext getLdapContext(String username, String password, Map<String, Object>additionalEnv) throws NamingException {
 		if (url == null)

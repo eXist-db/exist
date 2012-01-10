@@ -405,7 +405,10 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Subject authenticate(String username, final Object credentials) throws AuthenticationException {
-        if("jsessionid".equals(username)) {
+        if (LOG.isDebugEnabled())
+            LOG.debug("Authentication try for '"+username+"'.");
+
+    	if("jsessionid".equals(username)) {
 
             Subject subject = sessions.read(new SessionDbRead<Subject>(){
                 @Override
@@ -566,10 +569,12 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public final Account addAccount(Account account) throws  PermissionDeniedException, EXistException{
         if(account.getRealmId() == null) {
+        	LOG.debug("Account must have realm id.");
             throw new ConfigurationException("Account must have realm id.");
         }
 		
         if(account.getName() == null || account.getName().isEmpty()) {
+        	LOG.debug("Account must have name.");
             throw new ConfigurationException("Account must have name.");
         }
 		
@@ -580,8 +585,8 @@ public class SecurityManagerImpl implements SecurityManager {
             id = getNextAccountId();
         }
 
-	final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-	final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
+		final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
+		final AccountImpl newAccount = new AccountImpl(registeredRealm, id, account);
 	
         accountLocks.getWriteLock(newAccount).lock();
         try {
