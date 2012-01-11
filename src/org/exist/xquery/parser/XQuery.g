@@ -138,6 +138,7 @@ imaginaryTokenDefinitions
 	DEF_NAMESPACE_DECL 
 	DEF_COLLATION_DECL
 	DEF_FUNCTION_NS_DECL 
+	ANNOT_DECL 
 	GLOBAL_VAR 
 	FUNCTION_DECL 
 	PROLOG
@@ -236,10 +237,13 @@ prolog throws XPathException
 			=> optionDecl { inSetters = false; }
 			|
 			( "declare" "function" )
-			=> functionDecl { inSetters = false; }
+			=> functionDeclUp { inSetters = false; }
 			|
 			( "declare" "variable" )
-			=> varDecl { inSetters = false; }
+			=> varDeclUp { inSetters = false; }
+			|
+			( "declare" MOD )
+			=> annotateDecl { inSetters = false; }
         ) 
 		SEMICOLON!
     )*
@@ -315,10 +319,15 @@ namespaceDecl
 	}
 	;
 
-varDecl throws XPathException
+varDeclUp! throws XPathException
+:
+	decl:"declare"! v:varDecl[#decl, null] { #varDeclUp = #v; }
+;
+
+varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 { String varName= null; }
 :
-	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
+	"variable"! DOLLAR! varName=qName! ( typeDeclaration )?
 	(
 		LCURLY! e1:expr RCURLY! // deprecated
 		|
@@ -327,8 +336,8 @@ varDecl throws XPathException
 		"external"
 	)
 	{ 
-		#varDecl= #(#[GLOBAL_VAR, varName], #varDecl);
-		#varDecl.copyLexInfo(#decl);
+		#varDecl= #(#[GLOBAL_VAR, varName], ann, #varDecl);
+		#varDecl.copyLexInfo(decl);
 	}
 	;
 
@@ -377,14 +386,55 @@ schemaPrefix
 	"default" "element" "namespace"
 	;
 
-functionDecl throws XPathException
+annotateDecl! throws XPathException
+:
+	decl:"declare"! ann:annotations!
+	(	("function")=> f:functionDecl[#ann] { #annotateDecl = #f; }
+	| 	("variable")=> v:varDecl[#decl, #ann] { #annotateDecl = #v; }
+	)
+;
+
+annotations
+:       (annotation)*
+;
+
+annotation
+{
+	String name= null;
+}
+:
+	MOD! name=eqName! (LPAREN! literal (COMMA! literal)* RPAREN!)?
+        { #annotation= #(#[ANNOT_DECL, name], #annotation); }
+;
+
+eqName! returns [String name]
+{
+	name= null;
+}
+:	(name=qName! | name=uriQualifiedName!)
+;
+
+uriQualifiedName! returns [String name]
+{
+	name= null;
+}
+:	sl:STRING_LITERAL ":" nc:NCNAME
+        { name = sl.getText() + ":" + nc.getText(); }
+;
+
+functionDeclUp! throws XPathException
+:
+	"declare"! f:functionDecl[null] { #functionDeclUp = #f; }
+;
+
+functionDecl [XQueryAST ann] throws XPathException
 { String name= null; }
 :
-	"declare"! "function"! name=qName! lp:LPAREN! ( paramList )?
+	"function"! name=qName! lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
 	( functionBody | "external" )
 	{ 
-		#functionDecl= #(#[FUNCTION_DECL, name], #functionDecl); 
+	  	#functionDecl= #(#[FUNCTION_DECL, name], #ann, #functionDecl); 
 		#functionDecl.copyLexInfo(#lp);
 	}
 	exception catch [RecognitionException e]
@@ -1748,6 +1798,7 @@ options {
 
 protected SLASH options { paraphrase="single slash '/'"; }: '/' ;
 protected DSLASH options { paraphrase="double slash '//'"; }: '/' '/' ;
+protected MOD : '%' ;
 protected COLON : ':' ;
 protected COMMA : ',' ;
 protected SEMICOLON options { paraphrase="semicolon ';'"; }: ';' ;
@@ -2107,6 +2158,8 @@ options {
 	DSLASH { $setType(DSLASH); }
 	|
 	COLON { $setType(COLON); }
+	|
+	MOD { $setType(MOD); }
 	|
 	COMMA { $setType(COMMA); }
 	|
