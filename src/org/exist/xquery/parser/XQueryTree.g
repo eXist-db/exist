@@ -408,6 +408,9 @@ throws PermissionDeniedException, EXistException, XPathException
 						"Variable: " + qn.toString());
 				declaredGlobalVars.add(qn);
 			}
+                        { List annots = new ArrayList(); }
+                        (annotations [annots]
+                        )?
 			(
 				#(
 					"as"
@@ -542,6 +545,40 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
+/** Parse a declared set of annotation associated to a function declaration or
+ * a variable declaration
+ * (distinction is made via one of the two parameters set to null)
+ */
+annotations [List annots]
+throws XPathException
+{
+  List annotList = null;
+}
+:       ( { annotList = new ArrayList(); }
+          annotation[annotList]
+          { if (annotList.size() != 0)
+              annots.add(annotList); 
+          }
+        )*
+;
+
+annotation [List annotList]
+throws XPathException
+{ Expression le = null; }
+:
+        #(
+		name:ANNOT_DECL { annotList.add(name.getText()); }
+                ( { PathExpr annotPath = new PathExpr(context); }
+                  le=literalExpr[annotPath]
+                  {annotPath.add(le); }
+                  (le=literalExpr[annotPath]
+                   {annotPath.add(le); }
+                  )*
+                  { annotList.add(annotPath); }
+                )?
+        )
+;
+
 /**
  * Parse a declared function.
  */
@@ -564,6 +601,24 @@ throws PermissionDeniedException, EXistException, XPathException
 			func.setASTNode(name);
 			List varList= new ArrayList(3);
 		}
+                { List annots = new ArrayList(); }
+                (annotations [annots] 
+                 { int i, j; 
+                   System.out.println("annotations nb: " + annots.size());
+                   for (i = 0; i < annots.size(); i++)
+                   { PathExpr annotPath = null;
+                     System.out.println("annotation name: " + (String)((List)annots.get(i)).get(0));
+                     if (((List)annots.get(i)).size() > 1)
+                     {
+                       annotPath = (PathExpr)((List)annots.get(i)).get(1);
+                       for (j = 0; j < annotPath.getLength(); j++) {
+                         Expression value = annotPath.getExpression(j);
+                         System.out.println("literal expr id: " + value.getExpressionId());
+                       }
+                     }
+                   }
+                  }
+                )?
 		( paramList [varList] )?
 		{
 			SequenceType[] types= new SequenceType[varList.size()];
