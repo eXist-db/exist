@@ -628,7 +628,37 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
                 { List annots = new ArrayList(); }
                 (annotations [annots] 
-                 { int i, j; 
+                 { 
+                    Annotation[] anns = new Annotation[annots.size()];
+
+                    //iterate the declare Annotations
+                    for(int i = 0; i < anns.length; i++) {
+                       List la = (List)annots.get(i);
+                       
+                       //extract the Value for the Annotation
+                       LiteralValue[] aValue;
+                       if(la.size() > 1) {
+
+                        PathExpr aPath = (PathExpr)la.get(1);
+                        
+                        aValue = new LiteralValue[aPath.getSubExpressionCount()];
+                        for(int j = 0; j < aValue.length; j++) {
+                            aValue[j] = (LiteralValue)aPath.getExpression(j);
+                        }
+                       } else {
+                        aValue = new LiteralValue[0];
+                       }
+
+                       Annotation a = new Annotation((QName)la.get(0), aValue);
+                       anns[i] = a;
+                    }
+
+                    //set the Annotations on the Function Signature
+                    signature.setAnnotations(anns);
+                    
+                //TODO ADAM WAS HERE
+                   /*
+                   int i, j; 
                    System.out.println("annotations nb: " + annots.size());
                    for (i = 0; i < annots.size(); i++)
                    { PathExpr annotPath = null;
@@ -642,6 +672,8 @@ throws PermissionDeniedException, EXistException, XPathException
                        }
                      }
                    }
+                   */
+
                   }
                 )?
 		( paramList [varList] )?
