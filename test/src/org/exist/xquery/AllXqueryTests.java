@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
         JavaFunctionsTest.class,
         XPathQueryTest.class,
         XQueryTest.class,
+        AnnotationsTest.class,
         EntitiesTest.class,
         SpecialNamesTest.class,
         ValueIndexTest.class,
