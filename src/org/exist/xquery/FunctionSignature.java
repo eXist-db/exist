@@ -54,6 +54,7 @@ public class FunctionSignature {
 		return new SequenceType[] { arg };
 	}
 	
+        private Annotation[] annotations;
 	private final QName name;
 	private SequenceType[] arguments;
 	private SequenceType returnType;
@@ -136,6 +137,10 @@ public class FunctionSignature {
 	public void setArgumentTypes(SequenceType[] types) {
 		this.arguments = types;
 	}
+        
+        public void setAnnotations(Annotation[] annotations) {
+            this.annotations = annotations;
+        }
 	
 	public String getDescription() {
 		return description;
