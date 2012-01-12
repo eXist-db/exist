@@ -567,7 +567,32 @@ throws XPathException
 { Expression le = null; }
 :
         #(
-		name:ANNOT_DECL { annotList.add(name.getText()); }
+		name:ANNOT_DECL { 
+                    QName qn= null;
+                    try {
+                        qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+                    } catch(XPathException e) {
+                        // throw exception with correct source location
+                        e.setLocation(name.getLine(), name.getColumn());
+                        throw e;
+                    }
+                    
+                    String ns = qn.getNamespaceURI();
+
+                    //TODO add in handling for %private and %public in the fn namespace
+                    if(
+                        ns.equals(Namespaces.XML_NS)
+                        || ns.equals(Namespaces.SCHEMA_NS)
+                        || ns.equals(Namespaces.SCHEMA_INSTANCE_NS)
+                        || ns.equals(Namespaces.XPATH_FUNCTIONS_NS)
+                        || ns.equals(Namespaces.XPATH_FUNCTIONS_MATH_NS)
+                        || ns.equals(Namespaces.XQUERY_OPTIONS_NS)
+                    ) {
+                        throw new XPathException(ErrorCodes.XQST0045, name.getLine(), name.getColumn());
+                    }
+
+                    annotList.add(qn);
+                }
                 ( { PathExpr annotPath = new PathExpr(context); }
                   le=literalExpr[annotPath]
                   {annotPath.add(le); }
@@ -607,7 +632,7 @@ throws PermissionDeniedException, EXistException, XPathException
                    System.out.println("annotations nb: " + annots.size());
                    for (i = 0; i < annots.size(); i++)
                    { PathExpr annotPath = null;
-                     System.out.println("annotation name: " + (String)((List)annots.get(i)).get(0));
+                     System.out.println("annotation name: " + ((List)annots.get(i)).get(0).toString());
                      if (((List)annots.get(i)).size() > 1)
                      {
                        annotPath = (PathExpr)((List)annots.get(i)).get(1);

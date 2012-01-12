@@ -34,6 +34,13 @@ public class XPathException extends Exception {
         this.line = line;
         this.column = column;
     }
+    
+    public XPathException(ErrorCode errorCode, int line, int column) {
+        super();
+        this.errorCode = errorCode;
+        this.line = line;
+        this.column = column;
+    }
 
     /**
      * Use constructor with errorCode and errorVal
@@ -114,8 +121,10 @@ public class XPathException extends Exception {
     public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
         this.errorCode = errorCode;
 
-        if(errorDesc==null){
-            errorCode.toString();
+        if(errorDesc == null){
+            this.message = errorCode.toString();
+        } else {
+            this.message = errorDesc;
         }
         this.errorVal = errorVal;
     }
@@ -124,16 +133,20 @@ public class XPathException extends Exception {
     public XPathException(ErrorCode errorCode, String errorDesc) {
         this.errorCode = errorCode;
 
-        if(errorDesc==null){
-            errorCode.toString();
+        if(errorDesc == null){
+            this.message = errorCode.toString();
+        } else {
+            this.message = errorDesc;
         }
     }
     public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
 
-        if(errorDesc==null){
-            errorCode.toString();
+        if(errorDesc == null){
+            this.message = errorCode.toString();
+        } else {
+            this.message = errorDesc;
         }
     }
 
@@ -189,6 +202,7 @@ public class XPathException extends Exception {
     /* (non-Javadoc)
      * @see java.lang.Throwable#getMessage()
      */
+    @Override
     public String getMessage() {
         StringBuilder buf = new StringBuilder();
         if(message == null) {
@@ -197,6 +211,10 @@ public class XPathException extends Exception {
         if(errorCode != null) {
             buf.append(errorCode.getErrorQName()); //TODO consider also displaying the W3C message by calling errorCode.toString()
             buf.append(" ");
+            
+            if(message.isEmpty()) {
+                message = errorCode.getDescription();
+            }
         }
         buf.append(message);
         if(getLine() > 0 || source != null) {
