@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist-db.org/Configuration" xmlns:sec="http://exist-db.org/Configuration">
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    targetNamespace="http://exist-db.org/Configuration"
+    xmlns:sec="http://exist-db.org/Configuration"
+    xmlns:db="http://docbook.org/ns/docbook">
+    
+    <xs:annotation>
+        <xs:documentation>
+            <db:info>
+                <db:title>LDAP Security Manager Schema</db:title>
+                <db:date>2012-01-14</db:date>
+                <db:author>
+                    <db:personname>
+                        <db:firstname>Adam</db:firstname>
+                        <db:surname>Retter</db:surname>
+                    </db:personname>
+                    <db:email>adam@exist-db.org</db:email>
+                </db:author>
+            </db:info>
+        </xs:documentation>
+    </xs:annotation>
+    
     <xs:element name="security-manager">
         <xs:complexType>
             <xs:sequence>
