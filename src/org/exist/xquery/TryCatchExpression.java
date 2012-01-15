@@ -28,18 +28,15 @@ import java.util.List;
                 
 import org.apache.log4j.Logger;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.ErrorCodes.EXistErrorCode;
 
+import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * XQuery 1.1+ try {...} catch{...} expression.
@@ -130,15 +127,17 @@ public class TryCatchExpression extends AbstractExpression {
         } catch (Throwable throwable) { 
 
             ErrorCode errorCode = null;
+            XPathException xpe = null;
 
+            // fn:error throws an XPathException
             if(throwable instanceof XPathException){
                 // Get errorcode from nicely thrown xpathexception
-                XPathException xpe = (XPathException)throwable;
+                xpe = (XPathException)throwable;
                 errorCode = xpe.getErrorCode();
 
                 // if no errorcode is found, reconstruct by parsing the error text.
                 if (errorCode == null) {
-                    errorCode = extractErrorCode((XPathException)xpe);
+                    errorCode = extractErrorCode(xpe);
                 }
 
             } else {
@@ -153,7 +152,17 @@ public class TryCatchExpression extends AbstractExpression {
             // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
             // need to be retrieved as variables
             Sequence catchResultSeq = null;
-            LocalVariable mark0 = context.markLocalVariables(false);
+            LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
+            
+            // Register new namespace
+            // DWES: 
+            // when declaring "fn:error( fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000') )"
+            // An Exception is thrown: err:XQST0033 It is a static error if a module contains multiple bindings for the same namespace prefix.
+            // DWES: should I use popLocalVariables
+            context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
+            context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
+            
+            //context.declareInScopeNamespace(null, null);
 
             try {
                 // flag used to escape loop when errorcode has matched
@@ -161,80 +170,36 @@ public class TryCatchExpression extends AbstractExpression {
 
                 // Iterate on all catch clauses
                 for (CatchClause catchClause : catchClauses) {
-
+                    
                     if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
 
                         errorMatched = true;
 
                         // Get catch variables
-                        List<QName> catchVars = (List<QName>) catchClause.getCatchVars();
-                        LocalVariable mark1 = context.markLocalVariables(false);
-                        int varPos = 1;
-
-                        try {
-                            // catch variables
-                            // "(" CatchErrorCode ("," CatchErrorDesc ("," CatchErrorVal)?)? ")"
-                            for (QName catchVar : catchVars) {
-
-                                // reset qname and prefix
-                                catchVar.setPrefix(null);
-                                catchVar.setNamespaceURI("");
-
-                                LocalVariable localVar = new LocalVariable(catchVar);
-
-                                // This should be in order of existance
-                                // xs:QName, xs:string?, and item()* respectively.
-                                switch (varPos) {
-                                    case 1:
-                                        // Error code: qname
-                                        localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
-                                        QNameValue qnv = new QNameValue(context, catchVar);
-                                        localVar.setValue(new StringValue(errorCode.getErrorQName().getStringValue()));
-                                        break;
-
-                                    case 2:
-                                        // Error description : optional string
-                                        localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
-                                        StringValue sv = new StringValue(errorCode.getDescription());
-                                        localVar.setValue(sv);
-                                        break;
-
-                                    case 3:
-                                        // Error value : optional item
-                                        localVar.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
-                                        if (throwable instanceof XPathException) {
-                                            // Get errorcode from exception
-                                            XPathException xpe = (XPathException) throwable;
-                                            Sequence sequence = xpe.getErrorVal();
-                                            if (sequence == null) {
-                                                // TODO setting an empty sequence does not work, it does
-                                                // not make the variable visible
-                                                sequence = Sequence.EMPTY_SEQUENCE;
-                                            }
-                                            localVar.setValue(sequence);
-
-                                        } else {
-                                            // fill data from throwable object
-                                            StringValue value = new StringValue(getStackTrace(throwable));
-                                            localVar.setValue(value);
-                                        }
-                                        break;
-                                }
-                                context.declareVariableBinding(localVar);
-                                varPos++;
-
-                            } // Var catch variables
-
+                        LocalVariable mark1 = context.markLocalVariables(false); // DWES: what does this do?
+                        
+                        try {  
+                            // Add std errors
+                            addErrCode(errorCodeQname);                          
+                            addErrDescription(errorCode); 
+                            addErrValue(xpe); 
+                            addErrModule(xpe); 
+                            addErrLineNumber(xpe); 
+                            addErrColumnNumber(xpe); 
+                            addErrAdditional(xpe); 
+                            addFunctionTrace(xpe);
+                            addJavaTrace(xpe);
 
                             // Evaluate catch expression
                             catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
-
+                            
+                            
                         } finally {
                             context.popLocalVariables(mark1);
                         }
 
                     } else {
-                        // if in the end nothing is set, rethrow
+                        // if in the end nothing is set, rethrow after loop
                     }
                 } // for catch clauses
 
@@ -255,6 +220,154 @@ public class TryCatchExpression extends AbstractExpression {
             context.expressionEnd(this);
         }
     }
+
+
+    // err:additional	item()*	
+    // Implementation-defined. This variable must be bound so that a query 
+    // can reference it without raising an error. The purpose of this 
+    // variable is to allow implementations to provide any additional 
+    // information that might be useful.
+    private void addErrAdditional(XPathException xpe) throws XPathException {
+        String additional = null;
+        
+        QName q_additional = new QName("additional", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_additional = new LocalVariable( q_additional);
+        err_additional.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+        if(additional == null){
+            err_additional.setValue(Sequence.EMPTY_SEQUENCE);
+        } else {
+            err_additional.setValue(new StringValue("to do"));
+        } 
+        context.declareVariableBinding(err_additional);
+    }
+
+    // err:column-number	xs:integer?	
+    // The column number within the stylesheet module of the instruction 
+    // where the error occurred, or an empty sequence if the information 
+    // is not available. The value may be approximate.
+    private void addErrColumnNumber(XPathException xpe) throws XPathException {
+
+        Integer column_nr = null ; 
+        if (xpe != null) {
+            column_nr=xpe.getColumn();
+        } 
+        
+        QName q_column_nr = new QName("column-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_column_nr = new LocalVariable( q_column_nr);
+        err_column_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+        if(column_nr == null){
+            err_column_nr.setValue(Sequence.EMPTY_SEQUENCE);
+        } else {
+            err_column_nr.setValue(new IntegerValue(column_nr));
+        } 
+        context.declareVariableBinding(err_column_nr);
+    }
+
+    // err:line-number	xs:integer?	
+    // The line number within the stylesheet module of the instruction 
+    // where the error occurred, or an empty sequence if the information 
+    // is not available. The value may be approximate.
+    private void addErrLineNumber(XPathException xpe) throws XPathException {
+
+        Integer line_nr = null ; 
+        if (xpe != null) {
+            line_nr=xpe.getLine();
+        } 
+        
+        QName q_line_nr = new QName("line-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_line_nr = new LocalVariable( q_line_nr);
+        err_line_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+        if(line_nr == null){
+            err_line_nr.setValue(Sequence.EMPTY_SEQUENCE);
+        } else {
+            err_line_nr.setValue(new IntegerValue(line_nr));
+        } 
+        context.declareVariableBinding(err_line_nr);
+    }
+
+    // err:module	xs:string?	
+    // The URI (or system ID) of the module containing the expression 
+    // where the error occurred, or an empty sequence if the information 
+    // is not available.
+    private void addErrModule(XPathException xpe) throws XPathException {
+      
+        String module = null ; // to be defined where to get
+        if (xpe != null) {
+            XACMLSource src = xpe.getXACMLSource();
+            if(src!=null){
+                module=src.getKey();
+            }
+        } 
+        
+        QName q_module = new QName("module", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_module = new LocalVariable( q_module);
+        err_module.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+        if(module == null){
+            err_module.setValue(Sequence.EMPTY_SEQUENCE);
+        } else {
+            err_module.setValue(new StringValue(module));
+        } 
+        context.declareVariableBinding(err_module);
+    }
+
+    // err:value	item()*	
+    // Value associated with the error. For an error raised by calling 
+    // the error function, this is the value of the third  argument 
+    // (if supplied).
+    private void addErrValue(XPathException xpe) throws XPathException {
+
+        QName q_value = new QName("value", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_value = new LocalVariable( q_value);
+        err_value.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));                           
+        
+        if (xpe != null) {
+            // Get errorcode from exception
+            Sequence sequence = xpe.getErrorVal();
+            if (sequence == null) {
+                sequence = Sequence.EMPTY_SEQUENCE;
+            }
+            err_value.setValue(sequence);
+
+        } else {
+            // fill data from throwable object
+            StringValue value = new StringValue(getStackTrace(xpe));
+            err_value.setValue(value);
+        }
+        context.declareVariableBinding(err_value);
+    }
+
+    // err:description	xs:string?	
+    // A description of the error condition; an empty sequence if no 
+    // description is available (for example, if the error function 
+    // was called with one argument).
+    private void addErrDescription(ErrorCode errorCode) throws XPathException {
+
+        String description = errorCode.getDescription();
+        
+        QName q_description = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_description = new LocalVariable( q_description);
+        err_description.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
+        if(description == null){
+            err_description.setValue(Sequence.EMPTY_SEQUENCE);
+        } else {
+            err_description.setValue(new StringValue(errorCode.getDescription()));
+        } 
+        context.declareVariableBinding(err_description);
+    }
+
+    // err:code	xs:QName	
+    // The error code
+    private void addErrCode(QName errorCodeQname) throws XPathException {
+
+        String code = errorCodeQname.getStringValue();
+        
+        QName q_code = new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable err_code = new LocalVariable( q_code);
+        err_code.setSequenceType(new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
+        err_code.setValue(new StringValue(code));
+        context.declareVariableBinding(err_code);
+    }
+    
 
     /**
      *  Extract and construct errorcode from error text.
@@ -349,6 +462,12 @@ public class TryCatchExpression extends AbstractExpression {
         visitor.visitTryCatch(this);
     }
 
+    /**
+     *  Check if error parameter matches list of error names.
+     * An '*' matches immediately.
+     * 
+     * @return TRUE is qname is in list, or list contains '*', else FALSE,
+     */
     private boolean isErrorInList(QName error, List<String> errors) {
 
         String qError = error.getStringValue();
@@ -374,6 +493,9 @@ public class TryCatchExpression extends AbstractExpression {
         return new String[]{errorText.substring(0, p).trim(), errorText.substring(p + 1).trim()};
     }
 
+    /**
+     * Write stacktrace to String. 
+     */
     private String getStackTrace(Throwable t){
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -383,6 +505,65 @@ public class TryCatchExpression extends AbstractExpression {
         return sw.toString();
 
     }
+
+    private void addFunctionTrace(XPathException xpe) throws XPathException {
+        
+        QName q_value = new QName("xquery-stack-trace", Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable localVar = new LocalVariable( q_value);
+        localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));
+        
+        List<XPathException.FunctionStackElement> callStack = xpe.getCallStack();
+        if(callStack==null){
+            localVar.setValue(Sequence.EMPTY_SEQUENCE);
+            
+        } else {
+            Sequence result = new ValueSequence();
+            for(XPathException.FunctionStackElement elt : callStack){
+                result.add(new StringValue("at " + elt.toString()) );
+            }
+            localVar.setValue(result);  
+        }
+        
+        context.declareVariableBinding(localVar);
+    }
+    
+    
+    private void addJavaTrace(Throwable xpe) throws XPathException  {
+        
+        QName q_value = new QName("java-stack-trace", Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX);
+        LocalVariable localVar = new LocalVariable( q_value);
+        localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));
+
+        StackTraceElement[] elements = xpe.getStackTrace();     
+        if (elements == null) {
+            localVar.setValue(Sequence.EMPTY_SEQUENCE);
+            
+        } else {
+            Sequence result = new ValueSequence();
+            addJavaTrace(xpe,result);
+            localVar.setValue(result);                    
+        }
+        
+        context.declareVariableBinding(localVar);
+    }
+    
+    // Local recursive function
+    private void addJavaTrace(Throwable xpe, Sequence result) throws XPathException {
+
+        StackTraceElement[] elements = xpe.getStackTrace();
+
+        result.add(new StringValue("Caused by: " + xpe.toString()));
+        for (StackTraceElement elt : elements) {
+            result.add(new StringValue("at " + elt.toString()));
+        }
+
+        Throwable cause = xpe.getCause();
+        if (cause != null) {
+            addJavaTrace(cause, result);
+        }
+
+    }
+
 
     /**
      * Data container

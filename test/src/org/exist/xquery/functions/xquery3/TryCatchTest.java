@@ -184,8 +184,8 @@ public class TryCatchTest extends EmbeddedExistTester {
 
         String query = "xquery version '3.0';"
                 + "try { a + 7 } "
-                + "catch * ($errcode, $errdesc, $errval) "
-                + "{  $errcode, $errdesc } ";
+                + "catch * "
+                + "{  $err:code, $err:description } ";
         try {
             ResourceSet results = executeQuery(query);
 
@@ -288,8 +288,8 @@ public class TryCatchTest extends EmbeddedExistTester {
         String query1 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error( fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000') ) "
-                + "} catch * ($errcode) "
-                + "{ $errcode }";
+                + "} catch * "
+                + "{ $err:code }";
         try {
             ResourceSet results = executeQuery(query1);
 
@@ -309,8 +309,8 @@ public class TryCatchTest extends EmbeddedExistTester {
         String query2 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error( fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000') ) "
-                + "} catch * ($errcode , $errdescr, $errval) "
-                + "{ $errcode }";
+                + "} catch * "
+                + "{ $err:code }";
         try {
             ResourceSet results = executeQuery(query2);
 
@@ -330,8 +330,8 @@ public class TryCatchTest extends EmbeddedExistTester {
         String query3 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'), 'TEST') "
-                + "} catch * ($errcode, $errdesc, $errval) "
-                + "{ $errcode, $errdesc }";
+                + "} catch * "
+                + "{ $err:code, $err:description }";
         try {
             ResourceSet results = executeQuery(query3);
 
@@ -354,8 +354,8 @@ public class TryCatchTest extends EmbeddedExistTester {
         String query4 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'), 'TEST') "
-                + "} catch * ($errcode, $errdesc) "
-                + "{ $errcode, $errdesc }";
+                + "} catch *  "
+                + "{ $err:code, $err:description }";
         try {
             ResourceSet results = executeQuery(query4);
 
@@ -378,8 +378,8 @@ public class TryCatchTest extends EmbeddedExistTester {
         String query5 = "xquery version '3.0';"
                 + "try {"
                 + " fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'), 'TEST', <ab/>) "
-                + "} catch * ($errcode, $errdesc, $errval) "
-                + "{ $errcode, $errdesc, $errval }";
+                + "} catch *  "
+                + "{ $err:code, $err:description, $err:value }";
         try {
             ResourceSet results = executeQuery(query5);
 
@@ -405,8 +405,8 @@ public class TryCatchTest extends EmbeddedExistTester {
 
         String query = "xquery version '3.0';"
                 + "try { a + 7 } "
-                + "catch * ($errcode, $errdesc, $errval) "
-                + "{  $errcode, $errdesc, empty($errval) } ";
+                + "catch *  "
+                + "{  $err:code, $err:description, empty($err:value) } ";
         try {
             ResourceSet results = executeQuery(query);
 
@@ -458,7 +458,7 @@ public class TryCatchTest extends EmbeddedExistTester {
                 + "try { "
                 + "     fn:error(fn:QName('http://foo.com', 'ERRORNAME'), 'ERRORTEXT') "
                 + "} "
-                + "catch foo:ERRORNAME ($code) { $code } "
+                + "catch foo:ERRORNAME { $err:code } "
                 + "catch *  { 'bad' } ";
         try {
             ResourceSet results = executeQuery(query2);

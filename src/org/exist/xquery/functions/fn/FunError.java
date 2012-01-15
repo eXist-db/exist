@@ -83,7 +83,9 @@ public class FunError extends BasicFunction {
     public FunError(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
+    
     public final static ErrorCode DEFAULT_ERROR = ErrorCodes.FOER0000;
+    public static final String DEFAULT_DESCRIPTION = "An error has been raised by the query";
 
     @Override
     public int returnsType() {
@@ -95,7 +97,7 @@ public class FunError extends BasicFunction {
 
         // Define default values
         ErrorCode errorCode = DEFAULT_ERROR;
-        String errorDesc = "An error has been raised by the query";
+        String errorDesc = DEFAULT_DESCRIPTION;
         Sequence errorVal = Sequence.EMPTY_SEQUENCE;
 
         // Enter if one or more parameters are supplied
