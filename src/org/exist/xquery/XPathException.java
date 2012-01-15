@@ -18,6 +18,9 @@ public class XPathException extends Exception {
     private String message = null;
     private Sequence errorVal;
     private List<FunctionStackElement> callStack = null;
+
+
+    
     private XACMLSource source = null;
 
     /**
@@ -53,6 +56,14 @@ public class XPathException extends Exception {
         this.column = expr.getColumn();
         this.source = expr.getSource();
     }
+    
+    
+    public XPathException(ErrorCode errorCode) {
+        super();
+        this.errorCode = errorCode;
+        this.message = errorCode.getDescription();
+    }
+    
 
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
         super();
@@ -139,6 +150,7 @@ public class XPathException extends Exception {
             this.message = errorDesc;
         }
     }
+    
     public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
@@ -188,11 +200,19 @@ public class XPathException extends Exception {
     	return errorCode;
     }
     
+    public XACMLSource getXACMLSource() {
+        return source;
+    }
+    
     public void addFunctionCall(UserDefinedFunction def, Expression call) {
         if(callStack == null) {
             callStack = new ArrayList<FunctionStackElement>();
         }
         callStack.add(new FunctionStackElement(def, def.getSource().getKey(), call.getLine(), call.getColumn()));
+    }
+    
+    public List<FunctionStackElement> getCallStack() {
+        return callStack;
     }
 
     public void prependMessage(String msg) {
@@ -285,14 +305,30 @@ public class XPathException extends Exception {
         return buf.toString();
     }
 
-    private static class FunctionStackElement {
+    public static class FunctionStackElement {
+
+        public int getColumn() {
+            return column;
+        }
+
+        public String getFile() {
+            return file;
+        }
+
+        public String getFunction() {
+            return function;
+        }
+
+        public int getLine() {
+            return line;
+        }
 
         String function;
         String file;
         int line;
         int column;
 
-        FunctionStackElement(UserDefinedFunction func, String file, int line, int column) {
+        public FunctionStackElement(UserDefinedFunction func, String file, int line, int column) {
             this.function = func.toString();
             this.file = file;
             this.line = line;

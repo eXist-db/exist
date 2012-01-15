@@ -692,26 +692,27 @@ public class XQueryContext implements BinaryValueManager, Context
         if( uri.equals( Namespaces.XML_NS ) ) {
             throw( new XPathException( "err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix" ) );
         }
+        
         final String prevURI = staticNamespaces.get( prefix );
 
         //This prefix was not bound
         if( prevURI == null ) {
-
-            //Bind it
+    
             if( uri.length() > 0 ) {
+                //Bind it
                 staticNamespaces.put( prefix, uri );
                 staticPrefixes.put( uri, prefix );
                 return;
-            }
-            //Nothing to bind
-            else {
+                
+            } else {
+                //Nothing to bind
 
                 //TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
                 LOG.warn( "Unbinding unbound prefix '" + prefix + "'" );
             }
-        } else
-        //This prefix was bound
-        {
+            
+        } else {
+            //This prefix was bound
 
             //Unbind it
             if( uri.length() == 0 ) {
@@ -725,7 +726,11 @@ public class XQueryContext implements BinaryValueManager, Context
             }
 
             //those prefixes can be rebound to different URIs
-            if( ( prefix.equals( "xs" ) && Namespaces.SCHEMA_NS.equals( prevURI ) ) || ( prefix.equals( "xsi" ) && Namespaces.SCHEMA_INSTANCE_NS.equals( prevURI ) ) || ( prefix.equals( "xdt" ) && Namespaces.XPATH_DATATYPES_NS.equals( prevURI ) ) || ( prefix.equals( "fn" ) && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) ) || ( prefix.equals( "local" ) && Namespaces.XQUERY_LOCAL_NS.equals( prevURI ) ) ) {
+            if(    ( prefix.equals( "xs" )    && Namespaces.SCHEMA_NS.equals( prevURI ) ) 
+                || ( prefix.equals( "xsi" )   && Namespaces.SCHEMA_INSTANCE_NS.equals( prevURI ) ) 
+                || ( prefix.equals( "xdt" )   && Namespaces.XPATH_DATATYPES_NS.equals( prevURI ) ) 
+                || ( prefix.equals( "fn" )    && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) )                  
+                || ( prefix.equals( "local" ) && Namespaces.XQUERY_LOCAL_NS.equals( prevURI ) ) ) {
 
                 staticPrefixes.remove( prevURI );
                 staticNamespaces.remove( prefix );
@@ -734,18 +739,19 @@ public class XQueryContext implements BinaryValueManager, Context
                     staticNamespaces.put( prefix, uri );
                     staticPrefixes.put( uri, prefix );
                     return;
-                }
-                //Nothing to bind (not sure if it should raise an error though)
-                else {
+                    
+                } else {
+                    //Nothing to bind (not sure if it should raise an error though)
 
                     //TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
                     LOG.warn( "Unbinding unbound prefix '" + prefix + "'" );
                 }
+                
             } else {
 
                 //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
                 if( !uri.equals( prevURI ) ) {
-                    throw( new XPathException( "err:XQST0033: Namespace prefix '" + prefix + "' is already bound to a different uri '" + prevURI + "'" ) );
+                    throw( new XPathException( ErrorCodes.XQST0033 ) );
                 }
             }
         }

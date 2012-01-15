@@ -81,9 +81,9 @@ xquery version '3.0';
             <product>{$product/name}
               <margin>{$product/price div $product/cost}</margin>
             </product>
-        } catch * ($errcode) {
+        } catch * {
             <product>{
-                ($product/name, "Error:", $errcode)
+                ($product/name, "Error:", $err:code)
             }</product>
         }
 }</result>
@@ -252,10 +252,10 @@ local:thrice(try { "oops" } catch * { 3 } )
 xquery version '3.0';
 try{
     xmldb:store('/db/foobaar/', "text.xml", <a/>)
-} catch * ($errcode, $errdesc) {
+} catch * {
 <result>
-<code>{$errcode}</code>
-<desc>{$errdesc}</desc>
+<code>{$err:code}</code>
+<desc>{$err:description}</desc>
 </result>
 }
 ]]>
@@ -289,5 +289,41 @@ try{
             <c/>
         </expected>
     </test>
+    
+<test output="text">
+        <task>Test for catching the right java exception 2</task>
+        <code><![CDATA[
+        xquery version '3.0';
+        let $x := "a b c"
+        return
+try {
+    fn:error(QName('http://foobar', 'foo:BAR'), "foofoo", <barbar/>)
+}
+catch * {
+    $err:code,'-', exists($err:value), $err:description,
+    $err:module, '(', $err:line-number, ',', $err:column-number, ')'
+}
+]]>
+        </code>
+        <expected>foo:BAR - true foofoo String ( 6 , 5 )</expected>
+    </test>
 
+
+
+<test output="text">
+        <task>Test for catching the right java exception 2</task>
+        <code><![CDATA[
+xquery version '3.0';
+try {
+    fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'))
+}
+catch * {
+    $err:code, $err:value, " module: ",
+    $err:module, "(", $err:line-number, ",", $err:column-number, ")"
+}
+]]>
+        </code>
+        <expected>err:FOER0000  module:  String ( 4 , 5 )</expected>
+    </test>
+    
 </TestSet>
