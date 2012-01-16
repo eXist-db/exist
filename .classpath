@@ -84,7 +84,7 @@
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/quartz-1.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/core/quartz-1.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/slf4j-api-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/slf4j-log4j12-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-logging-1.1.1.jar"/>
