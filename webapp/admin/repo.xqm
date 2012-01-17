@@ -57,7 +57,7 @@ declare function repomanager:publicrepo() as element()
                     let $package := $meta//package:package/string(@name)
                     let $type := $meta//repo:meta//repo:type/string()
                     let $install :=
-                        repo:install(concat('http://localhost:',request:get-server-port(),'/exist/rest',$stored))
+                        repo:install(concat('http://localhost:',request:get-server-port(), request:get-context-path(), '/rest',$stored))
                     let $deploy :=
                         if ($type eq "application") then
                             repo:deploy($package)
@@ -95,7 +95,7 @@ declare function repomanager:upload() as element()
                     let $package := $meta//package:package/string(@name)
                     let $type := $meta//repo:meta//repo:type/string()
                     let $install := 
-                        repo:install(concat('http://localhost:',request:get-server-port(),'/exist/rest',$stored))
+                        repo:install(concat('http://localhost:',request:get-server-port(),request:get-context-path(), '/rest',$stored))
                     let $deployed :=
                         if ($type eq "application") then
                             repo:deploy($package)
@@ -124,7 +124,7 @@ declare function repomanager:activate() as element()
             <ul>
                 <li>Installed package: {$name}</li>
                 {
-                    repo:install(concat('http://localhost:',$port,'/exist/rest',$repomanager:coll,'/',$name,'.xar')),
+                    repo:install(concat('http://localhost:',$port,request:get-context-path(), '/rest',$repomanager:coll,'/',$name,'.xar')),
                     if ($type eq "application") then
                         repo:deploy($package)
                     else
