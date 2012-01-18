@@ -26,10 +26,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -72,8 +73,9 @@ public class MimeTable {
      * Returns the singleton.
      */
     public static MimeTable getInstance() {
-        if (instance == null)
+        if(instance == null) {
             instance = new MimeTable();
+        }
         return instance;
     }
     
@@ -81,8 +83,9 @@ public class MimeTable {
      * Returns the singleton, using a custom mime-types.xml file
      */
     public static MimeTable getInstance(File f) {
-        if (instance == null)
+        if (instance == null) {
             instance = new MimeTable(f);
+        }
         return instance;
     }
     
@@ -91,8 +94,9 @@ public class MimeTable {
      * like for instance an internal database resource.
      */
     public static MimeTable getInstance(InputStream stream,String src) {
-        if (instance == null)
-            instance = new MimeTable(stream,src);
+        if (instance == null) {
+            instance = new MimeTable(stream, src);
+        }
         return instance;
     }
 
@@ -135,28 +139,23 @@ public class MimeTable {
         return mimeTypes.get(mimeType);
     }
     
-    public Vector<String> getAllExtensions(MimeType mimeType)
-    {
+    public List<String> getAllExtensions(MimeType mimeType) {
     	return getAllExtensions(mimeType.getName());
     }
     
-    public Vector<String> getAllExtensions(String mimeType)
-    {
-    	Vector<String> extns = new Vector<String>();
+    public List<String> getAllExtensions(String mimeType) {
+    	List<String> extns = new ArrayList<String>();
     	
-    	for(String extKey : extensions.keySet())
-    	{
-    		MimeType mt = extensions.get(extKey);
-    		if(mt.getName().equals(mimeType))
-    		{
-    			extns.add(extKey);
-    		}
+    	for(String extKey : extensions.keySet()) {
+            MimeType mt = extensions.get(extKey);
+            if(mt.getName().equals(mimeType)) {
+                extns.add(extKey);
+            }
     	}
     	
     	String preferred = preferredExtension.get(mimeType);
-    	if(preferred != null && !extns.contains(preferred))
-    	{
-    		extns.add(0, preferred);
+    	if(preferred != null && !extns.contains(preferred)) {
+            extns.add(0, preferred);
     	}
     	
     	return extns;
@@ -172,11 +171,13 @@ public class MimeTable {
     
     public boolean isXMLContent(String fileName) {
         String ext = getExtension(fileName);
-        if (ext == null)
+        if(ext == null) {
             return false;
+        }
         MimeType type = extensions.get(ext);
-        if (type == null)
+        if(type == null) {
             return false;
+        }
         return type.getType() == MimeType.XML;
     }
     
@@ -197,8 +198,9 @@ public class MimeTable {
         File f = new File(fileName);
         fileName = f.getName();
         int p = fileName.lastIndexOf('.');
-        if (p < 0 || p + 1 == fileName.length())
+        if(p < 0 || p + 1 == fileName.length()) {
             return null;
+        }
         return fileName.substring(p).toLowerCase();
     }
     
@@ -306,6 +308,7 @@ public class MimeTable {
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
+        @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
 
@@ -364,6 +367,7 @@ public class MimeTable {
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
          */
+        @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
             if (MIME_TYPE.equals(qName)) {
@@ -395,6 +399,7 @@ public class MimeTable {
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
          */
+        @Override
         public void characters(char[] ch, int start, int length)
                 throws SAXException {
             charBuf.append(ch, start, length);
