@@ -313,11 +313,9 @@ public abstract class Modification {
 	 * @throws TriggerException 
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
-        DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(broker);
-        if(trigger != null) {
-        	trigger.beforeUpdateDocument(broker, transaction, doc);
+            DocumentTrigger trigger = doc.getCollection().getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+            trigger.beforeUpdateDocument(broker, transaction, doc);
             triggers.put(doc.getDocId(), trigger);
-        }
 	}
 	
 	/** 
@@ -331,7 +329,7 @@ public abstract class Modification {
 	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
         DocumentTrigger trigger = triggers.get(doc.getDocId());
         if(trigger != null)
-        	trigger.afterUpdateDocument(broker, transaction, doc);
+            trigger.afterUpdateDocument(broker, transaction, doc);
 	}
 	
 	public String toString() {

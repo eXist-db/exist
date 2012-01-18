@@ -117,7 +117,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     
     private Observer[] observers = null;
     
-    private volatile boolean collectionConfEnabled = true;
+    private volatile boolean collectionConfigEnabled = true;
     private boolean triggersEnabled = true;
     
     // fields required by the collections cache
@@ -146,6 +146,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         this(broker);
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
+    }
+    
+    public boolean isTriggersEnabled() {
+        return triggersEnabled;
     }
 
     public void setPath(XmldbURI path) {
@@ -776,25 +780,26 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("Permission to remove document denied");
             
-            DocumentTrigger trigger = null;
-            if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
-            	trigger = getDocumentTrigger(broker);
-            } else {
+            boolean useTriggers = isTriggersEnabled();
+            if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
                 // we remove a collection.xconf configuration file: tell the configuration manager to
                 // reload the configuration.
+                useTriggers = false;
                 CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
                 confMgr.invalidateAll(getURI());
             }
             
-            if (trigger != null) {
-                trigger.beforeDeleteDocument(broker, transaction, doc);
+            DocumentTriggersVisitor triggersVisitor = null;
+            if(useTriggers) {
+                triggersVisitor = getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+                triggersVisitor.beforeDeleteDocument(broker, transaction, doc);
             }
             
             broker.removeXMLResource(transaction, doc);
             documents.remove(docUri.getRawCollectionPath());
             
-            if (trigger != null) {
-                trigger.afterDeleteDocument(broker, transaction, getURI().append(docUri));
+            if(useTriggers) {
+                triggersVisitor.afterDeleteDocument(broker, transaction, getURI().append(docUri));
             }
             
             broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
@@ -845,10 +850,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("permission to remove document denied");
 
-            DocumentTrigger trigger = getDocumentTrigger(broker);
-
-            if (trigger != null)
-        		trigger.beforeDeleteDocument(broker, transaction, doc);
+            DocumentTriggersVisitor triggersVisitor = null;
+            if(isTriggersEnabled()) {
+                triggersVisitor = getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+                triggersVisitor.beforeDeleteDocument(broker, transaction, doc);
+            }
+            
 
             try {
                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
@@ -858,8 +865,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             documents.remove(doc.getFileURI().getRawCollectionPath());
             
-            if (trigger != null)
-        		trigger.afterDeleteDocument(broker, transaction, doc.getURI());
+            if(isTriggersEnabled()) {
+                triggersVisitor.afterDeleteDocument(broker, transaction, doc.getURI());
+            }
 
         } finally {
             broker.getBrokerPool().getProcessMonitor().endJob();
@@ -1029,11 +1037,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     		document.getUpdateLock().release(Lock.WRITE_LOCK);
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
-        collectionConfEnabled = true;
+        setCollectionConfigEnabled(true);
         broker.deleteObservers();
-        info.finishTrigger(broker, transaction, document.getURI(), document);
+        
+        if(isTriggersEnabled() && isCollectionConfigEnabled() && info.getTriggersVisitor() != null) {
+            if(info.isCreating()) {
+                info.getTriggersVisitor().afterCreateDocument(broker, transaction, document);
+            } else {
+                info.getTriggersVisitor().afterUpdateDocument(broker, transaction, document);
+            }
+        }
+        
+        
         broker.getBrokerPool().getNotificationService().notifyUpdate(document,
-                (info.isCreatingEvent() ? UpdateListener.ADD : UpdateListener.UPDATE));
+                (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
@@ -1231,15 +1248,37 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             checkPermissions(transaction, broker, oldDoc);
             manageDocumentInformation(broker, oldDoc, document );
             Indexer indexer = new Indexer(broker, transaction);
+            
             IndexInfo info = new IndexInfo(indexer, config);
+            info.setCreating(oldDoc == null);
             indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
             indexer.setValidating(true);
-            // if !triggersEnabled, setupTriggers will return null anyway, so no need to check
-            info.setTrigger(
-                setupTriggers(broker, docUri, oldDoc != null, config),
-                oldDoc == null);
-            info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
+            
+            if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
+                // we are updating collection.xconf. Notify configuration manager
+                //CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                //confMgr.invalidateAll(getURI());
+                setCollectionConfigEnabled(false);
+            }
+
+            DocumentTriggersVisitor triggersVisitor = null;
+            if(isTriggersEnabled() && isCollectionConfigEnabled()) {
+                triggersVisitor = getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+                
+                triggersVisitor.setOutputHandler(indexer);
+		triggersVisitor.setLexicalOutputHandler(indexer);
+		triggersVisitor.setValidating(true);
+                
+                if(oldDoc == null) {
+                    triggersVisitor.beforeCreateDocument(broker, transaction, getURI().append(docUri));
+                } else {
+                    triggersVisitor.beforeUpdateDocument(broker, transaction, oldDoc);
+                }
+                
+                info.setTriggersVisitor(triggersVisitor);
+            }
+            
             if (LOG.isDebugEnabled())
                 LOG.debug("Scanning document " + getURI().append(docUri));
             doValidate.run(info);
@@ -1285,7 +1324,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 addDocument(transaction, broker, document);
             }
             indexer.setValidating(false);
-            info.postValidateTrigger();
+            if(triggersVisitor != null) {
+                triggersVisitor.setValidating(false);
+            }
             return info;
         } finally {
             if (oldDoc != null && oldDocLocked) 
@@ -1404,6 +1445,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     "User '" + broker.getSubject().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
 
+    /*
     private DocumentTrigger setupTriggers(DBBroker broker, XmldbURI docUri, boolean update, CollectionConfiguration config) {
         //TODO : is this the right place for such a task ? -pb
         if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
@@ -1434,7 +1476,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             LOG.debug("Using store trigger '" + trigger.getClass().getName() + "'");
         
         return trigger;
-    }
+    }*/
 
     // Blob
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
@@ -1475,8 +1517,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         	getLock().acquire(Lock.WRITE_LOCK);
 	        
 	        checkPermissions(transaction, broker, oldDoc);
-	        
-	        DocumentTrigger trigger = getDocumentTrigger(broker);
 
 	        manageDocumentInformation(broker, oldDoc, blob );
 	        DocumentMetadata metadata = blob.getMetadata();
@@ -1490,12 +1530,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 	        
 	        blob.setContentLength(size);
 	        
-            if (trigger != null) {
-            	if (oldDoc == null)
-            		trigger.beforeCreateDocument(broker, transaction, blob.getURI());
-            	else
-            		trigger.beforeUpdateDocument(broker, transaction, oldDoc);
-            }
+                DocumentTriggersVisitor triggersVisitor = null;
+                if(isTriggersEnabled()) {
+                    triggersVisitor = getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+                    if(oldDoc == null) {
+                        triggersVisitor.beforeCreateDocument(broker, transaction, blob.getURI());
+                    } else {
+                        triggersVisitor.beforeUpdateDocument(broker, transaction, oldDoc);
+                    }
+                }
 	        
 	        if (oldDoc != null) {
 	            LOG.debug("removing old document " + oldDoc.getFileURI());
@@ -1513,12 +1556,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             // This is no longer needed as the dom.dbx isn't used
 	        //broker.closeDocument();
 	        
-	        if (trigger != null) {
-            	if (oldDoc == null)
-            		trigger.afterCreateDocument(broker, transaction, blob);
-            	else
-            		trigger.afterUpdateDocument(broker, transaction, blob);
-	        }
+                if(isTriggersEnabled()) {
+                    if(oldDoc == null) {
+                        triggersVisitor.afterCreateDocument(broker, transaction, blob);
+                    } else {
+                        triggersVisitor.afterUpdateDocument(broker, transaction, blob);
+                    }
+                }
 	        
 	        return blob;
 	        
@@ -1583,8 +1627,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
 
     public CollectionConfiguration getConfiguration(DBBroker broker) {
-        if (!collectionConfEnabled)
+        if (!isCollectionConfigEnabled()) {
             return null;
+        }
         
         //System collection has no configuration
         //if (DBBroker.SYSTEM_COLLECTION.equals(getURI().getRawCollectionPath()))
@@ -1599,9 +1644,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             //TODO: AR: if a Trigger throws CollectionConfigurationException from its configure() method, is the rest of the collection configurartion (indexes etc.) ignored even though they might be fine?
             configuration = manager.getConfiguration(broker, this);
-            collectionConfEnabled = true;
+            setCollectionConfigEnabled(true);
         } catch (CollectionConfigurationException e) {
-            collectionConfEnabled = false;
+            setCollectionConfigEnabled(false);
             LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
         }
         //LOG.debug("Loaded configuration for collection:  " + getURI());
@@ -1615,8 +1660,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param enabled
      */
-    public void setConfigEnabled(boolean enabled) {
-        collectionConfEnabled = enabled;
+    public void setCollectionConfigEnabled(boolean collectionConfigEnabled) {
+        this.collectionConfigEnabled = collectionConfigEnabled;
+    }
+    
+    public boolean isCollectionConfigEnabled() {
+        return collectionConfigEnabled;
     }
 
     /**
@@ -1640,6 +1689,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return created;
     }
 
+    /*** TODO why do we need this? is it just for the versioning trigger? If so we need to enable/disable specific triggers! ***/
     public void setTriggersEnabled(boolean enabled) {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
@@ -1864,6 +1914,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
     }
     
+    /*
     public DocumentTrigger getDocumentTrigger(DBBroker broker) {
         if (triggersEnabled) {
             CollectionConfiguration config = getConfiguration(broker);
@@ -1888,5 +1939,5 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 }
         }
         return null;
-    }
+    }*/
 }

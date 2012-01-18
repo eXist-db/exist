@@ -41,8 +41,6 @@ import org.xml.sax.ext.LexicalHandler;
  * @author wolf
  */
 public abstract class FilteringTrigger implements DocumentTrigger {
-
-	protected Logger LOG = Logger.getLogger(getClass());
 	
 	// The output handlers to which SAX events should be
 	// forwarded
@@ -56,7 +54,7 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 	 * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
 	 * to later retrieve the collection. 
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
+	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
             this.collection = parent;
         }
     
@@ -94,10 +92,6 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 
 	public void setLexicalOutputHandler(LexicalHandler handler) {
 		lexicalOutputHandler = handler;
-	}
-	
-	public Logger getLogger() {
-		return LOG;
 	}
 	
 	public void setDocumentLocator(Locator locator) {

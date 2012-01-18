@@ -46,7 +46,10 @@ import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggerProxy;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.config.ConfigurationDocumentTrigger;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
@@ -908,13 +911,11 @@ public class BrokerPool extends Observable implements Database {
         if (systemCollection != null) {
         	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
         	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, systemCollection);
-        	try {
-				collConf.registerTrigger(broker, 
-						"store,update,remove", 
-						"org.exist.config.ConfigurationDocumentTrigger", null);
-			} catch (CollectionConfigurationException e) {
-				LOG.error("Configuration changers watcher could not the initialized.", e);
-			}
+                
+                
+                Class c = ConfigurationDocumentTrigger.class;
+                DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, systemCollection.getURI());
+                collConf.getDocumentTriggerProxies().add(triggerProxy);  
         }
 
         // remove temporary docs
@@ -1036,16 +1037,13 @@ public class BrokerPool extends Observable implements Database {
         Collection collection = broker.getCollection(XmldbURI.ETC_COLLECTION_URI);
 
         //initialize configurations watcher trigger
-        if (collection != null) {
-        	CollectionConfigurationManager manager = getConfigurationManager();
-        	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
-        	try {
-				collConf.registerTrigger(broker, 
-						"store,update,remove", 
-						"org.exist.config.ConfigurationDocumentTrigger", null);
-			} catch (CollectionConfigurationException e) {
-				//LOG.error("Configuration changers watcher could not the initialized.", e);
-			}
+        if(collection != null) {
+            CollectionConfigurationManager manager = getConfigurationManager();
+            CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+            
+            Class c = ConfigurationDocumentTrigger.class;
+            DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, collection.getURI());
+            collConf.getDocumentTriggerProxies().add(triggerProxy);  
         }
     }
 

@@ -5,7 +5,6 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.TriggerException;
@@ -254,7 +253,7 @@ public class ListenerManager {
 		private ContentHandler contentHandler;
 		private LexicalHandler lexicalHandler;
 		
-		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws CollectionConfigurationException {
+		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters) throws TriggerException {
 			// nothing to do
 		}
 		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {

@@ -38,17 +38,20 @@ import org.xml.sax.InputSource;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
+import org.apache.log4j.Logger;
 
 /**
  * Test trigger to check if trigger configuration is working properly.
  */
 public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 
+    protected Logger LOG = Logger.getLogger(getClass());
+    
     private final static String TEMPLATE = "<?xml version=\"1.0\"?><events></events>";
 
     private DocumentImpl doc;
 
-    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
         System.out.println("TestTrigger prepares");
@@ -57,7 +60,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
             TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transactMgr.beginTransaction();
             try {
-                getLogger().debug("creating new file for collection contents");
+                LOG.debug("creating new file for collection contents");
 
                 // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
@@ -70,7 +73,7 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
                 transactMgr.commit(transaction);
             } catch (Exception e) {
                 transactMgr.abort(transaction);
-                throw new CollectionConfigurationException(e.getMessage(), e);
+                throw new TriggerException(e.getMessage(), e);
             } finally {
                 parent.setTriggersEnabled(true);
             }

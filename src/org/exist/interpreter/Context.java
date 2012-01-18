@@ -815,43 +815,6 @@ public interface Context {
 	 */
 	public Object getXQueryContextVar(String name);
 
-	/**
-	 * Starts a batch Transaction.
-	 *
-	 * @throws  TransactionException  
-	 * @throws TriggerException 
-	 */
-	public void startBatchTransaction() throws TransactionException, TriggerException;
-
-	/**
-	 * Determines if a batch transaction should be performed.
-	 *
-	 * @return  true if a batch update transaction should be performed
-	 */
-	public boolean hasBatchTransaction();
-
-	/**
-	 * Get the Transaction for the batch.
-	 *
-	 * @return  The Transaction
-	 */
-	public Txn getBatchTransaction();
-
-	/**
-	 * Set's that a trigger should be executed for the provided document as part of the batch transaction.
-	 *
-	 * @param  doc  The document to trigger for
-	 */
-	public void setBatchTransactionTrigger(DocumentImpl doc);
-
-	/**
-	 * Completes a batch transaction, by committing the transaction and calling finish on any triggers set by setBatchTransactionTrigger().
-	 *
-	 * @throws TransactionException  
-	 * @throws TriggerException 
-	 */
-	public void finishBatchTransaction() throws TransactionException, TriggerException;
-
 	public void registerUpdateListener(UpdateListener listener);
 
 	/**

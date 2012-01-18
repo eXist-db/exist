@@ -33,8 +33,8 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -54,17 +54,19 @@ import org.xml.sax.SAXException;
  */
 public class STXTransformerTrigger extends FilteringTrigger implements DocumentTrigger {
 
+    protected Logger LOG = Logger.getLogger(getClass());
+    
     private SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
     private TransformerHandler handler = null;
 
     private static STXTemplatesCache templatesCache = new STXTemplatesCache();
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
         String stylesheet = (String)parameters.get("src").get(0);
         if(stylesheet == null) {
-                throw new CollectionConfigurationException("STXTransformerTrigger requires an attribute 'src'");
+                throw new TriggerException("STXTransformerTrigger requires an attribute 'src'");
         }
 
         /*
@@ -97,26 +99,26 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
             try {
                 doc = (DocumentImpl)broker.getXMLResource(stylesheetUri);
                 if(doc == null) {
-                    throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " not found in database");
+                    throw new TriggerException("stylesheet " + stylesheetUri + " not found in database");
                 }
                 if(doc instanceof BinaryDocument) {
-                    throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
+                    throw new TriggerException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
                 }
                 handler = factory.newTransformerHandler(templatesCache.getOrUpdateTemplate(broker, doc));
             } catch (TransformerConfigurationException e) {
-                    throw new CollectionConfigurationException(e.getMessage(), e);
+                    throw new TriggerException(e.getMessage(), e);
             } catch (PermissionDeniedException e) {
-                    throw new CollectionConfigurationException(e.getMessage(), e);
+                    throw new TriggerException(e.getMessage(), e);
             } catch (SAXException e) {
-                    throw new CollectionConfigurationException(e.getMessage(), e);
+                    throw new TriggerException(e.getMessage(), e);
             }
         } else {
             try {
-                getLogger().debug("compiling stylesheet " + stylesheet);
+                LOG.debug("compiling stylesheet " + stylesheet);
                 Templates template = factory.newTemplates(new StreamSource(stylesheet));
                 handler = factory.newTransformerHandler(template);
             } catch (TransformerConfigurationException e) {
-                throw new CollectionConfigurationException(e.getMessage(), e);
+                throw new TriggerException(e.getMessage(), e);
             }
         }
     }

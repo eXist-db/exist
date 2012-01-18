@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -82,6 +82,8 @@ import org.xml.sax.SAXException;
 */
 public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, CollectionTrigger {
 
+        protected Logger LOG = Logger.getLogger(getClass());
+    
 	private final static String NAMESPACE = "http://exist-db.org/xquery/trigger";
 
 	private final static String EVENT_TYPE_PREPARE = "prepare";
@@ -155,7 +157,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	/**
 	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException
+	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException
 	{
  		this.collection = parent;
  		

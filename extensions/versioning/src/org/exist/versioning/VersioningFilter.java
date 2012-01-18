@@ -33,8 +33,8 @@ public class VersioningFilter extends CustomMatchListener {
                 DocumentImpl doc = node.getDocument();
                 XmldbURI uri = doc.getURI();
                 if (!uri.startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
-                    if (doc.getCollection().getConfiguration(getBroker()).
-                            triggerRegistered(VersioningTrigger.class)) {
+                    
+                    if (doc.getCollection().getConfiguration(getBroker()).triggerRegistered(VersioningTrigger.class)) {
                         try {
                             long rev = VersioningHelper.getCurrentRevision(getBroker(), doc.getURI());
                             long time = System.currentTimeMillis();

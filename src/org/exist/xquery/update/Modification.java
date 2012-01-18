@@ -25,19 +25,17 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggersVisitor;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
@@ -61,7 +59,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -80,7 +77,7 @@ public abstract class Modification extends AbstractExpression
 	
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap<DocumentTrigger> triggers;
+    protected Int2ObjectHashMap<DocumentTriggersVisitor> triggers;
     
     /**
 	 * @param context
@@ -89,7 +86,7 @@ public abstract class Modification extends AbstractExpression
 		super(context);
 		this.select = select;
 		this.value = value;
-        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(97);
+        this.triggers = new Int2ObjectHashMap<DocumentTriggersVisitor>(10);
     }
 
 	public int getCardinality() {
@@ -260,10 +257,9 @@ public abstract class Modification extends AbstractExpression
 	public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
         DBBroker broker = context.getBroker();
         TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-        Txn transaction = context.getBatchTransaction();
+        
         //if there is no batch update transaction, start a new individual transaction
-        if(transaction == null)
-            transaction = txnMgr.beginTransaction();
+        Txn transaction = txnMgr.beginTransaction();
         try {
             for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 DocumentImpl next = i.next();
@@ -276,8 +272,8 @@ public abstract class Modification extends AbstractExpression
                     }
                 broker.checkXMLResourceConsistency(next);
             }
-            if(!context.hasBatchTransaction())
-                txnMgr.commit(transaction);
+            
+            txnMgr.commit(transaction);
         } catch (Exception e) {
             txnMgr.abort(transaction);
         }
@@ -291,29 +287,13 @@ public abstract class Modification extends AbstractExpression
 	 * 
 	 * @throws TriggerException 
 	 */
-	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException
-	{
-		//if we are doing a batch update then only call prepare for the first update to that document
-		if(context.hasBatchTransaction())
-		{
-			Iterator<DocumentImpl> itTrigDoc = modifiedDocuments.getDocumentIterator();
-	    	while(itTrigDoc.hasNext())
-	    	{
-	    		DocumentImpl trigDoc = itTrigDoc.next();
-	    		if(trigDoc.getURI().equals(doc.getURI()))
-	    		{
-	    			return;
-	    		}
-	    	}
-		}
+	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
 
-		//prepare the trigger
-        DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(context.getBroker());
-
-         if(trigger != null) {
-        	trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
-            triggers.put(doc.getDocId(), trigger);
-        }
+            DocumentTriggersVisitor triggersVisitor = doc.getCollection().getConfiguration(context.getBroker()).getDocumentTriggerProxies().instantiateVisitor(context.getBroker());
+            
+            //prepare the trigger
+            triggersVisitor.beforeUpdateDocument(context.getBroker(), transaction, doc);
+            triggers.put(doc.getDocId(), triggersVisitor);
 	}
 	
 	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
@@ -323,17 +303,12 @@ public abstract class Modification extends AbstractExpression
 	 * 
 	 * @throws TriggerException 
 	 */
-	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException
-	{
-		//if this is part of a batch transaction, defer the trigger
-		if(context.hasBatchTransaction()) {
-			context.setBatchTransactionTrigger(doc);
-		} else {
-			//finish the trigger
-            DocumentTrigger trigger = triggers.get(doc.getDocId());
-            if(trigger != null)
-            	trigger.afterUpdateDocument(context.getBroker(), transaction, doc);
-		}
+	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
+            //finish the trigger
+            DocumentTriggersVisitor triggersVisitor = triggers.get(doc.getDocId());
+            if(triggersVisitor != null) {
+                triggersVisitor.afterUpdateDocument(context.getBroker(), transaction, doc);
+            }
 	}
 	
 	/**
@@ -343,16 +318,10 @@ public abstract class Modification extends AbstractExpression
 	 */
 	public Txn getTransaction()
 	{
-		Txn transaction = context.getBatchTransaction();
-		
-		//if there is no batch update transaction, start a new individual transaction
-		if(transaction == null)
-		{
-			TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-			transaction = txnMgr.beginTransaction();
-		}
-		
-		return transaction;
+            TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+            Txn transaction = txnMgr.beginTransaction();
+
+            return transaction;
 	}
 	
 	/**
@@ -361,13 +330,9 @@ public abstract class Modification extends AbstractExpression
 	 * @param transaction The Transaction to commit
 	 */
 	public void commitTransaction(Txn transaction) throws TransactionException
-	{
-		//only commit the transaction, if its not a batch update transaction
-		if(!context.hasBatchTransaction())
-		{
-			TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-			txnMgr.commit(transaction);
-		}
+	{	
+            TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+            txnMgr.commit(transaction);
 	}
 	
     final static class IndexListener implements NodeIndexListener {

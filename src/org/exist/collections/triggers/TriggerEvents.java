@@ -113,7 +113,7 @@ public class TriggerEvents {
 		EVENTS.DELETE_DOCUMENT
 	};
 
-	public static Set<EVENTS> convertFromString(String events) throws CollectionConfigurationException {
+	public static Set<EVENTS> convertFromString(String events) throws TriggerException {
 		
 		Set<EVENTS> result = new HashSet<EVENTS>();
 		
@@ -132,7 +132,7 @@ public class TriggerEvents {
 	        }
 	
 	        if ( i > EVENTS_STRING.length){
-	        	throw new CollectionConfigurationException(
+	        	throw new TriggerException(
 		    			"Unknown event type '" + event);
 			}
 	    }
@@ -146,7 +146,7 @@ public class TriggerEvents {
 		"REMOVE",
 	};
 
-	public static Set<EVENTS> convertFromOldDesign(String events) throws CollectionConfigurationException {
+	public static Set<EVENTS> convertFromOldDesign(String events) throws TriggerException {
 		
 		Set<EVENTS> result = new HashSet<EVENTS>();
 		

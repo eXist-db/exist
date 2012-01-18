@@ -23,6 +23,7 @@ package org.exist.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
@@ -47,6 +48,8 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
+        protected Logger LOG = Logger.getLogger(getClass());
+    
 	@Override
 	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
 	}

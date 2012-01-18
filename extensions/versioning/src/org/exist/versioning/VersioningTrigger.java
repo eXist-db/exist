@@ -102,7 +102,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) 
-    throws CollectionConfigurationException {
+    throws TriggerException {
         super.configure(broker, parent, parameters);
         
         if (parameters != null) {

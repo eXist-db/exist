@@ -42,7 +42,7 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
 	 * @see org.exist.collections.FilteringTrigger#configure(java.util.Map)
 	 */
 	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters)
-		throws CollectionConfigurationException {
+		throws TriggerException {
 		super.configure(broker, parent, parameters);
 		System.out.println("parameters:");
                 
