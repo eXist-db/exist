@@ -42,139 +42,154 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public abstract class FilteringTrigger implements DocumentTrigger {
 	
-	// The output handlers to which SAX events should be
-	// forwarded
-	protected ContentHandler outputHandler = null;
-	protected LexicalHandler lexicalOutputHandler = null;
-	protected Collection collection = null;
-	protected boolean validating = true;
-	
-	/**
-	 * Configure the trigger. The default implementation just stores the parent collection
-	 * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
-	 * to later retrieve the collection. 
-	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
-            this.collection = parent;
-        }
+    // The output handlers to which SAX events should be
+    // forwarded
+    private ContentHandler outputHandler = null;
+    private LexicalHandler lexicalOutputHandler = null;
+    private Collection collection = null;
+    private boolean validating = true;
+
+    protected Collection getCollection() {
+        return collection;
+    }
     
-	public void setValidating(boolean validating) {
-		this.validating = validating;
-	}
-	
-	public boolean isValidating() {
-		return validating;
-	}
-	
-	public Collection getCollection() {
-		return collection;
-	}
-	
-	public ContentHandler getInputHandler() {
-		return this;
-	}
-	
-	public LexicalHandler getLexicalInputHandler() {
-		return this;
-	}
+    /**
+     * Configure the trigger. The default implementation just stores the parent collection
+     * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
+     * to later retrieve the collection. 
+     */
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+        this.collection = parent;
+    }
 
-	public ContentHandler getOutputHandler() {
-		return outputHandler;
-	}
-	
-	public LexicalHandler getLexicalOutputHandler() {
-		return lexicalOutputHandler;
-	}
-	
-	public void setOutputHandler(ContentHandler handler) {
-		outputHandler = handler;
-	}
+    @Override
+    public void setValidating(boolean validating) {
+        this.validating = validating;
+    }
 
-	public void setLexicalOutputHandler(LexicalHandler handler) {
-		lexicalOutputHandler = handler;
-	}
-	
-	public void setDocumentLocator(Locator locator) {
-		outputHandler.setDocumentLocator(locator);
-	}
+    @Override
+    public boolean isValidating() {
+        return validating;
+    }
 
-	public void startDocument() throws SAXException {
-		outputHandler.startDocument();
-	}
+    @Override
+    public ContentHandler getInputHandler() {
+        return this;
+    }
 
-	public void endDocument() throws SAXException {
-		outputHandler.endDocument();
-	}
+    @Override
+    public LexicalHandler getLexicalInputHandler() {
+        return this;
+    }
 
-	public void startPrefixMapping(String prefix, String namespaceURI)
-		throws SAXException {
-		outputHandler.startPrefixMapping(prefix, namespaceURI);
-	}
+    @Override
+    public ContentHandler getOutputHandler() {
+        return outputHandler;
+    }
 
-	public void endPrefixMapping(String prefix) throws SAXException {
-		outputHandler.endPrefixMapping(prefix);
-	}
+    @Override
+    public LexicalHandler getLexicalOutputHandler() {
+        return lexicalOutputHandler;
+    }
 
-	public void startElement(
-		String namespaceURI,
-		String localName,
-		String qname,
-		Attributes attributes)
-		throws SAXException {
-		outputHandler.startElement(namespaceURI, localName, qname, attributes);
-	}
+    @Override
+    public void setOutputHandler(ContentHandler handler) {
+            outputHandler = handler;
+    }
 
-	public void endElement(String namespaceURI, String localName, String qname)
-		throws SAXException {
-		outputHandler.endElement(namespaceURI, localName, qname);
-	}
+    @Override
+    public void setLexicalOutputHandler(LexicalHandler handler) {
+        lexicalOutputHandler = handler;
+    }
 
-	public void characters(char[] ch, int start, int length)
-		throws SAXException {
-		outputHandler.characters(ch, start, length);
-	}
+    @Override
+    public void setDocumentLocator(Locator locator) {
+        outputHandler.setDocumentLocator(locator);
+    }
 
-	public void ignorableWhitespace(char[] ch, int start, int length)
-		throws SAXException {
-		outputHandler.ignorableWhitespace(ch, start, length);
-	}
+    @Override
+    public void startDocument() throws SAXException {
+        outputHandler.startDocument();
+    }
 
-	public void processingInstruction(String target, String data)
-		throws SAXException {
-		outputHandler.processingInstruction(target, data);
-	}
+    @Override
+    public void endDocument() throws SAXException {
+        outputHandler.endDocument();
+    }
 
-	public void skippedEntity(String arg0) throws SAXException {
-		outputHandler.skippedEntity(arg0);
-	}
+    @Override
+    public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
+        outputHandler.startPrefixMapping(prefix, namespaceURI);
+    }
 
-	public void startDTD(String name, String publicId, String systemId)
-		throws SAXException {
-		lexicalOutputHandler.startDTD(name, publicId, systemId);
-	}
+    @Override
+    public void endPrefixMapping(String prefix) throws SAXException {
+        outputHandler.endPrefixMapping(prefix);
+    }
 
-	public void endDTD() throws SAXException {
-		lexicalOutputHandler.endDTD();
-	}
+    @Override
+    public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
+        outputHandler.startElement(namespaceURI, localName, qname, attributes);
+    }
 
-	public void startEntity(String arg0) throws SAXException {
-		lexicalOutputHandler.startEntity(arg0);
-	}
+    @Override
+    public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
+        outputHandler.endElement(namespaceURI, localName, qname);
+    }
 
-	public void endEntity(String arg0) throws SAXException {
-		lexicalOutputHandler.endEntity(arg0);
-	}
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        outputHandler.characters(ch, start, length);
+    }
 
-	public void startCDATA() throws SAXException {
-		lexicalOutputHandler.startCDATA();
-	}
+    @Override
+    public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        outputHandler.ignorableWhitespace(ch, start, length);
+    }
 
-	public void endCDATA() throws SAXException {
-		lexicalOutputHandler.endCDATA();
-	}
+    @Override
+    public void processingInstruction(String target, String data) throws SAXException {
+        outputHandler.processingInstruction(target, data);
+    }
 
-	public void comment(char[] ch, int start, int length) throws SAXException {
-		lexicalOutputHandler.comment(ch, start, length);
-	}
+    @Override
+    public void skippedEntity(String arg0) throws SAXException {
+        outputHandler.skippedEntity(arg0);
+    }
 
+    @Override
+    public void startDTD(String name, String publicId, String systemId) throws SAXException {
+        lexicalOutputHandler.startDTD(name, publicId, systemId);
+    }
+
+    @Override
+    public void endDTD() throws SAXException {
+        lexicalOutputHandler.endDTD();
+    }
+
+    @Override
+    public void startEntity(String arg0) throws SAXException {
+        lexicalOutputHandler.startEntity(arg0);
+    }
+
+    @Override
+    public void endEntity(String arg0) throws SAXException {
+        lexicalOutputHandler.endEntity(arg0);
+    }
+
+    @Override
+    public void startCDATA() throws SAXException {
+        lexicalOutputHandler.startCDATA();
+    }
+
+    @Override
+    public void endCDATA() throws SAXException {
+        lexicalOutputHandler.endCDATA();
+    }
+
+    @Override
+    public void comment(char[] ch, int start, int length) throws SAXException {
+        lexicalOutputHandler.comment(ch, start, length);
+    }
 }
