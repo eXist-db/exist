@@ -102,13 +102,13 @@ public class CSVExtractingTrigger extends FilteringTrigger {
 
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws CollectionConfigurationException {
+    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
 
         //get the separator
         List<String> separators = (List<String>)parameters.get("separator");
         if(separators == null || separators.size() != 1) {
-            throw new CollectionConfigurationException("A separator parameter must be provided to the CSVExtractingTrigger configuration");
+            throw new TriggerException("A separator parameter must be provided to the CSVExtractingTrigger configuration");
         } else {
             this.separator = separators.get(0);
         }

@@ -126,11 +126,5 @@ public interface Trigger {
 	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
 	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
 	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws CollectionConfigurationException;
-
-	/**
-	 * Returns a Logger object. Use this to log debugging information.
-	 * 
-	 */
-	public Logger getLogger();
+	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
 }

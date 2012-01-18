@@ -366,7 +366,7 @@ public class Node extends Item {
 		if (!(item instanceof NodeProxy)) return null;
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
 //		try {
-			DocumentTrigger trigger = docimpl.getCollection().getDocumentTrigger(tx.broker); 
+			DocumentTrigger trigger = docimpl.getCollection().getConfiguration(tx.broker).getDocumentTriggerProxies().instantiateVisitor(tx.broker);
 			if (trigger == null) return null;
 			
 			trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);

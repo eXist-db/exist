@@ -25,8 +25,8 @@ import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.FilteringTrigger;
@@ -58,6 +58,8 @@ import org.xml.sax.InputSource;
  */
 public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger {
 
+        protected Logger LOG = Logger.getLogger(getClass());
+    
 	private DocumentImpl doc;
 	
 	/* (non-Javadoc)
@@ -71,7 +73,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
 	public void configure(DBBroker broker, Collection parent, Map parameters)
-		throws CollectionConfigurationException {
+		throws TriggerException {
 		super.configure(broker, parent, parameters);
 		// the name of the contents file can be set through parameters
 		XmldbURI contentsFile = null;
@@ -82,7 +84,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 			try{
 				contentsFile = XmldbURI.xmldbUriFor(contentsName);
 			} catch(URISyntaxException e) {
-				throw new CollectionConfigurationException(e);
+				throw new TriggerException(e);
 			}
 		}
 		// try to retrieve the contents file
@@ -90,7 +92,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 		if(this.doc == null)
 			// doesn't exist yet: create it
 			try {
-				getLogger().debug("creating new file for collection contents");
+				LOG.debug("creating new file for collection contents");
 				// IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
                 parent.setTriggersEnabled(false);
@@ -99,7 +101,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
                 parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>", false);
                 this.doc = info.getDocument();
 			} catch (Exception e) {
-				throw new CollectionConfigurationException(e.getMessage(), e);
+				throw new TriggerException(e.getMessage(), e);
 			} finally {
 				parent.setTriggersEnabled(true);
 			}
@@ -109,7 +111,7 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 	}
 
 	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
-		getLogger().debug(xupdate);
+		LOG.debug(xupdate);
 		// create a document set containing "contents.xml"
 		DefaultDocumentSet docs = new DefaultDocumentSet();
 		docs.add(doc);

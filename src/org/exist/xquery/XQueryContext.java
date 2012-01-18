@@ -102,7 +102,6 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
  * XQuery context components.
@@ -292,10 +291,6 @@ public class XQueryContext implements BinaryValueManager, Context
 
     //For holding XQuery Context variables for general storage in the XQuery Context
     HashMap<String, Object>                            XQueryContextVars             = new HashMap<String, Object>();
-
-    //Transaction for  batched xquery updates
-    private Txn                                        batchTransaction              = null;
-    private MutableDocumentSet                         batchTransactionTriggers      = new DefaultDocumentSet();
 
     private AccessContext                              accessCtx;
 
@@ -3138,10 +3133,6 @@ public class XQueryContext implements BinaryValueManager, Context
                 return( new Optimize( this, qname, contents, true ) );
             }
 
-            if( BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple( qname ) ) {
-                return( new BatchTransactionPragma( qname, contents ) );
-            }
-
             if( ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple( qname ) ) {
                 return( new ForceIndexUse( qname, contents ) );
             }
@@ -3224,103 +3215,6 @@ public class XQueryContext implements BinaryValueManager, Context
     public Object getXQueryContextVar( String name )
     {
         return( XQueryContextVars.get( name ) );
-    }
-
-
-    /**
-     * Starts a batch Transaction.
-     *
-     * @throws  TransactionException  
-     * @throws TriggerException 
-     */
-    public void startBatchTransaction() throws TransactionException, TriggerException
-    {
-        //only allow one batch to exist at once, if there is a current batch then commit them
-        if( batchTransaction != null ) {
-            finishBatchTransaction();
-        }
-
-        TransactionManager txnMgr = getBroker().getBrokerPool().getTransactionManager();
-        batchTransaction = txnMgr.beginTransaction();
-    }
-
-
-    /**
-     * Determines if a batch transaction should be performed.
-     *
-     * @return  true if a batch update transaction should be performed
-     */
-    public boolean hasBatchTransaction()
-    {
-        return( batchTransaction != null );
-    }
-
-
-    /**
-     * Get the Transaction for the batch.
-     *
-     * @return  The Transaction
-     */
-    public Txn getBatchTransaction()
-    {
-        return( batchTransaction );
-    }
-
-
-    /**
-     * Set's that a trigger should be executed for the provided document as part of the batch transaction.
-     *
-     * @param  doc  The document to trigger for
-     */
-    public void setBatchTransactionTrigger( DocumentImpl doc )
-    {
-        //we want the last updated version of the document, so remove any previous version (matched by xmldburi)
-        Iterator<DocumentImpl> itTrigDoc = batchTransactionTriggers.getDocumentIterator();
-
-        while( itTrigDoc.hasNext() ) {
-            DocumentImpl trigDoc = itTrigDoc.next();
-
-            if( trigDoc.getURI().equals( doc.getURI() ) ) {
-                itTrigDoc.remove();
-                break;
-            }
-        }
-
-        //store the document so we can later finish the trigger
-        batchTransactionTriggers.add( doc );
-    }
-
-
-    /**
-     * Completes a batch transaction, by committing the transaction and calling finish on any triggers set by setBatchTransactionTrigger().
-     *
-     * @throws TransactionException  
-     * @throws TriggerException 
-     */
-    public void finishBatchTransaction() throws TransactionException, TriggerException
-    {
-        if( batchTransaction != null ) {
-
-            //commit the transaction batch
-            TransactionManager txnMgr = getBroker().getBrokerPool().getTransactionManager();
-            txnMgr.commit( batchTransaction );
-
-            //finish any triggers
-            Iterator<DocumentImpl> itDoc = batchTransactionTriggers.getDocumentIterator();
-
-            while( itDoc.hasNext() ) {
-                DocumentImpl            doc    = itDoc.next();
-
-                //finish the trigger
-                DocumentTrigger trigger = doc.getCollection().getDocumentTrigger(getBroker());
-
-                if( trigger != null )
-                	trigger.afterUpdateDocument(getBroker(), TriggerStatePerThread.getTransaction(), doc);
-            }
-            batchTransactionTriggers.clear();
-
-            batchTransaction = null;
-        }
     }
 
 

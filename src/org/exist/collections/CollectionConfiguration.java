@@ -21,13 +21,19 @@
  */
 package org.exist.collections;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.exist.collections.triggers.CollectionTrigger;
-import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.AbstractTriggerProxy;
+import org.exist.collections.triggers.CollectionTriggerProxies;
+import org.exist.collections.triggers.CollectionTriggerProxy;
+import org.exist.collections.triggers.DocumentTriggerProxies;
+import org.exist.collections.triggers.DocumentTriggerProxy;
 import org.exist.collections.triggers.Trigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.collections.triggers.TriggerProxy;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
@@ -57,9 +63,12 @@ public class CollectionConfiguration {
 	private final static String ROOT_ELEMENT = "collection";
 	/** First level element in a collection configuration document */
 	private final static String TRIGGERS_ELEMENT = "triggers";
+        private final static String TRIGGER_ELEMENT = "trigger";
 	private final static String EVENT_ATTRIBUTE = "event";
 	private final static String CLASS_ATTRIBUTE = "class";
 	private final static String PARAMETER_ELEMENT = "parameter";
+        private final static String PARAM_NAME_ATTRIBUTE = "name";
+        private final static String PARAM_VALUE_ATTRIBUTE = "value";
 
 	/** First level element in a collection configuration document */
 	private final static String INDEX_ELEMENT = "index";
@@ -73,7 +82,8 @@ public class CollectionConfiguration {
 	
 	private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
-	private TriggerConfig triggers = null;
+        private DocumentTriggerProxies documentTriggerProxies = null;
+        private CollectionTriggerProxies collectionTriggerProxies = null;
 
 	private IndexSpec indexSpec = null;
     
@@ -146,8 +156,24 @@ public class CollectionConfiguration {
 					NodeList triggers = node.getChildNodes();
 					for(int j = 0; j < triggers.getLength(); j++) {
 						node = triggers.item(j);
-						if(node.getNodeType() == Node.ELEMENT_NODE)
-							createTrigger(broker, (Element)node, checkOnly);
+						if(node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
+                                                    List <TriggerProxy> triggerProxys = configureTrigger((Element)node, srcCollectionURI, checkOnly);
+                                                    if(triggerProxys != null) {
+                                                        
+                                                        for(TriggerProxy triggerProxy : triggerProxys) {
+                                                        
+                                                            if(triggerProxy instanceof DocumentTriggerProxy) {
+                                                                getDocumentTriggerProxies().add((DocumentTriggerProxy)triggerProxy);   
+                                                            }
+
+                                                            if(triggerProxy instanceof CollectionTriggerProxy) {
+                                                                getCollectionTriggerProxies().add((CollectionTriggerProxy)triggerProxy);   
+                                                            }
+                                                        }
+                                                        
+                                                        //createTrigger(broker, (Element)node, checkOnly);
+                                                    }
+                                                }
 					}
                     
 			    } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
@@ -287,35 +313,16 @@ public class CollectionConfiguration {
         return indexSpec;
     }
 
-    public CollectionTrigger newCollectionTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
-		if (triggers == null) {
-			if (srcCollectionURI == null) return null;
-			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
-        	if (parent != null) return parent.getCollectionTrigger(broker);
-		} else 
-            return triggers.newCollectionInstance(broker, collection);
-        return null;
-    }
-
-    public DocumentTrigger newDocumentTrigger(DBBroker broker, Collection collection) throws org.exist.collections.CollectionConfigurationException {
-		if (triggers == null) {
-			if (srcCollectionURI == null) return null;
-			Collection parent = broker.getCollection(srcCollectionURI.removeLastSegment());
-        	if (parent != null) return parent.getDocumentTrigger(broker);
-		} else 
-            return triggers.newDocumentInstance(broker, collection);
-        return null;
-    }
-
     //TODO: code
-    public boolean triggerRegistered(Class<?> triggerClass) {
+    //public boolean triggerRegistered(Class<?> triggerClass) {
 //        for (int i = 0; i < triggers.length; i++) {
 //            if (oldtriggers[i] != null && oldtriggers[i].getTriggerClass() == triggerClass)
 //                return true;
 //        }
-        return false;
-    }
+      //  return false;
+    //}
 
+    /*
 	private void createTrigger(DBBroker broker, Element node, boolean testConfig)
             throws CollectionConfigurationException {
         
@@ -337,51 +344,112 @@ public class CollectionConfiguration {
         	triggers = trigger;
         }
     }
-	
-	@SuppressWarnings("unchecked")
-	private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
-            throws CollectionConfigurationException {
-		try {
-			Class<?> clazz = Class.forName(classname);
-			if(!Trigger.class.isAssignableFrom(clazz)) {
-				throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
+     
+    @SuppressWarnings("unchecked")
+    private TriggerConfig instantiate(DBBroker broker, Element node, String classname, boolean testOnly)
+        throws CollectionConfigurationException {
+            try {
+                    Class<?> clazz = Class.forName(classname);
+                    if(!Trigger.class.isAssignableFrom(clazz)) {
+                            throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
+            return null;
+        }
+
+        TriggerConfig triggerConf = new TriggerConfig((Class<Trigger>) clazz);
+        triggerConf.setParameters(ParametersExtractor.extract(node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT)));
+
+        return triggerConf;
+    } catch (ClassNotFoundException e) {
+        if (testOnly)
+            throw new CollectionConfigurationException(e.getMessage(), e);
+        else
+            LOG.warn("Trigger class not found: " + e.getMessage(), e);
+            }
+    return null;
+    } */
+    
+    public DocumentTriggerProxies getDocumentTriggerProxies() {
+        if(documentTriggerProxies == null) {
+             documentTriggerProxies = new DocumentTriggerProxies();
+        }
+        return documentTriggerProxies;
+    }
+    
+    public CollectionTriggerProxies getCollectionTriggerProxies() {
+        if(collectionTriggerProxies == null) {
+             collectionTriggerProxies = new CollectionTriggerProxies();
+        }
+        return collectionTriggerProxies;
+    }
+    
+    private List<TriggerProxy> configureTrigger(Element triggerElement, XmldbURI collectionConfigurationURI, boolean testOnly) throws CollectionConfigurationException {
+
+        //TODO : rely on schema-driven validation -pb
+
+        String classname = triggerElement.getAttributes().getNamedItem(CLASS_ATTRIBUTE).getNodeValue();
+
+        try {
+            Class clazz = Class.forName(classname);
+            
+            if(!Trigger.class.isAssignableFrom(clazz)) {
+                throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
                 return null;
             }
-            
-            TriggerConfig triggerConf = new TriggerConfig((Class<Trigger>) clazz);
-            triggerConf.setParameters(ParametersExtractor.extract(node.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT)));
 
-            return triggerConf;
+            
+
+            NodeList nlParameter = triggerElement.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
+            Map<String, List<? extends Object>> parameters = ParametersExtractor.extract(nlParameter);
+            
+            List<TriggerProxy> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
+            
+            /*
+            if (nlParameter.getLength() > 0) {
+                Map<String, String> parameters = new HashMap<String, String>(nlParameter.getLength());
+                for (int i = 0 ; i < nlParameter.getLength();  i++) {
+                    Element param = (Element)nlParameter.item(i);
+                    //TODO : rely on schema-driven validation -pb
+                    String name = param.getAttribute(PARAM_NAME_ATTRIBUTE);
+                    if(name == null) {
+                        throwOrLog("Expected attribute '" + PARAM_NAME_ATTRIBUTE +
+                                "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
+                    } else {
+                        String value = param.getAttribute(PARAM_VALUE_ATTRIBUTE);
+                        if(value == null) {
+                            throwOrLog("Expected attribute '" + PARAM_VALUE_ATTRIBUTE +
+                                    "' for element '" + PARAMETER_ELEMENT + "' in trigger's configuration.", testOnly);
+                        } else {
+                            parameters.put(name, value);
+                        }
+                    }
+                }
+            } */
+            
+            return triggerProxys;
         } catch (ClassNotFoundException e) {
-            if (testOnly)
+            if(testOnly) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
-            else
+            } else {
                 LOG.warn("Trigger class not found: " + e.getMessage(), e);
-		}
+            }
+        } catch (TriggerException te) {
+            if(testOnly) {
+                throw new CollectionConfigurationException(te.getMessage(), te);
+            } else {
+                LOG.warn("Trigger class not found: " + te.getMessage(), te);
+            }
+        }
         return null;
     }
-	
-	public void registerTrigger(DBBroker broker, String events, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
-		triggers = instantiate(broker, classname, parameters);
-	}
-	
-	private TriggerConfig instantiate(DBBroker broker, String classname, Map<String, List<?>> parameters) throws CollectionConfigurationException {
-		try {
-			Class<?> clazz = Class.forName(classname);
-			if(!Trigger.class.isAssignableFrom(clazz)) {
-				throw new CollectionConfigurationException(
-						"Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'");
-		    }
-		    TriggerConfig triggerConf = new TriggerConfig((Class<Trigger>) clazz);
-		    
-		    if (parameters != null)
-		    	triggerConf.setParameters(parameters);
-
-		    return triggerConf;
-		} catch (ClassNotFoundException e) {
-	        throw new CollectionConfigurationException(e.getMessage(), e);
-		}
-	}
+    
+    //TODO: code
+    public boolean triggerRegistered(Class<?> triggerClass) {
+    //        for (int i = 0; i < triggers.length; i++) {
+    //            if (oldtriggers[i] != null && oldtriggers[i].getTriggerClass() == triggerClass)
+    //                return true;
+    //}	        
+        return false;
+    }
 
     @Override
 	public String toString() {
@@ -398,87 +466,5 @@ public class CollectionConfiguration {
 		return result.toString();
 	}
 
-    public static class TriggerConfig {
-
-        private Class<DocumentTrigger> documentTriggersClazz;
-        private Class<CollectionTrigger> collectionTriggersClazz;
-        private Map<String, List<?>> parameters;
-
-        public TriggerConfig(Class<? extends Trigger> clazz) {
-        	try {
-                this.collectionTriggersClazz = (Class<CollectionTrigger>) clazz;
-    		} catch (Exception e) {
-    			this.collectionTriggersClazz = null;
-			}
-        		
-        	try {
-                this.documentTriggersClazz = (Class<DocumentTrigger>) clazz;
-    		} catch (Exception e) {
-    			this.documentTriggersClazz = null;
-        	}
-        }
-
-        public TriggerConfig(Class<DocumentTrigger> docClazz, Class<CollectionTrigger> colClazz) {
-            this.documentTriggersClazz = docClazz;
-            this.collectionTriggersClazz = colClazz;
-        }
-
-        public DocumentTrigger newDocumentInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
-            try {
-            	DocumentTrigger trigger = documentTriggersClazz.newInstance();
-                trigger.configure(broker, collection, parameters);
-                return trigger;
-            } catch (InstantiationException e) {
-                throw new CollectionConfigurationException(e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                throw new CollectionConfigurationException(e.getMessage(), e);
-            } catch (ClassCastException e) {
-            	return null;
-            }
-        }
-
-        public CollectionTrigger newCollectionInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
-            try {
-            	CollectionTrigger trigger = collectionTriggersClazz.newInstance();
-                trigger.configure(broker, collection, parameters);
-                return trigger;
-            } catch (InstantiationException e) {
-                throw new CollectionConfigurationException(e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                throw new CollectionConfigurationException(e.getMessage(), e);
-            } catch (ClassCastException e) {
-            	return null;
-            }
-        }
-
-        @Deprecated
-        public Trigger newInstance(DBBroker broker, Collection collection) throws CollectionConfigurationException {
-        	return null;
-//            try {
-//                Trigger trigger = clazz.newInstance();
-//                trigger.configure(broker, collection, parameters);
-//                return trigger;
-//            } catch (InstantiationException e) {
-//                throw new CollectionConfigurationException(e.getMessage(), e);
-//            } catch (IllegalAccessException e) {
-//                throw new CollectionConfigurationException(e.getMessage(), e);
-//            }
-        }
-
-        public Map<String, List<?>> getParameters() {
-            return parameters;
-        }
-
-        public void setParameters(Map<String, List<?>> parameters) {
-            this.parameters = parameters;
-        }
-
-        public Class<DocumentTrigger> getDocumentTriggerClass() {
-            return documentTriggersClazz;
-        }
-
-        public Class<CollectionTrigger> getCollectionTriggerClass() {
-            return collectionTriggersClazz;
-        }
-    }
+    
 }
