@@ -21,7 +21,7 @@ public class Annotation {
        this.value = value;
     }
     
-    public QName getQName() {
+    public QName getName() {
         return name;
     }
     
