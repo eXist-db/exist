@@ -108,6 +108,10 @@ public class FunctionSignature {
 		this.description = description;
 	}
 	
+        public Annotation[] getAnnotations() {
+            return annotations;
+        }
+        
 	public QName getName() {
 		return name;
 	}
