@@ -20,4 +20,12 @@ public class Annotation {
        this.name = name;
        this.value = value;
     }
+    
+    public QName getQName() {
+        return name;
+    }
+    
+    public LiteralValue[] getValue() {
+        return value;
+    }
 }
