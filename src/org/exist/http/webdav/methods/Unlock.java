@@ -79,20 +79,25 @@ public class Unlock extends AbstractWebDAVMethod {
 	            if(resource==null){
 	                // No document found, maybe a collection
 	                collection = broker.openCollection(path, org.exist.storage.lock.Lock.READ_LOCK);
-	                if(collection!=null){
-	                    LOG.info("Lock on collections not supported yet");
-	                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-	                            "Lock on collections not supported yet");
-	                    
-	                    return;
-	                } else  {
-	                    LOG.info(NOT_FOUND_ERR + " " + path);
-	                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-	                            NOT_FOUND_ERR + " " + path);
-	                    return;
+	                try{
+
+		                if(collection!=null){
+		                    LOG.info("Lock on collections not supported yet");
+		                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+		                            "Lock on collections not supported yet");
+		                    
+		                    return;
+		                } else  {
+		                    LOG.info(NOT_FOUND_ERR + " " + path);
+		                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+		                            NOT_FOUND_ERR + " " + path);
+		                    return;
+		                }
+	                }finally{
+
+	                	if(collection != null)
+	                		collection.release(Lock.READ_LOCK);
 	                }
-	                //TODO : release collection lock here ?
-	                //It is used below though...
 	            }
 	            
 	            User lock = resource.getUserLock();
