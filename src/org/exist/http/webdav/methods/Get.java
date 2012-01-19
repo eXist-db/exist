@@ -90,14 +90,19 @@ public class Get extends AbstractWebDAVMethod {
             
             if(resource == null) {
                 collection = broker.openCollection(path, Lock.READ_LOCK);
-                if(collection == null){
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    
-                } else {
-                    collectionListing(broker, collection, request, response);
-                    collection.release(Lock.READ_LOCK);
+                try{
+                    if(collection == null){
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        
+                    } else {
+                        collectionListing(broker, collection, request, response);
+                    }
+                    return;
+                }finally{
+                	
+                	if(collection != null)
+                		collection.release(Lock.READ_LOCK);
                 }
-                return;
                 //TODO : release collection lock here ?
             }
             
