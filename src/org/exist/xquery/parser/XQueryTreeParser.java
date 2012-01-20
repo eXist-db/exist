@@ -5683,7 +5683,8 @@ public XQueryTreeParser() {
 		_t = _t.getFirstChild();
 		
 					FunctionParameterSequenceType var = new FunctionParameterSequenceType(varname.getText());
-					var.setCardinality(Cardinality.ZERO_OR_MORE);
+					//this doesnt make any sense!	
+					//var.setCardinality(Cardinality.ZERO_OR_MORE);
 					vars.add(var);
 				
 		{
