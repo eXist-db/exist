@@ -102,6 +102,7 @@ import java.util.*;
  *   &lt;/servlet-mapping>
  * </pre>
  */
+@Deprecated
 public class RedirectorServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 853971301553787943L;
