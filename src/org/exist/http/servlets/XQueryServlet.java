@@ -32,6 +32,7 @@ import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -50,6 +51,7 @@ import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeTable;
@@ -64,10 +66,14 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.XMLUtil;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Servlet to generate HTML output from an XQuery file.
@@ -98,11 +104,11 @@ import org.exist.dom.XMLUtil;
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class XQueryServlet extends AbstractExistHttpServlet {
+public class XQueryServlet extends HttpServlet {
     
-    private static final long serialVersionUID = 5266794852401553015L;
+	private static final long serialVersionUID = 5266794852401553015L;
 
-    private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
+	private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
 
     // Request attributes
     public static final String ATTR_XQUERY_USER = "xquery.user";
@@ -114,27 +120,63 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     public static final String ATTR_MODULE_LOAD_PATH = "xquery.module-load-path";
 
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
+    public final static String DEFAULT_ENCODING = "UTF-8";
     public final static String DEFAULT_CONTENT_TYPE = "text/html";
     
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+
+    private Authenticator authenticator;
     
+    private Subject defaultUser = null;
     private XmldbURI collectionURI = null;
     
+    private String containerEncoding = null;
+    private String formEncoding = null;
     private String encoding = null;
     private String contentType = null;
 
-    @Override
-    public Logger getLog() {
-        return LOG;
-    }
+    private BrokerPool pool;
 
     /* (non-Javadoc)
      * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
      */
-    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
+        try {
+            Class<?> driver = Class.forName(DRIVER);
+            Database database = (Database)driver.newInstance();
+            database.setProperty("create-database", "true");
+            DatabaseManager.registerDatabase(database);
+            
+        } catch(Exception e) {
+            String errorMessage="Failed to initialize database driver";
+            LOG.error(errorMessage,e);
+            throw new ServletException(errorMessage+": " + e.getMessage(), e);
+        }
+
+        try {
+			pool = BrokerPool.getInstance();
+		} catch (EXistException e) {
+            throw new ServletException("Could not intialize db: " + e.getMessage(), e);
+		}
+        
+		authenticator = new BasicAuthenticator(pool);
+		defaultUser = pool.getSecurityManager().getGuestSubject();
+		
+        String username = config.getInitParameter("user");
+        if(username != null) {
+        	String password = config.getInitParameter("password");
+        	Subject user;
+			try {
+				user = pool.getSecurityManager().authenticate(username, password);
+	        	if (user != null && user.isAuthenticated())
+	        		defaultUser = user;
+                
+			} catch (AuthenticationException e) {
+				LOG.error("User can not be authenticated ("+username+"), using default user.");
+			}
+        }
         String confCollectionURI = config.getInitParameter("uri");
         if(confCollectionURI == null) {
             collectionURI = DEFAULT_URI;
@@ -148,22 +190,29 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             }
         }
         
+        formEncoding = config.getInitParameter("form-encoding");
+        if(formEncoding == null)
+            formEncoding = DEFAULT_ENCODING;
+        LOG.info("form-encoding = " + formEncoding);
+        
+        containerEncoding = config.getInitParameter("container-encoding");
+        if(containerEncoding == null)
+            containerEncoding = DEFAULT_ENCODING;
+        LOG.info("container-encoding = " + containerEncoding);
+        
         encoding = config.getInitParameter("encoding");
-        if(encoding == null) {
+        if(encoding == null)
             encoding = DEFAULT_ENCODING;
-        }
-        getLog().info("encoding = " + encoding);
+        LOG.info("encoding = " + encoding);
 
         contentType = config.getInitParameter("content-type");
-        if(contentType == null) {
+        if(contentType == null)
             contentType = DEFAULT_CONTENT_TYPE;
-        }
     }
     
     /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         process(request, response);
     }
@@ -171,7 +220,6 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
         
@@ -180,7 +228,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if(descriptor != null) {
             if(descriptor.allowRequestLogging()) {
-                request = new HttpServletRequestWrapper(req, getFormEncoding());
+                request = new HttpServletRequestWrapper(req, formEncoding);
             } else {
                 request = req;
             }
@@ -204,7 +252,6 @@ public class XQueryServlet extends AbstractExistHttpServlet {
      /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         HttpServletRequest request = null;
         
@@ -213,7 +260,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if(descriptor != null) {
             if(descriptor.allowRequestLogging()) {
-                request = new HttpServletRequestWrapper(req, getFormEncoding());
+                request = new HttpServletRequestWrapper(req, formEncoding);
             } else {
                 request = req;
             }
@@ -229,7 +276,6 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     /* (non-Javadoc)
      * @see javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         process(request, response);
     }
@@ -266,7 +312,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //            } catch (IllegalStateException e) {
 //            }
         ServletOutputStream sout = response.getOutputStream();
-        PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, getFormEncoding()));
+        PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
 //        response.setContentType(contentType + "; charset=" + formEncoding);
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
@@ -283,7 +329,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         else
         	moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
 
-        Subject user = getDefaultUser();
+        Subject user = defaultUser;
 
         // to determine the user, first check the request attribute "xquery.user", then
         // the current session attribute "user"
@@ -301,25 +347,24 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 password = getSessionAttribute(session, "password");
             }
             
-            //TODO authentication should use super.authenticate(...) !!!
 			try {
 				if( username != null && password != null ) {
-					Subject newUser = getPool().getSecurityManager().authenticate(username, password);
+					Subject newUser = pool.getSecurityManager().authenticate(username, password);
 		        	if (newUser != null && newUser.isAuthenticated())
 		        		user = newUser;
 				}
                 
 			} catch (AuthenticationException e) {
-				getLog().error("User can not be authenticated ("+username+").");
+				LOG.error("User can not be authenticated ("+username+").");
 			}
         }
         
-        if (user == getDefaultUser()) {
+        if (user == defaultUser) {
         	Subject requestUser = AccountImpl.getUserFromServletRequest(request);
         	if (requestUser != null) {
         		user = requestUser;
         	} else {
-        		requestUser = getAuthenticator().authenticate(request, response, false);
+        		requestUser = authenticator.authenticate(request, response, false);
         		if (requestUser != null) 
         			user = requestUser;
         	}
@@ -345,14 +390,14 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         } else if (urlAttrib != null) {
             DBBroker broker = null;
             try {
-        	    broker = getPool().get(user);
+        	    broker = pool.get(user);
                 source = SourceFactory.getSource(broker, moduleLoadPath, urlAttrib.toString(), true);
             } catch (Exception e) {
-                getLog().error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 sendError(output, "Error", e.getMessage());
             } finally {
-                getPool().release(broker);
+                pool.release(broker);
             }
             
         } else {
@@ -393,8 +438,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 	try {
 						source.validate(user, Permission.READ);
 					} catch (PermissionDeniedException e) {
-						if (getDefaultUser().equals(user)) {
-							getAuthenticator().sendChallenge(request, response);
+						if (defaultUser.equals(user)) {
+							authenticator.sendChallenge(request, response);
 						} else {
 							response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
 						}
@@ -403,7 +448,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                     
 					//Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
-                    response.setContentType("text/plain; charset=" + getFormEncoding());
+                    response.setContentType("text/plain; charset=" + formEncoding);
                     output.write(source.getContent());
                     output.flush();
                     return;
@@ -430,7 +475,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
         DBBroker broker = null;
         try {
-        	broker = getPool().get(user);
+        	broker = pool.get(user);
             XQuery xquery = broker.getXQueryService();
             CompiledXQuery query = xquery.getXQueryPool().borrowCompiledXQuery(broker, source);
 
@@ -456,7 +501,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             Properties outputProperties = new Properties();
             outputProperties.put("base-uri", collectionURI.toString());
             
-            context.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, getFormEncoding(), getContainerEncoding()));
+            context.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
             context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
             context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
 
@@ -475,7 +520,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             if (mediaType != null) {
                 if (!response.isCommitted())
                 	if (MimeTable.getInstance().isTextContent(mediaType))
-                		response.setContentType(mediaType + "; charset=" + getFormEncoding());
+                		response.setContentType(mediaType + "; charset=" + formEncoding);
                 	else
                 		response.setContentType(mediaType);
                 
@@ -491,7 +536,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                     
 	            } finally {
 	                if (MimeTable.getInstance().isTextContent(contentType))
-	                    contentType += "; charset=" + getFormEncoding();
+	                    contentType += "; charset=" + formEncoding;
 	                response.setContentType(contentType );
 	            }
             }
@@ -518,15 +563,15 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             }
             
 		} catch (PermissionDeniedException e) {
-			if (getDefaultUser().equals(user)) {
-				getAuthenticator().sendChallenge(request, response);
+			if (defaultUser.equals(user)) {
+				authenticator.sendChallenge(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + path + " denied.");
 			}
 			return;
             
         } catch (Throwable e){
-            getLog().error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             if (reportErrors)
             	writeError(output, e);
             else {
@@ -535,7 +580,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             }
             
         } finally {
-            getPool().release(broker);
+            pool.release(broker);
         }
 
         output.flush();
@@ -558,6 +603,32 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 return null;
             }
         return obj.toString();
+    }
+
+    private void sendError(PrintWriter out, String message, XMLDBException e) {
+        out.print("<html><head>");
+        out.print("<title>XQueryServlet Error</title>");
+        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
+        out.print("<body><div id=\"container\"><h1>Error found</h1>");
+        Throwable t = e.getCause();
+        if (t instanceof XPathException) {
+            XPathException xe = (XPathException) t;
+            out.println(xe.getMessageAsHTML());
+            
+        } else {
+            out.print("<h2>Message:</h2>");
+            out.print("<pre>");
+            out.print(message);
+            out.print("</pre>");
+        }
+        
+        if(t!=null){
+            // t can be null
+            out.print(HTTPUtils.printStackTraceHTML(t));
+        }
+        
+        
+        out.print("</div></body></html>");
     }
 
     private void writeError(PrintWriter out, Throwable e) {

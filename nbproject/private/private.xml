@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/xquery/XQuery.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/storage/XQueryPool.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/RESTServer.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/sleepy/XQueryCompilationTrigger.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/xquery/Annotation.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/xquery/XQueryContext.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/sleepy/annotations/RESTAnnotationFactory.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/sleepy/RESTfulXQueryServiceRegistry.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/sleepy/annotations/PATHAnnotation.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/http/sleepy/annotations/GETAnnotation.java</file>
+        <file>file:/Users/aretter/NetBeansProjects/eXist-trunk/src/org/exist/xquery/parser/XQueryTree.g</file>
+    </open-files>
 </project-private>
