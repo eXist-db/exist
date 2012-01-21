@@ -422,9 +422,9 @@ public class ExistDocument extends ExistResource {
                     LOG.debug("Resource was already locked locked.");
             }
 
-            if (userLock != null && !userLock.getName().equals(subject.getName())) {
+            if (userLock != null && userLock.getName()!=null && !userLock.getName().equals(subject.getName())) {
                 if(LOG.isDebugEnabled())
-                    LOG.debug("Resource is locked.");
+                    LOG.debug("Resource is locked by user " + userLock.getName() + ".");
                 throw new PermissionDeniedException(userLock.getName());
             }
 
@@ -703,7 +703,7 @@ public class ExistDocument extends ExistResource {
                 throw new DocumentNotLockedException("Resource was not locked.");
             }
             
-            if (!userLock.getName().equals(subject.getName())) {
+            if (userLock.getName()!=null && !userLock.getName().equals(subject.getName())) {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Resource is locked by "+userLock.getName());
                 throw new PermissionDeniedException(userLock.getName());
