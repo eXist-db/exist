@@ -1432,13 +1432,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                         "The document is locked by user " +
                         lockUser.getName());
             // do we have permissions for update?
-            if (!oldDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE))
+            if (!oldDoc.getPermissions().validate(broker.getSubject(), Permission.UPDATE) 
+                    && !oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE))
                 throw new PermissionDeniedException("Document exists and update is not allowed");
+            
             // do we have write permissions?
             if (!(getPermissions().validate(broker.getSubject(), Permission.UPDATE) ||
                     getPermissions().validate(broker.getSubject(), Permission.WRITE)))
                 throw new PermissionDeniedException(
                     "Document exists and update is not allowed for the collection");
+            
             
         } else if (!getPermissions().validate(broker.getSubject(), Permission.WRITE))
             throw new PermissionDeniedException(

@@ -438,6 +438,7 @@ public class ExistDocument extends ExistResource {
             // Update locktoken
             inputToken.setOwner(subject.getName());
             inputToken.createOpaqueLockToken();
+            //inputToken.setTimeOut(inputToken.getTimeOut());
             inputToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
 
             // Update document
