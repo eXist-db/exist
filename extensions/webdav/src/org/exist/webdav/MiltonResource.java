@@ -229,9 +229,20 @@ public class MiltonResource implements Resource {
         if (timeout == null || timeout.getSeconds() == null) {
             existToken.setTimeOut(existToken.NO_LOCK_TIMEOUT);
 
+        } else if (timeout.getSeconds() == Long.MAX_VALUE ) {
+            existToken.setTimeOut(org.exist.dom.LockToken.LOCK_TIMEOUT_INFINITE);
+            
         } else {
-            existToken.setTimeOut(timeout.getSeconds());
+            Long futureDate = (new Date().getTime())/1000 + timeout.getSeconds();
+            existToken.setTimeOut( futureDate );
         }
+        
+        // Copy username if existent
+        String user = lockInfo.lockedByUser;
+        if(user != null){
+            existToken.setOwner(user);
+        }
+        
 
         return existToken;
     }
