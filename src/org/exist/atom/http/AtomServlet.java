@@ -34,7 +34,6 @@ import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -53,18 +52,15 @@ import org.exist.atom.modules.AtomProtocol;
 import org.exist.atom.modules.Query;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
+import org.exist.http.servlets.AbstractExistHttpServlet;
 import org.exist.http.servlets.Authenticator;
-import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.security.Account;
-import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.validation.XmlLibraryChecker;
 
 import org.w3c.dom.Document;
@@ -74,560 +70,402 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
-
 /**
  * Implements a rest interface for exist collections as atom feeds
  * 
  * @author Alex Milowski
  */
-public class AtomServlet extends HttpServlet {
+public class AtomServlet extends AbstractExistHttpServlet {
 
-	private static final long serialVersionUID = 1L;
-	
-	public final static String DEFAULT_ENCODING = "UTF-8";
-	public final static String CONF_NS = "http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0";
+    private static final long serialVersionUID = 1L;
+
+    public final static String DEFAULT_ENCODING = "UTF-8";
+    public final static String CONF_NS = "http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0";
     
     // authentication methods ; copied from original webdav classes
     public final static int WEBDAV_BASIC_AUTH = 0;
     public final static int WEBDAV_DIGEST_AUTH = 1;
 
-	protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
+    protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
 
-	/**
-	 * A user principal object that implements XmldbPrincipal
-	 */
-	static class UserXmldbPrincipal implements XmldbPrincipal {
-		int authMethod;
-		Account user;
+    @Override
+    public Logger getLog() {
+        return LOG;
+    }
+    
+    /**
+     * A user principal object that implements XmldbPrincipal
+     */
+    static class UserXmldbPrincipal implements XmldbPrincipal {
+        int authMethod;
+        Account user;
 
-		UserXmldbPrincipal(int authMethod, Account user) {
-			this.authMethod = authMethod;
-			this.user = user;
-		}
+        UserXmldbPrincipal(int authMethod, Account user) {
+            this.authMethod = authMethod;
+            this.user = user;
+        }
 
-		public String getName() {
-			return user.getName();
-		}
+        @Override
+        public String getName() {
+            return user.getName();
+        }
 
-		@Deprecated
-		public String getPassword() {
-			return authMethod == WEBDAV_BASIC_AUTH 
-                    ? user.getPassword() 
-                    : user.getDigestPassword();
-		}
+        @Deprecated
+        @Override
+        public String getPassword() {
+            return authMethod == WEBDAV_BASIC_AUTH 
+            ? user.getPassword() 
+            : user.getDigestPassword();
+        }
 
-		public boolean hasRole(String role) {
-			return user.hasGroup(role);
-		}
-	}
+        @Override
+        public boolean hasRole(String role) {
+            return user.hasGroup(role);
+        }
+    }
 
-	/**
-	 * Module contexts that default to using the servlet's config
-	 */
-	class ModuleContext implements AtomModule.Context {
-		ServletConfig config;
-		String moduleLoadPath;
+    /**
+     * Module contexts that default to using the servlet's config
+     */
+    class ModuleContext implements AtomModule.Context {
+        ServletConfig config;
+        String moduleLoadPath;
 
-		ModuleContext(ServletConfig config, String subpath,
-				String moduleLoadPath) {
-			this.config = config;
-			this.moduleLoadPath = moduleLoadPath;
-		}
+        ModuleContext(ServletConfig config, String subpath, String moduleLoadPath) {
+            this.config = config;
+            this.moduleLoadPath = moduleLoadPath;
+        }
 
-		public String getDefaultCharset() {
-			return formEncoding;
-		}
+        @Override
+        public String getDefaultCharset() {
+            return formEncoding;
+        }
 
-		public String getParameter(String name) {
-			return config.getInitParameter(name);
-		}
+        @Override
+        public String getParameter(String name) {
+            return config.getInitParameter(name);
+        }
 
-		public String getContextPath() {
-			// TODO: finish
-			return null;
-		}
+        @Override
+        public String getContextPath() {
+            // TODO: finish
+            return null;
+        }
 
-		public URL getContextURL() {
-			// TODO: finish
-			return null;
-		}
+        @Override
+        public URL getContextURL() {
+            // TODO: finish
+            return null;
+        }
 
-		public String getModuleLoadPath() {
-			return moduleLoadPath;
-		}
-	}
+        @Override
+        public String getModuleLoadPath() {
+            return moduleLoadPath;
+        }
+    }
 
-	// What I want...
-	// private Map<String,AtomModule> modules;
-	private Map<String, AtomModule> modules;
-	private Map<String, Boolean> noAuth;
+    // What I want...
+    // private Map<String,AtomModule> modules;
+    private Map<String, AtomModule> modules;
+    private Map<String, Boolean> noAuth;
 
-	private String formEncoding = null;
-	private BrokerPool pool = null;
-	private String defaultUsername = SecurityManager.GUEST_USER;
-	private String defaultPassword = SecurityManager.GUEST_USER;
+    private String formEncoding = null;
+    private BrokerPool pool = null;
+    private String defaultUsername = SecurityManager.GUEST_USER;
+    private String defaultPassword = SecurityManager.GUEST_USER;
 
-	private Authenticator authenticator;
+    private Authenticator authenticator;
 
-	private Subject defaultUser;
+    private Subject defaultUser;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
+     */
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
 
-		// Configure BrokerPool
-		try {
-			if (BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
-				LOG.debug("Database already started. Skipping configuration ...");
-                
-			} else {
-				// The database isn't started, so we'll start it
-				String confFile = config.getInitParameter("configuration");
-				String dbHome = config.getInitParameter("basedir");
-				String start = config.getInitParameter("start");
+        // Load all the modules
+        // modules = new HashMap<String,AtomModule>();
+        modules = new HashMap<String, AtomModule>();
+        noAuth = new HashMap<String, Boolean>();
 
-				if (confFile == null) {
-					confFile = "conf.xml";
-				}
-				dbHome = (dbHome == null) ? config.getServletContext()
-						.getRealPath(".") : config.getServletContext()
-						.getRealPath(dbHome);
+        String configFileOpt = config.getInitParameter("config-file");
+        File dbHome = pool.getConfiguration().getExistHome();
 
-				LOG.debug("AtomServlet: exist.home=" + dbHome);
+        File atomConf;
+        if (configFileOpt == null)
+                atomConf = new File(dbHome, "atom-services.xml");
+        else
+                atomConf = new File(config.getServletContext().getRealPath(
+                                configFileOpt));
 
-				File f = new File(dbHome + File.separator + confFile);
-				LOG.debug("reading configuration from " + f.getAbsolutePath());
+        config.getServletContext().log("Checking for atom configuration in " + atomConf.getAbsolutePath());
 
-				if (!f.canRead()) {
-					throw new ServletException("configuration file " + confFile
-							+ " not found or not readable");
-				}
-				Configuration configuration = new Configuration(confFile,
-						dbHome);
-				if (start != null && start.equals("true")) {
-					startup(configuration);
-				}
-			}
-            
-			pool = BrokerPool.getInstance();
+        if (atomConf.exists()) {
+                config.getServletContext().log("Loading configuration " + atomConf.getAbsolutePath());
+                DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+                docFactory.setNamespaceAware(true);
+                DocumentBuilder docBuilder = null;
+                Document confDoc = null;
+                InputStream is = null;
+                try {
+                        is = new FileInputStream(atomConf);
+                        InputSource src = new InputSource(new InputStreamReader(is,	formEncoding));
+                        URI docBaseURI = atomConf.toURI();
+                        src.setSystemId(docBaseURI.toString());
+                        docBuilder = docFactory.newDocumentBuilder();
 
-			// The default user is used when there is no authentication
-			String option = config.getInitParameter("use-default-user");
-			boolean useDefaultUser = true;
-			if (option != null) {
-				useDefaultUser = option.trim().equals("true");
-			}
-            
-			if (useDefaultUser) {
-				option = config.getInitParameter("user");
-				if (option != null) {
-					defaultUsername = option;
-				}
-                
-				option = config.getInitParameter("password");
-				if (option != null) {
-					defaultPassword = option;
-				}
-                
-				defaultUser = getDefaultUser();
-				if (defaultUser != null) {
-					LOG.info("Using default user " + defaultUsername
-							+ " for all unauthorized requests.");
-				} else {
-					LOG.error("Default user " + defaultUsername
-                            + " cannot be found.  A BASIC AUTH challenge will be the default.");
-				}
-                
-			} else {
-				LOG.info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
-				defaultUser = null;
-			}
+                        confDoc = docBuilder.parse(src);
+                        confDoc.getDocumentElement();
 
-			// Currently, we only support basic authentication
-			authenticator = new BasicAuthenticator(pool);
-            
-		} catch (EXistException e) {
-			throw new ServletException("No database instance available");
-		} catch (DatabaseConfigurationException e) {
-			throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
-		}
+                        // Add all the modules
+                        NodeList moduleConfList = confDoc.getElementsByTagNameNS(CONF_NS, "module");
+                        for (int i = 0; i < moduleConfList.getLength(); i++) {
+                                Element moduleConf = (Element) moduleConfList.item(i);
+                                String name = moduleConf.getAttribute("name");
+                                if (modules.get(name) != null) {
+                                        throw new ServletException("Module '" + name
+                                                        + "' is configured more than once ( child # " + (i + 1));
+                                }
 
-		// get form and container encoding's
-		formEncoding = config.getInitParameter("form-encoding");
-		if (formEncoding == null) {
-			formEncoding = DEFAULT_ENCODING;
-		}
-        
-		String containerEncoding = config.getInitParameter("container-encoding");
-		if (containerEncoding == null) {
-			containerEncoding = DEFAULT_ENCODING;
-		}
+                                if ("false".equals(moduleConf.getAttribute("authenticate"))) {
+                                        noAuth.put(name, Boolean.TRUE);
+                                }
 
-		// Load all the modules
-		// modules = new HashMap<String,AtomModule>();
-		modules = new HashMap<String, AtomModule>();
-		noAuth = new HashMap<String, Boolean>();
+                                String className = moduleConf.getAttribute("class");
+                                if (className != null && className.length() > 0) {
+                                        try {
+                                                Class<?> moduleClass = Class.forName(className);
+                                                AtomModule amodule = (AtomModule) moduleClass.newInstance();
+                                                modules.put(name, amodule);
+                                                amodule.init(new ModuleContext(config, name, atomConf.getParent()));
 
-		String configFileOpt = config.getInitParameter("config-file");
-		File dbHome = pool.getConfiguration().getExistHome();
-        
-		File atomConf;
-		if (configFileOpt == null)
-			atomConf = new File(dbHome, "atom-services.xml");
-		else
-			atomConf = new File(config.getServletContext().getRealPath(
-					configFileOpt));
-        
-		config.getServletContext().log("Checking for atom configuration in " + atomConf.getAbsolutePath());
-        
-		if (atomConf.exists()) {
-			config.getServletContext().log("Loading configuration " + atomConf.getAbsolutePath());
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			docFactory.setNamespaceAware(true);
-			DocumentBuilder docBuilder = null;
-			Document confDoc = null;
-			InputStream is = null;
-			try {
-				is = new FileInputStream(atomConf);
-				InputSource src = new InputSource(new InputStreamReader(is,	formEncoding));
-				URI docBaseURI = atomConf.toURI();
-				src.setSystemId(docBaseURI.toString());
-				docBuilder = docFactory.newDocumentBuilder();
-                
-				confDoc = docBuilder.parse(src);
-				confDoc.getDocumentElement();
+                                        } catch (Exception ex) {
+                                                throw new ServletException("Cannot instantiate class " + className
+                                                                                + " for module '" + name
+                                                                                + "' due to exception: " + ex.getMessage(), ex);
+                                        }
 
-				// Add all the modules
-				NodeList moduleConfList = confDoc.getElementsByTagNameNS(CONF_NS, "module");
-				for (int i = 0; i < moduleConfList.getLength(); i++) {
-					Element moduleConf = (Element) moduleConfList.item(i);
-					String name = moduleConf.getAttribute("name");
-					if (modules.get(name) != null) {
-						throw new ServletException("Module '" + name
-								+ "' is configured more than once ( child # " + (i + 1));
-					}
-                    
-					if ("false".equals(moduleConf.getAttribute("authenticate"))) {
-						noAuth.put(name, Boolean.TRUE);
-					}
-                    
-					String className = moduleConf.getAttribute("class");
-					if (className != null && className.length() > 0) {
-						try {
-							Class<?> moduleClass = Class.forName(className);
-							AtomModule amodule = (AtomModule) moduleClass.newInstance();
-							modules.put(name, amodule);
-							amodule.init(new ModuleContext(config, name, atomConf.getParent()));
-                            
-						} catch (Exception ex) {
-							throw new ServletException("Cannot instantiate class " + className
-											+ " for module '" + name
-											+ "' due to exception: " + ex.getMessage(), ex);
-						}
-                        
-					} else {
-						// no class means query
-						Query query = new Query();
-						modules.put(name, query);
+                                } else {
+                                        // no class means query
+                                        Query query = new Query();
+                                        modules.put(name, query);
 
-						String allowQueryPost = moduleConf.getAttribute("query-by-post");
-						if ("true".equals(allowQueryPost)) {
-							query.setQueryByPost(true);
-						}
+                                        String allowQueryPost = moduleConf.getAttribute("query-by-post");
+                                        if ("true".equals(allowQueryPost)) {
+                                                query.setQueryByPost(true);
+                                        }
 
-						NodeList methodList = moduleConf.getElementsByTagNameNS(CONF_NS, "method");
-                        
-						for (int m = 0; m < methodList.getLength(); m++) {
-							Element methodConf = (Element) methodList.item(m);
-							String type = methodConf.getAttribute("type");
-							if (type == null) {
-								LOG.warn("No type specified for method in module " + name);
-								continue;
-							}
-                            
-							// What I want but can't have because of JDK 1.4
-							// URI baseURI =
-							// URI.create(methodConf.getBaseURI());
-							URI baseURI = docBaseURI;
-							String queryRef = methodConf.getAttribute("query");
-							if (queryRef == null) {
-								LOG.warn("No query specified for method " + type + " in module " + name);
-								continue;
-							}
-                            
-							boolean fromClasspath = "true".equals(methodConf.getAttribute("from-classpath"));
-							Query.MethodConfiguration mconf = query.getMethodConfiguration(type);
-							if (mconf == null) {
-								LOG.warn("Unknown method " + type
-										+ " in module " + name);
-								continue;
-							}
-                            
-							String responseContentType = methodConf.getAttribute("content-type");
-							if (responseContentType != null	&& responseContentType.trim().length() != 0) {
-								mconf.setContentType(responseContentType);
-							}
+                                        NodeList methodList = moduleConf.getElementsByTagNameNS(CONF_NS, "method");
 
-							URL queryURI = null;
-							if (fromClasspath) {
-								LOG.debug("Nope. Attempting to get resource "
-										+ queryRef + " from "
-										+ Atom.class.getName());
-								queryURI = Atom.class.getResource(queryRef);
-                                
-							} else {
-								queryURI = baseURI.resolve(queryRef).toURL();
-							}
-                            
-							LOG.debug("Loading from module " + name
-									+ " method " + type + " from resource "
-									+ queryURI + " via classpath("
-									+ fromClasspath + ") and ref (" + queryRef
-									+ ")");
-                            
-							if (queryURI == null) {
-								throw new ServletException("Cannot find resource " + queryRef
-												+ " for module " + name);
-							}
-							mconf.setQuerySource(queryURI);
-						}
-						query.init(new ModuleContext(config, name, atomConf.getParent()));
+                                        for (int m = 0; m < methodList.getLength(); m++) {
+                                                Element methodConf = (Element) methodList.item(m);
+                                                String type = methodConf.getAttribute("type");
+                                                if (type == null) {
+                                                        getLog().warn("No type specified for method in module " + name);
+                                                        continue;
+                                                }
 
-					}
-				}
+                                                // What I want but can't have because of JDK 1.4
+                                                // URI baseURI =
+                                                // URI.create(methodConf.getBaseURI());
+                                                URI baseURI = docBaseURI;
+                                                String queryRef = methodConf.getAttribute("query");
+                                                if (queryRef == null) {
+                                                        getLog().warn("No query specified for method " + type + " in module " + name);
+                                                        continue;
+                                                }
 
-			} catch (IOException e) {
-				LOG.warn(e);
-				throw new ServletException(e.getMessage());
-			} catch (SAXException e) {
-				LOG.warn(e);
-				throw new ServletException(e.getMessage());
-			} catch (ParserConfigurationException e) {
-				LOG.warn(e);
-				throw new ServletException(e.getMessage());
-			} catch (EXistException e) {
-				LOG.warn(e);
-				throw new ServletException(e.getMessage());
-			} finally {
-				if (is != null) {
-					try {
-						is.close();
-					} catch (IOException ex) {
-					}
-				}
-			}
-            
-		} else {
-			try {
-				AtomProtocol protocol = new AtomProtocol();
-				modules.put("edit", protocol);
-				protocol.init(new ModuleContext(config, "edit", dbHome.getAbsolutePath()));
-                
-				AtomFeeds feeds = new AtomFeeds();
-				modules.put("content", feeds);
-				feeds.init(new ModuleContext(config, "content", dbHome.getAbsolutePath()));
-                
-				Query query = new Query();
-				query.setQueryByPost(true);
-				modules.put("query", query);
-				query.init(new ModuleContext(config, "query", dbHome.getAbsolutePath()));
-                
-				Query topics = new Query();
-				modules.put("topic", topics);
-				topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
-				topics.init(new ModuleContext(config, "topic", dbHome.getAbsolutePath()));
-                
-				Query introspect = new Query();
-				modules.put("introspect", introspect);
-				introspect.getMethodConfiguration("GET").setQuerySource(
-						introspect.getClass().getResource("introspect.xq"));
-				introspect.init(new ModuleContext(config, "introspect", dbHome.getAbsolutePath()));
-                
-			} catch (EXistException ex) {
-				throw new ServletException("Exception during module init(): "
-						+ ex.getMessage(), ex);
-			}
-		}
+                                                boolean fromClasspath = "true".equals(methodConf.getAttribute("from-classpath"));
+                                                Query.MethodConfiguration mconf = query.getMethodConfiguration(type);
+                                                if (mconf == null) {
+                                                        getLog().warn("Unknown method " + type
+                                                                        + " in module " + name);
+                                                        continue;
+                                                }
 
-		// XML lib checks....
-		XmlLibraryChecker.check();
-	}
+                                                String responseContentType = methodConf.getAttribute("content-type");
+                                                if (responseContentType != null	&& responseContentType.trim().length() != 0) {
+                                                        mconf.setContentType(responseContentType);
+                                                }
 
-	protected void service(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException {
-        
-		try {
-			// Get the path
-			String path = request.getPathInfo();
+                                                URL queryURI = null;
+                                                if (fromClasspath) {
+                                                        getLog().debug("Nope. Attempting to get resource "
+                                                                        + queryRef + " from "
+                                                                        + Atom.class.getName());
+                                                        queryURI = Atom.class.getResource(queryRef);
 
-			if (path == null) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-						"URL has no extra path information specified.");
-				return;
-			}
+                                                } else {
+                                                        queryURI = baseURI.resolve(queryRef).toURL();
+                                                }
 
-			int firstSlash = path.indexOf('/', 1);
-			if (firstSlash < 0 && path.length() == 1) {
-				response.sendError(400, "Module not specified.");
-				return;
-			}
-            
-			String moduleName = firstSlash < 0 ? path.substring(1) : path.substring(1, firstSlash);
-			path = firstSlash < 0 ? "" : path.substring(firstSlash);
+                                                getLog().debug("Loading from module " + name
+                                                                + " method " + type + " from resource "
+                                                                + queryURI + " via classpath("
+                                                                + fromClasspath + ") and ref (" + queryRef
+                                                                + ")");
 
-			AtomModule module = modules.get(moduleName);
-			if (module == null) {
-				response.sendError(400, "Module " + moduleName + " not found.");
-				return;
-			}
+                                                if (queryURI == null) {
+                                                        throw new ServletException("Cannot find resource " + queryRef
+                                                                                        + " for module " + name);
+                                                }
+                                                mconf.setQuerySource(queryURI);
+                                        }
+                                        query.init(new ModuleContext(config, name, atomConf.getParent()));
 
-			Subject user = null;
-			if (noAuth.get(moduleName) == null) {
-				// Authenticate
-				user = authenticate(request, response);
-				if (user == null) {
-					// You now get a challenge if there is no user
-					return;
-				}
-			}
+                                }
+                        }
 
-			final Principal principal = new UserXmldbPrincipal(WEBDAV_BASIC_AUTH, user);
-			HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
-				public Principal getUserPrincipal() {
-					return principal;
-				}
-			};
+                } catch (IOException e) {
+                        getLog().warn(e);
+                        throw new ServletException(e.getMessage());
+                } catch (SAXException e) {
+                        getLog().warn(e);
+                        throw new ServletException(e.getMessage());
+                } catch (ParserConfigurationException e) {
+                        getLog().warn(e);
+                        throw new ServletException(e.getMessage());
+                } catch (EXistException e) {
+                        getLog().warn(e);
+                        throw new ServletException(e.getMessage());
+                } finally {
+                        if (is != null) {
+                                try {
+                                        is.close();
+                                } catch (IOException ex) {
+                                }
+                        }
+                }
 
-			// Handle the resource
-			DBBroker broker = null;
-			try {
-				broker = pool.get(user);
-				module.process(broker, new HttpRequestMessage(request, path,
-						'/' + moduleName), new HttpResponseMessage(response));
+        } else {
+                try {
+                        AtomProtocol protocol = new AtomProtocol();
+                        modules.put("edit", protocol);
+                        protocol.init(new ModuleContext(config, "edit", dbHome.getAbsolutePath()));
 
-			} catch (NotFoundException ex) {
-				LOG.info("Resource " + path + " not found by " + moduleName, ex);
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, ex
-						.getMessage());
+                        AtomFeeds feeds = new AtomFeeds();
+                        modules.put("content", feeds);
+                        feeds.init(new ModuleContext(config, "content", dbHome.getAbsolutePath()));
 
-			} catch (PermissionDeniedException ex) {
-				LOG.info("Permission denied to " + path + " by " + moduleName
-						+ " for " + user.getName(), ex);
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+                        Query query = new Query();
+                        query.setQueryByPost(true);
+                        modules.put("query", query);
+                        query.init(new ModuleContext(config, "query", dbHome.getAbsolutePath()));
 
-			} catch (BadRequestException ex) {
-				LOG.info("Bad request throw from module " + moduleName, ex);
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+                        Query topics = new Query();
+                        modules.put("topic", topics);
+                        topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
+                        topics.init(new ModuleContext(config, "topic", dbHome.getAbsolutePath()));
 
-			} catch (EXistException ex) {
-				LOG.fatal("Exception getting broker from pool for user "
-						+ user.getName(), ex);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						"Service is not available.");
+                        Query introspect = new Query();
+                        modules.put("introspect", introspect);
+                        introspect.getMethodConfiguration("GET").setQuerySource(
+                                        introspect.getClass().getResource("introspect.xq"));
+                        introspect.init(new ModuleContext(config, "introspect", dbHome.getAbsolutePath()));
 
-			} catch (Throwable e) {
-				LOG.error(e.getMessage(), e);
-				throw new ServletException("An error occurred: " + e.getMessage(), e);
+                } catch (EXistException ex) {
+                        throw new ServletException("Exception during module init(): "
+                                        + ex.getMessage(), ex);
+                }
+        }
 
-			} finally {
-				pool.release(broker);
-			}
+        // XML lib checks....
+        XmlLibraryChecker.check();
+    }
 
-		} catch (IOException ex) {
-			LOG.fatal("I/O exception on request.", ex);
-			try {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						"Service is not available.");
-			} catch (IOException finalEx) {
-				LOG.fatal("Cannot return 500 on exception.", ex);
-			}
-		}
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
-	}
+            try {
+                    // Get the path
+                    String path = request.getPathInfo();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.GenericServlet#destroy()
-	 */
-	public void destroy() {
-		super.destroy();
-		BrokerPool.stopAll(false);
-	}
+                    if (path == null) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                                            "URL has no extra path information specified.");
+                            return;
+                    }
 
-	private Subject authenticate(HttpServletRequest request,
-			HttpServletResponse response) throws java.io.IOException {
-		// First try to validate the principial if passed from the servlet
-		// engine
-		Principal principal = request.getUserPrincipal();
+                    int firstSlash = path.indexOf('/', 1);
+                    if (firstSlash < 0 && path.length() == 1) {
+                            response.sendError(400, "Module not specified.");
+                            return;
+                    }
 
-		if (principal instanceof XmldbPrincipal) {
-			String username = ((XmldbPrincipal) principal).getName();
-			String password = ((XmldbPrincipal) principal).getPassword();
+                    String moduleName = firstSlash < 0 ? path.substring(1) : path.substring(1, firstSlash);
+                    path = firstSlash < 0 ? "" : path.substring(firstSlash);
 
-			LOG.info("Validating Principle: " + principal.getName());
-			try {
-				return pool.getSecurityManager().authenticate(username, password);
-                
-			} catch (AuthenticationException e) {
-				LOG.info(e.getMessage());
-			}
-		}
+                    AtomModule module = modules.get(moduleName);
+                    if (module == null) {
+                            response.sendError(400, "Module " + moduleName + " not found.");
+                            return;
+                    }
 
-		String auth = request.getHeader("Authorization");
-		if (auth == null && defaultUser != null) {
-			return defaultUser;
-		}
-		return authenticator.authenticate(request, response);
-	}
+                    Subject user = null;
+                    if (noAuth.get(moduleName) == null) {
+                            // Authenticate
+                            user = authenticate(request, response);
+                            if (user == null) {
+                                    // You now get a challenge if there is no user
+                                    return;
+                            }
+                    }
 
-	private Subject getDefaultUser() {
-		if (defaultUsername != null) {
-			try {
-				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);
-			} catch (AuthenticationException e) {
-			}
-		}
-		return null;
-	}
+                    final Principal principal = new UserXmldbPrincipal(WEBDAV_BASIC_AUTH, user);
+                    HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
+                            public Principal getUserPrincipal() {
+                                    return principal;
+                            }
+                    };
 
-	private void startup(Configuration configuration) throws ServletException {
-        
-		if (configuration == null) {
-			throw new ServletException("database has not been configured");
-		}
-        
-		LOG.info("configuring eXist instance");
-		try {
-			if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
-				BrokerPool.configure(1, 5, configuration);
-			}
-		} catch (EXistException e) {
-			throw new ServletException(e.getMessage());
-		} catch (DatabaseConfigurationException e) {
-			throw new ServletException(e.getMessage());
-		}
-        
-		try {
-			LOG.info("registering XMLDB driver");
-			Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) clazz.newInstance();
-			DatabaseManager.registerDatabase(database);
-		} catch (ClassNotFoundException e) {
-			LOG.info("ERROR", e);
-		} catch (InstantiationException e) {
-			LOG.info("ERROR", e);
-		} catch (IllegalAccessException e) {
-			LOG.info("ERROR", e);
-		} catch (XMLDBException e) {
-			LOG.info("ERROR", e);
-		}
-	}
+                    // Handle the resource
+                    DBBroker broker = null;
+                    try {
+                            broker = pool.get(user);
+                            module.process(broker, new HttpRequestMessage(request, path,
+                                            '/' + moduleName), new HttpResponseMessage(response));
+
+                    } catch (NotFoundException ex) {
+                            getLog().info("Resource " + path + " not found by " + moduleName, ex);
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND, ex
+                                            .getMessage());
+
+                    } catch (PermissionDeniedException ex) {
+                            getLog().info("Permission denied to " + path + " by " + moduleName
+                                            + " for " + user.getName(), ex);
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+
+                    } catch (BadRequestException ex) {
+                            getLog().info("Bad request throw from module " + moduleName, ex);
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+
+                    } catch (EXistException ex) {
+                            getLog().fatal("Exception getting broker from pool for user "
+                                            + user.getName(), ex);
+                            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                            "Service is not available.");
+
+                    } catch (Throwable e) {
+                            getLog().error(e.getMessage(), e);
+                            throw new ServletException("An error occurred: " + e.getMessage(), e);
+
+                    } finally {
+                            pool.release(broker);
+                    }
+
+            } catch (IOException ex) {
+                    getLog().fatal("I/O exception on request.", ex);
+                    try {
+                            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                            "Service is not available.");
+                    } catch (IOException finalEx) {
+                            getLog().fatal("Cannot return 500 on exception.", ex);
+                    }
+            }
+
+    }
 }

@@ -29,35 +29,21 @@ import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
 import org.exist.http.SOAPServer;
-import org.exist.http.urlrewrite.XQueryURLRewrite;
-import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.XmldbPrincipal;
-import org.exist.security.internal.AccountImpl;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.VirtualTempFile;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.XMLDBException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
-import java.security.Principal;
 
 /**
  * Implements the REST-style interface if eXist is running within a Servlet
@@ -65,625 +51,451 @@ import java.security.Principal;
  * 
  * @author wolf
  */
-public class EXistServlet extends HttpServlet {
-
-	private static final long serialVersionUID = -3563999345725645647L;
-
-	private String formEncoding = null;
-	public final static String DEFAULT_ENCODING = "UTF-8";
-
-	protected final static Logger LOG = Logger.getLogger(EXistServlet.class);
-	private BrokerPool pool = null;
-	private String defaultUsername = SecurityManager.GUEST_USER;
-	private String defaultPassword = SecurityManager.GUEST_USER;
-
-	private boolean internalOnly = false;
-	
-	private RESTServer srvREST;
-	private SOAPServer srvSOAP;
-
-	private Authenticator authenticator;
-
-	private Subject defaultUser;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-
-		// Configure BrokerPool
-		try {
-			if (BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
-				LOG.info("Database already started. Skipping configuration ...");
-			} else {
-				String confFile = config.getInitParameter("configuration");
-				String dbHome = config.getInitParameter("basedir");
-				String start = config.getInitParameter("start");
-
-				if (confFile == null)
-					confFile = "conf.xml";
-				dbHome = (dbHome == null) ? config.getServletContext().getRealPath(".") : config.getServletContext().getRealPath(dbHome);
-
-				LOG.info("EXistServlet: exist.home=" + dbHome);
-
-				File f = new File(dbHome + File.separator + confFile);
-				LOG.info("reading configuration from " + f.getAbsolutePath());
-
-				if (!f.canRead())
-					throw new ServletException("configuration file " + confFile + " not found or not readable");
-				Configuration configuration = new Configuration(confFile, dbHome);
-				if (start != null && start.equals("true"))
-					startup(configuration);
-			}
-			pool = BrokerPool.getInstance();
-			String option = config.getInitParameter("use-default-user");
-			boolean useDefaultUser = true;
-			if (option != null) {
-				useDefaultUser = option.trim().equals("true");
-			}
-			if (useDefaultUser) {
-				option = config.getInitParameter("user");
-				if (option != null) {
-					defaultUsername = option;
-
-					option = config.getInitParameter("password");
-					if (option != null)
-						defaultPassword = option;
-					defaultUser = getDefaultUser();
-				} else {
-					defaultUser = pool.getSecurityManager().getGuestSubject();
-				}
-				if (defaultUser != null) {
-					LOG.info("Using default user " + defaultUsername + " for all unauthorized requests.");
-				} else {
-					LOG.error("Default user " + defaultUsername + " cannot be found.  A BASIC AUTH challenge will be the default.");
-				}
-			} else {
-				LOG.info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
-				defaultUser = null;
-			}
-			authenticator = new BasicAuthenticator(pool);
-		} catch (EXistException e) {
-			throw new ServletException("No database instance available");
-		} catch (DatabaseConfigurationException e) {
-			throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
-		}
-
-		// get form and container encoding's
-		formEncoding = config.getInitParameter("form-encoding");
-		if (formEncoding == null)
-			formEncoding = DEFAULT_ENCODING;
-		String containerEncoding = config.getInitParameter("container-encoding");
-		if (containerEncoding == null)
-			containerEncoding = DEFAULT_ENCODING;
-
-		String useDynamicContentType = config.getInitParameter("dynamic-content-type");
-		if (useDynamicContentType == null)
-			useDynamicContentType = "no";
-
-		String param = config.getInitParameter("hidden");
-		if (param != null)
-			internalOnly = Boolean.valueOf(param);
-		
-		// Instantiate REST Server
-		srvREST = new RESTServer(pool, formEncoding, containerEncoding, useDynamicContentType.equalsIgnoreCase("yes")
-				|| useDynamicContentType.equalsIgnoreCase("true"), internalOnly);
-
-		// Instantiate SOAP Server
-		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
-
-		// XML lib checks....
-		XmlLibraryChecker.check();
-		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest
-	 * , javax.servlet.http.HttpServletResponse)
-	 */
-	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// first, adjust the path
-		String path = adjustPath(request);
-
-		// second, perform descriptor actions
-		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if (descriptor != null) {
-			// TODO: figure out a way to log PUT requests with
-			// HttpServletRequestWrapper and
-			// Descriptor.doLogRequestInReplayLog()
-
-			// map's the path if a mapping is specified in the descriptor
-			path = descriptor.mapPath(path);
-		}
-
-		// third, authenticate the user
-		Subject user = authenticate(request, response);
-		if (user == null) {
-			// You now get a challenge if there is no user
-			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
-			// "Permission denied: unknown user or password");
-			return;
-		}
-
-		DBBroker broker = null;
-		VirtualTempFile vtempFile = null;
-		try {
-			XmldbURI dbpath = XmldbURI.create(path);
-			broker = pool.get(user);
-			Collection collection = broker.getCollection(dbpath);
-			if (collection != null) {
-				response.sendError(400, "A PUT request is not allowed against a plain collection path.");
-				return;
-			}
-			// fourth, process the request
-			ServletInputStream is = request.getInputStream();
-			long len = request.getContentLength();
-			String lenstr = request.getHeader("Content-Length");
-			if(lenstr!=null)
-				len = Long.parseLong(lenstr);
-			// put may send a lot of data, so save it
-			// to a temporary file first.
-			
-			vtempFile = new VirtualTempFile();
-			vtempFile.setTempPrefix("existSRV");
-			vtempFile.setTempPostfix(".tmp");
-			vtempFile.write(is,len);
-			vtempFile.close();
-
-			srvREST.doPut(broker, vtempFile, dbpath, request, response);
-
-		} catch (BadRequestException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-
-		} catch (PermissionDeniedException e) {
-			// If the current user is the Default User and they do not have permission
-			// then send a challenge request to prompt the client for a username/password.
-			// Else return a FORBIDDEN Error
-			if (user != null && user.equals(defaultUser)) {
-				authenticator.sendChallenge(request, response);
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-			}
-
-		} catch (EXistException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-		} catch (Throwable e) {
-			LOG.error(e);
-			throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
-
-		} finally {
-			if (broker != null) {
-				pool.release(broker);
-			}
-			if (vtempFile != null) {
-				vtempFile.delete();
-			}
-		}
-	}
-
-	/**
-	 * @param request
-	 * @return
-	 */
-	private String adjustPath(HttpServletRequest request) {
-		String path = request.getPathInfo();
-
-		if (path == null) {
-			path = "";
-		}
-
-		int p = path.lastIndexOf(';');
-		if (p != Constants.STRING_NOT_FOUND)
-			path = path.substring(0, p);
-		return path;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
-	 * , javax.servlet.http.HttpServletResponse)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		// first, adjust the path
-		String path = adjustPath(request);
-
-		// second, perform descriptor actions
-		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if (descriptor != null && !descriptor.requestsFiltered()) {
-			// logs the request if specified in the descriptor
-			descriptor.doLogRequestInReplayLog(request);
-
-			// map's the path if a mapping is specified in the descriptor
-			path = descriptor.mapPath(path);
-		}
-
-		// third, authenticate the user
-		Subject user = authenticate(request, response);
-		if (user == null) {
-			// You now get a challenge if there is no user
-			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
-			// "Permission denied: unknown user " + "or password");
-			return;
-		}
-
-		// fourth, process the request
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-
-			// Route the request
-			if (path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1) {
-				// SOAP Server
-				srvSOAP.doGet(broker, request, response, path);
-			} else {
-				// REST Server
-				srvREST.doGet(broker, request, response, path);
-			}
-		} catch (BadRequestException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage());
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-
-		} catch (PermissionDeniedException e) {
-			// If the current user is the Default User and they do not have permission
-			// then send a challenge request to prompt the client for a username/password.
-			// Else return a FORBIDDEN Error
-			if (user != null && user.equals(defaultUser)) {
-				authenticator.sendChallenge(request, response);
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-			}
-
-		} catch (NotFoundException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage());
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-
-		} catch (EXistException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-		} catch (EOFException ee) {
-			LOG.error("GET Connection has been interrupted", ee);
-			throw new ServletException("GET Connection has been interrupted", ee);
-
-		} catch (Throwable e) {
-			LOG.error(e.getMessage(), e);
-			throw new ServletException("An error occurred: " + e.getMessage(), e);
-
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-	protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// first, adjust the path
-		String path = adjustPath(request);
-
-		// second, perform descriptor actions
-		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if (descriptor != null && !descriptor.requestsFiltered()) {
-			// logs the request if specified in the descriptor
-			descriptor.doLogRequestInReplayLog(request);
-
-			// map's the path if a mapping is specified in the descriptor
-			path = descriptor.mapPath(path);
-		}
-
-		// third, authenticate the user
-		Subject user = authenticate(request, response);
-		if (user == null) {
-			// You now get a challenge if there is no user
-			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
-			// "Permission denied: unknown user " + "or password");
-			return;
-		}
-
-		// fourth, process the request
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-			srvREST.doHead(broker, request, response, path);
-
-		} catch (BadRequestException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-
-		} catch (PermissionDeniedException e) {
-			// If the current user is the Default User and they do not have permission
-			// then send a challenge request to prompt the client for a username/password.
-			// Else return a FORBIDDEN Error
-			if (user != null && user.equals(defaultUser)) {
-				authenticator.sendChallenge(request, response);
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-			}
-
-		} catch (NotFoundException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-
-		} catch (EXistException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-		} catch (Throwable e) {
-			LOG.error(e);
-			throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
-
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest
-	 * , javax.servlet.http.HttpServletResponse)
-	 */
-	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// first, adjust the path
-		String path = adjustPath(request);
-
-		// second, perform descriptor actions
-		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if (descriptor != null) {
-			// map's the path if a mapping is specified in the descriptor
-			path = descriptor.mapPath(path);
-		}
-
-		// third, authenticate the user
-		Subject user = authenticate(request, response);
-		if (user == null) {
-			// You now get a challenge if there is no user
-			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
-			// "Permission denied: unknown user " + "or password");
-			return;
-		}
-
-		// fourth, process the request
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-			srvREST.doDelete(broker, XmldbURI.create(path), response);
-
-		} catch (PermissionDeniedException e) {
-			// If the current user is the Default User and they do not have permission
-			// then send a challenge request to prompt the client for a username/password.
-			// Else return a FORBIDDEN Error
-			if (user != null && user.equals(defaultUser)) {
-				authenticator.sendChallenge(request, response);
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-			}
-
-		} catch (NotFoundException e) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-
-		} catch (EXistException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-		} catch (Throwable e) {
-			LOG.error(e);
-			throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
-
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
-	 * , javax.servlet.http.HttpServletResponse)
-	 */
-	protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
-		HttpServletRequest request = null;
-
-		// For POST request, If we are logging the requests we must wrap
-		// HttpServletRequest in HttpServletRequestWrapper
-		// otherwise we cannot access the POST parameters from the content body
-		// of the request!!! - deliriumsky
-		Descriptor descriptor = Descriptor.getDescriptorSingleton();
-		if (descriptor != null) {
-			if (descriptor.allowRequestLogging()) {
-				request = new HttpServletRequestWrapper(req, formEncoding);
-			} else {
-				request = req;
-			}
-		} else {
-			request = req;
-		}
-
-		// first, adjust the path
-		String path = request.getPathInfo();
-		if (path == null) {
-			path = "";
-		} else {
-			path = adjustPath(request);
-		}
-
-		// second, perform descriptor actions
-		if (descriptor != null && !descriptor.requestsFiltered()) {
-			// logs the request if specified in the descriptor
-			descriptor.doLogRequestInReplayLog(request);
-
-			// map's the path if a mapping is specified in the descriptor
-			path = descriptor.mapPath(path);
-		}
-
-		// third, authenticate the user
-		Subject user = authenticate(request, response);
-		if (user == null) {
-			// You now get a challenge if there is no user
-			// response.sendError(HttpServletResponse.SC_FORBIDDEN,
-			// "Permission denied: unknown user " + "or password");
-			return;
-		}
-
-		// fourth, process the request
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-
-			// Route the request
-			if (path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1) {
-				// SOAP Server
-				srvSOAP.doPost(broker, request, response, path);
-			} else {
-				// REST Server
-				srvREST.doPost(broker, request, response, path);
-			}
-
-		} catch (PermissionDeniedException e) {
-			// If the current user is the Default User and they do not have permission
-			// then send a challenge request to prompt the client for a username/password.
-			// Else return a FORBIDDEN Error
-			if (user != null && user.equals(defaultUser)) {
-				authenticator.sendChallenge(request, response);
-                
-			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-			}
-
-		} catch (EXistException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-
-		} catch (BadRequestException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-
-		} catch (NotFoundException e) {
-			if (response.isCommitted())
-				throw new ServletException(e.getMessage(), e);
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-
-		} catch (Throwable e) {
-			LOG.error(e);
-			throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
-
-		} finally {
-			pool.release(broker);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.GenericServlet#destroy()
-	 */
-	public void destroy() {
-		super.destroy();
-		BrokerPool.stopAll(false);
-	}
-
-	private Subject authenticate(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
-		if (internalOnly && request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-			return null;
-		}
-		Principal principal = AccountImpl.getUserFromServletRequest(request);
-		if (principal != null) return (Subject) principal;
-		
-		// Try to validate the principal if passed from the Servlet engine
-		principal = request.getUserPrincipal();
-
-		if (principal instanceof XmldbPrincipal) {
-			String username = ((XmldbPrincipal) principal).getName();
-			String password = ((XmldbPrincipal) principal).getPassword();
-
-			LOG.info("Validating Principle: " + username);
-			try {
-				return pool.getSecurityManager().authenticate(username, password);
-			} catch (AuthenticationException e) {
-				LOG.info(e.getMessage());
-			}
-		}
-
-		if (principal instanceof Subject)
-			return (Subject) principal;
-
-		// Secondly try basic authentication
-		String auth = request.getHeader("Authorization");
-		if (auth == null && defaultUser != null) {
-			return defaultUser;
-		}
-		return authenticator.authenticate(request, response);
-		/*
-		 * byte[] c = Base64.decode(auth.substring(6).getBytes()); String s =
-		 * new String(c); int p = s.indexOf(':'); if (p ==
-		 * Constants.STRING_NOT_FOUND) { return null; } String username =
-		 * s.substring(0, p); String password = s.substring(p + 1);
-		 * 
-		 * User user = pool.getSecurityManager().getUser(username); if (user ==
-		 * null) return null; if (!user.validate(password)) return null; return
-		 * user;
-		 */
-	}
-
-	private Subject getDefaultUser() {
-		if (defaultUsername != null) {
-			try {
-				return pool.getSecurityManager().authenticate(defaultUsername, defaultPassword);
-			} catch (AuthenticationException e) {
-				return null;
-			}
-		}
-		return null;
-	}
-	
-	private void startup(Configuration configuration) throws ServletException {
-		if (configuration == null)
-			throw new ServletException("database has not been " + "configured");
-		LOG.info("configuring eXist instance");
-		try {
-			if (!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME))
-				BrokerPool.configure(1, 5, configuration);
-		} catch (EXistException e) {
-			throw new ServletException(e.getMessage(), e);
-		} catch (DatabaseConfigurationException e) {
-			throw new ServletException(e.getMessage(), e);
-		}
-		try {
-			LOG.info("registering XMLDB driver");
-			Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) clazz.newInstance();
-			DatabaseManager.registerDatabase(database);
-		} catch (ClassNotFoundException e) {
-			LOG.info("ERROR", e);
-		} catch (InstantiationException e) {
-			LOG.info("ERROR", e);
-		} catch (IllegalAccessException e) {
-			LOG.info("ERROR", e);
-		} catch (XMLDBException e) {
-			LOG.info("ERROR", e);
-		}
-	}
+public class EXistServlet extends AbstractExistHttpServlet {
+
+    private static final long serialVersionUID = -3563999345725645647L;
+
+    private final static Logger LOG = Logger.getLogger(EXistServlet.class);
+
+    private RESTServer srvREST;
+    private SOAPServer srvSOAP;
+
+    @Override
+    public Logger getLog() {
+        return LOG;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
+     */
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        String useDynamicContentType = config.getInitParameter("dynamic-content-type");
+        if(useDynamicContentType == null) {
+                useDynamicContentType = "no";
+        }
+        
+        // Instantiate REST Server
+        srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), useDynamicContentType.equalsIgnoreCase("yes")
+                        || useDynamicContentType.equalsIgnoreCase("true"), isInternalOnly());
+
+        // Instantiate SOAP Server
+        srvSOAP = new SOAPServer(getFormEncoding(), getContainerEncoding());
+
+        // XML lib checks....
+        XmlLibraryChecker.check();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // first, adjust the path
+        String path = adjustPath(request);
+
+        // second, perform descriptor actions
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if (descriptor != null) {
+            // TODO: figure out a way to log PUT requests with
+            // HttpServletRequestWrapper and
+            // Descriptor.doLogRequestInReplayLog()
+
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        Subject user = authenticate(request, response);
+        if (user == null) {
+            // You now get a challenge if there is no user
+            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+            // "Permission denied: unknown user or password");
+            return;
+        }
+
+        DBBroker broker = null;
+        VirtualTempFile vtempFile = null;
+        try {
+            XmldbURI dbpath = XmldbURI.create(path);
+            broker = getPool().get(user);
+            Collection collection = broker.getCollection(dbpath);
+            if (collection != null) {
+                    response.sendError(400, "A PUT request is not allowed against a plain collection path.");
+                    return;
+            }
+            // fourth, process the request
+            ServletInputStream is = request.getInputStream();
+            long len = request.getContentLength();
+            String lenstr = request.getHeader("Content-Length");
+            if(lenstr!=null)
+                    len = Long.parseLong(lenstr);
+            // put may send a lot of data, so save it
+            // to a temporary file first.
+
+            vtempFile = new VirtualTempFile();
+            vtempFile.setTempPrefix("existSRV");
+            vtempFile.setTempPostfix(".tmp");
+            vtempFile.write(is,len);
+            vtempFile.close();
+
+            srvREST.doPut(broker, vtempFile, dbpath, request, response);
+
+        } catch(BadRequestException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        } catch (PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if(user != null && user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch(EXistException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch(Throwable e) {
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        } finally {
+            if(broker != null) {
+                getPool().release(broker);
+            }
+            if(vtempFile != null) {
+                vtempFile.delete();
+            }
+        }
+    }
+
+    /**
+     * @param request
+     * @return
+     */
+    private String adjustPath(HttpServletRequest request) {
+        String path = request.getPathInfo();
+
+        if(path == null) {
+            path = "";
+        }
+
+        int p = path.lastIndexOf(';');
+        if(p != Constants.STRING_NOT_FOUND) {
+            path = path.substring(0, p);
+        }
+        
+        return path;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        // first, adjust the path
+        String path = adjustPath(request);
+
+        // second, perform descriptor actions
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null && !descriptor.requestsFiltered()) {
+            // logs the request if specified in the descriptor
+            descriptor.doLogRequestInReplayLog(request);
+
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        Subject user = authenticate(request, response);
+        if(user == null) {
+            // You now get a challenge if there is no user
+            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+            // "Permission denied: unknown user " + "or password");
+            return;
+        }
+
+        // fourth, process the request
+        DBBroker broker = null;
+        try {
+            broker = getPool().get(user);
+
+            // Route the request
+            if(path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1) {
+                // SOAP Server
+                srvSOAP.doGet(broker, request, response, path);
+            } else {
+                // REST Server
+                srvREST.doGet(broker, request, response, path);
+            }
+        } catch (BadRequestException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage());
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
+        } catch (PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if(user != null && user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch (NotFoundException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage());
+            }
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+
+        } catch (EXistException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (EOFException ee) {
+            getLog().error("GET Connection has been interrupted", ee);
+            throw new ServletException("GET Connection has been interrupted", ee);
+        } catch (Throwable e) {
+            getLog().error(e.getMessage(), e);
+            throw new ServletException("An error occurred: " + e.getMessage(), e);
+        } finally {
+            getPool().release(broker);
+        }
+    }
+
+    @Override
+    protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // first, adjust the path
+        String path = adjustPath(request);
+
+        // second, perform descriptor actions
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null && !descriptor.requestsFiltered()) {
+            // logs the request if specified in the descriptor
+            descriptor.doLogRequestInReplayLog(request);
+
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        Subject user = authenticate(request, response);
+        if(user == null) {
+            // You now get a challenge if there is no user
+            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+            // "Permission denied: unknown user " + "or password");
+            return;
+        }
+
+        // fourth, process the request
+        DBBroker broker = null;
+        try {
+            broker = getPool().get(user);
+            srvREST.doHead(broker, request, response, path);
+        } catch (BadRequestException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+
+        } catch (PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if(user != null && user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch (NotFoundException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (EXistException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch(Throwable e) {
+            getLog().error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        } finally {
+                getPool().release(broker);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // first, adjust the path
+        String path = adjustPath(request);
+
+        // second, perform descriptor actions
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null) {
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        Subject user = authenticate(request, response);
+        if(user == null) {
+            // You now get a challenge if there is no user
+            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+            // "Permission denied: unknown user " + "or password");
+            return;
+        }
+
+        // fourth, process the request
+        DBBroker broker = null;
+        try {
+            broker = getPool().get(user);
+            srvREST.doDelete(broker, XmldbURI.create(path), response);
+        } catch (PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if(user != null && user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch(NotFoundException e) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch(EXistException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch(Throwable e) {
+            getLog().error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+
+        } finally {
+            getPool().release(broker);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
+        HttpServletRequest request = null;
+
+        // For POST request, If we are logging the requests we must wrap
+        // HttpServletRequest in HttpServletRequestWrapper
+        // otherwise we cannot access the POST parameters from the content body
+        // of the request!!! - deliriumsky
+        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if(descriptor != null) {
+            if(descriptor.allowRequestLogging()) {
+                request = new HttpServletRequestWrapper(req, getFormEncoding());
+            } else {
+                request = req;
+            }
+        } else {
+            request = req;
+        }
+
+        // first, adjust the path
+        String path = request.getPathInfo();
+        if(path == null) {
+            path = "";
+        } else {
+            path = adjustPath(request);
+        }
+
+        // second, perform descriptor actions
+        if(descriptor != null && !descriptor.requestsFiltered()) {
+            // logs the request if specified in the descriptor
+            descriptor.doLogRequestInReplayLog(request);
+
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        Subject user = authenticate(request, response);
+        if(user == null) {
+            // You now get a challenge if there is no user
+            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
+            // "Permission denied: unknown user " + "or password");
+            return;
+        }
+
+        // fourth, process the request
+        DBBroker broker = null;
+        try {
+            broker = getPool().get(user);
+
+            // Route the request
+            if(path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1) {
+                // SOAP Server
+                srvSOAP.doPost(broker, request, response, path);
+            } else {
+                // REST Server
+                srvREST.doPost(broker, request, response, path);
+            }
+        } catch(PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if(user != null && user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch (EXistException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch(BadRequestException e) {
+            if (response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        } catch(NotFoundException e) {
+            if(response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch(Throwable e) {
+            getLog().error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        } finally {
+            getPool().release(broker);
+        }
+    }
 }
