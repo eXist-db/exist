@@ -24,8 +24,9 @@
  */
 package org.exist.xquery.modules.spatial;
 
-import org.apache.log4j.Logger;
+import java.io.ByteArrayInputStream;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
@@ -38,6 +39,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -51,13 +54,6 @@ import org.w3c.dom.Element;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
 
 public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
     protected static final Logger logger = Logger.getLogger(FunGeometricProperties.class);
