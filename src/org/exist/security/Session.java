@@ -80,4 +80,7 @@ public class Session {
 		return subject;
 	}
 
+	public boolean isValid() {
+		return (System.currentTimeMillis() - lastUse > 30*1000); //30 seconds
+	}
 }
