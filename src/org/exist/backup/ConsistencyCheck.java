@@ -118,7 +118,8 @@ public class ConsistencyCheck
     private void checkCollection( Collection collection, List<ErrorReport> errors, ProgressCallback callback ) throws TerminatedException
     {
         XmldbURI uri = collection.getURI();
-        callback.startCollection( uri.toString() );
+        if (callback != null)
+        	callback.startCollection( uri.toString() );
 
         for( Iterator<XmldbURI> i = collection.collectionIteratorNoLock(); i.hasNext(); ) {
             XmldbURI childUri = i.next();
@@ -131,7 +132,8 @@ public class ConsistencyCheck
                     error.setCollectionId( collection.getId() );
                     error.setCollectionURI( childUri );
                     errors.add( error );
-                    callback.error( error );
+                    if (callback != null)
+                    	callback.error( error );
                     continue;
                 }
                 if (child.getId() != collection.getId())
@@ -142,7 +144,8 @@ public class ConsistencyCheck
                 error.setCollectionId( collection.getId() );
                 error.setCollectionURI( childUri );
                 errors.add( error );
-                callback.error( error );
+                if (callback != null)
+                	callback.error( error );
             }
         }
     }
