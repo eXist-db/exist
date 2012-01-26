@@ -571,7 +571,7 @@ declare function indexes:index-name-to-label($index-name as xs:string) as xs:str
     ====
 :)
 declare function indexes:toggle-sortorder($current-sortorder) {
-    indexes:toggle-sortorder($current-sortorder, ())
+    indexes:toggle-sortorder($current-sortorder, ('ascending'))
 };
 
 declare function indexes:toggle-sortorder($current-sortorder, $other-new-parameters) {
