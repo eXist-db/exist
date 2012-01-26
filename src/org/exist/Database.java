@@ -26,6 +26,7 @@ import java.util.Observer;
 import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
+import org.exist.scheduler.Scheduler;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
@@ -71,6 +72,13 @@ public interface Database {
 	 * @return CacheManager
 	 */
 	public CacheManager getCacheManager();
+	
+    /** 
+     * 
+     * @return Scheduler
+     */
+    public Scheduler getScheduler();
+
 
 	/**
 	 * 
