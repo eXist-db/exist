@@ -21,12 +21,15 @@
  */
 package org.exist.security.internal;
 
+import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -60,6 +63,10 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.SimpleTrigger;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -96,7 +103,6 @@ public class SecurityManagerImpl implements SecurityManager {
     //TODO: validate & remove if session timeout
     private SessionDb sessions = new SessionDb();
 
-
     @ConfigurationFieldAsAttribute("last-account-id")
     protected int lastUserId = 0;
 
@@ -131,6 +137,10 @@ public class SecurityManagerImpl implements SecurityManager {
     	realms.add(defaultRealm);
 
     	PermissionFactory.sm = this;
+    	
+        Properties params = new Properties();
+        params.put(getClass().getName(), this);
+    	pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
 
     /**
@@ -413,7 +423,14 @@ public class SecurityManagerImpl implements SecurityManager {
             Subject subject = sessions.read(new SessionDbRead<Subject>(){
                 @Override
                 public Subject execute(final Map<String, Session> db) {
-                    return db.get((String)credentials).getSubject();
+                	
+                	Session session = db.get((String)credentials);
+                	if (session == null) return null;
+                	
+                	if (session.isValid())
+                		return session.getSubject();
+                	
+                	return null; 
                 }
             });
 
@@ -421,7 +438,6 @@ public class SecurityManagerImpl implements SecurityManager {
                 throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");
 
             }
-
             //TODO: validate session
             return subject;
         }
@@ -765,6 +781,50 @@ public class SecurityManagerImpl implements SecurityManager {
     }
     
     //Session management part	
+    
+    public final static long TIMEOUT_CHECK_PERIOD = 20000; //20 sec
+
+    public static class SessionsCheck implements JobDescription, org.quartz.Job {
+    	
+    	boolean firstRun = true;
+    	
+    	public SessionsCheck() {
+		}
+
+        public String getGroup() {
+        	return "eXist.Security";
+        }
+
+    	@Override
+        public String getName() {
+            return "Sessions.Check";
+        }
+
+        @Override
+        public void setName(String name) {
+        }
+
+        @Override
+        public final void execute( JobExecutionContext jec ) throws JobExecutionException {
+            JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+
+            SecurityManagerImpl sm = ( SecurityManagerImpl )jobDataMap.get( SecurityManagerImpl.class.getName() );
+
+            sm.sessions.modify(new SessionDbModify(){
+	            @Override
+	            public void execute(final Map<String, Session> db) {
+	            	Iterator<Map.Entry<String, Session>> iter = db.entrySet().iterator();
+	            	while (iter.hasNext()) {
+	            		Map.Entry<String, Session> entry = iter.next();
+	            		if (!entry.getValue().isValid()) {
+	            			iter.remove();
+	            		}
+	            	}
+	            }
+	        });
+    	}
+    }
+
     @Override
     public void registerSession(final Session session) {
         sessions.modify(new SessionDbModify(){
