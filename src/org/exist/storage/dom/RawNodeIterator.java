@@ -47,12 +47,12 @@ public class RawNodeIterator {
 
     private final static Logger LOG = Logger.getLogger(RawNodeIterator.class);
 
-	private DOMFile db = null;
-	private int offset;
-	private short lastTID = ItemId.UNKNOWN_ID;
-	private DOMFile.DOMPage p = null;
-	private long page;
-	private DBBroker broker;
+    private DOMFile db = null;
+    private int offset;
+    private short lastTupleID = ItemId.UNKNOWN_ID;
+    private DOMFile.DOMPage page = null;
+    private long pageNum;
+    private DBBroker broker;
 
     /**
      * Construct the iterator. The iterator will be positioned before the specified
@@ -65,7 +65,7 @@ public class RawNodeIterator {
      */
     public RawNodeIterator(DBBroker broker, DOMFile db, NodeHandle node) throws IOException {
         this.db = db;
-		this.broker = broker;
+        this.broker = broker;
         seek(node);
     }
 
@@ -92,10 +92,10 @@ public class RawNodeIterator {
                     throw new IOException("Node not found: " + e.getMessage());
                 }
             }
-            page = rec.getPage().getPageNum();
+            pageNum = rec.getPage().getPageNum();
             //Position the stream at the very beginning of the record
             offset = rec.offset - DOMFile.LENGTH_TID;
-            p = rec.getPage();
+            page = rec.getPage();
         } catch (LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
         } finally {
@@ -107,111 +107,103 @@ public class RawNodeIterator {
 	 *  Returns the raw data of the next node in document order.
      * @return the raw data of the node
      */
-	public Value next() {
+    public Value next() {
         Value nextValue = null;
         Lock lock = db.getLock();
-		try {
-			try {
-				lock.acquire(Lock.READ_LOCK);
-			} catch (LockException e) {
-				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
-				return null;
-			}
-			db.setOwnerObject(broker);
+        try {
+            try {
+                lock.acquire(Lock.READ_LOCK);
+            } catch (LockException e) {
+                LOG.error("Failed to acquire read lock on " + db.getFile().getName());
+                return null;
+            }
+            db.setOwnerObject(broker);
             long backLink = 0;
             do {
-                DOMFile.DOMFilePageHeader ph = p.getPageHeader();
+                DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 // next value larger than length of the current page?
-                if (offset >= ph.getDataLength()) {
+                if (offset >= pageHeader.getDataLength()) {
                     // load next page in chain
-                    long nextPage = ph.getNextDataPage();
+                    long nextPage = pageHeader.getNextDataPage();
                     if (nextPage == Paged.Page.NO_PAGE) {
-                        SanityCheck.TRACE("bad link to next " + p.page.getPageInfo() + "; previous: " +
-                                ph.getPrevDataPage() + "; offset = " + offset + "; lastTID = " + lastTID);
+                        SanityCheck.TRACE("bad link to next " + page.page.getPageInfo() +
+                            "; previous: " + pageHeader.getPrevDataPage() +
+                            "; offset = " + offset + "; lastTupleID = " + lastTupleID);
                         return null;
                     }
-                    page = nextPage;
-                    p = db.getCurrentPage(nextPage);
-                    //LOG.debug(" -> " + nextPage + "; len = " + p.len + "; " + p.page.getPageInfo());
-                    db.addToBuffer(p);
+                    pageNum = nextPage;
+                    page = db.getCurrentPage(nextPage);
+                    db.addToBuffer(page);
                     offset = 0;
                 }
-                // extract the tid
-                lastTID = ByteConversion.byteToShort(p.data, offset);
+                // extract the tuple id
+                lastTupleID = ByteConversion.byteToShort(page.data, offset);
                 offset += DOMFile.LENGTH_TID;
-
                 //	check if this is just a link to a relocated node
-                if(ItemId.isLink(lastTID)) {
+                if(ItemId.isLink(lastTupleID)) {
                     // skip this
                     offset += DOMFile.LENGTH_FORWARD_LOCATION;
-                    //System.out.println("skipping link on p " + page + " -> " +
-                    //StorageAddress.pageFromPointer(link));
-                    //continue the iteration
                     continue;
                 }
-
                 // read data length
-                short vlen = ByteConversion.byteToShort(p.data, offset);
+                short vlen = ByteConversion.byteToShort(page.data, offset);
                 offset += DOMFile.LENGTH_DATA_LENGTH;
                 if (vlen < 0) {
-                    LOG.warn("Got negative length" + vlen + " at offset " + offset + "!!!");
-                    LOG.debug(db.debugPageContents(p));
+                    LOG.error("Got negative length" + vlen + " at offset " + offset + "!!!");
+                    LOG.debug(db.debugPageContents(page));
                     //TODO : throw an exception right now ?
                 }
-
-                if(ItemId.isRelocated(lastTID)) {
+                if(ItemId.isRelocated(lastTupleID)) {
                     // found a relocated node. Read the original address
-                    backLink = ByteConversion.byteToLong(p.data, offset);
+                    backLink = ByteConversion.byteToLong(page.data, offset);
                     offset += DOMFile.LENGTH_ORIGINAL_LOCATION;
                 }
-
                 //	overflow page? load the overflow value
                 if (vlen == DOMFile.OVERFLOW) {
                     vlen = DOMFile.LENGTH_OVERFLOW_LOCATION;
-                    final long overflow = ByteConversion.byteToLong(p.data, offset);
+                    final long overflow = ByteConversion.byteToLong(page.data, offset);
                     offset += DOMFile.LENGTH_OVERFLOW_LOCATION;
                     try {
                         final byte[] odata = db.getOverflowValue(overflow);
                         nextValue = new Value(odata);
                     } catch(Exception e) {
-                        LOG.warn("Exception while loading overflow value: " + e.getMessage() +
-                                "; originating page: " + p.page.getPageInfo());
+                        LOG.error("Exception while loading overflow value: " + e.getMessage() +
+                            "; originating page: " + page.page.getPageInfo());
                     }
                     // normal node
                 } else {
                     try {
-                        nextValue = new Value(p.data, offset, vlen);
+                        nextValue = new Value(page.data, offset, vlen);
                         offset += vlen;
                     } catch(Exception e) {
-                        LOG.warn("Error while deserializing node: " + e.getMessage(), e);
-                        LOG.warn("Reading from offset: " + offset + "; len = " + vlen);
-                        LOG.debug(db.debugPageContents(p));
+                        LOG.error("Error while deserializing node: " + e.getMessage(), e);
+                        LOG.error("Reading from offset: " + offset + "; len = " + vlen);
+                        LOG.debug(db.debugPageContents(page));
                         throw new RuntimeException(e);
                     }
                 }
                 if(nextValue == null) {
-                    LOG.warn("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
-                            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " +
-                            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - vlen) +
-                            "; len = " + p.getPageHeader().getDataLength());
-                    //LOG.debug(db.debugPageContents(p));
-                    //LOG.debug(p.dumpPage());
+                    LOG.error("illegal node on page " + page.getPageNum() +
+                        "; tupleID = " + ItemId.getId(lastTupleID) +
+                        "; next = " + page.getPageHeader().getNextDataPage() +
+                        "; prev = " + page.getPageHeader().getPrevDataPage() +
+                        "; offset = " + (offset - vlen) +
+                        "; len = " + page.getPageHeader().getDataLength());
                     return null;
                 }
-                if(ItemId.isRelocated(lastTID)) {
+                if(ItemId.isRelocated(lastTupleID)) {
                     nextValue.setAddress(backLink);
                 } else {
-                    nextValue.setAddress(
-                            StorageAddress.createPointer((int) page, ItemId.getId(lastTID))
+                    nextValue.setAddress(StorageAddress.createPointer((int) pageNum, 
+                        ItemId.getId(lastTupleID))
                     );
                 }
-                //YES ! needed because of the continue statement above
             } while (nextValue == null);
-			return nextValue;
-		} finally {
-			lock.release(Lock.READ_LOCK);
-		}
-	}
+            return nextValue;
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+    }
 
     public void closeDocument() {
         db.closeDocument();
@@ -224,6 +216,6 @@ public class RawNodeIterator {
      * @return internal virtual storage address of the node
      */
     public long currentAddress() {
-		return StorageAddress.createPointer((int) page, ItemId.getId(lastTID));
-	}
+        return StorageAddress.createPointer((int) pageNum, ItemId.getId(lastTupleID));
+    }
 }

@@ -444,7 +444,7 @@ public class DOMFile extends BTree implements Lockable {
         }
         final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         rec.offset += LENGTH_DATA_LENGTH;
-        if (ItemId.isRelocated(rec.getTID()))
+        if (ItemId.isRelocated(rec.getTupleID()))
             rec.offset += LENGTH_ORIGINAL_LOCATION;
         if (vlen == OVERFLOW)
             rec.offset += LENGTH_OVERFLOW_LOCATION;
@@ -1379,7 +1379,7 @@ public class DOMFile extends BTree implements Lockable {
         }
         final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         rec.offset += LENGTH_DATA_LENGTH;
-        if (ItemId.isRelocated(rec.getTID()))
+        if (ItemId.isRelocated(rec.getTupleID()))
             rec.offset += LENGTH_ORIGINAL_LOCATION;
         Value v;
         if (vlen == OVERFLOW) {
@@ -1556,7 +1556,7 @@ public class DOMFile extends BTree implements Lockable {
             System.arraycopy(rec.getPage().data, rec.offset, data, 0, LENGTH_LINK);
             //Position the stream at the very beginning of the record
             RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
-                rec.getPage().getPageNum(), rec.getTID(), rec.offset - LENGTH_TID, data, false, 0);
+                rec.getPage().getPageNum(), rec.getTupleID(), rec.offset - LENGTH_TID, data, false, 0);
             writeToLog(loggable, rec.getPage().page);
         }
         final int end = rec.offset + LENGTH_LINK;
@@ -1605,12 +1605,12 @@ public class DOMFile extends BTree implements Lockable {
         final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         rec.offset += LENGTH_DATA_LENGTH;
         short realLen = vlen;
-        if (ItemId.isLink(rec.getTID())) {
+        if (ItemId.isLink(rec.getTupleID())) {
             throw new RuntimeException("Cannot remove link ...");
         }
         boolean isOverflow = false;
         long backLink = 0;
-        if (ItemId.isRelocated(rec.getTID())) {
+        if (ItemId.isRelocated(rec.getTupleID())) {
             backLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
             rec.offset += LENGTH_ORIGINAL_LOCATION;
             realLen += LENGTH_ORIGINAL_LOCATION;
@@ -1632,9 +1632,10 @@ public class DOMFile extends BTree implements Lockable {
         }
         if (isTransactional && transaction != null) {
             byte[] data = new byte[vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen];
-            System.arraycopy(rec.getPage().data, rec.offset, data, 0, vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
+            System.arraycopy(rec.getPage().data, rec.offset, data, 0,
+                vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
             RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
-               rec.getPage().getPageNum(), rec.getTID(), startOffset, data, isOverflow, backLink);
+               rec.getPage().getPageNum(), rec.getTupleID(), startOffset, data, isOverflow, backLink);
             writeToLog(loggable, rec.getPage().page);
         }
         final int dlen = pageHeader.getDataLength();
@@ -1853,7 +1854,7 @@ public class DOMFile extends BTree implements Lockable {
         final RecordPos rec = findRecord(p);
         final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         rec.offset += LENGTH_DATA_LENGTH;
-        if (ItemId.isRelocated(rec.getTID()))
+        if (ItemId.isRelocated(rec.getTupleID()))
             rec.offset += LENGTH_ORIGINAL_LOCATION;
         if (value.length < vlen) {
             // value is smaller than before
@@ -1864,12 +1865,12 @@ public class DOMFile extends BTree implements Lockable {
                     + value.length + "; got: " + vlen);
         } else {
             if (isTransactional && transaction != null) {
-                if (ItemId.getId(rec.getTID()) < 0) {
+                if (ItemId.getId(rec.getTupleID()) < 0) {
                     LOG.error("tid < 0");
                     //TODO : throw exception ? -pb
                 }
                 Loggable loggable = new UpdateValueLoggable(transaction, 
-                    rec.getPage().getPageNum(), rec.getTID(),
+                    rec.getPage().getPageNum(), rec.getTupleID(),
                     value, rec.getPage().data, rec.offset);
                 writeToLog(loggable, rec.getPage().page);
             }
@@ -1968,10 +1969,10 @@ public class DOMFile extends BTree implements Lockable {
             }
             //Position the stream at the very beginning of the record
             short tupleID = ByteConversion.byteToShort(rec.getPage().data, rec.offset - LENGTH_TID);
-            rec.setTID(tupleID);
-            if (ItemId.isLink(rec.getTID())) {
+            rec.setTupleID(tupleID);
+            if (ItemId.isLink(rec.getTupleID())) {
                 // This is a link: skip it
-                //We position the offset *after* the next TID
+                //We position the offset *after* the next TupleID
                 rec.offset += (LENGTH_FORWARD_LOCATION + LENGTH_TID);
             } else {
                 //OK: node found
@@ -1983,7 +1984,7 @@ public class DOMFile extends BTree implements Lockable {
         int realLen = vlen;
         rec.offset += LENGTH_DATA_LENGTH;
         //Check if the node was relocated
-        if (ItemId.isRelocated(rec.getTID())) {
+        if (ItemId.isRelocated(rec.getTupleID())) {
             rec.offset += LENGTH_ORIGINAL_LOCATION;
         }
         byte[] data = rec.getPage().data;
@@ -2004,8 +2005,7 @@ public class DOMFile extends BTree implements Lockable {
         readOffset += StoredNode.LENGTH_SIGNATURE_LENGTH;
         //Switch on the node type
         switch (type) {
-            case Node.ELEMENT_NODE: 
-            {
+            case Node.ELEMENT_NODE: {
                 final int children = ByteConversion.byteToInt(data, readOffset);
                 readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
                 final int dlnLen = ByteConversion.byteToShort(data, readOffset);
@@ -2027,8 +2027,7 @@ public class DOMFile extends BTree implements Lockable {
                 return;
             }
             case Node.TEXT_NODE:
-            case Node.CDATA_SECTION_NODE:
-            {
+            case Node.CDATA_SECTION_NODE: {
                 final int dlnLen = ByteConversion.byteToShort(data, readOffset);
                 readOffset += NodeId.LENGTH_NODE_ID_UNITS;
                 final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
@@ -2037,8 +2036,7 @@ public class DOMFile extends BTree implements Lockable {
                     (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
                 break;
             }
-            case Node.ATTRIBUTE_NODE:
-            {
+            case Node.ATTRIBUTE_NODE: {
                 if (isTopNode) {
                     final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
                     final byte idSizeType = (byte) (data[start] & 0x3);
@@ -2247,7 +2245,7 @@ public class DOMFile extends BTree implements Lockable {
                 "; contents: " + debugPageContents(page));
             ByteConversion.byteToShort(rec.getPage().data, rec.offset);
             rec.offset += LENGTH_DATA_LENGTH;
-            if (ItemId.isRelocated(rec.getTID()))
+            if (ItemId.isRelocated(rec.getTupleID()))
                 rec.offset += LENGTH_ORIGINAL_LOCATION;
             System.arraycopy(loggable.value, 0, rec.getPage().data, rec.offset, loggable.value.length);
             rec.getPage().getPageHeader().setLsn(loggable.getLsn());
@@ -2266,7 +2264,7 @@ public class DOMFile extends BTree implements Lockable {
         final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         SanityCheck.THROW_ASSERT(vlen == loggable.oldValue.length);
         rec.offset += LENGTH_DATA_LENGTH;
-        if (ItemId.isRelocated(rec.getTID()))
+        if (ItemId.isRelocated(rec.getTupleID()))
             rec.offset += LENGTH_ORIGINAL_LOCATION;
         System.arraycopy(loggable.oldValue, 0, page.data, rec.offset, loggable.oldValue.length);
         page.getPageHeader().setLsn(loggable.getLsn());
