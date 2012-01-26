@@ -110,8 +110,8 @@ public class ConsistencyCheckTask implements SystemTask {
         agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.INIT));
 
         if (paused) {
-            if (LOG.isDebugEnabled())
-                LOG.debug("Consistency check is paused.");
+            if (LOG.isInfoEnabled())
+                LOG.info("Consistency check is paused.");
             agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.PAUSED));
             return;
         }
@@ -153,16 +153,16 @@ public class ConsistencyCheckTask implements SystemTask {
             }
 
             if (doBackup) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Starting backup...");
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Starting backup...");
                 }
 
                 SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, createZip, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
-                if (LOG.isDebugEnabled() && lastExportedBackup != null) {
-                    LOG.debug("Created backup to file: " + lastExportedBackup.getAbsolutePath());
+                if (LOG.isInfoEnabled() && lastExportedBackup != null) {
+                    LOG.info("Created backup to file: " + lastExportedBackup.getAbsolutePath());
                 }
             }
 
