@@ -467,16 +467,24 @@ public class SecurityManagerImpl implements SecurityManager {
 
         throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "User [" + username + "] not found");
     }
+    
+    protected Subject systemSubject = null;
+    protected Subject guestSubject = null;
 	
     @Override
     public Subject getSystemSubject() {
-        return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
+    	if (systemSubject == null)
+    		systemSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
+    	
+        return systemSubject; 
     }
 
     @Override
     public Subject getGuestSubject() {
-        return new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
-        //return new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_GUEST, this);
+    	if (guestSubject == null)
+    		guestSubject = new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
+    	
+    	return guestSubject;
     }
 
     @Override
