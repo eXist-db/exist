@@ -10,7 +10,6 @@ import org.exist.util.Configuration;
 
 public class SyncTask implements SystemTask {
 
-	@SuppressWarnings("unused")
 	private final static String JOB_GROUP = "eXist.internal";
 	private final static String JOB_NAME = "Sync";
 	
