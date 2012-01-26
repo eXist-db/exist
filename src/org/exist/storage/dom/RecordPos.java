@@ -24,42 +24,42 @@ import org.exist.storage.dom.DOMFile.DOMPage;
 
 public final class RecordPos {
 
-	private DOMPage page;
-	int offset;
-	private short tid;
-	private boolean isLink = false;
+    private DOMPage page;
+    int offset;
+    private short tupleID;
+    private boolean isLink = false;
 
-	public RecordPos(int offset, DOMPage page, short tid) {
-		this.offset = offset;
-		this.page = page;
-		this.tid = tid;
-	}
+    public RecordPos(int offset, DOMPage page, short tupleID) {
+        this.offset = offset;
+        this.page = page;
+        this.tupleID = tupleID;
+    }
 
-	public RecordPos(int offset, DOMPage page, short tid, boolean isLink) {
-		this.offset = offset;
-		this.page = page;
-		this.tid = tid;
-		this.isLink = isLink;
-	}
+    public RecordPos(int offset, DOMPage page, short tupleID, boolean isLink) {
+        this.offset = offset;
+        this.page = page;
+        this.tupleID = tupleID;
+        this.isLink = isLink;
+    }
+
+    public DOMPage getPage() {
+        return page;
+    }
+
+    public void setPage(DOMPage page) {
+        this.page = page;
+    }	
+
+    public short getTupleID() {
+        return tupleID;
+    }
 	
-	public DOMPage getPage() {
-		return page;
-	}
-	
-	public void setPage(DOMPage page) {
-		this.page = page;
-	}	
+    //Strange : only one call to this method
+    public void setTupleID(short tupleID) {
+        this.tupleID = tupleID;
+    }	
 
-	public short getTID() {
-		return tid;
-	}
-	
-	//Strange : only one call to this method
-	public void setTID(short tid) {
-		this.tid = tid;
-	}	
-
-	public boolean isLink() {
-		return isLink;
-	}
+    public boolean isLink() {
+        return isLink;
+    }
 }

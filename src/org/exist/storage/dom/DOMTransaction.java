@@ -27,7 +27,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 
-
 /**
  * DOMTransaction controls access to the DOM file
  * 
@@ -41,7 +40,7 @@ import org.exist.util.ReadOnlyException;
 public abstract class DOMTransaction {
 
     private final static Logger LOG = Logger.getLogger(DOMTransaction.class);
-	
+
     private Object ownerObject;
     private DOMFile file;
     private DocumentImpl document = null;
@@ -52,10 +51,10 @@ public abstract class DOMTransaction {
      * @param owner
      * @param f
      */
-    public DOMTransaction(Object owner, DOMFile f) {
-    	ownerObject = owner;
-    	file = f;
-    	mode = Lock.READ_LOCK;
+    public DOMTransaction(Object owner, DOMFile file) {
+        this.ownerObject = owner;
+        this.file = file;
+        this.mode = Lock.READ_LOCK;
     }
 
     /**
@@ -65,11 +64,11 @@ public abstract class DOMTransaction {
      * @param f a <code>DOMFile</code> value
      * @param mode an <code>int</code> value
      */
-    public DOMTransaction(Object owner, DOMFile f, int mode) {
-	this(owner, f);
-	this.mode = mode;
+    public DOMTransaction(Object owner, DOMFile file, int mode) {
+        this(owner, file);
+        this.mode = mode;
     }
-	
+
     /**
      * Creates a new <code>DOMTransaction</code> instance.
      *
@@ -78,11 +77,11 @@ public abstract class DOMTransaction {
      * @param mode an <code>int</code> value
      * @param doc a <code>DocumentImpl</code> value
      */
-    public DOMTransaction(Object owner, DOMFile f, int mode, DocumentImpl doc) {
-	this(owner, f, mode);
-	this.document = doc;		
+    public DOMTransaction(Object owner, DOMFile file, int mode, DocumentImpl doc) {
+        this(owner, file, mode);
+        this.document = doc;
     }
-	
+
     /**
      * The method <code>start</code>
      *
@@ -97,22 +96,22 @@ public abstract class DOMTransaction {
      * @return an <code>Object</code> value
      */
     public Object run() {
-    	Lock lock = file.getLock();
+        Lock lock = file.getLock();
         try {
             // try to acquire a lock on the file
             try {
                 lock.acquire( mode );
             } catch( LockException e ) {
-            	System.out.println("Failed to acquire read lock on " + file.getFile().getName());
+                System.out.println("Failed to acquire read lock on " + file.getFile().getName());
                 return null;
             }
-    	    file.setOwnerObject(ownerObject);
-    	    file.setCurrentDocument(document);
+            file.setOwnerObject(ownerObject);
+            file.setCurrentDocument(document);
             return start();
-    	} catch( ReadOnlyException e ) {
-	    LOG.warn(e.getMessage(), e);
+        } catch(ReadOnlyException e) {
+            LOG.error(e.getMessage(), e);
         } finally {
-	    lock.release(mode);
+            lock.release(mode);
         }
         return null;
     }
