@@ -24,6 +24,7 @@ package org.exist.xquery.modules.httpclient;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 import org.apache.log4j.Logger;
 
@@ -105,43 +106,60 @@ public class PUTFunction extends BaseHTTPClientFunction
 
         String indentLevel = (args.length >= 5 && !args[4].isEmpty()) ? args[4].itemAt(0).toString() : null;
 
-        //serialize the node to SAX
-        ByteArrayOutputStream baos           = new ByteArrayOutputStream();
-        OutputStreamWriter    osw            = null;
+        RequestEntity entity = null;
+        
+        if( Type.subTypeOf( payload.getType(), Type.NODE ) ) {
+	        //serialize the node to SAX
+	        ByteArrayOutputStream baos           = new ByteArrayOutputStream();
+	        OutputStreamWriter    osw            = null;
+	
+	        try {
+	            osw = new OutputStreamWriter( baos, "UTF-8" );
+	        }
+	        catch( UnsupportedEncodingException e ) {
+	            throw( new XPathException( this, "Internal error" ) );
+	        }
+	        IndentingXMLWriter     xmlWriter = new IndentingXMLWriter( osw );
+	        Properties outputProperties = new Properties();
+	        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+	        if (indentLevel != null) {
+	            outputProperties.setProperty(OutputKeys.INDENT, "yes");
+	            outputProperties.setProperty(EXistOutputKeys.INDENT_SPACES, indentLevel);
+	        } else {
+	            outputProperties.setProperty(OutputKeys.INDENT, "no");
+	        }
+	        xmlWriter.setOutputProperties(outputProperties);
+	
+	        SAXSerializer sax       = new SAXSerializer();
+	
+	        sax.setReceiver( xmlWriter );
+	
+	        try {
+	            payload.toSAX( context.getBroker(), sax, new Properties() );
+	            osw.flush();
+	            osw.close();
+	        } catch( Exception e ) {
+	        	throw new XPathException(this, e);
+	        }
+	        entity = new ByteArrayRequestEntity( baos.toByteArray(), "application/xml; charset=utf-8" );
 
-        try {
-            osw = new OutputStreamWriter( baos, "UTF-8" );
-        }
-        catch( UnsupportedEncodingException e ) {
-            throw( new XPathException( this, "Internal error" ) );
-        }
-        IndentingXMLWriter     xmlWriter = new IndentingXMLWriter( osw );
-        Properties outputProperties = new Properties();
-        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        if (indentLevel != null) {
-            outputProperties.setProperty(OutputKeys.INDENT, "yes");
-            outputProperties.setProperty(EXistOutputKeys.INDENT_SPACES, indentLevel);
+        } else if( Type.subTypeOf( payload.getType(), Type.BASE64_BINARY ) ) { 
+
+        	entity = new ByteArrayRequestEntity((byte[]) ((BinaryValue)payload).toJavaObject(byte[].class));
+        	
         } else {
-            outputProperties.setProperty(OutputKeys.INDENT, "no");
-        }
-        xmlWriter.setOutputProperties(outputProperties);
 
-        SAXSerializer sax       = new SAXSerializer();
-
-        sax.setReceiver( xmlWriter );
-
-        try {
-            payload.toSAX( context.getBroker(), sax, new Properties() );
-            osw.flush();
-            osw.close();
+            try {
+                entity = new StringRequestEntity( payload.getStringValue(), "text/text; charset=utf-8", "UTF-8" );
+            }
+            catch( UnsupportedEncodingException uee ) {
+                uee.printStackTrace();
+            }
         }
-        catch( Exception e ) {
-            e.printStackTrace();
-        }
+
 
         //setup PUT request
         PutMethod     put    = new PutMethod( url );
-        RequestEntity entity = new ByteArrayRequestEntity( baos.toByteArray(), "application/xml; charset=utf-8" );
 
         put.setRequestEntity( entity );
 
