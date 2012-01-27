@@ -101,6 +101,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -123,9 +124,6 @@ public class XQueryURLRewrite implements Filter {
 
     private static final Logger LOG = Logger.getLogger(XQueryURLRewrite.class);
 
-    public final static String DEFAULT_USER = "guest";
-    public final static String DEFAULT_PASS = "guest";
-
     public final static String RQ_ATTR = "org.exist.forward";
     public final static String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
     public final static String RQ_ATTR_SERVLET_PATH = "org.exist.forward.servlet-path";
@@ -139,7 +137,7 @@ public class XQueryURLRewrite implements Filter {
 
     private FilterConfig config;
 
-    private final Map<String, ModelAndView> urlCache = new HashMap<String, ModelAndView>();
+    private final Map<String, ModelAndView> urlCache = new ConcurrentHashMap<String, ModelAndView>();
 
     protected Subject defaultUser = null;
     protected BrokerPool pool;
@@ -147,9 +145,7 @@ public class XQueryURLRewrite implements Filter {
     // path to the query
     private String query = null;
     
-    private final Map<Object, Source> sources = new HashMap<Object, Source>();
-
-    private boolean checkModified = true;
+    //private boolean checkModified = true;
 
     private boolean compiledCache = true;
 
@@ -162,11 +158,11 @@ public class XQueryURLRewrite implements Filter {
 
         query = filterConfig.getInitParameter("xquery");
         
-        String opt = filterConfig.getInitParameter("check-modified");
-        if (opt != null)
-            checkModified = opt != null && opt.equalsIgnoreCase("true");
+//        String opt = filterConfig.getInitParameter("check-modified");
+//        if (opt != null)
+//            checkModified = opt != null && opt.equalsIgnoreCase("true");
         
-        opt = filterConfig.getInitParameter("compiled-cache");
+        String opt = filterConfig.getInitParameter("compiled-cache");
         if (opt != null)
         	compiledCache = opt != null && opt.equalsIgnoreCase("true");
         
@@ -207,7 +203,7 @@ public class XQueryURLRewrite implements Filter {
 
         try {
             configure();
-            checkCache(user);
+            //checkCache(user);
 
             RequestWrapper modifiedRequest = new RequestWrapper(request);
             URLRewrite staticRewrite = rewriteConfig.lookup(modifiedRequest);
@@ -226,7 +222,10 @@ public class XQueryURLRewrite implements Filter {
                 }
 
                 // check if the request URI is already in the url cache
-                ModelAndView modelView = getFromCache(modifiedRequest.getHeader("Host") + modifiedRequest.getRequestURI(), user);
+                ModelAndView modelView = getFromCache(
+                		modifiedRequest.getHeader("Host") + modifiedRequest.getRequestURI(), 
+                		user);
+                
                 // no: create a new model and view configuration
                 if (modelView == null) {
                     modelView = new ModelAndView();
@@ -243,7 +242,7 @@ public class XQueryURLRewrite implements Filter {
                 		outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
                 		outputProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
                         
-                        result = runQuery(broker, modifiedRequest, response, staticRewrite, outputProperties);
+                        result = runQuery(broker, modifiedRequest, response, modelView, staticRewrite, outputProperties);
 
                         logResult(broker, result);
                         
@@ -310,11 +309,9 @@ public class XQueryURLRewrite implements Filter {
                         	return;
 	                    }
 	                    
-	                    if (modelView.useCache()) {
-	                        synchronized (urlCache) {
-	                            urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
-	                        }
-	                    }
+	                    if (modelView.useCache())
+                            urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
+
                     } finally {
                         pool.release(broker);
                     }
@@ -481,62 +478,50 @@ public class XQueryURLRewrite implements Filter {
         }
     }
 
-	private ModelAndView getFromCache(String url, Subject user) throws EXistException {
+	private ModelAndView getFromCache(String url, Subject user) throws EXistException, ServletException, PermissionDeniedException {
 		/* Make sure we have a broker *before* we synchronize on urlCache or we may run
 		 * into a deadlock situation (with method checkCache)
 		 */
+		ModelAndView model = urlCache.get(url);
+		if (model == null)
+			return null;
+
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			synchronized (urlCache) {
-				return urlCache.get(url);
+
+			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
+			
+			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
+				urlCache.remove(url);
+				return null;
 			}
+			
+			return model;
 		} finally {
 			pool.release(broker);
 		}
 	}
 	
-    private void checkCache(Subject user) throws EXistException {
-        if (checkModified) {
-            // check if any of the currently used sources has been updated
-            // if yes, clear the cache
-        	DBBroker broker = null;
-            try {
-                broker = pool.get(user);
-                synchronized (urlCache) {
-                	for (Source source : sources.values()) {
-                		if (source instanceof DBSource) {
-                			// Check if the XQuery source changed. If yes, clear all caches.
-
-                			if (source.isValid(broker) != Source.VALID) {
-                				clearCaches();
-                				break;
-                			}
-                		} else {
-                			if (source.isValid((DBBroker)null) != Source.VALID) {
-                				clearCaches();
-                				break;
-                			}
-                		}
-                	}
-                }
-            } finally {
-                pool.release(broker);
-            }
-        }
-    }
+//    private void checkCache(Subject user) throws EXistException {
+//        if (checkModified) {
+//            // check if any of the currently used sources has been updated
+//        	DBBroker broker = null;
+//            try {
+//                broker = pool.get(user);
+//
+//                for (Entry<ModelAndView, Source> entry : sources.entrySet() )
+//        			if (entry.getValue().isValid(broker) != Source.VALID)
+//        				urlCache.remove(entry.getKey());
+//
+//            } finally {
+//                pool.release(broker);
+//            }
+//        }
+//    }
 
     protected void clearCaches() throws EXistException {
-    	DBBroker broker = null;
-    	try {
-    		broker = pool.get(defaultUser);
-    		synchronized (urlCache) {
-    			urlCache.clear();
-    			sources.clear();
-    		}
-    	} finally {
-    		pool.release(broker);
-    	}
+		urlCache.clear();
     }
     
     /**
@@ -663,26 +648,28 @@ public class XQueryURLRewrite implements Filter {
     public void destroy() {
         config = null;
     }
-
-    private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
-                              URLRewrite staticRewrite, Properties outputProperties)
-        throws ServletException, XPathException, PermissionDeniedException {
-        // Try to find the XQuery
-        SourceInfo sourceInfo;
+    
+    private SourceInfo getSourceInfo(DBBroker broker, RequestWrapper request, URLRewrite staticRewrite) throws ServletException {
         String moduleLoadPath = config.getServletContext().getRealPath(".");
         String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         if (basePath == null)
-            sourceInfo = getSource(broker, moduleLoadPath);
+            return getSource(broker, moduleLoadPath);
         else
-            sourceInfo = findSource(request, broker, basePath);
+            return findSource(request, broker, basePath);
+    }
+
+    private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
+							  ModelAndView model,
+                              URLRewrite staticRewrite, Properties outputProperties)
+        throws ServletException, XPathException, PermissionDeniedException {
+        // Try to find the XQuery
+        SourceInfo sourceInfo = getSourceInfo(broker, request, staticRewrite);
 
         if (sourceInfo == null)
             return Sequence.EMPTY_SEQUENCE; // no controller found
 
-        synchronized (urlCache) {
-            sources.put(sourceInfo.source.getKey(), sourceInfo.source);
-        }
-
+        String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
+        
         XQuery xquery = broker.getXQueryService();
         XQueryPool xqyPool = xquery.getXQueryPool();
 		
@@ -706,6 +693,7 @@ public class XQueryURLRewrite implements Filter {
 				throw new ServletException("Failed to read query from " + query, e);
 			}
 		}
+        model.setSourceInfo(sourceInfo);
         
 //		This used by controller.xql only ?
 //		String xdebug = request.getParameter("XDEBUG_SESSION_START");
@@ -717,7 +705,7 @@ public class XQueryURLRewrite implements Filter {
         try {
 			return xquery.execute(compiled, null, outputProperties);
 		} finally {
-                        queryContext.cleanupBinaryValueInstances();
+            queryContext.cleanupBinaryValueInstances();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
 		}
     }
@@ -958,8 +946,17 @@ public class XQueryURLRewrite implements Filter {
         List<URLRewrite> views = new LinkedList<URLRewrite>();
         List<URLRewrite> errorHandlers = null;
         boolean useCache = false;
+        SourceInfo sourceInfo = null;
 
         private ModelAndView() {
+        }
+
+        public void setSourceInfo(SourceInfo sourceInfo) {
+            this.sourceInfo = sourceInfo;
+        }
+
+        public SourceInfo getSourceInfo() {
+            return sourceInfo;
         }
 
         public void setModel(URLRewrite model) {
