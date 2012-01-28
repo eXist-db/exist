@@ -60,9 +60,10 @@ import java.util.Arrays;
  */
 
 public class IndexQuery {
+
     // No Operator
     public static final int ANY = 0;   // Any And All Matches
-    
+
     // Singleton Operators
     public static final int EQ = 1;    // Equal To
     public static final int NEQ = -1;  // Not Equal To
@@ -70,7 +71,7 @@ public class IndexQuery {
     public static final int LEQ = -2;  // Less Than Or Equal To
     public static final int LT = 3;    // Less Than
     public static final int GEQ = -3;  // Greater Than Or Equal To
-    
+
     // Range Operators
     public static final int BW = 4;    // Between (Inclusive)
     public static final int NBW = -4;  // Not Between (Inclusive)
@@ -80,11 +81,11 @@ public class IndexQuery {
     // Set Operators
     public static final int IN = 6;    // In The Set
     public static final int NIN = -6;  // Not In The Set
-    
+
     // Truncation Operator
     public static final int TRUNC_RIGHT = 7;
     public static final int TRUNC_LEFT = 8;
-    
+
     public static final int REGEXP = 9;
 
     public static final int RANGE = 10;
@@ -95,12 +96,12 @@ public class IndexQuery {
    public IndexQuery() {
       op = ANY;
    }
-   
+
    public IndexQuery(int op, Value[] vals) {
       this.op = op;
       this.vals = vals;
    }
-   
+
    public IndexQuery(Value[] vals) {
       this(IN, vals);
    }
@@ -109,36 +110,36 @@ public class IndexQuery {
       this.op = op;
       vals = new Value[] { val1 };
    }
-      
+
    public IndexQuery(Value val1) {
       this(EQ, val1);
    }
-   
+
    public IndexQuery(int op, Value val1, Value val2) {
       this.op = op;
       vals = new Value[] { val1, val2 };
    }
-   
+
    public IndexQuery(Value val1, Value val2) {
       this(IN, val1, val2);
    }
-   
+
    public IndexQuery(int op, String val1) {
       this(op, new Value(val1));
    }
-   
+
    public IndexQuery(String val1) {
       this(new Value(val1));
    }
-   
+
    public IndexQuery(int op, String val1, String val2) {
       this(op, new Value(val1), new Value(val2));
    }
-   
+
    public IndexQuery(String val1, String val2) {
       this(new Value(val1), new Value(val2));
    }
-   
+
    /**
     * getOperator returns the operator associated with this query.
     *
@@ -147,7 +148,7 @@ public class IndexQuery {
    public int getOperator() {
       return op;
    }
-   
+
    /**
     * getValue returns one of the Values associated with this query.
     *
@@ -166,7 +167,7 @@ public class IndexQuery {
    public Value[] getValues() {
       return vals;
    }
-   
+
    /**
     * getLength returns the length of the Value set associated with
     * this query.
@@ -176,8 +177,7 @@ public class IndexQuery {
    public final int getLength() {
       return vals.length;
    }
-   
-   
+
    /**
     * testValue tests the specified value for validity against this
     * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
@@ -187,61 +187,44 @@ public class IndexQuery {
     * @return Whether or not the value matches
     */
     public boolean testValue(Value value) {
-	switch ( op ) {
-	    // No Comparison (Any)
-	case ANY:
+        switch ( op ) {
+        // No Comparison (Any)
+        case ANY:
             return true;
-            
-	    // Singleton Comparisons
-	case EQ:
+        // Singleton Comparisons
+        case EQ:
             return value.equals(vals[0]);
-	case NEQ:
+        case NEQ:
             return !value.equals(vals[0]);
-	case GT:
+        case GT:
             return value.compareTo(vals[0]) > 0;
-	case LEQ:
-            return value.compareTo(vals[0]) <= 0;
-	case LT:
-            return value.compareTo(vals[0]) < 0;
-	case GEQ:
+        case GEQ:
             return value.compareTo(vals[0]) >= 0;
-            
-	    // Range Comparisons
-	case BW:
+        case LT:
+            return value.compareTo(vals[0]) < 0;
+        case LEQ:
+            return value.compareTo(vals[0]) <= 0;
+        // Range Comparisons
+        case BW:
             return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) <= 0;
-	case NBW:
+        case NBW:
             return value.compareTo(vals[0]) <= 0 || value.compareTo(vals[1]) >= 0;
-	case BWX:
+        case BWX:
             return value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
-	case NBWX:
+        case NBWX:
             return value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
-    case RANGE:
+        case RANGE:
             return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
-            
-	    // Set Comparisons
-	case IN:
-	case NIN:
-	    return Arrays.binarySearch(vals, value)>= 0 ? op == IN
-		: op == NIN;
-	case TRUNC_RIGHT:
-	    /*
-	      if(vals[0].getLength() > value.getLength()) {
-	      byte[] temp = new byte[value.getLength()];
-	      System.arraycopy(vals[0].getData(), 0, temp, 0, value.getLength());
-	      return (new Value(temp)).compareTo(value) == 0;
-	      }
-	      if(value.getLength() > vals[0].getLength()) {
-	      byte[] temp = new byte[vals[0].getLength()];
-	      System.arraycopy(value.getData(), 0, temp, 0, vals[0].getLength());
-	      return (new Value(temp)).compareTo(vals[0]) == 0;
-	      }
-	      return vals[0].compareTo(value) == 0;
-	    */
-	    return value.startsWith(vals[0]);
-	case TRUNC_LEFT:
-	    return value.endsWith(vals[0]);
-	}
-	return false;
+        // Set Comparisons
+        case IN:
+        case NIN:
+            return Arrays.binarySearch(vals, value)>= 0 ? op == IN : op == NIN;
+        case TRUNC_RIGHT:
+            return value.startsWith(vals[0]);
+        case TRUNC_LEFT:
+            return value.endsWith(vals[0]);
+        }
+        return false;
     }
 
    /**
