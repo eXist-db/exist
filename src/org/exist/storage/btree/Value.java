@@ -63,135 +63,130 @@ import org.apache.log4j.Logger;
 
 public class Value implements Comparable<Object> {
 
-	private static Logger LOG = Logger.getLogger(Value.class.getName());
+    private static Logger LOG = Logger.getLogger(Value.class.getName());
 
     public final static Value EMPTY_VALUE = new Value(new byte[0]);
 
     protected long address = -1;
     protected byte[] data = null;
     protected int pos = 0;
-
     protected int len = -1;
 
     public Value() {
+    }
+
+    public Value(Value value) {
+        this.data = value.data;
+        this.pos = value.pos;
+        this.len = value.len;
 	}
 
-	public Value(Value value) {
-		data = value.data;
-		pos = value.pos;
-		len = value.len;
-	}
+    public Value(byte[] data) {
+        this.data = data;
+        this.len = data.length;
+    }
 
-	public Value(byte[] data) {
-		this.data = data;
-		len = data.length;
-	}
+    public Value(byte[] data, int pos, int len) {
+        this.data = data;
+        this.pos = pos;
+        this.len = len;
+    }
 
-	public Value(byte[] data, int pos, int len) {
-		this.data = data;
-		this.pos = pos;
-		this.len = len;
-	}
+    public Value(String data) {
+        try {
+            this.data = data.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+            LOG.warn(uee);
+            this.data = data.getBytes();
+        }
+        this.len = this.data.length;
+    }
 
-	public Value(String data) {
-		try {
-			this.data = data.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException uee) {
-			LOG.warn(uee);
-			this.data = data.getBytes();
-		}
-		this.len = this.data.length;
-	}
-    
-	public void setAddress( long addr ) {
-		address = addr;
-	}
-	
-	public long getAddress() {
-		return address;
-	}
-    
-	/**
-	 * getData retrieves the data being stored by the Value as a byte array.
-	 *
-	 * @return The Data
-	 */
-	public byte[] getData() {
-		if (pos > 0 || len < data.length) {
-			final byte[] b = new byte[len];
-			System.arraycopy(data, pos, b, 0, len);
-			return b;
-		} else
-			return data;
-	}
-    
-	public final byte[] data() {
-		return data;
-	}
+    public void setAddress( long addr ) {
+        address = addr;
+    }
 
-	public final int start() {
-		return pos;
-	}
-	
-	/**
-	 * getLength retrieves the length of the data being stored by the Value.
-	 *
-	 * @return The Value length
-	 */
-	public final int getLength() {
-		return len;
-	}
+    public long getAddress() {
+        return address;
+    }
 
-	public String toString() {
-		return dump();
-	}
+    /**
+     * getData retrieves the data being stored by the Value as a byte array.
+     *
+     * @return The Data
+     */
+    public byte[] getData() {
+        if (pos > 0 || len < data.length) {
+            final byte[] b = new byte[len];
+            System.arraycopy(data, pos, b, 0, len);
+            return b;
+        } else
+            return data;
+    }
 
-	public int hashCode() {
-		return toString().hashCode();
-	}
+    public final byte[] data() {
+        return data;
+    }
 
-	public boolean equals(Value value) {
-		return len == value.len ? compareTo(value) == 0 : false;
-	}
+    public final int start() {
+        return pos;
+    }
 
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj instanceof Value)
-			return equals((Value) obj);
-		else
-			return equals(new Value(obj.toString()));
-	}
+    /**
+     * getLength retrieves the length of the data being stored by the Value.
+     *
+     * @return The Value length
+     */
+    public final int getLength() {
+        return len;
+    }
 
-	public final int compareTo(Value value) {
-		//final int dlen = value.len;
-		final int stop = len > value.len ? value.len : len;
+    public String toString() {
+    	return dump();
+    }
 
-		for (int i = 0; i < stop; i++) {
-			final byte b1 = data[pos + i];
-			final byte b2 = value.data[value.pos + i];
-			if (b1 != b2){
-				final short s1 = (short) (b1 & 0xFF);
-				final short s2 = (short) (b2 & 0xFF);
-				return s1 > s2 ? (i + 1) : - (i + 1);
-			}
-		}
+    public int hashCode() {
+        return toString().hashCode();
+    }
 
-		if (len == value.len)
-			return 0;
-		else
-			return len > value.len ? stop + 1 : - (stop + 1);
-	}
+    public boolean equals(Value value) {
+        return len == value.len ? compareTo(value) == 0 : false;
+    }
 
-	public final int compareTo(Object obj) {
-		if (obj instanceof Value)
-			return compareTo((Value) obj);
-		else
-			return compareTo(new Value(obj.toString()));
-	}
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj instanceof Value)
+            return equals((Value) obj);
+        else
+            return equals(new Value(obj.toString()));
+    }
+
+    public final int compareTo(Value value) {
+        final int stop = len > value.len ? value.len : len;
+        for (int i = 0; i < stop; i++) {
+            final byte b1 = data[pos + i];
+            final byte b2 = value.data[value.pos + i];
+            if (b1 != b2){
+                final short s1 = (short) (b1 & 0xFF);
+                final short s2 = (short) (b2 & 0xFF);
+                return s1 > s2 ? (i + 1) : - (i + 1);
+            }
+        }
+        if (len == value.len)
+            return 0;
+        else
+            return len > value.len ? stop + 1 : - (stop + 1);
+    }
+
+    public final int compareTo(Object obj) {
+        if (obj instanceof Value)
+            return compareTo((Value) obj);
+        else
+            return compareTo(new Value(obj.toString()));
+    }
 
     public final int comparePrefix(Value value) {
-        //int size = value.len;
         for (int i = 0; i < value.len; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
@@ -225,29 +220,29 @@ public class Value implements Comparable<Object> {
     }
 
     public final boolean startsWith(Value value) {
-		if (len < value.len)
-			return false;
-		byte[] vdata = value.data;
-		int vpos = value.pos;
-
-		for (int i = 0; i < value.len; i++)
-			if (data[i + pos] != vdata[i + vpos])
-				return false;
-		return true;
-	}
+        if (len < value.len)
+            return false;
+        byte[] vdata = value.data;
+        int vpos = value.pos;
+        for (int i = 0; i < value.len; i++) {
+            if (data[i + pos] != vdata[i + vpos])
+                return false;
+        }
+        return true;
+    }
 
     public final boolean endsWith(Value value) {
-		if (len < value.len)
-			return false;
-		byte[] vdata = value.data;
-		int vpos = value.pos;
-		int d = len - value.len;
-		for (int i = 0; i < value.len; ++i) {
-			if (data[d + i + pos] != vdata[i + vpos])
-				return false;
-		}
-		return true;
-	}
+        if (len < value.len)
+            return false;
+        byte[] vdata = value.data;
+        int vpos = value.pos;
+        int d = len - value.len;
+        for (int i = 0; i < value.len; ++i) {
+            if (data[d + i + pos] != vdata[i + vpos])
+                return false;
+        }
+        return true;
+    }
 
     /**
      * Returns the length of the common prefix this value
@@ -275,19 +270,18 @@ public class Value implements Comparable<Object> {
         }
         return l;
     }
-    
+
     public Value getSeparator(Value other) {
         int offset = commonPrefix(other) + 1;
         byte[] data = new byte[Math.abs(offset)];
         System.arraycopy(other.getData(), 0, data, 0, data.length);
         return new Value(data);
     }
-    
+
     public String dump() {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < len; i++) {
-            buf.append(Integer.toHexString(data[pos + i]    ));
-//            buf.append(' ');
+            buf.append(Integer.toHexString(data[pos + i]));
         }
         return buf.toString();
     }

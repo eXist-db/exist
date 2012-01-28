@@ -42,68 +42,68 @@ public interface Cache {
     public String getType();
 
     /**
-	 * Add the item to the cache. If it is already in the cache,
-	 * update the references.
-	 * 
-	 * @param item
-	 */
-	public void add(Cacheable item);
-	
-	/**
-	 * Add the item to the cache. If it is already in the cache,
-	 * update the references.
-	 * 
-	 * @param item
-	 * @param initialRefCount the initial reference count for the item
-	 */
-	public void add(Cacheable item, int initialRefCount);
-	
-	/**
-	 * Retrieve an item from the cache.
-	 * 
-	 * @param item
-	 * @return the item in the cache or null if it does not exist.
-	 */
-	public Cacheable get(Cacheable item);
-	
-	/**
-	 * Retrieve an item by its key.
-	 * 
-	 * @param key a unique key, usually the page number
-	 * @return the item in the cache or null if it does not exist.
-	 */
-	public Cacheable get(long key);
-	
-	/**
-	 * Remove an item from the cache.
-	 * 
-	 * @param item
-	 */
-	public void remove(Cacheable item);
-	
+     * Add the item to the cache. If it is already in the cache,
+     * update the references.
+     * 
+     * @param item
+     */
+    public void add(Cacheable item);
+
+    /**
+     * Add the item to the cache. If it is already in the cache,
+     * update the references.
+     * 
+     * @param item
+     * @param initialRefCount the initial reference count for the item
+     */
+    public void add(Cacheable item, int initialRefCount);
+
+    /**
+     * Retrieve an item from the cache.
+     * 
+     * @param item
+     * @return the item in the cache or null if it does not exist.
+     */
+    public Cacheable get(Cacheable item);
+
+    /**
+     * Retrieve an item by its key.
+     * 
+     * @param key a unique key, usually the page number
+     * @return the item in the cache or null if it does not exist.
+     */
+    public Cacheable get(long key);
+
+    /**
+     * Remove an item from the cache.
+     * 
+     * @param item
+     */
+    public void remove(Cacheable item);
+
     /**
      * Returns true if the cache contains any dirty
      * items that need to be written to disk.
      * 
      */
-	public boolean hasDirtyItems();
-	
-	/**
-	 * Call release on all items, but without
-	 * actually removing them from the cache.
-	 * 
-	 * This gives the items a chance to write all
-	 * unwritten data to disk.
-	 */
-	public boolean flush();
-	
-	/**
-	 * Get the size of this cache.
-	 * 
-	 * @return size
-	 */
-	public int getBuffers();
-	
+    public boolean hasDirtyItems();
+
+    /**
+     * Call release on all items, but without
+     * actually removing them from the cache.
+     * 
+     * This gives the items a chance to write all
+     * unwritten data to disk.
+     */
+    public boolean flush();
+
+    /**
+     * Get the size of this cache.
+     * 
+     * @return size
+     */
+    public int getBuffers();
+
     /**
      * Returns the factor by which the cache should grow
      * if it can be resized. The returned factor f will be
@@ -116,7 +116,7 @@ public interface Cache {
      * @return growth factor
      */
     public double getGrowthFactor();
-    
+
     /**
      * Resize the cache. This method is called by the
      * {@link org.exist.storage.DefaultCacheManager}. The newSize parameter
@@ -126,40 +126,40 @@ public interface Cache {
      * @param newSize the new size of the cache.
      */
     public void resize(int newSize);
-    
+
     /**
      * Set the CacheManager object that controls this cache.
      * 
      * @param manager
      */
     public void setCacheManager(CacheManager manager);
-    
-	/**
-	 * Get the number of buffers currently used.
-	 * 
-	 */
-	public int getUsedBuffers();
-	
-	/**
-	 * Get the number of times where an object has been successfully
-	 * loaded from the cache.
-	 */
-	public int getHits();
-	
-	/**
-	 * Get the number of times where an object could not be
-	 * found in the cache.
-	 * 
-	 * @return number of times where an object could not be
-	 * found in the cache
-	 */
-	public int getFails();
-    
+
+    /**
+     * Get the number of buffers currently used.
+     * 
+     */
+    public int getUsedBuffers();
+
+    /**
+     * Get the number of times where an object has been successfully
+     * loaded from the cache.
+     */
+    public int getHits();
+
+    /**
+     * Get the number of times where an object could not be
+     * found in the cache.
+     * 
+     * @return number of times where an object could not be
+     * found in the cache
+     */
+    public int getFails();
+
     public int getLoad();
-    
-	public void setFileName(String fileName);
-    
+
+    public void setFileName(String fileName);
+
     public String getFileName();
-	
-	public final static Logger LOG = Logger.getLogger(Cache.class);
+
+    public final static Logger LOG = Logger.getLogger(Cache.class);
 }

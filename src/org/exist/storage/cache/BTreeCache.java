@@ -35,37 +35,35 @@ public class BTreeCache extends LRUCache {
     }
 
     public void add(Cacheable item, int initialRefCount) {
-		add(item);
-	}
+        add(item);
+    }
 
     public void add(Cacheable item) {
-//        if (map.size() == max)
-//            removeNext((BTreeCacheable) item);
         map.put(item.getKey(), item);
-		if(map.size() >= max + 1) {
-			removeNext((BTreeCacheable) item);
-		}
-	}
+        if (map.size() >= max + 1) {
+            removeNext((BTreeCacheable) item);
+        }
+    }
 
     protected void removeNext(BTreeCacheable item) {
         boolean removed = false;
         boolean mustRemoveInner = false;
-		SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
-		do {
-			BTreeCacheable cached = (BTreeCacheable)next.getValue();
-			if(cached.allowUnload() && cached.getKey() != item.getKey() &&
-                (mustRemoveInner || !cached.isInnerPage())) {
-				cached.sync(true);
-				map.remove(next.getKey());
-				removed = true;
-			} else {
-				next = next.getNext();
-				if(next == null) {
-					next = map.getFirstEntry();
+        SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
+        do {
+            BTreeCacheable cached = (BTreeCacheable)next.getValue();
+            if(cached.allowUnload() && cached.getKey() != item.getKey() &&
+                    (mustRemoveInner || !cached.isInnerPage())) {
+                cached.sync(true);
+                map.remove(next.getKey());
+                removed = true;
+            } else {
+                next = next.getNext();
+                if(next == null) {
+                    next = map.getFirstEntry();
                     mustRemoveInner = true;
-				}
-			}
-		} while(!removed);
+                }
+            }
+        } while(!removed);
         accounting.replacedPage(item);
         if (growthFactor > 1.0 && accounting.resizeNeeded()) {
             accounting.stats();
