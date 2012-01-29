@@ -92,7 +92,7 @@ public class URLRewriteTest {
         }
 
         @Override
-        public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
