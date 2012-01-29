@@ -17,6 +17,21 @@
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
 
+	<servlet>
+        <servlet-name>ScaleImageJAI</servlet-name>
+        <servlet-class>org.exist.http.servlets.ScaleImageJAI</servlet-class>
+
+        <init-param>
+            <param-name>base</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>output-dir</param-name>
+            <param-value>/home/wolf/images</param-value>
+        </init-param>
+    </servlet>
+    
     <!--
         Log4jInit initializes Log4j.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
@@ -197,9 +212,9 @@
     <!--
         XQueryURLRewrite, servlet filter for URL rewriting and redirection.
     -->
-    <filter>
-        <filter-name>XQueryURLRewrite</filter-name>
-        <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
+    <servlet>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <servlet-class>org.exist.http.urlrewrite.XQueryURLRewrite</servlet-class>
 
         <!-- Defines the location of the controller-config.xml file,
              which defines the root mappings. -->
@@ -222,7 +237,7 @@
 			<param-value>false</param-value>
 		</init-param>
         -->
-    </filter>
+    </servlet>
 
     <!--
         XSLTServlet applies an XSLT transformation to its input stream.
@@ -288,10 +303,10 @@
     -->
 
     <!-- XQuery URL rewriter -->
-    <filter-mapping>
-        <filter-name>XQueryURLRewrite</filter-name>
+    <servlet-mapping>
+        <servlet-name>XQueryURLRewrite</servlet-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    </servlet-mapping>
 
     <!-- XMLRPC -->
     <!--

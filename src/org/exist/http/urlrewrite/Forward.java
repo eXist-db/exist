@@ -23,28 +23,39 @@ package org.exist.http.urlrewrite;
 
 import java.io.IOException;
 
-import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 
 public abstract class Forward extends URLRewrite {
 
-    protected Forward(Element config, String uri) {
+    private static final Logger LOG = Logger.getLogger(Forward.class);
+
+	protected Forward(Element config, String uri) {
         super(config, uri);
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	Object flag = request.getAttribute("XQueryURLRewrite.forward");
+    	if (uri.equals(flag)) {
+    		LOG.error("Request to " + uri + " already forwarded from " + flag);
+    		return;
+    	}
+    	
+    	request.setAttribute("XQueryURLRewrite.forward", uri);
+    	
         RequestDispatcher dispatcher = getRequestDispatcher(request);
         if (dispatcher == null)
             throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);
         setHeaders(new HttpResponseWrapper(response));
         dispatcher.forward(request, response);
+        
     }
 
     protected abstract RequestDispatcher getRequestDispatcher(HttpServletRequest request);

@@ -44,7 +44,7 @@ public class Redirect extends URLRewrite {
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         setHeaders(new HttpResponseWrapper(response));
         response.sendRedirect(target);
     }

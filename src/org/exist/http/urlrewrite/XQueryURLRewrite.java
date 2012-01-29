@@ -79,12 +79,14 @@ import org.xmldb.api.DatabaseManager;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -106,7 +108,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
- * A filter to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
+ * A servlet to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
  * based on XQuery.
  *
  * The request is passed to an XQuery whose return value determines where the request will be
@@ -120,7 +122,7 @@ import java.util.regex.Matcher;
  *
  * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information. 
  */
-public class XQueryURLRewrite implements Filter {
+public class XQueryURLRewrite extends HttpServlet {
 
     private static final Logger LOG = Logger.getLogger(XQueryURLRewrite.class);
 
@@ -135,7 +137,7 @@ public class XQueryURLRewrite implements Filter {
 
     private final static Pattern NAME_REGEX = Pattern.compile("^.*/([^/]+)$", 0);
 
-    private FilterConfig config;
+    private ServletConfig config;
 
     private final Map<String, ModelAndView> urlCache = new ConcurrentHashMap<String, ModelAndView>();
 
@@ -152,7 +154,7 @@ public class XQueryURLRewrite implements Filter {
     private RewriteConfig rewriteConfig;
     
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(ServletConfig filterConfig) throws ServletException {
         // save FilterConfig for later use
         this.config = filterConfig;
 
@@ -169,7 +171,7 @@ public class XQueryURLRewrite implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    protected void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, ServletException {
         if (rewriteConfig == null) {
             configure();
             rewriteConfig = new RewriteConfig(this);
@@ -211,7 +213,7 @@ public class XQueryURLRewrite implements Filter {
                 modifiedRequest.setPaths(staticRewrite.resolve(modifiedRequest), staticRewrite.getPrefix());
                 if (LOG.isTraceEnabled())
                     LOG.trace("Forwarding to target: " + staticRewrite.getTarget());
-                staticRewrite.doRewrite(modifiedRequest, response, filterChain);
+                staticRewrite.doRewrite(modifiedRequest, response);
             } else {
                 if (LOG.isTraceEnabled())
                     LOG.trace("Processing request URI: " + request.getRequestURI());
@@ -291,9 +293,9 @@ public class XQueryURLRewrite implements Filter {
 	                                node = node.getNextSibling();
 	                            }
 	                            if (modelView.getModel() == null)
-	                                modelView.setModel(new PassThrough(elem, modifiedRequest));
+	                                modelView.setModel(new PassThrough(config, elem, modifiedRequest));
 	                        } else if (Namespaces.EXIST_NS.equals(elem.getNamespaceURI()) && "ignore".equals(elem.getLocalName())) {
-	                            modelView.setModel(new PassThrough(elem, modifiedRequest));
+	                            modelView.setModel(new PassThrough(config, elem, modifiedRequest));
 	                            NodeList nl = elem.getElementsByTagNameNS(Namespaces.EXIST_NS, "cache-control");
 	                            if (nl.getLength() > 0) {
 	                                elem = (Element) nl.item(0);
@@ -327,7 +329,7 @@ public class XQueryURLRewrite implements Filter {
             	HttpServletResponse wrappedResponse = 
             		new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
                 if (modelView.getModel() == null)
-                    modelView.setModel(new PassThrough(modifiedRequest));
+                    modelView.setModel(new PassThrough(config, modifiedRequest));
 
                 if (staticRewrite != null) {
                 	if (modelView.getModel().doResolve())
@@ -336,7 +338,7 @@ public class XQueryURLRewrite implements Filter {
                 		modelView.getModel().setAbsolutePath(modifiedRequest);
                 }
                 modifiedRequest.allowCaching(!modelView.hasViews());
-                doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse, filterChain);
+                doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse);
 
                 int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
                 if (status == HttpServletResponse.SC_NOT_MODIFIED) {
@@ -408,7 +410,7 @@ public class XQueryURLRewrite implements Filter {
 				wrappedReq.setData(data);
 			
 			wrappedResponse = new CachingResponseWrapper(response, true);
-			doRewrite(view, wrappedReq, wrappedResponse, null);
+			doRewrite(view, wrappedReq, wrappedResponse);
 
 			// catch errors in the view
 			status = ((CachingResponseWrapper) wrappedResponse).getStatus();
@@ -536,8 +538,7 @@ public class XQueryURLRewrite implements Filter {
      * @throws IOException
      * @throws ServletException
      */
-    protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response,
-                             FilterChain filterChain) throws IOException, ServletException {
+    protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response) throws IOException, ServletException {
         if (action.getTarget() != null && !(action instanceof Redirect)) {
             String uri = action.resolve(request);
             URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true);
@@ -553,10 +554,10 @@ public class XQueryURLRewrite implements Filter {
             }
         }
         action.prepareRequest(request);
-        action.doRewrite(request, response, filterChain);
+        action.doRewrite(request, response);
     }
 
-    protected FilterConfig getConfig() {
+    protected ServletConfig getConfig() {
         return config;
     }
     

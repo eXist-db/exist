@@ -26,15 +26,16 @@ import org.w3c.dom.Element;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 public class PathForward extends Forward {
 
-    private FilterConfig filterConfig;
+    private ServletConfig filterConfig;
     private String servletName = null;
 
-    public PathForward(FilterConfig filterConfig, Element config, String uri) throws ServletException {
+    public PathForward(ServletConfig filterConfig, Element config, String uri) throws ServletException {
         super(config, uri);
         this.filterConfig = filterConfig;
         servletName = config.getAttribute("servlet");
