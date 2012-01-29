@@ -31,23 +31,6 @@ exclude-result-prefixes="webxml">
     </context-param>
   </xsl:template>
   <xsl:template match="/webxml:web-app/webxml:filter[last()]">
-    <xsl:comment>XForms Filter</xsl:comment>
-    <xsl:text>
-    
-</xsl:text>
-    <filter>
-      <filter-name>XFormsFilter</filter-name>
-      <filter-class>
-      de.betterform.agent.web.filter.XFormsFilter</filter-class>
-      <init-param>
-        <param-name>useragent</param-name>
-        <param-value>dojo</param-value>
-      </init-param>
-    </filter>
-    <xsl:text>
-    
-</xsl:text>
-    <xsl:copy-of select="." />
   </xsl:template>
   <xsl:template match="/webxml:web-app/webxml:servlet[last()]">
     <xsl:copy-of select="." />
@@ -85,12 +68,27 @@ exclude-result-prefixes="webxml">
       <servlet-class>
       de.betterform.agent.web.resources.ResourceServlet</servlet-class>
     </servlet>
-  </xsl:template>
-  <xsl:template match="/webxml:web-app/webxml:filter-mapping[webxml:filter-name/text()='XQueryURLRewrite']">
-
-    <xsl:text></xsl:text>
-	
-	
+    <xsl:copy-of select="." />
+    <xsl:text>
+    
+    </xsl:text>
+    
+    <xsl:comment>XForms Filter</xsl:comment>
+    <xsl:text>
+    
+</xsl:text>
+    <filter>
+      <filter-name>XFormsFilter</filter-name>
+      <filter-class>
+        de.betterform.agent.web.filter.XFormsFilter</filter-class>
+      <init-param>
+        <param-name>useragent</param-name>
+        <param-value>dojo</param-value>
+      </init-param>
+    </filter>
+    <xsl:text>
+    
+</xsl:text>
     <filter-mapping>
       <filter-name>XFormsFilter</filter-name>
       <url-pattern>/rest/db/*</url-pattern>
@@ -99,10 +97,6 @@ exclude-result-prefixes="webxml">
       <filter-name>XFormsFilter</filter-name>
       <servlet-name>XFormsPostServlet</servlet-name>
     </filter-mapping>
-    <xsl:text>
-    
-</xsl:text>
-    <xsl:copy-of select="." />
     <xsl:text>
     
 </xsl:text>
@@ -134,6 +128,7 @@ exclude-result-prefixes="webxml">
       <servlet-name>ResourceServlet</servlet-name>
       <url-pattern>/bfResources/*</url-pattern>
     </servlet-mapping>
+    <xsl:copy-of select="." />
   </xsl:template>
   <xsl:template match="node()|@*">
     <xsl:copy>
