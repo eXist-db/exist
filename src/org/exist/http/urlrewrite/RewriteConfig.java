@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
@@ -236,7 +237,7 @@ public class RewriteConfig {
         }
     }
 
-    private URLRewrite parseAction(FilterConfig config, String pattern, Element action) throws ServletException {
+    private URLRewrite parseAction(ServletConfig config, String pattern, Element action) throws ServletException {
         URLRewrite rewrite = null;
         if ("forward".equals(action.getLocalName())) {
             rewrite = new PathForward(config, action, pattern);

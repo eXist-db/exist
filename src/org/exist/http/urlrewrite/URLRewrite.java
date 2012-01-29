@@ -196,8 +196,7 @@ public abstract class URLRewrite {
         return prefix;
     }
 
-    public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response,
-                                   FilterChain chain) throws ServletException, IOException;
+    public abstract void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
     public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {

@@ -55,7 +55,7 @@ public class ControllerForward extends URLRewrite {
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
 
     @Override

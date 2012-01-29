@@ -21,31 +21,31 @@
  */
 package org.exist.http.urlrewrite;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 
-public class PassThrough extends URLRewrite {
+public class PassThrough extends Forward {
 
-    public PassThrough(HttpServletRequest request) {
+	private ServletConfig servletConfig;
+	
+    public PassThrough(ServletConfig servletConfig, HttpServletRequest request) {
         super(null, request.getRequestURI());
+        this.servletConfig = servletConfig;
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
     
-    public PassThrough(Element config, HttpServletRequest request) {
+    public PassThrough(ServletConfig servletConfig, Element config, HttpServletRequest request) {
         super(config, request.getRequestURI());
+        this.servletConfig = servletConfig;
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
 
-    @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        setHeaders(new HttpResponseWrapper(response));
-        chain.doFilter(request, response);
-    }
+	@Override
+	protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
+		// always forward to the servlet engine's default servlet
+        return servletConfig.getServletContext().getNamedDispatcher("default");
+	}
 }

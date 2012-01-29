@@ -78,7 +78,7 @@ public class ModuleCall extends URLRewrite {
     }
 
     @Override
-    public void doRewrite(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    public void doRewrite(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             Sequence result = call.eval(null);
