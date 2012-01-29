@@ -1142,6 +1142,11 @@ public class XQueryURLRewrite extends HttpServlet {
             return path.length() == sp.length() ? null : path.substring(sp.length());
        }
 
+        @Override
+        public String getPathTranslated() {
+        	return super.getRealPath(getPathInfo());
+        }
+        
         protected void setData(byte[] data) {
             if (data == null)
                 data = new byte[0];
