@@ -45,11 +45,19 @@ wrapper.java.additional.4=-Djetty.home=../../../@jetty.dir@
 # log4j configuration is read from the conf directory of the wrapper
 wrapper.java.additional.5=-Dlog4j.configuration=file:../conf/log4j.xml
 
+# JMX 
+#wrapper.java.additional.6=-Dcom.sun.management.jmxremote
+#wrapper.java.additional.7=-Dcom.sun.management.jmxremote.port=1099
+#wrapper.java.additional.8=-Dcom.sun.management.jmxremote.authenticate=false
+#wrapper.java.additional.9=-Dcom.sun.management.jmxremote.ssl=false
+#wrapper.java.additional.10=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean=TRUE
+#wrapper.java.additional.11=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean.testing=false
+
 # Initial Java Heap Size (in MB)
-wrapper.java.initmemory=16
+wrapper.java.initmemory=256
 
 # Maximum Java Heap Size (in MB)
-wrapper.java.maxmemory=128
+wrapper.java.maxmemory=512
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=jetty
@@ -77,11 +85,11 @@ wrapper.logfile.loglevel=INFO
 #  the log is rolled. Size is specified in bytes.  The default value
 #  of 0, disables log rolling.  May abbreviate with the 'k' (kb) or
 #  'm' (mb) suffix.  For example: 10m = 10 megabytes.
-wrapper.logfile.maxsize=0
+wrapper.logfile.maxsize=2m
 
 # Maximum number of rolled log files which will be allowed before old
 #  files are deleted.  The default value of 0 implies no limit.
-wrapper.logfile.maxfiles=0
+wrapper.logfile.maxfiles=5
 
 # Log Level for sys/event log output.  (See docs for log levels)
 wrapper.syslog.loglevel=NONE
