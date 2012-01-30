@@ -77,13 +77,8 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.FilterChain;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
@@ -760,8 +755,12 @@ public class XQueryURLRewrite extends HttpServlet {
                                 LOG.trace("Looking for controller.xql in " + subColl.getURI());
                                 XmldbURI docUri = subColl.getURI().append("controller.xql");
                                 doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
-                                if (doc != null)
+                                if (doc != null) {
+                                	if (controllerDoc != null)
+                                		controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
+                                	
                                     controllerDoc = doc;
+                                }
                             } else
                                 break;
                         } else {
