@@ -20,6 +20,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     //private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024; //64KB
     private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
 
+    private final RandomAccessFile raf;
     private final FileChannel channel;
     private MappedByteBuffer buf;
     private File tempFile = null;
@@ -27,16 +28,17 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     //private final ReadOnlyByteBufferAccessor bufAccessor;
 
     public MemoryMappedFileFilterInputStreamCache() throws IOException {
-        this( null );
+        this(null);
     }
 
     public MemoryMappedFileFilterInputStreamCache(File f) throws FileNotFoundException, IOException {
-        if( f == null) {
+        if(f == null) {
 		tempFile = File.createTempFile("MemoryMappedFileFilterInputStreamCache" + "_" + System.currentTimeMillis(), ".tmp");
 		tempFile.deleteOnExit();
 		f = tempFile;
         }
-        this.channel = new RandomAccessFile(f, "rw").getChannel();
+        this.raf =  new RandomAccessFile(f, "rw");
+        this.channel = raf.getChannel();
         this.buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
         //this.bufAccessor = new ReadOnlyByteBufferAccessor();
     }
@@ -127,13 +129,15 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     public void invalidate() throws IOException {
         buf.force();
         channel.close();
+        raf.close();
+        //System.gc();
     }
     
     @Override
-    protected void finalize()
-	throws Throwable
-    {
-	if(tempFile!=null)
-		tempFile.delete();
+    protected void finalize() throws Throwable {
+        super.finalize();
+	if(tempFile != null) {
+            boolean deletedFile = tempFile.delete();
+        }
     }
 }
