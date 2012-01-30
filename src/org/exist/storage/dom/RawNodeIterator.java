@@ -127,12 +127,12 @@ public class RawNodeIterator {
                     long nextPage = pageHeader.getNextDataPage();
                     if (nextPage == Paged.Page.NO_PAGE) {
                         SanityCheck.TRACE("bad link to next " + page.page.getPageInfo() +
-                            "; previous: " + pageHeader.getPrevDataPage() +
+                            "; previous: " + pageHeader.getPreviousDataPage() +
                             "; offset = " + offset + "; lastTupleID = " + lastTupleID);
                         return null;
                     }
                     pageNum = nextPage;
-                    page = db.getCurrentPage(nextPage);
+                    page = db.getDOMPage(nextPage);
                     db.addToBuffer(page);
                     offset = 0;
                 }
@@ -186,7 +186,7 @@ public class RawNodeIterator {
                     LOG.error("illegal node on page " + page.getPageNum() +
                         "; tupleID = " + ItemId.getId(lastTupleID) +
                         "; next = " + page.getPageHeader().getNextDataPage() +
-                        "; prev = " + page.getPageHeader().getPrevDataPage() +
+                        "; prev = " + page.getPageHeader().getPreviousDataPage() +
                         "; offset = " + (offset - vlen) +
                         "; len = " + page.getPageHeader().getDataLength());
                     return null;

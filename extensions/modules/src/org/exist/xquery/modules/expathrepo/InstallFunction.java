@@ -26,7 +26,7 @@ import org.exist.repo.ExistRepository;
  * @version 1.0
  */
 public class InstallFunction extends BasicFunction {
-    @SuppressWarnings("unused")
+
 	private final static Logger logger = Logger.getLogger(InstallFunction.class);
 
     public final static FunctionSignature signature =
