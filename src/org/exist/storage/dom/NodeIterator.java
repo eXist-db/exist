@@ -118,13 +118,13 @@ public final class NodeIterator implements Iterator<StoredNode> {
                         long nextPageNum = pageHeader.getNextDataPage();
                         if (nextPageNum == Page.NO_PAGE) {
                             SanityCheck.TRACE("bad link to next " + page.page.getPageInfo() +
-                                "; previous: " + pageHeader.getPrevDataPage() +
+                                "; previous: " + pageHeader.getPreviousDataPage() +
                                 "; offset = " + offset + "; lastTupleID = " + lastTupleID);
                             System.out.println(db.debugPageContents(page));
                             return null;
                         }
                         pageNum = nextPageNum;
-                        page = db.getCurrentPage(nextPageNum);
+                        page = db.getDOMPage(nextPageNum);
                         //LOG.debug(" -> " + nextPage + "; len = " + page.len + "; " + page.page.getPageInfo());
                         db.addToBuffer(page);
                         offset = 0;
@@ -182,7 +182,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                         LOG.error("illegal node on page " + page.getPageNum() +
                             "; tid = " + ItemId.getId(lastTupleID) +
                             "; next = " + page.getPageHeader().getNextDataPage() +
-                            "; prev = " + page.getPageHeader().getPrevDataPage() +
+                            "; prev = " + page.getPageHeader().getPreviousDataPage() +
                             "; offset = " + (offset - vlen) +
                             "; len = " + page.getPageHeader().getDataLength());
                         System.out.println(db.debugPageContents(page));
@@ -237,7 +237,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
             startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
             return true;
         } else if (pageNum != Page.NO_PAGE) {
-            page = db.getCurrentPage(pageNum);
+            page = db.getDOMPage(pageNum);
             db.addToBuffer(page);
             return true;
         }

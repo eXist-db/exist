@@ -19,24 +19,23 @@ import java.util.Map;
  */
 public class Statistics {
 
-	/** generate index statistics
-	 * @param conf
-	 * @param indexStats
-	 */
-	public static void generateIndexStatistics(Configuration conf, Map<String, IndexStats> indexStats) {
-		DOMFile dom = (DOMFile) conf.getProperty(DOMFile.FILE_KEY_IN_CONFIG);
-		if(dom != null)
-			indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));
-		BFile db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
-		if(db != null)
-			indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));	
-		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
-		if(db != null) 
-			indexStats.put(NativeValueIndex.FILE_NAME, new IndexStats(db));			
-		db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
-		if(db != null)
-			indexStats.put(NativeTextEngine.FILE_NAME, new IndexStats(db));
-
-	}
+    /** generate index statistics
+     * @param conf
+     * @param indexStats
+     */
+    public static void generateIndexStatistics(Configuration conf, Map<String, IndexStats> indexStats) {
+        DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
+        if(dom != null)
+            indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));
+        BFile db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
+        if(db != null)
+            indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));	
+        db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
+        if(db != null) 
+            indexStats.put(NativeValueIndex.FILE_NAME, new IndexStats(db));			
+        db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
+        if(db != null)
+            indexStats.put(NativeTextEngine.FILE_NAME, new IndexStats(db));
+    }
 
 }
