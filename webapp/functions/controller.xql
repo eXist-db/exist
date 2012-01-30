@@ -121,6 +121,7 @@ return
           		<view>
               	    <!-- Apply db2xhtml stylesheet -->
           			<forward servlet="XSLTServlet">
+          			    <set-attribute name="xslt.base" value="{$exist:controller}"/>
           				<set-attribute name="xslt.input" value="model"/>
           				<set-attribute name="xslt.root" value="{request:get-context-path()}{$exist:prefix}"/>
           				<set-attribute name="xslt.stylesheet" value="{$exist:root}/stylesheets/db2xhtml.xsl"/>
