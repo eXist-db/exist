@@ -419,6 +419,12 @@ public class SecurityManagerImpl implements SecurityManager {
             LOG.debug("Authentication try for '"+username+"'.");
 
     	if("jsessionid".equals(username)) {
+    		
+    		if (getSystemSubject().getSessionId().equals(credentials))
+    			return getSystemSubject();
+
+    		if (getGuestSubject().getSessionId().equals(credentials))
+    			return getGuestSubject();
 
             Subject subject = sessions.read(new SessionDbRead<Subject>(){
                 @Override
