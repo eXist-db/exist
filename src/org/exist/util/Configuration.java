@@ -303,7 +303,7 @@ public class Configuration implements ErrorHandler
 
         String enforceIndexUse = getConfigAttributeValue( xquery, XQueryContext.ENFORCE_INDEX_USE_ATTRIBUTE );
         if (enforceIndexUse != null) {
-        	config.put( XQueryContext.PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse.equals("always"));
+        	config.put( XQueryContext.PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse );
         }
         
         String backwardCompatible = getConfigAttributeValue( xquery, XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
