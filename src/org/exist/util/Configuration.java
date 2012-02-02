@@ -301,6 +301,11 @@ public class Configuration implements ErrorHandler
             LOG.debug( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": " + config.get( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING ) );
         }
 
+        String enforceIndexUse = getConfigAttributeValue( xquery, XQueryContext.ENFORCE_INDEX_USE_ATTRIBUTE );
+        if (enforceIndexUse != null) {
+        	config.put( XQueryContext.PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse.equals("always"));
+        }
+        
         String backwardCompatible = getConfigAttributeValue( xquery, XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
 
         if( ( backwardCompatible != null ) && ( backwardCompatible.length() > 0 ) ) {
