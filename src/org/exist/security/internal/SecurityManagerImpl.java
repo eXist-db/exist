@@ -824,13 +824,16 @@ public class SecurityManagerImpl implements SecurityManager {
 
             SecurityManagerImpl sm = ( SecurityManagerImpl )jobDataMap.get( SecurityManagerImpl.class.getName() );
 
+            if (sm == null)
+            	return;
+            
             sm.sessions.modify(new SessionDbModify(){
 	            @Override
 	            public void execute(final Map<String, Session> db) {
 	            	Iterator<Map.Entry<String, Session>> iter = db.entrySet().iterator();
 	            	while (iter.hasNext()) {
 	            		Map.Entry<String, Session> entry = iter.next();
-	            		if (!entry.getValue().isValid()) {
+	            		if (entry == null || !entry.getValue().isValid()) {
 	            			iter.remove();
 	            		}
 	            	}
