@@ -59,6 +59,9 @@ public class OpOr extends LogicalOp {
         Sequence result;
 		Expression left = getLeft();
 		Expression right = getRight();
+		Sequence ls = left.eval(contextSequence, null);
+		Sequence rs = right.eval(contextSequence, null);
+		doOptimize = doOptimize && ls.isPersistentSet() && rs.isPersistentSet();
 		if(doOptimize) {
 			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
 			rl = rl.getContextNodes(contextId);
@@ -72,12 +75,12 @@ public class OpOr extends LogicalOp {
 				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
 			}
         } else {
-			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
-			if (ls)
+			boolean rl = left.eval(contextSequence).effectiveBooleanValue();
+			if (rl)
                 result= BooleanValue.TRUE;
             else {
-                boolean rs = right.eval(contextSequence).effectiveBooleanValue();
-                result = ls || rs ? BooleanValue.TRUE : BooleanValue.FALSE;                
+                boolean rr = right.eval(contextSequence).effectiveBooleanValue();
+                result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;                
             }
 		}
         

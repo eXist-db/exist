@@ -60,11 +60,14 @@ public class OpAnd extends LogicalOp {
                 doOptimize = false;
             Expression left = getLeft();
     		Expression right = getRight();
+    		Sequence ls = left.eval(contextSequence, null);
+    		Sequence rs = right.eval(contextSequence, null);
+    		doOptimize = doOptimize && ls.isPersistentSet() && rs.isPersistentSet();
     		if(doOptimize) {
-    			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
+    			NodeSet rl = ls.toNodeSet();
     			rl = rl.getContextNodes(left.getContextId()); 
     			// TODO: optimize and return false if rl.isEmpty() ?
-    			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
+    			NodeSet rr = rs.toNodeSet();
     			rr = rr.getContextNodes(right.getContextId());
     			result = rr.intersection(rl); 
     			//<test>{() and ()}</test> has to return <test>false</test>    			
@@ -74,13 +77,13 @@ public class OpAnd extends LogicalOp {
     				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
     			}
     		} else {
-    			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
+    			boolean rl = ls.effectiveBooleanValue();
     			// immediately return false if the left operand is false
-    			if (!ls)
+    			if (!rl)
                     result = BooleanValue.FALSE;
                 else {
-        			boolean rs = right.eval(contextSequence).effectiveBooleanValue();
-                    result = (ls && rs) ? BooleanValue.TRUE : BooleanValue.FALSE;
+        			boolean rr = rs.effectiveBooleanValue();
+                    result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
                 }
     		}
         }
