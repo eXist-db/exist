@@ -113,6 +113,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public static final String                         ENABLE_QUERY_REWRITING_ATTRIBUTE                 = "enable-query-rewriting";
     public static final String                         XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE             = "backwardCompatible";
     public static final String                         XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE = "raise-error-on-failed-retrieval";
+    public static final String						   ENFORCE_INDEX_USE_ATTRIBUTE					    = "enforce-index-use";
 
     //TODO : move elsewhere ?
     public static final String                         BUILT_IN_MODULE_URI_ATTRIBUTE                    = "uri";
@@ -123,6 +124,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public static final String                         PROPERTY_ENABLE_QUERY_REWRITING                  = "xquery.enable-query-rewriting";
     public static final String                         PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL  = "xquery.raise-error-on-failed-retrieval";
     public static final boolean                        XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT   = false;
+    public static final String						   PROPERTY_ENFORCE_INDEX_USE						= "xquery.enforce-index-use";
 
     //TODO : move elsewhere ?
     public static final String                         PROPERTY_BUILT_IN_MODULES                        = "xquery.modules";
@@ -3060,7 +3062,7 @@ public class XQueryContext implements BinaryValueManager, Context
             if( params.length > 0 ) {
                 String[] param = Option.parseKeyValuePair( params[0] );
 
-                if( "enable".equals( param[0] ) ) {
+                if( param != null && "enable".equals( param[0] ) ) {
 
                     if( "yes".equals( param[1] ) ) {
                         enableOptimizer = true;
@@ -3166,7 +3168,7 @@ public class XQueryContext implements BinaryValueManager, Context
             if( targetDoc == null ) {
                 throw( new XPathException( "Internal error: failed to store temporary doc fragment" ) );
             }
-            LOG.debug( "Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI() );
+            LOG.warn( "Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI(), new Throwable() );
             return( targetDoc );
         }
         catch( EXistException e ) {
