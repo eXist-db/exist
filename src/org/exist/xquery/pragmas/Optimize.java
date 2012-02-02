@@ -281,8 +281,8 @@ public class Optimize extends Pragma {
         if (contextSequence == null || qname == null)
             return Type.ITEM;
         
-        Boolean enforceIndexUse = 
-        		(Boolean) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
+        String enforceIndexUse = 
+        		(String) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
         int indexType = Type.ITEM;
         for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
@@ -298,7 +298,7 @@ public class Optimize extends Pragma {
             int type = config.getType();
             if (indexType == Type.ITEM) {
                 indexType = type;
-                if (enforceIndexUse.booleanValue())
+                if (enforceIndexUse != null && "always".equals(enforceIndexUse))
                 	return indexType;
             } else if (indexType != type) {
                 if (LOG.isTraceEnabled())
