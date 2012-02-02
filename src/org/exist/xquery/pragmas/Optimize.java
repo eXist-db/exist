@@ -280,6 +280,8 @@ public class Optimize extends Pragma {
     public static int getQNameIndexType(XQueryContext context, Sequence contextSequence, QName qname) {
         if (contextSequence == null || qname == null)
             return Type.ITEM;
+        boolean enforceIndexUse = 
+        		(Boolean) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
         int indexType = Type.ITEM;
         for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
@@ -293,9 +295,11 @@ public class Optimize extends Pragma {
                 return Type.ITEM;   // found a collection without index
             }
             int type = config.getType();
-            if (indexType == Type.ITEM)
+            if (indexType == Type.ITEM) {
                 indexType = type;
-            else if (indexType != type) {
+                if (enforceIndexUse)
+                	return indexType;
+            } else if (indexType != type) {
                 if (LOG.isTraceEnabled())
                     LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
                         "with the required type " + Type.getTypeName(type) + " on " + qname);

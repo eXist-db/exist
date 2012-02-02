@@ -1670,7 +1670,7 @@
                 <example>
                     <title>XQuery Engine Configuration</title>
                     <programlisting>
-                        <markup><![CDATA[<xquery enable-java-binding="no" enable-query-rewriting="no"  disable-deprecated-functions="no" raise-error-on-failed-retrieval="no" backwardCompatible="no">
+                        <markup><![CDATA[<xquery enable-java-binding="no" enable-query-rewriting="no" enforce-index-use="always" disable-deprecated-functions="no" raise-error-on-failed-retrieval="no" backwardCompatible="no">
     <builtin-modules>
         <!-- Default Modules -->
         <module class="org.exist.xquery.functions.util.UtilModule"
@@ -1702,6 +1702,39 @@
                             <listitem>
                                 <para>enables or disables XQuery functions marked as
                                     deprecated.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>enforce-index-use=strict|always</term>
+                            <listitem>
+                                <para>controls if available range indexes should be used if only
+                                    some collections in the context set define a matching index.
+                                    Available settings are: "always" to always use an index, even if
+                                    it does not apply to the entire set of collections being
+                                    queried; "strict" to only use indexes if they are defined for
+                                    the entire collection set.</para>
+                                <para>For example, if you have two collections: /db/one and /db/two,
+                                    and you define a range index on a certain element
+                                        <sgmltag>node</sgmltag> in /db/one, but not in /db/two, the
+                                    query engine would not use the index with setting "strict" if
+                                    you query both collections. At compile time, eXist doesn't know
+                                    if <sgmltag>node</sgmltag> exists in both collections and will
+                                    not use the index if it determines that an index definition does
+                                    only apply to a part of the collection set being queried. To use
+                                    the index, you would need to start your XPath expression with a
+                                    call to collection(), selecting the correct collection with the
+                                    index defined.</para>
+                                <para>On the other hand, if enforce-index-use is set to "always",
+                                    the query engine only checks if one collection in the collection
+                                    set has a matching index defined on it. This may lead to an
+                                    incomplete query result if one forgets certain
+                                    collections.</para>
+                                <para>In other words, when enforce-index-use is set to "always", it
+                                    is the query writers responsibility to make sure indexes are
+                                    defined properly. But experience has shown it is easier for
+                                    users to understand that a certain result is incomplete because
+                                    an index is missing, whereas they have problems to see that a
+                                    performance issue is caused by inconsistent indexing. </para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>

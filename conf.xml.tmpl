@@ -626,6 +626,13 @@
             -  backwardCompatible:
                 Set to "yes" to enable backward compatibility (untyped argument 
                 checks for instance)
+            - enforce-index-use
+                When set to "strict", eXist will not use a range index unless all
+                collections in the context sequence define it. When set to
+                "always", the query engine will still use an index, even if only
+                one collection has it defined. It thus leaves it to the user to
+                properly define indexes and if you forget to specify an index on
+                a particular collection, it will be missing in the results.
             - raise-error-on-failed-retrieval
                 Set to "yes" if a call to doc(), xmldb:document(), collection() or 
                 xmldb:xcollection() should raise an error (FODC0002) when an 
@@ -637,6 +644,7 @@
     <!-- TODO: add attribute 'enabled="yes/no"' -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no" 
             enable-query-rewriting="yes" backwardCompatible="no" 
+			enforce-index-use="always"
             raise-error-on-failed-retrieval="no">
         
         <builtin-modules>
