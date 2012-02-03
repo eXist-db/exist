@@ -85,7 +85,7 @@ return
 				<cache-control cache="no"/>
 			</dispatch>
 			
-	else if (ends-with($exist:resource, '.xml')) then
+	else if (ends-with($exist:resource, '.xml') or $exist:resource eq "examples.xql") then
 		(: 	check if the requested document was selected from a query result.
 			if yes, pass it to docs.xql to get the match highlighting. :)
 		if ($query) then
@@ -126,7 +126,7 @@ return
 				</view>
             	<cache-control cache="no"/>
 			</dispatch>
-			
+
 	else if (ends-with($exist:path, '/dump')) then
 		let $newPath := substring-before($exist:path, '/dump')
 		return

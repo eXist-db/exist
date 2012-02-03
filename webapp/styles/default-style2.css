@@ -681,3 +681,32 @@ td.doclink {
 .float-left {
     float: left;
 }
+
+.packages {
+     width: 100%;
+}
+
+.packages th {
+    background-color: #F6F6F6;
+    border-bottom: 1px solid black;
+    text-align: left;
+}
+
+.packages td.status {
+    width: 120px;
+    text-align: center;
+}
+
+.packages td {
+    text-align: left;
+    padding: 4px;
+}
+
+.packages .installed {
+    background-color: green;
+    color: white;
+}
+
+.packages .not-installed {
+    background-color: red;
+}
