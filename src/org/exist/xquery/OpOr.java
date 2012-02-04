@@ -60,26 +60,41 @@ public class OpOr extends LogicalOp {
 		Expression left = getLeft();
 		Expression right = getRight();
 		Sequence ls = left.eval(contextSequence, null);
-		Sequence rs = right.eval(contextSequence, null);
-		doOptimize = doOptimize && ls.isPersistentSet() && rs.isPersistentSet();
+		// first check if left operand is a persistent set
+		doOptimize = doOptimize && ls.isPersistentSet();
 		if(doOptimize) {
-			NodeSet rl = left.eval(contextSequence, null).toNodeSet();
-			rl = rl.getContextNodes(contextId);
-			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
-			rr = rr.getContextNodes(contextId);
-			result = rl.union(rr);
-			//<test>{() or ()}</test> should return <test>false</test>			
-			if (getParent() instanceof EnclosedExpr ||
-				//First, the intermediate PathExpr
-				(getParent() != null && getParent().getParent() == null)) {					
-				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+			// yes: try to optimize by looking at right operand
+			Sequence rs = right.eval(contextSequence, null);
+			if (rs.isPersistentSet()) {
+				NodeSet rl = ls.toNodeSet();
+				rl = rl.getContextNodes(contextId);
+				NodeSet rr = rs.toNodeSet();
+				rr = rr.getContextNodes(contextId);
+				result = rl.union(rr);
+				//<test>{() or ()}</test> should return <test>false</test>			
+				if (getParent() instanceof EnclosedExpr ||
+					//First, the intermediate PathExpr
+					(getParent() != null && getParent().getParent() == null)) {					
+					result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+				}
+			} else {
+				// fall back
+				boolean rl = ls.effectiveBooleanValue();
+				if (rl)
+	                result = BooleanValue.TRUE;
+	            else {
+	                boolean rr = rs.effectiveBooleanValue();
+	                result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;                
+	            }
 			}
         } else {
-			boolean rl = left.eval(contextSequence).effectiveBooleanValue();
+        	// no: default evaluation based on boolean value
+			boolean rl = ls.effectiveBooleanValue();
 			if (rl)
-                result= BooleanValue.TRUE;
+                result = BooleanValue.TRUE;
             else {
-                boolean rr = right.eval(contextSequence).effectiveBooleanValue();
+            	Sequence rs = right.eval(contextSequence, null);
+                boolean rr = rs.effectiveBooleanValue();
                 result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;                
             }
 		}
