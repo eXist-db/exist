@@ -123,6 +123,7 @@ imaginaryTokenDefinitions
 	WILDCARD 
 	PREFIX_WILDCARD 
 	FUNCTION 
+	DYNAMIC_FCALL
 	UNARY_MINUS
 	UNARY_PLUS
 	XPOINTER
@@ -961,7 +962,7 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => filterStep
 	|
-	( DOLLAR | ( qName LPAREN ) | SELF | LPAREN | literal | XML_COMMENT | LT |
+	( DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI )
 	=> filterStep
 	|
@@ -1050,8 +1051,16 @@ wildcard
 	}
 	;
 
-filterStep throws XPathException: 
-	primaryExpr predicates ;
+filterStep throws XPathException:
+	primaryExpr ( 
+		(LPPAREN) => predicate
+		|
+		(LPAREN) => argumentList 
+		{
+			#filterStep = #(#[DYNAMIC_FCALL, "DynamicFunction"], #filterStep);
+		}
+	)*
+	;
 
 primaryExpr throws XPathException
 { String varName= null; }
@@ -1068,7 +1077,9 @@ primaryExpr throws XPathException
 	|
 	directConstructor
 	|
-	functionCall
+	(eqName LPAREN ) => functionCall
+	|
+	( eqName HASH ) => functionItemExpr
 	|
 	contextItemExpr
 	|
@@ -1116,6 +1127,22 @@ parenthesizedExpr throws XPathException
 	{ #parenthesizedExpr= #(#[PARENTHESIZED, "Parenthesized"], #e); }
 	;
 
+functionItemExpr throws XPathException
+:
+	namedFunctionRef
+	;
+
+namedFunctionRef throws XPathException
+{
+	String name = null;
+}
+:
+	name=eqName! h:HASH! INTEGER_LITERAL
+	{
+		#namedFunctionRef = #(#[HASH, name], #namedFunctionRef);
+	}
+	;
+
 functionCall throws XPathException
 { String fnName= null; }
 :
@@ -1134,6 +1161,16 @@ functionCall throws XPathException
 functionParameters throws XPathException
 :
 	exprSingle ( COMMA! exprSingle )*
+	;
+
+argumentList throws XPathException
+:
+	LPAREN! (argument (COMMA! argument)*)? RPAREN!
+	;
+
+argument throws XPathException
+:
+	exprSingle
 	;
 
 contextItemExpr : SELF^ ;
@@ -1801,6 +1838,7 @@ protected DSLASH options { paraphrase="double slash '//'"; }: '/' '/' ;
 protected MOD : '%' ;
 protected COLON : ':' ;
 protected COMMA : ',' ;
+protected HASH : '#' ;
 protected SEMICOLON options { paraphrase="semicolon ';'"; }: ';' ;
 protected STAR options { paraphrase="wildcard '*'"; }: '*';
 protected QUESTION options { paraphrase="question mark '?'"; }: '?' ;
@@ -2218,6 +2256,8 @@ options {
         //wsExplicit = true;
 		$setType(PRAGMA_END); 
 	}
+	|
+	HASH { $setType(HASH); }
 	;
 
 protected CHAR

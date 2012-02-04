@@ -1745,6 +1745,13 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=functionCall [path]
 	step=predicates [step]
 	{ path.add(step); }
+	|
+	step=dynamicFunctionCall [path]
+	step=predicates [step]
+	{ path.add(step); }
+	|
+	step=functionReference [path]
+	{ path.add(step); }
 	;
 	
 pathExpr [PathExpr path]
@@ -2195,6 +2202,52 @@ throws PermissionDeniedException, EXistException, XPathException
 		)*
 	)
 	{ step= FunctionFactory.createFunction(context, fn, path, params); }
+	;
+
+dynamicFunctionCall [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	PathExpr pathExpr;
+	step = null;
+}
+:
+	#(
+		fn:DYNAMIC_FCALL
+		{ PathExpr name = new PathExpr(context); }
+		expr [name]
+		{ List<Expression> params= new ArrayList<Expression>(2); }
+		(
+			{ pathExpr= new PathExpr(context); }
+			expr [pathExpr]
+			{ params.add(pathExpr); }
+		)*
+	)
+	{ step = new DynamicFunctionCall(context, name, params); }
+	;
+			
+functionReference [PathExpr path]
+returns  [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step = null;
+}:
+	#(
+		name:HASH
+		arity:INTEGER_LITERAL
+		{
+			QName qname;
+			try {
+				qname = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+			} catch(XPathException e) {
+				// throw exception with correct source location
+				e.setLocation(name.getLine(), name.getColumn());
+				throw e;
+			}
+			NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText()));
+			step = ref;
+		}
+	)
 	;
 
 forwardAxis returns [int axis]
