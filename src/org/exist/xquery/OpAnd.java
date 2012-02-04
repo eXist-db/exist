@@ -61,30 +61,42 @@ public class OpAnd extends LogicalOp {
             Expression left = getLeft();
     		Expression right = getRight();
     		Sequence ls = left.eval(contextSequence, null);
-    		Sequence rs = right.eval(contextSequence, null);
-    		doOptimize = doOptimize && ls.isPersistentSet() && rs.isPersistentSet();
+    		doOptimize = doOptimize && ls.isPersistentSet();
     		if(doOptimize) {
-    			NodeSet rl = ls.toNodeSet();
-    			rl = rl.getContextNodes(left.getContextId()); 
-    			// TODO: optimize and return false if rl.isEmpty() ?
-    			NodeSet rr = rs.toNodeSet();
-    			rr = rr.getContextNodes(right.getContextId());
-    			result = rr.intersection(rl); 
-    			//<test>{() and ()}</test> has to return <test>false</test>    			
-    			if (getParent() instanceof EnclosedExpr ||
-    				//First, the intermediate PathExpr
-    				(getParent() != null && getParent().getParent() == null)) {
-    				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+    			Sequence rs = right.eval(contextSequence, null);
+    			if (rs.isPersistentSet()) {
+	    			NodeSet rl = ls.toNodeSet();
+	    			rl = rl.getContextNodes(left.getContextId()); 
+	    			// TODO: optimize and return false if rl.isEmpty() ?
+	    			NodeSet rr = rs.toNodeSet();
+	    			rr = rr.getContextNodes(right.getContextId());
+	    			result = rr.intersection(rl); 
+	    			//<test>{() and ()}</test> has to return <test>false</test>    			
+	    			if (getParent() instanceof EnclosedExpr ||
+	    				//First, the intermediate PathExpr
+	    				(getParent() != null && getParent().getParent() == null)) {
+	    				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+	    			}
+    			} else {
+    				// fall back if right sequence is not persistent
+    				boolean rl = ls.effectiveBooleanValue();
+        			if (!rl)
+        			    result = BooleanValue.FALSE;
+        			else {
+        				boolean rr = rs.effectiveBooleanValue();
+        			    result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+        			}
     			}
     		} else {
     			boolean rl = ls.effectiveBooleanValue();
     			// immediately return false if the left operand is false
     			if (!rl)
-                    result = BooleanValue.FALSE;
-                else {
-        			boolean rr = rs.effectiveBooleanValue();
-                    result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                }
+    			    result = BooleanValue.FALSE;
+    			else {
+    				Sequence rs = right.eval(contextSequence, null);
+    				boolean rr = rs.effectiveBooleanValue();
+    			    result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+    			}
     		}
         }
         
@@ -94,7 +106,6 @@ public class OpAnd extends LogicalOp {
         return result;
         
 	}
-
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitAndExpr(this);
