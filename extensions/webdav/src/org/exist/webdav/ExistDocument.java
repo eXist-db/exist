@@ -698,7 +698,7 @@ public class ExistDocument extends ExistResource {
             Account userLock = document.getUserLock();
 
             // Check if Resource is already locked. 
-            if (userLock != null) {
+            if (userLock == null) {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Resource was not locked.");
                 throw new DocumentNotLockedException("Resource was not locked.");
