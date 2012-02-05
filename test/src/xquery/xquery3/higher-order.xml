@@ -149,4 +149,162 @@ return
         </code>
         <expected>HELLO WORLD!</expected>
     </test>
+    <test output="text">
+        <task>Function sequence type: any function</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:apply($func as function(*), $list) {
+    for $item in $list return $func($item)
+};
+
+ex:apply(function($a) { upper-case($a) }, ("Hello", "world!"))
+]]>
+        </code>
+        <expected>HELLO WORLD!</expected>
+    </test>
+    <test output="text">
+        <task>Function sequence type: one parameter</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:apply($func as function(xs:string*) as xs:string*, $list) {
+    for $item in $list return $func($item)
+};
+
+ex:apply(function($a) { upper-case($a) }, ("Hello", "world!"))
+]]>
+        </code>
+        <expected>HELLO WORLD!</expected>
+    </test>
+    <test output="text">
+        <task>Function sequence type: two parameters 1</task>
+        <code><![CDATA[
+(: copied from the XQuery spec :)
+declare function local:fold-left(
+        $f as function(item()*, item()) as item()*, 
+        $zero as item()*, 
+        $seq as item()*) as item()* {
+  if (fn:empty($seq)) then $zero
+  else local:fold-left($f, $f($zero, $seq[1]), subsequence($seq, 2))
+};
+
+local:fold-left(function($a, $b) { $a + $b }, 0, 1 to 5)
+]]>
+        </code>
+        <expected>15</expected>
+    </test>
+    <test output="text">
+        <task>Function sequence type: two parameters 2</task>
+        <code><![CDATA[
+declare function local:fold-left(
+        $f as function(item()*, item()) as item()*, 
+        $zero as item()*, 
+        $seq as item()*) as item()* {
+  if (fn:empty($seq)) then $zero
+  else local:fold-left($f, $f($zero, $seq[1]), subsequence($seq, 2))
+};
+
+local:fold-left(function($a, $b) { $a * $b }, 1, (2,3,5,7))
+]]>
+        </code>
+        <expected>210</expected>
+    </test>
+    <test output="text">
+        <task>Function sequence type: two parameters 3</task>
+        <code><![CDATA[declare function local:map($f, $seq) {
+  if (fn:empty($seq))
+  then ()
+  else ($f($seq[1]), local:map($f, subsequence($seq, 2)))
+};
+
+local:map(function($a) { $a * $a }, 1 to 5)
+]]>
+        </code>
+        <expected>1 4 9 16 25</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:add($a, $b) {
+    $a + $b
+};
+
+let $f1 := function-lookup(xs:QName("ex:add"), 2)
+return
+       $f1(20, 50)
+]]>
+        </code>
+        <expected>70</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup on unknown function</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+let $f1 := function-lookup(xs:QName("ex:add"), 2)
+return
+    if ($f1) then
+       $f1(20, 50)
+    else
+        ()
+]]>
+        </code>
+        <expected></expected>
+    </test>
+    <test output="text">
+        <task>fn:function-arity</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:add($a, $b) {
+    $a + $b
+};
+
+let $f1 := ex:add#2
+return
+       function-arity($f1)
+]]>
+        </code>
+        <expected>2</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-name</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:add($a, $b) {
+    $a + $b
+};
+
+let $f1 := ex:add#2
+return
+       function-name($f1)
+]]>
+        </code>
+        <expected>ex:add</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-name on anonymous function</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+let $f1 := function($a, $b) {
+    $a + $b
+}
+return
+       function-name($f1)
+]]>
+        </code>
+        <expected></expected>
+    </test>
 </TestSet>
