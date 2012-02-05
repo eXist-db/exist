@@ -5,6 +5,24 @@
         <p>Higher-order functions in XQuery 3.0</p>
         <author>Wolfgang Meier</author>
     </description>
+    <setup>
+        <create-collection parent="/db" name="xq3-test"/>
+        <store collection="/db/xq3-test" type="application/xquery" name="test1.xql"><![CDATA[
+module namespace ex2="http://exist-db.org/xquery/ex2";
+
+(: copied from the XQuery spec :)
+declare function ex2:fold-left(
+        $f as function(item()*, item()) as item()*, 
+        $zero as item()*, 
+        $seq as item()*) as item()* {
+  if (fn:empty($seq)) then $zero
+  else ex2:fold-left($f, $f($zero, $seq[1]), subsequence($seq, 2))
+};
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xq3-test"/>
+    </tearDown>
     <test output="text">
         <task>Named function reference</task>
         <code><![CDATA[xquery version "3.0";
@@ -226,6 +244,20 @@ local:map(function($a) { $a * $a }, 1 to 5)
         <expected>1 4 9 16 25</expected>
     </test>
     <test output="text">
+        <task>Calling function in imported module</task>
+        <code><![CDATA[
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+let $f1 := ex2:fold-left#3
+return
+    $f1(function($a, $b) { $a * $b }, 1, (2,3,5,7))
+]]>
+        </code>
+        <expected>210</expected>
+    </test>
+    
+    <test output="text">
         <task>fn:function-lookup</task>
         <code><![CDATA[xquery version "3.0";
 
@@ -257,6 +289,19 @@ return
 ]]>
         </code>
         <expected></expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup on function in imported module</task>
+        <code><![CDATA[
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+let $f1 := function-lookup(xs:QName("ex2:fold-left"), 3)
+return
+    $f1(function($a, $b) { $a * $b }, 1, (2,3,5,7))
+]]>
+        </code>
+        <expected>210</expected>
     </test>
     <test output="text">
         <task>fn:function-arity</task>
