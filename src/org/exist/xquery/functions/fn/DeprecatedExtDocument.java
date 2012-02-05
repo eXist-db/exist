@@ -127,7 +127,11 @@ public class DeprecatedExtDocument extends Function {
 //	            docs = cachedDocs;
 //	        } else {
 		        docs = new DefaultDocumentSet();
-		        context.getBroker().getAllXMLResources(docs);
+                        try {
+                            context.getBroker().getAllXMLResources(docs);
+                        } catch (PermissionDeniedException pde) {
+                            throw new XPathException(this, "Permission denied: Insufficient privileges to read resources: " + pde.getMessage(), pde);
+                        }
 //	        }
 	    } else {
 		    List<String> args = getParameterValues(contextSequence, contextItem);

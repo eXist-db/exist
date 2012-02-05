@@ -91,9 +91,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
 
         if(isCalledAs("permissions-to-string")) {
             int mode = ((IntegerValue)args[0].itemAt(0)).getInt();
-            SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
-            Subject currentSubject = sm.getDatabase().getSubject();
-            Permission perm = PermissionFactory.getPermission(currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+            Permission perm = PermissionFactory.getPermission(mode);
             return new StringValue(perm.toString());
         } else {
             String permissionsString = args[0].itemAt(0).getStringValue();

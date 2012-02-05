@@ -97,7 +97,7 @@ public class TestEXistXMLSerialize {
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod("rwxr-xr-x");
     }
 
     @After

@@ -114,6 +114,8 @@ public class Scan extends BasicFunction {
                     throw new XPathException(this, "invalid module uri: " + uri + ": " + e.getMessage(), e);
                 } catch (LockException e) {
                     throw new XPathException(this, "internal lock error: " + e.getMessage());
+                } catch(PermissionDeniedException pde) {
+                    throw new XPathException(this, pde.getMessage(), pde);
                 } finally {
                     if (doc != null)
                         doc.getUpdateLock().release(Lock.READ_LOCK);

@@ -31,6 +31,8 @@ import org.exist.xmldb.XmldbURI;
 
 import java.util.List;
 import java.util.Map;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.LockException;
 
 /**
  * @author wolf
@@ -62,7 +64,13 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
         }
         System.out.println("collection contents:");
         DefaultDocumentSet docs = new DefaultDocumentSet();
-        getCollection().getDocuments(broker, docs, true);
+        
+        try {
+            getCollection().getDocuments(broker, docs);
+        } catch (PermissionDeniedException pde) {
+            throw new TriggerException(pde.getMessage(), pde);
+        }
+        
         for(int i = 0; i < docs.getDocumentCount(); i++) {
             System.out.println("\t" + docs.getDocumentAt(i).getFileURI());
         }

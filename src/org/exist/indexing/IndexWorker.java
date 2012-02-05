@@ -35,6 +35,7 @@ import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
 
 import java.util.Map;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * Provide concurrent access to the index structure. Implements the core operations on the index.
@@ -173,7 +174,7 @@ public interface IndexWorker {
      * @param collection The collection to remove
      * @param broker The broker that will perform the operation
      */
-    void removeCollection(Collection collection, DBBroker broker);
+    void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException;
     
     /** 
      * Checking index could be delegated to a worker. Use this method to do so.

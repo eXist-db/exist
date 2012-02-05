@@ -143,7 +143,16 @@ public class Folder extends NamedResource implements Cloneable {
 		 * @return the number of child subfolders
 		 */
 		public int size() {
-			return getQuickHandle().getChildCollectionCount();
+                        DBBroker _broker = null;
+                        try {
+                            _broker = db.acquireBroker();
+                            return getQuickHandle().getChildCollectionCount(_broker);
+                        } catch(PermissionDeniedException pde) {
+                            throw new DatabaseException(pde.getMessage(), pde);
+			} finally {
+                            db.releaseBroker(_broker);
+			}
+			
 		}
 
 		/**
@@ -159,6 +168,8 @@ public class Folder extends NamedResource implements Cloneable {
 			try {
 				_broker = db.acquireBroker();
 				return _broker.getCollection(XmldbURI.create(path() + "/" + descendantName)) != null;
+                        } catch(PermissionDeniedException pde) {
+                            throw new DatabaseException(pde.getMessage(), pde);
 			} finally {
 				db.releaseBroker(_broker);
 			}
@@ -180,33 +191,63 @@ public class Folder extends NamedResource implements Cloneable {
 			}
 		}
 
+                public class FolderIterator implements Iterator<Folder> {
+                    private Folder last;
+                    
+                    private Iterator<XmldbURI> delegate = null;
+                    private DBBroker broker = null;
+                    
+                    private Iterator<XmldbURI> getDelegate() throws IllegalStateException {
+                        if(delegate == null) {
+                            try {
+                                broker = db.acquireBroker();
+                                delegate = getQuickHandle().collectionIterator(broker);
+                            } catch(PermissionDeniedException pde) {
+                                throw new IllegalStateException(pde.getMessage(), pde);
+                            }
+                        }
+                        
+                        return delegate;
+                    }
+                    
+                    @Override
+                    public void remove() {
+                            staleMarker.check();
+                            if (last == null) {
+                                throw new IllegalStateException("no collection to remove");
+                            }
+                            last.delete();
+                            last = null;
+                    }
+                    
+                    @Override
+                    public boolean hasNext() {
+                            staleMarker.check();
+                            boolean result = getDelegate().hasNext();
+                            if(!result) {
+                                db.releaseBroker(broker);
+                            }
+                            return result;
+                    }
+                    
+                    @Override
+                    public Folder next() {
+                            staleMarker.check();
+                            last = get(getDelegate().next().getCollectionPath());
+                            return last;
+                    }
+                }
+                
 		/**
 		 * Return an iterator over the immediate child subfolders.  You can use this iterator to
 		 * selectively delete subfolders as well.
 		 * 
 		 * @return an iterator over the child subfolders 
 		 */
+                @Override
 		public Iterator<Folder> iterator() {
-			staleMarker.check();
-			return new Iterator<Folder>() {
-				private Iterator<XmldbURI> delegate = getQuickHandle().collectionIterator();
-				private Folder last;
-				public void remove() {
-					staleMarker.check();
-					if (last == null) throw new IllegalStateException("no collection to remove");
-					last.delete();
-					last = null;
-				}
-				public boolean hasNext() {
-					staleMarker.check();
-					return delegate.hasNext();
-				}
-				public Folder next() {
-					staleMarker.check();
-					last = get(delegate.next().getCollectionPath());
-					return last;
-				}
-			};
+                    staleMarker.check();
+                    return new FolderIterator();
 		}
 		
 	}
@@ -336,7 +377,19 @@ public class Folder extends NamedResource implements Cloneable {
 		public boolean contains(String documentPath) {
 			checkIsRelativeDocPath(documentPath);
 			if (documentPath.contains("/")) return database().contains(Folder.this.path() + "/" + documentPath);
-			return getQuickHandle().getDocument(broker, XmldbURI.create(documentPath)) != null;
+                        
+                        DBBroker _broker = null;
+                        try {
+                            _broker = db.acquireBroker();
+                            return getQuickHandle().getDocument(_broker, XmldbURI.create(documentPath)) != null;
+                        } catch(PermissionDeniedException pde) {
+                            throw new DatabaseException(pde.getMessage(), pde);
+                        } finally {
+                            if(_broker != null) {
+                                db.releaseBroker(_broker);
+                            }
+                        }
+			
 		}
 
 		/**
@@ -424,9 +477,20 @@ public class Folder extends NamedResource implements Cloneable {
 		public Document get(String documentPath) {
 			checkIsRelativeDocPath(documentPath);
 			if (documentPath.contains("/")) return database().getDocument(Folder.this.path() + "/" + documentPath);
-			DocumentImpl dimpl = getQuickHandle().getDocument(broker, XmldbURI.create(documentPath));
-			if (dimpl == null) throw new DatabaseException("no such document: " + documentPath);
-			return Document.newInstance(dimpl, Folder.this);
+			
+                        DBBroker _broker = null; 
+                        try {
+                            _broker = db.acquireBroker();
+                            DocumentImpl dimpl = getQuickHandle().getDocument(_broker, XmldbURI.create(documentPath));
+                            if (dimpl == null) throw new DatabaseException("no such document: " + documentPath);
+                            return Document.newInstance(dimpl, Folder.this);
+                        } catch(PermissionDeniedException pde) {
+                            throw new DatabaseException(pde.getMessage(), pde);
+                        } finally {
+                            if(_broker != null) {
+                                db.releaseBroker(_broker);
+                            }
+                        }
 		}
 		
 		private void checkIsRelativeDocPath(String docPath) {
@@ -440,7 +504,15 @@ public class Folder extends NamedResource implements Cloneable {
 		 * @return the number of child documents
 		 */
 		public int size() {
-			return getQuickHandle().getDocumentCount();
+                    DBBroker _broker = null;
+                    try {
+                        _broker = db.acquireBroker();
+			return getQuickHandle().getDocumentCount(_broker);
+                    } catch (PermissionDeniedException pde) {
+                        throw new DatabaseException(pde.getMessage(), pde);
+                    } finally {
+                        db.releaseBroker(_broker);
+                    }
 		}
 		
 		/**
@@ -476,8 +548,10 @@ public class Folder extends NamedResource implements Cloneable {
 				protected void prepareContext(DBBroker broker_) {
 					acquire(Lock.READ_LOCK, broker_);
 					try {
-						docs = handle.allDocs(broker_, new DefaultDocumentSet(), false, false);
+						docs = handle.allDocs(broker_, new DefaultDocumentSet(), false);
 						baseUri = new AnyURIValue(handle.getURI());
+                                        }catch (PermissionDeniedException pde) {
+                                            throw new DatabaseException(pde.getMessage(), pde);
 					} finally {
 						release();
 					}
@@ -499,6 +573,8 @@ public class Folder extends NamedResource implements Cloneable {
 					acquire(Lock.READ_LOCK);
 					try {
 						delegate = handle.iterator(broker);
+                                        } catch(PermissionDeniedException pde) {
+                                            throw new DatabaseException(pde.getMessage(), pde);
 					} finally {
 						release();
 					}
@@ -615,8 +691,15 @@ public class Folder extends NamedResource implements Cloneable {
 					tx.abortIfIncomplete();
 				}
 			} else {
-				collection = broker.getCollection(XmldbURI.create(path));
-				if (collection == null) throw new DatabaseException("collection not found '" + path + "'");
+				try {
+                                    collection = broker.getCollection(XmldbURI.create(path));
+                                
+                                    if (collection == null) {
+                                        throw new DatabaseException("collection not found '" + path + "'");
+                                    }
+                                } catch(PermissionDeniedException pde) {
+                                    throw new DatabaseException(pde.getMessage(), pde);
+                                }
 			}
 			// store the normalized path, minus the root prefix if possible
 			changePath(collection.getURI().getCollectionPath());
@@ -727,17 +810,23 @@ public class Folder extends NamedResource implements Cloneable {
 	
 	void acquire(int _lockMode, DBBroker _broker) {
 		staleMarker.check();
-		if (broker != null || handle != null) throw new IllegalStateException("broker already acquired");
+		if(broker != null || handle != null) throw new IllegalStateException("broker already acquired");
 		broker = _broker;
 		try {
-			handle = broker.openCollection(XmldbURI.create(path()), _lockMode);
-			if (handle == null) throw new DatabaseException("collection not found '" + path + "'");
-			this.lockMode = _lockMode;
+                    handle = broker.openCollection(XmldbURI.create(path()), _lockMode);
+                    if(handle == null) {
+                        throw new DatabaseException("collection not found '" + path + "'");
+                    }
+                    this.lockMode = _lockMode;
 		} catch (RuntimeException e) {
-			broker = null;
-			handle = null;
-			throw e;
-		}
+                    broker = null;
+                    handle = null;
+                    throw e;
+		} catch(PermissionDeniedException pde) {
+                    broker = null;
+                    handle = null;
+                    throw new DatabaseException(pde.getMessage(), pde);
+                }
 	}
 	
 	void release() {
@@ -785,10 +874,13 @@ public class Folder extends NamedResource implements Cloneable {
 	public boolean isEmpty() {
 		acquire(Lock.NO_LOCK);
 		try {
-			return handle.getDocumentCount() == 0 && handle.getChildCollectionCount() == 0;
-		} finally {
+			return handle.getDocumentCount(broker) == 0 && handle.getChildCollectionCount(broker) == 0;
+                } catch (PermissionDeniedException pde) {
+                    throw new DatabaseException(pde.getMessage(), pde);
+                } finally {
 			release();
 		}
+                
 	}
 	
 	/**
@@ -797,12 +889,12 @@ public class Folder extends NamedResource implements Cloneable {
 	public void clear() {
 		transact(Lock.READ_LOCK);
 		try {
-			if (handle.getDocumentCount() == 0 && handle.getChildCollectionCount() == 0) return;
+			if (handle.getDocumentCount(broker) == 0 && handle.getChildCollectionCount(broker) == 0) return;
 			broker.removeCollection(tx.tx, handle);
 			createInternal(path);
 			commit();
 		} catch (PermissionDeniedException e) {
-			throw new RuntimeException(e);
+			throw new DatabaseException(e);
 		} catch (IOException e) {
 			throw new DatabaseException(e);
 		} catch (TriggerException e) {
@@ -1009,8 +1101,10 @@ public class Folder extends NamedResource implements Cloneable {
 			DocumentSet docs;
 			acquire(Lock.READ_LOCK);
 			try {
-				docs = handle.allDocs(broker, new DefaultDocumentSet(), recursive, false);
-			} finally {
+				docs = handle.allDocs(broker, new DefaultDocumentSet(), recursive);
+                        } catch(PermissionDeniedException pde) {
+                            throw new DatabaseException(pde.getMessage(), pde);
+                        } finally {
 				release();
 			}
 			Sequence result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
@@ -1040,8 +1134,10 @@ public class Folder extends NamedResource implements Cloneable {
 			@Override void prepareContext(DBBroker broker_) {
 				acquire(Lock.READ_LOCK, broker_);
 				try {
-					docs = handle.allDocs(broker_, new DefaultDocumentSet(), true, false);
+					docs = handle.allDocs(broker_, new DefaultDocumentSet(), true);
 					baseUri = new AnyURIValue(handle.getURI());
+                                } catch(PermissionDeniedException pde) {
+                                    throw new DatabaseException(pde.getMessage(), pde);
 				} finally {
 					release();
 				}
@@ -1083,8 +1179,8 @@ public class Folder extends NamedResource implements Cloneable {
 				broker.moveResource(tx.tx, doc, handle, uri);
 			}
 			commit();
-		} catch (PermissionDeniedException e) {
-			throw new DatabaseException("permission denied", e);
+		} catch (PermissionDeniedException pde) {
+			throw new DatabaseException(pde.getMessage(), pde);
 		} catch (LockException e) {
 			throw new DatabaseException("lock denied", e);
 		} catch (IOException e) {
@@ -1096,10 +1192,20 @@ public class Folder extends NamedResource implements Cloneable {
 		} finally {
 			release();
 		}
-		return getQuickHandle().getDocument(broker, uri);
+                
+                DBBroker _broker = null;
+                Collection _handle = getQuickHandle();
+                try {
+                     _broker = db.acquireBroker();
+                    return _handle.getDocument(_broker, uri);
+                } catch(PermissionDeniedException pde) {
+                    throw new DatabaseException(pde.getMessage(), pde);
+                } finally {
+                    if(_broker != null) {
+                        db.releaseBroker(_broker);
+                    }
+                }
+                        
+                    
 	}
-	
-
-
-
 }

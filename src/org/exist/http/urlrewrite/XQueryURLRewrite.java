@@ -747,7 +747,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 for (int i = 0; i < components.length; i++) {
                     DocumentImpl doc = null;
                     try {
-                        if (components[i].length() > 0 && subColl.hasChildCollection(XmldbURI.createInternal(components[i]))) {
+                        if (components[i].length() > 0 && subColl.hasChildCollection(broker, XmldbURI.createInternal(components[i]))) {
                             XmldbURI newSubCollURI = subColl.getURI().append(components[i]);
                             LOG.trace("Inspecting sub-collection: " + newSubCollURI);
                             subColl = broker.openCollection(newSubCollURI, Lock.READ_LOCK);
@@ -819,6 +819,9 @@ public class XQueryURLRewrite extends HttpServlet {
             } catch (URISyntaxException e) {
                 LOG.warn("Bad URI for base path: " + e.getMessage(), e);
                 return null;
+            } catch (PermissionDeniedException e) {
+                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
+              return null;
             }
         } else {
             LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);

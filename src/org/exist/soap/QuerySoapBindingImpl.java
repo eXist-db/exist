@@ -44,6 +44,7 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import antlr.collections.AST;
+import org.exist.util.LockException;
 
 /**
  *  Provides the actual implementations for the methods defined in
@@ -223,13 +224,13 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             Collection c = new Collection();
             
             // Sub-collections
-            String childCollections[] = new String[collection.getChildCollectionCount()];
+            String childCollections[] = new String[collection.getChildCollectionCount(broker)];
             int j = 0;
-            for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
+            for (Iterator i = collection.collectionIterator(broker); i.hasNext(); j++)
                 childCollections[j] = ((XmldbURI) i.next()).toString();
             
             // Resources
-            String[] resources = new String[collection.getDocumentCount()];
+            String[] resources = new String[collection.getDocumentCount(broker)];
             j = 0;
             XmldbURI resource;
             for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
@@ -241,6 +242,8 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             return c;
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
+        } catch (PermissionDeniedException pde) {
+            throw new RemoteException(pde.getMessage());
         } finally {
             pool.release(broker);
         }

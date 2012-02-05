@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.*;
 import org.exist.dom.*;
+import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -294,7 +295,7 @@ public class Node extends Item {
 			final NodeImpl oldNode = (NodeImpl) getDOMNode();
 			if (oldNode.getParentNode() == null) throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()) + " with no parent");
 			if (oldNode.getParentNode().getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE)
-				return document().folder().documents().build(Name.overwrite(document().name()));
+				return document().folder().documents().build(Name.overwrite(db, document().name()));
 			return new ElementBuilder<Object>(namespaceBindings, false, new ElementBuilder.CompletedCallback<Object>() {
 				public Object completed(org.w3c.dom.Node[] nodes) {
 					assert nodes.length == 1;

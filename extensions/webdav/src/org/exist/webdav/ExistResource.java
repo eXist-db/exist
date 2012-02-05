@@ -47,7 +47,7 @@ public abstract class ExistResource {
     protected Long lastModified;
     protected boolean readAllowed = false;
     protected boolean writeAllowed = false;
-    protected boolean updateAllowed = false;
+    protected boolean executeAllowed = false;
     protected ExistResource existResource;
 
     protected String ownerUser;
@@ -68,7 +68,7 @@ public abstract class ExistResource {
     }
 
     protected boolean isUpdateAllowed() {
-        return updateAllowed;
+        return executeAllowed;
     }
 
     protected Subject getUser() {

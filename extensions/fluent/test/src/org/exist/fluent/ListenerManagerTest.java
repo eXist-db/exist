@@ -99,7 +99,7 @@ public class ListenerManagerTest extends DatabaseTestCase {
 		int k = path.lastIndexOf('/');
 		assert k > 0;
 		Folder folder = db.createFolder(path.substring(0, k));
-		return folder.documents().build(Name.overwrite(path.substring(k + 1)))
+		return folder.documents().build(Name.overwrite(db, path.substring(k + 1)))
 				.elem("test").attrIf(stamp != null, "stamp", stamp).end("test")
 				.commit();
 	}

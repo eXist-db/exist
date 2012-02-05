@@ -28,5 +28,7 @@ package org.exist.security;
 public interface Credential {
 
     public boolean check(Object credentials);
+
+    public String getDigest();
     
 }

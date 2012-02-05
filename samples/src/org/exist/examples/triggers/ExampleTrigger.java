@@ -72,40 +72,42 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
-	public void configure(DBBroker broker, Collection parent, Map parameters)
-		throws TriggerException {
-		super.configure(broker, parent, parameters);
-		// the name of the contents file can be set through parameters
-		XmldbURI contentsFile = null;
-		String contentsName = (String)parameters.get("contents");
-		if(contentsName == null) {
-			contentsFile = XmldbURI.create("contents.xml");
-		} else {
-			try{
-				contentsFile = XmldbURI.xmldbUriFor(contentsName);
-			} catch(URISyntaxException e) {
-				throw new TriggerException(e);
-			}
-		}
-		// try to retrieve the contents file
-		this.doc = parent.getDocument(broker, contentsFile);
-		if(this.doc == null)
-			// doesn't exist yet: create it
-			try {
-				LOG.debug("creating new file for collection contents");
-				// IMPORTANT: temporarily disable triggers on the collection.
+    @Override
+    public void configure(DBBroker broker, Collection parent, Map parameters)
+            throws TriggerException {
+            super.configure(broker, parent, parameters);
+            // the name of the contents file can be set through parameters
+            XmldbURI contentsFile = null;
+            String contentsName = (String)parameters.get("contents");
+            if(contentsName == null) {
+                    contentsFile = XmldbURI.create("contents.xml");
+            } else {
+                    try{
+                            contentsFile = XmldbURI.xmldbUriFor(contentsName);
+                    } catch(URISyntaxException e) {
+                            throw new TriggerException(e);
+                    }
+            }
+            // try to retrieve the contents file
+            try {
+                this.doc = parent.getDocument(broker, contentsFile);
+                if(this.doc == null)
+                // doesn't exist yet: create it
+
+                LOG.debug("creating new file for collection contents");
+                // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
                 parent.setTriggersEnabled(false);
-				IndexInfo info = parent.validateXMLResource(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
-				//TODO : unlock the collection here ?
+                IndexInfo info = parent.validateXMLResource(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
+                //TODO : unlock the collection here ?
                 parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>", false);
                 this.doc = info.getDocument();
-			} catch (Exception e) {
-				throw new TriggerException(e.getMessage(), e);
-			} finally {
-				parent.setTriggersEnabled(true);
-			}
-	}
+            } catch (Exception e) {
+                throw new TriggerException(e.getMessage(), e);
+            } finally {
+                parent.setTriggersEnabled(true);
+            }
+    }
 
 	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
 	}

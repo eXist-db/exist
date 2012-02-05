@@ -81,8 +81,9 @@ public class Append extends Modification {
 				StoredNode node = ql[i];
 				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				doc.getMetadata().setIndexListener(listener);
-				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
-					throw new PermissionDeniedException("permission to update document denied");
+				if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
+					throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                                }
                 node.appendChildren(transaction, children, child);
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());

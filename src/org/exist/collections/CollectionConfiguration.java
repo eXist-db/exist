@@ -90,8 +90,8 @@ public class CollectionConfiguration {
     private XmldbURI docName = null;
     private XmldbURI srcCollectionURI;
 	
-	private int defCollPermissions = Permission.DEFAULT_PERM;
-	private int defResPermissions = Permission.DEFAULT_PERM;
+	private int defCollPermissions = Permission.DEFAULT_COLLECTION_PERM;
+	private int defResPermissions = Permission.DEFAULT_RESOURCE_PERM;
     
 	private String defCollGroup = null;
 	private String defResGroup = null;

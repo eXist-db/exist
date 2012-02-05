@@ -67,7 +67,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		try {
 			broker = pool.get(user);
 			if (resource == null) {
-				docs = c.allDocs(broker, docs, true, true);
+				docs = c.allDocs(broker, docs, true);
 			} else {
 				XmldbURI resourceURI = XmldbURI.xmldbUriFor(resource);
 				DocumentImpl doc = c.getDocument(broker, resourceURI);

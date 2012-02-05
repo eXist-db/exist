@@ -29,6 +29,7 @@ import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 
 import java.io.IOException;
+import org.exist.security.PermissionRequired;
 
 public class DocumentMetadata {
 

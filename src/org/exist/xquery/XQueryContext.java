@@ -1194,7 +1194,12 @@ public class XQueryContext implements BinaryValueManager, Context
         if( staticDocumentPaths == null ) {
 
             // no path defined: return all documents in the db
-            getBroker().getAllXMLResources( ndocs );
+            try {
+                getBroker().getAllXMLResources( ndocs );
+            } catch(PermissionDeniedException pde) {
+                LOG.warn("Permission denied to read resource all resources" + pde.getMessage(), pde);
+                throw new XPathException("Permission denied to read resource all resources" + pde.getMessage(), pde);
+            }
         } else {
             DocumentImpl doc;
             Collection   collection;
@@ -1205,7 +1210,7 @@ public class XQueryContext implements BinaryValueManager, Context
                     collection = getBroker().getCollection( staticDocumentPaths[i] );
 
                     if( collection != null ) {
-                        collection.allDocs( getBroker(), ndocs, true, true );
+                        collection.allDocs( getBroker(), ndocs, true);
                     } else {
                         doc = getBroker().getXMLResource( staticDocumentPaths[i], Lock.READ_LOCK );
 

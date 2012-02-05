@@ -134,9 +134,9 @@ public class Update extends Modification {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
-                            Permission.UPDATE))
-                            throw new XPathException(this,
-                                    "permission to update document denied");
+                            Permission.WRITE)){
+                            throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                    }
                     doc.getMetadata().setIndexListener(listener);
                                         
                     //update the document

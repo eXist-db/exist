@@ -34,7 +34,7 @@ public class QueryServiceTest extends DatabaseTestCase {
 
 	@Test public void importModule1() {
 		Folder f = db.getFolder("/");
-		Document doc = f.documents().load(Name.create("module1"), Source.blob(
+		Document doc = f.documents().load(Name.create(db,"module1"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:foo() { 'foo' };\n"
 		));
@@ -43,7 +43,7 @@ public class QueryServiceTest extends DatabaseTestCase {
 	
 	@Test public void importModule2() {
 		Folder f = db.createFolder("/top/next");
-		Document doc = f.documents().load(Name.create("module1"), Source.blob(
+		Document doc = f.documents().load(Name.create(db,"module1"), Source.blob(
 				"\n\nmodule  namespace  _123=\"http://example.com?a=1-2&amp;b=4\" ;\n" +
 				"declare function _123:foo() { 'foo' };\n"
 		));
@@ -52,11 +52,11 @@ public class QueryServiceTest extends DatabaseTestCase {
 	
 	@Test public void importModule3() {
 		Folder f = db.getFolder("/");
-		Document doc1 = f.documents().load(Name.create("module1"), Source.blob(
+		Document doc1 = f.documents().load(Name.create(db,"module1"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:foo() { 'foo' };\n"
 		));
-		Document doc2 = f.documents().load(Name.create("module2"), Source.blob(
+		Document doc2 = f.documents().load(Name.create(db,"module2"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:foo() { 'bar' };\n"
 		));
@@ -66,11 +66,11 @@ public class QueryServiceTest extends DatabaseTestCase {
 	
 	@Test(expected = DatabaseException.class) public void importModule4() {
 		Folder f = db.getFolder("/");
-		Document doc1 = f.documents().load(Name.create("module1"), Source.blob(
+		Document doc1 = f.documents().load(Name.create(db,"module1"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:foo() { 'foo' };\n"
 		));
-		Document doc2 = f.documents().load(Name.create("module2"), Source.blob(
+		Document doc2 = f.documents().load(Name.create(db,"module2"), Source.blob(
 				"module namespace ex = 'http://example.com/other';\n" +
 				"declare function ex:foo() { 'bar' };\n"
 		));
@@ -79,12 +79,12 @@ public class QueryServiceTest extends DatabaseTestCase {
 	
 	@Test public void importModule5() {
 		Folder f = db.getFolder("/");
-		Document module = f.documents().load(Name.create("module"), Source.blob(
+		Document module = f.documents().load(Name.create(db,"module"), Source.blob(
 				"module namespace ex = 'http://example.com';\n" +
 				"declare function ex:root() { / };\n"
 		));
-		XMLDocument doc1 = f.documents().load(Name.create("doc1"), Source.xml("<foo/>"));
-		f.documents().load(Name.create("doc2"), Source.xml("<foo/>"));
+		XMLDocument doc1 = f.documents().load(Name.create(db,"doc1"), Source.xml("<foo/>"));
+		f.documents().load(Name.create(db,"doc2"), Source.xml("<foo/>"));
 		QueryService qs = db.query(doc1).importModule(module);
 		assertEquals(1, qs.all("/").size());
 		assertEquals(1, qs.all("ex:root()").size());
@@ -92,8 +92,8 @@ public class QueryServiceTest extends DatabaseTestCase {
 	
 	@Test public void limitRootDocuments1() {
 		Folder f = db.getFolder("/");
-		XMLDocument doc1 = f.documents().load(Name.create("doc1"), Source.xml("<foo/>"));
-		f.documents().load(Name.create("doc2"), Source.xml("<foo/>"));
+		XMLDocument doc1 = f.documents().load(Name.create(db,"doc1"), Source.xml("<foo/>"));
+		f.documents().load(Name.create(db,"doc2"), Source.xml("<foo/>"));
 		assertEquals(2, f.query().all("/foo").size());
 		assertEquals(1, f.query().limitRootDocuments(doc1).all("/foo").size());
 	}

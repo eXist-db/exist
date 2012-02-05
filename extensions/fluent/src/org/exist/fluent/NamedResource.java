@@ -111,10 +111,10 @@ public abstract class NamedResource extends Resource {
 		public boolean hasPermission(char who, char what) {
 			int mask = convertPermissionBit(what);
 			switch(who) {
-				case 'a': mask = mask | (mask << 3) | (mask << 6);
-				case 'u': mask <<= 6; break;
-				case 'g': mask <<= 3; break;
-				case 'o': break;
+				case Permission.ALL_CHAR: mask = mask | (mask << 3) | (mask << 6);
+				case Permission.USER_CHAR: mask <<= 6; break;
+				case Permission.GROUP_CHAR: mask <<= 3; break;
+				case Permission.OTHER_CHAR: break;
 				default: throw new IllegalArgumentException("illegal permission \"who\" code '" + who + "'");
 			}
 			return (permissions.getMode() & mask) == mask;
@@ -122,9 +122,9 @@ public abstract class NamedResource extends Resource {
 		
 		private int convertPermissionBit(char what) {
 			switch(what) {
-				case 'r': return Permission.READ;
-				case 'w': return Permission.WRITE;
-				case 'u': return Permission.UPDATE;
+				case Permission.READ_CHAR: return Permission.READ;
+				case Permission.WRITE_CHAR: return Permission.WRITE;
+				case Permission.EXECUTE_CHAR: return Permission.EXECUTE;
 				default: throw new IllegalArgumentException("illegal permission \"what\" code '" + what + "'");
 			}
 		}

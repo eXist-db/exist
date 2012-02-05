@@ -336,6 +336,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					lockedDocuments.unlock();
                     brokerPool.release(reservedBroker);
                     deadlockCaught = true;
+                    } catch (PermissionDeniedException e) {
+                        throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+                        "Permission denied on document");
 	            }
             } while (deadlockCaught);
         } catch (EXistException e) {

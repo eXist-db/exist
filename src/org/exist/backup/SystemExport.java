@@ -21,8 +21,11 @@
  */
 package org.exist.backup;
 
+import java.io.*;
+import java.util.*;
 import org.apache.log4j.Logger;
 
+import org.exist.security.PermissionDeniedException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -58,9 +61,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 
-import java.io.*;
-
-import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -346,7 +346,7 @@ public class SystemExport
      * @throws  SAXException
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    private void export( Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException
+    private void export( Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException, PermissionDeniedException
     {
         if( callback != null ) {
             callback.startCollection( current.getURI().toString() );
@@ -385,7 +385,7 @@ public class SystemExport
             }
             serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
 
-            int docsCount = current.getDocumentCountNoLock();
+            int docsCount = current.getDocumentCountNoLock(broker);
             int count     = 0;
 
             for( Iterator<DocumentImpl> i = current.iteratorNoLock( broker ); i.hasNext(); count++ ) {
@@ -403,7 +403,7 @@ public class SystemExport
                 docs.add( doc, false );
             }
 
-            for( Iterator<XmldbURI> i = current.collectionIteratorNoLock(); i.hasNext(); ) {
+            for( Iterator<XmldbURI> i = current.collectionIteratorNoLock(broker); i.hasNext(); ) {
                 XmldbURI childUri = i.next();
 
                 if( childUri.equalsInternal( TEMP_COLLECTION ) ) {
@@ -843,34 +843,39 @@ public class SystemExport
             this.serializer = serializer;
         }
 
+        @Override
         public void startElement( String uri, String localName, String qName, Attributes attributes ) throws SAXException
         {
             if( uri.equals( Namespaces.EXIST_NS ) ) {
 
-                if( localName.equals( "subcollection" ) ) {
-                    String name = attributes.getValue( "filename" );
+                try {
+                    if( localName.equals( "subcollection" ) ) {
+                        String name = attributes.getValue( "filename" );
 
-                    if( name == null ) {
-                        name = attributes.getValue( "name" );
-                    }
+                        if( name == null ) {
+                            name = attributes.getValue( "name" );
+                        }
 
-                    if( !collection.hasChildCollection( XmldbURI.create( name ) ) ) {
-                        AttributesImpl attr = new AttributesImpl();
-                        attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
-                        attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "collection" );
-                        serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
-                        serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
-                    }
-                } else if( localName.equals( "resource" ) ) {
-                    String name = attributes.getValue( "name" );
+                        if( !collection.hasChildCollection(broker, XmldbURI.create( name ) ) ) {
+                            AttributesImpl attr = new AttributesImpl();
+                            attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
+                            attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "collection" );
+                            serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
+                            serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
+                        }
+                    } else if( localName.equals( "resource" ) ) {
+                        String name = attributes.getValue( "name" );
 
-                    if( !collection.hasDocument( XmldbURI.create( name ) ) ) {
-                        AttributesImpl attr = new AttributesImpl();
-                        attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
-                        attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "resource" );
-                        serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
-                        serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
+                        if( !collection.hasDocument(broker, XmldbURI.create( name ) ) ) {
+                            AttributesImpl attr = new AttributesImpl();
+                            attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
+                            attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "resource" );
+                            serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
+                            serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
+                        }
                     }
+                } catch(PermissionDeniedException pde) {
+                    throw new SAXException("Unable to process :" + qName + ": " + pde.getMessage(), pde);
                 }
             }
         }

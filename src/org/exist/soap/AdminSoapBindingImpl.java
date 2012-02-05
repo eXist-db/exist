@@ -291,7 +291,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                         "collection " + collectionName + " not found");
             }
             DocumentSet docs =
-                    collection.allDocs(broker, new DefaultDocumentSet(), true, true);
+                    collection.allDocs(broker, new DefaultDocumentSet(), true);
             XUpdateProcessor processor =
                     new XUpdateProcessor(broker, docs, AccessContext.SOAP);
             Modification modifications[] =
@@ -527,8 +527,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                             : DocumentType.XMLResource);
                     docs.add(dd);
                 }
-                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
+                for(Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
                     collections.add(i.next().toString());
+                }
             }
             Permission perms = collection.getPermissions();
             desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
@@ -792,73 +793,70 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public void setUser(java.lang.String sessionId, java.lang.String name, java.lang.String password, org.exist.soap.Strings groups, java.lang.String home) throws java.rmi.RemoteException {
-        if (password.length() == 0)
+        if (password.length() == 0) {
             password = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        }
         
-        org.exist.security.SecurityManager manager = pool.getSecurityManager();
-        if(name.equals(org.exist.security.SecurityManager.GUEST_USER) &&
-                (!manager.hasAdminPrivileges(user)))
-            throw new RemoteException(
-                    "guest user cannot be modified");
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
+        
+        final org.exist.security.SecurityManager manager = pool.getSecurityManager();
+        if(name.equals(org.exist.security.SecurityManager.GUEST_USER) && (!manager.hasAdminPrivileges(user))) {
+            throw new RemoteException("guest user cannot be modified");
+        }
+        
         Account u;
-        if (!manager.hasAccount(name)) {
-            if (!manager.hasAdminPrivileges(user))
-                throw new RemoteException(
-                        "not allowed to create user");
+        if(!manager.hasAccount(name)) {
+            if(!manager.hasAdminPrivileges(user)) {
+                throw new RemoteException("not allowed to create user");
+            }
+          
             u = new UserAider(name);
             ((UserAider)u).setPasswordDigest(password);
         } else {
             u = manager.getAccount(session.getUser(), name);
-            if (!(u.getName().equals(user.getName()) || manager
-                    .hasAdminPrivileges(user)))
-                throw new RemoteException(
-                        "you are not allowed to change this user");
-            ((AccountImpl)u).setPasswordDigest(password);
-        }
-        for (int i = 0; i < groups.getElements().length; i++ ) {
-            if (!u.hasGroup(groups.getElements()[i])) {
-                if(!manager.hasAdminPrivileges(user))
-                    throw new RemoteException(
-                            "User is not allowed to add groups");
-                
-                String roleName = groups.getElements()[i];
-                if (!manager.hasGroup(roleName))
-					try {
-						manager.addGroup(roleName);
-					} catch (PermissionDeniedException e) {
-	                    throw new RemoteException(e.getMessage());
-					} catch (EXistException e) {
-	                    throw new RemoteException(e.getMessage());
-					}
-                
-                try {
-					u.addGroup(roleName);
-				} catch (PermissionDeniedException e) {
-	                throw new RemoteException(
-                    e.getMessage());
-				}
+            if(!(u.getName().equals(user.getName()) || manager.hasAdminPrivileges(user))) {
+                throw new RemoteException("you are not allowed to change this user");
             }
+            ((AccountImpl)u).setPassword(password);
         }
-        if (home != null) {
-        	try {
+        
+        if(home != null) {
+            try {
                 u.setHome(XmldbURI.xmldbUriFor(home));
-        	} catch(URISyntaxException e) {
-        		throw new RemoteException("Invalid collection URI",e);
-        	}
+            } catch(URISyntaxException e) {
+                throw new RemoteException("Invalid collection URI",e);
+            }
         }
         
         DBBroker broker = null;
         try {
-        	broker = pool.get(user);
-        	
-			manager.addAccount(u);
-		} catch (Exception e) {
-    		throw new RemoteException(e.getMessage(), e);
-		} finally {
-			pool.release(broker);
-		}
+            broker = pool.get(user);
+            for(String groupName : groups.getElements()) {
+                if (!u.hasGroup(groupName)) {
+
+                    if(!manager.hasAdminPrivileges(user)) {
+                        throw new RemoteException("User is not allowed to add groups");
+                    }
+
+                    if(!manager.hasGroup(groupName)){
+                        manager.addGroup(groupName);
+                    }
+                    u.addGroup(groupName);
+                }
+            }
+            
+            manager.addAccount(u);
+            
+        } catch (PermissionDeniedException e) {
+            throw new RemoteException(e.getMessage());
+        } catch (EXistException e) {
+            throw new RemoteException(e.getMessage());
+        } finally {
+            if(broker != null) {
+                pool.release(broker);
+            }
+        }
     }
     
     @Override
@@ -978,8 +976,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new EXistException("Resource "
                         + path + " not found");
             }
-            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+            if (!doc.getPermissions().validate(user, Permission.WRITE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+            
             org.exist.security.SecurityManager manager = pool.getSecurityManager();
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
@@ -1025,7 +1024,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if (doc == null)
                 throw new EXistException("Resource "
                         + path + " not found");
-            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+            if (!doc.getPermissions().validate(user, Permission.WRITE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + path);
             org.exist.security.SecurityManager manager = pool.getSecurityManager();
             Account lockOwner = doc.getUserLock();
@@ -1154,12 +1153,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + name);
-            EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount()];
+            EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount(broker)];
             XmldbURI child, path;
             Collection childColl;
             Permission perm;
             int cnt = 0;
-            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+            for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                 child = i.next();
                 path = name.append(child);
                 childColl = broker.getCollection(path);
@@ -1202,7 +1201,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + name);
-            EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount()];
+            EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount(broker)];
             DocumentImpl doc;
             Permission perm;
             int cnt = 0;

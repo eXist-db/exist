@@ -112,6 +112,7 @@ public class LocalIndexQueryService implements IndexQueryService {
     /* (non-Javadoc)
 	 * @see org.exist.xmldb.IndexQueryService#configure(java.lang.String)
 	 */
+    @Override
 	public void configureCollection(String configData) throws XMLDBException {
 		DBBroker broker = null;
         TransactionManager transact = pool.getTransactionManager();
@@ -204,7 +205,7 @@ public class LocalIndexQueryService implements IndexQueryService {
 		try {
 			broker = pool.get(user);
 			MutableDocumentSet docs = new DefaultDocumentSet();
-			parent.getCollection().allDocs(broker, docs, inclusive, true);
+			parent.getCollection().allDocs(broker, docs, inclusive);
 			return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
 		} catch (PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,

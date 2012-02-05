@@ -44,7 +44,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggerProxy;
@@ -63,6 +62,7 @@ import org.exist.numbering.NodeIdFactory;
 import org.exist.plugin.PluginsManagerImpl;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.SystemTaskJob;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -838,26 +838,35 @@ public class BrokerPool extends Observable implements Database {
 			recovered = transactionManager.runRecovery(broker);
             //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
             if (!recovered) {
-            	if (broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
-            		Txn txn = transactionManager.beginTransaction();
-            		try {
-            			//TODO : use a root collection final member
-            			broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
-            			transactionManager.commit(txn);
-            		} catch (IOException e) {
-            			transactionManager.abort(txn);
-	        		} catch (PermissionDeniedException e) {
-	        			transactionManager.abort(txn);
-	        		} catch (TriggerException e) {
-	        			transactionManager.abort(txn);
-					}
-            	}
+                try {
+                    if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
+                        Txn txn = transactionManager.beginTransaction();
+                        try {
+                            //TODO : use a root collection final member
+                            broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
+                            transactionManager.commit(txn);
+                        } catch (IOException e) {
+                            transactionManager.abort(txn);
+                        } catch (PermissionDeniedException e) {
+                            transactionManager.abort(txn);
+                        } catch (TriggerException e) {
+                            transactionManager.abort(txn);
+                        }
+                    }
+                } catch(PermissionDeniedException pde) {
+                    LOG.fatal(pde.getMessage(), pde);
+                }
             }
         }
 
         /* initialise required collections if they dont exist yet */
         if(!exportOnly) {
-            initialiseSystemCollections(broker);
+            try {
+                initialiseSystemCollections(broker);
+            } catch(PermissionDeniedException pde) {
+                LOG.error(pde.getMessage(), pde);
+                throw new EXistException(pde.getMessage(), pde);
+            }
         }
         
         //TODO : from there, rethink the sequence of calls.
@@ -875,7 +884,12 @@ public class BrokerPool extends Observable implements Database {
             LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
         
-        initialiseTriggersForSystemCollections(broker);
+        try {
+            initialiseTriggersForSystemCollections(broker);
+        } catch(PermissionDeniedException pde) {
+            LOG.error(pde.getMessage(), pde);
+            throw new EXistException(pde.getMessage(), pde);
+        }
         
         //wake-up the security manager
         securityManager.attach(this, broker);
@@ -907,19 +921,26 @@ public class BrokerPool extends Observable implements Database {
         signalSystemStatus(SIGNAL_RIDEABLE);
 
         //initialize configurations watcher trigger
-        Collection systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-        if (systemCollection != null) {
-        	CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-        	CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, systemCollection);
-                
-                
+        try {
+            Collection systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+            if (systemCollection != null) {
+                CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+                CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, systemCollection);
+
                 Class c = ConfigurationDocumentTrigger.class;
                 DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, systemCollection.getURI());
                 collConf.getDocumentTriggerProxies().add(triggerProxy);  
+            }
+        } catch(PermissionDeniedException pde) {
+            LOG.error(pde.getMessage(), pde);
         }
 
         // remove temporary docs
-        broker.cleanUpTempResources(true);
+        try {
+            broker.cleanUpTempResources(true);
+        } catch(PermissionDeniedException pde) {
+            LOG.error(pde.getMessage(), pde);
+        }
 
         sync(broker, Sync.MAJOR_SYNC);
         
@@ -995,7 +1016,7 @@ public class BrokerPool extends Observable implements Database {
      * @param sysCollectionUri XmldbURI of the collection to create
      * @param permissions The permissions to set on the created collection
      */
-    private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException {
+    private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException, PermissionDeniedException {
         Collection collection = sysBroker.getCollection(sysCollectionUri);
         if (collection == null) {
             TransactionManager transact = getTransactionManager();
@@ -1025,15 +1046,15 @@ public class BrokerPool extends Observable implements Database {
      *
      * @throws EXistException If a system collection cannot be created
      */
-    private void initialiseSystemCollections(DBBroker broker) throws EXistException
+    private void initialiseSystemCollections(DBBroker broker) throws EXistException, PermissionDeniedException
     {
         //create /db/system
-        initialiseSystemCollection(broker, XmldbURI.SYSTEM_COLLECTION_URI, 0770);
+        initialiseSystemCollection(broker, XmldbURI.SYSTEM_COLLECTION_URI, Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
         //create /db/etc
-        initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, 0774);
+        initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, Permission.DEFAULT_SYSTEM_ETC_COLLECTION_PERM);
     }
 
-    private void initialiseTriggersForSystemCollections(DBBroker broker) throws EXistException {
+    private void initialiseTriggersForSystemCollections(DBBroker broker) throws EXistException, PermissionDeniedException {
         Collection collection = broker.getCollection(XmldbURI.ETC_COLLECTION_URI);
 
         //initialize configurations watcher trigger
@@ -1581,8 +1602,14 @@ public class BrokerPool extends Observable implements Database {
 		Subject user = broker.getSubject();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setSubject(securityManager.getSystemSubject());
-        if (status != SHUTDOWN)
-            broker.cleanUpTempResources();
+        if(status != SHUTDOWN) {
+            
+            try {
+                broker.cleanUpTempResources();
+            } catch(PermissionDeniedException pde) {
+                LOG.warn("Unable to clean-up temp collection: " + pde.getMessage(), pde);
+            }
+        }
         if (syncEvent == Sync.MAJOR_SYNC) {
         	LOG.debug("Major sync");
             try {

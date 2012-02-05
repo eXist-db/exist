@@ -24,21 +24,18 @@ package org.exist.security.internal;
 import org.exist.security.AbstractRealm;
 import org.exist.security.AbstractAccount;
 import org.apache.log4j.Logger;
-import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.Group;
-import org.exist.security.MessageDigester;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.storage.BrokerPool;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +58,6 @@ import org.exist.storage.DBBroker;
 public class AccountImpl extends AbstractAccount {
 
     private final static Logger LOG = Logger.getLogger(AccountImpl.class);
-    public static int PASSWORD_ENCODING;
     public static boolean CHECK_PASSWORDS = true;
 
     private final static SecurityProperties securityProperties = new SecurityProperties();
@@ -289,151 +285,27 @@ public class AccountImpl extends AbstractAccount {
      *
      * @see org.exist.security.User#setPassword(java.lang.String)
      */
+    @Override
     public final void setPassword(String passwd) {
-        _cred = new Password(passwd);
+        _cred = new Password(this, passwd);
 
         if(passwd == null) {
             this.password = null;
             this.digestPassword = null;
         } else {
             this.password = _cred.toString();
-            this.digestPassword = digest(passwd);
+            this.digestPassword = _cred.getDigest();
         }
-    }
-
-    /**
-     * Sets the digest passwod value of the User object
-     *
-     * @param passwd
-     *            The new passwordDigest value
-     * @deprecated
-     */
-    public final void setPasswordDigest(String passwd) {
-        //setPassword(passwd);
-        this.digestPassword = (passwd == null) ? null : passwd;
-    }
-
-    /**
-     * Sets the encoded passwod value of the User object
-     *
-     * @param passwd
-     *            The new passwordDigest value
-     * @deprecated
-     */
-    public final void setEncodedPassword(String passwd) {
-        setPassword("{MD5}" + passwd);
-        this.password = (passwd == null) ? null : passwd;
-    }
-
-    public final String digest(String passwd) {
-        switch(PASSWORD_ENCODING) {
-            case PLAIN_ENCODING:
-                return passwd;
-            case MD5_ENCODING:
-                return MessageDigester.md5(name + ":" + getRealm().getId() + ":" + passwd, false);
-            default:
-                return MessageDigester.md5(passwd, true);
-        }
-
-    }
-
-    /**
-     * Split up the validate method into two, to make it possible to
-     * authenticate users, which are not defined in the instance named "exist"
-     * without having impact on the standard functionality.
-     *
-     * @param passwd
-     * @return true if the password was correct, false if not, or if there was a
-     *         problem.
-     */
-    @Deprecated //use SecurityManager.authenticate
-    public final boolean validate(String passwd) {
-        SecurityManager sm;
-        try {
-            sm = BrokerPool.getInstance().getSecurityManager();
-            return validate(passwd, sm);
-        } catch(EXistException e) {
-            LOG.warn("Failed to get security manager in validate: ", e);
-            return false;
-        }
-    }
-
-    @Deprecated //use SecurityManager.authenticate
-    public final boolean validate(String passwd, SecurityManager sm) {
-        // security management is disabled if in repair mode
-        if(!CHECK_PASSWORDS) {
-            return true;
-        }
-
-        if(password == null && digestPassword == null) {
-            return true;
-        } else if(id == 1 && passwd == null) {
-            passwd = "";
-        }
-        if(passwd == null) {
-            return false;
-        }
-
-        if(password != null) {
-            if(MessageDigester.md5(passwd, true).equals(password)) {
-                return true;
-            }
-        }
-        if(digestPassword != null) {
-            if(digest(passwd).equals(digestPassword)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Deprecated //use SecurityManager.authenticate
-    public final boolean validateDigest(String passwd) {
-        if(digestPassword == null) {
-            return true;
-        }
-        if(passwd == null) {
-            return false;
-        }
-        return digest(passwd).equals(digestPassword);
     }
 
     public final static class SecurityProperties {
 
-        private final static int DEFAULT_PASSWORD_ENCODING = MD5_ENCODING;
         private final static boolean DEFAULT_CHECK_PASSWORDS = true;
 
-        private final static String PROP_PASSWORDS_ENCODING = "passwords.encoding";
         private final static String PROP_CHECK_PASSWORDS = "passwords.check";
 
         private Properties loadedSecurityProperties = null;
-        private Integer passwordEncoding = null;
         private Boolean checkPasswords = null;
-
-        public synchronized int getPasswordEncoding() {
-            if(passwordEncoding == null) {
-                String property = getProperty(PROP_PASSWORDS_ENCODING);
-                if(property == null || property.length() == 0) {
-                    passwordEncoding = DEFAULT_PASSWORD_ENCODING;
-                } else {
-                    setPasswordEncoding(property);
-                }
-            }
-            return passwordEncoding.intValue();
-        }
-
-        public synchronized void setPasswordEncoding(String encoding) {
-            if(encoding != null) {
-                LOG.info("Setting password encoding to " + encoding);
-                if(encoding.equalsIgnoreCase("plain")) {
-                    PASSWORD_ENCODING = PLAIN_ENCODING;
-                } else if(encoding.equalsIgnoreCase("md5")) {
-                    PASSWORD_ENCODING = MD5_ENCODING;
-                } else {
-                    PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
-                }
-            }
-        }
 
         public synchronized boolean isCheckPasswords() {
             if(checkPasswords == null) {
@@ -472,4 +344,5 @@ public class AccountImpl extends AbstractAccount {
             return loadedSecurityProperties.getProperty(propertyName);
         }
     }
+   
 }

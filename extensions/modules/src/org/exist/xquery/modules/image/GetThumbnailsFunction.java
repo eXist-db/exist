@@ -39,6 +39,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -198,24 +199,28 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 		}
 
-		Collection allPictures = dbbroker.getCollection(picturePath
-				.toXmldbURI());
+                Collection allPictures = null;
+                Collection existingThumbsCol = null;
+                File[] existingThumbsArray = null;
+                try {
+                    allPictures = dbbroker.getCollection(picturePath.toXmldbURI());
 
-		if (allPictures == null) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
+                    if (allPictures == null) {
+                            return Sequence.EMPTY_SEQUENCE;
+                    }
 
-		Collection existingThumbsCol = null;
-		File[] existingThumbsArray = null;
-		if (isSaveToDataBase) {
-			existingThumbsCol = dbbroker.getCollection(thumbPath.toXmldbURI());
-		} else {
-			existingThumbsArray = thumbDir.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return (name.endsWith(".jpeg") || name.endsWith(".jpg"));
-				}
-			});
-		}
+                    if (isSaveToDataBase) {
+                            existingThumbsCol = dbbroker.getCollection(thumbPath.toXmldbURI());
+                    } else {
+                            existingThumbsArray = thumbDir.listFiles(new FilenameFilter() {
+                                    public boolean accept(File dir, String name) {
+                                            return (name.endsWith(".jpeg") || name.endsWith(".jpg"));
+                                    }
+                            });
+                    }
+                } catch (PermissionDeniedException pde) {
+                    throw new XPathException(pde.getMessage(), pde);
+                }
 
 		DocumentImpl docImage = null;
 		BinaryDocument binImage = null;
@@ -227,12 +232,13 @@ public class GetThumbnailsFunction extends BasicFunction {
 		Image image = null;
 		ByteArrayOutputStream os = null;
 
+                try { 
 		Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
 
 		while (i.hasNext()) {
 			docImage = (DocumentImpl) i.next();
 			// is not already existing??
-			if (!((fileExist(existingThumbsCol, docImage, prefix)) || (fileExist(
+			if (!((fileExist(context.getBroker(), existingThumbsCol, docImage, prefix)) || (fileExist(
 					existingThumbsArray, docImage, prefix)))) {
 				if (docImage.getResourceType() == DocumentImpl.BINARY_FILE)
 					// TODO maybe extends for gifs too.
@@ -305,7 +311,9 @@ public class GetThumbnailsFunction extends BasicFunction {
 				result.add(new StringValue(docImage.getFileURI().toString()));
 			}
 		}
-
+                } catch(PermissionDeniedException pde) {
+                    throw new XPathException(this, pde.getMessage(), pde);
+                }
 		try {
 			transact.commit(transaction);
 		} catch (Exception e) {
@@ -318,9 +326,9 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 	}
 
-	private boolean fileExist(Collection col, DocumentImpl file, String prefix) {
+	private boolean fileExist(DBBroker broker, Collection col, DocumentImpl file, String prefix) throws PermissionDeniedException {
 		if (col != null)
-			return col.hasDocument(XmldbURI.create(prefix + file.getFileURI()));
+			return col.hasDocument(broker, XmldbURI.create(prefix + file.getFileURI()));
 		return false;
 	}
 

@@ -148,8 +148,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         this.fileURI = fileURI;
 
         // the permissions assigned to this document
-        Subject currentSubject = pool.getSubject();
-        this.permissions = PermissionFactory.getPermission(currentSubject.getId(), currentSubject.getDefaultGroup().getId());
+        this.permissions = PermissionFactory.getDefaultResourcePermission();
     }
 
     public BrokerPool getBrokerPool() {
@@ -280,7 +279,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * The method <code>setMode</code>
      *
      * @param perm a <code>Permission</code> value
+     * 
+     * @deprecated This function is considered a security problem
+     * and should be removed, move code to copyOf or Constructor
      */
+    @Deprecated
     public void setPermissions(Permission perm) {
         permissions = perm;
     }
@@ -289,7 +292,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * The method <code>setMetadata</code>
      *
      * @param meta a <code>DocumentMetadata</code> value
+     * 
+     * @deprecated This function is considered a security problem
+     * and should be removed, move code to copyOf or Constructor
      */
+    @Deprecated
     public void setMetadata(DocumentMetadata meta) {
         this.metadata = meta;
     }

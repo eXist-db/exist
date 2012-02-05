@@ -33,8 +33,6 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
-import org.exist.security.internal.RealmImpl;
-import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
@@ -337,5 +335,13 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         } else if(!user.hasDbaRole() && !user.getName().equals(getName())) {
             throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to modify account '" + getName() + "'");
         }
+    }
+
+    @Override
+    public int getUserMask() {
+        
+        //TODO make this configurable
+        
+        return Permission.DEFAULT_UMASK;
     }
 }

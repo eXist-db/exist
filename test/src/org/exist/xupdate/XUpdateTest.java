@@ -81,7 +81,7 @@ public class XUpdateTest {
                         // change ownership to guest
                         Account guest = ums.getAccount("guest");
                         ums.chown(guest, guest.getPrimaryGroup());
-                        ums.chmod(Permission.DEFAULT_PERM);
+                        ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
 
                         System.out.println("collection created.");
                     }

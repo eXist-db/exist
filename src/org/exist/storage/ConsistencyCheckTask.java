@@ -39,6 +39,7 @@ import org.exist.backup.SystemExport;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.management.TaskStatus;
+import org.exist.security.PermissionDeniedException;
 import org.exist.util.Configuration;
 import org.exist.xquery.TerminatedException;
 
@@ -169,6 +170,9 @@ public class ConsistencyCheckTask implements SystemTask {
         } catch (TerminatedException e) {
             throw new EXistException(e.getMessage(), e);
             
+        } catch (PermissionDeniedException e) {
+            //TODO should maybe throw PermissionDeniedException instead!
+            throw new EXistException(e.getMessage(), e);
         } finally {
             if (report != null)
                 report.close();

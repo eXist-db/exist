@@ -190,7 +190,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         @Override
         public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
             
-            final boolean aclPermissionInUse = PermissionFactory.getPermission() instanceof ACLPermission;
+            final boolean aclPermissionInUse = PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
 
             //map unix style user and group ids to acl style
             if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("account")) {

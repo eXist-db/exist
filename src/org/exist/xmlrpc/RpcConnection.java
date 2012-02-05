@@ -81,9 +81,11 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.zip.DeflaterOutputStream;
 import org.exist.security.PermissionFactory.PermissionModifier;
 import org.exist.security.internal.aider.ACEAider;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * This class implements the actual methods defined by
@@ -230,7 +232,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      */
     private boolean configureCollection(XmldbURI collUri, String configuration)
-    throws EXistException {
+    throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
         TransactionManager transact = factory.getBrokerPool().getTransactionManager();
@@ -268,11 +270,11 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception URISyntaxException if an error occurs
      */
-    public String createId(String collName) throws EXistException, URISyntaxException {
+    public String createId(String collName) throws EXistException, URISyntaxException, PermissionDeniedException {
     	return createId(XmldbURI.xmldbUriFor(collName));
     }
     
-    private String createId(XmldbURI collUri) throws EXistException {
+    private String createId(XmldbURI collUri) throws EXistException, PermissionDeniedException {
         DBBroker broker = factory.getBrokerPool().get(user);
         Collection collection = null;
         try {
@@ -286,10 +288,10 @@ public class RpcConnection implements RpcAPI {
                 ok = true;
                 id = XmldbURI.create(Integer.toHexString(rand.nextInt()) + ".xml");
                 // check if this id does already exist
-                if (collection.hasDocument(id))
+                if (collection.hasDocument(broker, id))
                     ok = false;
                 
-                if (collection.hasSubcollection(id))
+                if (collection.hasSubcollection(broker, id))
                     ok = false;
                 
             } while (!ok);
@@ -342,7 +344,7 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
-    protected LockedDocumentMap beginProtected(DBBroker broker, HashMap<String, Object> parameters) throws EXistException {
+    protected LockedDocumentMap beginProtected(DBBroker broker, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         String protectColl = (String) parameters.get(RpcAPI.PROTECTED_MODE);
         if (protectColl == null)
             return null;
@@ -604,7 +606,7 @@ public class RpcConnection implements RpcAPI {
                             : "XMLResource");
                     docs.addElement(hash);
                 }
-                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
+                for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); )
                     collections.addElement(i.next().toString());
             }
             Permission perms = collection.getPermissions();
@@ -728,7 +730,7 @@ public class RpcConnection implements RpcAPI {
             HashMap<String, Object> desc = new HashMap<String, Object>();
             List<String> collections = new ArrayList<String>();
             if (collection.getPermissions().validate(user, Permission.READ)) {
-                for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); )
+                for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); )
                     collections.add(i.next().toString());
             }
             Permission perms = collection.getPermissions();
@@ -1147,7 +1149,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("collection " + collUri + " not found");
             }
             //TODO : register a lock (which one ?) in the transaction ?
-            DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true, true);
+            DocumentSet docs = collection.allDocs(broker, new DefaultDocumentSet(), true);
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
             Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
@@ -1288,7 +1290,7 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      */
     @Override
-    public Vector<String> getDocumentListing() throws EXistException {
+    public Vector<String> getDocumentListing() throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -1381,7 +1383,7 @@ public class RpcConnection implements RpcAPI {
         try {
             broker = factory.getBrokerPool().get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            return collection.getDocumentCount();
+            return collection.getDocumentCount(broker);
         } finally {
             if(collection != null)
                 collection.release(Lock.READ_LOCK);
@@ -1427,10 +1429,10 @@ public class RpcConnection implements RpcAPI {
                 ok = true;
                 id = XmldbURI.create(Integer.toHexString(rand.nextInt()) + ".xml");
                 // check if this id does already exist
-                if (collection.hasDocument(id))
+                if (collection.hasDocument(broker, id))
                     ok = false;
                 
-                if (collection.hasSubcollection(id))
+                if (collection.hasSubcollection(broker, id))
                     ok = false;
                 
             } while (!ok);
@@ -1567,7 +1569,7 @@ public class RpcConnection implements RpcAPI {
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + collUri);
-            HashMap<String, List<Object>> result = new HashMap<String, List<Object>>(collection.getDocumentCount());
+            HashMap<String, List<Object>> result = new HashMap<String, List<Object>>(collection.getDocumentCount(broker));
 
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             	DocumentImpl doc = i.next();
@@ -1625,8 +1627,8 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Collection " + collUri + " not found");
             if (!collection.getPermissions().validate(user, Permission.READ))
                 throw new PermissionDeniedException("not allowed to read collection " + collUri);
-            HashMap<XmldbURI, List<Object>> result = new HashMap<XmldbURI, List<Object>>(collection.getChildCollectionCount());
-            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+            HashMap<XmldbURI, List<Object>> result = new HashMap<XmldbURI, List<Object>>(collection.getChildCollectionCount(broker));
+            for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
             	XmldbURI child = i.next();
             	XmldbURI path = collUri.append(child);
                 Collection childColl = broker.getCollection(path);
@@ -1826,17 +1828,17 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public void removeGroup(String name) throws EXistException, PermissionDeniedException {
-
-    	DBBroker broker = null; 
-        BrokerPool database = factory.getBrokerPool();
-        
+    public void removeGroup(final String name) throws EXistException, PermissionDeniedException {
         try {
-        	broker = database.get(user);
-
-            database.getSecurityManager().deleteGroup(user, name);
-        } finally {
-        	database.release(broker);
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                    broker.getBrokerPool().getSecurityManager().deleteGroup(user, name);
+                    return null;
+                }
+            });
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
         }
     }
 
@@ -1881,7 +1883,7 @@ public class RpcConnection implements RpcAPI {
      * @exception URISyntaxException if an error occurs
      */
     @Override
-    public boolean hasCollection(String collectionName) throws EXistException, URISyntaxException {
+    public boolean hasCollection(String collectionName) throws EXistException, URISyntaxException, PermissionDeniedException {
     	return hasCollection(XmldbURI.xmldbUriFor(collectionName));
     }
 
@@ -1892,7 +1894,7 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>boolean</code> value
      * @exception Exception if an error occurs
      */
-    private boolean hasCollection(XmldbURI collUri) throws EXistException {
+    private boolean hasCollection(XmldbURI collUri) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
@@ -2851,23 +2853,26 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public boolean removeAccount(String name) throws EXistException,
-            PermissionDeniedException {
-        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+    public boolean removeAccount(final String name) throws EXistException, PermissionDeniedException {
+        final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
         
-        if (!manager.hasAdminPrivileges(user))
-            throw new PermissionDeniedException(
-                    "you are not allowed to remove users");
-        
-        DBBroker broker = null;
-        try {
-        	broker = factory.brokerPool.get(user);
-
-        	manager.deleteAccount(user, name);
-        	return true;
-        } finally {
-        	factory.brokerPool.release(broker);
+        if(!manager.hasAdminPrivileges(user)) {
+            throw new PermissionDeniedException("you are not allowed to remove users");
         }
+        
+        try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                    manager.deleteAccount(user, name);
+                    return null;
+                }
+            });
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        }
+        
+        return true;
     }
 
     @Override
@@ -3417,15 +3422,15 @@ public class RpcConnection implements RpcAPI {
     	}
     }
 
-    private interface BrokerOperation {
-        public void withBroker(DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException;
+    private interface BrokerOperation<R> {
+        public R withBroker(DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException;
     }
 
-    private void executeWithBroker(BrokerOperation brokerOperation) throws EXistException, URISyntaxException, PermissionDeniedException {
+    private <R> R executeWithBroker(BrokerOperation<R> brokerOperation) throws EXistException, URISyntaxException, PermissionDeniedException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            brokerOperation.withBroker(broker);
+            return brokerOperation.withBroker(broker);
         } finally {
             if(broker != null) {
                 factory.getBrokerPool().release(broker);
@@ -3435,9 +3440,9 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
-        executeWithBroker(new BrokerOperation() {
+        executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
@@ -3445,6 +3450,7 @@ public class RpcConnection implements RpcAPI {
                         permission.setGroup(ownerGroup);
                     }
                 });
+                return null;
             }
         });
         
@@ -3455,15 +3461,16 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-        executeWithBroker(new BrokerOperation() {
+        executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
                         permission.setMode(permissions);
                     }
                 });
+                return null;
             }
         });
 
@@ -3472,9 +3479,9 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-         executeWithBroker(new BrokerOperation() {
+         executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
@@ -3485,6 +3492,7 @@ public class RpcConnection implements RpcAPI {
                         }
                     }
                 });
+                return null;
             }
          });
 
@@ -3505,9 +3513,9 @@ public class RpcConnection implements RpcAPI {
      */
     @Override
     public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final String permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-         executeWithBroker(new BrokerOperation() {
+         executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
@@ -3520,6 +3528,7 @@ public class RpcConnection implements RpcAPI {
                         }
                     }
                 });
+                return null;
              }
         });
 
@@ -3540,9 +3549,9 @@ public class RpcConnection implements RpcAPI {
      */
     @Override
     public boolean setPermissions(final String resource, final String owner, final String ownerGroup, final int permissions) throws EXistException, PermissionDeniedException, URISyntaxException {
-         executeWithBroker(new BrokerOperation() {
+         executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
@@ -3552,6 +3561,7 @@ public class RpcConnection implements RpcAPI {
 
                     }
                 });
+                return null;
             }
         });
 
@@ -3560,9 +3570,9 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean setPermissions(final String resource, final String owner, final String group, final int mode, final List<ACEAider> aces) throws EXistException, PermissionDeniedException, URISyntaxException {
-         executeWithBroker(new BrokerOperation() {
+         executeWithBroker(new BrokerOperation<Void>() {
             @Override
-            public void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
                 PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
                     @Override
                     public void modify(Permission permission) throws PermissionDeniedException {
@@ -3579,6 +3589,7 @@ public class RpcConnection implements RpcAPI {
                         }
                     }
                 });
+                return null;
             }
          });
 
@@ -3601,18 +3612,21 @@ public class RpcConnection implements RpcAPI {
     public boolean addAccount(String name, String passwd, String passwdDigest,
             Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
         
-    	if (passwd.length() == 0)
+    	if (passwd.length() == 0) {
             passwd = null;
+        }
         
-    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+    	final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
-    	if (manager.hasAccount(name))
+    	if (manager.hasAccount(name)) {
             throw new PermissionDeniedException("Account '"+name+"' exist");
+        }
 
-        if (!manager.hasAdminPrivileges(user))
+        if (!manager.hasAdminPrivileges(user)) {
             throw new PermissionDeniedException("Account '"+user.getName()+"' not allowed to create new account");
+        }
 
-        UserAider u = new UserAider(name);
+        final UserAider u = new UserAider(name);
         u.setEncodedPassword(passwd);
         u.setPasswordDigest(passwdDigest);
 
@@ -3629,14 +3643,17 @@ public class RpcConnection implements RpcAPI {
         	}
         }
         
-        DBBroker broker = null;
-        BrokerPool database = factory.getBrokerPool();
+        
         try {
-        	broker = database.get(user);
-
-            manager.addAccount(u);
-        } finally {
-        	database.release(broker);
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                    manager.addAccount(u);
+                    return null;
+                }
+            });
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
         }
         
         return true;
@@ -3654,7 +3671,7 @@ public class RpcConnection implements RpcAPI {
         if (passwd.length() == 0)
             passwd = null;
         
-        UserAider account = new UserAider(name);
+        final UserAider account = new UserAider(name);
         account.setEncodedPassword(passwd);
         account.setPasswordDigest(passwdDigest);
 
@@ -3668,31 +3685,43 @@ public class RpcConnection implements RpcAPI {
         		throw new EXistException("Invalid home URI",e);
         	}
         }
-
-        SecurityManager manager = factory.getBrokerPool().getSecurityManager();
-        
-        DBBroker broker = null;
+        final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
         try {
-        	broker = factory.getBrokerPool().get(user);
-
-        	return manager.updateAccount(user, account);
-        } finally {
-        	factory.getBrokerPool().release(broker);
+            return executeWithBroker(new BrokerOperation<Boolean>() {
+                @Override
+                public Boolean withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                    return manager.updateAccount(user, account);
+                }
+            });
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
         }
     }
 
     @Override
     public boolean addGroup(String name) throws EXistException, PermissionDeniedException {
         
-    	SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+    	final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
-    	if (!manager.hasGroup(name)) {
-            if (!manager.hasAdminPrivileges(user))
-                throw new PermissionDeniedException(
-                        "not allowed to create group");
-            Group role = new GroupAider(name);
-            manager.addGroup(role);
-            return true;
+    	if(!manager.hasGroup(name)) {
+            
+            if(!manager.hasAdminPrivileges(user)) {
+                throw new PermissionDeniedException("not allowed to create group");
+            }
+            
+            final Group role = new GroupAider(name);
+            try {
+                executeWithBroker(new BrokerOperation<Void>() {
+                    @Override
+                    public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                        manager.addGroup(role);
+                        return null;
+                    }
+                });
+                return true;
+            } catch (URISyntaxException use) {
+                throw new EXistException(use.getMessage(), use);
+            }
         }
         
     	return false;
@@ -3811,7 +3840,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Resource " + docURI + " not found");
             }
             //TODO : register the lock within the transaction ?
-            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+            if (!doc.getPermissions().validate(user, Permission.WRITE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             SecurityManager manager = factory.getBrokerPool().getSecurityManager();
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
@@ -3910,7 +3939,7 @@ public class RpcConnection implements RpcAPI {
             doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);
             if (doc == null)
                 throw new EXistException("Resource " + docURI + " not found");
-            if (!doc.getPermissions().validate(user, Permission.UPDATE))
+            if (!doc.getPermissions().validate(user, Permission.WRITE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             SecurityManager manager = factory.getBrokerPool().getSecurityManager();
             Account lockOwner = doc.getUserLock();
@@ -4200,7 +4229,7 @@ public class RpcConnection implements RpcAPI {
             if (collection == null)
                 throw new EXistException("collection " + collUri + " not found");
             MutableDocumentSet docs = new DefaultDocumentSet();
-            collection.allDocs(broker, docs, inclusive, true);
+            collection.allDocs(broker, docs, inclusive);
             NodeSet nodes = docs.docsToNodeSet();
             Vector<Vector<Object>> result = scanIndexTerms(start, end, broker, docs, nodes);
             return result;
@@ -4750,7 +4779,7 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException("Resource " + docUri + " not found");
             }
             //TODO : register the lock within the transaction ?
-            if (!doc.getPermissions().validate(user, Permission.UPDATE)) {
+            if (!doc.getPermissions().validate(user, Permission.WRITE)) {
             	transact.abort(transaction);
             	throw new PermissionDeniedException("User is not allowed to lock resource " + docUri);
             }
@@ -5059,7 +5088,7 @@ public class RpcConnection implements RpcAPI {
         return getDocument(name, encoding, prettyPrint, null);
     }
     
-    public boolean setTriggersEnabled(String path, String value){
+    public boolean setTriggersEnabled(String path, String value) throws PermissionDeniedException{
     	DBBroker broker = null;
     	boolean triggersEnabled = Boolean.parseBoolean(value); 
 		try {

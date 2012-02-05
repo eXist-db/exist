@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * Internally used to dispatch an operation to each of the
@@ -197,7 +198,7 @@ public class IndexController {
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
      */
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.removeCollection(collection, broker);
         }

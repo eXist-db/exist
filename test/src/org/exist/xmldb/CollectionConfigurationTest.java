@@ -172,13 +172,13 @@ public class CollectionConfigurationTest {
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod("rwxr-xr-x");
 
         Collection testConfCollection = service.createCollection(CONF_COLL_URI.toString());
         ums = (UserManagementService) testConfCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod("rwxr-xr-x");
 
         //  configColl = cms.createCollection(CONF_COLL_URI.toString());
     }
@@ -473,6 +473,8 @@ public class CollectionConfigurationTest {
         
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         //Configure collection automatically
         // sub2 should inherit its index configuration from the top collection
@@ -510,6 +512,8 @@ public class CollectionConfigurationTest {
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         //Configure collection automatically
         IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
@@ -546,7 +550,11 @@ public class CollectionConfigurationTest {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub1 = cms.createCollection(COLLECTION_SUB1.toString());
+        UserManagementService ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(CONFIG1);
@@ -610,6 +618,8 @@ public class CollectionConfigurationTest {
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(CONFIG1);
@@ -665,6 +675,8 @@ public class CollectionConfigurationTest {
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(CONFIG1);
@@ -717,6 +729,8 @@ public class CollectionConfigurationTest {
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
+        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
         idxConf.configureCollection(INVALID_CONFIG1);
@@ -1429,6 +1443,8 @@ public class CollectionConfigurationTest {
        if(configColl == null) {
      	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
             configColl = cms.createCollection(collPath.toString());
+            UserManagementService ums = (UserManagementService) configColl.getService("UserManagementService", "1.0");
+            ums.chmod("rwxr-xr-x");
        }
        assertNotNull(configColl);
        Resource res = configColl.createResource(confName.toString(), "XMLResource");

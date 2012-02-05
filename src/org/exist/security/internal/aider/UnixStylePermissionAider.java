@@ -22,11 +22,9 @@
 package org.exist.security.internal.aider;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 import org.exist.security.AbstractUnixStylePermission;
 
 import org.exist.security.Group;
-import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
 import org.exist.security.Subject;
@@ -37,6 +35,7 @@ import org.exist.util.SyntaxException;
 /**
  * Unix style permission details.
  * 
+ * @author Adam Retter <adam@exist-db.org>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class UnixStylePermissionAider extends AbstractUnixStylePermission implements PermissionAider {
@@ -44,7 +43,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     //owner, default to DBA
     private Account owner;
     private Group ownerGroup;
-    private int mode = DEFAULT_PERM;
+    private int mode;
 
     public UnixStylePermissionAider() {
     	owner = new UserAider(SecurityManager.DBA_USER);
@@ -269,15 +268,15 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
         final char ch[] = new char[] {
             (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_UID << 9)) == 0 ? ((mode & (UPDATE << 6)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETUID_CHAR,
+            (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
             
             (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_GID << 9)) == 0 ? ((mode & (UPDATE << 3)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETGID_CHAR,
+            (mode & (SET_GID << 9)) == 0 ? ((mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
 
             (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (STICKY << 9)) == 0 ? ((mode & UPDATE) == 0 ? UNSET_CHAR : UPDATE_CHAR) : STICKY_CHAR
+            (mode & (STICKY << 9)) == 0 ? ((mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
         };
         return String.valueOf(ch);
     }
@@ -297,8 +296,8 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
                     case WRITE_CHAR:
                         mode |= (WRITE << (6 - i));
                         break;
-                    case UPDATE_CHAR:
-                        mode |= (UPDATE << (6 - i));
+                    case EXECUTE_CHAR:
+                        mode |= (EXECUTE << (6 - i));
                         break;
                     case SETUID_CHAR | SETGID_CHAR:
                         if(i == 0) {
@@ -389,4 +388,6 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     public boolean isCurrentSubjectInGroup() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    
 }

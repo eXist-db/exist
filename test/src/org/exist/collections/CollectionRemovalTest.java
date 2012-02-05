@@ -128,8 +128,10 @@ public class CollectionRemovalTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             assertNotNull(test);
+            
             DocumentImpl doc = test.getDocument(broker, XmldbURI.createInternal("document.xml"));
             assertNotNull(doc);
+            
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             String xml = serializer.serialize(doc);
@@ -196,14 +198,14 @@ public class CollectionRemovalTest {
             assertNotNull(root);
             Permission perms = root.getPermissions();
             // collection is world-writable
-            perms.setMode(0777);
+            perms.setMode(0744);
 			broker.saveCollection(transaction, root);
 
             Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test);
             perms = test.getPermissions();
             // collection is world-writable
-            perms.setMode(0777);
+            perms.setMode(0744);
 			broker.saveCollection(transaction, test);
 
 			IndexInfo info = test.validateXMLResource(transaction, broker,
@@ -216,7 +218,7 @@ public class CollectionRemovalTest {
             assertNotNull(childCol1);
             perms = childCol1.getPermissions();
             // collection only accessible to user
-            perms.setMode(0777);
+            perms.setMode(0744);
             broker.saveCollection(transaction, childCol1);
 
             info = childCol1.validateXMLResource(transaction, broker,

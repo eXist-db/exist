@@ -2649,7 +2649,7 @@ public class InteractiveClient {
         builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
         builder.append(" version ");
         builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-        builder.append(", Copyright (C) 2001-2011 Wolfgang Meier\n");
+        builder.append(", Copyright (C) 2001-2011 The eXist-db Project\n");
         builder.append("eXist comes with ABSOLUTELY NO WARRANTY.\n");
         builder.append("This is free software, and you are welcome to redistribute it\nunder certain conditions; for details read the license file.\n");
         return builder.toString();

@@ -25,7 +25,7 @@ import static org.easymock.classextension.EasyMock.expect;
  */
 public class SimpleACLPermissionTest {
 
-    private final static int ALL = Permission.READ | Permission.WRITE | Permission.UPDATE;
+    private final static int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;
 
     @Test
     public void add() throws PermissionDeniedException {
@@ -67,7 +67,7 @@ public class SimpleACLPermissionTest {
 
         final int userId = 1112;
         final String userName = "aretter";
-        final String mode = "rwu";
+        final String mode = "rwx";
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
         //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
@@ -101,7 +101,7 @@ public class SimpleACLPermissionTest {
 
         final int groupId = 1112;
         final String groupName = "aretter";
-        final String mode = "rwu";
+        final String mode = "rwx";
 
         //expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase);
         //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);

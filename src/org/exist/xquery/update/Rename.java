@@ -139,10 +139,9 @@ public class Rename extends Modification {
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getUser(),
-                            Permission.UPDATE))
-                            throw new XPathException(this,
-                                    "permission denied to update document");
+                    if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
+                            throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                    }
                     doc.getMetadata().setIndexListener(listener);
                     
                     //update the document

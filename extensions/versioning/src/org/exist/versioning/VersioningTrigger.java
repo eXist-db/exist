@@ -138,7 +138,10 @@ public class VersioningTrigger extends FilteringTrigger {
     				} catch (LockException e) {
     					LOG.warn("Versioning trigger could not store base document: " + vDoc.getFileURI() +
     							e.getMessage(), e);
-    				} finally {
+    				} catch (PermissionDeniedException e) {
+    					LOG.warn("Versioning trigger could not store base document: " + vDoc.getFileURI() +
+    							e.getMessage(), e);
+                                } finally {
     					vDoc.getUpdateLock().release(Lock.WRITE_LOCK);
     				}
     			}

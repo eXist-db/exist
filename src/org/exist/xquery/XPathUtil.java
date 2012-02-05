@@ -34,6 +34,7 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
@@ -227,6 +228,8 @@ public class XPathUtil {
             throw new XPathException(xe);
         } catch (XMLDBException xe) {
             throw new XPathException("Failed to get document for RemoteXMLResource: " + xe.getMessage());
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException("Failed to get document: " + pde.getMessage());
         }
         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromString(((RemoteXMLResource)xres).getNodeId());
         return new NodeProxy(document, nodeId);

@@ -41,7 +41,7 @@ public class ItemListTest extends DatabaseTestCase {
 	}
 
 	@Test	public void convertToSequence() {
-		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("test"))
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create(db, "test"))
 			.elem("a")
 				.elem("b")
 					.elem("c").end("c")
@@ -57,7 +57,7 @@ public class ItemListTest extends DatabaseTestCase {
 	}
 	
 	@Test(expected=DatabaseException.class) public void stale1() {
-		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(db), Source.xml(
 				"<foo><bar1/><bar2/></foo>"));
 		ItemList list = doc.query().all("/foo/*");
 		doc.query().all("//bar1").deleteAllNodes();
@@ -65,7 +65,7 @@ public class ItemListTest extends DatabaseTestCase {
 	}
 	
 	@Test public void stale2() {
-		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(db), Source.xml(
 				"<foo><bar1/><bar2/></foo>"));
 		ItemList list = doc.query().all("/foo/*");
 		doc.query().all("//bar1").deleteAllNodes();
@@ -75,14 +75,14 @@ public class ItemListTest extends DatabaseTestCase {
 	}
 		
 	@Test public void deleteAllNodes1() {
-		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(db), Source.xml(
 				"<foo><bar><bar/></bar></foo>"));
 		doc.query().all("//bar").deleteAllNodes();
 		assertEquals("<foo/>", doc.contentsAsString());
 	}
 
 	@Test public void deleteAllNodes2() {
-		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(), Source.xml(
+		XMLDocument doc = db.createFolder("/top").documents().load(Name.generate(db), Source.xml(
 				"<bar><bar><bar/></bar></bar>"));
 		doc.query().all("//bar").deleteAllNodes();
 		assertEquals(0, db.getFolder("/top").documents().size());

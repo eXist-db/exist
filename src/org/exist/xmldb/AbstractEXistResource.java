@@ -26,6 +26,7 @@ import java.util.Date;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -108,7 +109,10 @@ public abstract class AbstractEXistResource implements EXistResource {
 		    	throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + parent.getPath() + " not found");
 	        try {
 	        	document = parentCollection.getDocumentWithLock(broker, docId, lockMode);
-	        } catch (LockException e) {
+	        } catch (PermissionDeniedException pde) {
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+	        			"Permission denied for document " + docId + ": " + pde.getMessage());
+                } catch (LockException e) {
 	        	throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 	        			"Failed to acquire lock on document " + docId);
 	        }

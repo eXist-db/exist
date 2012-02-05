@@ -55,11 +55,14 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
         super.configure(broker, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
         System.out.println("TestTrigger prepares");
-        this.doc = parent.getDocument(broker, docPath);
-        if (this.doc == null) {
-            TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
-            Txn transaction = transactMgr.beginTransaction();
-            try {
+        TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transactMgr.beginTransaction();
+        try {
+            this.doc = parent.getDocument(broker, docPath);
+            if (this.doc == null) {
+                
+                
+        
                 LOG.debug("creating new file for collection contents");
 
                 // IMPORTANT: temporarily disable triggers on the collection.
@@ -71,12 +74,12 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
                 this.doc = info.getDocument();
 
                 transactMgr.commit(transaction);
-            } catch (Exception e) {
-                transactMgr.abort(transaction);
-                throw new TriggerException(e.getMessage(), e);
-            } finally {
-                parent.setTriggersEnabled(true);
             }
+        } catch (Exception e) {
+            transactMgr.abort(transaction);
+            throw new TriggerException(e.getMessage(), e);
+        } finally {
+            parent.setTriggersEnabled(true);
         }
     }
 
