@@ -143,6 +143,7 @@ imaginaryTokenDefinitions
 	GLOBAL_VAR 
 	FUNCTION_DECL
 	FUNCTION_INLINE 
+	FUNCTION_TEST
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -503,7 +504,13 @@ occurrenceIndicator
 
 itemType throws XPathException
 :
-	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! | ( . LPAREN ) => kindTest | atomicType
+	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! 
+	|
+	( "function" LPAREN ) => functionTest
+	| 
+	( . LPAREN ) => kindTest 
+	|
+	atomicType
 	;
 
 singleType throws XPathException
@@ -516,6 +523,25 @@ atomicType throws XPathException
 :
 	name=qName
 	{ #atomicType= #[ATOMIC_TYPE, name]; }
+	;
+
+functionTest throws XPathException
+:
+	( "function" LPAREN STAR RPAREN) => anyFunctionTest
+	|
+	typedFunctionTest
+	;
+
+anyFunctionTest throws XPathException
+:
+	"function"! LPAREN! s:STAR RPAREN!
+	{ #anyFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #s); }
+	;
+
+typedFunctionTest throws XPathException
+:
+	"function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
+	{ #typedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #typedFunctionTest); }
 	;
 
 // === Expressions ===

@@ -136,6 +136,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"GLOBAL_VAR",
 		"FUNCTION_DECL",
 		"FUNCTION_INLINE",
+		"FUNCTION_TEST",
 		"PROLOG",
 		"OPTION",
 		"ATOMIC_TYPE",

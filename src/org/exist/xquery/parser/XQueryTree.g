@@ -843,6 +843,26 @@ throws XPathException
 		)
 		|
 		#(
+			FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION_REFERENCE); }
+			(
+				STAR
+				|
+				(
+					// TODO: parameter types are collected, but not used!
+					// Change SequenceType accordingly.
+					{ List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
+					(
+						{ SequenceType paramType = new SequenceType(); }
+						sequenceType [paramType]
+						{ paramTypes.add(paramType); }
+					)*
+					{ SequenceType returnType = new SequenceType(); }
+					"as" sequenceType [returnType]
+				)
+			)
+		)
+		|
+		#(
 			"item" { type.setPrimaryType(Type.ITEM); }
 		)
 		|
