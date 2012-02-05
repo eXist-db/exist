@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.exist.collections.Collection;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
@@ -69,6 +70,8 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + ie.getMessage(), ie);
         } catch (IllegalAccessException iae) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + iae.getMessage(), iae);
+        } catch (PermissionDeniedException pde) {
+            throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + pde.getMessage(), pde);
         }
     }
     

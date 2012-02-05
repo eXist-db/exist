@@ -380,8 +380,17 @@ public class RESTServer {
 					if (safeMode || !collection.getPermissions().validate(broker.getSubject(), Permission.READ))
 						throw new PermissionDeniedException("Not allowed to read collection");
 					// return a listing of the collection contents
-					writeCollection(response, encoding, broker, collection);
-					return;
+					try {
+                                            writeCollection(response, encoding, broker, collection);
+                                            return;
+                                        } catch(LockException le) {
+                                            if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+                                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                            } else {
+                                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                            }
+                                        }
+					
 				} else if (source) {
 					// didn't find regular resource, or user wants source
 					// on a possible xquery resource that was not found
@@ -811,7 +820,7 @@ public class RESTServer {
 					MutableDocumentSet docs = new DefaultDocumentSet();
 					Collection collection = broker.getCollection(pathUri);
 					if (collection != null) {
-						collection.allDocs(broker, docs, true, true);
+						collection.allDocs(broker, docs, true);
 
 					} else {
 						DocumentImpl xupdateDoc = broker.getResource(pathUri, Permission.READ);
@@ -1747,7 +1756,7 @@ public class RESTServer {
 	 */
 	protected void writeCollection(HttpServletResponse response,
 			String encoding, DBBroker broker, Collection collection)
-			throws IOException {
+			throws IOException, PermissionDeniedException, LockException {
 
 		response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
 
@@ -1789,7 +1798,7 @@ public class RESTServer {
 			serializer.startElement(Namespaces.EXIST_NS, "collection",
 					"exist:collection", attrs);
 
-			for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext();) {
+			for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
 				XmldbURI child = i.next();
 				Collection childCollection = broker.getCollection(collection
 						.getURI().append(child));

@@ -78,7 +78,7 @@ public class Database {
 		configXml.append("<collection xmlns='http://exist-db.org/collection-config/1.0'>");
 		configXml.append(ListenerManager.getTriggerConfigXml());
 		{
-			XMLDocument configDoc = db.getFolder("/").documents().load(Name.generate(), Source.xml(configFile));
+			XMLDocument configDoc = db.getFolder("/").documents().load(Name.generate(db), Source.xml(configFile));
 			Node indexNode = configDoc.query().optional("/exist/indexer/index").node();
 			if (indexNode.extant()) configXml.append(indexNode.toString());
 			configDoc.delete();
@@ -349,13 +349,15 @@ public class Database {
 		
 		DBBroker broker = acquireBroker();
 		try {
-			if (broker.getCollection(XmldbURI.create(path)) != null) return true;
-			String folderPath = path.substring(0, i);
-			String name = path.substring(i+1);			
-			Collection collection = broker.openCollection(XmldbURI.create(folderPath), Lock.NO_LOCK);
-			if (collection == null) return false;
-			return collection.getDocument(broker, XmldbURI.create(name)) != null;
-		} finally {
+                    if (broker.getCollection(XmldbURI.create(path)) != null) return true;
+                    String folderPath = path.substring(0, i);
+                    String name = path.substring(i+1);			
+                    Collection collection = broker.openCollection(XmldbURI.create(folderPath), Lock.NO_LOCK);
+                    if (collection == null) return false;
+                    return collection.getDocument(broker, XmldbURI.create(name)) != null;
+                } catch(PermissionDeniedException pde) {
+                    throw new DatabaseException(pde.getMessage(), pde);
+                } finally {
 			releaseBroker(broker);
 		}
 	}

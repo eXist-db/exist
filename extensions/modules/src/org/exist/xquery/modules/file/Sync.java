@@ -20,6 +20,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -102,14 +103,15 @@ public class Sync extends BasicFunction {
 			
 			output.endElement();
 			output.endDocument();
-            
+                } catch(PermissionDeniedException pde) {
+                    throw new XPathException(pde.getMessage(), pde);
 		} finally {
 			context.popDocumentContext();
 		}
 		return output.getDocument();
 	}
 
-	private void saveCollection(XmldbURI collectionPath, File targetDir, Date startDate, MemTreeBuilder output) {
+	private void saveCollection(XmldbURI collectionPath, File targetDir, Date startDate, MemTreeBuilder output) throws PermissionDeniedException {
 		if (!targetDir.exists() && !targetDir.mkdirs()) {
 			reportError(output, "Failed to create output directory: " + targetDir.getAbsolutePath() + 
 					" for collection " + collectionPath);
@@ -139,8 +141,8 @@ public class Sync extends BasicFunction {
 				}
 			}
 			
-			subcollections = new ArrayList<XmldbURI>(collection.getChildCollectionCount());
-			for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); ) {
+			subcollections = new ArrayList<XmldbURI>(collection.getChildCollectionCount(context.getBroker()));
+			for (Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
 				subcollections.add(i.next());
 			}
 		} finally {

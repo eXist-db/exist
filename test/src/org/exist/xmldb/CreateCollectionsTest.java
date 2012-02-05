@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.exist.dom.XMLUtil;
 import org.exist.security.Account;
-import org.exist.security.Permission;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -97,7 +96,7 @@ public class CreateCollectionsTest  {
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod("rwxrwxrwx");
     }
 
     @After
@@ -137,6 +136,8 @@ public class CreateCollectionsTest  {
         final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
+        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         final File files[] = getShakespeareSamplesDirectory().listFiles(new XMLFilenameFilter());
 
@@ -170,6 +171,8 @@ public class CreateCollectionsTest  {
         final Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         final CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         final Collection testCollection = service.createCollection("test");
+        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         final String testFile = "macbeth.xml";
         storeResourceFromFile(new File(getShakespeareSamplesDirectory(), testFile), testCollection);
@@ -195,6 +198,8 @@ public class CreateCollectionsTest  {
         Collection colTest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         CollectionManagementService service = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection("test");
+        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr-xr-x");
 
         byte[] data = storeBinaryResourceFromFile(new File( getExistDir(),"webapp/logo.jpg"), testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();

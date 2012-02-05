@@ -120,7 +120,7 @@ public class ExistDocument extends ExistResource {
             permissions = document.getPermissions();
             readAllowed = permissions.validate(subject, Permission.READ);
             writeAllowed = permissions.validate(subject, Permission.WRITE);
-            updateAllowed = permissions.validate(subject, Permission.UPDATE);
+            executeAllowed = permissions.validate(subject, Permission.EXECUTE);
 
 
             ownerUser = permissions.getOwner().getUsername();

@@ -91,10 +91,9 @@ public class Insert extends Modification {
                 StoredNode node = ql[i];
                 DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
-                if (!doc.getPermissions().validate(broker.getUser(),
-                        Permission.UPDATE))
-                        throw new PermissionDeniedException(
-                        "permission to update document denied");
+                if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
+                        throw new PermissionDeniedException("permission to update document denied");
+                }
                 parent = (NodeImpl) node.getParentNode();
                 switch (mode) {
                     case INSERT_BEFORE:

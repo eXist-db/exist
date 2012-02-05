@@ -212,7 +212,7 @@ public class ElementBuilderTest extends DatabaseTestCase {
 	}
 	
 	@Test public void adoptStoredNode() {
-		org.exist.fluent.Node node = db.getFolder("/").documents().load(Name.generate(), Source.xml("<test xml:id='foo'/>")).root();
+		org.exist.fluent.Node node = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<test xml:id='foo'/>")).root();
 		ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
 				new ElementBuilder.CompletedCallback<Object>() {
 					public Object completed(Node[] nodes) {

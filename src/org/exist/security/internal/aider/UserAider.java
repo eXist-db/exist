@@ -29,6 +29,7 @@ import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
@@ -327,6 +328,12 @@ public class UserAider implements Account {
     public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
          //do nothing
         //TODO do we need to check any permissions?
+    }
+
+    @Override
+    public int getUserMask() {
+        
+        return Permission.DEFAULT_UMASK;
     }
 
 

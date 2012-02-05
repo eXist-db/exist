@@ -41,6 +41,7 @@ import org.xmldb.api.modules.BinaryResource;
 
 import java.io.*;
 import java.util.Date;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -411,20 +412,33 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 	
 	protected DocumentImpl getDocument(DBBroker broker, int lock) throws XMLDBException {
 	    DocumentImpl document = null;
-	    if(lock != Lock.NO_LOCK)
-            try {
-                document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
-            } catch (LockException e) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-                        "Failed to acquire lock on document " + docId);
+	    if(lock != Lock.NO_LOCK) {
+                try {
+                    document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
+                } catch (PermissionDeniedException e) {
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+                            "Permission denied for document " + docId + ": " + e.getMessage());
+                } catch (LockException e) {
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+                            "Failed to acquire lock on document " + docId);
+                }
+            } else {
+                try { 
+                    document = parent.getCollection().getDocument(broker, docId);
+                } catch (PermissionDeniedException e) {
+                    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Permission denied for document " + docId + ": " + e.getMessage());
+                }
             }
-        else
-	        document = parent.getCollection().getDocument(broker, docId);
-	    if (document == null)
+	    
+            if (document == null) {
 	        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
-	    if (document.getResourceType() != DocumentImpl.BINARY_FILE)
+            }
+	    
+            if (document.getResourceType() != DocumentImpl.BINARY_FILE) {
 	        throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "Document " + docId + 
 	                " is not a binary resource");
+            }
+            
 	    return document;
 	}
 	

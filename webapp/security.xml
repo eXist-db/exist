@@ -5,9 +5,18 @@
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>User Authentication and Access Control</title>
-        <date>November 2009</date>
+        <date>January 2012</date>
         <author>
-            <firstname>Wolfgang M.</firstname>
+            <firstname>Adam</firstname>
+            <surname>Retter</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>adam.retter at googlemail.com</email>
+                </address>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Wolfgang</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
@@ -27,27 +36,91 @@
         <section>
             <title>Overview</title>
             <para>In this section, we discuss eXist's security features and how to manage database
-                users and groups. Beginning with version 0.9, the eXist database engine supports
-                basic user authentication and access control. Unix users will find the format for
-                these authentication and permission settings very similar to that of the Unix
-                operating system. To make it easier to manage users and modify resource permissions,
-                eXist provides an interactive interface to execute commands and perform
-                administrative tasks, as discussed in the following sections. This interface is
-                facilitated by the XML:DB service included with eXist.</para>
-            <para>Every eXist database user has an account with a username, password and other
-                information that is stored in the database. Furthermore, every user belongs to one
-                or more groups - and respectively, every resource in the database is owned by a user
-                and by a group. By default, the owner is set to the user who created the resource,
-                and his primary group, but eXist allows for different permissions for the owner, the
-                owner's group and others. However, only the owner of the resource (or <filename
-                    >dba</filename> users) can change these permissions.</para>
-            <para>User and group information is found in the designated XML file <filename
+                users, groups and access control. eXist-db was orginally based upon a Unix
+                permissions model with a single internal authentication realm. eXist-db version 2.0
+                and later also include support for Access Control Lists and authentication using
+                multiple realms through a central Security Manager.</para>
+        </section>
+        <section>
+            <title>Security Manager</title>
+            <para>eXist-db since version 2.0 has a central security manager which is configured by the file <filename>/db/system/security/config.xml</filename>. This file controls what authentication realms are available to the Security Manager.</para>
+            <programlisting language="xml">
+                <markup>
+<![CDATA[
+<security-manager xmlns="http://exist-db.org/Configuration" last-account-id="11" last-group-id="10" version="2.0">
+    <Authentication-Entry-Point>/authentication/login</Authentication-Entry-Point>
+</security-manager>
+]]>
+                </markup>
+            </programlisting>
+            <para>This file is generated during database startup.</para>
+            <para><important>The eXist-db Realm is always enabled implicitly.</important></para>
+        </section>
+        <section>
+            <title>Realms</title>
+            <para>Since version 2.0 of eXist-db there is support for multiple authentication realms. eXist-db always has an internal realm and this certainly remains, however you may now also plugin one or more external realms which provide user and group authentication for eXist-db.</para>
+            <section>
+                <title>eXist-db Realm</title>
+                <para>The eXist-db realm is the default internal realm. By default this realm provides for the '<emphasis>SYSTEM</emphasis>', '<emphasis>admin</emphasis>' and '<emphasis>guest</emphasis>' users and '<emphasis>DBA</emphasis>' and '<emphasis>guest</emphasis>' groups. Any additional users or groups created in eXist-db will be added to this realm.</para>
+                <para>Every eXist-db realm user has an account with a username, password and metadata that is stored in the database. Each user may belong to zero or more groups.</para>
+                <para>User and group information for the eXist-db realm is maintained in the collection <filename
+                    >/db/system/security/exist</filename>.
+                    <important>The security collections in /db/system/security should not be manually manipulated or read, rather they should be accessed via the SecurityManager class or the SecurityManager Module. Directly manipulation can lead to inconsistent state and security issues.</important>
+                </para>
+                <para>The following is a simple example of a user account document for the eXist-db realm e.g. <filename>/db/system/security/exist/accounts/aretter.xml</filename>:</para>
+                <example>
+                    <title><filename>aretter.xml</filename> Account Document</title>
+                    <programlisting><markup><![CDATA[<account xmlns="http://exist-db.org/Configuration" id="11">
+    <password>{RIPEMD160}Vi7e971INiGmyWGT1bm63bHj1gf=</password>
+    <group name="dba"/>
+    <expired>false</expired>
+    <enabled>true</enabled>
+    <metadata/>
+    <name>aretter</name>
+</account>]]></markup>
+                </programlisting>
+                </example>
+                <para>As we see from this example, passwords are hashed using a
+                    <emphasis>RIPEMD-160</emphasis> algorithm (e.g. <option>aretter</option> has the
+                    <emphasis>RIPEMD-160</emphasis> hashed and base64 encoded password "Vi7e971INiGmyWGT1bm63bHj1gf=").
+                    Therefore, whenever a user enters his or her password, the database generates a RIPEMD-160
+                    encryption and compares it to the encryption stored in the users acccount document.
+                    Since it is very difficult for users or machines to guess the
+                    original password from the RIPEMD hash, passwords in eXist should be sufficiently
+                    secure.</para>
+                <para>Note that the <filename>/db/system/security</filename> collection is (by default) only
+                    readable and writable by the system or <option>dba</option> users. The <option>dba</option> group is specially reserved for
+                    database administrators, and only <option>dba</option> users are allowed to create, remove or modify other users.</para>
+            </section>
+            <section>
+                <title>LDAP Realm</title>
+                <para>TODO</para>
+            </section>
+            <section>
+                <title>OAuth Realm</title>
+                <para>TODO</para>
+            </section>
+            <section>
+                <title>OpenID Realm</title>
+                <para>TODO</para>
+            </section>
+            <section>
+                <title>Legacy Internal Realm</title>
+                <para>Before eXist-db 2.0, the internal security realm was maintained in a different manner. The details are included here for the purpose of informing decisions on migration.</para>                
+                <para>Every eXist database user has an account with a username, password and other
+                    information that is stored in the database. Furthermore, every user belongs to one
+                    or more groups - and respectively, every resource in the database is owned by a user
+                    and by a group. By default, the owner is set to the user who created the resource,
+                    and his primary group, but eXist allows for different permissions for the owner, the
+                    owner's group and others. However, only the owner of the resource (or <filename
+                        >dba</filename> users) can change these permissions.</para>
+                <para>User and group information is found in the designated XML file <filename
                     >/db/system/users.xml</filename> located in collection <filename
-                    >/db/system</filename>. This file is generated during database startup. The
-                following is a simple example of a <filename>users.xml</filename> document: </para>
-            <example>
-                <title><filename>users.xml</filename> User Information</title>
-                <programlisting><markup><![CDATA[<auth>
+                        >/db/system</filename>. This file is generated during database startup. The
+                    following is a simple example of a <filename>users.xml</filename> document: </para>
+                <example>
+                    <title><filename>users.xml</filename> User Information</title>
+                    <programlisting><markup><![CDATA[<auth>
     <groups last-id="3">
         <group name="dba" id="1"/>
         <group name="guest" id="2"/>
@@ -66,29 +139,31 @@
     </users>
 </auth>]]></markup>
                 </programlisting>
-            </example>
-            <para>As we see from this example, passwords are encrypted using an
+                </example>
+                <para>As we see from this example, passwords are encrypted using an
                     <emphasis>MD5</emphasis> algorithm (e.g. <option>user-1</option> has the
                     <emphasis>MD5</emphasis>-encrypted password "7f0261c14d7d1b8e51680a013daa623e").
-                Therefore, whenever a user enters his or her password, the database generates an MD5
-                encryption and compares it to the encryption stored in <filename
-                    >users.xml</filename>. Since it is very difficult for users to guess the
-                original password from the MD5 string, passwords in eXist should be sufficiently
-                secure.</para>
-            <para>Note that the <filename>/db/system</filename> collection is (by default) only
-                readable by <option>dba</option> users (although it is possible to make it
-                accessible by other users). The <option>dba</option> group is specially reserved for
-                database administrators, and only <option>dba</option> users are allowed to create
-                or remove users, or change permissions for other users.</para>
-            <important>
-                <para>By default, access to an eXist database is disabled until a password is set
-                    for the administrator (see <emphasis>Changing the Administrator
-                        Password</emphasis> below for instructions). Since <option>write</option>
-                    permissions for files are granted to everyone, it is important to be careful
-                    about how you configure server access for users on a network or the
-                    Internet.</para>
-            </important>
+                    Therefore, whenever a user enters his or her password, the database generates an MD5
+                    encryption and compares it to the encryption stored in <filename
+                        >users.xml</filename>. Since it is very difficult for users to guess the
+                    original password from the MD5 string, passwords in eXist should be sufficiently
+                    secure.</para>
+                <para>Note that the <filename>/db/system</filename> collection is (by default) only
+                    readable by <option>dba</option> users (although it is possible to make it
+                    accessible by other users). The <option>dba</option> group is specially reserved for
+                    database administrators, and only <option>dba</option> users are allowed to create
+                    or remove users, or change permissions for other users.</para>
+                <important>
+                    <para>By default, access to an eXist database is disabled until a password is set
+                        for the administrator (see <emphasis>Changing the Administrator
+                            Password</emphasis> below for instructions). Since <option>write</option>
+                        permissions for files are granted to everyone, it is important to be careful
+                        about how you configure server access for users on a network or the
+                        Internet.</para>
+                </important>
+            </section>
         </section>
+        
         <section>
             <title>Changing the Administrator Password</title>
             <informaltable>
@@ -199,230 +274,310 @@ enter groups: users]]></screen>
         </section>
         <section id="permissions">
             <title>Resource Permissions</title>
-            <para>The default that is based on the UNIX <emphasis role="bold">read</emphasis>,
-                    <emphasis role="bold">write</emphasis> and <emphasis role="bold"
-                    >execute</emphasis> flags for <emphasis role="bold">owner</emphasis>, <emphasis
-                    role="bold">group</emphasis> and <emphasis role="bold">world</emphasis>. For
-                eXist, the <emphasis role="bold">execute</emphasis> is <emphasis role="bold"
-                    >update</emphasis>.</para>
-            <screenshot>
-                <graphic fileref="resources/owner-group-world.png"/>
-            </screenshot>
-            <informaltable frame="void" border="1">
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Owner</td>
-                        <td>These permissions work for the owner of the resource</td>
-                    </tr>
-                    <tr>
-                        <td>Group</td>
-                        <td>These permissions work for the members of the group of the resource</td>
-                    </tr>
-                    <tr>
-                        <td>World</td>
-                        <td>These permissions work for any user</td>
-                    </tr>
-                    <tr/>
-                </tbody>
-            </informaltable>
-            <screenshot>
-                <graphic fileref="resources/permission-grid.png"/>
-            </screenshot>
-            <informaltable frame="void" border="1">
-                <thead>
-                    <tr>
-                        <th>Permission Type</th>
-                        <th>Collection</th>
-                        <th>Resource</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Read/Execute</td>
-                        <td>The list of resources and collections within the collection can be
-                            read.</td>
-                        <td>The resource can be read through the WebDAV interface and executed
-                            through the RESTful interface.</td>
-                    </tr>
-                    <tr>
-                        <td>Create/Delete</td>
-                        <td>Allows for the removal or adding a new file or sub-collection.</td>
-                        <td>Allows for the deletion of the resource.</td>
-                    </tr>
-                    <tr>
-                        <td>Modify/Change</td>
-                        <td>If only update is allowed, then the user will not be allowed to add new
-                            files to the collection.</td>
-                        <td>Allows the user to update an existing resource by using XUpdate ro by
-                            replacing the entire resource.</td>
-                    </tr>
-                    <tr/>
-                </tbody>
-            </informaltable>
-            <note>
-                <para>Please be aware that permissions for collections are <emphasis>NOT</emphasis>
-                    inherited by their sub-collections, i.e. write permissions can be set for some
-                    sub-collections, but you must also have write permissions for the parent
-                    collection for these to be effective.</para>
-            </note>
-            <para>Using the Admin Client or the command-line, You can list the permissions assigned
-                to each resource (this assumes the <property>permissions</property> property in
-                    <filename>client.properties</filename> is set to <option>true</option>). An
-                example listing is shown below:</para>
-            <example>
-                <title>Resource Permission Settings</title>
-                <screen><![CDATA[exist:/db/shakespeare/plays>ls
--rwur-ur--      admin   dba     hamlet.xml
--rwur-ur--      admin   dba     macbeth.xml
--rwur-ur--      wolf    users   r_and_j.xml
--rwur-ur--      admin   dba     shakes.xsl
-exist:/db/shakespeare/plays>]]></screen>
-            </example>
-            <para>As shown on the left-hand side, the Admin Client displays resource permissions in
-                a similar format to the output of the Unix <command>ls -l</command> command: a
-                ten-character code. The first character represents the type of resource:
-                    <option>-</option> [hyphen] for documents (files) and <option>d</option> for
-                collections. The next three characters are the permissions for the user: a
-                    <option>-</option> [hyphen] is used for denied permissions, <option>r</option>
-                for read, <option>w</option> for write, and <option>u</option> for update. The next
-                three characters (five through seven) set the permissions for groups, and the last
-                three for others (i.e. anyone else who can access the database). Given the previous
-                example, we can see that all files except <filename>r_and_j.xml</filename> are owned
-                by user &quot;admin&quot; and group &quot;dba&quot;.</para>
-            <para>As mentioned in the previous section, the database root collection <filename
-                    >/db</filename> initially has permissions set to <option>drwurwurwu</option>,
-                i.e. full access is granted to everyone. Also note that <option>-rwur-ur--</option>
-                is the default setting for all newly created resources, i.e. the group has
-                read/update permissions, but not write permissions; others are only allowed to
-                read.</para>
-            <para id="octal">Some XQuery functions expect to get the permissions as an octal number.
-                The <ulink url="http://en.wikipedia.org/wiki/File_system_permissions#Octal_notation"
-                    >octal notation</ulink> is quite common on Unix systems. In eXist, the first 3
-                bits correspond to the user permissions, the second 3 bits are for the group and the
-                final 3 bits for others. In order to set the permissions to
-                    <option>-rwur-ur--</option> you would need to specify <option>0754</option> in
-                octal notation.</para>
+            <para>eXist-db has always supported a Unix like permissions model. Since eXist-db version 2.0 this has also been augmented with simple Access Control Lists. It is important to understand the Unix permission model first, and then consider Access Control Lists should the Unix Model not prove sufficient for your application.</para>
             <section>
-                <title>Changing Resource Permissions</title>
-                <informaltable>
-                    <tgroup cols="2">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <para>Permissions can be changed using either the <emphasis>Edit
-                                            Properties</emphasis> dialog box (shown on the right) in
-                                        the Admin Client or the <command>chmod</command> command in
-                                        the shell window. The <emphasis>Edit Properties</emphasis>
-                                        dialog box is opened by selecting <guimenuitem
-                                            >Files</guimenuitem> &#187;<guimenuitem>Resource
-                                            Properties</guimenuitem> from the menu, OR by clicking
-                                        on the <guiicon>Properties Icon</guiicon> (image of
-                                        checkboxes) in the toolbar. This dialog box shows permission
-                                        settings for all database users and groups.</para>
-                                </td>
-                                <td>
-                                    <screenshot>
-                                        <graphic fileref="resources/client-6.png"/>
-                                    </screenshot>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </tgroup>
+                <title>Unix Model</title>
+                <para>The default that is based on the UNIX <emphasis role="bold">read</emphasis>,
+                        <emphasis role="bold">write</emphasis> and <emphasis role="bold"
+                        >execute</emphasis> flags for <emphasis role="bold">owner</emphasis>, <emphasis
+                            role="bold">group</emphasis> and <emphasis role="bold">world</emphasis>. In versions prior to eXist-db 2.0, there was no <emphasis role="bold">execute</emphasis> flag, rather an <emphasis role="bold">update</emphasis> flag was present.</para>
+                <screenshot>
+                    <graphic fileref="resources/owner-group-world.png"/>
+                </screenshot>
+                <informaltable frame="void" border="1">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Owner</td>
+                            <td>These permissions work for the owner of the resource</td>
+                        </tr>
+                        <tr>
+                            <td>Group</td>
+                            <td>These permissions work for the members of the group of the resource</td>
+                        </tr>
+                        <tr>
+                            <td>World</td>
+                            <td>These permissions work for any user</td>
+                        </tr>
+                        <tr/>
+                    </tbody>
                 </informaltable>
                 <note>
-                    <para>Please note that only the owner of a resource or members of
-                            <option>dba</option> are allowed to change permissions. All other users
-                        who attempt to change these settings will receive an error message.</para>
+                    <para>Please be aware that permissions for collections are <emphasis>NOT</emphasis>
+                        inherited by their sub-collections, i.e. write permissions can be set for some
+                        sub-collections, but you must also have write permissions for the parent
+                        collection for these to be effective.</para>
                 </note>
-                <para>On the command-line, you can use the <command>chmod</command> command to
-                    change permissions. This command expects two parameters:</para>
-                <variablelist>
-                    <varlistentry>
-                        <term>chmod</term>
-                        <listitem>
-                            <para>Parameters:</para>
-                            <orderedlist>
-                                <listitem>
-                                    <para>Name of a resource or collection</para>
-                                </listitem>
-                                <listitem>
-                                    <para>Read, write and update permissions to set or remove
-                                            (<option>+</option> or <option>-</option> respectively,
-                                        for the specified user, group, or other according to the
-                                        following syntax:</para>
-                                </listitem>
-                            </orderedlist>
-                            <synopsis>chmod [resource] [user|group|other]=[+|-][read|write|update][, ...]</synopsis>
-                        </listitem>
-                    </varlistentry>
-                </variablelist>
-                <para>For example, to grant the write permission to the group and deny all to
-                    others, you may use:</para>
-                <synopsis>chmod hamlet.xml group=+write,other=-read,-update,-write</synopsis>
-                <para>If you do not specify a resource in the first argument of the <command
-                        >chmod</command> command, the permission string will be applied to the
-                    current collection. This is an important feature if you want to change
-                    permissions for the <filename>/db</filename> root collection, which would
-                    otherwise not be possible. For example, to deny write permissions to others for
-                    the entire database, change directory to the root collection (i.e. enter
-                        <command>cd ..</command>) and enter:</para>
-                <synopsis>chmod other=-write</synopsis>
+                <para>Using the Admin Client or the command-line, You can list the permissions assigned
+                    to each resource (this assumes the <property>permissions</property> property in
+                        <filename>client.properties</filename> is set to <option>true</option>). An
+                    example listing is shown below:</para>
+                <example>
+                    <title>Resource Permission Settings</title>
+                    <screen><![CDATA[exist:/db/shakespeare/plays>ls
+    -rwxr-xr--      admin   dba     hamlet.xml
+    -rwxr-xr--      admin   dba     macbeth.xml
+    -rwxr-xr--      wolf    users   r_and_j.xml
+    -rwxr-xr--      admin   dba     shakes.xsl
+    exist:/db/shakespeare/plays>]]></screen>
+                </example>
+                <para>As shown on the left-hand side, the Admin Client displays resource permissions in
+                    a similar format to the output of the Unix <command>ls -l</command> command: a
+                    ten-character code. The first character represents the type of resource:
+                        <option>-</option> [hyphen] for documents (files) and <option>d</option> for
+                    collections. The next three characters are the permissions for the user: a
+                        <option>-</option> [hyphen] is used for denied permissions, <option>r</option>
+                    for read, <option>w</option> for write, and <option>x</option> for execute. The next
+                    three characters (five through seven) set the permissions for groups, and the last
+                    three for others (i.e. anyone else who can access the database). Given the previous
+                    example, we can see that all files except <filename>r_and_j.xml</filename> are owned
+                    by user &quot;admin&quot; and group &quot;dba&quot;.</para>
+                <para>As mentioned in the previous section, the database root collection <filename
+                        >/db</filename> initially has permissions set to <option>drwxr-xr-x</option>,
+                    i.e. full access is granted to everyone. Also note that <option>-rw-r--r--</option>
+                    is the default setting for all newly created resources, i.e. the owner has read/write permissions but not execure, and the group and others (world) has
+                    read permissions.</para>
+                <section>
+                    <title>Changing Resource Permissions</title>
+                    <informaltable>
+                        <tgroup cols="2">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <para>Permissions can be changed using either the <emphasis>Edit
+                                                Properties</emphasis> dialog box (shown on the right) in
+                                            the Admin Client or the <command>chmod</command> command in
+                                            the shell window. The <emphasis>Edit Properties</emphasis>
+                                            dialog box is opened by selecting <guimenuitem
+                                                >Files</guimenuitem> &#187;<guimenuitem>Resource
+                                                Properties</guimenuitem> from the menu, OR by clicking
+                                            on the <guiicon>Properties Icon</guiicon> (image of
+                                            checkboxes) in the toolbar. This dialog box shows permission
+                                            settings for all database users and groups.</para>
+                                    </td>
+                                    <td>
+                                        <screenshot>
+                                            <graphic fileref="resources/client-6.png"/>
+                                        </screenshot>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                    <note>
+                        <para>Please note that only the owner of a resource or members of
+                                <option>dba</option> are allowed to change permissions. All other users
+                            who attempt to change these settings will receive an error message.</para>
+                    </note>
+                    <para>On the command-line, you can use the <command>chmod</command> command to
+                        change permissions. This command expects two parameters:</para>
+                    <variablelist>
+                        <varlistentry>
+                            <term>chmod</term>
+                            <listitem>
+                                <para>Parameters:</para>
+                                <orderedlist>
+                                    <listitem>
+                                        <para>Name of a resource or collection</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para>Read, write and execute permissions to set or remove
+                                                (<option>+</option> or <option>-</option> respectively,
+                                            for the specified user, group, or other according to the
+                                            following syntax:</para>
+                                    </listitem>
+                                </orderedlist>
+                                <synopsis>chmod [resource] [user|group|other]=[+|-][read|write|execute][, ...]</synopsis>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                    <para>For example, to grant the write permission to the group and deny all to
+                        others, you may use:</para>
+                    <synopsis>chmod hamlet.xml group=+write,other=-read,-execute,-write</synopsis>
+                    <para>If you do not specify a resource in the first argument of the <command
+                            >chmod</command> command, the permission string will be applied to the
+                        current collection. This is an important feature if you want to change
+                        permissions for the <filename>/db</filename> root collection, which would
+                        otherwise not be possible. For example, to deny write permissions to others for
+                        the entire database, change directory to the root collection (i.e. enter
+                            <command>cd ..</command>) and enter:</para>
+                    <synopsis>chmod other=-write</synopsis>
+                </section>
+                <section>
+                    <title>Changing Resource Ownership</title>
+                    <para>Only the owner has full control over a resource, and it is sometimes important
+                        to change this ownership. The Admin Client provides the <command>chown</command>
+                        command to do this. The command expects three arguments:</para>
+                    <variablelist>
+                        <varlistentry>
+                            <term>chown</term>
+                            <listitem>
+                                <para>Arguments:</para>
+                                <orderedlist>
+                                    <listitem>
+                                        <para>Name of the user.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para>Name of the group.</para>
+                                    </listitem>
+                                    <listitem>
+                                        <para>Name of the resource.</para>
+                                    </listitem>
+                                </orderedlist>
+                                <synopsis>chown [user] [group] [resource]</synopsis>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                    <para>For example, to change the owner of the file <filename>r_and_j.xml</filename>,
+                        you would do the following:</para>
+                    <example>
+                        <title>Changing Ownership</title>
+                        <screen><![CDATA[
+    exist:/db/shakespeare/plays>chown wolf users r_and_j.xml
+    exist:/db/shakespeare/plays>ls
+    -rwxr-xr--      admin   dba     hamlet.xml
+    -rwxr-xr--      admin   dba     macbeth.xml
+    -rwxr-xr--      wolf    users   r_and_j.xml
+    -rwxr-xr--      admin   dba     shakes.xsl
+    exist:/db/shakespeare/plays>]]></screen>
+                    </example>
+                </section>
             </section>
             <section>
-                <title>Changing Resource Ownership</title>
-                <para>Only the owner has full control over a resource, and it is sometimes important
-                    to change this ownership. The Admin Client provides the <command>chown</command>
-                    command to do this. The command expects three arguments:</para>
-                <variablelist>
-                    <varlistentry>
-                        <term>chown</term>
-                        <listitem>
-                            <para>Arguments:</para>
-                            <orderedlist>
-                                <listitem>
-                                    <para>Name of the user.</para>
-                                </listitem>
-                                <listitem>
-                                    <para>Name of the group.</para>
-                                </listitem>
-                                <listitem>
-                                    <para>Name of the resource.</para>
-                                </listitem>
-                            </orderedlist>
-                            <synopsis>chown [user] [group] [resource]</synopsis>
-                        </listitem>
-                    </varlistentry>
-                </variablelist>
-                <para>For example, to change the owner of the file <filename>r_and_j.xml</filename>,
-                    you would do the following:</para>
-                <example>
-                    <title>Changing Ownership</title>
-                    <screen><![CDATA[
-exist:/db/shakespeare/plays>chown wolf users r_and_j.xml
-exist:/db/shakespeare/plays>ls
--rwur-ur--      admin   dba     hamlet.xml
--rwur-ur--      admin   dba     macbeth.xml
--rwur-ur--      wolf    users   r_and_j.xml
--rwur-ur--      admin   dba     shakes.xsl
-exist:/db/shakespeare/plays>]]></screen>
-                </example>
+                <title>Access Control Lists</title>
+                <para>TODO</para>
             </section>
         </section>
         <section>
-            <title>Using XQuery Access Control</title>
-            <para>Please see separate documentation on <ulink url="xacml.xml">XACML in
-                eXist</ulink>.</para>
-        </section>
-        <section>
-            <title>LDAP Security</title>
-            <para>Please see separate documentation on <ulink url="ldap-security.xml">LDAP
-                    Security</ulink>.</para>
+            <title>Operational Permissions</title>
+            <para>Each operation in eXist-db now enforces permission checks. The details of the permissions required for an operation are laid out below. These permissions should align with a strict Unix model, if they are found to be incorrect or lacking, please let the project known immediately.</para>
+            <table border="1">
+                <title>Document Permissions Matrix</title>
+                <tgroup cols="3">
+                    <thead>
+                        <row>
+                            <entry>Operation</entry>
+                            <entry>Collection</entry>
+                            <entry>Document</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Open Collection</entry>
+                            <entry>--x</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry>List Collection Contents</entry>
+                            <entry>r-x</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry>Add Document</entry>
+                            <entry>-wx</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry>Remove Document</entry>
+                            <entry>-wx</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry>Overwrite Existing Document</entry>
+                            <entry>--x</entry>
+                            <entry>-w- (or owner)</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table border="1">
+                <title>Document Copy/Move Permissions Matrix</title>
+                <tgroup cols="5">
+                    <thead>
+                        <row>
+                            <entry>Operation</entry>
+                            <entry>Source Collection</entry>
+                            <entry>Source Document</entry>
+                            <entry>Destination Collection (if exists)</entry>
+                            <entry>Destination Document (if exists)</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>Copy Document</entry>
+                            <entry>--x</entry>
+                            <entry>r--</entry>
+                            <entry>-wx (w only if destination document does not exist)</entry>
+                            <entry>-w-</entry>
+                        </row>
+                        <row>
+                            <entry>Move/Rename Document</entry>
+                            <entry>-wx</entry>
+                            <entry>--x (or owner)</entry>
+                            <entry>-wx</entry>
+                            <entry>-w-</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <table border="1">
+                <title>Collection Permissions Matrix</title>
+                <tgroup cols="6">
+                    <colspec colname="c1"/>
+                    <colspec colname="c2"/>
+                    <colspec colname="c3"/>
+                    <colspec colname="c4"/>
+                    <colspec colname="c5"/>
+                    <colspec colname="c6"/>
+                    <thead>
+                        <row>
+                            <entry namest="col1" nameend="col2">Operation</entry>
+                            <entry>Parent of Source Collection</entry>
+                            <entry>Source Collection</entry>
+                            <entry>Parent of Destination Collection</entry>    
+                            <entry>Destination Collection (if exists)</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry namest="col1" nameend="col2">Add Collection</entry>
+                            <entry>---</entry>
+                            <entry>---</entry>
+                            <entry>-wx</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry namest="col1" nameend="col2">Remove Collection</entry>
+                            <entry>-wx</entry>
+                            <entry>rwx (and on all sub-collections)</entry>
+                            <entry>---</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry namest="col1" nameend="col2">Copy Collection</entry>
+                            <entry>---</entry>
+                            <entry>r-x</entry>
+                            <entry>---</entry>
+                            <entry>---</entry>
+                        </row>
+                        <row>
+                            <entry namest="col1" nameend="col2">Move/Rename Collection</entry>
+                            <entry>-wx</entry>
+                            <entry>-w-</entry>
+                            <entry>---</entry>
+                            <entry>-wx (If replacing an existing collection, then the Permissions for removing that collection must be met first).</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para>When copying a collection, permisions must also be checked for each sub-collection and resource.</para>
+            <para>Copying a Sub-Collection requires <emphasis>r-x</emphasis> on the sub-collection, and <emphasis>rwx</emphasis> on the destination collection, and if the sub-collection already exists in the destination then <emphasis>r-x</emphasis> on that.</para>
+            <para>Copying a Resources of a Collection requires <emphasis>r--</emphasis> on the resource, and <emphasis>-w-</emphasis> on the destination resource if it exists, else <emphasis>-w-</emphasis> on the destination collection.</para>
         </section>
     </chapter>
 </book>

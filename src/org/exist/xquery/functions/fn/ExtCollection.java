@@ -58,6 +58,7 @@ import org.exist.xquery.value.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -149,7 +150,7 @@ public class ExtCollection extends Function {
 	                    if (context.inProtectedMode())
 	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
 	                    else
-	                        coll.allDocs(context.getBroker(), ndocs, includeSubCollections, true, context.getProtectedDocs());
+	                        coll.allDocs(context.getBroker(), ndocs, includeSubCollections, context.getProtectedDocs());
 	                }
 	            }
                 docs = ndocs;
@@ -158,6 +159,10 @@ public class ExtCollection extends Function {
             e.setLocation(line, column);
             logger.error("FODC0002: can not access collection '" + e.getMessage() + "'");
             throw new XPathException(this, "FODC0002: " + e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            logger.error("FODC0002: can not access collection '" + pde.getMessage() + "'", pde);
+            throw new XPathException(line, column, "FODC0002: can not access collection '" + pde.getMessage() + "'", pde);
+            
         }
         // iterate through all docs and create the node set
 		NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);

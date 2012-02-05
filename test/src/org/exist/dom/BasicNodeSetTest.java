@@ -278,7 +278,7 @@ public class BasicNodeSetTest {
             
         Serializer serializer = broker.getSerializer();
         serializer.reset();
-        DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+        DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true);
 
         System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
         // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
@@ -455,7 +455,7 @@ public class BasicNodeSetTest {
             
             
             //for the tests
-            docs = root.allDocs(broker, new DefaultDocumentSet(), true, false);
+            docs = root.allDocs(broker, new DefaultDocumentSet(), true);
             seqSpeech = executeQuery(broker, "//SPEECH", 2628, null);
             
         } catch(Exception e) {

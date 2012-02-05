@@ -54,6 +54,7 @@ import java.util.Stack;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import org.exist.security.PermissionDeniedException;
 
 
 public class ConsistencyCheck
@@ -82,7 +83,7 @@ public class ConsistencyCheck
      *
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    public List<ErrorReport> checkAll( ProgressCallback callback ) throws TerminatedException
+    public List<ErrorReport> checkAll( ProgressCallback callback ) throws TerminatedException, PermissionDeniedException
     {
         List<ErrorReport> errors = checkCollectionTree( callback );
         checkDocuments( callback, errors );
@@ -99,7 +100,7 @@ public class ConsistencyCheck
      *
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    public List<ErrorReport> checkCollectionTree( ProgressCallback callback ) throws TerminatedException
+    public List<ErrorReport> checkCollectionTree( ProgressCallback callback ) throws TerminatedException, PermissionDeniedException
     {
         AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
@@ -121,31 +122,41 @@ public class ConsistencyCheck
         if (callback != null)
         	callback.startCollection( uri.toString() );
 
-        for( Iterator<XmldbURI> i = collection.collectionIteratorNoLock(); i.hasNext(); ) {
-            XmldbURI childUri = i.next();
+        try {
+            for(Iterator<XmldbURI> i = collection.collectionIteratorNoLock(broker); i.hasNext(); ) {
+                XmldbURI childUri = i.next();
 
-            try {
-                Collection child = broker.getCollection( uri.append( childUri ) );
+                try {
+                    Collection child = broker.getCollection( uri.append( childUri ) );
 
-                if( child == null ) {
-                    ErrorReport.CollectionError error = new org.exist.backup.ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Child collection not found: " + childUri + ", parent is " + uri );
+                    if( child == null ) {
+                        ErrorReport.CollectionError error = new org.exist.backup.ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Child collection not found: " + childUri + ", parent is " + uri );
+                        error.setCollectionId( collection.getId() );
+                        error.setCollectionURI( childUri );
+                        errors.add( error );
+                        if (callback != null)
+                            callback.error( error );
+                        continue;
+                    }
+                    if (child.getId() != collection.getId())
+                            checkCollection( child, errors, callback );
+                }
+                catch( Exception e ) {
+                    ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading child collection: " + childUri + ", parent is " + uri );
                     error.setCollectionId( collection.getId() );
                     error.setCollectionURI( childUri );
                     errors.add( error );
                     if (callback != null)
-                    	callback.error( error );
-                    continue;
+                            callback.error( error );
                 }
-                if (child.getId() != collection.getId())
-                	checkCollection( child, errors, callback );
             }
-            catch( Exception e ) {
-                ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading child collection: " + childUri + ", parent is " + uri );
-                error.setCollectionId( collection.getId() );
-                error.setCollectionURI( childUri );
-                errors.add( error );
-                if (callback != null)
-                	callback.error( error );
+        } catch(PermissionDeniedException pde) {
+            ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading collection: " + collection.getURI() + ", parent is " + uri );
+            error.setCollectionId(collection.getId() );
+            error.setCollectionURI(collection.getURI());
+            errors.add(error);
+            if(callback != null) {
+                callback.error(error);
             }
         }
     }

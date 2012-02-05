@@ -92,6 +92,7 @@ import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -345,7 +346,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             reader.flush();
         } catch (IOException e) {
-            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
+        } catch (PermissionDeniedException e) {
+            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWritingReader(reader);
             mode = StreamListener.STORE;

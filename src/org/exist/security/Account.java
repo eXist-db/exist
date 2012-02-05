@@ -171,6 +171,11 @@ public interface Account extends Principal, User {
     public void assertCanModifyAccount(Account user) throws PermissionDeniedException;
 
     
+    /**
+     * Get the umask of the user
+     */
+    public int getUserMask();
+    
     public void setMetadataValue(SchemaType schemaType, String value);
 
     public String getMetadataValue(SchemaType schemaType);

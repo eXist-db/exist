@@ -162,7 +162,7 @@ public class EmbeddedUpload {
             if(collection == null)
                 throw new IOException("Resource "+collectionUri.toString()+" is not a collection.");
             
-            if(collection.hasChildCollection(documentUri))
+            if(collection.hasChildCollection(broker, documentUri))
                 throw new IOException("Resource "+documentUri.toString()+" is a collection.");
             
             MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);

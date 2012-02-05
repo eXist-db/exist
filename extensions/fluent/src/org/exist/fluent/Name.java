@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.collections.Collection;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -19,8 +21,11 @@ public abstract class Name {
 	
 	protected String givenName, oldName;
 	protected Collection context;
+        private final Database db;
 	
-	private Name() {}
+	private Name(Database db) {
+            this.db = db;
+        }
 	
 	Folder stripPathPrefix(Folder base) {
 		return base;
@@ -28,7 +33,8 @@ public abstract class Name {
 	
 	private static abstract class SpecifiedName extends Name {
 		protected String specifiedName;
-		SpecifiedName(String specifiedName) {
+		SpecifiedName(Database db, String specifiedName) {
+                        super(db);
 			this.specifiedName = specifiedName;
 		}
 		Folder stripPathPrefix(Folder base) {
@@ -71,7 +77,18 @@ public abstract class Name {
 	protected boolean existsInContext(String proposedName) {
 		if (proposedName == null || proposedName.length() == 0) throw new IllegalArgumentException("name null or empty");
 		XmldbURI proposedUri = XmldbURI.create(proposedName);
-		return context.hasDocument(proposedUri) || context.hasSubcollection(proposedUri);
+                
+                DBBroker _broker = null;
+                try {
+                    _broker = db.acquireBroker();
+                    return context.hasDocument(_broker, proposedUri) || context.hasSubcollection(_broker, proposedUri);
+                } catch(PermissionDeniedException pde) {
+                    throw new DatabaseException(pde.getMessage(), pde);
+                } finally {
+                    if(_broker != null) {
+                        db.releaseBroker(_broker);
+                    }   
+                }
 	}
 	
 	protected void evalInsert(String proposedName) {
@@ -110,8 +127,8 @@ public abstract class Name {
 	 *
 	 * @return a random name unique within the target folder
 	 */
-	public static Name generate() {
-		return generate("");
+	public static Name generate(Database db) {
+		return generate(db, "");
 	}
 	
 	/**
@@ -121,8 +138,8 @@ public abstract class Name {
 	 * @param suffix the string to append to the random name, e.g. ".xml"
 	 * @return a random name unique within the target folder and ending with the given suffix
 	 */
-	public static Name generate(final String suffix) {
-		return new Name() {
+	public static Name generate(Database db, final String suffix) {
+		return new Name(db) {
 			@Override protected void eval() {evalGenerate("", suffix);}
 			@Override public String def() {return "generate" + (suffix.length() == 0 ? "" : " " + suffix);}
 		};
@@ -134,8 +151,8 @@ public abstract class Name {
 	 *
 	 * @return the existing name if unique, otherwise a unique variation of the existing name
 	 */
-	public static Name keepAdjust() {
-		return new Name() {
+	public static Name keepAdjust(Database db) {
+		return new Name(db) {
 			@Override protected void eval() {evalDeconflict(oldName);}
 			@Override protected String def() {return "adjust " + (oldName == null ? "old name" : oldName);}
 		};
@@ -152,8 +169,8 @@ public abstract class Name {
 	 * @param name the desired name
 	 * @return if the given name is unique, the name; otherwise, a unique variation on the given name
 	 */
-	public static Name adjust(String name) {
-		return new SpecifiedName(name) {
+	public static Name adjust(Database db, String name) {
+		return new SpecifiedName(db, name) {
 			@Override protected void eval() {evalDeconflict(specifiedName);}
 			@Override protected String def() {return "adjust " + specifiedName;}
 		};
@@ -165,8 +182,8 @@ public abstract class Name {
 	 *
 	 * @return the existing name that will be used whether it's unique or not
 	 */
-	public static Name keepOverwrite() {
-		return new Name() {
+	public static Name keepOverwrite(Database db) {
+		return new Name(db) {
 			@Override protected void eval() {givenName = oldName;}
 			@Override protected String def() {return "overwrite " + (oldName == null ? "old name" : oldName);}
 		};
@@ -181,8 +198,8 @@ public abstract class Name {
 	 * @param name the desired name
 	 * @return the desired name that will be used whether it's unique or not
 	 */
-	public static Name overwrite(String name) {
-		return new SpecifiedName(name) {
+	public static Name overwrite(Database db, String name) {
+		return new SpecifiedName(db, name) {
 			@Override protected void eval() {givenName = specifiedName;}
 			@Override protected String def() {return "overwrite " + specifiedName;}
 		};
@@ -194,8 +211,8 @@ public abstract class Name {
 	 *
 	 * @return the existing name, with a stipulation that any operation using it will fail if it's a duplicate
 	 */
-	public static Name keepCreate() {
-		return new Name() {
+	public static Name keepCreate(Database db) {
+		return new Name(db) {
 			@Override protected void eval() {evalInsert(oldName);}
 			@Override protected String def() {return "create " + (oldName == null ? "old name" : oldName);}
 		};
@@ -209,8 +226,8 @@ public abstract class Name {
 	 * @param name the desired name believed to be unique
 	 * @return the desired name, with a stipulation that any operation using it will fail if it's a duplicate
 	 */
-	public static Name create(String name) {
-		return new SpecifiedName(name) {
+	public static Name create(Database db, String name) {
+		return new SpecifiedName(db, name) {
 			@Override protected void eval() {evalInsert(specifiedName);}
 			@Override protected String def() {return "create " + specifiedName;}
 		};

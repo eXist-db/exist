@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.exist.security.Permission;
 import org.exist.security.Account;
 import java.io.File;
 import java.io.IOException;
@@ -345,7 +344,7 @@ public class ResourceTest {
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod("rwxr-xr-x");
 
         //store sample files as guest
         Collection testCollectionAsGuest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);

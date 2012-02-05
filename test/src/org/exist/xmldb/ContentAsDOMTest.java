@@ -105,7 +105,7 @@ public class ContentAsDOMTest {
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_UID);
         ums.chown(guest, guest.getPrimaryGroup());
-        ums.chmod(Permission.DEFAULT_PERM);
+        ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
 
         Resource resource = testCollection.createResource("test.xml", "XMLResource");
         resource.setContent(XML);

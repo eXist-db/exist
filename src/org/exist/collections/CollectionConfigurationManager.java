@@ -75,7 +75,7 @@ public class CollectionConfigurationManager {
 
     private BrokerPool pool;
     
-    public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException {
+    public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException, PermissionDeniedException, LockException {
 		this.pool = broker.getBrokerPool();
         this.latch = pool.getCollectionsCache();
         
@@ -207,17 +207,17 @@ public class CollectionConfigurationManager {
         return defaultConfig;
     }
 
-    protected void loadAllConfigurations(DBBroker broker) throws CollectionConfigurationException {
+    protected void loadAllConfigurations(DBBroker broker) throws CollectionConfigurationException, PermissionDeniedException, LockException {
         Collection root = broker.getCollection(XmldbURI.CONFIG_COLLECTION_URI);
         loadAllConfigurations(broker, root);
     }
 
-    protected void loadAllConfigurations(DBBroker broker, Collection configCollection) throws CollectionConfigurationException {
+    protected void loadAllConfigurations(DBBroker broker, Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException, LockException {
         if (configCollection == null)
             return;
         loadConfiguration(broker, configCollection);
         XmldbURI path = configCollection.getURI();
-        for (Iterator<XmldbURI> i = configCollection.collectionIterator(); i.hasNext(); ) {
+        for(Iterator<XmldbURI> i = configCollection.collectionIterator(broker); i.hasNext(); ) {
             XmldbURI childName = i.next();
             Collection child = broker.getCollection(path.appendInternal(childName));
             if (child == null)
@@ -226,8 +226,8 @@ public class CollectionConfigurationManager {
         }
     }
 
-    protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException {
-        if (configCollection != null && configCollection.getDocumentCount() > 0) {
+    protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException, LockException {
+        if (configCollection != null && configCollection.getDocumentCount(broker) > 0) {
             for(Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl confDoc = i.next();
                 if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
@@ -347,7 +347,7 @@ public class CollectionConfigurationManager {
      * @param broker The broker which will do the operation
      * @throws EXistException
      */
-    public void checkRootCollectionConfig(DBBroker broker) throws EXistException {
+    public void checkRootCollectionConfig(DBBroker broker) throws EXistException, PermissionDeniedException {
     	String configuration = 
 			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 	    	"    <index>" +

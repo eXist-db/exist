@@ -29,6 +29,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.Iterator;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -56,7 +57,7 @@ public class FunDoctype extends Function {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 		
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
@@ -67,19 +68,24 @@ public class FunDoctype extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		MutableDocumentSet docs = new DefaultDocumentSet();
-		for (int i = 0; i < getArgumentCount(); i++) {
-			Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-				String next = j.nextItem().getStringValue();
-				context.getBroker().getXMLResourcesByDoctype(next, docs);
-			}
-		}
-        
-		NodeSet result = new ExtArrayNodeSet(1);
-		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-			result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
-		}
+        MutableDocumentSet docs = new DefaultDocumentSet();
+        for (int i = 0; i < getArgumentCount(); i++) {
+            Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            for (SequenceIterator j = seq.iterate(); j.hasNext();) {
+                String next = j.nextItem().getStringValue();
+                try {
+                    context.getBroker().getXMLResourcesByDoctype(next, docs);
+                } catch(PermissionDeniedException pde) {
+                    LOG.error(pde.getMessage(), pde);
+                    throw new XPathException(pde.getMessage(), pde);
+                }
+            }
+        }
+
+        NodeSet result = new ExtArrayNodeSet(1);
+        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+                result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
+        }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        

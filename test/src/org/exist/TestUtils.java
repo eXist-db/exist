@@ -45,7 +45,7 @@ public class TestUtils {
                 root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
             }
             broker.saveCollection(transaction, root);
-            for (Iterator<XmldbURI> i = root.collectionIterator(); i.hasNext(); ) {
+            for (Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
                 XmldbURI childName = i.next();
                 if (childName.equals("system"))
                     continue;

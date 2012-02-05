@@ -187,9 +187,9 @@ public class TwoDatabasesTest extends TestCase
       BinaryDocument binDoc = null;
       try {
          Collection top = broker.getCollection(XmldbURI.create("xmldb:exist:///"));
-         System.out.println("count="+top.getDocumentCount());
+         System.out.println("count="+top.getDocumentCount(broker));
          MutableDocumentSet docs = new DefaultDocumentSet();
-         top.getDocuments(broker,docs,true);
+         top.getDocuments(broker,docs);
          XmldbURI [] uris = docs.getNames();
          for (int i=0; i<uris.length; i++) {
             System.out.println(i+": "+uris[i].toString());

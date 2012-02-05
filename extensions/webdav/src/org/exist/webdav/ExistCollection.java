@@ -104,7 +104,7 @@ public class ExistCollection extends ExistResource {
             permissions = collection.getPermissions();
             readAllowed = permissions.validate(subject, Permission.READ);
             writeAllowed = permissions.validate(subject, Permission.WRITE);
-            updateAllowed = permissions.validate(subject, Permission.UPDATE);
+            executeAllowed = permissions.validate(subject, Permission.EXECUTE);
 
             creationTime = collection.getCreationTime();
             lastModified = creationTime; // Collection does not have more information.
@@ -112,7 +112,8 @@ public class ExistCollection extends ExistResource {
             ownerUser = permissions.getOwner().getUsername();
             ownerGroup = permissions.getGroup().getName();
 
-
+        } catch(PermissionDeniedException pde) {
+            LOG.error(pde);
         } catch (EXistException e) {
             LOG.error(e);
 
@@ -147,7 +148,7 @@ public class ExistCollection extends ExistResource {
             collection = broker.openCollection(xmldbUri, Lock.READ_LOCK);
 
             // Get all collections
-            Iterator<XmldbURI> collections = collection.collectionIteratorNoLock(); // QQ: use collectionIterator ?
+            Iterator<XmldbURI> collections = collection.collectionIteratorNoLock(broker); // QQ: use collectionIterator ?
             while (collections.hasNext()) {
                 collectionURIs.add(xmldbUri.append(collections.next()));
 
@@ -156,7 +157,9 @@ public class ExistCollection extends ExistResource {
         } catch (EXistException e) {
             LOG.error(e);
             collectionURIs = null;
-
+        } catch (PermissionDeniedException pde) {
+            LOG.error(pde);
+            collectionURIs = null;            
         } finally {
 
             if (collection != null) {
@@ -189,6 +192,9 @@ public class ExistCollection extends ExistResource {
                 documentURIs.add(documents.next().getURI());
             }
 
+        } catch (PermissionDeniedException e) {
+            LOG.error(e);
+            documentURIs = null;
         } catch (EXistException e) {
             LOG.error(e);
             documentURIs = null;

@@ -46,7 +46,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
 
     protected SecurityManager sm;
 
-    protected long vector = encodeAsBitVector(RealmImpl.SYSTEM_ACCOUNT_ID, RealmImpl.DBA_GROUP_ID, DEFAULT_PERM);
+    protected long vector = encodeAsBitVector(RealmImpl.SYSTEM_ACCOUNT_ID, RealmImpl.DBA_GROUP_ID, 0);
 
     public UnixStylePermission(SecurityManager sm) {
     	if(sm == null) {
@@ -66,7 +66,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     public UnixStylePermission(SecurityManager sm, int ownerId, int groupId, int mode) {
         this(sm);
-        vector = encodeAsBitVector(ownerId, groupId, mode);
+        this.vector = encodeAsBitVector(ownerId, groupId, mode);
     }
 
     /**
@@ -366,22 +366,22 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     /**
      *  Format mode
      *
-     *@return the mode formatted as a string e.g. 'rwurwurwu'
+     *@return the mode formatted as a string e.g. 'rwxrwxrwx'
      */
     @Override
     public String toString() {
         final char ch[] = new char[] {
             (vector & (READ << 28)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 28)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1L << 31)) == 0 ? ((vector & (UPDATE << 28)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETUID_CHAR,
+            (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
             
             (vector & (READ << 4)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 4)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 7)) == 0 ? ((vector & (UPDATE << 4)) == 0 ? UNSET_CHAR : UPDATE_CHAR) : SETGID_CHAR,
+            (vector & (1 << 7)) == 0 ? ((vector & (EXECUTE << 4)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
 
             (vector & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 3)) == 0 ? ((vector & UPDATE) == 0 ? UNSET_CHAR : UPDATE_CHAR) : STICKY_CHAR
+            (vector & (1 << 3)) == 0 ? ((vector & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
         };
         return String.valueOf(ch);
     }

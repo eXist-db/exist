@@ -9,7 +9,7 @@ import org.junit.Test;
 public class MetadataTest extends DatabaseTestCase {
 	@Test public void binaryDocumentCreationDate() {
 		Date before = new Date();
-		Document doc = db.getFolder("/").documents().load(Name.generate(), Source.blob("hello"));
+		Document doc = db.getFolder("/").documents().load(Name.generate(db), Source.blob("hello"));
 		Date after = new Date();
 		assertTrue(before.compareTo(doc.metadata().creationDate()) <= 0);
 		assertTrue(after.compareTo(doc.metadata().creationDate()) >= 0);
@@ -17,7 +17,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void xmlLoadDocumentCreationDate() {
 		Date before = new Date();
-		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
+		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo/>"));
 		Date after = new Date();
 		assertTrue(before.compareTo(doc.metadata().creationDate()) <= 0);
 		assertTrue(after.compareTo(doc.metadata().creationDate()) >= 0);
@@ -25,7 +25,7 @@ public class MetadataTest extends DatabaseTestCase {
 
 	@Test public void xmlBuildDocumentCreationDate() {
 		Date before = new Date();
-		XMLDocument doc = db.getFolder("/").documents().build(Name.generate()).elem("foo").end("foo").commit();
+		XMLDocument doc = db.getFolder("/").documents().build(Name.generate(db)).elem("foo").end("foo").commit();
 		Date after = new Date();
 		assertTrue(before.compareTo(doc.metadata().creationDate()) <= 0);
 		assertTrue(after.compareTo(doc.metadata().creationDate()) >= 0);
@@ -40,7 +40,7 @@ public class MetadataTest extends DatabaseTestCase {
 	}
 
 	@Test public void xmlDocumentAppendLastModificationDate() throws InterruptedException {
-		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
+		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo/>"));
 		Thread.sleep(50);
 		Date before = new Date();
 		doc.root().append().elem("bar").end("bar").commit();
@@ -51,7 +51,7 @@ public class MetadataTest extends DatabaseTestCase {
 	}
 
 	@Test public void xmlDocumentReplaceLastModificationDate() throws InterruptedException {
-		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo><bar/></foo>"));
+		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo><bar/></foo>"));
 		Thread.sleep(50);
 		Date before = new Date();
 		doc.query().single("//bar").node().replace().elem("baz").end("baz").commit();
@@ -62,7 +62,7 @@ public class MetadataTest extends DatabaseTestCase {
 	}
 
 	@Test public void xmlDocumentUpdateLastModificationDate() throws InterruptedException {
-		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
+		XMLDocument doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo/>"));
 		Thread.sleep(50);
 		Date before = new Date();
 		doc.root().update().attr("bar", "baz").commit();
@@ -73,14 +73,14 @@ public class MetadataTest extends DatabaseTestCase {
 	}
 	
 	@Test public void documentOwner() {
-		Document doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
+		Document doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo/>"));
 		assertEquals("admin", doc.metadata().owner());
 		doc.metadata().owner("guest");
 		assertEquals("guest", doc.metadata().owner());
 	}
 
 	@Test public void documentGroup() {
-		Document doc = db.getFolder("/").documents().load(Name.generate(), Source.xml("<foo/>"));
+		Document doc = db.getFolder("/").documents().load(Name.generate(db), Source.xml("<foo/>"));
 		assertEquals("dba", doc.metadata().group());
 		doc.metadata().group("guest");
 		assertEquals("guest", doc.metadata().group());

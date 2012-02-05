@@ -32,26 +32,6 @@ public class PermissionAiderFactory {
 
     private final static Logger LOG = Logger.getLogger(PermissionAiderFactory.class);
 
-    public static PermissionAider getPermission() {
-        PermissionAider permission = null;
-        try {
-            permission = new SimpleACLPermissionAider();
-        } catch(Throwable ex) {
-          LOG.error("Exception while instantiating security permission class.", ex);
-        }
-        return permission;
-    }
-
-    public static PermissionAider getPermission(int mode) {
-        PermissionAider permission = null;
-        try {
-            permission = new SimpleACLPermissionAider(mode);
-        } catch(Throwable ex) {
-          LOG.error("Exception while instantiating security permission class.", ex);
-        }
-        return permission;
-    }
-
     public static PermissionAider getPermission(String ownerName, String groupName, int mode) {
         PermissionAider permission = null;
         try {

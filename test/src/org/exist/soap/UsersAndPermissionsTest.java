@@ -118,9 +118,4 @@ public class UsersAndPermissionsTest extends TestCase {
             
         }
     }
-    
-    public void testRemoveThisEmptyTest() throws Exception {
-//        assertEquals(1,1);
-    }
-    
 }

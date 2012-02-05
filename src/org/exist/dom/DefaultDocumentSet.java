@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.TreeSet;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * Manages a set of documents.
@@ -67,10 +68,12 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         list = null;
     }
 
+    @Override
     public void add(DocumentImpl doc) {
         add(doc, true);
     }
 
+    @Override
     public void add(DocumentImpl doc, boolean checkDuplicates) {
         final int docId = doc.getDocId();
         if (checkDuplicates && containsKey(docId))
@@ -88,6 +91,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         add((DocumentImpl) node);
     }
 
+    @Override
     public void addAll(DocumentSet other) {
         for (int i = 0; i < other.getDocumentCount(); i++)
             add(other.getDocumentAt(i));
@@ -100,18 +104,23 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
      * The method assumes that no duplicate entries are
      * in the input collection.
      */
-    public void addAll(DBBroker broker, Collection collection, String[] paths, boolean checkPermissions) {
+    @Override
+    public void addAll(DBBroker broker, Collection collection, String[] paths) {
         DocumentImpl doc;
-        for (int i = 0; i < paths.length; i++) {
-            doc = collection.getDocumentNoLock(paths[i]);
-            if (doc == null)
+        for(String path : paths) {
+            try {
+                doc = collection.getDocumentNoLock(broker, path);
+            } catch (PermissionDeniedException pde) {
                 continue;
-            if(broker == null || !checkPermissions ||
-                    doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
-                // WM: we don't have a lock on the document, so we should not change its broker:
-                // doc.setBroker(broker);
-                put(doc.getDocId(), doc);
             }
+            
+            if (doc == null) {
+                continue;
+            }
+            
+            // WM: we don't have a lock on the document, so we should not change its broker:
+            // doc.setBroker(broker);
+            put(doc.getDocId(), doc);
         }
     }
 
@@ -127,13 +136,22 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
      * @param lockType
      * @throws LockException
      */
+    @Override
     public void addAll(DBBroker broker, Collection collection, String[] paths, LockedDocumentMap lockMap, int lockType) throws LockException {
         DocumentImpl doc;
         Lock lock;
-        for (int i = 0; i < paths.length; i++) {
-            doc = collection.getDocumentNoLock(paths[i]);
-            if (doc == null)
-                   continue;
+        for(String path : paths) {
+            
+            try {
+                doc = collection.getDocumentNoLock(broker, path);
+            } catch(PermissionDeniedException pde) {
+                continue;
+            }
+            
+            if(doc == null) {
+                continue;
+            }
+            
             if (doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                 lock = doc.getUpdateLock();
 
@@ -144,18 +162,22 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         }
     }
 
+    @Override
     public void addCollection(Collection collection) {
         collections.add(collection);
     }
 
+    @Override
     public Iterator<DocumentImpl> getDocumentIterator() {
         return valueIterator();
     }
 
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return collections.iterator();
     }
 
+    @Override
     public int getDocumentCount() {
         return size();
     }
@@ -164,6 +186,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return collections.size();
     }
 
+    @Override
     public DocumentImpl getDocumentAt(int pos) {
         //UNDERSTAND: do we need that list??? (shabanovd)
         if (list == null) {
@@ -174,10 +197,12 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return list.get(pos);
     }
 
+    @Override
     public DocumentImpl getDoc(int docId) {
         return (DocumentImpl) get(docId);
     }
 
+    @Override
     public XmldbURI[] getNames() {
         XmldbURI result[] = new XmldbURI[size()];
         DocumentImpl d;
@@ -190,6 +215,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return result;
     }
 
+    @Override
     public DocumentSet intersection(DocumentSet other) {
         DefaultDocumentSet r = new DefaultDocumentSet();
         DocumentImpl d;
@@ -218,6 +244,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return result;
     }
 
+    @Override
     public boolean contains(DocumentSet other) {
         if (other.getDocumentCount() > size())
             return false;
@@ -230,10 +257,12 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return true;
     }
 
+    @Override
     public boolean contains(int id) {
         return containsKey(id);
     }
 
+    @Override
     public NodeSet docsToNodeSet() {
         NodeSet result = new NewArrayNodeSet(getDocumentCount());
         DocumentImpl doc;
@@ -270,6 +299,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return max;
     }
 
+    @Override
     public boolean equalDocs(DocumentSet other) {
         if (this == other)
             // we are comparing the same objects
@@ -285,6 +315,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         return true;
     }
 
+    @Override
     public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
         DocumentImpl d;
         Lock dlock;
@@ -303,6 +334,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         }
     }
 
+    @Override
     public void unlock(boolean exclusive) {
         DocumentImpl d;
         Lock dlock;

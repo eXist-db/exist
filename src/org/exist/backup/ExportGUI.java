@@ -44,6 +44,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
+import org.exist.security.PermissionDeniedException;
 
 
 /**
@@ -579,6 +580,9 @@ public class ExportGUI extends javax.swing.JFrame
         }
         catch( EXistException e ) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
+        }
+        catch (PermissionDeniedException pde) {
+            System.err.println( "ERROR: Failed to retrieve database broker: " + pde.getMessage() );
         }
         catch( TerminatedException e ) {
             System.err.println( "WARN: Check terminated by db." );

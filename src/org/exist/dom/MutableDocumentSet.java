@@ -16,7 +16,7 @@ public interface MutableDocumentSet extends DocumentSet {
 
     void addAll(DocumentSet other);
     
-    void addAll(DBBroker broker, Collection collection, String[] paths, boolean checkPermissions);
+    void addAll(DBBroker broker, Collection collection, String[] paths);
 
     void addAll(DBBroker broker, Collection collection, String[] paths, LockedDocumentMap lockMap, int lockType) throws LockException;
 

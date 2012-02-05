@@ -63,6 +63,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -925,7 +926,12 @@ public class Configurator {
         if (conf != null)
             return conf;
         //XXX: locking required
-        DocumentAtExist document = collection.getDocument(broker, fileURL);
+        DocumentAtExist document = null;
+        try {
+            document = collection.getDocument(broker, fileURL);
+        } catch(PermissionDeniedException pde) {
+            throw new ConfigurationException(pde.getMessage(), pde);
+        }
         if (document == null) {
             if (broker.isReadOnly()) {
                 //database in read-only mode & there no configuration file, 
@@ -953,6 +959,7 @@ public class Configurator {
             try {
                 document = save(instance, broker, collection, fileURL);
             } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
                 return null;
             }
         }
@@ -1010,6 +1017,8 @@ public class Configurator {
             return save(instance, broker, collection, uri.lastSegment());
         } catch (EXistException e) {
             throw new IOException(e);
+        } catch (PermissionDeniedException pde) {
+            throw new IOException(pde);
         } finally {
             database.release(broker);
         }
@@ -1022,6 +1031,8 @@ public class Configurator {
             if (collection == null)
                 throw new IOException("Collection URI = "+uri.removeLastSegment()+" not found.");
             return save(instance, broker, collection, uri.lastSegment());
+        } catch (PermissionDeniedException pde) {
+            throw new IOException(pde);
         } catch (EXistException e) {
             throw new IOException(e);
         }

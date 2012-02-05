@@ -23,8 +23,8 @@ public class RemoveRootCollectionTest {
 		Txn transaction = transact.beginTransaction();
 		broker.removeCollection(transaction, root);
 		transact.commit(transaction);
-		assertEquals(0, root.getChildCollectionCount());
-		assertEquals(0, root.getDocumentCount());
+		assertEquals(0, root.getChildCollectionCount(broker));
+		assertEquals(0, root.getDocumentCount(broker));
 	}
 
 	@Test public void removeRootCollectionWithChildCollection() throws Exception {
@@ -32,8 +32,8 @@ public class RemoveRootCollectionTest {
 		Txn transaction = transact.beginTransaction();
 		broker.removeCollection(transaction, root);
 		transact.commit(transaction);
-		assertEquals(0, root.getChildCollectionCount());
-		assertEquals(0, root.getDocumentCount());
+		assertEquals(0, root.getChildCollectionCount(broker));
+		assertEquals(0, root.getDocumentCount(broker));
 	}
 
 	@Ignore @Test public void removeRootCollectionWithDocument() throws Exception {
@@ -41,8 +41,8 @@ public class RemoveRootCollectionTest {
 		Txn transaction = transact.beginTransaction();
 		broker.removeCollection(transaction, root);
 		transact.commit(transaction);
-		assertEquals(0, root.getChildCollectionCount());
-		assertEquals(0, root.getDocumentCount());
+		assertEquals(0, root.getChildCollectionCount(broker));
+		assertEquals(0, root.getDocumentCount(broker));
 	}
 
 

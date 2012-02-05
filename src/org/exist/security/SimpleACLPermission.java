@@ -46,12 +46,12 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     private int acl[] = new int[0];
 
-    public SimpleACLPermission(SecurityManager sm, int ownerId, int groupId, int mode) {
-        super(sm, ownerId, groupId, mode);
-    }
-
     public SimpleACLPermission(SecurityManager sm) {
         super(sm);
+    }
+    
+    public SimpleACLPermission(SecurityManager sm, int ownerId, int groupId, int mode) {
+        super(sm, ownerId, groupId, mode);
     }
     
     public void addUserACE(ACE_ACCESS_TYPE access_type, int userId, int mode) throws PermissionDeniedException {
@@ -129,8 +129,8 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
                 case WRITE_CHAR:
                     mode |= WRITE;
                     break;
-                case UPDATE_CHAR:
-                    mode |= UPDATE;
+                case EXECUTE_CHAR:
+                    mode |= EXECUTE;
                     break;
                 case UNSET_CHAR:
                     break;
@@ -243,7 +243,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         final char ch[] = new char[] {
             (aceMode & READ) != READ ? UNSET_CHAR : READ_CHAR,
             (aceMode & WRITE) != WRITE ? UNSET_CHAR : WRITE_CHAR,
-            (aceMode & UPDATE) != UPDATE ? UNSET_CHAR : UPDATE_CHAR
+            (aceMode & EXECUTE) != EXECUTE ? UNSET_CHAR : EXECUTE_CHAR
         };
         return String.valueOf(ch);
     }

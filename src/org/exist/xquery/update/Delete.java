@@ -126,10 +126,9 @@ public class Delete extends Modification {
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                    if (!doc.getPermissions().validate(context.getUser(),
-                            Permission.UPDATE)) {
+                    if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         //transact.abort(transaction);    
-                        throw new XPathException(this, "permission to update document denied");
+                        throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
                     doc.getMetadata().setIndexListener(listener);
                     

@@ -36,6 +36,7 @@ import org.exist.xquery.TerminatedException;
 import java.io.File;
 
 import java.util.List;
+import org.exist.security.PermissionDeniedException;
 
 
 public class ExportMain
@@ -192,6 +193,10 @@ public class ExportMain
         catch( TerminatedException e ) {
             System.err.println( "WARN: Export was terminated by db." );
             retval = 3;
+        }
+        catch(PermissionDeniedException pde) {
+            System.err.println( "ERROR: Failed to retrieve database data: " + pde.getMessage() );
+            retval = 4;
         }
         finally {
             pool.release( broker );

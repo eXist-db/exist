@@ -387,7 +387,7 @@ public class LocalUserManagementService implements UserManagementService {
                     return modifyResource(broker, resource, new DatabaseItemModifier<DocumentImpl, Void>(){
                         @Override
                         public Void modify(DocumentImpl document) throws PermissionDeniedException, SyntaxException, LockException {
-                            if(!document.getPermissions().validate(user, Permission.UPDATE)) {
+                            if(!document.getPermissions().validate(user, Permission.WRITE)) {
                                 throw new PermissionDeniedException("User is not allowed to lock resource " + resourceId);
                             }
 
@@ -430,7 +430,7 @@ public class LocalUserManagementService implements UserManagementService {
                     return modifyResource(broker, resource, new DatabaseItemModifier<DocumentImpl, Void>(){
                         @Override
                         public Void modify(DocumentImpl document) throws PermissionDeniedException, SyntaxException, LockException {
-                            if(!document.getPermissions().validate(user, Permission.UPDATE)) {
+                            if(!document.getPermissions().validate(user, Permission.WRITE)) {
 				throw new PermissionDeniedException("User is not allowed to lock resource '" + resourceId + "'");
                             }
 			
@@ -492,12 +492,12 @@ public class LocalUserManagementService implements UserManagementService {
                 public Permission[] withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
                         @Override
-                        public Permission[] read(org.exist.collections.Collection collection) {
+                        public Permission[] read(org.exist.collections.Collection collection) throws PermissionDeniedException {
                             if(!collection.getPermissions().validate(user, Permission.READ)) {
                                     return new Permission[0];
                             }
                             
-                            Permission perms[] = new Permission[collection.getDocumentCount()];                            
+                            Permission perms[] = new Permission[collection.getDocumentCount(broker)];                            
                             Iterator<DocumentImpl> itDocument = collection.iterator(broker);
                             int i = 0;
                             while(itDocument.hasNext()) {
@@ -525,13 +525,13 @@ public class LocalUserManagementService implements UserManagementService {
                 public Permission[] withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
                         @Override
-                        public Permission[] read(org.exist.collections.Collection collection) throws XMLDBException {
+                        public Permission[] read(org.exist.collections.Collection collection) throws XMLDBException, PermissionDeniedException {
                             if(!collection.getPermissions().validate(user, Permission.READ)) {
 				return new Permission[0];
                             }
                             
-                            Permission perms[] = new Permission[collection.getChildCollectionCount()];
-                            Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator();
+                            Permission perms[] = new Permission[collection.getChildCollectionCount(broker)];
+                            Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator(broker);
                             int i = 0;
                             while(itChildCollectionUri.hasNext()) {
                                 XmldbURI childCollectionUri = collectionUri.append(itChildCollectionUri.next());
@@ -766,7 +766,7 @@ public class LocalUserManagementService implements UserManagementService {
         }
     }
     
-    private <R> R readResource(DBBroker broker, Resource resource, DatabaseItemReader<DocumentImpl, R> reader) throws XMLDBException {
+    private <R> R readResource(DBBroker broker, Resource resource, DatabaseItemReader<DocumentImpl, R> reader) throws XMLDBException, PermissionDeniedException {
         
         DocumentImpl document = null;    
         try {
@@ -781,7 +781,7 @@ public class LocalUserManagementService implements UserManagementService {
         }
     }
     
-    private <R> R readCollection(DBBroker broker, XmldbURI collectionURI, DatabaseItemReader<org.exist.collections.Collection, R> reader) throws XMLDBException {
+    private <R> R readCollection(DBBroker broker, XmldbURI collectionURI, DatabaseItemReader<org.exist.collections.Collection, R> reader) throws XMLDBException, PermissionDeniedException {
         org.exist.collections.Collection coll = null;
         
         try {
@@ -893,6 +893,6 @@ public class LocalUserManagementService implements UserManagementService {
     }
     
     private interface DatabaseItemReader<T, R> {
-        public R read(T databaseItem) throws XMLDBException;
+        public R read(T databaseItem) throws PermissionDeniedException, XMLDBException;
     }
 }

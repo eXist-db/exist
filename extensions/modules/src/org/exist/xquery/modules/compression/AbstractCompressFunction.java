@@ -387,10 +387,10 @@ public abstract class AbstractCompressFunction extends BasicFunction
 	 *            Whether to use a folder hierarchy in the archive file that
 	 *            reflects the collection hierarchy
 	 */
-	private void compressCollection(OutputStream os, Collection col, boolean useHierarchy, String stripOffset) throws IOException, SAXException, LockException {
+	private void compressCollection(OutputStream os, Collection col, boolean useHierarchy, String stripOffset) throws IOException, SAXException, LockException, PermissionDeniedException {
 		// iterate over child documents
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
-		col.getDocuments(context.getBroker(), childDocs, true);
+		col.getDocuments(context.getBroker(), childDocs);
 		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs
 				.hasNext();) {
 			DocumentImpl childDoc = (DocumentImpl) itChildDocs.next();
@@ -402,7 +402,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			}
 		}
 		// iterate over child collections
-		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(); itChildCols.hasNext();) {
+		for (Iterator<XmldbURI> itChildCols = col.collectionIterator(context.getBroker()); itChildCols.hasNext();) {
 			// get the child collection
 			XmldbURI childColURI = (XmldbURI) itChildCols.next();
 			Collection childCol = context.getBroker().getCollection(col.getURI().append(childColURI));

@@ -119,8 +119,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadGroupsFromRealmStorage(final DBBroker broker) throws ConfigurationException {
-        if(collectionGroups != null && collectionGroups.getDocumentCount() > 0) {
+    private void loadGroupsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
+        if(collectionGroups != null && collectionGroups.getDocumentCount(broker) > 0) {
             
             final AbstractRealm r = this;
             
@@ -152,9 +152,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadRemovedGroupsFromRealmStorage(DBBroker broker) throws ConfigurationException {
+    private void loadRemovedGroupsFromRealmStorage(DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove groups information
-        if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount() > 0) {
+        if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount(broker) > 0) {
             for(Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
                 Configuration conf = Configurator.parse(i.next());
                 Integer id = conf.getPropertyInteger("id");
@@ -171,9 +171,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadAccountsFromRealmStorage(final DBBroker broker) throws ConfigurationException {
+    private void loadAccountsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load accounts information
-        if (collectionAccounts != null && collectionAccounts.getDocumentCount() > 0) {
+        if (collectionAccounts != null && collectionAccounts.getDocumentCount(broker) > 0) {
             
             final AbstractRealm r = this;
             
@@ -202,9 +202,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadRemovedAccountsFromRealmStorage(DBBroker broker) throws ConfigurationException {
+    private void loadRemovedAccountsFromRealmStorage(DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove accounts information
-        if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount() > 0) {
+        if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount(broker) > 0) {
             for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
                 Configuration conf = Configurator.parse(i.next());
 	            	
@@ -227,11 +227,17 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
         initialiseRealmStorage(broker);
         
-        loadGroupsFromRealmStorage(broker);
-        loadRemovedGroupsFromRealmStorage(broker);
+        try {
+            loadGroupsFromRealmStorage(broker);
+            loadRemovedGroupsFromRealmStorage(broker);
            
-        loadAccountsFromRealmStorage(broker);
-        loadRemovedAccountsFromRealmStorage(broker);
+            loadAccountsFromRealmStorage(broker);
+            loadRemovedAccountsFromRealmStorage(broker);
+        } catch(PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        } catch(LockException le) {
+            throw new EXistException(le.getMessage(), le);
+        }
     }
 
     public void save() throws PermissionDeniedException, EXistException, IOException {

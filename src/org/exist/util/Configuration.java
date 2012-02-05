@@ -933,14 +933,6 @@ public class Configuration implements ErrorHandler
             String encoding = getConfigAttributeValue( security, "password-encoding" );
             config.put( "db-connection.security.password-encoding", encoding );
 
-            if( encoding != null ) {
-                LOG.info( "db-connection.security.password-encoding: " + config.get( "db-connection.security.password-encoding" ) );
-                AccountImpl.getSecurityProperties().setPasswordEncoding( encoding );
-
-            } else {
-                LOG.info( "No password encoding set, defaulting." );
-            }
-
             //Unused
             String realm = getConfigAttributeValue( security, "password-realm" );
             config.put( "db-connection.security.password-realm", realm );

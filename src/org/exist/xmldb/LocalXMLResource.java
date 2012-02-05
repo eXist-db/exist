@@ -63,6 +63,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * Local implementation of XMLResource.
@@ -498,16 +499,20 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	protected DocumentImpl getDocument(DBBroker broker, int lock) throws XMLDBException {
 	    DocumentImpl document = null;
-	    if(lock != Lock.NO_LOCK) {
             try {
-                document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
+                if(lock != Lock.NO_LOCK) {
+                    document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
+                 } else {
+                    document = parent.getCollection().getDocument(broker, docId);
+                }
             } catch (LockException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
                         "Failed to acquire lock on document " + docId);
+            } catch (PermissionDeniedException pde) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
+                        "Permission denied on document " + docId);
             }
-	    } else {
-	        document = parent.getCollection().getDocument(broker, docId);
-	    }
+	   
 	    if (document == null) {
 	        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE);
 	    }
@@ -562,7 +567,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                         + docId + " not found");
             }
 			
-			if (!document.getPermissions().validate(user, Permission.UPDATE))
+			if (!document.getPermissions().validate(user, Permission.WRITE))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 						"User is not allowed to lock resource " + document.getFileURI());
 			

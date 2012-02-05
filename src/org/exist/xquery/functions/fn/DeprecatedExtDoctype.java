@@ -28,6 +28,7 @@ import org.exist.numbering.NodeId;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import java.util.Iterator;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -69,24 +70,29 @@ public class DeprecatedExtDoctype extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		MutableDocumentSet docs = new DefaultDocumentSet();
-		for (int i = 0; i < getArgumentCount(); i++) {
-			Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-				String next = j.nextItem().getStringValue();
-				context.getBroker().getXMLResourcesByDoctype(next, docs);
-			}
-		}
+        MutableDocumentSet docs = new DefaultDocumentSet();
+        try {
+            for (int i = 0; i < getArgumentCount(); i++) {
+                    Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+                    for (SequenceIterator j = seq.iterate(); j.hasNext();) {
+                            String next = j.nextItem().getStringValue();
+                            context.getBroker().getXMLResourcesByDoctype(next, docs);
+                    }
+            }
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException(pde.getMessage(), pde);
+        }
+
+        NodeSet result = new ExtArrayNodeSet(1);
+        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+            result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
+        }
         
-		NodeSet result = new ExtArrayNodeSet(1);
-		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-			result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
-		}
-        
-        if (context.getProfiler().isEnabled()) 
+        if(context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);        
+        }
         
         return result;
-	}
+    }
 
 }

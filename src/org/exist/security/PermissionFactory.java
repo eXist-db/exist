@@ -45,34 +45,58 @@ public class PermissionFactory {
 
     public static SecurityManager sm = null;        //TODO The way this gets set is nasty AR
 
-    public static Permission getPermission() {
-        Permission permission = null;
-        try {
-            permission = new SimpleACLPermission(sm);
-        } catch(Throwable ex) {
-          LOG.error("Exception while instantiating security permission class.", ex);
-        }
-        return permission;
-    }
-
-    public static Permission getPermission(int ownerId, int groupId) {
+    /**
+     * Get the Default Resource permissions for the current Subject
+     * this includes incorporating their umask
+     */
+    public static Permission getDefaultResourcePermission() {
+        
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
-        return new SimpleACLPermission(sm, ownerId, groupId, Permission.DEFAULT_PERM);
+       
+        final Subject currentSubject = sm.getDatabase().getSubject();
+        final int mode = Permission.DEFAULT_RESOURCE_PERM - currentSubject.getUserMask();
+        
+        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
     
-    public static Permission getPermission(int ownerId, int groupId, int mode) {
-        return new SimpleACLPermission(sm, ownerId, groupId, mode);
+    /**
+     * Get the Default Collection permissions for the current Subject
+     * this includes incorporating their umask
+     */
+    public static Permission getDefaultCollectionPermission() {
+        
+        //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
+        
+        final Subject currentSubject = sm.getDatabase().getSubject();
+        final int mode = Permission.DEFAULT_COLLECTION_PERM - currentSubject.getUserMask();
+        
+        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+    }
+    
+    /**
+     * Get permissions for the current Subject
+     */
+    public static Permission getPermission(int mode) {
+        final Subject currentSubject = sm.getDatabase().getSubject();
+        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+    }
+    
+    /**
+     * Get permissions for the user, group and mode
+     */
+    public static Permission getPermission(int userId, int groupId, int mode) {
+        return new SimpleACLPermission(sm, userId, groupId, mode);
     }
 
-    public static Permission getPermission(Subject invokingUser, String userName, String groupName, int mode) {
+    public static Permission getPermission(String userName, String groupName, int mode) {
         Permission permission = null;
         try {
-            Account owner = sm.getAccount(invokingUser, userName);
+            final Account owner = sm.getAccount(sm.getDatabase().getSubject(), userName);
             if(owner == null) {
                 throw new IllegalArgumentException("User was not found '" + (userName == null ? "" : userName) + "'");
             }
 
-            Group group = sm.getGroup(invokingUser, groupName);
+            final Group group = sm.getGroup(sm.getDatabase().getSubject(), groupName);
             if(group == null) {
         	throw new IllegalArgumentException("Group was not found '" + (userName == null ? "" : groupName) + "'");
             }

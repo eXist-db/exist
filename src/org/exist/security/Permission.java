@@ -29,7 +29,14 @@ import org.exist.util.SyntaxException;
 
 public interface Permission {
 	
-    public final static int DEFAULT_PERM = 0644;
+    public final static int DEFAULT_COLLECTION_PERM = 0777;
+    public final static int DEFAULT_RESOURCE_PERM = 0666;
+    public final static int DEFAULT_UMASK = 022;
+    
+    public final static int DEFAULT_SYSTEM_COLLECTION_PERM = 0755;
+    public final static int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 0755;
+    
+    public final static int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
 
     public final static int SET_UID = 4;
     public final static int SET_GID = 2;
@@ -37,7 +44,6 @@ public interface Permission {
 
     public final static int READ = 4;
     public final static int WRITE = 2;
-    public final static int UPDATE = 1;
     public final static int EXECUTE = 1;
 	
     public final static String USER_STRING = "user";
@@ -46,14 +52,14 @@ public interface Permission {
 
     public final static String READ_STRING = "read";
     public final static String WRITE_STRING = "write";
-    public final static String UPDATE_STRING = "update";
+    public final static String EXECUTE_STRING = "execute";
 
     public final static char SETUID_CHAR = 's';
     public final static char SETGID_CHAR = 's';
     public final static char STICKY_CHAR = 't';
     public final static char READ_CHAR = 'r';
     public final static char WRITE_CHAR = 'w';
-    public final static char UPDATE_CHAR = 'u';
+    public final static char EXECUTE_CHAR = 'x';
     public final static char UNSET_CHAR = '-';
 
     public final static char ALL_CHAR = 'a';

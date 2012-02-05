@@ -63,7 +63,7 @@ public abstract class DatabaseTestCase {
 		Transaction tx = db.requireTransactionWithBroker();
 		try {
 			Collection root = tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-			for (Iterator<XmldbURI> it = root.collectionIterator(); it.hasNext(); ) {
+			for (Iterator<XmldbURI> it = root.collectionIterator(tx.broker); it.hasNext(); ) {
 				XmldbURI childName = it.next();
 				if (!childName.getCollectionPath().equals(DBBroker.SYSTEM_COLLECTION_NAME)) {
 					tx.broker.removeCollection(tx.tx, tx.broker.getCollection(root.getURI().append(childName)));

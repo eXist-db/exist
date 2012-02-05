@@ -118,7 +118,12 @@ public class XMLDBDocument extends Function {
 	    //	            docs = cachedDocs;
 	    //	        } else {
 	    MutableDocumentSet mdocs = new DefaultDocumentSet();
-	    context.getBroker().getAllXMLResources(mdocs);
+            try {
+                context.getBroker().getAllXMLResources(mdocs);
+            } catch(PermissionDeniedException pde) {
+                LOG.error(pde.getMessage(), pde);
+                throw new XPathException(pde.getMessage(), pde);
+            }
 	    docs = mdocs;
 	    //	        }
 	} else {

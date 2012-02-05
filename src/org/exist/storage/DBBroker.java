@@ -239,7 +239,7 @@ public abstract class DBBroker extends Observable {
      *            are added.
      * 
      */
-    public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs);
+    public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException;
 
     public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) throws TerminatedException;
 
@@ -262,7 +262,7 @@ public abstract class DBBroker extends Observable {
      * 
      * @return collection or null if no collection matches the path
      */
-    public abstract Collection getCollection(XmldbURI uri);
+    public abstract Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
 
     /**
      * Returns the database collection identified by the specified path. The
@@ -318,7 +318,7 @@ public abstract class DBBroker extends Observable {
      * @return collection or null if no collection matches the path
      * 
      */
-    public abstract Collection openCollection(XmldbURI uri, int lockMode);
+    public abstract Collection openCollection(XmldbURI uri, int lockMode) throws PermissionDeniedException;
 
     public abstract List<String> findCollectionsMatching(String regexp);
     
@@ -563,6 +563,7 @@ public abstract class DBBroker extends Observable {
      * @param data
      *            the document binary data
      */
+    @Deprecated
     public abstract void storeBinaryResource(Txn transaction,
         BinaryDocument blob, byte[] data) throws IOException;
 
@@ -782,14 +783,14 @@ public abstract class DBBroker extends Observable {
 	 * Clean up temporary resources. Called by the sync daemon.
 	 * 
 	 */
-	public abstract void cleanUpTempResources();
+	public abstract void cleanUpTempResources() throws PermissionDeniedException;
 		
 	/**
 	 * Clean up temporary resources. Called by the sync daemon.
 	 * 
 	 * @param forceRemoval Should temporary resources be forcefully removed
 	 */
-	public abstract void cleanUpTempResources(boolean forceRemoval);
+	public abstract void cleanUpTempResources(boolean forceRemoval) throws PermissionDeniedException;
 	
 	/** Convenience method that allows to check available memory during broker-related processes.
 	 * This method should eventually trigger flush() events.
@@ -799,8 +800,7 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * 
 	 */
-	public abstract MutableDocumentSet getXMLResourcesByDoctype(String doctype,
-			MutableDocumentSet result);
+	public abstract MutableDocumentSet getXMLResourcesByDoctype(String doctype, MutableDocumentSet result) throws PermissionDeniedException;
 
 	public int getReferenceCount() {
 		return referenceCount;

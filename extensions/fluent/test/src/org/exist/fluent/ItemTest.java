@@ -25,7 +25,7 @@ public class ItemTest extends DatabaseTestCase {
 	}
 	
 	@Test public void equals4() {
-		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("test"))
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create(db, "test"))
 			.elem("root")
 				.elem("text1").text("foo").end("text1")
 				.elem("text2").text("foo").end("text2")
@@ -37,7 +37,7 @@ public class ItemTest extends DatabaseTestCase {
 	}
 
 	@Test public void convertToSequence() {
-		XMLDocument doc = db.createFolder("/top").documents().build(Name.create("test"))
+		XMLDocument doc = db.createFolder("/top").documents().build(Name.create(db, "test"))
 			.elem("a")
 				.elem("b")
 					.elem("c").end("c")

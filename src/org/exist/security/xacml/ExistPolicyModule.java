@@ -17,6 +17,7 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
+import org.exist.security.PermissionDeniedException;
 
 /*
 *Added new constructor to AnyURIValue to accept a URI
@@ -74,6 +75,9 @@ public class ExistPolicyModule extends PolicyFinderModule
 			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			return findPolicy(broker, context);
 		}
+                catch(PermissionDeniedException pde) {
+                    	return XACMLUtil.errorResult("Error while finding policy: " + pde.getMessage(), pde);
+                }
 		catch(EXistException ee)
 		{
 			return XACMLUtil.errorResult("Error while finding policy: " + ee.getMessage(), ee);
@@ -83,7 +87,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 			pool.release(broker);
 		}
 	}
-	private PolicyFinderResult findPolicy(DBBroker broker, EvaluationCtx context)
+	private PolicyFinderResult findPolicy(DBBroker broker, EvaluationCtx context) throws PermissionDeniedException
 	{
 		DocumentSet mainPolicyDocs = XACMLUtil.getPolicyDocuments(broker, false);
 		if(mainPolicyDocs == null)

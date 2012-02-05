@@ -44,7 +44,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * action       ::= op [perm ...]
      * who          ::= a | u | g | o
      * op           ::= + | - | =
-     * perm         ::= r | s | t | w | u
+     * perm         ::= r | s | t | w | x
      */
     private void setUnixSymbolicMode(String symbolicMode) throws SyntaxException, PermissionDeniedException {
 
@@ -68,8 +68,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
                         perm |= WRITE;
                         break;
 
-                    case UPDATE_CHAR:
-                        perm |= UPDATE;
+                    case EXECUTE_CHAR:
+                        perm |= EXECUTE;
                         break;
 
                     case SETUID_CHAR:
@@ -170,7 +170,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
      *  Set mode using a string. The string has the
      * following syntax:
      *
-     * [user|group|other]=[+|-][read|write|update]
+     * [user|group|other]=[+|-][read|write|execute]
      *
      * For example, to set read and write mode for the group, but
      * not for others:
@@ -205,8 +205,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
                     perm = READ;
                 } else if(s.endsWith(WRITE_STRING.toLowerCase())) {
                     perm = WRITE;
-                } else if(s.endsWith(UPDATE_STRING.toLowerCase())) {
-                    perm = UPDATE;
+                } else if(s.endsWith(EXECUTE_STRING.toLowerCase())) {
+                    perm = EXECUTE;
                 } else {
                     throw new SyntaxException("Unrecognised mode char '" + s + "'");
                 }
@@ -243,8 +243,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 case WRITE_CHAR:
                     mode |= (WRITE << shift);
                     break;
-                case UPDATE_CHAR:
-                    mode |= (UPDATE << shift);
+                case EXECUTE_CHAR:
+                    mode |= (EXECUTE << shift);
                     break;
                 case SETUID_CHAR:
                     if(i < 3) {
@@ -267,13 +267,13 @@ public abstract class AbstractUnixStylePermission implements Permission {
         setMode(mode);
     }
 
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + UPDATE_CHAR +"])+)+),?)+");
+    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
     private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
 
-    private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + UPDATE_STRING + "),?)+)+");
+    private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
     private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
 
-    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + UPDATE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + UPDATE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + UPDATE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
+    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
     private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
 
     /**

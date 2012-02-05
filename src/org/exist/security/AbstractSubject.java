@@ -273,6 +273,16 @@ public abstract class AbstractSubject implements Subject {
     }
 
     @Override
+    public int getUserMask() {
+        
+        //TODO make this configurable
+        
+        return Permission.DEFAULT_UMASK;
+    }
+    
+    
+
+    @Override
     public void clearMetadata() {
         account.clearMetadata();
     }

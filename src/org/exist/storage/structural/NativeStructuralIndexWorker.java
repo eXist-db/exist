@@ -20,6 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.*;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * Internal default implementation of the structural index. It uses a single btree, in which
@@ -489,7 +490,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return qnames;
     }
 
-    public void removeCollection(Collection collection, DBBroker broker) {
+    @Override
+    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
         for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             DocumentImpl doc = i.next();
             removeDocument(doc);

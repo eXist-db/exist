@@ -71,6 +71,10 @@ public abstract class AbstractHashSet<K> {
 	public int size() {
 		return items;
 	}
+        
+        public boolean isEmpty() {
+            return items == 0;
+        }
 	
 	public abstract Iterator<K> iterator();
 	

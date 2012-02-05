@@ -390,8 +390,8 @@ public class PermissionsFunctions extends BasicFunction {
         if(modeStr.indexOf(Permission.WRITE_CHAR) > -1) {
             mode |= Permission.WRITE;
         }
-        if(modeStr.indexOf(Permission.UPDATE_CHAR) > -1) {
-            mode |= Permission.UPDATE;
+        if(modeStr.indexOf(Permission.EXECUTE_CHAR) > -1) {
+            mode |= Permission.EXECUTE;
         }
         
         Subject currentSubject = context.getBroker().getSubject();

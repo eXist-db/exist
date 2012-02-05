@@ -68,7 +68,7 @@ public class DatabaseCollectionTest {
             // change ownership to guest
             Account guest = ums.getAccount(GUEST_UID);
             ums.chown(guest, guest.getPrimaryGroup());
-            ums.chmod(Permission.DEFAULT_PERM);
+            ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
 
             assertNotNull("Could not connect to database.");
             System.out.println("<<<\n");
