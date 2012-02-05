@@ -83,7 +83,56 @@ return
         </code>
         <expected>70</expected>
     </test>
-    <!--test output="text">
+    <test output="text">
+        <task>Inline function</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:apply($func, $list) {
+    for $item in $list return $func($item)
+};
+
+let $f2 := function($a) { upper-case($a) }
+return
+       ex:apply($f2, ("Hello", "world!"))
+]]>
+        </code>
+        <expected>HELLO WORLD!</expected>
+    </test>
+    <test output="text">
+        <task>Inline function with annotation</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:apply($func, $list) {
+    for $item in $list return $func($item)
+};
+
+let $f2 := %ex:annoex function($a) { upper-case($a) }
+return
+       ex:apply($f2, ("Hello", "world!"))
+]]>
+        </code>
+        <expected>HELLO WORLD!</expected>
+    </test>
+    <test output="text">
+        <task>Inline function as parameter in function call</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare namespace ex="http://exist-db.org/xquery/ex";
+
+declare function ex:apply($func, $list) {
+    for $item in $list return $func($item)
+};
+
+ex:apply(function($a) { upper-case($a) }, ("Hello", "world!"))
+]]>
+        </code>
+        <expected>HELLO WORLD!</expected>
+    </test>
+    <test output="text">
         <task>Combine named function reference, dynamic calls and inline functions</task>
         <code><![CDATA[xquery version "3.0";
 
@@ -94,11 +143,10 @@ declare function ex:apply($func, $list) {
 };
 
 let $f1 := ex:apply#2
-let $f2 := function($a) { upper-case($a) }
 return
        $f1(function($a) { upper-case($a) }, ("Hello", "world!"))
 ]]>
         </code>
         <expected>HELLO WORLD!</expected>
-    </test-->
+    </test>
 </TestSet>
