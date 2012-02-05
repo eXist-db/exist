@@ -141,7 +141,8 @@ imaginaryTokenDefinitions
 	DEF_FUNCTION_NS_DECL 
 	ANNOT_DECL 
 	GLOBAL_VAR 
-	FUNCTION_DECL 
+	FUNCTION_DECL
+	FUNCTION_INLINE 
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -962,7 +963,7 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => filterStep
 	|
-	( DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
+	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI )
 	=> filterStep
 	|
@@ -1077,9 +1078,9 @@ primaryExpr throws XPathException
 	|
 	directConstructor
 	|
-	(eqName LPAREN ) => functionCall
+	( MOD | "function" LPAREN | eqName HASH ) => functionItemExpr
 	|
-	( eqName HASH ) => functionItemExpr
+	(eqName LPAREN ) => functionCall
 	|
 	contextItemExpr
 	|
@@ -1129,6 +1130,8 @@ parenthesizedExpr throws XPathException
 
 functionItemExpr throws XPathException
 :
+	( MOD | "function" ) => inlineFunctionExpr
+	|
 	namedFunctionRef
 	;
 
@@ -1140,6 +1143,27 @@ namedFunctionRef throws XPathException
 	name=eqName! h:HASH! INTEGER_LITERAL
 	{
 		#namedFunctionRef = #(#[HASH, name], #namedFunctionRef);
+	}
+	;
+
+inlineFunctionExpr throws XPathException
+:
+	ann:annotations! "function"! lp:LPAREN! ( paramList )?
+	RPAREN! ( returnType )?
+	functionBody
+	{ 
+	  	#inlineFunctionExpr = #(#[FUNCTION_DECL, null], null, #inlineFunctionExpr); 
+		#inlineFunctionExpr.copyLexInfo(#lp);
+	}
+	exception catch [RecognitionException e]
+	{ 
+		if (#lp == null) {
+			throw new XPathException(e.getLine(), e.getColumn(), "Syntax error within inline function: " + e.getMessage());
+		} else {
+			#lp.setLine(e.getLine());
+			#lp.setColumn(e.getColumn());
+			throw new XPathException(#lp, "Syntax error within user defined function: " + e.getMessage());
+		}
 	}
 	;
 

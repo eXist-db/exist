@@ -419,6 +419,7 @@ public XQueryTreeParser() {
 					case VARIABLE_REF:
 					case ELEMENT:
 					case TEXT:
+					case FUNCTION_DECL:
 					case ATTRIBUTE_TEST:
 					case COMP_ELEM_CONSTRUCTOR:
 					case COMP_ATTR_CONSTRUCTOR:
@@ -484,8 +485,8 @@ public XQueryTreeParser() {
 					case LITERAL_node:
 					case LITERAL_attribute:
 					case LITERAL_comment:
-					case 180:
 					case 181:
+					case 182:
 					case HASH:
 					case SELF:
 					case XML_COMMENT:
@@ -495,12 +496,12 @@ public XQueryTreeParser() {
 					case LITERAL_child:
 					case LITERAL_self:
 					case LITERAL_descendant:
-					case 194:
 					case 195:
+					case 196:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 198:
 					case 199:
+					case 200:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
 					case INTEGER_LITERAL:
@@ -605,6 +606,7 @@ public XQueryTreeParser() {
 					case VARIABLE_REF:
 					case ELEMENT:
 					case TEXT:
+					case FUNCTION_DECL:
 					case ATTRIBUTE_TEST:
 					case COMP_ELEM_CONSTRUCTOR:
 					case COMP_ATTR_CONSTRUCTOR:
@@ -670,8 +672,8 @@ public XQueryTreeParser() {
 					case LITERAL_node:
 					case LITERAL_attribute:
 					case LITERAL_comment:
-					case 180:
 					case 181:
+					case 182:
 					case HASH:
 					case SELF:
 					case XML_COMMENT:
@@ -681,12 +683,12 @@ public XQueryTreeParser() {
 					case LITERAL_child:
 					case LITERAL_self:
 					case LITERAL_descendant:
-					case 194:
 					case 195:
+					case 196:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 198:
 					case 199:
+					case 200:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
 					case INTEGER_LITERAL:
@@ -829,6 +831,7 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
+							case FUNCTION_DECL:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -894,8 +897,8 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 180:
 							case 181:
+							case 182:
 							case HASH:
 							case SELF:
 							case XML_COMMENT:
@@ -905,12 +908,12 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 194:
 							case 195:
+							case 196:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 198:
 							case 199:
+							case 200:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -940,6 +943,7 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
+						case FUNCTION_DECL:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -1005,8 +1009,8 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 180:
 						case 181:
+						case 182:
 						case HASH:
 						case SELF:
 						case XML_COMMENT:
@@ -1016,12 +1020,12 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 194:
 						case 195:
+						case 196:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 198:
 						case 199:
+						case 200:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -1051,6 +1055,7 @@ public XQueryTreeParser() {
 					case VARIABLE_REF:
 					case ELEMENT:
 					case TEXT:
+					case FUNCTION_DECL:
 					case ATTRIBUTE_TEST:
 					case COMP_ELEM_CONSTRUCTOR:
 					case COMP_ATTR_CONSTRUCTOR:
@@ -1116,8 +1121,8 @@ public XQueryTreeParser() {
 					case LITERAL_node:
 					case LITERAL_attribute:
 					case LITERAL_comment:
-					case 180:
 					case 181:
+					case 182:
 					case HASH:
 					case SELF:
 					case XML_COMMENT:
@@ -1127,12 +1132,12 @@ public XQueryTreeParser() {
 					case LITERAL_child:
 					case LITERAL_self:
 					case LITERAL_descendant:
-					case 194:
 					case 195:
+					case 196:
 					case LITERAL_parent:
 					case LITERAL_ancestor:
-					case 198:
 					case 199:
+					case 200:
 					case DOUBLE_LITERAL:
 					case DECIMAL_LITERAL:
 					case INTEGER_LITERAL:
@@ -1244,6 +1249,7 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
+							case FUNCTION_DECL:
 							case POSITIONAL_VAR:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
@@ -1310,8 +1316,8 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 180:
 							case 181:
+							case 182:
 							case HASH:
 							case SELF:
 							case XML_COMMENT:
@@ -1321,12 +1327,12 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 194:
 							case 195:
+							case 196:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 198:
 							case 199:
+							case 200:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -1365,6 +1371,7 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
+							case FUNCTION_DECL:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -1430,8 +1437,8 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 180:
 							case 181:
+							case 182:
 							case HASH:
 							case SELF:
 							case XML_COMMENT:
@@ -1441,12 +1448,12 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 194:
 							case 195:
+							case 196:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 198:
 							case 199:
+							case 200:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -1533,6 +1540,7 @@ public XQueryTreeParser() {
 							case VARIABLE_REF:
 							case ELEMENT:
 							case TEXT:
+							case FUNCTION_DECL:
 							case ATTRIBUTE_TEST:
 							case COMP_ELEM_CONSTRUCTOR:
 							case COMP_ATTR_CONSTRUCTOR:
@@ -1598,8 +1606,8 @@ public XQueryTreeParser() {
 							case LITERAL_node:
 							case LITERAL_attribute:
 							case LITERAL_comment:
-							case 180:
 							case 181:
+							case 182:
 							case HASH:
 							case SELF:
 							case XML_COMMENT:
@@ -1609,12 +1617,12 @@ public XQueryTreeParser() {
 							case LITERAL_child:
 							case LITERAL_self:
 							case LITERAL_descendant:
-							case 194:
 							case 195:
+							case 196:
 							case LITERAL_parent:
 							case LITERAL_ancestor:
-							case 198:
 							case 199:
+							case 200:
 							case DOUBLE_LITERAL:
 							case DECIMAL_LITERAL:
 							case INTEGER_LITERAL:
@@ -1687,6 +1695,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ORDER_BY:
 			case GROUP_BY:
 			case ATTRIBUTE_TEST:
@@ -1754,8 +1763,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -1765,12 +1774,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -1859,6 +1868,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ORDER_BY:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
@@ -1925,8 +1935,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -1936,12 +1946,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -2036,6 +2046,7 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
+						case FUNCTION_DECL:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -2103,8 +2114,8 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 180:
 						case 181:
+						case 182:
 						case HASH:
 						case SELF:
 						case XML_COMMENT:
@@ -2114,12 +2125,12 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 194:
 						case 195:
+						case 196:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 198:
 						case 199:
+						case 200:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -2192,6 +2203,7 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
+						case FUNCTION_DECL:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -2258,8 +2270,8 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 180:
 						case 181:
+						case 182:
 						case HASH:
 						case SELF:
 						case XML_COMMENT:
@@ -2269,12 +2281,12 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 194:
 						case 195:
+						case 196:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 198:
 						case 199:
+						case 200:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -2319,6 +2331,7 @@ public XQueryTreeParser() {
 						case VARIABLE_REF:
 						case ELEMENT:
 						case TEXT:
+						case FUNCTION_DECL:
 						case ATTRIBUTE_TEST:
 						case COMP_ELEM_CONSTRUCTOR:
 						case COMP_ATTR_CONSTRUCTOR:
@@ -2384,8 +2397,8 @@ public XQueryTreeParser() {
 						case LITERAL_node:
 						case LITERAL_attribute:
 						case LITERAL_comment:
-						case 180:
 						case 181:
+						case 182:
 						case HASH:
 						case SELF:
 						case XML_COMMENT:
@@ -2395,12 +2408,12 @@ public XQueryTreeParser() {
 						case LITERAL_child:
 						case LITERAL_self:
 						case LITERAL_descendant:
-						case 194:
 						case 195:
+						case 196:
 						case LITERAL_parent:
 						case LITERAL_ancestor:
-						case 198:
 						case 199:
+						case 200:
 						case DOUBLE_LITERAL:
 						case DECIMAL_LITERAL:
 						case INTEGER_LITERAL:
@@ -2440,6 +2453,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -2505,8 +2519,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -2516,12 +2530,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -2766,13 +2780,13 @@ public XQueryTreeParser() {
 					case ATTRIBUTE_TEST:
 					case LITERAL_element:
 					case LITERAL_empty:
-					case 103:
+					case 104:
 					case LITERAL_item:
 					case LITERAL_text:
 					case LITERAL_node:
 					case LITERAL_comment:
-					case 180:
 					case 181:
+					case 182:
 					{
 						break;
 					}
@@ -2836,6 +2850,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -2901,8 +2916,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -2912,12 +2927,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -3086,6 +3101,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -3151,8 +3167,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -3162,12 +3178,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -3218,6 +3234,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -3283,8 +3300,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -3294,12 +3311,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -3408,6 +3425,7 @@ public XQueryTreeParser() {
 		case VARIABLE_REF:
 		case ELEMENT:
 		case TEXT:
+		case FUNCTION_DECL:
 		case COMP_ELEM_CONSTRUCTOR:
 		case COMP_ATTR_CONSTRUCTOR:
 		case COMP_TEXT_CONSTRUCTOR:
@@ -3442,20 +3460,20 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 180:
 		case 181:
+		case 182:
 		case SELF:
 		case AT:
 		case PARENT:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 194:
 		case 195:
+		case 196:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 198:
 		case 199:
+		case 200:
 		{
 			step=pathExpr(_t,path);
 			_t = _retTree;
@@ -3620,11 +3638,11 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 69:
+		case 70:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 72:
 		case 73:
+		case 74:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -3678,8 +3696,8 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 180:
 		case 181:
+		case 182:
 		case HASH:
 		case SELF:
 		case XML_COMMENT:
@@ -3689,12 +3707,12 @@ public XQueryTreeParser() {
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 194:
 		case 195:
+		case 196:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 198:
 		case 199:
+		case 200:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
@@ -3753,11 +3771,11 @@ public XQueryTreeParser() {
 		case NCNAME:
 		case EQ:
 		case STRING_LITERAL:
-		case 69:
+		case 70:
 		case LITERAL_ordering:
 		case LITERAL_construction:
-		case 72:
 		case 73:
+		case 74:
 		case LITERAL_element:
 		case LITERAL_order:
 		case COMMA:
@@ -3811,8 +3829,8 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 180:
 		case 181:
+		case 182:
 		case HASH:
 		case SELF:
 		case XML_COMMENT:
@@ -3822,12 +3840,12 @@ public XQueryTreeParser() {
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 194:
 		case 195:
+		case 196:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 198:
 		case 199:
+		case 200:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
@@ -3946,11 +3964,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 69:
+			case 70:
 			{
 				AST __t16 = _t;
 				org.exist.xquery.parser.XQueryAST tmp35_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,69);
+				match(_t,70);
 				_t = _t.getFirstChild();
 				{
 				if (_t==null) _t=ASTNULL;
@@ -4035,12 +4053,12 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 73:
+			case 74:
 			{
 				try {      // for error handling
 					AST __t20 = _t;
 					org.exist.xquery.parser.XQueryAST tmp41_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,73);
+					match(_t,74);
 					_t = _t.getFirstChild();
 					{
 					if (_t==null) _t=ASTNULL;
@@ -4056,10 +4074,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 91:
+					case 92:
 					{
 						org.exist.xquery.parser.XQueryAST tmp43_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,91);
+						match(_t,92);
 						_t = _t.getNextSibling();
 						
 						staticContext.setPreserveNamespaces(false);
@@ -4087,10 +4105,10 @@ public XQueryTreeParser() {
 						
 						break;
 					}
-					case 93:
+					case 94:
 					{
 						org.exist.xquery.parser.XQueryAST tmp45_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-						match(_t,93);
+						match(_t,94);
 						_t = _t.getNextSibling();
 						
 						staticContext.setInheritNamespaces(false);
@@ -4117,11 +4135,11 @@ public XQueryTreeParser() {
 				}
 				break;
 			}
-			case 72:
+			case 73:
 			{
 				AST __t23 = _t;
 				org.exist.xquery.parser.XQueryAST tmp46_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,72);
+				match(_t,73);
 				_t = _t.getFirstChild();
 				base = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,STRING_LITERAL);
@@ -4332,6 +4350,7 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
+				case FUNCTION_DECL:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -4398,8 +4417,8 @@ public XQueryTreeParser() {
 				case LITERAL_node:
 				case LITERAL_attribute:
 				case LITERAL_comment:
-				case 180:
 				case 181:
+				case 182:
 				case HASH:
 				case SELF:
 				case XML_COMMENT:
@@ -4409,12 +4428,12 @@ public XQueryTreeParser() {
 				case LITERAL_child:
 				case LITERAL_self:
 				case LITERAL_descendant:
-				case 194:
 				case 195:
+				case 196:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
-				case 198:
 				case 199:
+				case 200:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
 				case INTEGER_LITERAL:
@@ -4445,6 +4464,7 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
+				case FUNCTION_DECL:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -4510,8 +4530,8 @@ public XQueryTreeParser() {
 				case LITERAL_node:
 				case LITERAL_attribute:
 				case LITERAL_comment:
-				case 180:
 				case 181:
+				case 182:
 				case HASH:
 				case SELF:
 				case XML_COMMENT:
@@ -4521,12 +4541,12 @@ public XQueryTreeParser() {
 				case LITERAL_child:
 				case LITERAL_self:
 				case LITERAL_descendant:
-				case 194:
 				case 195:
+				case 196:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
-				case 198:
 				case 199:
+				case 200:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
 				case INTEGER_LITERAL:
@@ -4594,12 +4614,6 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case FUNCTION_DECL:
-			{
-				functionDecl(_t,path);
-				_t = _retTree;
-				break;
-			}
 			case MODULE_IMPORT:
 			case SCHEMA_IMPORT:
 			{
@@ -4608,7 +4622,12 @@ public XQueryTreeParser() {
 				break;
 			}
 			default:
-			{
+				if (_t==null) _t=ASTNULL;
+				if ((_t.getType()==FUNCTION_DECL)) {
+					functionDecl(_t,path);
+					_t = _retTree;
+				}
+			else {
 				break _loop37;
 			}
 			}
@@ -4703,11 +4722,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 103:
+		case 104:
 		{
 			AST __t84 = _t;
 			org.exist.xquery.parser.XQueryAST tmp59_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,103);
+			match(_t,104);
 			_t = _t.getFirstChild();
 			
 							type.setPrimaryType(Type.EMPTY);
@@ -4883,11 +4902,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 180:
+		case 181:
 		{
 			AST __t94 = _t;
 			org.exist.xquery.parser.XQueryAST tmp67_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,180);
+			match(_t,181);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.PROCESSING_INSTRUCTION);
 			{
@@ -4943,11 +4962,11 @@ public XQueryTreeParser() {
 			_t = _t.getNextSibling();
 			break;
 		}
-		case 181:
+		case 182:
 		{
 			AST __t97 = _t;
 			org.exist.xquery.parser.XQueryAST tmp69_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,181);
+			match(_t,182);
 			_t = _t.getFirstChild();
 			type.setPrimaryType(Type.DOCUMENT);
 			{
@@ -5022,11 +5041,11 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 203:
+			case 204:
 			{
 				AST __t102 = _t;
 				org.exist.xquery.parser.XQueryAST tmp72_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,203);
+				match(_t,204);
 				_t = _t.getFirstChild();
 				org.exist.xquery.parser.XQueryAST tmp73_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,QNAME);
@@ -5099,23 +5118,28 @@ public XQueryTreeParser() {
 /**
  * Parse a declared function.
  */
-	public final void functionDecl(AST _t,
+	public final Expression  functionDecl(AST _t,
 		PathExpr path
 	) throws RecognitionException, PermissionDeniedException,EXistException,XPathException {
+		Expression step;
 		
 		org.exist.xquery.parser.XQueryAST functionDecl_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST name = null;
-		Expression step = null;
+		step = null;
 		
 		AST __t54 = _t;
 		name = _t==ASTNULL ? null :(org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,FUNCTION_DECL);
 		_t = _t.getFirstChild();
-		PathExpr body= new PathExpr(context);
+		
+					PathExpr body= new PathExpr(context);
+					boolean inline = name.getText() == null;
+				
 		
 					QName qn= null;
 					try {
-						qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+						if (!inline)
+							qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 					} catch(XPathException e) {
 						// throw exception with correct source location
 						e.setLocation(name.getLine(), name.getColumn());
@@ -5255,13 +5279,18 @@ public XQueryTreeParser() {
 			org.exist.xquery.parser.XQueryAST tmp78_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LCURLY);
 			_t = _t.getFirstChild();
-			step=expr(_t,body);
+			expr(_t,body);
 			_t = _retTree;
 			
 								func.setFunctionBody(body);
-								context.declareFunction(func);
-								if(myModule != null)
-									myModule.declareFunction(func);
+								if (!inline) {
+									context.declareFunction(func);
+									if(myModule != null)
+										myModule.declareFunction(func);
+								} else {
+									// anonymous function
+									step = new InlineFunction(context, func);
+								}
 							
 			_t = __t60;
 			_t = _t.getNextSibling();
@@ -5283,6 +5312,7 @@ public XQueryTreeParser() {
 		_t = __t54;
 		_t = _t.getNextSibling();
 		_retTree = _t;
+		return step;
 	}
 	
 	public final void importDecl(AST _t,
@@ -6490,6 +6520,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -6555,8 +6586,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -6566,12 +6597,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -6649,6 +6680,13 @@ public XQueryTreeParser() {
 			path.add(step);
 			break;
 		}
+		case FUNCTION_DECL:
+		{
+			step=functionDecl(_t,path);
+			_t = _retTree;
+			path.add(step);
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(_t);
@@ -6699,17 +6737,17 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 180:
 		case 181:
+		case 182:
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 194:
 		case 195:
+		case 196:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 198:
 		case 199:
+		case 200:
 		{
 			{
 			if (_t==null) _t=ASTNULL;
@@ -6720,12 +6758,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			{
 				axis=forwardAxis(_t);
 				_t = _retTree;
@@ -6740,8 +6778,8 @@ public XQueryTreeParser() {
 			case LITERAL_text:
 			case LITERAL_node:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			{
 				break;
 			}
@@ -7002,11 +7040,11 @@ public XQueryTreeParser() {
 						
 				break;
 			}
-			case 180:
+			case 181:
 			{
 				AST __t210 = _t;
 				org.exist.xquery.parser.XQueryAST tmp98_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,180);
+				match(_t,181);
 				_t = _t.getFirstChild();
 				
 							if (axis == Constants.ATTRIBUTE_AXIS)
@@ -7054,10 +7092,10 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				break;
 			}
-			case 181:
+			case 182:
 			{
 				org.exist.xquery.parser.XQueryAST tmp99_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-				match(_t,181);
+				match(_t,182);
 				_t = _t.getNextSibling();
 				test= new TypeTest(Type.DOCUMENT);
 				{
@@ -7125,10 +7163,10 @@ public XQueryTreeParser() {
 					_t = __t213;
 					_t = _t.getNextSibling();
 				}
-				else if ((_t.getType()==203)) {
+				else if ((_t.getType()==204)) {
 					AST __t216 = _t;
 					org.exist.xquery.parser.XQueryAST tmp102_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-					match(_t,203);
+					match(_t,204);
 					_t = _t.getFirstChild();
 					org.exist.xquery.parser.XQueryAST tmp103_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 					match(_t,QNAME);
@@ -7338,6 +7376,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -7403,8 +7442,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -7414,12 +7453,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -7485,6 +7524,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -7550,8 +7590,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -7561,12 +7601,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -8012,6 +8052,7 @@ public XQueryTreeParser() {
 		case VARIABLE_REF:
 		case ELEMENT:
 		case TEXT:
+		case FUNCTION_DECL:
 		case ATTRIBUTE_TEST:
 		case COMP_ELEM_CONSTRUCTOR:
 		case COMP_ATTR_CONSTRUCTOR:
@@ -8077,8 +8118,8 @@ public XQueryTreeParser() {
 		case LITERAL_node:
 		case LITERAL_attribute:
 		case LITERAL_comment:
-		case 180:
 		case 181:
+		case 182:
 		case HASH:
 		case SELF:
 		case XML_COMMENT:
@@ -8088,12 +8129,12 @@ public XQueryTreeParser() {
 		case LITERAL_child:
 		case LITERAL_self:
 		case LITERAL_descendant:
-		case 194:
 		case 195:
+		case 196:
 		case LITERAL_parent:
 		case LITERAL_ancestor:
-		case 198:
 		case 199:
+		case 200:
 		case DOUBLE_LITERAL:
 		case DECIMAL_LITERAL:
 		case INTEGER_LITERAL:
@@ -8222,6 +8263,7 @@ public XQueryTreeParser() {
 				case VARIABLE_REF:
 				case ELEMENT:
 				case TEXT:
+				case FUNCTION_DECL:
 				case ATTRIBUTE_TEST:
 				case COMP_ELEM_CONSTRUCTOR:
 				case COMP_ATTR_CONSTRUCTOR:
@@ -8287,8 +8329,8 @@ public XQueryTreeParser() {
 				case LITERAL_node:
 				case LITERAL_attribute:
 				case LITERAL_comment:
-				case 180:
 				case 181:
+				case 182:
 				case HASH:
 				case SELF:
 				case XML_COMMENT:
@@ -8298,12 +8340,12 @@ public XQueryTreeParser() {
 				case LITERAL_child:
 				case LITERAL_self:
 				case LITERAL_descendant:
-				case 194:
 				case 195:
+				case 196:
 				case LITERAL_parent:
 				case LITERAL_ancestor:
-				case 198:
 				case 199:
+				case 200:
 				case DOUBLE_LITERAL:
 				case DECIMAL_LITERAL:
 				case INTEGER_LITERAL:
@@ -8371,6 +8413,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -8436,8 +8479,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -8447,12 +8490,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -8516,6 +8559,7 @@ public XQueryTreeParser() {
 			case VARIABLE_REF:
 			case ELEMENT:
 			case TEXT:
+			case FUNCTION_DECL:
 			case ATTRIBUTE_TEST:
 			case COMP_ELEM_CONSTRUCTOR:
 			case COMP_ATTR_CONSTRUCTOR:
@@ -8581,8 +8625,8 @@ public XQueryTreeParser() {
 			case LITERAL_node:
 			case LITERAL_attribute:
 			case LITERAL_comment:
-			case 180:
 			case 181:
+			case 182:
 			case HASH:
 			case SELF:
 			case XML_COMMENT:
@@ -8592,12 +8636,12 @@ public XQueryTreeParser() {
 			case LITERAL_child:
 			case LITERAL_self:
 			case LITERAL_descendant:
-			case 194:
 			case 195:
+			case 196:
 			case LITERAL_parent:
 			case LITERAL_ancestor:
-			case 198:
 			case 199:
+			case 200:
 			case DOUBLE_LITERAL:
 			case DECIMAL_LITERAL:
 			case INTEGER_LITERAL:
@@ -9087,18 +9131,18 @@ public XQueryTreeParser() {
 			axis= Constants.DESCENDANT_AXIS;
 			break;
 		}
-		case 194:
+		case 195:
 		{
 			org.exist.xquery.parser.XQueryAST tmp129_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,194);
+			match(_t,195);
 			_t = _t.getNextSibling();
 			axis= Constants.DESCENDANT_SELF_AXIS;
 			break;
 		}
-		case 195:
+		case 196:
 		{
 			org.exist.xquery.parser.XQueryAST tmp130_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,195);
+			match(_t,196);
 			_t = _t.getNextSibling();
 			axis= Constants.FOLLOWING_SIBLING_AXIS;
 			break;
@@ -9111,10 +9155,10 @@ public XQueryTreeParser() {
 			axis= Constants.FOLLOWING_AXIS;
 			break;
 		}
-		case 199:
+		case 200:
 		{
 			org.exist.xquery.parser.XQueryAST tmp132_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,199);
+			match(_t,200);
 			_t = _t.getNextSibling();
 			axis= Constants.PRECEDING_SIBLING_AXIS;
 			break;
@@ -9135,10 +9179,10 @@ public XQueryTreeParser() {
 			axis= Constants.ANCESTOR_AXIS;
 			break;
 		}
-		case 198:
+		case 199:
 		{
 			org.exist.xquery.parser.XQueryAST tmp135_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
-			match(_t,198);
+			match(_t,199);
 			_t = _t.getNextSibling();
 			axis= Constants.ANCESTOR_SELF_AXIS;
 			break;
@@ -9205,6 +9249,7 @@ public XQueryTreeParser() {
 		"ANNOT_DECL",
 		"GLOBAL_VAR",
 		"FUNCTION_DECL",
+		"FUNCTION_INLINE",
 		"PROLOG",
 		"OPTION",
 		"ATOMIC_TYPE",
@@ -9414,72 +9459,72 @@ public XQueryTreeParser() {
 	
 	private static final long[] mk_tokenSet_0() {
 		long[] data = new long[8];
-		data[0]=646231362165342098L;
-		data[1]=-5755664093239181306L;
-		data[2]=-1747412048582578174L;
-		data[3]=4196351L;
+		data[0]=1292462726468403090L;
+		data[1]=6935415887231189004L;
+		data[2]=-3494824097165156347L;
+		data[3]=8392703L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
 	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[8];
-		data[0]=646231362702213010L;
-		data[1]=-5755663938620358650L;
-		data[2]=-1747412048582578174L;
-		data[3]=4196351L;
+		data[0]=1292462727005274002L;
+		data[1]=6935416196468834316L;
+		data[2]=-3494824097165156347L;
+		data[3]=8392703L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
 		long[] data = new long[8];
-		data[0]=646231362165342098L;
-		data[1]=-5755663938620358650L;
-		data[2]=-1747412048582578174L;
-		data[3]=4196351L;
+		data[0]=1292462726468403090L;
+		data[1]=6935416196468834316L;
+		data[2]=-3494824097165156347L;
+		data[3]=8392703L;
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
 	private static final long[] mk_tokenSet_3() {
-		long[] data = { 537395200L, 156766306304L, 0L, 0L};
+		long[] data = { 537395200L, 313532612608L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
 	private static final long[] mk_tokenSet_4() {
-		long[] data = { 524288L, 156766306304L, 0L, 0L};
+		long[] data = { 524288L, 313532612608L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
 	private static final long[] mk_tokenSet_5() {
 		long[] data = new long[8];
-		data[1]=4L;
-		data[3]=1792L;
+		data[1]=8L;
+		data[3]=3584L;
 		return data;
 	}
 	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
 	private static final long[] mk_tokenSet_6() {
 		long[] data = new long[8];
-		data[0]=648483385317851066L;
-		data[1]=-567507976658943994L;
-		data[2]=-1747412048582577566L;
-		data[3]=4196351L;
+		data[0]=1296966772772896698L;
+		data[1]=-1135015953317887988L;
+		data[2]=-3494824097165155131L;
+		data[3]=8392703L;
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	private static final long[] mk_tokenSet_7() {
 		long[] data = new long[8];
-		data[0]=646231362165342106L;
-		data[1]=-5755664093239181306L;
-		data[2]=-1747412048582578174L;
-		data[3]=4196351L;
+		data[0]=1292462726468403098L;
+		data[1]=6935415887231189004L;
+		data[2]=-3494824097165156347L;
+		data[3]=8392703L;
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
 	private static final long[] mk_tokenSet_8() {
 		long[] data = new long[8];
-		data[0]=6685030706315264L;
-		data[1]=2147483648L;
-		data[2]=432345564227567616L;
-		data[3]=4194304L;
+		data[0]=13370061403193344L;
+		data[1]=4294967296L;
+		data[2]=864691128455135232L;
+		data[3]=8388608L;
 		return data;
 	}
 	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());

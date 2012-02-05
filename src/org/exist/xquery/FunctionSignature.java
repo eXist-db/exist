@@ -54,7 +54,7 @@ public class FunctionSignature {
 		return new SequenceType[] { arg };
 	}
 	
-        private Annotation[] annotations;
+    private Annotation[] annotations;
 	private final QName name;
 	private SequenceType[] arguments;
 	private SequenceType returnType;
@@ -142,9 +142,9 @@ public class FunctionSignature {
 		this.arguments = types;
 	}
         
-        public void setAnnotations(Annotation[] annotations) {
-            this.annotations = annotations;
-        }
+    public void setAnnotations(Annotation[] annotations) {
+        this.annotations = annotations;
+    }
 	
 	public String getDescription() {
 		return description;
@@ -198,6 +198,11 @@ public class FunctionSignature {
 
     public boolean equals(Object obj) {
         FunctionSignature other = (FunctionSignature) obj;
+        if (name == null) {
+        	if (other.name != null)
+        		return false;
+        	return getArgumentCount() == other.getArgumentCount();
+        }
         if (name.equalsSimple(other.name))
             return getArgumentCount() == other.getArgumentCount();
         return false;
