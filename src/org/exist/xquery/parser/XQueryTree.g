@@ -608,14 +608,20 @@ throws XPathException
  * Parse a declared function.
  */
 functionDecl [PathExpr path]
+returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{ Expression step = null; }:
+{ step = null; }:
 	#(
-		name:FUNCTION_DECL { PathExpr body= new PathExpr(context); }
+		name:FUNCTION_DECL // for inline functions, name is null
+		{ 
+			PathExpr body= new PathExpr(context);
+			boolean inline = name.getText() == null;
+		}
 		{
 			QName qn= null;
 			try {
-				qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+				if (!inline)
+					qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 			} catch(XPathException e) {
 				// throw exception with correct source location
 				e.setLocation(name.getLine(), name.getColumn());
@@ -698,12 +704,17 @@ throws PermissionDeniedException, EXistException, XPathException
 		(
 			// the function body:
 			#(
-				LCURLY step=expr [body]
+				LCURLY expr [body]
 				{ 
 					func.setFunctionBody(body);
-					context.declareFunction(func);
-					if(myModule != null)
-						myModule.declareFunction(func);
+					if (!inline) {
+						context.declareFunction(func);
+						if(myModule != null)
+							myModule.declareFunction(func);
+					} else {
+						// anonymous function
+						step = new InlineFunction(context, func);
+					}
 				}
 			)
 			|
@@ -1751,6 +1762,9 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ path.add(step); }
 	|
 	step=functionReference [path]
+	{ path.add(step); }
+	|
+    step=functionDecl [path]
 	{ path.add(step); }
 	;
 	

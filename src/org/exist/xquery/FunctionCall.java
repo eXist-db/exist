@@ -99,7 +99,8 @@ public class FunctionCall extends Function {
 			ModuleContext modContext = (ModuleContext) functionDef.getContext();
 			// util:eval will stuff non-module function declarations into a module context sometimes,
 			// so watch out for those and ignore them.
-			if (functionDef.getName().getNamespaceURI().equals(modContext.getModuleNamespace()) &&
+			if (functionDef.getName() != null && 
+					functionDef.getName().getNamespaceURI().equals(modContext.getModuleNamespace()) &&
                     modContext.getRootContext() != context.getRootContext()) {
                 ExternalModule rootModule = (ExternalModule) context.getRootModule(functionDef.getName().getNamespaceURI());
                 if (rootModule != null) {

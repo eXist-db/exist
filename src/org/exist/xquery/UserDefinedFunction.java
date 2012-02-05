@@ -84,7 +84,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		reseted = false;
 		
-		if(!call.isRecursive()) {
+		if(call != null && !call.isRecursive()) {
 			// Save the local variable stack
 			LocalVariable mark = context.markLocalVariables(true);
 			try {
@@ -151,7 +151,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
      */
     public void dump(ExpressionDumper dumper) {
         FunctionSignature signature = getSignature();
-        dumper.display(signature.getName());
+        if (signature.getName() != null)
+        	dumper.display(signature.getName());
         dumper.display('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)
@@ -168,7 +169,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
     public String toString() {
         FunctionSignature signature = getSignature();
         StringBuilder buf = new StringBuilder();
-        buf.append(signature.getName());
+        if (signature.getName() != null)
+        	buf.append(signature.getName());
         buf.append('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)

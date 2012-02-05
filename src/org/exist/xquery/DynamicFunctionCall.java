@@ -28,10 +28,10 @@ public class DynamicFunctionCall extends AbstractExpression {
 
 	@Override
 	public void dump(ExpressionDumper dumper) {
-		ExpressionDumper.dump(functionExpr);
+		functionExpr.dump(dumper);
 		dumper.display('(');
 		for (Expression arg : arguments) {
-			ExpressionDumper.dump(arg);
+			arg.dump(dumper);
 		}
 		dumper.display(')');
 	}
