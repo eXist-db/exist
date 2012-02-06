@@ -22,7 +22,6 @@
 package org.exist.commands.info;
 
 import org.exist.Database;
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.plugin.command.AbstractCommand;
@@ -75,7 +74,7 @@ public class Lock extends AbstractCommand {
 			out().println("Update lock: ");
 			doc.getUpdateLock().debug(out());
 
-		} catch (EXistException e) {
+		} catch (Exception e) {
 			throw new CommandException(e);
 		} finally {
 			if (db != null)
