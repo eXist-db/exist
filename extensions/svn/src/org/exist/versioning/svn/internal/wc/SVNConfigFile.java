@@ -20,7 +20,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.exist.EXistException;
+import org.exist.security.Subject;
+import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.versioning.svn.Resource;
+import org.jfree.util.Log;
 import org.tmatesoft.svn.core.internal.util.SVNHashMap;
 import java.util.Map;
 
@@ -291,13 +297,26 @@ public class SVNConfigFile {
                 return;
             }
         }
-        Resource configFile = new Resource(configDir, "config");
-        Resource serversFile = new Resource(configDir, "servers");
-        Resource readmeFile = new Resource(configDir, "README.txt");
-        
-        writeFile("/org/tmatesoft/svn/core/internal/wc/config/config", configFile);
-        writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
-        writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
+    	DBBroker broker = null;
+    	Subject subject = null;
+    	try {
+    		broker = BrokerPool.getInstance().getActiveBroker();
+    		subject = broker.getSubject();
+    		broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+
+		    Resource configFile = new Resource(configDir, "config");
+		    Resource serversFile = new Resource(configDir, "servers");
+		    Resource readmeFile = new Resource(configDir, "README.txt");
+		    
+		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/config", configFile);
+		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
+		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
+    	} catch (EXistException e) {
+    		Log.debug(e);
+		} finally {
+			if (broker != null && subject != null)
+				broker.setSubject(subject);
+    	}
     }
 
     private static void writeFile(String url, Resource configFile) {

@@ -125,7 +125,7 @@ public class ExportEditor implements ISVNEditor {
 
 			transaction = transact.beginTransaction();
 
-		} catch (EXistException e) {
+		} catch (Exception e) {
 			SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR,
 					"error: failed to initialize database.");
 			throw new SVNException(err);
@@ -169,8 +169,11 @@ public class ExportEditor implements ISVNEditor {
 
 		currentPath = path;
 
-		currentDirectory = broker.getCollection(myRootDirectory.getURI()
-				.append(path));
+		try {
+			currentDirectory = broker.getCollection(myRootDirectory.getURI().append(path));
+		} catch (PermissionDeniedException e) {
+			throw new SVNException(SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: failed on IO."), e);
+		}
 	}
 
 	public void changeDirProperty(String name, SVNPropertyValue property)
@@ -411,8 +414,11 @@ public class ExportEditor implements ISVNEditor {
 	}
 
 	public void closeDir() throws SVNException {
-		currentDirectory = broker
-				.getCollection(currentDirectory.getParentURI());
+		try {
+			currentDirectory = broker.getCollection(currentDirectory.getParentURI());
+		} catch (PermissionDeniedException e) {
+			throw new SVNException(SVNErrorMessage.create(SVNErrorCode.IO_ERROR, "error: ."), e);
+		}
 
 		currentPath = SVNPathUtil.removeTail(currentPath);
 	}
