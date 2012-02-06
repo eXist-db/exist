@@ -25,7 +25,7 @@ import gnu.crypto.hash.MD5;
 import gnu.crypto.hash.RipeMD160;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.axis.encoding.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.exist.security.Account;
 import org.exist.security.Credential;
 import org.exist.security.MessageDigester;
@@ -73,6 +73,7 @@ public class Password implements Credential {
             this.digestPw = digest(account.getName(), account.getRealmId(), pw);
         }
     }
+
     
     @Override
     public String getDigest() {
@@ -85,7 +86,7 @@ public class Password implements Credential {
 
     final String hashAndEncode(String p) {
         //base64 encode the hash
-        return Base64.encode(hash(p));
+        return Base64.encodeBase64String(hash(p));
     }
     
     final byte[] hash(String p) {
