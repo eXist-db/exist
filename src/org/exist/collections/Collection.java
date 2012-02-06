@@ -229,10 +229,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param  doc
      */
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) throws PermissionDeniedException {
-        
-        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+        // Wrong place for checking permissions. This method is called when reading
+		// the list of documents for the collection, NOT for creating a collection.
+        /*if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
-        }
+        }*/
         
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
 			try {
