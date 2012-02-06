@@ -2,7 +2,7 @@ module namespace docs="http://exist-db.org/xquery/admin/fundocs";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace xqdm="http://exist-db.org/xquery/xqdoc";
-
+import module namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace xqdoc="http://www.xqdoc.org/1.0";
 
 declare variable $docs:COLLECTION := "/db/xqdocs";
@@ -122,7 +122,8 @@ declare function docs:configure() {
        	docs:create-collection("/db/system/config/db", "xqdocs"),
        	xdb:store("/db/system/config/db/xqdocs", "collection.xconf", $docs:config),
        	docs:create-collection("/db", "xqdocs"),
-       	xdb:chmod-collection("/db/xqdocs", 508)
+	sm:chown(xs:anyURI("/db/xqdocs"), "admin:guest"),
+       	sm:chmod(xs:anyURI("/db/xqdocs"), "rwxr-xr--")
     ) return ()
 };
 
@@ -130,10 +131,9 @@ declare function docs:load-external($uri as xs:string) {
     let $xml := xqdm:scan(xs:anyURI($uri))
     let $moduleURI := $xml//xqdoc:module/xqdoc:uri
     let $docName := concat(util:hash($moduleURI, "MD5"), ".xml")
-    let $null := (
-		xdb:store($docs:COLLECTION, $docName, $xml),
-		xdb:chmod-resource($docs:COLLECTION, $docName, 508)
-	)
+	let $stored := xdb:store($docs:COLLECTION, $docName, $xml)
+	let $null := sm:chown(xs:anyURI($stored), "admin:guest")
+	let $null := sm:chmod(xs:anyURI($stored), "rwxr-xr--")
 	return
 	   <li>Extracted docs from external module {$moduleURI}</li>
 };
@@ -150,10 +150,10 @@ declare function docs:load-internal-modules() {
 	let $docName := concat(util:hash($moduleURI, "MD5"), ".xml")
 	return 
 	   if ($moduleDocs) then 
-            let $null := (
-    		  xdb:store($docs:COLLECTION, $docName, $moduleDocs),
-    		  xdb:chmod-resource($docs:COLLECTION, $docName, 508)
-            )
+    		  let $stored := xdb:store($docs:COLLECTION, $docName, $moduleDocs)
+let $null := sm:chown(xs:anyURI($stored), "admin:guest")
+        let $null := sm:chmod(xs:anyURI($stored), "rwxr-xr--")
+
             return
                 <li>Extracted docs from builtin module {$moduleURI}</li>
 	   else
@@ -178,6 +178,9 @@ declare function docs:load-documentation() {
 		xdb:store-files-from-pattern($docs:COLLECTION, $dir, "*.xml", "text/xml")
 	for $path in $stored
 	return
+	let $null := sm:chown(xs:anyURI($path), "admin:guest")
+        let $null := sm:chmod(xs:anyURI($path), "rwxr-xr--") return
+
 	   <li>{$path}</li>
 };
 
