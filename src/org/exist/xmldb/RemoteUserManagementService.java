@@ -1,5 +1,6 @@
 package org.exist.xmldb;
 
+import java.util.*;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -12,10 +13,6 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import org.exist.security.ACLPermission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
@@ -336,6 +333,108 @@ public class RemoteUserManagementService implements UserManagementService {
 		return "UserManagementService";
 	}
 
+    @Override
+    public Date getSubCollectionCreationTime(Collection cParent, String name) throws XMLDBException {
+        if(parent == null) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+        }
+
+        Long creationTime;
+        try {
+            creationTime = ((RemoteCollection)cParent).getSubCollectionCreationTime(name);
+
+            if(creationTime == null) {
+            
+                List<Object> params = new ArrayList<Object>(2);
+                params.add(((RemoteCollection) cParent).getPath());
+                params.add(name);
+
+                creationTime = ((Long)parent.getClient().execute("getSubCollectionCreationTime", params)).longValue();
+            }   
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+
+        return new Date(creationTime);
+    }
+
+    @Override
+    public Permission getSubCollectionPermissions(Collection cParent, String name) throws XMLDBException {
+        if(parent == null) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+        }
+
+        Permission perm = null;
+        try {
+            perm = ((RemoteCollection)cParent).getSubCollectionPermissions(name);
+
+            if(perm == null) {
+            
+                List<Object> params = new ArrayList<Object>(2);
+                params.add(((RemoteCollection) cParent).getPath());
+                params.add(name);
+
+                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubCollectionPermissions", params);
+
+                final String owner = (String)result.get("owner");
+                final String group = (String)result.get("group");
+                final int mode = ((Integer)result.get("permissions")).intValue();
+                final Object[] acl = (Object[])result.get("acl");
+                List aces = null;
+                if (acl != null)
+                	aces = Arrays.asList(acl);
+
+                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+            }   
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+        }
+
+        return perm;
+    }
+
+    @Override
+    public Permission getSubResourcePermissions(Collection cParent, String name) throws XMLDBException {
+        if(parent == null) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
+        }
+
+        Permission perm = null;
+        try {
+            perm = ((RemoteCollection)cParent).getSubCollectionPermissions(name);
+
+            if(perm == null) {
+            
+                List<Object> params = new ArrayList<Object>(2);
+                params.add(((RemoteCollection) cParent).getPath());
+                params.add(name);
+
+                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubResourcePermissions", params);
+
+                final String owner = (String)result.get("owner");
+                final String group = (String)result.get("group");
+                final int mode = ((Integer)result.get("permissions")).intValue();
+                final Object[] acl = (Object[])result.get("acl");
+                List aces = null;
+                if (acl != null)
+                	aces = Arrays.asList(acl);
+
+                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
+            }   
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+        }
+
+        return perm;
+    }
+
+        
+        
+        
     /**
      *  Get current permissions for a collection
      *

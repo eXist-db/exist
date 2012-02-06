@@ -1,5 +1,6 @@
 package org.exist.xmldb;
 
+import java.util.Date;
 import java.util.List;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -249,8 +250,21 @@ public interface UserManagementService extends Service {
      *@exception  XMLDBException  Description of the Exception
      */
     public Permission getPermissions( Collection coll ) throws XMLDBException;
+    
+    /**
+     * Get the permissions of the sub-collection
+     */
+    public Permission getSubCollectionPermissions(Collection parent, String name) throws XMLDBException;
 
 
+    /**
+     * Get the permissions of the sub-resource
+     */
+    public Permission getSubResourcePermissions(Collection parent, String name) throws XMLDBException;
+    
+
+    public Date getSubCollectionCreationTime(Collection parent, String string) throws XMLDBException;
+    
     /**
      *  Get permissions for the specified resource
      *
@@ -330,6 +344,8 @@ public interface UserManagementService extends Service {
 
 	@Deprecated //it'll removed after 1.6
     public void lockResource(Resource res, User u) throws XMLDBException;
+
+    
 
 }
 
