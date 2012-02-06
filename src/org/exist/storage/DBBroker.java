@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import org.exist.collections.Collection.SubCollectionEntry;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -836,4 +837,6 @@ public abstract class DBBroker extends Observable {
             throws IOException, XMLStreamException;
 
     public abstract void backupToArchive(RawDataBackup backup) throws IOException;
+
+    public abstract void readCollectionEntry(SubCollectionEntry entry);
 }

@@ -320,6 +320,62 @@ public class RemoteCollection implements CollectionImpl {
         }
         return perm;
     }
+    
+    public Permission getSubCollectionPermissions(String name) throws PermissionDeniedException, XMLDBException {
+        List<String> params = new ArrayList<String>(2);
+        params.add(getPath());
+        params.add(name);
+        try {
+            HashMap<?,?> result = (HashMap<?,?>) rpcClient.execute("getSubCollectionPermissions", params);
+            
+            final String owner = (String)result.get("owner");
+            final String group = (String)result.get("group");
+            final int mode = ((Integer)result.get("permissions")).intValue();
+            final Object[] acl = (Object[])result.get("acl");
+            List aces = null;
+            if (acl != null)
+                aces = Arrays.asList(acl);
+
+            return getPermission(owner, group, mode, (List<ACEAider>)aces);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
+    }
+    
+    public Permission getSubResourcePermissions(String name) throws PermissionDeniedException, XMLDBException {
+        List<String> params = new ArrayList<String>(2);
+        params.add(getPath());
+        params.add(name);
+        try {
+            HashMap<?,?> result = (HashMap<?,?>) rpcClient.execute("getSubResourcePermissions", params);
+            
+            final String owner = (String)result.get("owner");
+            final String group = (String)result.get("group");
+            final int mode = ((Integer)result.get("permissions")).intValue();
+            final Object[] acl = (Object[])result.get("acl");
+            List aces = null;
+            if (acl != null)
+                aces = Arrays.asList(acl);
+
+            return getPermission(owner, group, mode, (List<ACEAider>)aces);
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
+    }
+    
+    public Long getSubCollectionCreationTime(String name) throws XMLDBException {
+        
+        List<Object> params = new ArrayList<Object>(2);
+        params.add(getPath());
+        params.add(name);
+
+        try {
+            return ((Long)rpcClient.execute("getSubCollectionCreationTime", params)).longValue();
+            
+        } catch (XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
+    }
 
     @Override
     public Resource getResource(String name) throws XMLDBException {

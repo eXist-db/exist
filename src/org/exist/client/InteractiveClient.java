@@ -354,17 +354,20 @@ public class InteractiveClient {
                 .getService("UserManagementService", "1.0");
         String childCollections[] = current.listChildCollections();
         String childResources[] = current.listResources();
+        
         resources = new String[childCollections.length + childResources.length];
         int i = 0;
-        Collection child;
+        //Collection child;
         Permission perm;
         
         List<ResourceDescriptor> tableData = new ArrayList<ResourceDescriptor>(resources.length); // A list of ResourceDescriptor for the GUI
         
         String cols[] = new String[4];
         for (; i < childCollections.length; i++) {
-            child = current.getChildCollection(childCollections[i]);
-            perm = mgtService.getPermissions(child);
+            //child = current.getChildCollection(childCollections[i]);
+            
+            perm = mgtService.getSubCollectionPermissions(current, childCollections[i]);
+            
             if (properties.getProperty("permissions").equals("true")) {
                 cols[0] = perm.toString();
                 cols[1] = perm.getOwner().getName();
@@ -375,7 +378,7 @@ public class InteractiveClient {
                 resources[i] = URIUtils.urlDecodeUtf8(childCollections[i]);
             }
 
-            Date created = ((CollectionImpl)child).getCreationTime();
+            Date created = mgtService.getSubCollectionCreationTime(current, childCollections[i]);
 
             if (startGUI) {
                 tableData.add( new ResourceDescriptor.Collection(

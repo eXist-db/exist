@@ -1,6 +1,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -461,6 +462,60 @@ public class LocalUserManagementService implements UserManagementService {
         }
         return null;
     }
+
+    @Override
+    public Permission getSubCollectionPermissions(final Collection parent, final String name) throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<Permission>(){
+                @Override
+                public Permission withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    if(parent instanceof LocalCollection) {
+                        return ((LocalCollection) parent).getCollection().getSubCollectionEntry(broker, name).getPermissions();
+                    }
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+        }    
+    }
+
+    @Override
+    public Permission getSubResourcePermissions(final Collection parent, final String name) throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<Permission>(){
+                @Override
+                public Permission withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    if(parent instanceof LocalCollection) {
+                        return ((LocalCollection) parent).getCollection().getResourceEntry(broker, name).getPermissions();
+                    }
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+        }
+    }
+
+    @Override
+    public Date getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
+        try {
+            return executeWithBroker(new BrokerOperation<Date>(){
+                @Override
+                public Date withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    if(parent instanceof LocalCollection) {
+                        return new Date(((LocalCollection) parent).getCollection().getSubCollectionEntry(broker, name).getCreated());
+                    }
+                    return null;
+                }
+            });
+        } catch(Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+        }
+    }
+    
+    
+    
 
     @Override
     public Permission getPermissions(final Resource resource) throws XMLDBException {

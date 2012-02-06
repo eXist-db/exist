@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
@@ -192,6 +193,143 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             throw new PermissionDeniedException("Permission denied to read collection: " + path);
         }
         return subcollections.contains(path);
+    }
+    
+    public abstract class CollectionEntry {
+        private final XmldbURI uri;
+        private Permission permissions;
+        private long created = -1;
+        
+        
+        protected CollectionEntry(XmldbURI uri, Permission permissions) {
+            this.uri = uri;
+            this.permissions = permissions;
+        }
+        
+        public abstract void readMetadata(DBBroker broker);
+        public abstract void read(VariableByteInput is) throws IOException;
+
+        public XmldbURI getUri() {
+            return uri;
+        }
+        
+        public long getCreated() {
+            return created;
+        }
+
+        protected void setCreated(long created) {
+            this.created = created;
+        }
+
+        public Permission getPermissions() {
+            return permissions;
+        }
+
+        protected void setPermissions(Permission permissions) {
+            this.permissions = permissions;
+        }
+        
+        
+    }
+    
+    public class SubCollectionEntry extends CollectionEntry {
+        
+        public SubCollectionEntry(XmldbURI uri) {
+            super(uri, PermissionFactory.getDefaultCollectionPermission());
+        }
+
+        @Override
+        public void readMetadata(DBBroker broker) {
+            broker.readCollectionEntry(this);
+        }
+
+        @Override
+        public void read(VariableByteInput is) throws IOException {
+            is.skip(1);
+
+            final int collLen = is.readInt();
+            for(int i = 0; i < collLen; i++) {
+                is.readUTF();
+            }
+
+            getPermissions().read(is);
+
+            setCreated(is.readLong());
+        }
+
+        public void read(Collection collection) {
+            setPermissions(collection.getPermissionsNoLock());
+            setCreated(collection.getCreationTime());
+        }
+    }
+    
+    public class DocumentEntry extends CollectionEntry {
+
+        public DocumentEntry(DocumentImpl document) {
+            super(document.getURI(), document.getPermissions());
+            setCreated(document.getMetadata().getCreated());
+        }
+
+        @Override
+        public void readMetadata(DBBroker broker) {
+        }
+
+        @Override
+        public void read(VariableByteInput is) throws IOException {
+        }
+    }
+    
+    public List<CollectionEntry> getEntries(DBBroker broker) throws PermissionDeniedException {
+        
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Permission denied to read collection: " + path);
+        }
+        
+        final List<CollectionEntry> list = new ArrayList<CollectionEntry>();
+        
+        final Iterator<XmldbURI> itSubCollection = subcollections.iterator();
+        while(itSubCollection.hasNext()) {
+            final XmldbURI subCollectionURI = itSubCollection.next();
+            
+            final CollectionEntry entry = new SubCollectionEntry(subCollectionURI);
+            entry.readMetadata(broker);
+            
+            list.add(entry);
+        }
+        
+        for(DocumentImpl document : documents.values()) {
+            final CollectionEntry entry = new DocumentEntry(document);
+            entry.readMetadata(broker);
+            
+            list.add(entry);
+        }
+        
+        
+        return list;
+    }
+    
+    public CollectionEntry getSubCollectionEntry(DBBroker broker, String name) throws PermissionDeniedException {
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Permission denied to read collection: " + path);
+        }
+        
+        final XmldbURI subCollectionURI = getURI().append(name);
+        
+        final CollectionEntry entry = new SubCollectionEntry(subCollectionURI);
+        entry.readMetadata(broker);
+        
+        return entry;
+    }
+    
+    public CollectionEntry getResourceEntry(DBBroker broker, String name) throws PermissionDeniedException {
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
+            throw new PermissionDeniedException("Permission denied to read collection: " + path);
+        }
+        
+        final CollectionEntry entry = new DocumentEntry(documents.get(name));
+        entry.readMetadata(broker);
+        
+        return entry;
     }
 
     /**

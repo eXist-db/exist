@@ -872,5 +872,10 @@ public interface RpcAPI {
 	throws EXistException, PermissionDeniedException, URISyntaxException;
     
     public void runCommand(XmldbURI collectionURI, Vector<String> params) throws EXistException, PermissionDeniedException;
+    
+    
+    public long getSubCollectionCreationTime(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
+    public HashMap<String, Object> getSubCollectionPermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
+    public HashMap<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 }
 

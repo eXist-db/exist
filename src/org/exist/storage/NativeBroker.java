@@ -47,6 +47,7 @@ import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
+import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.CollectionTrigger;
@@ -789,6 +790,54 @@ public class NativeBroker extends DBBroker {
         }
         
         return collections;
+    }
+    
+    @Override
+    public void readCollectionEntry(SubCollectionEntry entry) {
+        
+        final XmldbURI uri = prepend(entry.getUri().toCollectionPathURI());
+        
+        Collection collection;
+        final CollectionCache collectionsCache = pool.getCollectionsCache();  
+        synchronized(collectionsCache) {
+            collection = collectionsCache.get(uri);
+            if (collection == null) {
+                final Lock lock = collectionsDb.getLock();
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    
+                    Value key = new CollectionStore.CollectionKey(uri.toString());
+                    VariableByteInput is = collectionsDb.getAsStream(key);
+                    if (is == null) {
+                        LOG.warn("Could not read collection entry for: " + uri);
+                        return;
+                    }
+                    
+                    //read the entry details
+                    entry.read(is);
+                    
+                } catch (UnsupportedEncodingException e) {
+                    LOG.error("Unable to encode '" + uri + "' in UTF-8");
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            } else {
+                
+                if (!collection.getURI().equalsInternal(uri)) {
+                    LOG.error("The collection received from the cache is not the requested: " + uri +
+                        "; received: " + collection.getURI());
+                    return;
+                }
+                
+                entry.read(collection);
+                
+                collectionsCache.add(collection);
+            }
+        }
     }
     
     /**

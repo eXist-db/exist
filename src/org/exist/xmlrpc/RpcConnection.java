@@ -1527,6 +1527,96 @@ public class RpcConnection implements RpcAPI {
         }
     }
     
+    @Override
+    public HashMap<String, Object> getSubCollectionPermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException {
+        
+        final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
+        DBBroker broker = null;
+        Collection collection = null;
+
+        try {
+            broker = factory.getBrokerPool().get(user);
+            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            Permission perm = null;
+            if(collection == null) {
+                throw new EXistException("collection " + uri + " not found");
+            } else {
+                perm = collection.getSubCollectionEntry(broker, name).getPermissions();
+            }
+
+            HashMap<String, Object> result = new HashMap<String, Object>();
+            result.put("owner", perm.getOwner().getName());
+            result.put("group", perm.getGroup().getName());
+            result.put("permissions", Integer.valueOf(perm.getMode()));
+
+            if(perm instanceof ACLPermission) {
+                result.put("acl", getACEs(perm));
+            }
+            return result;
+        } finally {
+            if(collection != null){
+                collection.release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
+        }
+    }
+    
+    @Override
+    public HashMap<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException {
+         final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
+        DBBroker broker = null;
+        Collection collection = null;
+
+        try {
+            broker = factory.getBrokerPool().get(user);
+            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            Permission perm = null;
+            if(collection == null) {
+                throw new EXistException("collection " + uri + " not found");
+            } else {
+                perm = collection.getResourceEntry(broker, name).getPermissions();
+            }
+
+            HashMap<String, Object> result = new HashMap<String, Object>();
+            result.put("owner", perm.getOwner().getName());
+            result.put("group", perm.getGroup().getName());
+            result.put("permissions", Integer.valueOf(perm.getMode()));
+
+            if(perm instanceof ACLPermission) {
+                result.put("acl", getACEs(perm));
+            }
+            return result;
+        } finally {
+            if(collection != null){
+                collection.release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
+        }   
+    }
+    
+    @Override
+    public long getSubCollectionCreationTime(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException {
+        final XmldbURI uri = XmldbURI.xmldbUriFor(parentPath);
+        DBBroker broker = null;
+        Collection collection = null;
+
+        try {
+            broker = factory.getBrokerPool().get(user);
+            collection = broker.openCollection(uri, Lock.READ_LOCK);
+            if(collection == null) {
+                throw new EXistException("collection " + uri + " not found");
+            } else {
+                return collection.getSubCollectionEntry(broker, name).getCreated();
+            }
+
+        } finally {
+            if(collection != null){
+                collection.release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
+        }   
+    }
+    
     private List<ACEAider> getACEs(Permission perm) {
         final List<ACEAider> aces = new ArrayList<ACEAider>();
         final ACLPermission aclPermission = (ACLPermission)perm;
