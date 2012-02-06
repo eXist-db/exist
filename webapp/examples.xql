@@ -110,5 +110,14 @@ declare function local:list-packages($packages as element(packages)*)
         <emphasis>Public Repo</emphasis>.</para>
         
         { local:list-packages($ex:default-packages) }
+
+		<section>
+			<title>XForms Examples</title>
+
+			<para>The <a href="xforms/examples.xml">XForms examples</a> demonstrating the
+			integration of betterFORM and XSLTForms have not been moved into installable
+			packages yet. Please go to the <a href="xforms/examples.xml">XForms demo page</a>.
+			</para>
+		</section>
     </chapter>
 </book>
