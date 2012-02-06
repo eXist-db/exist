@@ -497,6 +497,8 @@ public class TryCatchExpression extends AbstractExpression {
      * Write stacktrace to String. 
      */
     private String getStackTrace(Throwable t){
+		if (t == null)
+			return null;
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
