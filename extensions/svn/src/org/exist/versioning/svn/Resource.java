@@ -147,6 +147,9 @@ public class Resource extends File {
 	    		tm.abort(transaction);
 				return false;
 			}
+		} catch (Exception e) {
+			return false;
+			
 		} finally {
 			if (db != null)
 				db.release(broker);
@@ -182,6 +185,10 @@ public class Resource extends File {
 	    		tm.abort(transaction);
 				return false;
 			}
+
+		} catch (Exception e) {
+			return false;
+		
 		} finally {
 			if (db != null)
 				db.release(broker);
@@ -411,6 +418,10 @@ public class Resource extends File {
 				if (resource != null)
 					resource.getUpdateLock().release(Lock.READ_LOCK);
 			}
+			
+		} catch (Exception e) {
+			return false;
+			
 		} finally {
 			if (db != null)
 				db.release(broker);
@@ -615,12 +626,12 @@ public class Resource extends File {
 	    	try {
 	        	collection.getLock().acquire(Lock.READ_LOCK);
 	
-	        	File[] children = new File[collection.getChildCollectionCount() + 
-	                                       collection.getDocumentCount()];
+	        	File[] children = new File[collection.getChildCollectionCount(broker) + 
+	                                       collection.getDocumentCount(broker)];
 	            
 	            //collections
 	            int j = 0;
-	            for (Iterator<XmldbURI> i = collection.collectionIterator(); i.hasNext(); j++)
+	            for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); j++)
 	            	children[j] = new Resource(i.next());
 	
 	            //collections
@@ -646,10 +657,18 @@ public class Resource extends File {
 	        } catch (LockException e) {
 	        	//throw new IOException("Failed to acquire lock on collection '" + uri + "'");
 	    		return null;
+	        
+	        } catch (Exception e) {
+	        	return null;
+	        	
 		    } finally {
 		        collection.release(Lock.READ_LOCK);
 		    }
-	    } finally {
+	    
+		} catch (Exception e) {
+			return null;
+			
+		} finally {
 	    	if (db != null)
 	    		db.release(broker);
 	    }
