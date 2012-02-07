@@ -27,7 +27,7 @@ import module namespace date="http://exist-db.org/xquery/admin-interface/date" a
 declare function local:sub-collections($root as xs:string, $children as xs:string*, $user as xs:string) {
         for $child in $children
         let $processChild := 
-			local:collections(concat($root, '/', $child), $child, $user)
+    		local:collections(concat($root, '/', $child), $child, $user)
 		where exists($processChild)
 		order by $child ascending
         return
@@ -89,29 +89,40 @@ declare function local:canWriteResource($collection as xs:string, $resource as x
 
 declare function local:collections($root as xs:string, $child as xs:string, 
 	$user as xs:string) {
-    let $children := xmldb:get-child-collections($root)
-    let $canWrite := local:canWrite($root, $user)
-    return
-        if (local:canRead($root, $user)) then (
-            <title>{xmldb:decode-uri(xs:anyURI($child))}</title>,
-            <isFolder json:literal="true">true</isFolder>,
-            <key>{xmldb:decode-uri(xs:anyURI($root))}</key>,
-            <writable json:literal="true">{if ($canWrite) then 'true' else 'false'}</writable>,
-            <addClass>{if ($canWrite) then 'writable' else 'readable'}</addClass>,
+    if (sm:has-access(xs:anyURI($root), "x")) then
+        let $children := xmldb:get-child-collections($root)
+        let $canWrite := 
+            (: local:canWrite($root, $user) :)
+            sm:has-access(xs:anyURI($root), "w")
+        return
+            if (sm:has-access(xs:anyURI($root), "r")) then (
+                <title>{xmldb:decode-uri(xs:anyURI($child))}</title>,
+                <isFolder json:literal="true">true</isFolder>,
+                <key>{xmldb:decode-uri(xs:anyURI($root))}</key>,
+                <writable json:literal="true">{if ($canWrite) then 'true' else 'false'}</writable>,
+                <addClass>{if ($canWrite) then 'writable' else 'readable'}</addClass>,
             	if (exists($children)) then
-                local:sub-collections($root, $children, $user)
+                    local:sub-collections($root, $children, $user)
             	else
                 ()
-        ) else
-            ()
+            ) else
+                ()  
+    else
+        ()
 };
 
 declare function local:list-collection-contents($collection as xs:string, $user as xs:string) {
     let $subcollections := 
         for $child in xmldb:get-child-collections($collection)
+        where sm:has-access(xs:anyURI(concat($collection, "/", $child)), "r")
         return
             concat("/", $child)
-    for $resource in ($subcollections, xmldb:get-child-resources($collection))
+    let $resources :=
+        for $r in xmldb:get-child-resources($collection)
+        where sm:has-access(xs:anyURI(concat($collection, "/", $r)), "r")
+        return
+            $r
+    for $resource in ($subcollections, $resources)
 	order by $resource ascending
 	return
 		$resource
@@ -135,42 +146,44 @@ declare function local:resources($collection as xs:string, $user as xs:string) {
                     concat($collection, $resource)
                 else
                     concat($collection, "/", $resource)
-            let $permissions := 
-                if ($isCollection) then
-                    xmldb:permissions-to-string(xmldb:get-permissions($path))
-                else
-                    xmldb:permissions-to-string(xmldb:get-permissions($collection, $resource))
-            let $owner := 
-                if ($isCollection) then
-                    xmldb:get-owner($path)
-                else
-                    xmldb:get-owner($collection, $resource)
-            let $group :=
-                if ($isCollection) then
-                    xmldb:get-group($path)
-                else
-                    xmldb:get-group($collection, $resource)
-            let $lastMod := 
-                if ($isCollection) then
-                    date:format-dateTime(xmldb:created($path))
-                else
-                    date:format-dateTime(xmldb:created($collection, $resource))
-            let $canWrite :=
-                if ($isCollection) then
-                    local:canWrite(concat($collection, "/", $resource), $user)
-                else
-                    local:canWriteResource($collection, $resource, $user)
+            where sm:has-access(xs:anyURI($path), "r")
             order by $resource ascending
             return
-                <json:value json:array="true">
-                    <name>{xmldb:decode-uri(if ($isCollection) then substring-after($resource, "/") else $resource)}</name>
-                    <permissions>{$permissions}</permissions>
-                    <owner>{$owner}</owner>
-                    <group>{$group}</group>
-                    <last-modified>{$lastMod}</last-modified>
-                    <writable json:literal="true">{$canWrite}</writable>
-                    <isCollection json:literal="true">{$isCollection}</isCollection>
-                </json:value>
+                let $permissions := 
+                    if ($isCollection) then
+                        xmldb:permissions-to-string(xmldb:get-permissions($path))
+                    else
+                        xmldb:permissions-to-string(xmldb:get-permissions($collection, $resource))
+                let $owner := 
+                    if ($isCollection) then
+                        xmldb:get-owner($path)
+                    else
+                        xmldb:get-owner($collection, $resource)
+                let $group :=
+                    if ($isCollection) then
+                        xmldb:get-group($path)
+                    else
+                        xmldb:get-group($collection, $resource)
+                let $lastMod := 
+                    if ($isCollection) then
+                        date:format-dateTime(xmldb:created($path))
+                    else
+                        date:format-dateTime(xmldb:created($collection, $resource))
+                let $canWrite :=
+                    if ($isCollection) then
+                        local:canWrite(concat($collection, "/", $resource), $user)
+                    else
+                        local:canWriteResource($collection, $resource, $user)
+                return
+                    <json:value json:array="true">
+                        <name>{xmldb:decode-uri(if ($isCollection) then substring-after($resource, "/") else $resource)}</name>
+                        <permissions>{$permissions}</permissions>
+                        <owner>{$owner}</owner>
+                        <group>{$group}</group>
+                        <last-modified>{$lastMod}</last-modified>
+                        <writable json:literal="true">{$canWrite}</writable>
+                        <isCollection json:literal="true">{$isCollection}</isCollection>
+                    </json:value>
         }
             </items>
         </json:value>

@@ -8,12 +8,14 @@
 
 a:link,a:visited {
 	color: #666;
+    text-decoration: none;
 }
 
 .ui-layout-north {
 	padding: 0;
 	background-color: #F3F3F3;
 	height: 75px;
+    overflow: hidden;
 }
 
 .ui-layout-center {
@@ -21,22 +23,13 @@ a:link,a:visited {
 	border: 0;
 }
 
-#header {
-	position: relative;
-	height: 75px;
-	margin: 0 0 0 8px;
-	text-align: right;
-	background-image: url("../images/logo.png");
-	background-repeat: no-repeat;
-	background-position: center left;
-}
-
 #login-info {
-	position: absolute;
-	right: 8px;
-	bottom: 10px;
+    margin-left: 10px;
+    padding-left: 18px;
+    border-left: 1px solid #bbb;
+    font-size: 75%;
 }
-
+    
 #login-error {
 	color: red;
 	text-align: center;
@@ -55,14 +48,20 @@ a:link,a:visited {
 	border-left: 1px solid #bbb;
 }
 
+.editor-header {
+    background-image: url("../images/logo.png");
+    background-repeat: no-repeat;
+    background-position: 8px 4px;
+}
+
 .menu {
 	height: 24px;
-	background: #F7F7F7;
-	width: 100%;
-	margin-bottom: 4px;
+	padding-bottom: 4px;
+    padding-left: 200px;
 }
 
 .menu ul {
+    background: #F7F7F7;
 	margin: 0 0 4px 0;
 	padding: 0;
 	list-style: none;
@@ -119,7 +118,7 @@ Sub level menu list items (undo style from Top level List Items)
 	font-size: 75%;
 	padding: 5px;
 	margin: 0;
-	background: #F0F0F0;
+	background-image: #F0F0F0;
 	width: 160px; /*width of sub menus*/
 }
 
@@ -130,7 +129,7 @@ Sub level menu list items (undo style from Top level List Items)
 
 #toolbar {
 	padding: 6px 4px;
-	margin: 0;
+	margin: 0 0 0 200px;
 }
 
 #status-bar {
@@ -145,6 +144,16 @@ Sub level menu list items (undo style from Top level List Items)
 #error-status {
 	font-size: 85%;
 	color: red;
+}
+
+#status-bar:hover {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    height: auto;
+    overflow: visible;
 }
 
 #search-box {

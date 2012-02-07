@@ -24,6 +24,6 @@ let $xml := request:get-parameter("xml", ())
 return
 	try {
 		util:parse($xml)
-	} catch exerr:EXXQDY0002 ($code, $desc, $val) {
-		$val
+	} catch exerr:EXXQDY0002  {
+		$err:value
 	}

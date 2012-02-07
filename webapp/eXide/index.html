@@ -33,34 +33,28 @@
         <script src="resources/scripts/ace/mode-css.js" type="text/javascript" charset="utf-8"/>
 
     <!--  Uncompressed Javascript files. Uncomment for development/debugging. -->
-<!--        <script type="text/javascript" src="src/ace-modes.js"/>-->
-<!--        <script type="text/javascript" src="src/util.js"/>-->
-<!--        <script type="text/javascript" src="src/events.js"/>-->
-<!--        <script type="text/javascript" src="src/commands.js"/>-->
-<!--        <script type="text/javascript" src="src/mode-helper.js"/>-->
-<!--        <script type="text/javascript" src="src/xquery-helper.js"/>-->
-<!--        <script type="text/javascript" src="src/xml-helper.js"/>-->
-<!--        <script type="text/javascript" src="src/outline.js"/>-->
-<!--        <script type="text/javascript" src="src/editor.js"/>-->
-<!--        <script type="text/javascript" src="src/deployment.js"/>-->
-<!--        <script type="text/javascript" src="src/eXide.js"/>-->
-<!--        <script type="text/javascript" src="src/templates.js"/>-->
-<!--        <script type="text/javascript" src="src/resources.js"/>-->
-<!--        <script type="text/javascript" src="src/find.js"/>-->
+        <!--script type="text/javascript" src="src/ace-modes.js"/>
+        <script type="text/javascript" src="src/util.js"/>
+        <script type="text/javascript" src="src/events.js"/>
+        <script type="text/javascript" src="src/commands.js"/>
+        <script type="text/javascript" src="src/mode-helper.js"/>
+        <script type="text/javascript" src="src/xquery-helper.js"/>
+        <script type="text/javascript" src="src/xml-helper.js"/>
+        <script type="text/javascript" src="src/outline.js"/>
+        <script type="text/javascript" src="src/editor.js"/>
+        <script type="text/javascript" src="src/deployment.js"/>
+        <script type="text/javascript" src="src/eXide.js"/>
+        <script type="text/javascript" src="src/templates.js"/>
+        <script type="text/javascript" src="src/resources.js"/>
+        <script type="text/javascript" src="src/find.js"/-->
     
     <!-- Compressed version -->
-        <script type="text/javascript" src="resources/scripts/eXide-1.0.min.js"/>
+    	<script type="text/javascript" src="resources/scripts/eXide-1.0.min.js"/>
     </head>
     <body>
         <div class="ui-layout-north">
-            <div id="header">
-                <div id="login-info">
-                    <span id="user"/>
-                    <a id="login" href="#">Login</a>
-                </div>
-            </div>
-        </div>
-        <div class="ui-layout-center">
+<!--            <div id="header">-->
+<!--            </div>-->
             <div class="editor-header">
                 <div class="menu">
                     <ul>
@@ -150,6 +144,10 @@
                             </ul>
                         </li>
                     </ul>
+                    <span id="login-info">
+                        <span id="user"/>
+                        <a id="login" href="#">Login</a>
+                    </span>
                 </div>
                 <span id="toolbar">
                     <span class="options">
@@ -169,11 +167,13 @@
                     <button id="run">Run</button>
                     <button id="validate">Check</button>
                 </span>
-                <div id="tabs-container">
-                    <ul id="tabs"/>
-                    <button id="tab-prev">Previous</button>
-                    <button id="tab-next">Next</button>
-                </div>
+            </div>
+        </div>
+        <div class="ui-layout-center">
+            <div id="tabs-container">
+                <ul id="tabs"/>
+                <button id="tab-prev">Previous</button>
+                <button id="tab-next">Next</button>
             </div>
             <pre class="content" id="editor"/>
             <div id="status-bar">
@@ -346,6 +346,15 @@
                         <li>
                             <input type="checkbox" name="print-margin" checked="checked"/>
                             <label for="print-margin">Show Print Margin:</label>
+                        </li>
+                        <li>
+                            <select name="soft-wrap">
+                                <option value="off">Off</option>
+                                <option value="free">Screen width</option>
+                                <option value="40">40</option>
+                                <option value="80">80</option>
+                            </select>
+                            <label for="soft-wrap">Soft wrap:</label>
                         </li>
                         <li>
                             <input type="checkbox" name="show-invisibles"/>
