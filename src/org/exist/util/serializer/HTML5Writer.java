@@ -84,4 +84,11 @@ public class HTML5Writer extends XHTMLWriter {
 	protected boolean isInlineTag(String namespaceURI, String localName) {
 		return inlineTags.contains(localName);
 	}
+	
+	@Override
+	protected boolean needsEscape(char ch) {
+		if ("script".equals(currentTag))
+			return !(ch == '<' || ch == '>' || ch == '&');
+		return super.needsEscape(ch);
+	}
 }
