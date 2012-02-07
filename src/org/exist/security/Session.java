@@ -33,7 +33,7 @@ import org.exist.storage.BrokerPool;
  */
 public class Session {
 	
-	private String id = "";
+	private String id;
 	private Subject subject;
 	
 	private long lastUse;
@@ -81,6 +81,6 @@ public class Session {
 	}
 
 	public boolean isValid() {
-		return (System.currentTimeMillis() - lastUse > 30*1000); //30 seconds
+		return (System.currentTimeMillis() - lastUse <= 30*1000); //30 seconds
 	}
 }
