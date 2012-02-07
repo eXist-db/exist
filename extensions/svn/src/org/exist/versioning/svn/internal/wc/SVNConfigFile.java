@@ -26,7 +26,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.versioning.svn.Resource;
-import org.jfree.util.Log;
+import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.internal.util.SVNHashMap;
 import java.util.Map;
 
@@ -42,6 +42,7 @@ public class SVNConfigFile {
     private Resource myFile;
     private String[] myLines;
     private long myLastModified;
+    final static Logger LOG = Logger.getLogger(SVNConfigFile.class);
 
     public SVNConfigFile(Resource file) {
         myFile = file.getAbsoluteFile();
@@ -312,7 +313,7 @@ public class SVNConfigFile {
 		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/servers", serversFile);
 		    writeFile("/org/tmatesoft/svn/core/internal/wc/config/README.txt", readmeFile);
     	} catch (EXistException e) {
-    		Log.debug(e);
+    		LOG.debug(e);
 		} finally {
 			if (broker != null && subject != null)
 				broker.setSubject(subject);
