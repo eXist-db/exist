@@ -92,7 +92,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         return emptyTags.contains(tag);
     }
     
-    private String currentTag;
+    protected String currentTag;
     
     /**
      * 

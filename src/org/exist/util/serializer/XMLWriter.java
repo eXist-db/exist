@@ -446,6 +446,10 @@ public class XMLWriter {
         doctypeWritten = true;
     }
     
+    protected boolean needsEscape(char ch) {
+    	return true;
+    }
+    
 	private final void writeChars(CharSequence s, boolean inAttribute)
 			throws IOException {
 		boolean[] specialChars = inAttribute ? attrSpecialChars
@@ -471,35 +475,38 @@ public class XMLWriter {
 			// writer.write(s.subSequence(pos, i).toString());
 			if (i >= len)
 				return;
-			switch (ch) {
-			case '<':
-				writer.write("&lt;");
-				break;
-			case '>':
-				writer.write("&gt;");
-				break;
-			case '&':
-				writer.write("&amp;");
-				break;
-			case '\r':
-				writer.write("&#xD;");
-				break;
-			case '\n':
-				writer.write("&#xA;");
-				break;
-			case '\t':
-				writer.write("&#x9;");
-				break;
-			case '"':
-				writer.write("&#34;");
-				break;
-			// non-breaking space:
-			case 160:
-				writer.write("&#160;");
-				break;
-			default:
-				writeCharacterReference(ch);
-			}
+			if (needsEscape(ch)) {
+				switch (ch) {
+				case '<':
+					writer.write("&lt;");
+					break;
+				case '>':
+					writer.write("&gt;");
+					break;
+				case '&':
+					writer.write("&amp;");
+					break;
+				case '\r':
+					writer.write("&#xD;");
+					break;
+				case '\n':
+					writer.write("&#xA;");
+					break;
+				case '\t':
+					writer.write("&#x9;");
+					break;
+				case '"':
+					writer.write("&#34;");
+					break;
+				// non-breaking space:
+				case 160:
+					writer.write("&#160;");
+					break;
+				default:
+					writeCharacterReference(ch);
+				}
+			} else
+				writer.write(ch);
 			pos = ++i;
 		}
 	}
