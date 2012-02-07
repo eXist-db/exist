@@ -340,8 +340,11 @@ public class XBot extends PircBot {
 			collection.storeResource(res);
             UserManagementService umgr = (UserManagementService)
                 collection.getService("UserManagementService", "1.0");
-            umgr.setPermissions(res, PermissionFactory.getPermission(null, properties.getProperty("xmldb.user"),
-                    properties.getProperty("xmldb.password"), 0744));
+            umgr.setPermissions(res, 
+            		PermissionFactory.getPermission(
+            				properties.getProperty("xmldb.user"),
+            				properties.getProperty("xmldb.password"),
+            				0744));
 		}
 		return resourceName;
 	}
