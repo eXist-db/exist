@@ -27,7 +27,7 @@ declare function local:fix-permissions($collection as xs:string, $resource as xs
     return
         if ($mime eq "application/xquery") then
             let $mode := sm:get-permissions($path)/sm:permission/@mode
-            let $permissions := xmldb:string-to-permissions(replace($mode, "(..).(..).(..).", "$1u$2u$3u"))
+            let $permissions := xmldb:string-to-permissions(replace($mode, "(..).(..).(..).", "$1x$2x$3x"))
             let $user := xmldb:get-current-user()
             let $group := xmldb:get-user-groups($user)[1]
             return

@@ -180,7 +180,7 @@ declare function deploy:set-execute-bit($resource as xs:string) {
     let $mode :=
         sm:get-permissions($resource)/sm:permission/@mode
     return
-        replace($mode, "(..).(..).(..).", "$1u$2u$3u")
+        replace($mode, "(..).(..).(..).", "$1x$2x$3x")
 };
 
 declare function deploy:copy-templates($target as xs:string, $source as xs:string, $userData as xs:string+, $permissions as xs:int) {
