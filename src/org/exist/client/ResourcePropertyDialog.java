@@ -300,7 +300,7 @@ public class ResourcePropertyDialog extends JDialog {
 		vbox.add(perms[0]);
 		perms[1] = new JCheckBox("write", (current & 0x2) == 0x2);
 		vbox.add(perms[1]);
-		perms[2] = new JCheckBox("update", (current & 0x1) == 0x1);
+		perms[2] = new JCheckBox("execute", (current & 0x1) == 0x1);
 		vbox.add(perms[2]);
 		return vbox;
 	}
