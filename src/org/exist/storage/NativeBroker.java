@@ -3775,13 +3775,11 @@ public class NativeBroker extends DBBroker {
                 else
                     doc = new DocumentImpl(pool, collection);
                 doc.read(istream);
-                collection.addDocument(null, NativeBroker.this, doc);
+                collection.addDocumentInternal(doc);
             } catch (EOFException e) {
                 LOG.error("EOFException while reading document data", e);
             } catch (IOException e) {
                 LOG.error("IOException while reading document data", e);
-            } catch (PermissionDeniedException pde) {
-                LOG.error("PermissionDeniedException while reading document data", pde);
             }
             return true;
         }

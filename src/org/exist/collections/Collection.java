@@ -367,11 +367,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param  doc
      */
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) throws PermissionDeniedException {
-        // Wrong place for checking permissions. This method is called when reading
-		// the list of documents for the collection, NOT for creating a collection.
-        /*if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
-        }*/
+        }
         
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
 			try {
@@ -380,6 +378,21 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 				// abort
 				return;
 			}
+        documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+    }
+
+    /**
+     * Add a document to the collection, used by DocumentCallback
+     *
+     * @param  doc
+     */
+    //TODO: redesign to make this method private 
+    public void addDocumentInternal(DocumentImpl doc) {
+        if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+        	//throw new EXistException("Document must have ID.");
+        	LOG.error("Document must have ID. ["+doc+"]");
+        	return;
+        }
         documents.put(doc.getFileURI().getRawCollectionPath(), doc);
     }
 
