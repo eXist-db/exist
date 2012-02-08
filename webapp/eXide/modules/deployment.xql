@@ -310,18 +310,6 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                         else
                             ()
                     }
-                    {
-                        if (not($collection)) then
-                            <li>
-                                <div class="hint">The source collection for the application's code. For testing purposes, this
-                                should be different from the target collection.</div>
-                                <input type="text" name="collection" placeholder="/db/source/yourapp" 
-                                    size="40"/>
-                                <label for="collection">Source Collection:</label>
-                            </li>
-                        else
-                            ()
-                    }
                     <li>
                         <div class="hint">The collection where the app will be installed. Should normally be different from 
                         the source collection.</div>
@@ -463,7 +451,7 @@ declare function deploy:download($collection as xs:string, $expathConf as elemen
     )
 };
 
-declare function deploy:deploy($collection as xs:string, $expathConf as element(),
+declare function deploy:deploy($collection as xs:string, $target as xs:string, $expathConf as element(),
     $repoConf as element()) {
     let $null := util:declare-option("exist:serialize", "method=json media-type=application/json")
     let $port := request:get-server-port()
@@ -472,10 +460,10 @@ declare function deploy:deploy($collection as xs:string, $expathConf as element(
     let $null := (
         repo:remove($expathConf/@name),
         repo:install($url),
-        repo:deploy($expathConf/@name)
+        repo:deploy($expathConf/@name, $target)
     )
     return
-        <info>{substring-after($repoConf/repo:target, "/db/")}</info>
+        <info>{substring-after($target, "/db/")}</info>
 };
 
 declare function deploy:get-info-from-descriptor($collection as xs:string) {
@@ -501,6 +489,7 @@ declare function deploy:get-info($collection as xs:string) {
             <info/>
 };
 
+let $target := request:get-parameter("target", ())
 let $collectionParam := request:get-parameter("collection", ())
 let $collection :=
     if ($collectionParam) then
@@ -508,7 +497,7 @@ let $collection :=
         return
             if ($root) then $root else $collectionParam
     else
-        ()
+        $target
 let $info := request:get-parameter("info", ())
 let $deploy := request:get-parameter("deploy", ())
 let $download := request:get-parameter("download", ())
@@ -522,7 +511,7 @@ return
         else if ($info) then
             deploy:get-info($info)
         else if ($deploy) then
-            deploy:deploy($collection, $expathConf, $repoConf)
+            deploy:deploy($collection, $target, $expathConf, $repoConf)
         else if ($abbrev) then
             deploy:store($collection, $expathConf)
         else
