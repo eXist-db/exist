@@ -291,7 +291,7 @@ public class Deploy extends BasicFunction {
 			XmldbURI name = XmldbURI.createInternal("repo.xml");
 			IndexInfo info = collection.validateXMLResource(txn, context.getBroker(), name, updatedXML);
 			Permission permission = info.getDocument().getPermissions();
-			setPermissions(MimeType.XML_TYPE, permission);
+			setPermissions(false, MimeType.XML_TYPE, permission);
 			
 			collection.store(txn, context.getBroker(), info, updatedXML, false);
 			
@@ -388,7 +388,7 @@ public class Deploy extends BasicFunction {
 		Collection collection = null;
 		try {
 			collection = context.getBroker().getOrCreateCollection(txn, target);
-			setPermissions(null, collection.getPermissions());
+			setPermissions(true, null, collection.getPermissions());
 			context.getBroker().saveCollection(txn, collection);
 			mgr.commit(txn);
 		} catch (Exception e) {
@@ -439,7 +439,7 @@ public class Deploy extends BasicFunction {
 						IndexInfo info = targetCollection.validateXMLResource(txn, context.getBroker(), name, is);
 						info.getDocument().getMetadata().setMimeType(mime.getName());
 						Permission permission = info.getDocument().getPermissions();
-						setPermissions(mime, permission);
+						setPermissions(false, mime, permission);
 						
 						targetCollection.store(txn, context.getBroker(), info, is, false);
 					} else {
@@ -450,7 +450,7 @@ public class Deploy extends BasicFunction {
 						is.close();
 						
 						Permission permission = doc.getPermissions();
-						setPermissions(mime, permission);
+						setPermissions(false, mime, permission);
 						doc.getMetadata().setMimeType(mime.getName());
 						context.getBroker().storeXMLResource(txn, doc);
 					}
@@ -468,7 +468,7 @@ public class Deploy extends BasicFunction {
 	 * @param mime
 	 * @param permission
 	 */
-	private void setPermissions(MimeType mime, Permission permission) throws PermissionDeniedException {
+	private void setPermissions(boolean isCollection, MimeType mime, Permission permission) throws PermissionDeniedException {
             if (user != null){
                 permission.setOwner(user);
             }
@@ -483,7 +483,7 @@ public class Deploy extends BasicFunction {
                 mode = permission.getMode();
             }
             
-            if (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName())){
+            if (isCollection || (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))) {
                 mode = mode | 0111;
             }
             permission.setMode(mode);
