@@ -580,7 +580,7 @@ public abstract class DBBroker extends Observable {
     public abstract void storeBinaryResource(Txn transaction,
         BinaryDocument blob, InputStream is) throws IOException;
 
-    public abstract void getCollectionResources(Collection collection);
+    public abstract void getCollectionResources(Collection.InternalAccess collectionInternalAccess);
 
     /* *
      * Retrieve the binary data stored under the resource descriptor
