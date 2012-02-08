@@ -2163,13 +2163,14 @@ public class NativeBroker extends DBBroker {
 
     //TODO : consider a better cooperation with Collection -pb
     @Override
-    public void getCollectionResources(Collection collection) {
-        Lock lock = collectionsDb.getLock();
+    public void getCollectionResources(Collection.InternalAccess collectionInternalAccess) {
+        final Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
-            Value key = new CollectionStore.DocumentKey(collection.getId());
+            Value key = new CollectionStore.DocumentKey(collectionInternalAccess.getId());
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
-            collectionsDb.query(query, new DocumentCallback(collection));
+            
+            collectionsDb.query(query, new DocumentCallback(collectionInternalAccess));
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {
@@ -3759,28 +3760,36 @@ public class NativeBroker extends DBBroker {
 
     private final class DocumentCallback implements BTreeCallback {
 
-        private Collection collection;
+        private final Collection.InternalAccess collectionInternalAccess;
 
-        public DocumentCallback(Collection collection) {
-            this.collection = collection;
+        private DocumentCallback(final Collection.InternalAccess collectionInternalAccess) {
+            this.collectionInternalAccess = collectionInternalAccess;
         }
 
-        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+        @Override
+        public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
+            
             try {
-                byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE]; 
-                VariableByteInput istream = collectionsDb.getAsStream(pointer);
-                DocumentImpl doc = null;
-                if (type == DocumentImpl.BINARY_FILE)
-                    doc = new BinaryDocument(pool, collection);
-                else
-                    doc = new DocumentImpl(pool, collection);
+                final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE]; 
+                final VariableByteInput istream = collectionsDb.getAsStream(pointer);
+                
+                final DocumentImpl doc;
+                if (type == DocumentImpl.BINARY_FILE) {
+                    doc = new BinaryDocument(pool);
+                } else {
+                    doc = new DocumentImpl(pool);
+                }
                 doc.read(istream);
-                collection.addDocumentInternal(doc);
+                
+                collectionInternalAccess.addDocument(doc);
             } catch (EOFException e) {
                 LOG.error("EOFException while reading document data", e);
             } catch (IOException e) {
                 LOG.error("IOException while reading document data", e);
+            } catch(EXistException ee) {
+                LOG.error("EXistException while reading document data", ee);
             }
+            
             return true;
         }
     }

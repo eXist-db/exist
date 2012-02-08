@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
@@ -378,21 +377,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 				// abort
 				return;
 			}
-        documents.put(doc.getFileURI().getRawCollectionPath(), doc);
-    }
-
-    /**
-     * Add a document to the collection, used by DocumentCallback
-     *
-     * @param  doc
-     */
-    //TODO: redesign to make this method private 
-    public void addDocumentInternal(DocumentImpl doc) {
-        if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-        	//throw new EXistException("Document must have ID.");
-        	LOG.error("Document must have ID. ["+doc+"]");
-        	return;
-        }
         documents.put(doc.getFileURI().getRawCollectionPath(), doc);
     }
 
@@ -1009,6 +993,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         ostream.writeLong(created);
     }
     
+    public interface InternalAccess {
+        public void addDocument(DocumentImpl doc) throws EXistException;
+        public int getId();
+        
+    }
+    
     /**
      * Read collection contents from the stream.
      *
@@ -1031,7 +1021,25 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             throw new PermissionDeniedException("Permission denied to open the Collection " + path);
         }
         
-        broker.getCollectionResources(this);
+        final Collection col = this;
+        broker.getCollectionResources(new InternalAccess() {
+            @Override
+            public void addDocument(DocumentImpl doc) throws EXistException {
+                doc.setCollection(col);
+                
+                if(doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+                    LOG.error("Document must have ID. ["+doc+"]");
+                    throw new EXistException("Document must have ID.");
+                }
+                
+                documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+            }
+
+            @Override
+            public int getId() {
+                return col.getId();
+            }
+        });
     }
 
     /**
