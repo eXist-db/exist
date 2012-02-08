@@ -176,15 +176,15 @@ public class Deploy extends BasicFunction {
 						} catch (Exception e) {
 							throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI: " + args[1].getStringValue(), args[1], e);
 						}
-					}
-
-					ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
-					if (target != null) {
-						// determine target collection
-						try {
-							targetCollection = XmldbURI.create(target.getStringValue());
-						} catch (Exception e) {
-							throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI for <target> element: " + target.getStringValue(), args[0], e);
+					} else {
+						ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
+						if (target != null) {
+							// determine target collection
+							try {
+								targetCollection = XmldbURI.create(target.getStringValue());
+							} catch (Exception e) {
+								throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad collection URI for <target> element: " + target.getStringValue(), args[0], e);
+							}
 						}
 					}
 
