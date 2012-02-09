@@ -53,19 +53,19 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public TextImpl( NodeId nodeId, String data ) {
         super( Node.TEXT_NODE, nodeId, data );
     }
-    
-	public String getLocalName() {		
+
+    public String getLocalName() {
         return "";
-	}    
-	
-	public String getNamespaceURI() {
+    }
+
+    public String getNamespaceURI() {
         return "";
-	}		
-    
+    }
+
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
         byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
-        		NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
+            NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
         int pos = 0;
         data[pos] = (byte) ( Signatures.Char << 0x5 );
         pos += LENGTH_SIGNATURE_LENGTH;
@@ -77,15 +77,11 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return data;
     }
 
-    public static StoredNode deserialize(byte[] data,
-                                       int start,
-                                       int len,
-                                       DocumentImpl doc,
-                                       boolean pooled) {
+    public static StoredNode deserialize(byte[] data, int start, int len,
+            DocumentImpl doc, boolean pooled) {
         TextImpl text;
-        if(pooled)
+        if (pooled)
             text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
-//            text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
         else
             text = new TextImpl();
         int pos = start;
@@ -111,7 +107,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public void deleteData( int offset, int count ) throws DOMException {
         super.deleteData( offset, count );
     }
-    
+
     public int getLength() {
         return super.getLength();
     }
@@ -141,7 +137,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
     }
 
     public String toString( boolean top ) {
-        if ( top ) {
+        if (top) {
             StringBuilder result = new StringBuilder();
             result.append( "<exist:text " );
             result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
@@ -153,134 +149,133 @@ public class TextImpl extends CharacterDataImpl implements Text {
             result.append( getData() );
             result.append( "</exist:text>" );
             return result.toString();
-        }
-        else
+        } else {
             return toString();
+        }
     }
 
     public String toString() {
         return super.toString();
     }
-    
+
     public int getChildCount() {
     	return 0;
     }
-    
+
     public boolean hasChildNodes() {
-        return false;        
+        return false;
     }
-    
-    public Node getFirstChild() {   
+
+    public Node getFirstChild() {
         //bad implementations don't call hasChildNodes before
         return null;
-    }    
+    }
 
-	/** ? @see org.w3c.dom.Text#isElementContentWhitespace()
-	 */
-	public boolean isElementContentWhitespace() {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Text#isElementContentWhitespace()
+     */
+    public boolean isElementContentWhitespace() {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Text#getWholeText()
-	 */
-	public String getWholeText() {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Text#getWholeText()
+     */
+    public String getWholeText() {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
-	 */
-	public Text replaceWholeText(String content) throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
+     */
+    public Text replaceWholeText(String content) throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#getBaseURI()
-	 */
-	public String getBaseURI() {
-		Node parent = getParentNode();
-		if (parent != null)
-			return parent.getBaseURI();
-		
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getBaseURI()
+     */
+    public String getBaseURI() {
+        Node parent = getParentNode();
+        if (parent != null)
+            return parent.getBaseURI();
+        else
+            return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-	 */
-	public short compareDocumentPosition(Node other) throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return 0;
-	}
+    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
+     */
+    public short compareDocumentPosition(Node other) throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return 0;
+    }
 
-	/** ? @see org.w3c.dom.Node#getTextContent()
-	 */
-	public String getTextContent() throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getTextContent()
+     */
+    public String getTextContent() throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-	 */
-	public void setTextContent(String textContent) throws DOMException {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		
-	}
+    /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
+     */
+    public void setTextContent(String textContent) throws DOMException {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    }
 
-	/** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-	 */
-	public boolean isSameNode(Node other) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
+     */
+    public boolean isSameNode(Node other) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-	 */
-	public String lookupPrefix(String namespaceURI) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
+     */
+    public String lookupPrefix(String namespaceURI) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-	 */
-	public boolean isDefaultNamespace(String namespaceURI) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
+     */
+    public boolean isDefaultNamespace(String namespaceURI) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-	 */
-	public String lookupNamespaceURI(String prefix) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
+     */
+    public String lookupNamespaceURI(String prefix) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-	 */
-	public boolean isEqualNode(Node arg) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return false;
-	}
+    /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
+     */
+    public boolean isEqualNode(Node arg) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return false;
+    }
 
-	/** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-	 */
-	public Object getFeature(String feature, String version) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
+     */
+    public Object getFeature(String feature, String version) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-	 */
-	public Object setUserData(String key, Object data, UserDataHandler handler) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
+     */
+    public Object setUserData(String key, Object data, UserDataHandler handler) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 
-	/** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-	 */
-	public Object getUserData(String key) {
-		// maybe _TODO_ - new DOM interfaces - Java 5.0
-		return null;
-	}
+    /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
+     */
+    public Object getUserData(String key) {
+        // maybe _TODO_ - new DOM interfaces - Java 5.0
+        return null;
+    }
 }
 

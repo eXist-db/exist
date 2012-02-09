@@ -78,15 +78,11 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         if (getLocalName().equals(name)) {
             return this;
         }
-
         List<Configuration> list = getConfigurations(name);
-
         if (list == null)
             return null;
-
         if (list.size() > 0)
             return list.get(0);
-
         return null;
     }
 
@@ -130,25 +126,20 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         NodeList nodes = getElementsByTagNameNS(NS, name);
         for(int i = 0; i < nodes.getLength(); i++) {
             Node item = nodes.item(i);
-
             if(!item.hasAttributes()){
                 return null;
             }
-
             NamedNodeMap attrs = item.getAttributes();
             if(attrs.getLength() != 1){
                 return null;
             }
-
             String key = attrs.getNamedItem("key").getNodeValue();
             String value = item.getNodeValue();
             if(value == null || value.isEmpty()){
                 return null;
             }
-
             map.put(key, value);
         }
-
         return map;
     }
 
@@ -211,7 +202,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         String value = getProperty(name);
         if (value == null)
             return null;
-        
         return Integer.valueOf(value);
     }
 
@@ -262,7 +252,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     @Override
     public Set<String> getProperties() {
-        
         Set<String> properties = new HashSet<String>();
         NamedNodeMap attrs = getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
@@ -270,7 +259,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
                 properties.add(attrs.item(i).getNodeName());
         }
-        
         NodeList children = getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
@@ -279,28 +267,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             }
         }
         return properties;
-
-        /*
-        Set<String> properties = new HashSet<String>();
-        Map<String, Boolean> map = new HashMap<String, Boolean>();
-        //XXX: detect single element as field value
-        NodeList children = getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-                //properties.add(child.getNodeName());
-            } else if (child.getNodeType() == Node.ELEMENT_NODE) {
-                map.put(child.getNodeName(), map.containsKey(child.getNodeName()));
-            }
-        }
-        for (Entry<String, Boolean> entry : map.entrySet()) {
-            if (!entry.getValue())
-                properties.add(entry.getKey());
-        }
-
-        return properties;
-         */
-        
     }
 
     @Override
@@ -345,7 +311,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
                         configuredObjectReference.get(), 
                         getProxyObject().getDocumentAtExist().getURI()
                     );
-                //Configurator.save(getProxyObject().getDocumentAtExist());
             } catch (Exception e) {
                throw new ConfigurationException(e.getMessage(), e);
             } finally {
@@ -353,13 +318,13 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             }
         }
     }
-    
+
     @Override
     public void save(final DBBroker broker) throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
         if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
             return; 
-        synchronized (this) {
+        synchronized(this) {
             try {
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
@@ -367,7 +332,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
                         configuredObjectReference.get(), 
                         getProxyObject().getDocumentAtExist().getURI()
                     );
-                //Configurator.save(getProxyObject().getDocumentAtExist());
             } catch (Exception e) {
                throw new ConfigurationException(e.getMessage(), e);
             } finally {
@@ -379,15 +343,14 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ConfigurationImpl) {
-            ConfigurationImpl conf = (ConfigurationImpl) obj;
-            if (!(getName().equals( conf.getName() )))
+            ConfigurationImpl conf = (ConfigurationImpl)obj;
+            if (!(getName().equals(conf.getName())))
                 return false;
             String id = getProperty(Configuration.ID);
             if (id == null) {
-                //LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
                 return false;
             }
-            if ( id.equals( conf.getProperty( Configuration.ID ) ) )
+            if (id.equals(conf.getProperty(Configuration.ID)))
                 return true;
         }
         return false;
@@ -395,15 +358,14 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     public boolean equals(Object obj, String uniqField) {
         if (obj instanceof ConfigurationImpl) {
-            ConfigurationImpl conf = (ConfigurationImpl) obj;
-            if (!(getName().equals( conf.getName() )))
+            ConfigurationImpl conf = (ConfigurationImpl)obj;
+            if (!(getName().equals(conf.getName())))
                 return false;
-            String uniq = getProperty( uniqField );
+            String uniq = getProperty( uniqField);
             if (uniq == null) {
-                //LOG.warn("Configuration must have id ["+obj+"] to perform 'equals'.");
                 return false;
             }
-            if ( uniq.equals( conf.getProperty( uniqField ) ) )
+            if (uniq.equals(conf.getProperty(uniqField)))
                 return true;
         }
         return false;

@@ -24,42 +24,42 @@ import org.w3c.dom.NodeList;
 
 public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
-	private static final long serialVersionUID = 5505309345079983721L;
+    private static final long serialVersionUID = 5505309345079983721L;
 
-	public NodeListImpl() {
-		super();
-	}
+    public NodeListImpl() {
+        super();
+    }
 
-	public NodeListImpl(int initialCapacity) {
-		super(initialCapacity);
-	}
+    public NodeListImpl(int initialCapacity) {
+        super(initialCapacity);
+    }
 
-	public boolean add(Node node) {
-		if (node == null)
-			return false;
-		return super.add(node);
-	}
+    public boolean add(Node node) {
+        if (node == null)
+            return false;
+        return super.add(node);
+    }
 
-	public boolean addAll(NodeList other) {
-		if (other.getLength() == 0)
-			return false;
-		
-		boolean result = true;
-		
-		for (int i = 0; i < other.getLength(); i++)
-			if (!add(other.item(i)))
-				result = false;
-		
-		return result;
-	}
+    public boolean addAll(NodeList other) {
+        if (other.getLength() == 0)
+            return false;
+        boolean result = true;
+        for (int i = 0; i < other.getLength(); i++) {
+            if (!add(other.item(i))) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
 
-	public int getLength() {
-		return size();
-	}
+    public int getLength() {
+        return size();
+    }
 
-	public Node item(int pos) {
-		if (pos >= size())
-			return null;
-		return (Node) get(pos);
-	}
+    public Node item(int pos) {
+        if (pos >= size())
+            return null;
+        return (Node) get(pos);
+    }
 }
