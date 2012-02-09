@@ -513,19 +513,22 @@ public class TryCatchExpression extends AbstractExpression {
         QName q_value = new QName("xquery-stack-trace", Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX);
         LocalVariable localVar = new LocalVariable( q_value);
         localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));
-        
-        List<XPathException.FunctionStackElement> callStack = xpe.getCallStack();
-        if(callStack==null){
-            localVar.setValue(Sequence.EMPTY_SEQUENCE);
-            
-        } else {
-            Sequence result = new ValueSequence();
-            for(XPathException.FunctionStackElement elt : callStack){
-                result.add(new StringValue("at " + elt.toString()) );
-            }
-            localVar.setValue(result);  
+       
+	    if (xpe == null) {
+			localVar.setValue(Sequence.EMPTY_SEQUENCE);
+		} else { 
+			List<XPathException.FunctionStackElement> callStack = xpe.getCallStack();
+			if(callStack==null){
+				localVar.setValue(Sequence.EMPTY_SEQUENCE);
+				
+			} else {
+				Sequence result = new ValueSequence();
+				for(XPathException.FunctionStackElement elt : callStack){
+					result.add(new StringValue("at " + elt.toString()) );
+				}
+				localVar.setValue(result);  
+			}
         }
-        
         context.declareVariableBinding(localVar);
     }
     
@@ -536,22 +539,27 @@ public class TryCatchExpression extends AbstractExpression {
         LocalVariable localVar = new LocalVariable( q_value);
         localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));
 
-        StackTraceElement[] elements = xpe.getStackTrace();     
-        if (elements == null) {
-            localVar.setValue(Sequence.EMPTY_SEQUENCE);
-            
-        } else {
-            Sequence result = new ValueSequence();
-            addJavaTrace(xpe,result);
-            localVar.setValue(result);                    
+		if (xpe == null) {
+			localVar.setValue(Sequence.EMPTY_SEQUENCE);
+		} else {
+			StackTraceElement[] elements = xpe.getStackTrace();     
+			if (elements == null) {
+				localVar.setValue(Sequence.EMPTY_SEQUENCE);
+				
+			} else {
+				Sequence result = new ValueSequence();
+				addJavaTrace(xpe,result);
+				localVar.setValue(result);                    
+			}
         }
-        
         context.declareVariableBinding(localVar);
     }
     
     // Local recursive function
     private void addJavaTrace(Throwable xpe, Sequence result) throws XPathException {
 
+		if (xpe == null)
+			return;
         StackTraceElement[] elements = xpe.getStackTrace();
 
         result.add(new StringValue("Caused by: " + xpe.toString()));
