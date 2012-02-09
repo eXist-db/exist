@@ -11,4 +11,4 @@ REQUEST=`cat <<ENDE
 ENDE
 `
 
-echo $REQUEST | curl -i --data @- http://localhost:8080/exist/rest/db
+echo $REQUEST | curl -H 'content-type:text/xml' -i --data-binary @- http://localhost:8080/exist/rest/db
