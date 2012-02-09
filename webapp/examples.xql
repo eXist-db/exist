@@ -8,11 +8,24 @@ declare variable $ex:default-packages :=
         <package uri="http://exist-db.org/apps/demo">
             <abbrev>demo</abbrev>
             <title>eXist-db Demo Apps</title>
+            <description>Demonstrates many of eXist's features in one app. Start here
+            to get an overview and edit/extend the examples.</description> 
+        </package>
+        <package uri="http://exist-db.org/apps/mobile-function-docs">
+            <abbrev>mobile-function-docs</abbrev>
+            <title>Mobile Function Documentation</title>
+            <description>Shows how to generate HTML for being viewed on a phone.</description>
+        </package>
+        <package uri="http://exist-db.org/apps/library">
+            <abbrev>tamboti</abbrev>
+            <title>Tamboti Metadata Framework</title>
+            <description>Complex example: a complete search interface and management system
+            for bibliographic data.</description>
         </package>
     </packages>
 ;
 
-declare function local:display-package($name as xs:string) 
+declare function local:display-package($name as xs:string, $package as element()) 
 {
     let $pkg := local:metadata($name)
     let $pkg-name := $pkg/package:package/string(@name)
@@ -31,6 +44,7 @@ declare function local:display-package($name as xs:string)
             <td class="status installed">Yes</td>
             <td>{$pkg-abbrev}</td>
             <td><a href="{$app-url}">{$pkg-title/text()}</a></td>
+            <td>{$package/description/text()}</td>
         </tr>
 };
 
@@ -66,6 +80,7 @@ declare function local:list-packages($packages as element(packages)*)
                 <th class="status">Installed</th>
                 <th>Short Name</th>
                 <th>Name</th>
+                <th>Description</th>
             </tr>
         </thead>
     {
@@ -73,12 +88,13 @@ declare function local:list-packages($packages as element(packages)*)
         for $pkg in $packages/package
         return
             if (index-of($all, $pkg/@uri/string())) then
-                local:display-package($pkg/@uri/string())
+                local:display-package($pkg/@uri/string(), $pkg)
             else
                 <tr>
                     <td class="status not-installed">No</td>
                     <td>{$pkg/abbrev/text()}</td>
                     <td>{$pkg/title/text()}</td>
+                    <td>{$pkg/description/text()}</td>
                 </tr>
     }
     </table> 
