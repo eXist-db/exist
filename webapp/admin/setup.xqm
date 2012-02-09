@@ -254,5 +254,5 @@ declare function setup:select() as element()
 declare function setup:report() as element()
 {
     <p>Files have been loaded. You can now go to the
-    <a href="../examples.xml">examples page</a>.</p>
+    <a href="../examples.xql">DemoApps examples page</a>.</p>
 };

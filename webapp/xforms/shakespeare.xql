@@ -1,5 +1,5 @@
 xquery version "1.0";
-
+(: $Id$ :)
 declare namespace q="http://exist-db.org/xquery/query";
 
 import module namespace kwic="http://exist-db.org/xquery/kwic";

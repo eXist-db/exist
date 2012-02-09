@@ -40,7 +40,7 @@
         <para>Since eXist v1.3/1.4, xprocxq is built and configured by default and should be enabled and ready to use.
          </para>
         <para>
-            Check out some simple <a href="examples.xml">examples</a> to check if your eXist is working.
+            Check out some simple <a href="examples.xql">DemoApps examples</a> to check if your eXist is working.
 		</para>
 
             <important>
