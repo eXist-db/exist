@@ -128,7 +128,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      */
     public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc) {
         return deserialize(data, start, len, doc, false);
-    }    
+    }
 
     /**
      * Read a node from the specified byte array.
@@ -316,11 +316,11 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                     }
                 }
             } catch (IOException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (XMLStreamException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (EXistException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
@@ -331,9 +331,6 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             return null;
         NodeId siblingId = nodeId.precedingSibling();
         return ownerDocument.getNode(siblingId);
-        //PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
-        //((StoredNode) parent).accept(visitor);
-        //return visitor.last;
     }
 
     /**
@@ -359,11 +356,11 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                     }
                 }
             } catch (IOException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (XMLStreamException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } catch (EXistException e) {
-                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
@@ -371,14 +368,6 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         }
         NodeId siblingId = nodeId.nextSibling();
         return ownerDocument.getNode(siblingId);
-        //Iterator iterator = getBroker().getNodeIterator(this);
-        //iterator.next();
-        //getLastNode(iterator, this);
-        //if (iterator.hasNext()) {
-            //StoredNode sibling = (StoredNode) iterator.next();
-            //return sibling.nodeId.isSiblingOf(nodeId) ? sibling : null;
-        //}
-        //return null;
     }
 
     protected StoredNode getLastNode(StoredNode node) {
@@ -393,19 +382,15 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             }
             return reader.getPreviousNode();
         } catch (IOException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
         } catch (XMLStreamException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
         } catch (EXistException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }
         return null;
-        //final Iterator iterator = getBroker().getNodeIterator(node);
-        //TODO : hasNext() test ? -pb
-        //iterator.next();
-        //return getLastNode(iterator, node);
     }
 
     protected StoredNode getLastNode(Iterator<StoredNode> iterator, StoredNode node) {
@@ -458,7 +443,6 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     public void release() {
         ownerDocument = null;
         clear();
-        //NodeObjectPool.getInstance().returnNode(this);
         NodePool.getInstance().returnNode(this);
     }
 
@@ -470,7 +454,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             iterator.next();
             return accept(iterator, visitor);
         } catch (EXistException e) {
-            LOG.warn("Exception while reading node: " + e.getMessage(), e);
+            LOG.error("Exception while reading node: " + e.getMessage(), e);
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }
@@ -506,16 +490,16 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 
     @Override
     public int compareTo(Object other) {
-        if( !( other instanceof StoredNode ) ) {
-            return( Constants.INFERIOR );
+        if( !(other instanceof StoredNode)) {
+            return(Constants.INFERIOR);
         }
         StoredNode n = (StoredNode)other;
-        if( n.ownerDocument == ownerDocument ) {
+        if(n.ownerDocument == ownerDocument) {
             return nodeId.compareTo(n.nodeId);
-        } else if( ownerDocument.getDocId() < n.ownerDocument.getDocId() ) {
-            return( Constants.INFERIOR );
+        } else if(ownerDocument.getDocId() < n.ownerDocument.getDocId()) {
+            return(Constants.INFERIOR);
         } else {
-            return( Constants.SUPERIOR );
+            return(Constants.SUPERIOR);
         }
     }
 }

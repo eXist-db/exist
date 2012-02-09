@@ -50,7 +50,7 @@ import org.exist.numbering.NodeId;
  * @author wolf
  */
 public abstract class Match implements Comparable<Match> {
-	
+
     public final static class Offset implements Comparable<Offset> {
         private int offset;
         private final int length;
@@ -59,19 +59,19 @@ public abstract class Match implements Comparable<Match> {
             this.offset = offset;
             this.length = length;
         }
-        
+
         public int getOffset() {
             return offset;
         }
-        
+
         public void setOffset(int offset) {
             this.offset = offset;
         }
-        
+
         public int getLength() {
             return length;
         }
-        
+
         @Override
         public int compareTo(Offset other) {
             return this.offset - other.offset;
@@ -86,42 +86,42 @@ public abstract class Match implements Comparable<Match> {
     private final int context;
     protected NodeId nodeId;
     private final String matchTerm;
-    
+
     private int[] offsets;
     private int[] lengths;
-    
-	private int currentOffset = 0;
-    
-	protected Match nextMatch = null;
-	
+
+    private int currentOffset = 0;
+
+    protected Match nextMatch = null;
+
     protected Match(int contextId, NodeId nodeId, String matchTerm) {
         this(contextId, nodeId, matchTerm, 1);
     }
-    
-	protected Match(int contextId, NodeId nodeId, String matchTerm, int frequency) {
+
+    protected Match(int contextId, NodeId nodeId, String matchTerm, int frequency) {
         this.context = contextId;
         this.nodeId = nodeId;
         this.matchTerm = matchTerm;
-		this.offsets = new int[frequency];
+        this.offsets = new int[frequency];
         this.lengths = new int[frequency];
     }
-	
-	protected Match(Match match) {
+
+    protected Match(Match match) {
         this.context = match.context;
         this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
-		this.offsets = match.offsets;
+        this.offsets = match.offsets;
         this.lengths = match.lengths;
         this.currentOffset = match.currentOffset;
     }
-	
-	public NodeId getNodeId() {
-		return nodeId;
-	}
-	
-	public int getFrequency() {
-		return currentOffset;
-	}
+
+    public NodeId getNodeId() {
+        return nodeId;
+    }
+
+    public int getFrequency() {
+        return currentOffset;
+    }
 
     public String getMatchTerm() {
         return matchTerm;
@@ -136,13 +136,12 @@ public abstract class Match implements Comparable<Match> {
     public abstract Match newCopy();
 
     public abstract String getIndexId();
-    
+
     public void addOffset(int offset, int length) {
         if (currentOffset == offsets.length) {
             int noffsets[] = new int[currentOffset + 1];
             System.arraycopy(offsets, 0, noffsets, 0, currentOffset);
             offsets = noffsets;
-            
             int nlengths[] = new int[currentOffset + 1];
             System.arraycopy(lengths, 0, nlengths, 0, currentOffset);
             lengths = nlengths;
@@ -150,7 +149,7 @@ public abstract class Match implements Comparable<Match> {
         offsets[currentOffset] = offset;
         lengths[currentOffset++] = length;
     }
-    
+
     private void addOffset(Offset offset) {
         addOffset(offset.offset, offset.length);
     }
@@ -187,18 +186,15 @@ public abstract class Match implements Comparable<Match> {
     /**
      * Constructs a match starting with this match and followed by the other match if possible
      *
-     * @param other
-     *            a match following this match
-     * @param minDistance
-     *            the minimum distance between this and the other match
-     * @param maxDistance
-     *            the maximum distance between this and the other match
-     * @return a match starting with this match and followed by the other match in the specified distance range if such
-     *         a match exists or null if no such match found
+     * @param other a match following this match
+     * @param minDistance the minimum distance between this and the other match
+     * @param maxDistance the maximum distance between this and the other match
+     * @return a match starting with this match and followed by 
+     *  the other match in the specified distance range if such
+     *  a match exists or null if no such match found
      */
     public Match followedBy(final Match other, final int minDistance, final int maxDistance) {
         List<Offset> newMatchOffsets = new LinkedList<Offset>();
-
         for (int i = 0; i < currentOffset; i++) {
             for (int j = 0; j < other.currentOffset; j++) {
                 int distance = other.offsets[j] - (offsets[i] + lengths[i]);
@@ -206,11 +202,9 @@ public abstract class Match implements Comparable<Match> {
                     newMatchOffsets.add(new Offset(offsets[i], lengths[i] + distance + other.lengths[j]));
                 }
             }
-                }
-
+        }
         if (newMatchOffsets.isEmpty())
             return null;
-
         int wildCardSize = newMatchOffsets.get(0).length - matchTerm.length() - other.matchTerm.length();
         StringBuilder matched = new StringBuilder(matchTerm);
         for (int ii = 0; ii < wildCardSize; ii++) {
@@ -218,9 +212,7 @@ public abstract class Match implements Comparable<Match> {
         }
         matched.append(other.matchTerm);
         Match result = createInstance(context, nodeId, matched.toString());
-
         result.addOffsets(newMatchOffsets);
-
         return result;
     }
 
@@ -228,11 +220,9 @@ public abstract class Match implements Comparable<Match> {
      * Expand the match backwards by at least minExpand up to maxExpand characters. The match is expanded as much as
      * possible.
      *
-     * @param minExpand
-     *            the minimum number of characters to expand this match by
-     * @param maxExpand
-     *            the maximum number of characters to expand this match by
-     * @return the expanded match if possible, or null if no offset is far enough from the start.
+     * @param minExpand The minimum number of characters to expand this match by
+     * @param maxExpand The maximum number of characters to expand this match by
+     * @return The expanded match if possible, or null if no offset is far enough from the start.
      */
     public Match expandBackward(final int minExpand, final int maxExpand) {
         Match result = null;
@@ -242,7 +232,7 @@ public abstract class Match implements Comparable<Match> {
                     StringBuilder matched = new StringBuilder();
                     for (int ii = 0; ii < minExpand; ii++) {
                         matched.append('?');
-            }
+                    }
                     matched.append(matchTerm);
                     result = createInstance(context, nodeId, matched.toString());
                 }
@@ -250,7 +240,6 @@ public abstract class Match implements Comparable<Match> {
                 result.addOffset(offsets[i] - expand, lengths[i] + expand);
             }
         }
-
         return result;
     }
 
@@ -258,32 +247,26 @@ public abstract class Match implements Comparable<Match> {
      * Expand the match forward by at least minExpand up to maxExpand characters. The match is expanded as much as
      * possible.
      *
-     * @param minExpand
-     *            the minimum number of characters to expand this match by
-     * @param maxExpand
-     *            the maximum number of characters to expand this match by
-     * @param dataLength
-     *            the length of the valued of the node, limiting the expansion
-     * @return the expanded match if possible, or null if no offset is far enough from the end.
+     * @param minExpand The minimum number of characters to expand this match by
+     * @param maxExpand The maximum number of characters to expand this match by
+     * @param dataLength The length of the valued of the node, limiting the expansion
+     * @return The expanded match if possible, or null if no offset is far enough from the end.
      */
     public Match expandForward(final int minExpand, final int maxExpand, final int dataLength) {
         Match result = null;
         for (int i = 0; i < currentOffset; i++) {
             if (offsets[i] + lengths[i] + minExpand <= dataLength) {
                 int expand = Math.min(dataLength - offsets[i] - lengths[i], maxExpand);
-
                 if (result == null) {
                     StringBuilder matched = new StringBuilder(matchTerm);
                     for (int ii = 0; ii < expand; ii++) {
                         matched.append('?');
-        }
+                    }
                     result = createInstance(context, nodeId, matched.toString());
                 }
-
                 result.addOffset(offsets[i], lengths[i] + expand);
             }
         }
-
         return result;
     }
 
@@ -293,12 +276,10 @@ public abstract class Match implements Comparable<Match> {
 
     private Match filterOffsets(F<Offset, Boolean> predicate) {
         Match result = createInstance(context, nodeId, matchTerm);
-
         for (Offset o : getOffsets()) {
             if (predicate.f(o).booleanValue())
                 result.addOffset(o);
         }
-
         if (result.currentOffset == 0)
             return null;
         else
@@ -308,13 +289,12 @@ public abstract class Match implements Comparable<Match> {
     /**
      * Creates a match containing only those offsets starting at the given position.
      *
-     * @param pos
-     *            required offset
-     * @return a match containing only offsets starting at the given position, or null if no such offset exists.
+     * @param pos Required offset
+     * @return a match containing only offsets starting at the given position, 
+     * or null if no such offset exists.
      */
     public Match filterOffsetsStartingAt(final int pos) {
         return filterOffsets(new F<Offset, Boolean>() {
-
             @Override
             public Boolean f(Offset a) {
                 return (a.offset == pos);
@@ -325,13 +305,12 @@ public abstract class Match implements Comparable<Match> {
     /**
      * Creates a match containing only those offsets ending at the given position.
      *
-     * @param pos
-     *            required position of the end of the matches
-     * @return a match containing only offsets ending at the given position, or null if no such offset exists.
+     * @param pos Required position of the end of the matches
+     * @return A match containing only offsets ending at the given position, 
+     * or null if no such offset exists.
      */
     public Match filterOffsetsEndingAt(final int pos) {
         return filterOffsets(new F<Offset, Boolean>() {
-
             @Override
             public Boolean f(Offset a) {
                 return (a.offset + a.length == pos);
@@ -340,18 +319,15 @@ public abstract class Match implements Comparable<Match> {
     }
 
     /**
-     * Creates a match containing only non-overlapping offsets, preferring longer matches, and then matches from left to
-     * right.
+     * Creates a match containing only non-overlapping offsets, 
+     * preferring longer matches, and then matches from left to right.
      *
      * @return a match containing only non-overlapping offsets
      */
     public Match filterOutOverlappingOffsets() {
-
         if (currentOffset == 0)
             return newCopy();
-
         List<Offset> newMatchOffsets = getOffsets();
-
         Collections.sort(newMatchOffsets, new Comparator<Offset>() {
 
             // Sort by descending length to get greedier matches first, then position for left to right matching
@@ -364,10 +340,8 @@ public abstract class Match implements Comparable<Match> {
                     return o1.offset - o2.offset;
             }
         });
-
         List<Offset> nonOverlappingMatchOffsets = new LinkedList<Offset>();
         nonOverlappingMatchOffsets.add(newMatchOffsets.remove(0));
-
         for (Offset o : newMatchOffsets) {
             boolean overlapsExistingOffset = false;
             for (Offset eo : nonOverlappingMatchOffsets) {
@@ -376,11 +350,9 @@ public abstract class Match implements Comparable<Match> {
                     break;
                 }
             }
-
             if (!overlapsExistingOffset)
                 nonOverlappingMatchOffsets.add(o);
         }
-
         Match result = createInstance(context, nodeId, matchTerm);
         result.addOffsets(nonOverlappingMatchOffsets);
         return result;
@@ -394,11 +366,11 @@ public abstract class Match implements Comparable<Match> {
      * @return true if a match starts at the given position
      */
     public boolean hasMatchAt(int pos) {
-    	for (int i = 0; i < currentOffset; i++) {
-    		if (offsets[i] == pos)
-    			return true;
-    	}
-    	return false;
+        for (int i = 0; i < currentOffset; i++) {
+            if (offsets[i] == pos)
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -408,11 +380,11 @@ public abstract class Match implements Comparable<Match> {
      * @return true if the given position is within a match
      */
     public boolean hasMatchAround(int pos) {
-    	for (int i = 0; i < currentOffset; i++) {
-    		if (offsets[i] + lengths[i] >= pos)
-    			return true;
-    	}
-    	return false;
+        for (int i = 0; i < currentOffset; i++) {
+            if (offsets[i] + lengths[i] >= pos)
+                return true;
+        }
+        return false;
     }
 
     public void mergeOffsets(Match other) {
@@ -423,27 +395,28 @@ public abstract class Match implements Comparable<Match> {
     }
 
     public Match getNextMatch() {
-		return nextMatch;
-	}
+        return nextMatch;
+    }
 
     public static boolean matchListEquals(Match m1, Match m2) {
-    	Match n1 = m1;
-    	Match n2 = m2;
-    	while (n1 != null) {
-    		if (n2 == null || n1 != n2)
-    			return false;
-    		n1 = n1.nextMatch;
-    		n2 = n2.nextMatch;
-    	}
-    	return true;
+        Match n1 = m1;
+        Match n2 = m2;
+        while (n1 != null) {
+            if (n2 == null || n1 != n2)
+                return false;
+            n1 = n1.nextMatch;
+            n2 = n2.nextMatch;
+        }
+        return true;
     }
-    
+
     @Override
-	public boolean equals(Object other) {
-		if(!(other instanceof Match))
-			return false;
+    public boolean equals(Object other) {
+        if(!(other instanceof Match))
+            return false;
         Match om = (Match) other;
-        return om.matchTerm != null && om.matchTerm.equals(matchTerm) &&
+        return om.matchTerm != null &&
+                om.matchTerm.equals(matchTerm) &&
                 om.nodeId.equals(nodeId);
     }
 
@@ -452,19 +425,19 @@ public abstract class Match implements Comparable<Match> {
             return true;
         return
             (nodeId == other.nodeId || nodeId.equals(other.nodeId)) &&
-                matchTerm.equals(other.matchTerm);
+            matchTerm.equals(other.matchTerm);
     }
 
     /**
-	 * Used to sort matches. Terms are compared by their string 
-	 * length to have the longest string first.
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(Match other) {
+     * Used to sort matches. Terms are compared by their string 
+     * length to have the longest string first.
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(Match other) {
         return matchTerm.compareTo(other.matchTerm);
-	}
+    }
 
     @Override
     public String toString() {

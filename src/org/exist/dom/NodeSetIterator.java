@@ -33,13 +33,12 @@ import java.util.Iterator;
  */
 public interface NodeSetIterator extends Iterator<NodeProxy> {
 
-    
     /**
      * Look ahead: returns the node at the iterator's current position but
      * does not move the iterator to the next node.
      */
     public NodeProxy peekNode();
-    
+
     /**
      * Reposition the iterator on the given NodeProxy, so calling
      * {@link Iterator#next()} will return this NodeProxy. If the
@@ -49,5 +48,5 @@ public interface NodeSetIterator extends Iterator<NodeProxy> {
      * @param proxy
      */
     public void setPosition(NodeProxy proxy);
-    
+
 }

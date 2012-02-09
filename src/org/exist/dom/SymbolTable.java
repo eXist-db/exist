@@ -182,7 +182,6 @@ public class SymbolTable {
         if(name.length() == 0) {
             throw new IllegalArgumentException("name is empty");
         }
-
         return (short)localNameSymbols.getId(name);
     }
 
@@ -196,7 +195,6 @@ public class SymbolTable {
         if(ns == null || ns.length() == 0) {
             return 0;
         }
-
         return (short)namespaceSymbols.getId(ns);
     }
 
@@ -247,11 +245,9 @@ public class SymbolTable {
      */
     private synchronized void writeAll(VariableByteOutputStream os) throws IOException {
         os.writeFixedInt(FILE_FORMAT_VERSION_ID);
-
         localNameSymbols.write(os);
         namespaceSymbols.write(os);
         mimeTypeSymbols.write(os);
-
         changed = false;
     }
 
@@ -265,7 +261,6 @@ public class SymbolTable {
         localNameSymbols.clear();
         namespaceSymbols.clear();
         mimeTypeSymbols.clear();
-
         while(is.available() > 0) {
             readEntry(is);
         }
@@ -275,23 +270,18 @@ public class SymbolTable {
         byte type = is.readByte();
         int id = is.readInt();
         String key = is.readUTF();
-
         //symbol types can be written in any order by SymbolCollection.getById()->SymbolCollection.write()
         switch(SymbolType.valueOf(type)) {
-            case NAME:
-                localNameSymbols.add(id, key);
-                break;
-
-            case NAMESPACE:
-                namespaceSymbols.add(id, key);
-                break;
-
-            case MIMETYPE:
-                mimeTypeSymbols.add(id, key);
-                break;
-
-            default:
-                //do nothing
+        case NAME:
+            localNameSymbols.add(id, key);
+            break;
+        case NAMESPACE:
+            namespaceSymbols.add(id, key);
+            break;
+        case MIMETYPE:
+            mimeTypeSymbols.add(id, key);
+            break;
+        //Removed default clause
         }
     }
 
@@ -304,11 +294,9 @@ public class SymbolTable {
     protected final void readLegacy(VariableByteInput istream) throws IOException {
 
         istream.readShort(); //read max, not needed anymore
-	istream.readShort(); //read nsMax not needed anymore
-
+        istream.readShort(); //read nsMax not needed anymore
         String key;
         short id;
-
         //read local names
         int count = istream.readInt();
         for(int i = 0; i < count; i++) {
@@ -316,7 +304,6 @@ public class SymbolTable {
             id = istream.readShort();
             localNameSymbols.add(id, key);
         }
-
         //read namespaces
         count = istream.readInt();
         for(int i = 0; i < count; i++) {
@@ -324,7 +311,6 @@ public class SymbolTable {
             id = istream.readShort();
             namespaceSymbols.add(id, key);
         }
-
         // default mappings have been removed
         // read them for backwards compatibility
         count = istream.readInt();
@@ -332,7 +318,6 @@ public class SymbolTable {
             istream.readUTF();
             istream.readShort();
         }
-
         //read namespaces
         count = istream.readInt();
         int mimeId;
@@ -341,7 +326,6 @@ public class SymbolTable {
             mimeId = istream.readInt();
             mimeTypeSymbols.add(mimeId, key);
         }
-
         changed = false;
     }
 
@@ -363,11 +347,10 @@ public class SymbolTable {
             fos.write(os.toByteArray());
             fos.close();
         } catch(FileNotFoundException e) {
-            throw new EXistException("file not found: "
-                    + this.getFile().getAbsolutePath());
+            throw new EXistException("File not found: " + this.getFile().getAbsolutePath());
         } catch(IOException e) {
-            throw new EXistException("io error occurred while creating "
-                    + this.getFile().getAbsolutePath());
+            throw new EXistException("IO error occurred while creating "
+                + this.getFile().getAbsolutePath());
         }
     }
 
@@ -381,26 +364,24 @@ public class SymbolTable {
         try {
             FileInputStream fis = new FileInputStream(getFile());
             VariableByteInput is = new VariableByteInputStream(fis);
-
             int magic = is.readFixedInt();
             if(magic == LEGACY_FILE_FORMAT_VERSION_ID) {
                 LOG.info("Converting legacy symbols.dbx to new format...");
                 readLegacy(is);
                 saveSymbols();
             } else if(magic != FILE_FORMAT_VERSION_ID) {
-                throw new EXistException("Symbol table was created by an older or newer version of eXist"
-                        + " (file id: " + magic + "). "
-                        + "To avoid damage, the database will stop.");
+                throw new EXistException("Symbol table was created by an older" +
+                    "or newer version of eXist" + " (file id: " + magic + "). " +
+                    "To avoid damage, the database will stop.");
             } else {
                 read(is);
             }
             fis.close();
         } catch(FileNotFoundException e) {
-            throw new EXistException("could not read "
-                    + this.getFile().getAbsolutePath());
+            throw new EXistException("Could not read " + this.getFile().getAbsolutePath());
         } catch(IOException e) {
-            throw new EXistException("io error occurred while reading "
-                    + this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);
+            throw new EXistException("IO error occurred while reading "
+                + this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);
         }
     }
 
@@ -415,6 +396,7 @@ public class SymbolTable {
     }
 
     public void flush() throws EXistException {
+        //Noting to do ? -pb
     }
 
     private OutputStream getOutputStream() throws FileNotFoundException {
@@ -477,6 +459,7 @@ public class SymbolTable {
             symbolsByName.put(name, id);
         }
 
+        /* Apparently unused. Commented out -pb
         private void ensureCapacity() {
             if(offset == symbolsById.length) {
                 String[] newSymbolsById = new String[(offset * 3) / 2];
@@ -484,6 +467,7 @@ public class SymbolTable {
                 symbolsById = newSymbolsById;
             }
         }
+        */
 
         protected String[] ensureCapacity(String[] array, int max) {
             if(array.length <= max) {
@@ -510,12 +494,10 @@ public class SymbolTable {
             if(id != -1) {
                 return id;
             }
-
-            id = add(++offset, name); //TODO we use "++offset" here instead of "offset++", because the system expects id's to start at 1, not 0
-
+            id = add(++offset, name); //TODO we use "++offset" here instead of "offset++", 
+            //because the system expects id's to start at 1, not 0
             write(id, name);
             changed = true;
-
             return id;
         }
 
@@ -526,7 +508,8 @@ public class SymbolTable {
                 symbol = i.next();
                 id = symbolsByName.get(symbol);
                 if(id < 0) {
-                    LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() +", symbol='" + symbol + "', id=" + id);
+                    LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() +
+                        ", symbol='" + symbol + "', id=" + id);
                 }
                 writeEntry(id, symbol, os);
             }
@@ -571,6 +554,7 @@ public class SymbolTable {
      * @author Adam Retter <adam@exist-db.org>
      */
     private class LocalNameSymbolCollection extends SymbolCollection {
+
         public LocalNameSymbolCollection(SymbolType symbolType, int initialSize) {
             super(symbolType, initialSize);
         }
@@ -578,7 +562,7 @@ public class SymbolTable {
         @Override
         protected void addSymbolById(int id, String name) {
             /*
-             For attributes, Dont store '@' in in-memory mapping of id -> attrName
+             For attributes, Don't store '@' in in-memory mapping of id -> attrName
              enables faster retrieval
              */
             if(name.charAt(0) == ATTR_NAME_PREFIX) {

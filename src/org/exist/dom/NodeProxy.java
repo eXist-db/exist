@@ -172,9 +172,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.nodeType = UNKNOWN_NODE_TYPE;
         this.internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
         this.nodeId = element.getNodeId();
-        
         match = null;
-        context = null;        
+        context = null;
     }
 
     /**
@@ -220,25 +219,25 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.NodeValue#getImplementation()
      */
     public int getImplementationType() {
-	return NodeValue.PERSISTENT_NODE;
+        return NodeValue.PERSISTENT_NODE;
     }
-    
-	public NodeSet copy() {
-		// return this, because there's no other node in the set
-		return this;
-	}
 
-	/**
+    public NodeSet copy() {
+        // return this, because there's no other node in the set
+        return this;
+    }
+
+    /**
      * Ordering first according to document ID; then if equal
      * according to node gid.
      * @param other a <code>NodeProxy</code> value
      * @return an <code>int</code> value
      */
     public int compareTo(NodeProxy other) {
-	final int diff = doc.getDocId() - other.doc.getDocId();
-	if (diff != Constants.EQUAL)
+        final int diff = doc.getDocId() - other.doc.getDocId();
+        if (diff != Constants.EQUAL)
             return diff;
-	return nodeId.compareTo(other.nodeId);
+        return nodeId.compareTo(other.nodeId);
     }
 
     /**
@@ -248,10 +247,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return an <code>int</code> value
      */
     public int compareTo(Object other) {
-	if(!(other instanceof NodeProxy))
+        if(!(other instanceof NodeProxy))
             //Always superior...
-	    return Constants.SUPERIOR;
-	return compareTo((NodeProxy) other);
+            return Constants.SUPERIOR;
+        return compareTo((NodeProxy) other);
     }
 
     /**
@@ -261,10 +260,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>boolean</code> value
      */
     public boolean equals(Object other) {
-	if (!(other instanceof NodeProxy))
+        if (!(other instanceof NodeProxy))
             //Always different...
             return false;
-	NodeProxy otherNode = (NodeProxy) other;
+        NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
             return false;
         return otherNode.nodeId.equals(nodeId);
@@ -278,9 +277,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @exception XPathException if an error occurs
      */
     public boolean equals(NodeValue other) throws XPathException {
-    	if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-    		throw new XPathException("cannot compare persistent node with in-memory node");
-		NodeProxy otherNode = (NodeProxy) other;
+        if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+            throw new XPathException("Cannot compare persistent node with in-memory node");
+        NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
             return false;
         return otherNode.nodeId.equals(nodeId);
@@ -295,13 +294,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @exception XPathException if an error occurs
      */
     public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
-		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-		    throw new XPathException("cannot compare persistent node with in-memory node");
-		NodeProxy otherNode = (NodeProxy) other;
-		if (doc.getDocId() != otherNode.doc.getDocId())
-			//Totally arbitrary
-			return doc.getDocId() < otherNode.doc.getDocId();
-		return nodeId.before(otherNode.nodeId, isPreceding);
+        if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+            throw new XPathException("Cannot compare persistent node with in-memory node");
+        NodeProxy otherNode = (NodeProxy) other;
+        if (doc.getDocId() != otherNode.doc.getDocId())
+            //Totally arbitrary
+            return doc.getDocId() < otherNode.doc.getDocId();
+        return nodeId.before(otherNode.nodeId, isPreceding);
     }
 
     /**
@@ -313,13 +312,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @exception XPathException if an error occurs
      */
     public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
-		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-		    throw new XPathException("cannot compare persistent node with in-memory node");
-		NodeProxy otherNode = (NodeProxy) other;
-		if (doc.getDocId() != otherNode.doc.getDocId())
-			//Totally arbitrary
-			return doc.getDocId() > otherNode.doc.getDocId();
-		return nodeId.after(otherNode.nodeId, isFollowing);
+        if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
+            throw new XPathException("Cannot compare persistent node with in-memory node");
+        NodeProxy otherNode = (NodeProxy) other;
+        if (doc.getDocId() != otherNode.doc.getDocId())
+            //Totally arbitrary
+            return doc.getDocId() > otherNode.doc.getDocId();
+            return nodeId.after(otherNode.nodeId, isFollowing);
     }
 
     /**
@@ -328,7 +327,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>Document</code> value
      */
     public Document getOwnerDocument() {
-	return doc;
+        return doc;
     }
 
     /**
@@ -364,7 +363,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public short getNodeType() {
-	return nodeType;
+        return nodeType;
     }
 
     /**
@@ -372,9 +371,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param nodeType The nodeType to set
      */
     public void setNodeType(short nodeType) {
-	//        if (this.nodeType != UNKNOWN_NODE_TYPE && this.nodeType != nodeType)
-	//            throw new IllegalArgumentException("Node type already affected");
-	//            throw new IllegalArgumentException("Node type already affected");
         this.nodeType = nodeType;
     }
 
@@ -392,34 +388,34 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param internalAddress The internalAddress to set
      */
     public void setInternalAddress(long internalAddress) {
-	this.internalAddress = internalAddress;
+        this.internalAddress = internalAddress;
     }
 
     public void setIndexType(int type) {
-	this.internalAddress = StorageAddress.setIndexType(internalAddress, (short) type);
+        this.internalAddress = StorageAddress.setIndexType(internalAddress, (short) type);
     }
 
     public int getIndexType() {
         if (internalAddress == -1)
             return Type.ITEM;
-	    return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
+        return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
     @Override
     public void setTrackMatches(boolean track) {    	
     }
-    
+
     @Override
     public boolean getTrackMatches() {
-    	return true;
+        return true;
     }
-    
+
     public Match getMatches() {
-	    return match;
+        return match;
     }
 
     public void setMatches(Match match) {
-	this.match = match;
+        this.match = match;
     }
 
     public boolean hasMatch(Match m) {
@@ -494,7 +490,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         ContextItem next = context;
         while (next != null) {
             if (contextId == next.getContextId() &&
-		next.getNode().getNodeId().equals(contextNode.getNodeId())) {
+                next.getNode().getNodeId().equals(contextNode.getNodeId())) {
                 // Ignore duplicate context nodes
                 break;
             }
@@ -526,7 +522,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param node a <code>NodeProxy</code> value
      */
     public void copyContext(NodeProxy node) {
-	context = node.getContext();
+        context = node.getContext();
     }
 
     /**
@@ -548,7 +544,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             }
             next = next.getNextDirect();
         }
-	//        System.out.println(debugContext());
     }
 
     /**
@@ -569,28 +564,26 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param contextId an <code>int</code> value
      */
     public void clearContext(int contextId) {
-//        context = null;
-//        return;
-	        if (contextId == Expression.IGNORE_CONTEXT) {
-	            context = null;
-	            return;
-	        }
-	        ContextItem newContext = null;
-	        ContextItem last = null;
-	        ContextItem next = context;
-	        while (next != null) {
-	            if (next.getContextId() != contextId) {
-	                if (newContext == null) {
-	                    newContext = next;
-	                } else {
-	                    last.setNextContextItem(next);
-	                }
-	                last = next;
-	                last.setNextContextItem(null);
-	            }
-	            next = next.getNextDirect();
-	        }
-	        this.context = newContext;
+        if (contextId == Expression.IGNORE_CONTEXT) {
+            context = null;
+            return;
+        }
+        ContextItem newContext = null;
+        ContextItem last = null;
+        ContextItem next = context;
+        while (next != null) {
+            if (next.getContextId() != contextId) {
+                if (newContext == null) {
+                    newContext = next;
+                } else {
+                    last.setNextContextItem(next);
+                }
+                last = next;
+                last.setNextContextItem(null);
+            }
+            next = next.getNextDirect();
+        }
+        this.context = newContext;
     }
 
     /**
@@ -599,7 +592,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>ContextItem</code> value
      */
     public ContextItem getContext() {
-	return context;
+        return context;
     }
 
     /**
@@ -608,18 +601,18 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>String</code> value
      */
     public String debugContext() {
-	StringBuilder buf = new StringBuilder();
-	buf.append("Context for " + nodeId + " [ " + toString() + "] : ");
-	ContextItem next = context;
-	while(next != null) {
-	    buf.append('[');
-	    buf.append(next.getNode().getNodeId());
-	    buf.append(':');
-	    buf.append(next.getContextId());
-	    buf.append("] ");
-	    next = next.getNextDirect();
-	}
-	return buf.toString();
+        StringBuilder buf = new StringBuilder();
+        buf.append("Context for " + nodeId + " [ " + toString() + "] : ");
+        ContextItem next = context;
+        while(next != null) {
+            buf.append('[');
+            buf.append(next.getNode().getNodeId());
+            buf.append(':');
+            buf.append(next.getContextId());
+            buf.append("] ");
+            next = next.getNextDirect();
+        }
+        return buf.toString();
     }
 
     //	methods of interface Item
@@ -628,26 +621,26 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#getType()
      */
     public int getType() {
-    switch (nodeType) {
-	case Node.ELEMENT_NODE :
-		//TODO : return Type.DOCUMENT for somein-memory nodes :
-		//http://sourceforge.net/tracker/index.php?func=detail&aid=1730690&group_id=17691&atid=117691
-		//Ideally compute this when proxy is constructed
-	    return Type.ELEMENT;
-	case Node.ATTRIBUTE_NODE :
-	    return Type.ATTRIBUTE;
-	case Node.TEXT_NODE :
-	    return Type.TEXT;
-	case Node.PROCESSING_INSTRUCTION_NODE :
-	    return Type.PROCESSING_INSTRUCTION;
-	case Node.COMMENT_NODE :
-	    return Type.COMMENT;
-	case Node.DOCUMENT_NODE:
-	    return Type.DOCUMENT;
-	    //(yet) unknown type : return generic
-	default :
-	    return Type.NODE;
-	}
+        switch (nodeType) {
+        case Node.ELEMENT_NODE :
+            //TODO : return Type.DOCUMENT for some in-memory nodes :
+            //http://sourceforge.net/tracker/index.php?func=detail&aid=1730690&group_id=17691&atid=117691
+            //Ideally compute this when proxy is constructed
+            return Type.ELEMENT;
+        case Node.ATTRIBUTE_NODE :
+            return Type.ATTRIBUTE;
+        case Node.TEXT_NODE :
+            return Type.TEXT;
+        case Node.PROCESSING_INSTRUCTION_NODE :
+            return Type.PROCESSING_INSTRUCTION;
+        case Node.COMMENT_NODE :
+            return Type.COMMENT;
+        case Node.DOCUMENT_NODE:
+            return Type.DOCUMENT;
+        //(yet) unknown type : return generic
+        default :
+            return Type.NODE;
+        }
     }
 
     /* (non-Javadoc)
@@ -675,7 +668,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#toSequence()
      */
     public Sequence toSequence() {
-	return this;
+        return this;
     }
 
     /**
@@ -700,6 +693,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 return broker.getNodeValue(new StoredNode(this), false);
             }
         } catch (EXistException e) {
+            //TODO : raise an exception here ! -pb
         } finally {
             doc.getBrokerPool().release(broker);
         }
@@ -717,6 +711,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             broker = doc.getBrokerPool().get(null);
             return broker.getNodeValue(new StoredNode(this), true);
         } catch (EXistException e) {
+            //TODO : raise an exception here !
         } finally {
             doc.getBrokerPool().release(broker);
         }
@@ -727,7 +722,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#getStringValue()
      */
     public String getStringValue() {
-	    return getNodeValue();
+        return getNodeValue();
     }
 
     /* (non-Javadoc)
@@ -741,7 +736,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#atomize()
      */
     public AtomicValue atomize() throws XPathException {
-	return new UntypedAtomicValue(getNodeValue());
+        return new UntypedAtomicValue(getNodeValue());
     }
 
     /* (non-Javadoc)
@@ -768,56 +763,56 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if(nodeType == Node.ATTRIBUTE_NODE) {
             AttrImpl attr = (node == null ? (AttrImpl)getNode() : (AttrImpl)node);
             receiver.attribute(attr.getQName(), attr.getValue());
-        } else
+        } else {
             receiver.addReferenceNode(this);
+        }
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
      */
     public int conversionPreference(Class javaClass) {
-	if (javaClass.isAssignableFrom(NodeProxy.class))
-	    return 0;
-	if (javaClass.isAssignableFrom(Node.class))
-	    return 1;
-	if (javaClass == String.class || javaClass == CharSequence.class)
-	    return 2;
-	if (javaClass == Character.class || javaClass == char.class)
-	    return 2;
-	if (javaClass == Double.class || javaClass == double.class)
-	    return 10;
-	if (javaClass == Float.class || javaClass == float.class)
-	    return 11;
-	if (javaClass == Long.class || javaClass == long.class)
-	    return 12;
-	if (javaClass == Integer.class || javaClass == int.class)
-	    return 13;
-	if (javaClass == Short.class || javaClass == short.class)
-	    return 14;
-	if (javaClass == Byte.class || javaClass == byte.class)
-	    return 15;
-	if (javaClass == Boolean.class || javaClass == boolean.class)
-	    return 16;
-	if (javaClass == Object.class)
-	    return 20;
-
-	return Integer.MAX_VALUE;
+        if (javaClass.isAssignableFrom(NodeProxy.class))
+            return 0;
+        if (javaClass.isAssignableFrom(Node.class))
+            return 1;
+        if (javaClass == String.class || javaClass == CharSequence.class)
+            return 2;
+        if (javaClass == Character.class || javaClass == char.class)
+            return 2;
+        if (javaClass == Double.class || javaClass == double.class)
+            return 10;
+        if (javaClass == Float.class || javaClass == float.class)
+            return 11;
+        if (javaClass == Long.class || javaClass == long.class)
+            return 12;
+        if (javaClass == Integer.class || javaClass == int.class)
+            return 13;
+        if (javaClass == Short.class || javaClass == short.class)
+            return 14;
+        if (javaClass == Byte.class || javaClass == byte.class)
+            return 15;
+        if (javaClass == Boolean.class || javaClass == boolean.class)
+            return 16;
+        if (javaClass == Object.class)
+            return 20;
+        return Integer.MAX_VALUE;
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
      */
     public Object toJavaObject(Class target) throws XPathException {
-	if (target.isAssignableFrom(NodeProxy.class))
-	    return this;
-	else if (target.isAssignableFrom(Node.class))
-	    return getNode();
-	else if (target == Object.class)
-	    return getNode();
-	else {
-	    StringValue v = new StringValue(getStringValue());
-	    return v.toJavaObject(target);
-	}
+        if (target.isAssignableFrom(NodeProxy.class))
+            return this;
+        else if (target.isAssignableFrom(Node.class))
+            return getNode();
+        else if (target == Object.class)
+            return getNode();
+        else {
+            StringValue v = new StringValue(getStringValue());
+            return v.toJavaObject(target);
+        }
     }
 
     /*
@@ -849,6 +844,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
      */
     public void setIsCached(boolean cached) {
+        //TODO : return something useful ? -pb
     }
 
     /* (non-Javadoc)
@@ -883,7 +879,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         addContextNode(contextId, this);
     }
 
-
     /* -----------------------------------------------*
      * Methods of class NodeSet
      * -----------------------------------------------*/
@@ -892,21 +887,21 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#iterator()
      */
     public NodeSetIterator iterator() {
-	return new SingleNodeIterator(this);
+        return new SingleNodeIterator(this);
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#iterate()
      */
     public SequenceIterator iterate() throws XPathException {
-	return new SingleNodeIterator(this);
+        return new SingleNodeIterator(this);
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#unorderedIterator()
      */
     public SequenceIterator unorderedIterator() {
-	return new SingleNodeIterator(this);
+        return new SingleNodeIterator(this);
     }
 
     /* (non-Javadoc)
@@ -933,7 +928,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>boolean</code> value
      */
     public boolean isEmpty() {
-	return false;
+        return false;
     }
 
     /**
@@ -942,7 +937,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>boolean</code> value
      */
     public boolean hasOne() {
-	return true;
+        return true;
     }
 
     /**
@@ -951,14 +946,14 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>boolean</code> value
      */
     public boolean hasMany() {
-	return false;
+        return false;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
      */
     public void add(NodeProxy proxy) {
-	throw new RuntimeException("Method not supported");
+        throw new RuntimeException("Method not supported");
     }
 
     /* (non-Javadoc)
@@ -986,34 +981,34 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.w3c.dom.NodeList#getLength()
      */
     public int getLength() {
-    	//TODO : how to delegate to the real node implementation's getLength() ?
-	return 1;
+        //TODO : how to delegate to the real node implementation's getLength() ?
+        return 1;
     }
 
     //TODO : evaluate both semantics
     public int getItemCount() {
-	return 1;
+        return 1;
     }
 
     /* (non-Javadoc)
      * @see org.w3c.dom.NodeList#item(int)
      */
     public Node item(int pos) {
-	return pos > 0 ? null : getNode();
+        return pos > 0 ? null : getNode();
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#itemAt(int)
      */
     public Item itemAt(int pos) {
-	return pos > 0 ? null : this;
+        return pos > 0 ? null : this;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#get(int)
      */
     public NodeProxy get(int pos) {
-	return pos > 0 ? null : this;
+        return pos > 0 ? null : this;
     }
 
 
@@ -1027,7 +1022,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>NodeProxy</code> value
      */
     public NodeProxy get(NodeProxy p) {
-	return contains(p) ? this : null;
+        return contains(p) ? this : null;
     }
 
     /**
@@ -1039,35 +1034,35 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeProxy get(DocumentImpl document, NodeId nodeId) {
         if (!this.nodeId.equals(nodeId))
-	    return null;
+            return null;
         if(this.doc.getDocId() != document.getDocId())
-	    return null;
-	return this;
+            return null;
+        return this;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#parentWithChild(org.exist.dom.NodeProxy, boolean, boolean, int)
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
-                                     boolean includeSelf, int level) {
+            boolean includeSelf, int level) {
         return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
 
     public NodeProxy parentWithChild(DocumentImpl otherDoc, NodeId otherId,
-				     boolean directParent, boolean includeSelf) {
-        if(otherDoc.getDocId() != doc.getDocId())
-	    return null;
-        if(includeSelf && otherId.compareTo(nodeId) == 0)
+            boolean directParent, boolean includeSelf) {
+        if (otherDoc.getDocId() != doc.getDocId())
+            return null;
+        if (includeSelf && otherId.compareTo(nodeId) == 0)
             return this;
         otherId = otherId.getParentId();
-	while (otherId != null) {
-	    if(otherId.compareTo(nodeId) == 0)
-		return this;
-	    else if (directParent)
-		return null;
+        while (otherId != null) {
+            if(otherId.compareTo(nodeId) == 0)
+                return this;
+            else if (directParent)
+                return null;
             otherId = otherId.getParentId();
-	}
-	return null;
+        }
+        return null;
     }
 
     /* (non-Javadoc)
@@ -1094,14 +1089,14 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#getState()
      */
     public int getState() {
-	    return 0;
+        return 0;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasChanged(int)
      */
     public boolean hasChanged(int previousState) {
-	    return false;
+        return false;
     }
 
     public boolean isCacheable() {
@@ -1122,12 +1117,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#getDocumentSet()
      */
     public DocumentSet getDocumentSet() {
-//        MutableDocumentSet docs = new DefaultDocumentSet(1);
-//        docs.add(doc);
-//        return docs;
         return this;
     }
-
 
     /**
      * The method <code>getCollectionIterator</code>
@@ -1136,21 +1127,21 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public Iterator<Collection> getCollectionIterator() {
         return new Iterator<Collection>() {
+            boolean hasNext = true;
 
-		boolean hasNext = true;
+            public boolean hasNext() {
+                return hasNext;
+            }
 
-		public boolean hasNext() {
-		    return hasNext;
-		}
+            public Collection next() {
+                hasNext = false;
+                return NodeProxy.this.getDocument().getCollection();
+            }
 
-		public Collection next() {
-		    hasNext = false;
-		    return NodeProxy.this.getDocument().getCollection();
-		}
-
-		public void remove() {
-		}
-	    };
+            public void remove() {
+                //Nothing to do
+            }
+        };
     }
 
     /* (non-Javadoc)
@@ -1213,7 +1204,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param inReverseOrder a <code>boolean</code> value
      */
     public void setProcessInReverseOrder(boolean inReverseOrder) {
-    	//Nothing to do
+        //Nothing to do
     }
 
     /**
@@ -1222,7 +1213,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>boolean</code> value
      */
     public boolean getProcessInReverseOrder() {
-    	return false;
+        return false;
     }
 
     /* (non-Javadoc)
@@ -1252,16 +1243,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         NodeSet ancestors = new NewArrayNodeSet();
         if (includeSelf)
             ancestors.add(this);
-        NodeId pid = nodeId.getParentId();
-        while(pid != null) {
-            NodeProxy parent = new NodeProxy(getDocument(), pid, Node.ELEMENT_NODE);
+        NodeId parentID = nodeId.getParentId();
+        while (parentID != null) {
+            NodeProxy parent = new NodeProxy(getDocument(), parentID, Node.ELEMENT_NODE);
             if (contextId != Expression.NO_CONTEXT_ID)
                 parent.addContextNode(contextId, this);
             else
                 parent.copyContext(this);
             parent.addMatches(this);
             ancestors.add(parent);
-            pid = pid.getParentId();
+            parentID = parentID.getParentId();
         }
         return ancestors;
     }
@@ -1313,13 +1304,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, int)
      */
     public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId,
-                                            boolean copyMatches) {
+            boolean copyMatches) {
         return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 
     public boolean matchAncestorDescendant(NodeSet al, int mode, boolean includeSelf, int contextId,
             boolean copyMatches) {
-    	return NodeSetHelper.matchAncestorDescendant(this, al, mode, includeSelf, contextId);
+        return NodeSetHelper.matchAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 
     /* (non-Javadoc)
@@ -1329,7 +1320,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return NodeSetHelper.selectPreceding(this, preceding);
     }
 
-    public NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException, UnsupportedOperationException {
+    public NodeSet selectPreceding(NodeSet preceding, int position, int contextId) throws XPathException,
+            UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -1400,7 +1392,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         NodeList children = node.getChildNodes();
         if (children.getLength() == 0)
             return NodeSet.EMPTY_SET;
-//        System.out.println("Retrieving child nodes for " + node + ": " + children.getLength());
         NewArrayNodeSet result = new NewArrayNodeSet();
         StoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
@@ -1424,56 +1415,56 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>String</code> value
      */
     public String toString() {
-    	if (nodeId == NodeId.DOCUMENT_NODE)
-	    return "Document node for " + doc.getDocId();
-    	else
-	    return doc.getNode(nodeId).getNodeName();
+        if (nodeId == NodeId.DOCUMENT_NODE)
+            return "Document node for " + doc.getDocId();
+        else
+            return doc.getNode(nodeId).getNodeName();
     }
-    
+
     public String toStringWithDetails() {
-    	if (nodeId == NodeId.DOCUMENT_NODE)
-	    return "Document node for " + doc.getDocId();
-    	else
-	    return doc.getNode(nodeId).toString();
+        if (nodeId == NodeId.DOCUMENT_NODE)
+            return "Document node for " + doc.getDocId();
+        else
+            return doc.getNode(nodeId).toString();
     }
 
     private final static class SingleNodeIterator implements NodeSetIterator, SequenceIterator {
 
-	private boolean hasNext = true;
-	private NodeProxy node;
+        private boolean hasNext = true;
+        private NodeProxy node;
 
-	public SingleNodeIterator(NodeProxy node) {
-	    this.node = node;
-	}
+        public SingleNodeIterator(NodeProxy node) {
+            this.node = node;
+        }
 
-	public boolean hasNext() {
-	    return hasNext;
-	}
+        public boolean hasNext() {
+            return hasNext;
+        }
 
-	public NodeProxy next() {
-	    if (!hasNext)
+        public NodeProxy next() {
+            if (!hasNext)
                 return null;
-	    hasNext = false;
-	    return node;
-	}
+            hasNext = false;
+            return node;
+        }
 
         public NodeProxy peekNode() {
             return node;
         }
 
-	public void remove() {
+        public void remove() {
             throw new RuntimeException("Method not supported");
-	}
+        }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.SequenceIterator#nextItem()
-	 */
-	public Item nextItem() {
-	    if (!hasNext)
-		return null;
-	    hasNext = false;
-	    return node;
-	}
+        /* (non-Javadoc)
+         * @see org.exist.xquery.value.SequenceIterator#nextItem()
+         */
+        public Item nextItem() {
+            if (!hasNext)
+                return null;
+            hasNext = false;
+            return node;
+        }
 
         public void setPosition(NodeProxy proxy) {
             node = proxy;
@@ -1501,6 +1492,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             }
 
             public void remove() {
+                //Raise exception ? -pb
             }
         };
     }
@@ -1522,7 +1514,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public XmldbURI[] getNames() {
-        return new XmldbURI[] { this.doc.getURI() };
+        return new XmldbURI[] {
+            this.doc.getURI()
+        };
     }
 
     public DocumentSet intersection(DocumentSet other) {
@@ -1536,7 +1530,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public boolean contains(DocumentSet other) {
         if (other.getDocumentCount() > 1)
-			return false;
+            return false;
         if (other.getDocumentCount() == 0)
             return true;
         return other.getDocumentAt(0).getDocId() == doc.getDocId();
@@ -1568,10 +1562,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public boolean equalDocs(DocumentSet other) {
         if (this == other)
-			// we are comparing the same objects
-			return true;
-		if (other.getDocumentCount() != 1)
-			return false;
+            // we are comparing the same objects
+            return true;
+        if (other.getDocumentCount() != 1)
+            return false;
         return other.getDocumentAt(0).getDocId() == doc.getDocId();
     }
 
@@ -1610,8 +1604,6 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         NodeList children = node.getChildNodes();
         if (children.getLength() == 0)
             return false;
-//        System.out.println("Retrieving child nodes for " + node + ": " + children.getLength());
-        NewArrayNodeSet result = new NewArrayNodeSet();
         StoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
             child = (StoredNode) children.item(i);

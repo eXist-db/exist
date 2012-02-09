@@ -22,9 +22,7 @@ package org.exist.collections;
 
 import org.exist.Indexer;
 import org.exist.Namespaces;
-import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggersVisitor;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -51,12 +49,12 @@ public class IndexInfo {
     private DocumentTriggersVisitor triggersVisitor;
     private boolean creating = false;
     private CollectionConfiguration collectionConfig;
-    
+
     IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
         this.indexer = indexer;
         this.collectionConfig = collectionConfig;
     }
-	
+
     public Indexer getIndexer() {
         return indexer;
     }
@@ -64,31 +62,30 @@ public class IndexInfo {
     public void setTriggersVisitor(DocumentTriggersVisitor triggersVisitor) {
         this.triggersVisitor = triggersVisitor;
     }
-    
+
     public DocumentTriggersVisitor getTriggersVisitor() {
         return triggersVisitor;
     }
-    
+
     public void setCreating(boolean creating) {
         this.creating = creating;
     }
-    
+
     public boolean isCreating() {
         return creating;
     }
-	
+
     void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {
         if(entityResolver != null) {
             reader.setEntityResolver(entityResolver);
         }
-        
         LexicalHandler lexicalHandler = triggersVisitor == null ? indexer : triggersVisitor.getLexicalInputHandler();
         ContentHandler contentHandler = triggersVisitor == null ? indexer : triggersVisitor.getInputHandler();
         reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
         reader.setContentHandler(contentHandler);
         reader.setErrorHandler(indexer);
     }
-	
+
     void setDOMStreamer(DOMStreamer streamer) {
         this.streamer = streamer;
         if (triggersVisitor == null) {
@@ -99,7 +96,7 @@ public class IndexInfo {
             streamer.setLexicalHandler(triggersVisitor.getLexicalInputHandler());
         }
     }
-	
+
     public DOMStreamer getDOMStreamer() {
             return this.streamer;
     }
