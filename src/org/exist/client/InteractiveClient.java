@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2011 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.client;
 
@@ -101,6 +101,7 @@ import org.exist.util.ZipEntryInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
+import org.exist.validation.service.ValidationService;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
@@ -150,7 +151,7 @@ public class InteractiveClient {
     public static final String SSL_ENABLE="ssl-enable";
     
     // values
-    protected static String EDIT_CMD = "xemacs $file";
+    protected static String EDIT_CMD = "emacsclient -t $file";
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
     protected static String URI_DEFAULT = "xmldb:exist://localhost:8443/exist/xmlrpc";
@@ -244,6 +245,8 @@ public class InteractiveClient {
         messageln("rmcol collection     remove collection");
         messageln("set [key=value]      set property. Calling set without ");
         messageln("                     argument shows current settings.");
+        messageln("validate [document]  validate xml document with system xml catalog.");
+        messageln("validate [document] [grammar]  validate xml document with ");
         messageln("                     specified grammar document.");
         messageln("\n--- search commands ---");
         messageln("find xpath-expr      execute the given XPath expression.");
@@ -518,7 +521,7 @@ public class InteractiveClient {
                 if (args.length < 2 || args[1] == null) {
                     collectionPath = XmldbURI.ROOT_COLLECTION_URI;
                 } else {
-                	collectionPath = XmldbURI.xmldbUriFor(args[1]);
+                	collectionPath = XmldbURI.xmldbUriFor(URIUtils.urlEncodeUtf8(args[1]));
                 }
                 collectionPath = currUri.resolveCollectionPath(collectionPath);
                 if(collectionPath.numSegments()==0) {
@@ -1076,7 +1079,26 @@ public class InteractiveClient {
             
         	} else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
-                
+            }  else if (args[0].equalsIgnoreCase("validate")) {
+                if (args.length < 2)
+                    messageln("missing document name.");
+                else {
+                    ValidationService validationService = (ValidationService) current.getService("ValidationService", "1.0");
+                    
+                    boolean valid=false;
+                    if(args.length==2){
+                        valid=validationService.validateResource(args[1]);
+                    } else {
+                       valid=validationService.validateResource(args[1], args[2]);
+                    }
+                    
+                    if (valid){
+                        messageln("document is valid."); 
+                    } else {
+                        messageln("document is not valid.");
+                    }
+                }
+                               
             //XXX:make it pluggable
         	} else if (havePluggableCommands) {
                 CollectionManagementServiceImpl mgtService = 
@@ -2652,8 +2674,8 @@ public class InteractiveClient {
         builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
         builder.append(" version ");
         builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-        builder.append(", Copyright (C) 2001-2011 The eXist-db Project\n");
-        builder.append("eXist comes with ABSOLUTELY NO WARRANTY.\n");
+        builder.append(", Copyright (C) 2001-2012 The eXist-db Project\n");
+        builder.append("eXist-db comes with ABSOLUTELY NO WARRANTY.\n");
         builder.append("This is free software, and you are welcome to redistribute it\nunder certain conditions; for details read the license file.\n");
         return builder.toString();
     }
