@@ -64,7 +64,7 @@ declare function admin:menu-panel() as element()
               <li>Install
                   <ul>
                       <li><a href="{$link}?panel=fundocs">Documentation</a></li>
-                      <li><a href="{$link}?panel=setup">Examples</a></li>
+                      <li><a href="{$link}?panel=setup">betterFORM Examples</a></li>
                       <!--li><a href="{$link}?panel=install">Tools</a></li-->
                   </ul>
               </li>
