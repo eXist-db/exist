@@ -49,7 +49,7 @@ return
 
     if ($exist:path eq '/') then
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-			<redirect url="examples.xml"/>
+			<redirect url="examples.xml"/> (: Change this or not? /ljo:)
 		</dispatch>
 		
     else if (ends-with($exist:path, '/source')) then

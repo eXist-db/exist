@@ -5,7 +5,7 @@ import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
 if ($exist:path = "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		<redirect url="../examples.xml"/>
+		<redirect url="../examples.xql"/>
 	</dispatch>
 	
 else if ($exist:resource = 'index.xml') then

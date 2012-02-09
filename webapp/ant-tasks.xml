@@ -516,6 +516,17 @@
 </xdb:xquery>
 ]]></markup></programlisting>
             </example>
+
+            <example>
+	      <title>Process an XQuery from URI</title>
+	      <programlisting>
+<markup><![CDATA[<xdb:xquery  xmlns:xdb="http://exist-db.org/ant"
+    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" 
+    queryUri="http://www.example.com/query/xquery-task.xql"
+    user="guest" password="guest-passwd">
+      <variable name="beta" value="&#x3d0;" />
+    </xdb:xquery>]]></markup></programlisting>
+            </example>
             <para>The XQuery task accepts the following attributes in 
 	    addition to the common ones:</para>
             <variablelist>

@@ -95,7 +95,7 @@ declare function sandbox:display-page() as element() {
                     <li><a href="../index.xml">Home</a></li>
                     <li><a href="../download.xml">Download</a></li>
                     <li><a href="http://atomic.exist-db.org">Wiki</a></li>
-                    <li><a href="../examples.xml">Demo</a></li>
+                    <li><a href="../examples.xql">DemoApps</a></li>
                 </ul>
                 <h1>XQuery Sandbox</h1>
             </div>

@@ -4,7 +4,7 @@
         <graphic fileref="../logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Package Repository</title>
-    	<subject>Package Repository</subject>
+        <subjectset><subject><subjectterm>Package Repository</subjectterm></subject></subjectset>
     	<date>July 2010</date>
         <author>
             <firstname>James</firstname>

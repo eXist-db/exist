@@ -29,7 +29,7 @@
                                 <a href="http://atomic.exist-db.org">Wiki</a>
                             </li>
                             <li class="last">
-                                <a href="examples.xml">Demo</a>
+                                <a href="examples.xql">DemoApps</a>
                             </li>
                         </ul>
                         <h1>Open Source Native XML Database</h1>

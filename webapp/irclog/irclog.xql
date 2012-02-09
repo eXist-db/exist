@@ -24,7 +24,7 @@ declare function irc:display-page($channel as xs:string) as element() {
                     <li><a href="../index.xml">Home</a></li>
                     <li><a href="../download.xml">Download</a></li>
                     <li><a href="http://atomic.exist-db.org">Wiki</a></li>
-                    <li><a href="../examples.xml">Demo</a></li>
+                    <li><a href="../examples.xql">Demo</a></li>
                 </ul>
                 <h1>IRC Log for Channel {$channel}</h1>
             </div>

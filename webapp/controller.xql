@@ -69,7 +69,7 @@ return
 		</dispatch>
 		
 	(: the following xml files use different stylesheets :)
-	else if ($exist:resource = ('index.xml', 'roadmap.xml', 'facts.xml') or $exist:path = '/examples.xml') then
+	else if ($exist:resource = ('index.xml', 'roadmap.xml', 'facts.xml') or $exist:path = '/examples.xql') then
 		let $stylesheet := switch ($exist:resource)
 			case "roadmap.xml" return "stylesheets/roadmap.xsl"
 			case "facts.xml"   return "stylesheets/facts.xsl"

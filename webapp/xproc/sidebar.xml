@@ -5,7 +5,7 @@
         <link href="../index.xml">Home</link>
         <link href="../download.xml">Download</link>
         <link href="http://atomic.exist-db.org">Wiki</link>
-        <link href="../examples.xml">Demo</link>
+        <link href="../examples.xql">DemoApps</link>
     </toolbar>
 
     <group name="About Us">
@@ -44,13 +44,7 @@
     </group>
     <group name="Examples">
         <item>
-            <link href="../examples.xml">All Examples</link>
-        </item>
-        <item>
-            <link href="http://demo.exist-db.org/apps/library/">Bibliographic Demo</link>
-        </item>
-        <item>
-            <link href="../xquery/acronyms.xql">XML Acronyms</link>
+            <link href="../examples.xql">DemoApps Examples</link>
         </item>
         <item>
             <link href="../eXide/" target="_new">XQuery IDE (eXide)</link>
