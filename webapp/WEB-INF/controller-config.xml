@@ -84,5 +84,5 @@
       ++ forwarded to the XQueryServlet without ever going through any of the
       ++ controllers.
   -->
-  <forward pattern=".*\.(xql|xqy|xquery)$" servlet="XQueryServlet"/>
+  <forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 </configuration>
