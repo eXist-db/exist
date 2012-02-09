@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * @author Adam Retter <adam@exist-db.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
+@Target(value = {ElementType.METHOD, ElementType.PARAMETER})
 public @interface PermissionRequired {
     
     //int mode() default UNDEFINED;

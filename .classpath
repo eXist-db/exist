@@ -138,9 +138,9 @@
 	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.6.11.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.11.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.11.jar"/>
+	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.6.12.jar"/>
+	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.12.jar"/>
+	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/user/exificient-0.7.jar"/>
 	<classpathentry kind="lib" path="lib/user/icu4j-4_8_1_1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/httpclient-4.1.jar"/>

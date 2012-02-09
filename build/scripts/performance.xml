@@ -24,7 +24,7 @@
         file="01_Content.imdi" filepath="${benchmark.data}/imdi"/>
 
     <path id="aspectj">
-        <pathelement path="${tools.aspectj}/lib/aspectjrt-1.6.11.jar"/>
+        <pathelement path="${tools.aspectj}/lib/aspectjrt-1.6.12.jar"/>
     </path>
     
     <target name="benchmark" depends="run-benchmark"/>

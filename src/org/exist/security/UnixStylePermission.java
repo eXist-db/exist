@@ -216,7 +216,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
-    private void setGroupId(int groupId) {
+    private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER)int groupId) {
         this.vector =
             ((vector >>> 28) << 28) | //current ownerId and ownerMode, mask rest
             (groupId << 8) |          //left shift new groupId into positon
@@ -510,6 +510,16 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         final int groupId = getGroupId();
         for(int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
             if(groupId == currentSubjectGroupId) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean isCurrentSubjectInGroup(final int groupId) {
+        for(int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
+            if(currentSubjectGroupId == groupId) {
                 return true;
             }
         }
