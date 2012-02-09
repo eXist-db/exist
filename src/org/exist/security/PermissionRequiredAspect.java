@@ -25,6 +25,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 
 import static org.exist.security.PermissionRequired.UNDEFINED;
 import static org.exist.security.PermissionRequired.IS_DBA;
@@ -38,6 +39,36 @@ import static org.exist.security.PermissionRequired.ACL_WRITE;
 @Aspect
 public class PermissionRequiredAspect {
 
+    
+    
+    @Pointcut("execution(* *(@org.exist.security.PermissionRequired (*),..)) && args(o,..) && this(permission)")
+    public void methodParameterWithPermissionRequired(Permission permission, Object o) {
+        
+    }
+    
+    @Before("methodParameterWithPermissionRequired(permission, o)")
+    public void enforcePermissionsOnParameter(JoinPoint joinPoint, Permission permission, Object o) throws PermissionDeniedException {
+        
+        //the next two lines can be replaced when this aspectj bug is closed - https://bugs.eclipse.org/bugs/show_bug.cgi?id=259416
+        final MethodSignature ms = (MethodSignature)joinPoint.getSignature(); 
+        final PermissionRequired parameterPermissionRequired = (PermissionRequired)ms.getMethod().getParameterAnnotations()[0][0];
+        
+        //1) check if we should allow DBA access
+        if(((parameterPermissionRequired.user() & IS_DBA) == IS_DBA) && permission.isCurrentSubjectDBA()) {
+            return;
+        }
+        
+        //2) check if the user is in the target group
+        if((parameterPermissionRequired.user() & IS_MEMBER) == IS_MEMBER) {
+            final Integer groupId = (Integer)o;
+            if(permission.isCurrentSubjectInGroup(groupId)) {
+               return; 
+            }
+        }
+            
+        throw new PermissionDeniedException("You must be a member of the group you are changing the item to");        
+    }
+    
     @Pointcut("execution(@org.exist.security.PermissionRequired * *(..)) && this(permission) && @annotation(permissionRequired)")
     public void methodWithPermissionRequired(Permission permission, PermissionRequired permissionRequired) {
     }

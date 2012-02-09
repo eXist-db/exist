@@ -389,5 +389,8 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    
+    @Override
+    public boolean isCurrentSubjectInGroup(int groupId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

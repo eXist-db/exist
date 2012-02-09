@@ -239,4 +239,6 @@ public interface Permission {
     public boolean isCurrentSubjectOwner();
 
     public boolean isCurrentSubjectInGroup();
+
+    public boolean isCurrentSubjectInGroup(int groupId);
 }
