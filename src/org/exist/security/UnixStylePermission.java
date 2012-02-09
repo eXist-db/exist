@@ -215,7 +215,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         setGroup(null, name);
     }
 
-    @PermissionRequired(user = IS_DBA | IS_OWNER, group = IS_MEMBER)
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
     private void setGroupId(int groupId) {
         this.vector =
             ((vector >>> 28) << 28) | //current ownerId and ownerMode, mask rest
