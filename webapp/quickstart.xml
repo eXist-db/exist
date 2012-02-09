@@ -19,19 +19,20 @@
         <title>Quick Start</title>
         <section id="objectives">
             <title>Objectives</title>
-            <para>
-                This guide describes the easiest way to install and begin using the eXist-db Open Source Native XML Database.
-            </para>
+            <para>This guide describes the easiest way to install and begin using the eXist-db Open
+                Source Native XML Database. </para>
         </section>
         <section id="requirements">
             <title>Requirements</title>
-            <para>
-                eXist can be installed on newer versions of Linux, Windows and Mac OS X. In order to run the eXist installer, it is necessary to have
-                the <ulink url="http://java.sun.com/javase/downloads/widget/jdk6.jsp">Java Development Kit (JDK)</ulink> installed on your operating system.
-                The JDK is pre-installed on Mac OS X through 10.6; for instructions on how to install JDK on Windows, see this <ulink
-                    url="http://java.about.com/od/gettingstarted/ss/installjdk.htm">guide</ulink>; for instructions on how to install JDK on Linux, see this
-                    <ulink url="http://www.wikihow.com/Install-Java-on-Linux">guide</ulink>.
-            </para>
+            <para>eXist can be installed on newer versions of Linux, Windows and Mac OS X. In order
+                to run the eXist installer, it is necessary to have the <ulink
+                    url="http://java.sun.com/javase/downloads/widget/jdk6.jsp">Java Development Kit
+                    (JDK)</ulink> installed on your operating system. eXist needs version 1.6 of the
+                JDK. It won't run with JDK 7 yet! The JDK is pre-installed on Mac OS X through 10.6;
+                for instructions on how to install JDK on Windows, see this <ulink
+                    url="http://java.about.com/od/gettingstarted/ss/installjdk.htm">guide</ulink>;
+                for instructions on how to install JDK on Linux, see this <ulink
+                    url="http://www.wikihow.com/Install-Java-on-Linux">guide</ulink>. </para>
             <para>
                 In order to be able to install and start up eXist on Mac OS X and Linux, you need to know the basics of how to use your operating system's terminal (Applications/Utilities/Terminal.app on Mac OS X). On Windows, knowing how to use the command
             prompt is not required for installing eXist.
@@ -191,13 +192,22 @@ Logging already initialized. Skipping...
             <screenshot>
                 <graphic fileref="resources/index1.png"/>
             </screenshot>
-            <para>Note that this web page is not the eXist-db.org homepage, but rather a local copy of this homepage
-                included with the eXist installation. This local copy includes the eXist documentation,
-                function libraries, resources, and a collection of XQuery examples that can be installed through the Admin webpage.
-            </para>
+            <para>Note that this web page is not the eXist-db.org homepage, but rather a local copy
+                of this homepage included with the eXist installation. This local copy includes the
+                eXist documentation, function libraries, resources, and a collection of XQuery
+                examples that can be installed through the Admin webpage.</para>
+        </section>
+        <section>
+            <title>Differences Between eXist Version 1.4.x and 2.0.x</title>
+            <para>eXist version 2.0.x comes with an application repository, which allows users to
+                download and deploy eXist-db based applications with a single mouse click. Most of
+                the examples can be installed from the application repository. If you are using
+                eXist 2.0, continue with the section describing <ulink url="#app-repository">installation via the repository</ulink>.</para>
+            <para>On eXist 1.4.x, the repository was not yet available, so you have to use the admin
+                web application to download and install data.</para>
         </section>
         <section id="sample-apps">
-            <title>Installing Sample Applications using the Admin Webpage</title>
+            <title>eXist 1.4.x: Installing Sample Applications using the Admin Webpage</title>
             <para>To begin using the database system, you must first create document collections and
                 import files into eXist. To help you in learning these and other basic database
                 operations, a number of simple XQuery web applications have been included with the
@@ -268,6 +278,39 @@ Logging already initialized. Skipping...
                     </tbody>
                 </tgroup>
             </informaltable>
+        </section>
+        <section id="app-repository">
+            <title>eXist 2.0.x: Using the Application Repository to Install Apps</title>
+            <para>Starting with the eXist 1.5 development releases, eXist features an application
+                repository, which makes installing applications a one-click experience. To install
+                apps from the repository, open the <ulink url="admin/admin.xql">admin web
+                application</ulink>. You need to log in as the admin user (only admin can install
+                applications).</para>
+            <para>To get started, we recommend to install the package <emphasis>eXist-db Demo Apps</emphasis>
+                first and walk through it. This package contains a collection of simple to advanced
+                examples.</para>
+            <screenshot>
+                <graphic fileref="resources/package-repo.png"/>
+            </screenshot>
+            <para>Within the admin web application, click on the link: "Package Repository" in the
+                left menu and you will be taken to repository panel, showing three tabs. In the
+                <menuchoice>Public Repo</menuchoice> tab, click on the "Retrieve packages" button.
+                The list of installable packages is retrieved from the server and displayed as 
+                a set of icons.</para>
+            <screenshot>
+                <graphic fileref="resources/package-manager2.png"/>
+            </screenshot>
+            <para>Clicking on an icon opens a popup describing the package. Use the icon on the
+                bottom left to launch the install process (for already installed applications, an
+                "uninstall" icon will be shown here). The page reloads when the installation has completed 
+                and reports a status message.</para>
+            <para>After installation, you should see the package in the <menuchoice>Installed</menuchoice>
+            tab. Click on the icon again to open the description popup. You should see a new link
+            <menuchoice>Local URL</menuchoice>. Clicking on it will open the app.</para>
+            <para>But you can also manually enter the apps' URL in the browser. All apps have an URL following
+                the pattern:</para>
+            
+            <synopsis>http://localhost:8080/exist/appy/my-app-abbreviation</synopsis>
         </section>
         <section id="administering">
             <title>Administering eXist with the Java Admin Client</title>
