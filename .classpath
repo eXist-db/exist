@@ -61,6 +61,8 @@
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.3.jar"/>
+	<classpathentry kind="lib" path="extensions/modules/lib/cssparser-0.9.5.jar"/>
+	<classpathentry kind="lib" path="extensions/modules/lib/sac-1.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
@@ -95,7 +97,6 @@
 	<classpathentry kind="lib" path="tools/ant/lib/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jing-20091111.jar"/>
 	<classpathentry kind="lib" path="lib/optional/servlet-api-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-codec-1.5.jar"/>
 	<classpathentry kind="lib" path="extensions/xqdoc/lib/xqdoc_conv.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-api-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/user/avalon-framework-impl-4.3.jar"/>
@@ -138,7 +139,6 @@
 	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.6.12.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.12.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/user/exificient-0.7.jar"/>
@@ -149,7 +149,16 @@
 	<classpathentry kind="lib" path="lib/optional/httpmime-4.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
 	<classpathentry kind="lib" path="lib/optional/xqjapi-1.0-fr.jar"/>
-	<classpathentry kind="lib" path="extensions/security/oauth/lib/scribe-1.2.3.jar"/>
+	<classpathentry kind="lib" path="extensions/security/oauth/lib/scribe-1.3.0.jar"/>
 	<classpathentry kind="lib" path="extensions/security/oauth/lib/org.json.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-codec-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1-min.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-net-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/user/avalon-framework-4.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/user/metadata-extractor-2.4.0-beta-1.jar"/>
+	<classpathentry kind="lib" path="lib/user/tika-core-0.7-jdk14.jar"/>
+	<classpathentry kind="lib" path="lib/user/tika-parsers-0.7.jar"/>
+	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.3.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
