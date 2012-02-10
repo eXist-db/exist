@@ -19,7 +19,7 @@
     <property name="build.compiler" value="modern"/>
 
     <!--
-        Get values from properies files. Note that the values in "local.build.properties" 
+        Get values from properties files. Note that the values in "local.build.properties" 
         are leading to "build.properties".
     -->
     <property file="../local.build.properties"/>
