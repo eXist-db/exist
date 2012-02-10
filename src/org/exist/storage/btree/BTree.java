@@ -197,15 +197,6 @@ public class BTree extends Paged {
         return -1;
     }
 
-    public boolean open(short expectedVersion) throws DBException {
-        if (super.open(expectedVersion)) {
-            initCache();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public boolean create(short fixedKeyLen) throws DBException {
         if (super.create()) {
             initCache();
@@ -225,16 +216,25 @@ public class BTree extends Paged {
         return true;
     }
 
-    protected void initCache() {
-        cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
-            0, CacheManager.BTREE_CACHE);
-        cache.setFileName(getFile().getName());
-        cacheManager.registerCache(cache);
+    public boolean open(short expectedVersion) throws DBException {
+        if (super.open(expectedVersion)) {
+            initCache();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void closeAndRemove() {
         super.closeAndRemove();
         cacheManager.deregisterCache(cache);
+    }
+
+    protected void initCache() {
+        cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
+            0, CacheManager.BTREE_CACHE);
+        cache.setFileName(getFile().getName());
+        cacheManager.registerCache(cache);
     }
 
     protected void setSplitFactor(double factor) {
@@ -280,58 +280,6 @@ public class BTree extends Paged {
         return getRootNode().removeValue(transaction, value);
     }
 
-    /**
-     *  findValue finds a Value in the BTree and returns the associated pointer
-     *  for it.
-     *
-     *@param  value               The Value to find
-     *@return                     The pointer that was associated with it
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
-     */
-    public long findValue(Value value) throws IOException, BTreeException {
-        return getRootNode().findValue(value);
-    }
-
-    /**
-     *  query performs a query against the BTree and performs callback
-     *  operations to report the search results.
-     *
-     *@param  query               The IndexQuery to use (or null for everything)
-     *@param  callback            The callback instance
-     *@exception  IOException     Description of the Exception
-     *@exception  BTreeException  Description of the Exception
-     */
-    public void query(IndexQuery query, BTreeCallback callback)
-            throws IOException, BTreeException, TerminatedException {
-        if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
-            Value val1 = query.getValue(0);
-            byte data1[] = val1.getData();
-            byte data2[] = new byte[data1.length];
-            System.arraycopy(data1, 0, data2, 0, data1.length);
-            data2[data2.length - 1] += 1;
-            query = new IndexQuery(query.getOperator(), val1, new Value(data2));
-        }
-        getRootNode().query(query, callback);
-    }
-
-    /**
-     *  Executes a query against the BTree and performs callback
-     *  operations to report the search results. This method takes an
-     *  additional prefix value. Only BTree keys starting with the specified
-     *  prefix are considered. Search through the tree is thus restricted to
-     *  a given key range.
-     *
-     *@param  query The IndexQuery to use (or null for everything)
-     *@param prefix a prefix value
-     *@param  callback The callback instance
-     *@exception  IOException
-     *@exception  BTreeException
-     */
-    public void query(IndexQuery query, Value prefix, BTreeCallback callback)
-            throws IOException, BTreeException, TerminatedException {
-        getRootNode().query(query, prefix, callback);
-    }
 
     public void remove(IndexQuery query, BTreeCallback callback) throws IOException,
             BTreeException, TerminatedException {
@@ -389,6 +337,59 @@ public class BTree extends Paged {
         }
     }
 
+    /**
+     *  findValue finds a Value in the BTree and returns the associated pointer
+     *  for it.
+     *
+     *@param  value               The Value to find
+     *@return                     The pointer that was associated with it
+     *@exception  IOException     Description of the Exception
+     *@exception  BTreeException  Description of the Exception
+     */
+    public long findValue(Value value) throws IOException, BTreeException {
+        return getRootNode().findValue(value);
+    }
+
+    /**
+     *  query performs a query against the BTree and performs callback
+     *  operations to report the search results.
+     *
+     *@param  query               The IndexQuery to use (or null for everything)
+     *@param  callback            The callback instance
+     *@exception  IOException     Description of the Exception
+     *@exception  BTreeException  Description of the Exception
+     */
+    public void query(IndexQuery query, BTreeCallback callback)
+            throws IOException, BTreeException, TerminatedException {
+        if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
+            Value val1 = query.getValue(0);
+            byte data1[] = val1.getData();
+            byte data2[] = new byte[data1.length];
+            System.arraycopy(data1, 0, data2, 0, data1.length);
+            data2[data2.length - 1] += 1;
+            query = new IndexQuery(query.getOperator(), val1, new Value(data2));
+        }
+        getRootNode().query(query, callback);
+    }
+
+    /**
+     *  Executes a query against the BTree and performs callback
+     *  operations to report the search results. This method takes an
+     *  additional prefix value. Only BTree keys starting with the specified
+     *  prefix are considered. Search through the tree is thus restricted to
+     *  a given key range.
+     *
+     *@param  query The IndexQuery to use (or null for everything)
+     *@param prefix a prefix value
+     *@param  callback The callback instance
+     *@exception  IOException
+     *@exception  BTreeException
+     */
+    public void query(IndexQuery query, Value prefix, BTreeCallback callback)
+            throws IOException, BTreeException, TerminatedException {
+        getRootNode().query(query, prefix, callback);
+    }
+
     protected void scanSequential(BTreeNode page, IndexQuery query, Value keyPrefix, BTreeCallback callback) throws TerminatedException {
         while (page != null) {
             for (int i = 0; i < page.nKeys; i++) {
@@ -406,29 +407,6 @@ public class BTree extends Paged {
             } else
                 page = null;
         }
-    }
-
-    /**
-     * Read a node from the given page.
-     * 
-     * @param page
-     * @return The BTree node
-     */
-    private BTreeNode getBTreeNode(long pageNum) {
-        try {
-            BTreeNode node = (BTreeNode) cache.get(pageNum);
-            if (node == null) {
-                Page page = getPage(pageNum);
-                node = new BTreeNode(page, false);
-                node.read();
-            }
-            int increment = node.pageHeader.getStatus() == BRANCH ? 2 : 1;
-            cache.add(node, increment);
-            return node;
-        } catch (IOException e) {
-            LOG.error("Failed to get BTree node on page " + pageNum, e);
-            return null;
-    	}
     }
 
     /**
@@ -456,6 +434,29 @@ public class BTree extends Paged {
             return node;
         } catch (IOException e) {
             LOG.error("Failed to create a BTree node", e);
+            return null;
+        }
+    }
+
+    /**
+     * Read a node from the given page.
+     * 
+     * @param page
+     * @return The BTree node
+     */
+    private BTreeNode getBTreeNode(long pageNum) {
+        try {
+            BTreeNode node = (BTreeNode) cache.get(pageNum);
+            if (node == null) {
+                Page page = getPage(pageNum);
+                node = new BTreeNode(page, false);
+                node.read();
+            }
+            int increment = node.pageHeader.getStatus() == BRANCH ? 2 : 1;
+            cache.add(node, increment);
+            return node;
+        } catch (IOException e) {
+            LOG.error("Failed to get BTree node on page " + pageNum, e);
             return null;
         }
     }

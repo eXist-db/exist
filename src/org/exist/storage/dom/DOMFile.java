@@ -1424,15 +1424,21 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Retrieve node at virtual address.
      * 
-     * @param p The virtual address
-     * @param warnIfMissing Whether or not a warning should be output 
-     * if the not can not be found 
+     * @param pointer The virtual address
      * @return  The node
      */
     public Value get(long pointer) {
         return get(pointer, true);
     }
 
+    /**
+     * Retrieve node at virtual address.
+     * 
+     * @param pointer The virtual address
+     * @param warnIfMissing Whether or not a warning should be output 
+     * if the node can not be found 
+     * @return  The node
+     */
     public Value get(long pointer, boolean warnIfMissing) {
         if (!lock.hasLock())
             LOG.warn("The file doesn't own a lock");
@@ -1459,36 +1465,28 @@ public class DOMFile extends BTree implements Lockable {
         return value;
     }
 
-    protected byte[] getOverflowValue(long pointer) {
-        if (!lock.hasLock())
-            LOG.warn("The file doesn't own a lock");
+    protected void dumpValue(Writer writer, Value key, int status) throws IOException {
+        if (status == BRANCH) {
+            super.dumpValue(writer, key, status);
+            return;
+        }
+        if (key.getLength() == 0)
+            return;
+        writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
+        writer.write(':');
         try {
-            OverflowDOMPage overflow = new OverflowDOMPage(pointer);
-            return overflow.read();
-        } catch (IOException e) {
-            LOG.warn("IO error while loading overflow value", e);
-            //TODO : throw exception ?
-            return null;
+            int bytes = key.getLength() - 4;
+            byte[] data = key.data();
+            for (int i = 0; i < bytes; i++) {
+                writer.write(DLNBase.toBitString(data[key.start() + 4 + i]));
+            }
+        } catch (Exception e) {
+            LOG.error(e);
+            e.printStackTrace();
+            System.out.println(e.getMessage() + ": doc: " +
+                    Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
         }
     }
-
-    /**
-     * Remove the overflow value.
-     * 
-     * @param transaction   The current transaction
-     * @param pnum  The pointer to the value
-     */
-    public void removeOverflowValue(Txn transaction, long pointer) {
-        if (!lock.isLockedForWrite())
-            LOG.warn("The file doesn't own a write lock");
-        try {
-            OverflowDOMPage overflow = new OverflowDOMPage(pointer);
-            overflow.delete(transaction);
-        } catch (IOException e) {
-            LOG.error("IO error while removing overflow value", e);
-        }
-    }
-
 
     /**
      * Put a new key/value pair.
@@ -1520,11 +1518,12 @@ public class DOMFile extends BTree implements Lockable {
      * Physically remove a node. The data of the node will be removed from the
      * page and the occupied space is freed.
      */
-    public void remove(Value key) {
-        if (!lock.isLockedForWrite())
-            LOG.warn("The file doesn't own a write lock");
-        remove(null, key);
-    }
+    //Unused ? -pb
+    //public void remove(Value key) {
+        //if (!lock.isLockedForWrite())
+            //LOG.warn("The file doesn't own a write lock");
+        //remove(null, key);
+    //}
 
     public void remove(Txn transaction, Value key) {
         if (!lock.isLockedForWrite())
@@ -1543,6 +1542,37 @@ public class DOMFile extends BTree implements Lockable {
         } catch (IOException ioe) {
             //TODO : throw exception ?
             LOG.warn(ioe);
+        }
+    }
+
+
+    protected byte[] getOverflowValue(long pointer) {
+        if (!lock.hasLock())
+            LOG.warn("The file doesn't own a lock");
+        try {
+            OverflowDOMPage overflow = new OverflowDOMPage(pointer);
+            return overflow.read();
+        } catch (IOException e) {
+            LOG.warn("IO error while loading overflow value", e);
+            //TODO : throw exception ?
+            return null;
+        }
+    }
+
+    /**
+     * Remove the overflow value.
+     * 
+     * @param transaction   The current transaction
+     * @param pnum  The pointer to the value
+     */
+    public void removeOverflowValue(Txn transaction, long pointer) {
+        if (!lock.isLockedForWrite())
+            LOG.warn("The file doesn't own a write lock");
+        try {
+            OverflowDOMPage overflow = new OverflowDOMPage(pointer);
+            overflow.delete(transaction);
+        } catch (IOException e) {
+            LOG.error("IO error while removing overflow value", e);
         }
     }
 
@@ -1594,9 +1624,10 @@ public class DOMFile extends BTree implements Lockable {
      * 
      * @param p
      */
-    public void removeNode(long pointer) {
-        removeNode(null, pointer);
-    }
+    //Seems to be unused -pb
+    //public void removeNode(long pointer) {
+        //removeNode(null, pointer);
+    //}
 
     public void removeNode(Txn transaction, long pointer) {
         if (!lock.isLockedForWrite())
@@ -1677,9 +1708,10 @@ public class DOMFile extends BTree implements Lockable {
      * Physically remove a node. The data of the node will be removed from the
      * page and the occupied space is freed.
      */
-    public void remove(Value key, long pointer) {
-        remove(null, key, pointer);
-    }
+    //Seems to be unused -pb
+    //public void remove(Value key, long pointer) {
+        //remove(null, key, pointer);
+    //}
 
     public void remove(Txn transaction, Value key, long pointer) {
         removeNode(transaction, pointer);
@@ -1689,7 +1721,7 @@ public class DOMFile extends BTree implements Lockable {
             LOG.error("BTree error while removing node", e);
             //TODO : rethrow exception ? -pb
         } catch (IOException e) {
-            LOG.warn("IO error while removing node", e);
+            LOG.error("IO error while removing node", e);
             //TODO : rethrow exception ? -pb
         }
     }
@@ -1791,27 +1823,6 @@ public class DOMFile extends BTree implements Lockable {
                 LOG.debug(debugPageContents(page));
         }
         return buf.toString();
-    }
-
-    /**
-     * Get the active Lock object for this file.
-     * 
-     * @see org.exist.util.Lockable#getLock()
-     */
-    public final Lock getLock() {
-        return lock;
-    }
-
-    /**
-     * The current object owning this file.
-     * 
-     * @param obj   The new ownerObject value
-     */
-    public synchronized final void setOwnerObject(Object ownerObject) {
-        if (ownerObject == null) {
-            LOG.error("setOwnerObject(null)");
-        }   
-        owner = ownerObject;
     }
 
     /**
@@ -2117,6 +2128,27 @@ public class DOMFile extends BTree implements Lockable {
         }
         //TODO : throw exception ? -pb
         return null;
+    }
+
+    /**
+     * Get the active Lock object for this file.
+     * 
+     * @see org.exist.util.Lockable#getLock()
+     */
+    public final Lock getLock() {
+        return lock;
+    }
+
+    /**
+     * The current object owning this file.
+     * 
+     * @param obj   The new ownerObject value
+     */
+    public synchronized final void setOwnerObject(Object ownerObject) {
+        if (ownerObject == null) {
+            LOG.error("setOwnerObject(null)");
+        }   
+        owner = ownerObject;
     }
 
     /*
@@ -2787,28 +2819,6 @@ public class DOMFile extends BTree implements Lockable {
         pageHeader.setLsn(loggable.getLsn());
         page.setDirty(true);
         dataCache.add(page, 2);
-    }
-
-    protected void dumpValue(Writer writer, Value key, int status) throws IOException {
-        if (status == BRANCH) {
-            super.dumpValue(writer, key, status);
-            return;
-        }
-        if (key.getLength() == 0)
-            return;
-        writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
-        writer.write(':');
-        try {
-            int bytes = key.getLength() - 4;
-            byte[] data = key.data();
-            for (int i = 0; i < bytes; i++) {
-                writer.write(DLNBase.toBitString(data[key.start() + 4 + i]));
-            }
-        } catch (Exception e) {
-            LOG.error(e);
-            e.printStackTrace();
-            System.out.println(e.getMessage() + ": doc: " + Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
-        }
     }
 
     protected final class DOMFilePageHeader extends BTreePageHeader {
