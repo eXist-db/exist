@@ -208,12 +208,80 @@ public class DOMFile extends BTree implements Lockable {
         config.setProperty(getConfigKeyForFile(), this);
     }
 
+    /**
+     * Set the current page.
+     * 
+     * @param page  The new page
+     */
+    private final void setCurrentPage(DOMPage page) {
+        long pageNum = pages.get(owner);
+        if (pageNum == page.page.getPageNum())
+            return;
+        pages.put(owner, page.page.getPageNum());
+    }
+
+    /**
+     * Retrieve the last page in the current sequence.
+     * 
+     * @return The current page
+     */
+    private final DOMPage getCurrentPage(Txn transaction) {
+        long pageNum = pages.get(owner);
+        if (pageNum == Page.NO_PAGE) {
+            final DOMPage page = new DOMPage();
+            pages.put(owner, page.page.getPageNum());
+            dataCache.add(page);
+            if (isTransactional && transaction != null) {
+                CreatePageLoggable loggable = new CreatePageLoggable(
+                    transaction, Page.NO_PAGE, page.getPageNum(), Page.NO_PAGE);
+                writeToLog(loggable, page.page);
+            }
+            return page;
+        } else {
+            return getDOMPage(pageNum);
+        }
+    }
+
+    /**
+     * Retrieve the current page
+     * 
+     * @param p Description of the Parameter
+     * @return The current page
+     */
+    protected final DOMPage getDOMPage(long pointer) {
+        DOMPage page = (DOMPage) dataCache.get(pointer);
+        if (page == null) {
+            page = new DOMPage(pointer);
+        }
+        return page;
+    }
+
+    /**
+     * Open the file.
+     * 
+     * @return Description of the Return Value
+     * @exception DBException   Description of the Exception
+     */
+    public boolean open() throws DBException {
+        return super.open(FILE_FORMAT_VERSION_ID);
+    }
+
+    public void closeDocument() {
+        if (!lock.hasLock())
+            LOG.warn("The file doesn't own a lock");
+        pages.remove(owner);
+    }
+
     public static String getFileName() {
         return FILE_NAME;
     }
 
     public static String getConfigKeyForFile() {
         return CONFIG_KEY_FOR_FILE;
+    }
+
+    public synchronized final void addToBuffer(DOMPage page) {
+        dataCache.add(page);
     }
 
     protected final Cache getPageBuffer() {
@@ -225,6 +293,27 @@ public class DOMFile extends BTree implements Lockable {
      */
     public short getFileVersion() {
         return FILE_FORMAT_VERSION_ID;
+    }
+
+    public boolean create() throws DBException {
+        if (super.create((short) -1))
+            return true;
+        else
+            return false;
+    }
+
+    public boolean close() throws DBException {
+        if (!isReadOnly())
+            flush();
+        super.close();
+        return true;
+    }
+
+    public void closeAndRemove() {
+        if (!lock.isLockedForWrite())
+            LOG.warn("The file doesn't own a write lock");
+        super.closeAndRemove();
+        cacheManager.deregisterCache(dataCache);
     }
 
     public void setCurrentDocument(DocumentImpl doc) {
@@ -1133,27 +1222,6 @@ public class DOMFile extends BTree implements Lockable {
         return buf.toString();
     }
 
-    public boolean close() throws DBException {
-        if (!isReadOnly())
-            flush();
-        super.close();
-        return true;
-    }
-
-    public void closeAndRemove() {
-        if (!lock.isLockedForWrite())
-            LOG.warn("The file doesn't own a write lock");
-        super.closeAndRemove();
-        cacheManager.deregisterCache(dataCache);
-    }
-
-    public boolean create() throws DBException {
-        if (super.create((short) -1))
-            return true;
-        else
-            return false;
-    }
-
     public FileHeader createFileHeader(int pageSize) {
         return new BTreeFileHeader(1024, pageSize);
     }
@@ -1421,69 +1489,6 @@ public class DOMFile extends BTree implements Lockable {
         }
     }
 
-    /**
-     * Set the current page.
-     * 
-     * @param page  The new page
-     */
-    private final void setCurrentPage(DOMPage page) {
-        long pageNum = pages.get(owner);
-        if (pageNum == page.page.getPageNum())
-            return;
-        pages.put(owner, page.page.getPageNum());
-    }
-
-    /**
-     * Retrieve the last page in the current sequence.
-     * 
-     * @return The current page
-     */
-    private final DOMPage getCurrentPage(Txn transaction) {
-        long pageNum = pages.get(owner);
-        if (pageNum == Page.NO_PAGE) {
-            final DOMPage page = new DOMPage();
-            pages.put(owner, page.page.getPageNum());
-            dataCache.add(page);
-            if (isTransactional && transaction != null) {
-                CreatePageLoggable loggable = new CreatePageLoggable(
-                    transaction, Page.NO_PAGE, page.getPageNum(), Page.NO_PAGE);
-                writeToLog(loggable, page.page);
-            }
-            return page;
-        } else {
-            return getDOMPage(pageNum);
-        }
-    }
-
-    /**
-     * Retrieve the current page
-     * 
-     * @param p Description of the Parameter
-     * @return The current page
-     */
-    protected final DOMPage getDOMPage(long pointer) {
-        DOMPage page = (DOMPage) dataCache.get(pointer);
-        if (page == null) {
-            page = new DOMPage(pointer);
-        }
-        return page;
-    }
-
-    public void closeDocument() {
-        if (!lock.hasLock())
-            LOG.warn("The file doesn't own a lock");
-        pages.remove(owner);
-    }
-
-    /**
-     * Open the file.
-     * 
-     * @return Description of the Return Value
-     * @exception DBException   Description of the Exception
-     */
-    public boolean open() throws DBException {
-        return super.open(FILE_FORMAT_VERSION_ID);
-    }
 
     /**
      * Put a new key/value pair.
@@ -3211,10 +3216,6 @@ public class DOMFile extends BTree implements Lockable {
             }
             pageHeader.setNextTupleID(maxTupleID);
         }
-    }
-
-    public synchronized final void addToBuffer(DOMPage page) {
-        dataCache.add(page);
     }
 
     /**
