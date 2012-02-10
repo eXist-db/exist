@@ -1,10 +1,8 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsltforms="http://www.agencexml.com/xsltforms">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsltforms="http://www.agencexml.com/xsltforms" xsltforms:dummy="dummy">
 	<head>
 		<title>XSLTForms Profiler</title>
 		<xf:model>
-			<xf:instance id="profile">
-				<xsltforms:dump/>
-			</xf:instance>
+			<xf:instance id="profile" src="javascript:window.opener.XsltForms_globals.xmlrequest('get','xsltforms-profiler')"/>
 		</xf:model>
 	</head>
 	<body>
