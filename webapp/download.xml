@@ -43,6 +43,28 @@
             <para>For information concerning upgrades from previous versions, see our <ulink
                     url="upgrading.xml">Upgrade Guide</ulink>.</para>
             <section>
+                <title>Tech Preview 2.0 (Codename: Praha)</title>
+                <para>2.0 is going to be the next stable release. The release is feature complete
+                    and the code has been running in production on a number of sites for the past
+                    year. The purpose of the tech preview is to allow users to test and provide
+                    feedback, so we can prepare the final release.</para>
+                <table cellpadding="5" cellspacing="5">
+                    <caption/>
+                    <tr>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">2.0 (Tech Preview)</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <ulink
+                                url="http://sourceforge.net/projects/exist/files/Stable/2.0/eXist-setup-2.0-tech-preview.jar/download"
+                                >eXist-setup-2.0-tech-preview.jar</ulink>
+                        </td>
+                        <td>Stand alone distribution, installer based on IzPack. Includes source. Run with <code>java -jar
+                            eXist-setup-2.0-tech-preview.jar</code></td>
+                    </tr>
+                </table>
+            </section>
+            <section>
                 <title>Stable Release 1.4 (Codename: <ulink
                         url="http://en.wikipedia.org/wiki/Eindhoven">Eindhoven</ulink>)</title>
                 <table cellpadding="5" cellspacing="5">
