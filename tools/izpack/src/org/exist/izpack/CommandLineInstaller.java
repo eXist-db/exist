@@ -100,34 +100,6 @@ public class CommandLineInstaller {
 			w.write("</AutomatedInstallation>");
 			w.close();
 
-
-            System.out.print("<AutomatedInstallation langpack=\"eng\">\n");
-            System.out.print("<com.izforge.izpack.panels.HelloPanel/>\n" +
-                    "<com.izforge.izpack.panels.JDKPathPanel>\n" +
-                    "<JDKPath>" + System.getProperty("java.home") + "</JDKPath>\n" +
-                    "</com.izforge.izpack.panels.JDKPathPanel>\n" +
-                    "<com.izforge.izpack.panels.PacksPanel>\n" +
-                    "<pack name=\"core\" index=\"0\" selected=\"true\"/>\n" +
-                    "<pack name=\"sources\" index=\"1\" selected=\"true\"/>\n" +
-                    "<pack name=\"javadoc\" index=\"2\" selected=\"true\"/>\n" +
-                    "</com.izforge.izpack.panels.PacksPanel>");
-            System.out.print("<com.izforge.izpack.panels.TargetPanel>\n" +
-                    "        <installpath>" + installPath + "</installpath>\n" +
-                    "    </com.izforge.izpack.panels.TargetPanel>\n");
-            System.out.print("<com.izforge.izpack.panels.UserInputPanel>\n" +
-                    "        <userInput>\n" +
-                    "            <entry key=\"adminPassSystem.out.printd\" value=\"\"/>\n" +
-                    "        </userInput>\n" +
-                    "    </com.izforge.izpack.panels.UserInputPanel>");
-            System.out.print("<com.izforge.izpack.panels.InstallPanel />\n" +
-                    "  <com.izforge.izpack.panels.ShortcutPanel>\n" +
-                    "       <programGroup/>" +
-                    "  </com.izforge.izpack.panels.ShortcutPanel>\n" +
-                    "  <com.izforge.izpack.panels.ProcessPanel />\n" +
-                    "  <com.izforge.izpack.panels.HTMLInfoPanel />\n" +
-                    "  <com.izforge.izpack.panels.FinishPanel />");
-            System.out.print("</AutomatedInstallation>");
-            
             EXistAutomatedInstaller installer = new EXistAutomatedInstaller(filename);
             installer.run();
 
