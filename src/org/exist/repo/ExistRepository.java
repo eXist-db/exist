@@ -89,19 +89,19 @@ public class ExistRepository
             return ctxt.loadBuiltInModule(namespace, name);
         }
         catch ( ClassNotFoundException ex ) {
-            throw new XPathException("Cannot find module from expath repository, but it should be there", ex);
+            throw new XPathException("Cannot find module class from EXPath repository: " + name, ex);
         }
         catch ( InstantiationException ex ) {
-            throw new XPathException("Problem instantiating module from expath repository", ex);
+            throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
         }
         catch ( IllegalAccessException ex ) {
-            throw new XPathException("Cannot access expath repository directory", ex);
+            throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
         }
         catch ( InvocationTargetException ex ) {
-            throw new XPathException("The module ctor threw an exception", ex);
+            throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
         }
         catch ( ClassCastException ex ) {
-            throw new XPathException("Problem casting module from expath repository", ex);
+            throw new XPathException("The class configured in EXPath repository is not a Module: " + name, ex);
         }
         catch ( IllegalArgumentException ex ) {
             throw new XPathException("Illegal argument passed to the module ctor", ex);
