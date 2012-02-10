@@ -61,7 +61,7 @@ public class ZipModule extends AbstractInternalModule {
 
     @Override
     public String getDescription() {
-        return "EXPath HTTP Client http://expath.org/spec/http-client";
+        return "EXPath ZIP Module http://expath.org/spec/zip";
     }
 
     @Override
