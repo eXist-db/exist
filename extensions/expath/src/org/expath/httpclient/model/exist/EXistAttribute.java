@@ -55,4 +55,15 @@ public class EXistAttribute implements Attribute {
     public boolean getBoolean() throws HttpClientException {
         return attribute.getValue().toLowerCase().equals("true");
     }
+
+    @Override
+    public int getInteger() throws HttpClientException {
+        String s = attribute.getValue();
+        try {
+            return Integer.parseInt(s);
+        }
+        catch ( NumberFormatException ex ) {
+            throw new HttpClientException("@" + getLocalName() + " is not an integer");
+        }
+    }
 }
