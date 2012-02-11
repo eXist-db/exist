@@ -1,6 +1,8 @@
 package org.exist.util.serializer;
 
+import static org.easymock.EasyMock.aryEq;
 import static org.easymock.EasyMock.capture;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.isNull;
 import static org.easymock.EasyMock.matches;
 import static org.easymock.classextension.EasyMock.createMock;
@@ -15,7 +17,6 @@ import junit.framework.Assert;
 import org.easymock.Capture;
 import org.exist.dom.QName;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 
@@ -83,16 +84,23 @@ public class EXISerializerTest {
 		Assert.assertEquals("value", capturedAttributeList.get(0).getValue(0));	
 	}
 	
-	@Ignore("incomplete")
 	@Test
-	public void testEndElement() {
-		// TODO
+	public void testEndElement() throws Exception {
+		QName testQName = new QName("local", "uri", "prefix");
+		mockEncoder.endElement(matches("uri"), matches("local"), (String)isNull());
+		replay(mockEncoder);
+		serializer.endElement(testQName);
+		verify(mockEncoder);
 	}
 	
-	@Ignore("incomplete")
 	@Test
-	public void testCharacters() {
-		// TODO
+	public void testCharacters() throws Exception {
+		String testString = "test";
+		CharSequence testSeq = testString;
+		mockEncoder.characters(aryEq(testString.toCharArray()), eq(0), eq(testString.length()));
+		replay(mockEncoder);
+		serializer.characters(testSeq);
+		verify(mockEncoder);
 	}
 	
 }
