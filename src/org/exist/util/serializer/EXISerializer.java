@@ -19,6 +19,7 @@
  */
 package org.exist.util.serializer;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -44,17 +45,19 @@ public class EXISerializer implements ContentHandler, Receiver {
 	
 	private SAXEncoder encoder;
 	
-	public EXISerializer(OutputStream exiOutputStream) throws EXIException {
+	public EXISerializer(OutputStream exiOutputStream) throws EXIException, IOException {
 		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-		encoder = new SAXEncoder(exiFactory, exiOutputStream);
+		encoder = new SAXEncoder(exiFactory);
+		encoder.setOutputStream(exiOutputStream);
 	}
 	
-	public EXISerializer(OutputStream exiOutputStream, InputStream xsdInputStream) throws EXIException {
+	public EXISerializer(OutputStream exiOutputStream, InputStream xsdInputStream) throws EXIException, IOException {
 		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
 		GrammarFactory grammarFactory = GrammarFactory.newInstance();
 		Grammar g = grammarFactory.createGrammar(xsdInputStream);
 		exiFactory.setGrammar(g);
-		encoder = new SAXEncoder(exiFactory, exiOutputStream);
+		encoder = new SAXEncoder(exiFactory);
+		encoder.setOutputStream(exiOutputStream);
 	}
 	
 	public void startDocument() throws SAXException {
@@ -104,7 +107,6 @@ public class EXISerializer implements ContentHandler, Receiver {
 	public void characters(CharSequence seq) throws SAXException {
 		String sequence = seq.toString();
 		encoder.characters(sequence.toCharArray(), 0, sequence.length());
-		
 	}
 
 	@Override
@@ -116,20 +118,17 @@ public class EXISerializer implements ContentHandler, Receiver {
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void cdataSection(char[] ch, int start, int len) throws SAXException {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void processingInstruction(String target, String data)
 			throws SAXException {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
