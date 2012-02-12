@@ -13,34 +13,34 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
     
     protected final static Logger LOG = Logger.getLogger(NodeImpl.class);    
 
-	/**
-	 * @see org.w3c.dom.Node#cloneNode(boolean)
-	 */
-	public Node cloneNode(boolean deep) {
+    /**
+     * @see org.w3c.dom.Node#cloneNode(boolean)
+     */
+    public Node cloneNode(boolean deep) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-	}
-    
+    }
+
     /**
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
     public Node appendChild(Node child) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }
-    
+
     public Node removeChild(Node oldChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-    } 
-    
+    }
+
     /**
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
     public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     } 
-    
+
     public void updateChild(Node oldChild, Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-    }     
+    }
 
     /**
      * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
@@ -48,23 +48,23 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
     public Node insertBefore(Node newChild, Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }
-    
+
     public Node insertAfter(Node newChild, Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }
-    
+
     public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }
-    
+
     public Node removeChild(Txn transaction, Node oldChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-    }    
+    }
  
     public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-    } 
-    
+    }
+
     /**
      * Update a child node. This method will only update the child node
      * but not its potential descendant nodes.
@@ -75,12 +75,12 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      */
     public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
-    }    
-    
+    }
+
     public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }
-    
+
     public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "insertAfter(Txn transaction, NodeList nodes, Node refChild) not implemented on class " + getClass().getName());
     } 
