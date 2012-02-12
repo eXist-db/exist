@@ -201,11 +201,13 @@ public class FnModule extends AbstractInternalModule {
 		new FunctionDef(QNameFunctions.localNameFromQName, QNameFunctions.class),
 		new FunctionDef(QNameFunctions.prefixFromQName, QNameFunctions.class),
 		new FunctionDef(QNameFunctions.namespaceURIFromQName, QNameFunctions.class),
-                new FunctionDef(FunResolveQName.signature, FunResolveQName.class),
+        new FunctionDef(FunResolveQName.signature, FunResolveQName.class),
 		new FunctionDef(FunEquals.signatures[0], FunEquals.class),
-                new FunctionDef(FunEquals.signatures[1], FunEquals.class),
-                new FunctionDef(FunAnalyzeString.signatures[0], FunAnalyzeString.class),
-                new FunctionDef(FunAnalyzeString.signatures[1], FunAnalyzeString.class),
+        new FunctionDef(FunEquals.signatures[1], FunEquals.class),
+        new FunctionDef(FunAnalyzeString.signatures[0], FunAnalyzeString.class),
+        new FunctionDef(FunAnalyzeString.signatures[1], FunAnalyzeString.class),
+        new FunctionDef(FunHeadTail.signatures[0], FunHeadTail.class),
+        new FunctionDef(FunHeadTail.signatures[1], FunHeadTail.class)
                 
 	};
     
