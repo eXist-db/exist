@@ -43,14 +43,14 @@ public abstract class ElementIndex extends Observable {
 
     /** The broker that is using this value index */
     protected DBBroker broker;
-    
+
     protected TreeMap<QName, ArrayList<NodeProxy>> pending = new TreeMap<QName, ArrayList<NodeProxy>>();
-    
+
     /** The current document */
     protected DocumentImpl doc;
 
     protected boolean inUpdateMode = false;
-    
+
     public ElementIndex(DBBroker broker) {
         this.broker = broker;
     }
@@ -62,21 +62,22 @@ public abstract class ElementIndex extends Observable {
         }
         this.doc = doc;
     }
-    
+
     public void setInUpdateMode(boolean update) {
         inUpdateMode = update;
     }
-    
-	public abstract NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,	NodeSelector selector);
-	
+
+    public abstract NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname,	NodeSelector selector);
+
     public abstract NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, 
-    		ExtNodeSet contextSet,  int contextId);
-	
-	public abstract Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
+        ExtNodeSet contextSet,  int contextId);
+
+    public abstract Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
         throws PermissionDeniedException;
 
-	public abstract boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
-	
+    public abstract boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
+
     public abstract boolean matchDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, 
-    		ExtNodeSet contextSet,  int contextId);
+        ExtNodeSet contextSet,  int contextId);
+
 }

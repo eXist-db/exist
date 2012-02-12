@@ -32,21 +32,22 @@ import org.exist.util.FastStringBuffer;
 /**
  * @author wolf
  */
-public class NodePath implements Comparable<NodePath>{
+public class NodePath implements Comparable<NodePath> {
 
     private final static Logger LOG = Logger.getLogger(NodePath.class);
-    
+
     /**
      * (Illegal) QNames used as a marker for arbitrary path steps.
      */
     public final static QName SKIP = new QName("//", "");
     public final static QName WILDCARD = new QName("*", "");
-    
+
     private QName[] components = new QName[5];
     private int pos = 0;
     private boolean includeDescendants = true;
 
     public NodePath() {
+        //Nothing to do
     }
     
     public NodePath(NodePath other) {
@@ -55,7 +56,7 @@ public class NodePath implements Comparable<NodePath>{
         pos = other.pos;
         includeDescendants = other.includeDescendants;
     }
-    
+
     /**
      * 
      */
@@ -67,33 +68,33 @@ public class NodePath implements Comparable<NodePath>{
         this.includeDescendants = includeDescendants;
         init(namespaces, path);
     }
-    
+
     public NodePath(QName qname) {
     	addComponent(qname);
     }
-    
+
     public void addComponent(QName component) {
-        if(pos == components.length) {
+        if (pos == components.length) {
             QName[] t = new QName[pos + 1];
             System.arraycopy(components, 0, t, 0, pos);
             components = t;
         }
         components[pos++] = component;
     }
-    
-	public void addComponentAtStart(QName component) {
-		if(pos == components.length) {
+
+    public void addComponentAtStart(QName component) {
+        if (pos == components.length) {
             QName[] t = new QName[pos + 1];
             System.arraycopy(components, 0, t, 1, pos);
             components = t;
-			components[0] = component;
+            components[0] = component;
         } else {
-			System.arraycopy(components, 0, components, 1, pos);
-			components[0] = component;
+            System.arraycopy(components, 0, components, 1, pos);
+            components[0] = component;
         }
         pos++;
-	}
-	
+    }
+
     public void removeLastComponent() {
         if (pos > 0)
             components[--pos] = null;
@@ -117,20 +118,20 @@ public class NodePath implements Comparable<NodePath>{
     }
 
     public boolean hasWildcard() {
-    	for (int i = 0; i < pos; i++) {
-    		if (components[i] == WILDCARD)
-    			return true;
-    	}
-    	return false;
+        for (int i = 0; i < pos; i++) {
+            if (components[i] == WILDCARD)
+                return true;
+        }
+        return false;
     }
-    
+
     public boolean match(QName qname) {
-    	if (pos > 0) {
-    		return components[pos - 1].equals(qname);
-    	}
-    	return false;
+        if (pos > 0) {
+            return components[pos - 1].equals(qname);
+        }
+        return false;
     }
-    
+
     public final boolean match(NodePath other) {
         boolean skip = false;
         int i = 0, j = 0;
@@ -179,35 +180,36 @@ public class NodePath implements Comparable<NodePath>{
     }
     
     private void addComponent(Map<String, String> namespaces, String component) {
-    	boolean isAttribute = false;
-    	if (component.startsWith("@")) {
-    		isAttribute = true;
-    		component = component.substring(1);
-    	}
+        boolean isAttribute = false;
+        if (component.startsWith("@")) {
+            isAttribute = true;
+            component = component.substring(1);
+        }
         String prefix = QName.extractPrefix(component);
         String localName = QName.extractLocalName(component);
         String namespaceURI = null;
         if (prefix != null) {
-	        namespaceURI = namespaces.get(prefix);
-	        if(namespaceURI == null) {
-	            LOG.error("No namespace URI defined for prefix: " + prefix);
-	            prefix = null;
-	            namespaceURI = "";
-	        }
+            namespaceURI = namespaces.get(prefix);
+            if(namespaceURI == null) {
+                LOG.error("No namespace URI defined for prefix: " + prefix);
+                //TODO : throw exception ? -pb
+                prefix = null;
+                namespaceURI = "";
+            }
         } else if (namespaces != null) {
-        	namespaceURI = namespaces.get("");
+            namespaceURI = namespaces.get("");
         }
         if (namespaceURI == null)
-    		namespaceURI = "";
+            namespaceURI = "";
         QName qn = new QName(localName, namespaceURI, prefix);
         LOG.debug("URI = " + namespaceURI);
         if (isAttribute)
-        	qn.setNameType(ElementValue.ATTRIBUTE);
+            qn.setNameType(ElementValue.ATTRIBUTE);
         addComponent(qn);
     }
-    
-    private void init( Map<String, String> namespaces, String path ) {        
-    	//TODO : compute better length
+
+    private void init( Map<String, String> namespaces, String path ) {
+        //TODO : compute better length
         FastStringBuffer token = new FastStringBuffer(path.length());
         int pos = 0;
         while (pos < path.length()) {
@@ -226,7 +228,6 @@ public class NodePath implements Comparable<NodePath>{
                 if (path.charAt(++pos ) == '/')
                     addComponent(SKIP);
                 break;
-
             default:
                 token.append(ch);
                 pos++;
@@ -235,35 +236,32 @@ public class NodePath implements Comparable<NodePath>{
         if (token.length() > 0)
             addComponent(namespaces, token.toString());
     }
-    
+
     public boolean equals(Object obj) {
-    	if (obj == null) return false;
-    	
-    	if (obj instanceof NodePath) {
-    		NodePath nodePath = (NodePath) obj;
-    		if (nodePath.pos == pos) {
-                for(int i = 0; i < pos; i++) {
-                	if (!nodePath.components[i].equals(components[i])) {
-                		return false;
-                	}
+        if (obj != null && obj instanceof NodePath) {
+            NodePath nodePath = (NodePath) obj;
+            if (nodePath.pos == pos) {
+                for (int i = 0; i < pos; i++) {
+                    if (!nodePath.components[i].equals(components[i])) {
+                        return false;
+                    }
                 }
                 return true;
-    		}
-    	}
-    	
-    	return false;
+            }
+        }
+        return false;
     }
-    
+
     public int hashCode() {
-    	int h = 0;
+        int h = 0;
         for(int i = 0; i < pos; i++) {
-        	h = 31*h + components[i].hashCode();
+            h = 31*h + components[i].hashCode();
         }
         return h;
     }
 
-	@Override
-	public int compareTo(NodePath o) {
-		return toString().compareTo(o.toString()); //TODO: optimize
-	}
+    @Override
+    public int compareTo(NodePath o) {
+        return toString().compareTo(o.toString()); //TODO: optimize
+    }
 }

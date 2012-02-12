@@ -22,11 +22,6 @@
  */
 package org.exist.storage.sync;
 
-import org.exist.scheduler.JobException;
-import org.exist.scheduler.UserJavaJob;
-import org.exist.storage.BrokerPool;
-
-import java.util.Map;
 
 /**
  * It will periodically trigger a cache sync to write
@@ -34,6 +29,6 @@ import java.util.Map;
  */
 public interface Sync {
 
-	public final static int MINOR_SYNC = 0;
-	public final static int MAJOR_SYNC = 1;
+    public final static int MINOR_SYNC = 0;
+    public final static int MAJOR_SYNC = 1;
 }
