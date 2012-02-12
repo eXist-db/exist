@@ -123,6 +123,17 @@
         <command>Class:</command>&#160;org.exist.xquery.modules.datetime.DateTimeModule
           <command>Namespace:</command>&#160;http://exist-db.org/xquery/datetime </para>
     </section>
+    
+    <section id="module_exi">
+      <title>EXI Module</title>
+      <para>Provides additional operations to encode and decode Efficient XML Interchange format (EXI)</para>
+      <para>
+        <command>Creator:</command>&#160;<dc:creator>Robert Walpole</dc:creator>
+        <command>Licence:</command>&#160;LGPL <command>Status:</command>&#160;production </para>
+      <para>
+        <command>Class:</command>&#160;org.exist.xquery.modules.exi.EXIModule
+        <command>Namespace:</command>&#160;http://exist-db.org/xquery/exi </para>
+    </section>
 
     <section id="module_file">
       <title>File Module</title>
