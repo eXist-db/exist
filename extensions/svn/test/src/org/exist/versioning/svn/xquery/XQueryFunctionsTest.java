@@ -112,7 +112,7 @@ public class XQueryFunctionsTest {
 	}
 
 	private String repositoryBaseURI() {
-		return "'http://localhost/test-svn'";
+		return "'http://localhost:9080/svn/testRepo'";
 	}
 
 	private String testAccount() {
@@ -161,6 +161,7 @@ public class XQueryFunctionsTest {
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
+        database.setProperty("configuration", "../../conf.xml");
         DatabaseManager.registerDatabase(database);
 
         rootCollection =
