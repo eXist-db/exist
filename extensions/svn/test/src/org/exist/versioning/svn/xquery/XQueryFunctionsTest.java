@@ -121,11 +121,13 @@ public class XQueryFunctionsTest {
 	}
 
 	private String testAccount() {
-		return "'test'";
+		return System.getProperty("svn_username");
+		//return "'test'";
 	}
 
 	private String testPassword() {
-		return "'test'";
+		return System.getProperty("svn_password");
+		//return "'test'";
 	}
 
 	public void test(String script) {
