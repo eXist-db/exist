@@ -138,6 +138,8 @@
     <target name="test" depends="compile" if="include.feature.svn.config">
         <echo message="Running svn extension tests"/>
 
+        <mkdir dir="${junit.index.reports}"/>
+
         <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
                maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}"/>
