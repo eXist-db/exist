@@ -155,4 +155,9 @@
             </batchtest>
         </junit>
     </target>
+    
+    <target name="test-svn">
+	    <property name="include.feature.svn.config" value="true"/>
+	    <antcall target="test"/>
+    </target>
 </project>
