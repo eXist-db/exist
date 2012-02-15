@@ -44,6 +44,9 @@
             <include name="*.jar"/>
         </fileset>
     </path>
+    <path id="classpath.jar">
+        <pathelement path="${top.dir}/${lib.extensions}/exist-svn.jar"/>
+    </path>
     <path id="classpath.test-libs">
          <fileset dir="${top.dir}/${lib.test}">
             <include name="*.jar"/>
