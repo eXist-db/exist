@@ -25,18 +25,23 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XQueryContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -166,6 +171,12 @@ public class XQueryFunctionsTest {
 
         rootCollection =
                 DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
+        
+        Configuration config = BrokerPool.getInstance().getConfiguration();
+        Map map = (Map)config.getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
+        map.put(
+    		"http://exist-db.org/xquery/versioning/svn", 
+    		org.exist.versioning.svn.xquery.SVNModule.class);
     }
 
     @After
