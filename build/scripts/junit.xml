@@ -235,6 +235,10 @@
         <ant antfile="build.xml" dir="extensions/fluent" target="test"/>
     </target>
     
+    <target name="test-svn" depends="prepare-extensions">
+        <ant antfile="build.xml" dir="extensions/svn" target="test-svn"/>
+    </target>
+
     <!-- Helper target for starting server -->
     <target name="start-server">
         <echo message="---------------------------------------"/>
