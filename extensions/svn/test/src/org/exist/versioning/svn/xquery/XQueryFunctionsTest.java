@@ -31,7 +31,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
 import org.exist.source.Source;
@@ -65,6 +64,10 @@ public class XQueryFunctionsTest {
 
 	@Test
 	public void test_001() {
+		System.out.println(repositoryBaseURI());
+		System.out.println(destinationPath());
+		System.out.println(testAccount());
+		System.out.println(testPassword());
 		test(
 			"xquery version \"1.0\"; " +
 			"let $destination-path := '/db/test/svn/checkout' " +
