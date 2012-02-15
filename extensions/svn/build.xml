@@ -158,6 +158,7 @@
     
     <target name="test-svn">
 	    <property name="include.feature.svn.config" value="true"/>
-        <ant antfile="build.xml" dir="extensions/svn" target="test"/>
+        <!-- <ant antfile="build.xml" dir="extensions/svn" target="test"/> -->
+	    <antcall target="test"/>
     </target>
 </project>
