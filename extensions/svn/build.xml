@@ -11,6 +11,8 @@
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
     
+    <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
+    
     <condition property="include.feature.svn.config">
         <istrue value="${include.feature.svn}"/>
     </condition>
