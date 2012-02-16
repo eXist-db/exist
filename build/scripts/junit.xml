@@ -374,6 +374,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
         </java>
