@@ -210,7 +210,7 @@ public class DeadlockDetection {
      * Register a thread as waiting for a resource lock.
      *
      * @param waiter the thread
-     * @param lock the lock object
+     * @param collectionLock the lock object
      */
     public static void addCollectionWaiter(Thread waiter, Lock collectionLock) {
     	lock.lock();
