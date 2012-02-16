@@ -433,7 +433,7 @@
             <link href="http://jline.sourceforge.net/javadoc/"/>
             <link href="http://logging.apache.org/log4j/1.2/apidocs/"/>
             <link href="http://nekohtml.sourceforge.net/javadoc/"/>
-            <link href="http://www.quartz-scheduler.org/docs/api/1.8.1/"/>
+            <link href="http://quartz-scheduler.org/api/1.8.5/"/>
             <link href="http://sunxacml.sourceforge.net/javadoc/"/>  
             <link href="http://ws.apache.org/axis/java/apiDocs/"/>
             <link href="http://ws.apache.org/xmlrpc/apidocs/"/>
