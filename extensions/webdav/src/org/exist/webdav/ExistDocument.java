@@ -409,9 +409,9 @@ public class ExistDocument extends ExistResource {
                     LOG.debug("Resource was already locked locked.");
             }
 
-            if (userLock != null && !userLock.getName().equals(user.getName())) {
+            if (userLock != null && userLock.getName()!=null && !userLock.getName().equals(user.getName())) {
                 if(LOG.isDebugEnabled())
-                    LOG.debug("Resource is locked.");
+                    LOG.debug("Resource is locked by user " + userLock.getName() + ".");
                 throw new PermissionDeniedException(userLock.getName());
             }
 
@@ -425,6 +425,7 @@ public class ExistDocument extends ExistResource {
             // Update locktoken
             inputToken.setOwner(user.getName());
             inputToken.createOpaqueLockToken();
+            //inputToken.setTimeOut(inputToken.getTimeOut());
             inputToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
 
             // Update document
@@ -684,13 +685,13 @@ public class ExistDocument extends ExistResource {
             User userLock = document.getUserLock();
 
             // Check if Resource is already locked. 
-            if (userLock != null) {
+            if (userLock == null) {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Resource was not locked.");
                 throw new DocumentNotLockedException("Resource was not locked.");
             }
             
-            if (!userLock.getName().equals(user.getName())) {
+            if (userLock.getName()!=null && !userLock.getName().equals(user.getName())) {
                 if(LOG.isDebugEnabled())
                     LOG.debug("Resource is locked by "+userLock.getName());
                 throw new PermissionDeniedException(userLock.getName());
