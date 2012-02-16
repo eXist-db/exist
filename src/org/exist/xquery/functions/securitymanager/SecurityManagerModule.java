@@ -48,6 +48,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
         new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
+        new FunctionDef(SetAccountMetadataFunction.signatures[0], SetAccountMetadataFunction.class),
 
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
