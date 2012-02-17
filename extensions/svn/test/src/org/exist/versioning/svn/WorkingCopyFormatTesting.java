@@ -29,7 +29,7 @@ import org.tmatesoft.svn.core.wc.SVNWCClient;
  * @version 1.1.2
  * @author  TMate Software Ltd.
  */
-public class WorkingCopyFormatTest {
+public class WorkingCopyFormatTesting {
 
     public static void main(String[] args) {
         //initialize SVNKit to work through file:/// protocol
