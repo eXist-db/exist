@@ -317,7 +317,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 	Committed to revision 74
  * 
  */
-public class WorkingCopyTest {
+public class WorkingCopyTesting {
 
     private static String myHomePath = "/db";
     private static String myWorkingCopyName = "svn-test";
