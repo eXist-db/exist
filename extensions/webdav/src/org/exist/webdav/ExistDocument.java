@@ -399,6 +399,9 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
 
         DocumentImpl document = null;
+        
+        TransactionManager txnManager = null;
+        Txn txn = null;
 
         try {
             broker = brokerPool.get(subject);
@@ -446,10 +449,10 @@ public class ExistDocument extends ExistResource {
             document.setUserLock(subject);
 
             // Make token persistant
-            TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            broker.storeXMLResource(transaction, document);
-            transact.commit(transaction);
+            txnManager = brokerPool.getTransactionManager();
+            txn = txnManager.beginTransaction();
+            broker.storeXMLResource(txn, document);
+            txnManager.commit(txn);
 
             if(LOG.isDebugEnabled())
                 LOG.debug("Successfully retrieved token");
@@ -458,10 +461,12 @@ public class ExistDocument extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
+            txnManager.abort(txn);
             throw e;
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
+            txnManager.abort(txn);
             throw e;
 
         } finally {
@@ -682,6 +687,10 @@ public class ExistDocument extends ExistResource {
             throw new EXistException("token is null");
         }
 
+        // Prepare transaction
+        TransactionManager txnManager = null;
+        Txn txn = null;
+            
         try {
             broker = brokerPool.get(subject);
 
@@ -721,10 +730,10 @@ public class ExistDocument extends ExistResource {
             lockToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
 
             // Make token persistant
-            TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            broker.storeXMLResource(transaction, document);
-            transact.commit(transaction);
+            txnManager = brokerPool.getTransactionManager();
+            txn = txnManager.beginTransaction();
+            broker.storeXMLResource(txn, document);
+            txnManager.commit(txn);
 
             if(LOG.isDebugEnabled())
                 LOG.debug("Successfully retrieved token");
@@ -733,10 +742,12 @@ public class ExistDocument extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
+            txnManager.abort(txn);
             throw e;
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
+            txnManager.abort(txn);
             throw e;
 
         } finally {
