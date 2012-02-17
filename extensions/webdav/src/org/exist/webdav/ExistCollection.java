@@ -49,6 +49,7 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.VirtualTempFile;
 import org.exist.util.VirtualTempFileInputSource;
+
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
