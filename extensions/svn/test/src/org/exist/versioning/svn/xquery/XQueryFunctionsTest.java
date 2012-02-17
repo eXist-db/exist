@@ -100,12 +100,12 @@ public class XQueryFunctionsTest {
 			"let $add := subversion:add($file-path) " +
 			
 			"let $commit-1 := subversion:commit($checkout-collection, 'Test of Commit after Add', $test-user, $test-password) " +
-			"let $list1 := subversion:list($checkout-collection) " +
+			"let $list1 := subversion:info($checkout-collection) " +
 			
 			"let $delete := subversion:delete($file-path) " +
 			"let $commit-2 := subversion:commit($checkout-collection, 'Test of Commit after Delete', $test-user, $test-password) " +
 			
-			"let $list2 := subversion:list($checkout-collection) " +
+			"let $list2 := subversion:info($checkout-collection) " +
 			
 			"return " +
 			"<result pass=\"true\">" +
