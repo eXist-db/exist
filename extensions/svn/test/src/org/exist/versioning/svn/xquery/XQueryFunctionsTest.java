@@ -74,7 +74,7 @@ public class XQueryFunctionsTest {
 			"let $fake := if (xmldb:collection-available($destination-path)) " +
 				"then xmldb:remove($destination-path )" +
 				"else() " +
-			"return subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+")"
+			"return <result pass=\"true\">subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+")<result>"
 		);
 	}
 
@@ -89,7 +89,7 @@ public class XQueryFunctionsTest {
 			"let $test-password := "+testPassword()+" " +
 			
 			"let $target-file := '1.xml' " +
-			"let $checkout-collection := '/db/test-svn/checkout' " +
+			"let $checkout-collection := "+destinationPath()+" " +
 			"let $file-path := concat($checkout-collection, '/', $target-file) " +
 			
 			"let $file := " +
@@ -108,10 +108,10 @@ public class XQueryFunctionsTest {
 			"let $list2 := subversion:list($checkout-collection) " +
 			
 			"return " +
-			"<results>" +
+			"<result pass=\"true\">" +
 				"<list1>{$list1}</list1>" +
 				"<list2>{$list2}</list2>" +
-			"</results>"
+			"</result>"
 		);
 	}
 
@@ -148,7 +148,7 @@ public class XQueryFunctionsTest {
             XMLResource resource = (XMLResource) result.getResource(0);
             results.append(resource.getContent()).append('\n');
             Element root = (Element) resource.getContentAsDOM();
-            NodeList tests = root.getElementsByTagName("test");
+            NodeList tests = root.getElementsByTagName("result");
             for (int i = 0; i < tests.getLength(); i++) {
                 Element test = (Element) tests.item(i);
                 String passed = test.getAttribute("pass");
@@ -169,7 +169,8 @@ public class XQueryFunctionsTest {
 
     private Collection rootCollection;
 
-    @Before
+	@Before
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setUpBefore() throws Exception {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
