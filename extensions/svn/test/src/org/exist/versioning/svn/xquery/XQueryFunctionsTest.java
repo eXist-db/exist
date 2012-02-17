@@ -74,7 +74,7 @@ public class XQueryFunctionsTest {
 			"let $fake := if (xmldb:collection-available($destination-path)) " +
 				"then xmldb:remove($destination-path )" +
 				"else() " +
-			"return <result pass=\"true\">subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+")<result>"
+			"return <result pass=\"true\">subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+")</result>"
 		);
 	}
 
