@@ -418,6 +418,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.xslts"/>
@@ -452,7 +453,7 @@
         <echo message="--------------"/>
         <echo message="XQTS tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.aspectj"/>
@@ -475,7 +476,7 @@
         <echo message="--------------"/>
         <echo message="XSLTS tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="512m">
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.aspectj"/>
