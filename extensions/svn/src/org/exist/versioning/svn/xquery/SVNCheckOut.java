@@ -21,10 +21,13 @@
  */
 package org.exist.versioning.svn.xquery;
 
+import java.io.IOException;
+
 import org.exist.dom.QName;
 import org.exist.versioning.svn.Resource;
 import org.exist.versioning.svn.WorkingCopy;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -86,17 +89,24 @@ public class SVNCheckOut extends AbstractSVNFunction {
         
         Resource wcDir = new Resource(destPath);
         if (wcDir.exists()) {
-        	throw new XPathException(this, 
-        			"the destination directory '"
-                    + wcDir.getAbsolutePath() + "' already exists!");
+        	IOException exception = 
+        			new IOException("the destination directory '" + wcDir.getAbsolutePath() + "' already exists!");
+
+        	LOG.debug(exception);
+        	
+        	throw new XPathException(this, exception);
         }
-        wcDir.mkdirs();
+        //wcDir.mkdirs();
         
         long rev = -1;
     	try {
     		rev = wc.checkout(SVNURL.parseURIEncoded(uri), SVNRevision.HEAD, wcDir, true);
 		} catch (SVNException svne) {
-			throw new XPathException(this,
+			svne.printStackTrace();
+			
+        	LOG.debug(svne);
+
+        	throw new XPathException(this,
 					"error while checking out a working copy for the location '"
                     + uri + "'", svne);
 		}
