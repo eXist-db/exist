@@ -217,7 +217,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	 * @see org.exist.xquery.ExternalModule#moduleIsValid()
 	 */
 	public boolean moduleIsValid(DBBroker broker) {
-		return mSource.isValid(broker) == Source.VALID;
+		return mSource != null && mSource.isValid(broker) == Source.VALID;
 //		return (mSource.isValid(broker) == Source.VALID && mContext.checkModulesValid());
 	}
 	
