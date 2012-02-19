@@ -31,9 +31,9 @@ import com.bradmcevoy.http.Request;
 import com.bradmcevoy.http.Request.Method;
 import com.bradmcevoy.http.Resource;
 
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -257,13 +257,9 @@ public class MiltonResource implements Resource {
         XmldbURI retval =null;
 
         try {
-            String path = URLDecoder.decode(uri.toString(), "UTF-8");
+            String path = new URI(uri.toString()).getPath();
 
             retval = XmldbURI.xmldbUriFor(""+path, false);
-
-        } catch (UnsupportedEncodingException ex) {
-            // oops
-            LOG.error(ex.getMessage());
             
         } catch (URISyntaxException ex){
             // oops
@@ -281,11 +277,11 @@ public class MiltonResource implements Resource {
         String path =null;
 
         try {
-            path = URLDecoder.decode(uri.toString(), "UTF-8");
+            path = new URI(uri).getPath();
 
-        } catch (UnsupportedEncodingException ex) {
+        } catch (URISyntaxException ex) {
             // oops
-             LOG.error(ex.getMessage());
+            LOG.error(ex.getMessage());
         }
         return path;
     }
