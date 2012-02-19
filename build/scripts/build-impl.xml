@@ -610,7 +610,8 @@
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
-
+        <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
+        
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
