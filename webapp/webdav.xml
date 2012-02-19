@@ -29,29 +29,32 @@
                 Explorer, Mac OS X Finder, <ulink url="http://www.webdav.org/cadaver">cadaver</ulink>, <ulink
                     url="http://www.konqueror.org/">KDE Konqueror</ulink>, <ulink url="http://www.oxygenxml.com/"
                     >oXygen XML Editor</ulink>, <ulink url="http://www.altova.com/">XML Spy</ulink>, <ulink
-                    url="http://www.openoffice.org/">OpenOffice.org</ulink> and many others (see "Compatibility" below).</para>
+                        url="http://www.libreoffice.org/">LibreOffice</ulink> and many others (see "Compatibility" below).</para>
 
-            <para>While eXist has had WebDAV support since version 1.0b2, the new WebDAV implementation in 
+            <para>While eXist has had WebDAV support since version 1.0b2, the new WebDAV implementation since 
                 version 1.4.1 brings improved WebDAV compatibility, thanks to its use of the excellent open-source <ulink
                     url="http://milton.ettrema.com/">Milton</ulink> WebDAV API for Java. </para>
             
             <para>In the default configuration
                 the WebDAV server can be accessed via the URLs <ulink url="http://localhost:8080/exist/webdav/db/"
                     >http://localhost:8080/exist/webdav/db/</ulink> and <ulink
-                    url="https://localhost:8443/exist/webdav/db/">https://localhost:8443/exist/webdav/db/</ulink>.
+                    url="https://localhost:8443/exist/webdav/db/">https://localhost:8443/exist/webdav/db/</ulink> (since eXist-db 2.0).
             </para>
         </section>
 
         <section id="compatibility">
             <title>Compatibility</title>
             <para>The <ulink url="http://milton.ettrema.com/">Milton</ulink> project maintains a detailed WebDAV client
-                    <ulink url="http://milton.ettrema.com/compat/">compatibility list</ulink> that describes a "Recipe
+                    <ulink url="http://milton.ettrema.com/guide/compat/">compatibility list</ulink> that describes a "Recipe
                 for broad client compatibility."  In case of any problems please read this document.  However, some preliminary points
                 specific to eXist should be kept in mind:</para>
             <itemizedlist>
                 <listitem>
-                    <para>eXist's Milton interface does not currently support HTTP Digest Authentication, in contrast to the original pre-Milton
-                         implementation.</para>
+                    <para>For Windows 7 see notes below and at the hints on the 
+                        <ulink url="http://milton.ettrema.com/guide/compat/">Milton documentation</ulink>.</para>
+                </listitem>
+                <listitem>
+                    <para>eXist's Milton based WebDAV interface does not currently support HTTP Digest Authentication.</para>
                 </listitem>
                 <listitem>
                     <para>The size of an XML document is presented as a multiple of 4096 bytes, which is eXist's
@@ -59,26 +62,20 @@
                         size on an XML document stored in the database can not be determined because the size depends on many factors, e.g. the applied
                         serialization parameters.</para>
                 </listitem>
-                <listitem>
-                    <para>It turns out that some WebDAV clients can not handle estimated sizes, cutting off the transfer prematurely.  A 
-                        <ulink url="http://exist.svn.sourceforge.net/viewvc/exist/trunk/eXist/extensions/webdav/src/org/exist/webdav/MiltonDocument.java?r1=12791&amp;r2=12825&amp;pathrev=12825">workaround</ulink> has
-                        been implemented to help some clients, but in some cases this doesn't seem to be sufficient.  
-                        You may need to find a different WebDAV client or contact your WebDAV client's developer.
-                    </para>
-                </listitem>
             </itemizedlist>
 
             <para>The Milton-based WebDAV interface has been successfully tested with: Windows Web Folders (Windows XP/7), <ulink
                     url="http://www.jscape.com/products/file-transfer-clients/anyclient/">AnyClient</ulink> (cross-platform), Mac OS X
-                Finder, <ulink url="http://www.panic.com/transmit/">Transmit</ulink> (Mac OS X), davfs version 1.4.5 (Linux),
-                OxygenXML and OpenOffice.org.</para>
+                Finder, <ulink url="http://www.panic.com/transmit/">Transmit</ulink> (Mac OS X), 
+                <ulink url="http://cyberduck.ch/">Cyberduck</ulink>, davfs2 version 1.4.5 (Linux),
+                OxygenXML and LibreOffice.</para>
             <para>The following clients are reported to have issues: <ulink url="http://en.wikipedia.org/wiki/GVFS"
-                    >GVFS</ulink> (Nautilus) and <ulink url="http://www.netdrive.net/">NetDrive</ulink>.</para>
+                    >GVFS</ulink> (Nautilus) and <ulink url="http://www.netdrive.net/">NetDrive</ulink>. (Compatibility can change over time)</para>
         </section>
 
         <section id="clients">
             <title>Clients</title>
-            <section>
+            <section id="webfolders">
                 <title>Windows Web Folders</title> 
                 <para>Out of the box, Windows (XP, 7) has <emphasis role="italic">some</emphasis> native support for
                     the WebDAV protocol, but there are some well-known issues.  Please consult the
@@ -123,7 +120,7 @@
                 </para>
             </section>
 
-            <section>
+            <section id="networkplaces">
                 <title>Windows XP's My Network Places</title>
 
                 <para>This enables you to access eXist from almost any Windows XP application that supports 'Network
@@ -150,7 +147,7 @@
 
             </section>
 
-            <section>
+            <section id="macosx">
                 <title>Mac OS X Finder</title>
                 <para>The eXist database can be accessed easily with the Mac OS X Finder. First select in the Finder "Go"
                     and "Connect to Server..." <screenshot>
@@ -169,10 +166,22 @@
                         <graphic fileref="resources/webdav_macosx_4.png"/>
                     </screenshot>
                 </para>
+                <note>
+                    <para>In the last few OSX releases Apple repetitively changed their WebDAV implementation
+                        significantly, repetitively introducing new bugs and problems. The main issue is that
+                        Finder requires exact document sizes reported for PROPFIND where as eXist-db by default
+                        reports a guesstimated size as mentioned in the Compatibility chapter</para>
+                    <para>As a workaround, eXist-db detects the OSX finder via the "user-agent" HTTP header and switches for PROPFIND
+                        into a kind of OSX compatibility mode where all XML documents in a collection are serialized 
+                        to determine the exact sizes of these documents. This is a rather expensive and
+                        time consuming operation for large documents and for collections with many documents.</para>
+                    <para>I recommend to use <ulink url="http://www.panic.com/transmit/">Transmit</ulink> or 
+                        <ulink url="http://cyberduck.ch/">Cyberduck</ulink> instead.</para>
+                </note>
             </section>
 
 
-            <section>
+            <section id="oxygenxml">
                 <title>oXygen XML Editor</title>
 
                 <para>
@@ -214,7 +223,7 @@
 
             </section>
 
-            <section>
+            <section id="xmlspy">
                 <title>XML Spy</title>
 
                 <para>
@@ -238,7 +247,7 @@
 
             </section>
 
-            <section>
+            <section id="kde">
                 <title>KDE Konqueror</title>
 
                 <para>Enter an URL like <command>webdav://localhost:8080/exist/webdav/db</command>. Use
@@ -248,6 +257,38 @@
                 </para>
 
             </section>
+            
+            <section id="libreoffice">
+                <title>LibreOffice</title>
+                
+                <para>For LibreOffice and OpenOffice.org the recommended way for opening documents 
+                    that are stored in eXist-db is using the 'native' WebDAV client, as documented in
+                    the <ulink url="http://help.libreoffice.org/Common/Opening_a_Document_Using_WebDAV_over_HTTPS">LibreOffice Help</ulink> documentation.</para>
+                
+                <note>
+                    <para>Warning: When using LibreOffice on OSX, do not write documents to a network share
+                        that is mounted via Finder as documented earlier, since this could corrupt
+                        your database. The problem has been identified but there is no solution yet. Please use
+                    the alternative described in this chapter.</para>
+                </note>
+                
+                <para>
+                    The first step is configuring LibreOffice to use the LibreOffice Open/Save dialogs instead
+                    of the dialogs that are provided by the operating system:
+                    <screenshot>
+                        <graphic fileref="resources/webdav_libreoffice_settings.gif"/>
+                    </screenshot>
+                    Now it is possible to type an URL in the File-Open dialog. Enter <ulink url="http://localhost:8080/exist/webdav/db/"
+                        >http://localhost:8080/exist/webdav/db/</ulink> and provide your login credentials. Now the dialogbox
+                    shows the content of the database:
+                    <screenshot>
+                        <graphic fileref="resources/webdav_libreoffice_open.gif"/>
+                    </screenshot>
+                </para>
+                
+                
+            </section>
+            
         </section>
 
         <section id="revert">
