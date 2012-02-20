@@ -106,11 +106,10 @@ public class DeadlockDetection {
      */
     public static WaitingThread deadlockCheckResource(Thread threadA, Thread threadB) {
         synchronized (latch) {
-            // check if threadB is waiting for a resource lock
+            //Check if threadB is waiting for a resource lock
             WaitingThread waitingThread = waitForResource.get(threadB);
-            // if lock != null, check if thread B waits for a resource lock currently held by thread A
+            //If lock != null, check if thread B waits for a resource lock currently held by thread A
             if (waitingThread != null) {
-//            	LOG.debug("deadlockCheck: " + threadB.getName() + " -> " + waitingThread.getLock().hasLock(threadA));
                 return waitingThread.getLock().hasLock(threadA) ? waitingThread : null;
             }
             return null;
@@ -127,9 +126,9 @@ public class DeadlockDetection {
      */
     public static boolean isBlockedBy(Thread threadA, Thread threadB) {
         synchronized (latch) {
-            // check if threadB is waiting for a resource lock
+            //Check if threadB is waiting for a resource lock
             WaitingThread waitingThread = waitForResource.get(threadB);
-            // if lock != null, check if thread B waits for a resource lock currently held by thread A
+            //If lock != null, check if thread B waits for a resource lock currently held by thread A
             if (waitingThread != null) {
                 return waitingThread.getLock().hasLock(threadA);
             }
@@ -150,10 +149,6 @@ public class DeadlockDetection {
                 Lock l = wt.getLock();
                 Thread t = ((MultiReadReentrantLock) l).getWriteLockedThread();
                 if (t == owner) {
-                    //System.out.println("Waiter: " + waiter.getName() + " Thread: " + t.getName() + " == " + owner.getName() +
-                    //" type: " + wt.getLockType());
-                    //debug(t.getName(), l.getLockInfo());
-                    // the thread acquired the lock in the meantime
                     return false;
                 }
                 if (t != null) {
@@ -167,9 +162,6 @@ public class DeadlockDetection {
             if (l != null) {
                 Thread t = ((ReentrantReadWriteLock) l).getOwner();
                 if (t == owner) {
-                    //System.out.println("Thread " + t.getName() + " == " + owner.getName());
-                    //debug(t.getName(), l.getLockInfo());
-                    //the thread acquired the lock in the meantime
                     return false;
                 }
                 if (t != null) {
@@ -251,23 +243,19 @@ public class DeadlockDetection {
     }
 
     //TODO: move to utils
-    public static String arrayToString(Object[] a) {
-        if (a == null)
+    public static String arrayToString(Object[] array) {
+        if (array == null)
             return "null";
-        if (a.length == 0)
+        if (array.length == 0)
             return "[]";
-
         StringBuffer buf = new StringBuffer();
-
-        for (int i = 0; i < a.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             if (i == 0)
                 buf.append('[');
             else
                 buf.append(", ");
-
-            buf.append(a[i] == null ? "null" : a[i].toString());
+            buf.append(array[i] == null ? "null" : array[i].toString());
         }
-
         buf.append("]");
         return buf.toString();
     }

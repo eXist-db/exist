@@ -48,16 +48,16 @@ public final class RecordPos {
 
     public void setPage(DOMPage page) {
         this.page = page;
-    }	
+    }
 
     public short getTupleID() {
         return tupleID;
     }
-	
+
     //Strange : only one call to this method
     public void setTupleID(short tupleID) {
         this.tupleID = tupleID;
-    }	
+    }
 
     public boolean isLink() {
         return isLink;

@@ -29,41 +29,36 @@ import org.exist.EXistException;
 import org.exist.util.Configuration;
 
 public class BrokerFactory {
-	
-	public static final String PROPERTY_DATABASE = "database";
 
-	private static Class<?> constructorArgs[] = { BrokerPool.class, Configuration.class };
-	
-	private static Map<String, Class<? extends DBBroker>> objClasses = 
-		new HashMap<String, Class<? extends DBBroker>>();
+    public static final String PROPERTY_DATABASE = "database";
 
-	public static void plug(String id, Class<? extends DBBroker> clazz) {
-		objClasses.put(id.toUpperCase(), clazz);
-	}
-	
-	static {
-		plug("NATIVE", NativeBroker.class);
-		//plug("NATIVE_CLUSTER", NativeBroker.class);
-	}
+    private static Class<?> constructorArgs[] = { BrokerPool.class, Configuration.class };
 
-	public static DBBroker getInstance(BrokerPool database, Configuration conf) throws EXistException {
-		String brokerID = (String) conf.getProperty(PROPERTY_DATABASE);
-		
-		if (brokerID == null)
-			throw new RuntimeException("no database defined");
-		
-		brokerID = brokerID.toUpperCase();
-		
-		if (!objClasses.containsKey(brokerID)) {
-			throw new RuntimeException("no database backend found for " + brokerID);
-		}
+    private static Map<String, Class<? extends DBBroker>> objClasses = 
+        new HashMap<String, Class<? extends DBBroker>>();
 
-		try {
-			Class<? extends DBBroker> clazz = objClasses.get(brokerID);
-			Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
-			return constructor.newInstance(database, conf);
-		} catch (Exception e) {
-			throw new RuntimeException("can't get database backend " + brokerID, e);
-		}
-	}
+    public static void plug(String id, Class<? extends DBBroker> clazz) {
+        objClasses.put(id.toUpperCase(), clazz);
+    }
+
+    static {
+        plug("NATIVE", NativeBroker.class);
+    }
+
+    public static DBBroker getInstance(BrokerPool database, Configuration conf) throws EXistException {
+            String brokerID = (String) conf.getProperty(PROPERTY_DATABASE);
+        if (brokerID == null)
+            throw new RuntimeException("no database defined");
+        brokerID = brokerID.toUpperCase();
+        if (!objClasses.containsKey(brokerID)) {
+            throw new RuntimeException("no database backend found for " + brokerID);
+        }
+        try {
+            Class<? extends DBBroker> clazz = objClasses.get(brokerID);
+            Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
+            return constructor.newInstance(database, conf);
+        } catch (Exception e) {
+            throw new RuntimeException("can't get database backend " + brokerID, e);
+        }
+    }
 }

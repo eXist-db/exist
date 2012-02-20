@@ -98,14 +98,14 @@ public class LockInfo implements Debuggable {
         this.readLocks = readLocks;
     }
 
-	@Override
-	public void debug(PrintStream out) {
-    	out.println("Lock type: " + getLockType());
-    	out.println("Lock mode: " + getLockMode());
-    	out.println("Lock id: " + getId());
-    	out.println("Held by: " + DeadlockDetection.arrayToString(getOwners()));
-    	out.println("Read locks: " + DeadlockDetection.arrayToString(getReadLocks()));
-    	out.println("Wait for read: " + DeadlockDetection.arrayToString(getWaitingForRead()));
-    	out.println("Wait for write: " + DeadlockDetection.arrayToString(getWaitingForWrite()));
-	}
+    @Override
+    public void debug(PrintStream out) {
+        out.println("Lock type: " + getLockType());
+        out.println("Lock mode: " + getLockMode());
+        out.println("Lock id: " + getId());
+        out.println("Held by: " + DeadlockDetection.arrayToString(getOwners()));
+        out.println("Read locks: " + DeadlockDetection.arrayToString(getReadLocks()));
+        out.println("Wait for read: " + DeadlockDetection.arrayToString(getWaitingForRead()));
+        out.println("Wait for write: " + DeadlockDetection.arrayToString(getWaitingForWrite()));
+    }
 }

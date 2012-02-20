@@ -33,8 +33,8 @@ import java.io.IOException;
  * of the node it represents to any other node in the same document.
  */
 public interface NodeId extends Comparable<NodeId> {
-	
-	public static final int LENGTH_NODE_ID_UNITS = 2; //sizeof short
+
+    public static final int LENGTH_NODE_ID_UNITS = 2; //sizeof short
 
     /**
      * Static field representing the document node.
@@ -44,7 +44,7 @@ public interface NodeId extends Comparable<NodeId> {
     public final static NodeId END_OF_DOCUMENT = new DLN(0);
 
     public final static NodeId ROOT_NODE = new DLN(1);
-    
+
     public final static int IS_CHILD = 1;
     public final static int IS_DESCENDANT = 2;
     public final static int IS_SELF = 3;
@@ -99,7 +99,7 @@ public interface NodeId extends Comparable<NodeId> {
     NodeId insertBefore();
 
     NodeId append(NodeId other);
-    
+
     /**
      * Returns a new NodeId representing the parent
      * of the current node. If the parent is the document,
@@ -216,4 +216,5 @@ public interface NodeId extends Comparable<NodeId> {
      * @throws IOException if there's a problem with the underlying output stream
      */
     NodeId write(NodeId previous, VariableByteOutputStream os) throws IOException;
+
 }

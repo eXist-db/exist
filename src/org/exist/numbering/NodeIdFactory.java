@@ -52,7 +52,7 @@ public interface NodeIdFactory {
      * @return nodeId
      */
     NodeId createInstance(int id);
-    
+
     /**
      * Read a NodeId from the given input stream.
      *
@@ -77,7 +77,7 @@ public interface NodeIdFactory {
      * @throws IOException if there's a problem with the underlying input stream
      */
     NodeId createFromStream(NodeId previous, VariableByteInput is) throws IOException;
-    
+
     /**
      * Read a NodeId from the given byte array. Start to read at
      * startOffset. sizeHint indicates the length of the id in an
@@ -99,7 +99,7 @@ public interface NodeIdFactory {
      * @return nodeId
      */
     NodeId createFromString(String string);
-    
+
     /**
      * Returns the number of bytes occupied by the NodeId stored
      * in the byte array at the given startOffset. This method is
@@ -120,6 +120,7 @@ public interface NodeIdFactory {
      * @return the document node id.
      */
     NodeId documentNodeId();
-    
+
     void writeEndOfDocument(VariableByteOutputStream os);
+
 }

@@ -62,7 +62,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
     /**
      *  Are there more nodes to be read?
      *
-     *@return    Description of the Return Value
+     *@return <code>true</code> if there is at least one more node to read
      */
     public boolean hasNext() {
         Lock lock = db.getLock();
@@ -71,10 +71,11 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 lock.acquire(Lock.READ_LOCK);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
+                //TODO : throw exception here ? -pb
                 return false;
             }
             db.setOwnerObject(broker);
-            if(gotoNextPosition()) {
+            if (gotoNextPosition()) {
                 db.getPageBuffer().add(page);
                 final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 if (offset < pageHeader.getDataLength())
@@ -82,12 +83,15 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 else if (pageHeader.getNextDataPage() == Page.NO_PAGE)
                     return false;
                 else
+                    //Mmmmh... strange -pb
                     return true;
             }
         } catch (BTreeException e) {
             LOG.warn(e);
+            //TODO : throw exception here ? -pb
         } catch (IOException e) {
             LOG.warn(e);
+            //TODO : throw exception here ? -pb
         } finally {
             lock.release(Lock.READ_LOCK);
         }
@@ -104,6 +108,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 lock.acquire(Lock.READ_LOCK);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
+                //TODO : throw exception here ? -pb
                 return null;
             }
             db.setOwnerObject(broker);
@@ -112,34 +117,34 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 long backLink = 0;
                 do {
                     DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
-                    // next value larger than length of the current page?
+                    //Next value larger than length of the current page?
                     if (offset >= pageHeader.getDataLength()) {
-                        // load next page in chain
+                        //Load next page in chain
                         long nextPageNum = pageHeader.getNextDataPage();
                         if (nextPageNum == Page.NO_PAGE) {
                             SanityCheck.TRACE("bad link to next " + page.page.getPageInfo() +
                                 "; previous: " + pageHeader.getPreviousDataPage() +
                                 "; offset = " + offset + "; lastTupleID = " + lastTupleID);
                             System.out.println(db.debugPageContents(page));
+                            //TODO : throw exception here ? -pb
                             return null;
                         }
                         pageNum = nextPageNum;
                         page = db.getDOMPage(nextPageNum);
-                        //LOG.debug(" -> " + nextPage + "; len = " + page.len + "; " + page.page.getPageInfo());
                         db.addToBuffer(page);
                         offset = 0;
                     }
-                    // extract the tuple ID
+                    //Extract the tuple ID
                     lastTupleID = ByteConversion.byteToShort(page.data, offset);
                     offset += DOMFile.LENGTH_TID;
-                    //	check if this is just a link to a relocated node
+                    //Check if this is just a link to a relocated node
                     if(ItemId.isLink(lastTupleID)) {
-                        // skip this
+                        //Skip this
                         offset += DOMFile.LENGTH_FORWARD_LOCATION;
-                        //continue the iteration
+                        //Continue the iteration
                         continue;
                     }
-                    // read data length
+                    //Read data length
                     short vlen = ByteConversion.byteToShort(page.data, offset);
                     offset += DOMFile.LENGTH_DATA_LENGTH;
                     if (vlen < 0) {
@@ -148,11 +153,11 @@ public final class NodeIterator implements Iterator<StoredNode> {
                         //TODO : throw an exception right now ?
                     }
                     if(ItemId.isRelocated(lastTupleID)) {
-                        // found a relocated node. Read the original address
+                        //Found a relocated node. Read the original address
                         backLink = ByteConversion.byteToLong(page.data, offset);
                         offset += DOMFile.LENGTH_ORIGINAL_LOCATION;
                     }
-                    //overflow page? load the overflow value
+                    //Overflow page? Load the overflow value
                     if (vlen == DOMFile.OVERFLOW) {
                         vlen = DOMFile.LENGTH_OVERFLOW_LOCATION;
                         final long overflow = ByteConversion.byteToLong(page.data, offset);
@@ -164,8 +169,9 @@ public final class NodeIterator implements Iterator<StoredNode> {
                         } catch(Exception e) {
                             LOG.warn("Exception while loading overflow value: " + e.getMessage() +
                                 "; originating page: " + page.page.getPageInfo());
+                            //TODO : rethrow exception ? -pb
                         }
-                    // normal node
+                    //Normal node
                     } else {
                         try {
                             nextNode = StoredNode.deserialize(page.data, offset, vlen, doc, useNodePool);
@@ -186,6 +192,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                             "; offset = " + (offset - vlen) +
                             "; len = " + page.getPageHeader().getDataLength());
                         System.out.println(db.debugPageContents(page));
+                        //TODO : throw an exception here ? -pb
                         return null;
                     }
                     if (ItemId.isRelocated(lastTupleID)) {
@@ -200,8 +207,10 @@ public final class NodeIterator implements Iterator<StoredNode> {
             return nextNode;
         } catch (BTreeException e) {
             LOG.error(e.getMessage(), e);
+            //TODO : re-throw exception ? -pb
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
+            //TODO : re-throw exception ? -pb
         } finally {
             lock.release(Lock.READ_LOCK);
         }
