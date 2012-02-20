@@ -76,7 +76,6 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-
 /**
  * Maintains an index on typed node values.
  *
@@ -91,177 +90,159 @@ import java.util.TreeMap;
  *
  * @author  wolf
  */
-public class NativeValueIndex implements ContentLoadingObserver
-{
-    private final static Logger      LOG                            = Logger.getLogger( NativeValueIndex.class );
+public class NativeValueIndex implements ContentLoadingObserver {
 
-    public static final String       FILE_NAME                      = "values.dbx";
-    public static final String       FILE_KEY_IN_CONFIG             = "db-connection.values";
+    private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
 
-    //TODO : find the real semantics
-    public static final int          WITH_PATH                      = 1;
-    public static final int          WITHOUT_PATH                   = 2;
+    public static final String FILE_NAME = "values.dbx";
+    public static final String FILE_KEY_IN_CONFIG = "db-connection.values";
 
-    public static final double       DEFAULT_VALUE_CACHE_GROWTH     = 1.25;
-    public static final double       DEFAULT_VALUE_KEY_THRESHOLD    = 0.01;
-    public static final double       DEFAULT_VALUE_VALUE_THRESHOLD  = 0.04;
+    public static final int WITH_PATH = 1;
+    public static final int WITHOUT_PATH = 2;
 
-    public static final int          LENGTH_VALUE_TYPE              = 1; //sizeof byte
-    public static final int          LENGTH_NODE_IDS                = 4; //sizeof int
+    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
 
-    public static final int          OFFSET_COLLECTION_ID           = 0;
-    public static final int          OFFSET_VALUE_TYPE              = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-    public static final int          OFFSET_DATA                    = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
+    public static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
+    public static final int LENGTH_NODE_IDS = 4; //sizeof int
 
-    public final static byte         IDX_GENERIC                    = 0;
-    public final static byte         IDX_QNAME                      = 1;
+    public static final int OFFSET_COLLECTION_ID = 0;
+    public static final int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+    public static final int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
 
-    public final static String       INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
-    public final static String       PROPERTY_INDEX_CASE_SENSITIVE  = "indexer.case-sensitive";
+    public final static byte IDX_GENERIC = 0;
+    public final static byte IDX_QNAME = 1;
+
+    public final static String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
+    public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
 
     /** The broker that is using this value index. */
-    DBBroker                         broker;
+    DBBroker broker;
 
-    /** The datastore for this value index. */
-    protected BFile                  dbValues;
-    protected Configuration          config;
+    /** The data-store for this value index. */
+    protected BFile dbValues;
+    protected Configuration config;
 
     /**
-     * A collection of key-value pairs that pending modifications for this value index. The keys are {@link org.exist.xquery.value.AtomicValue atomic
-     * values} that implement {@link Indexable Indexable}. The values are {@link org.exist.util.LongLinkedList lists} containing the nodes GIDs
-     * (global identifiers.
+     * A collection of key-value pairs that pending modifications for this value index.
+     * The keys are {@link org.exist.xquery.value.AtomicValue atomic values}
+     * that implement {@link Indexable Indexable}.
+     * The values are {@link org.exist.util.LongLinkedList lists} containing the nodes GIDs
+     * (global identifiers).
      */
     protected Map<Object, List<NodeId>>[] pending = new Map[2];
 
     /** The current document. */
-    private DocumentImpl             doc;
+    private DocumentImpl doc;
 
-    /** Work output Stream taht should be cleared before every use. */
-    private VariableByteOutputStream os                             = new VariableByteOutputStream();
+    /** Work output Stream that should be cleared before every use. */
+    private VariableByteOutputStream os = new VariableByteOutputStream();
 
     //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-    protected boolean                caseSensitive                  = true;
+    protected boolean caseSensitive = true;
 
-    public NativeValueIndex( DBBroker broker, byte id, String dataDir, Configuration config ) throws DBException
-    {
-        this.broker               = broker;
-        this.config               = config;
+    public NativeValueIndex(DBBroker broker, byte id, String dataDir,
+        Configuration config ) throws DBException {
+        this.broker = broker;
+        this.config = config;
         this.pending[IDX_GENERIC] = new TreeMap<Object, List<NodeId>>();
-        this.pending[IDX_QNAME]   = new TreeMap<Object, List<NodeId>>();
-
+        this.pending[IDX_QNAME] = new TreeMap<Object, List<NodeId>>();
         //use inheritance if necessary !
         //TODO : read from configuration (key ?)
-        double cacheGrowth        = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
+        double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
         double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
         double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
-        BFile  nativeFile         = ( BFile )config.getProperty( getConfigKeyForFile() );
-
-        if( nativeFile == null ) {
-
+        BFile nativeFile = (BFile)config.getProperty(getConfigKeyForFile());
+        if (nativeFile == null) {
             //use inheritance
-            File file = new File( dataDir + File.separatorChar + getFileName() );
-            LOG.debug( "Creating '" + file.getName() + "'..." );
-            nativeFile = new BFile( broker.getBrokerPool(), id, false, file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold );
-            config.setProperty( getConfigKeyForFile(), nativeFile );
-
+            File file = new File(dataDir + File.separatorChar + getFileName());
+            LOG.debug("Creating '" + file.getName() + "'...");
+            nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
+                broker.getBrokerPool().getCacheManager(), cacheGrowth,
+                cacheKeyThresdhold, cacheValueThresHold);
+            config.setProperty(getConfigKeyForFile(), nativeFile);
         }
         dbValues = nativeFile;
-
         //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-        Boolean caseOpt = ( Boolean )config.getProperty( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE );
-
-        if( caseOpt != null ) {
+        Boolean caseOpt = (Boolean)config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        if (caseOpt != null) {
             caseSensitive = caseOpt.booleanValue();
         }
         broker.addContentLoadingObserver( getInstance() );
     }
 
-    public String getFileName()
-    {
+    public String getFileName() {
         return( FILE_NAME );
     }
 
-
-    public String getConfigKeyForFile()
-    {
-        return( FILE_KEY_IN_CONFIG );
+    public String getConfigKeyForFile() {
+        return(FILE_KEY_IN_CONFIG);
     }
 
-
-    public NativeValueIndex getInstance()
-    {
-        return( this );
+    public NativeValueIndex getInstance() {
+        return(this);
     }
-
 
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.DocumentImpl)
      */
-    public void setDocument( DocumentImpl document )
-    {
-        for( byte section = 0; section <= IDX_QNAME; section++ ) {
-
-            if( ( pending[section].size() > 0 ) && ( this.doc.getDocId() != doc.getDocId() ) ) {
-                LOG.error( "Document changed but pending had " + pending[section].size(), new Throwable() );
+    public void setDocument(DocumentImpl document) {
+        for (byte section = 0; section <= IDX_QNAME; section++) {
+            if ((pending[section].size() > 0) && (this.doc.getDocId() != doc.getDocId())) {
+                LOG.error("Document changed but pending had " + pending[section].size(), new Throwable());
+                //TODO : throw exception ? -pb
                 pending[section].clear();
             }
         }
         this.doc = document;
     }
 
-
     /**
      * Store the given element's value in the value index.
      *
-     * @param  node       The element
-     * @param  content    The string representation of the value
-     * @param  xpathType  The value type
-     * @param  indexType  DOCUMENT ME!
-     * @param  remove     DOCUMENT ME!
+     * @param  node The element
+     * @param  content The string representation of the value
+     * @param  xpathType The value type
+     * @param  indexType DOCUMENT ME!
+     * @param  remove DOCUMENT ME!
      */
-    public void storeElement( ElementImpl node, String content, int xpathType, byte indexType, boolean remove )
-    {
-        if( doc.getDocId() != node.getDocId() ) {
-            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getDocId() + "') differ !" ) );
+    public void storeElement(ElementImpl node, String content, int xpathType,
+        byte indexType, boolean remove) {
+        if (doc.getDocId() != node.getDocId()) {
+            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() +
+                "') and proxy id ('" + node.getDocId() + "') differ !"));
         }
-        AtomicValue atomic = convertToAtomic( xpathType, content );
-
+        AtomicValue atomic = convertToAtomic(xpathType, content);
         //Ignore if the value can't be successfully atomized
         //(this is logged elsewhere)
-        if( atomic == null ) {
+        if (atomic == null) {
             return;
         }
         Object key;
-
-        if( indexType == IDX_QNAME ) {
-            key = new QNameKey( node.getQName(), atomic );
+        if (indexType == IDX_QNAME) {
+            key = new QNameKey(node.getQName(), atomic);
         } else {
             key = atomic;
         }
-
-        if( !remove ) {
+        if(!remove) {
             List<NodeId> buf;
-
             //Is this indexable value already pending ?
-            if( pending[indexType].containsKey( key ) ) {
-                buf = pending[indexType].get( key );
+            if (pending[indexType].containsKey(key)) {
+                buf = pending[indexType].get(key);
             } else {
-
                 //Create a NodeId list
-                buf = new ArrayList<NodeId>( 8 );
-                pending[indexType].put( key, buf );
+                buf = new ArrayList<NodeId>(8);
+                pending[indexType].put(key, buf);
             }
-
             //Add node's NodeId to the list
-            buf.add( node.getNodeId() );
+            buf.add(node.getNodeId());
         } else {
-
-            if( !pending[indexType].containsKey( key ) ) {
-                pending[indexType].put( key, null );
+            if (!pending[indexType].containsKey(key)) {
+                pending[indexType].put(key, null);
             }
         }
     }
-
 
     /**
      * Store the given attribute's value in the value index.

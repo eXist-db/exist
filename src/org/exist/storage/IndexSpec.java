@@ -64,8 +64,6 @@ public class IndexSpec {
     private static final String QNAME_ATTRIB = "qname";
     private static final String FULLTEXT_ELEMENT = "fulltext";
 
-    //private final static Logger LOG = Logger.getLogger(IndexSpec.class);
-
     private FulltextIndexSpec ftSpec = null;
 
     private GeneralRangeIndexSpec specs[] = null;
@@ -76,7 +74,7 @@ public class IndexSpec {
     public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
         read(broker, index);
     }
-    
+
     /**
      * Read index configurations from an "index" element node. The node should have
      * exactly one "fulltext" child node and zero or more "create" nodes. The "fulltext"
@@ -88,39 +86,37 @@ public class IndexSpec {
      */
     public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
         Map<String, String> namespaces = getNamespaceMap(index);
-		
-        NodeList cl = index.getChildNodes();
-        for(int i = 0; i < cl.getLength(); i++) {
-            Node node = cl.item(i);
-            if(node.getNodeType() == Node.ELEMENT_NODE) {
-	            if(FULLTEXT_ELEMENT.equals(node.getLocalName())) {
-	                ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
-	            } else if(CREATE_ELEMENT.equals(node.getLocalName())) {
-	                Element elem = (Element) node;
-	                String type = elem.getAttribute(TYPE_ATTRIB);
-	                if (elem.hasAttribute(QNAME_ATTRIB)) {
-	                	String qname = elem.getAttribute(QNAME_ATTRIB);
-	                	QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
-		                qnameSpecs.put(qnIdx.getQName(), qnIdx);
-	                } else if (elem.hasAttribute(PATH_ATTRIB)) {
-	                	String path = elem.getAttribute(PATH_ATTRIB);
-	                	GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
-	                	addValueIndex(valueIdx);
-	                } else {
-	                	String error_message = "Configuration error: element " + elem.getNodeName() +
-	                		" must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
-	                	throw new DatabaseConfigurationException(error_message);
-	                }
-	            }
+        NodeList childNodes = index.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                if (FULLTEXT_ELEMENT.equals(node.getLocalName())) {
+                    ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
+                } else if (CREATE_ELEMENT.equals(node.getLocalName())) {
+                    Element elem = (Element) node;
+                    String type = elem.getAttribute(TYPE_ATTRIB);
+                    if (elem.hasAttribute(QNAME_ATTRIB)) {
+                        String qname = elem.getAttribute(QNAME_ATTRIB);
+                        QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
+                        qnameSpecs.put(qnIdx.getQName(), qnIdx);
+                    } else if (elem.hasAttribute(PATH_ATTRIB)) {
+                        String path = elem.getAttribute(PATH_ATTRIB);
+                        GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
+                        addValueIndex(valueIdx);
+                    } else {
+                        String error_message = "Configuration error: element " + elem.getNodeName() +
+                            " must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
+                        throw new DatabaseConfigurationException(error_message);
+                    }
+                }
             }
         }
-
         // configure custom indexes, but not if broker is null (which means we are reading
         // the default index config from conf.xml)
         if (broker != null)
-            customIndexSpecs = broker.getIndexController().configure(cl, namespaces);
+            customIndexSpecs = broker.getIndexController().configure(childNodes, namespaces);
     }
-	
+
     /**
      * Returns the fulltext index configuration object for the current
      * configuration.
@@ -148,16 +144,16 @@ public class IndexSpec {
      */
     public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {
-	        for(int i = 0; i < specs.length; i++) {
-	            if(specs[i].matches(path))
-	                return specs[i];
-	        }
+            for (int i = 0; i < specs.length; i++) {
+                if(specs[i].matches(path))
+                    return specs[i];
+            }
         }
         return null;
     }
-    
+
     public QNameRangeIndexSpec getIndexByQName(QName name) {
-    	return qnameSpecs.get(name);
+        return qnameSpecs.get(name);
     }
 
     public boolean hasIndexesByPath() {
@@ -167,7 +163,7 @@ public class IndexSpec {
     public boolean hasIndexesByQName() {
         return qnameSpecs.size() > 0;
     }
-    
+
     public List<QName> getIndexedQNames() {
         ArrayList<QName> qnames = new ArrayList<QName>(8);
         for (QName qname : qnameSpecs.keySet()) {
@@ -175,7 +171,7 @@ public class IndexSpec {
         }
         return qnames;
     }
-    
+
     /**
      * Add a {@link GeneralRangeIndexSpec}.
      * 
@@ -192,7 +188,7 @@ public class IndexSpec {
             specs = nspecs;
         }
     }
-    
+
     /**
      * Returns a map containing all prefix/namespace mappings declared in
      * the index element.
@@ -228,20 +224,20 @@ public class IndexSpec {
     }
 
     public String toString() {
-		StringBuilder result = new StringBuilder();
-		if (ftSpec != null)
-			result.append(ftSpec.toString()).append('\n');
-		if(specs!= null) {
-			for (int i = 0 ; i < specs.length ; i++) {
-				GeneralRangeIndexSpec spec = specs[i];
-				if (spec != null)
-					result.append(spec.toString()).append('\n');
-			}
-		}		
-		for (QName qName : qnameSpecs.keySet()) {
-			result.append(qnameSpecs.get(qName).toString()).append('\n');
-		}		
-		return result.toString();
+        StringBuilder result = new StringBuilder();
+        if (ftSpec != null)
+            result.append(ftSpec.toString()).append('\n');
+        if (specs!= null) {
+            for (int i = 0 ; i < specs.length ; i++) {
+                GeneralRangeIndexSpec spec = specs[i];
+                if (spec != null)
+                    result.append(spec.toString()).append('\n');
+            }
+        }
+        for (QName qName : qnameSpecs.keySet()) {
+            result.append(qnameSpecs.get(qName).toString()).append('\n');
+        }
+        return result.toString();
     }
-    
+
 }

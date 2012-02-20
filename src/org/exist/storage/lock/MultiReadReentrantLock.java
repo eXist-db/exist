@@ -158,11 +158,8 @@ public class MultiReadReentrantLock implements Lock {
                 //LOG.debug("wake up from readLock wait");
             }
             DeadlockDetection.clearResourceWaiter(thisThread);
-        }
-        //LOG.debug("readLock acquired by thread: " + Thread.currentThread().getName());
-
-        waitingForReadLock--;
-        // add acquired lock to the current list of read locks
+        }        waitingForReadLock--;
+        //Add acquired lock to the current list of read locks
         outstandingReadLocks.add(new LockOwner(thisThread));
         return true;
     }
@@ -179,21 +176,15 @@ public class MultiReadReentrantLock implements Lock {
         synchronized (this) {
             if (writeLockedThread == thisThread) {
                 outstandingWriteLocks++;
-                //LOG.debug("acquired additional write lock on " + getId());
                 return true;
             }
-
             if (writeLockedThread == null && grantWriteLock()) {
                 writeLockedThread = thisThread;
                 outstandingWriteLocks++;
-                //LOG.debug( "writeLock on " + getId() + " acquired without waiting by " + writeLockedThread.getName());
                 return true;
             }
             if (!waitIfNecessary)
                 return false;
-            //if (writeLockedThread == thisThread) {
-                //LOG.debug("nested write lock: " + outstandingWriteLocks);
-            //}
             deadlockCheck();
             if (waitingForWriteLock == null)
                 waitingForWriteLock = new ArrayList<WaitingThread>(3);
@@ -206,8 +197,6 @@ public class MultiReadReentrantLock implements Lock {
         synchronized (thisThread) {
             if (thisThread != writeLockedThread) {
                 while (thisThread != writeLockedThread && deadlockedThreads == null) {
-                    //LOG.debug("writeLock wait on " + getId() + ". held by " + (writeLockedThread == null ? "null" : writeLockedThread.getName())
-                    // + ". outstanding: " + outstandingWriteLocks);
                     if (LockOwner.DEBUG) {
                         StringBuffer buf = new StringBuffer("Waiting for write: ");
                         for (int i = 0; i < waitingForWriteLock.size(); i++) {
@@ -222,7 +211,7 @@ public class MultiReadReentrantLock implements Lock {
                         try {
                             waiter.doWait();
                         } catch (LockException e) {
-                            // Don't throw the exception now, leave the synchronized block and clean up first
+                            //Don't throw the exception now, leave the synchronized block and clean up first
                             exceptionCaught = e;
                             break;
                         }
@@ -230,8 +219,7 @@ public class MultiReadReentrantLock implements Lock {
                 }
             }
             if (deadlockedThreads == null && exceptionCaught == null)
-                outstandingWriteLocks++; //testing
-            //LOG.debug( "writeLock on " + getId() + " acquired by " + writeLockedThread.getName());
+                outstandingWriteLocks++;
         }
         synchronized (this) {
             DeadlockDetection.clearResourceWaiter(thisThread);
@@ -271,74 +259,59 @@ public class MultiReadReentrantLock implements Lock {
 
     public void release(int mode) {
         switch (mode) {
-            case Lock.NO_LOCK:
-                break;
-            case Lock.WRITE_LOCK:
-                releaseWrite(1);
-                break;
-            default:
-                releaseRead(1);
-                break;
+        case Lock.NO_LOCK:
+            break;
+        case Lock.WRITE_LOCK:
+            releaseWrite(1);
+            break;
+        //TODO : use READ_LOCK ? -pb
+        default:
+            releaseRead(1);
+            break;
         }
     }
 
     public void release(int mode, int count) {
         switch (mode) {
-            case Lock.WRITE_LOCK:
-                releaseWrite(count);
-                break;
-            default:
-                releaseRead(count);
-                break;
+        case Lock.WRITE_LOCK:
+            releaseWrite(count);
+            break;
+        //TODO : use READ_LOCK ? -pb
+        default:
+            releaseRead(count);
+            break;
         }
     }
 
     private synchronized void releaseWrite(int count) {
         if (Thread.currentThread() == writeLockedThread) {
-            //log.info( "outstandingWriteLocks= " + outstandingWriteLocks );
             if (outstandingWriteLocks > 0)
                 outstandingWriteLocks -= count;
-            //else {
-                //LOG.info("extra lock release, writelocks are " + outstandingWriteLocks + "and done was called");
-            //}
-
             if (outstandingWriteLocks > 0) {
-                //LOG.debug("writeLock released for a nested writeLock request: " + outstandingWriteLocks +
-                //"; thread: " + writeLockedThread.getName());
                 return;
             }
-
-            // if another thread is waiting for a write lock, we immediately pass control to it.
-            // no further checks should be required here.
+            //If another thread is waiting for a write lock, we immediately 
+            //pass control to it. No further checks should be required here.
             if (grantWriteLockAfterRead()) {
                 WaitingThread waiter = waitingForWriteLock.get(0);
                 removeWaitingWrite(waiter);
                 DeadlockDetection.clearResourceWaiter(waiter.getThread());
                 writeLockedThread = waiter.getThread();
-                //if (LOG.isDebugEnabled()) {
-                //  LOG.debug("writeLock released and before notifying a write lock waiting thread " + writeLockedThread);
-                //}
                 synchronized (writeLockedThread) {
                     writeLockedThread.notifyAll();
                 }
-                //if (LOG.isDebugEnabled()) {
-                //  LOG.debug("writeLock released by " + Thread.currentThread().getName() +
-                //  " after notifying a write lock waiting thread " + writeLockedThread.getName());
-                //}
             } else {
                 writeLockedThread = null;
                 if (waitingForReadLock > 0) {
-                    //LOG.debug("writeLock " + Thread.currentThread().getName() + " released, notified waiting readers");
-                    // wake up pending read locks
+                    //Wake up pending read locks
                     notifyAll();
                 }
             }
         } else {
             LOG.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
                 "thread was interrupted or it never acquired the lock.", new Throwable());
+            //TODO : throw exception ? -pb
         }
-        //LOG.debug("writeLock released: " + getId() + "; outstanding: " + outstandingWriteLocks +
-        //"; thread: " + Thread.currentThread().getName() + " suspended: " + suspendedThreads.size());
     }
 
     /**
@@ -346,30 +319,19 @@ public class MultiReadReentrantLock implements Lock {
      * from this object.
      *
      * @throws IllegalStateException if called when there are no outstanding locks or there is a
-     *                               write lock issued to a different thread.
+     * write lock issued to a different thread.
      */
     private synchronized void releaseRead(int count) {
         if (!outstandingReadLocks.isEmpty()) {
             removeReadLock(count);
-//            if (LOG.isDebugEnabled()) {
-//                LOG.debug("readLock on " + getId() + " released by " + Thread.currentThread().getName());
-//                LOG.debug("remaining read locks: " + listReadLocks());
-//            }
             if (writeLockedThread == null && grantWriteLockAfterRead()) {
                 WaitingThread waiter = waitingForWriteLock.get(0);
                 removeWaitingWrite(waiter);
                 DeadlockDetection.clearResourceWaiter(waiter.getThread());
                 writeLockedThread = waiter.getThread();
-//                if (LOG.isDebugEnabled()) {
-//                    LOG.debug("readLock released and before notifying a write lock waiting thread " + writeLockedThread);
-//                    LOG.debug("remaining read locks: " + outstandingReadLocks.size());
-//                }
                 synchronized (writeLockedThread) {
                     writeLockedThread.notifyAll();
                 }
-//                if (LOG.isDebugEnabled()) {
-//                    LOG.debug("readLock released and after notifying a write lock waiting thread " + writeLockedThread);
-//                }
             }
             return;
         } else {
@@ -380,6 +342,7 @@ public class MultiReadReentrantLock implements Lock {
                     new Throwable());
             if (LockOwner.DEBUG)
                 debugReadLocks("ILLEGAL RELEASE");
+            //TODO : throw exception ? -pb
         }
     }
 
@@ -411,15 +374,9 @@ public class MultiReadReentrantLock implements Lock {
     }
 
     private void deadlockCheck() throws DeadlockException {
-//    	if (writeLockedThread != null) {
-//    		Lock lock = DeadlockDetection.isWaitingFor(writeLockedThread);
-//    		if (lock != null && lock.hasLock())
-//    			throw new DeadlockException();
-//    	}
         for (LockOwner next : outstandingReadLocks) {
             Lock lock = DeadlockDetection.isWaitingFor(next.getOwner());
             if (lock != null) {
-//                LOG.debug("Checking for deadlock...");
                 lock.wakeUp();
             }
         }
@@ -437,10 +394,6 @@ public class MultiReadReentrantLock implements Lock {
         ArrayList<WaitingThread> waiters = new ArrayList<WaitingThread>(10);
         if (DeadlockDetection.wouldDeadlock(waiter, writeLockedThread, waiters)) {
             LOG.warn("Potential deadlock detected on lock " + getId() + "; killing threads: " + waiters.size());
-//            for (int i = 0; i < waiters.size(); i++) {
-//                WaitingThread wt = (WaitingThread) waiters.get(i);
-//                LOG.debug("Waiter: " + wt.getThread().getName() + " -> " + wt.getLock().getId());
-//            }
             return waiters.size() > 0 ? waiters : null;
         }
         return null;
@@ -458,16 +411,14 @@ public class MultiReadReentrantLock implements Lock {
         if (outstandingReadLocks.isEmpty()) {
             return true;
         }
-
         Thread waiter = Thread.currentThread();
-
-        // walk through outstanding read locks
+        //Walk through outstanding read locks
         for (LockOwner next : outstandingReadLocks) {
-            // if the read lock is owned by the current thread, all is ok and we continue
+            //If the read lock is owned by the current thread, all is OK and we continue
             if (next.getOwner() != waiter) {
-                // otherwise, check if the lock belongs to a thread which is currently blocked
-                // by a lock owned by the current thread. if yes, it will be safe to grant the
-                // write lock: the other thread will be blocked anyway.
+                //Otherwise, check if the lock belongs to a thread which is currently blocked
+                //by a lock owned by the current thread. if yes, it will be safe to grant the
+                //write lock: the other thread will be blocked anyway.
                 if (!DeadlockDetection.isBlockedBy(waiter, next.getOwner())) {
                     return false;
                 }
@@ -484,12 +435,12 @@ public class MultiReadReentrantLock implements Lock {
      * @return true if the write lock can be granted
      */
     private boolean grantWriteLockAfterRead() {
-        // waiting write locks?
+        //Waiting write locks?
         if (waitingForWriteLock != null && waitingForWriteLock.size() > 0) {
-            // yes, check read locks
+            //Yes, check read locks
             final int size = outstandingReadLocks.size();
             if (size > 0) {
-                // grant lock if all read locks are held by the write thread
+                //Grant lock if all read locks are held by the write thread
                 WaitingThread waiter = waitingForWriteLock.get(0);
                 return isCompatible(waiter.getThread());
             }
@@ -545,11 +496,11 @@ public class MultiReadReentrantLock implements Lock {
      */
     private boolean isCompatible(Thread waiting) {
         for (LockOwner next : outstandingReadLocks) {
-            // if the read lock is owned by the current thread, all is ok and we continue
+            //If the read lock is owned by the current thread, all is OK and we continue
             if (next.getOwner() != waiting) {
-                // otherwise, check if the lock belongs to a thread which is currently blocked
-                // by a lock owned by the current thread. if yes, it will be safe to grant the
-                // write lock: the other thread will be blocked anyway.
+                //Otherwise, check if the lock belongs to a thread which is currently blocked
+                //by a lock owned by the current thread. if yes, it will be safe to grant the
+                //write lock: the other thread will be blocked anyway.
                 if (!DeadlockDetection.isBlockedBy(waiting, next.getOwner())) {
                     return false;
                 }
@@ -569,7 +520,8 @@ public class MultiReadReentrantLock implements Lock {
             }
         }
         if (writeLockedThread != null) {
-            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.WRITE_LOCK, getId(), new String[] { writeLockedThread.getName() });
+            info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.WRITE_LOCK, getId(), 
+                    new String[] {writeLockedThread.getName()});
             info.setReadLocks(readers);
         } else {
             info = new LockInfo(LockInfo.RESOURCE_LOCK, LockInfo.READ_LOCK, getId(), readers);
@@ -590,18 +542,8 @@ public class MultiReadReentrantLock implements Lock {
         }
     }
 
-    @SuppressWarnings("unused")
-	private String listReadLocks() {
-        StringBuffer buf = new StringBuffer();
-        for (LockOwner owner : outstandingReadLocks) {
-            buf.append(' ');
-            buf.append(owner.getOwner().getName());
-        }
-        return buf.toString();
+    @Override
+    public void debug(PrintStream out) {
+        getLockInfo().debug(out);
     }
-
-	@Override
-	public void debug(PrintStream out) {
-		getLockInfo().debug(out);
-	}
 }

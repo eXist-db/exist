@@ -56,7 +56,7 @@ import java.util.Properties;
  * attempt is aborted and {@link #tryLock()} returns false.
  * 
  * Otherwise, we create a new lock file and start a daemon thread to periodically update
- * the lock file's heartbeat value.
+ * the lock file's heart-beat value.
  * 
  * @author Wolfgang Meier
  * 
@@ -70,7 +70,7 @@ public class FileLock {
 
     /** Magic word to be written to the start of the lock file */
     private final static byte[] MAGIC =
-        { 0x65, 0x58, 0x69, 0x73, 0x74, 0x2D, 0x64,0x62 }; // "eXist-db"
+        { 0x65, 0x58, 0x69, 0x73, 0x74, 0x2D, 0x64, 0x62 }; // "eXist-db"
 
     /** BrokerPool provides access the SyncDaemon */
     private BrokerPool pool;
@@ -81,20 +81,20 @@ public class FileLock {
     /** An open channel to the lock file */
     private FileChannel channel = null;
 
-    /** Temp buffer used for writing */
+    /** Temporary buffer used for writing */
     private final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
 
     /** The time (in milliseconds) of the last heartbeat written to the lock file */
     private long lastHeartbeat = -1L;
 
     public FileLock(BrokerPool pool, String path) {
-	this.pool = pool;
-	this.lockFile = new File(path);
+        this.pool = pool;
+        this.lockFile = new File(path);
     }
 
     public FileLock(BrokerPool pool, File parent, String lockName) {
-	this.pool = pool;
-	this.lockFile = new File(parent, lockName);
+        this.pool = pool;
+        this.lockFile = new File(parent, lockName);
     }
 
     /**
@@ -115,13 +115,13 @@ public class FileLock {
                 message("Failed to read lock file", null);
                 e.printStackTrace();
             }
-            // check if there's a heartbeat. if not, remove the stale .lck file and try again
+            //Check if there's a heart-beat. If not, remove the stale .lck file and try again
             if (checkHeartbeat()) {
-                // there seems to be a heartbeat...
-                // sometimes Java does not properly delete files, so we may have an old
-                // lock file from a previous db run, which has not timed out yet. We thus
-                // give the db a second chance and wait for HEARTBEAT + 100 milliseconds
-                // before we check the heartbeat a second time.
+                //There seems to be a heart-beat...
+                //Sometimes Java does not properly delete files, so we may have an old
+                //lock file from a previous db run, which has not timed out yet. We thus
+                //give the db a second chance and wait for HEARTBEAT + 100 milliseconds
+                //before we check the heart-beat a second time.
                 synchronized (this) {
                     try {
                         message("Waiting a short time for the lock to be released...", null);
@@ -131,7 +131,7 @@ public class FileLock {
                     }
                 }
                 try {
-                    // close the open channel, so it can be read again
+                    //Close the open channel, so it can be read again
                     if (channel.isOpen())
                         channel.close();
                     channel = null;
@@ -146,19 +146,16 @@ public class FileLock {
         } catch (IOException e) {
             throw new ReadOnlyException(message("Could not create lock file", e));
         }
-
         try {
             save();
         } catch (IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
         }
-
-        //Schedule the heartbeat for the file lock
+        //Schedule the heart-beat for the file lock
         Properties params = new Properties();
         params.put(FileLock.class.getName(), this);
         pool.getScheduler().createPeriodicJob(HEARTBEAT,
                 new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
-
         return true;
     }
 

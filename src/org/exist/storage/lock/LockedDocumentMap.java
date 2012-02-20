@@ -32,88 +32,80 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
  * This map is used by the XQuery engine to track how many read locks were
  * acquired for a document during query execution.
  */
-public class LockedDocumentMap extends Int2ObjectHashMap {
+public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
 
     public LockedDocumentMap() {
         super(29, 1.75);
     }
 
-    public void add(DocumentImpl doc) {
-        LockedDocument entry = (LockedDocument) get(doc.getDocId());
+    public void add(DocumentImpl document) {
+        LockedDocument entry = (LockedDocument) get(document.getDocId());
         if (entry == null) {
-            entry = new LockedDocument(doc);
-            put(doc.getDocId(), entry);
+            entry = new LockedDocument(document);
+            put(document.getDocId(), entry);
         }
         entry.locksAcquired++;
     }
 
     public MutableDocumentSet toDocumentSet() {
         MutableDocumentSet docs = new DefaultDocumentSet(size());
-        LockedDocument d;
+        LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
                 continue;
-            d = (LockedDocument) values[idx];
-            docs.add(d.document);
+            lockedDocument = (LockedDocument) values[idx];
+            docs.add(lockedDocument.document);
         }
         return docs;
     }
 
-    public DocumentSet getDocsByCollection(Collection collection, boolean includeSubColls, MutableDocumentSet targetSet) {
+    public DocumentSet getDocsByCollection(Collection collection,
+            boolean includeSubColls, MutableDocumentSet targetSet) {
         if (targetSet == null)
             targetSet = new DefaultDocumentSet(size());
-        LockedDocument d;
+        LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
                 continue;
-	        d = (LockedDocument) values[idx];
-            if (d.document.getCollection().getURI().startsWith(collection.getURI()))
-                targetSet.add(d.document);
+            lockedDocument = (LockedDocument) values[idx];
+            if (lockedDocument.document.getCollection().getURI().startsWith(collection.getURI()))
+                targetSet.add(lockedDocument.document);
         }
         return targetSet;
     }
 
     public void unlock() {
-        LockedDocument d;
-        Lock dlock;
+        LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
                 continue;
-            d = (LockedDocument) values[idx];
-            unlockDocument(d); 
+            lockedDocument = (LockedDocument) values[idx];
+            unlockDocument(lockedDocument); 
         }
     }
 
     public LockedDocumentMap unlockSome(DocumentSet keep) {
-        LockedDocument d;
-        Lock dlock;
+        LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
                 continue;
-            d = (LockedDocument) values[idx];
-            if (!keep.contains(d.document.getDocId())) {
+            lockedDocument = (LockedDocument) values[idx];
+            if (!keep.contains(lockedDocument.document.getDocId())) {
                 values[idx] = REMOVED;
-                unlockDocument(d);
+                unlockDocument(lockedDocument);
             }
         }
         return this;
     }
 
-    private void unlockDocument(LockedDocument d) {
-        Lock dlock = d.document.getUpdateLock();
-        dlock.release(Lock.WRITE_LOCK, d.locksAcquired);
-        //for (int i = 0; i < d.locksAcquired; i++) {
-            //dlock.release(Lock.READ_LOCK);
-        //}
-        //if (dlock.isLockedForRead(Thread.currentThread())) {
-            //System.out.println("Thread is still LOCKED: " + Thread.currentThread().getName());
-        //}
+    private void unlockDocument(LockedDocument lockedDocument) {
+        Lock documentLock = lockedDocument.document.getUpdateLock();
+        documentLock.release(Lock.WRITE_LOCK, lockedDocument.locksAcquired);
     }
 
     private static class LockedDocument {
         private DocumentImpl document;
         private int locksAcquired = 0;
-
         public LockedDocument(DocumentImpl document) {
             this.document = document;
         }
