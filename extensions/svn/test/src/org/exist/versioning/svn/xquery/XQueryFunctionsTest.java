@@ -62,6 +62,23 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryFunctionsTest {
 
+	String common = 
+	"xquery version \"3.0\"; " +
+
+	"let $collection := '/db/test/commit' " +
+	"let $target-file := 'test.xml'" +
+	"let $file-path := concat($collection, '/', $target-file) " +
+
+	"let $url := "+repositoryBaseURI()+" " +
+	"let $user := "+testAccount()+" " +
+	"let $password := "+testPassword()+" " +
+
+	"let $checkout-rel-path := concat($url, '/commit') " +
+
+	"let $login := xmldb:login($collection, 'guest', 'guest') " +
+	"return <result pass='true'>";
+
+
 	@Test
 	public void test_001() {
 		test(
@@ -70,7 +87,7 @@ public class XQueryFunctionsTest {
 			"let $fake := if (xmldb:collection-available($destination-path)) " +
 				"then xmldb:remove($destination-path )" +
 				"else() " +
-			"return <result pass=\"true\">subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+")</result>"
+			"return <result pass=\"true\">subversion:checkout("+repositoryBaseURI()+", '/db/test/svn/checkout', "+testAccount()+", "+testPassword()+")</result>"
 		);
 	}
 
@@ -84,7 +101,7 @@ public class XQueryFunctionsTest {
 			"let $password := "+testPassword()+" " +
 			
 			"let $target-file := 'test.xml' " +
-			"let $collection := "+destinationPath()+" " +
+			"let $collection := '/db/test/svn/checkout' " +
 			"let $file-path := concat($collection, '/', $target-file) " +
 			
 			"let $file := " +
@@ -116,7 +133,7 @@ public class XQueryFunctionsTest {
 			"xquery version \"1.0\"; " +
 			"<result pass=\"true\">" +
 			"subversion:get-latest-revision-number(" +
-			destinationPath()+", " +
+			"'/db/test/svn/checkout', " +
 			testAccount()+", " +
 			testPassword()+")" +
 			"</result>"
@@ -129,7 +146,7 @@ public class XQueryFunctionsTest {
 			"xquery version \"1.0\"; " +
 			"<result pass=\"true\">" +
 			"subversion:clean-up(" +
-			destinationPath()+")" +
+			"'/db/test/svn/checkout')" +
 			"</result>"
 		);
 	}
@@ -146,7 +163,7 @@ public class XQueryFunctionsTest {
 			"let $user := "+testAccount()+" " +
 			"let $password := "+testPassword()+" " +
 			
-			"let $tmp := subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+") " +
+			"let $tmp := subversion:checkout("+repositoryBaseURI()+", $collection, "+testAccount()+", "+testPassword()+") " +
 
 			"let $file := " +
 			"if (doc-available($file-path)) " +
@@ -173,21 +190,6 @@ public class XQueryFunctionsTest {
 
 	@Test
 	public void test_011() {
-		String common = "xquery version \"3.0\"; " +
-
-			"let $collection := '/db/test/commit' " +
-			"let $target-file := 'test.xml'" +
-			"let $file-path := concat($collection, '/', $target-file) " +
-
-			"let $url := "+repositoryBaseURI()+" " +
-			"let $user := "+testAccount()+" " +
-			"let $password := "+testPassword()+" " +
-
-			"let $checkout-rel-path := concat($url, '/commit') " +
-
-			"let $login := xmldb:login($collection, 'guest', 'guest') " +
-			"return <result pass='true'>";
-
 		test(
 			common +
 			"{if (xmldb:collection-available($collection)) " +
@@ -236,10 +238,6 @@ public class XQueryFunctionsTest {
 		    "}"+
 		    "</result>"
 	    );
-	}
-
-	private String destinationPath() {
-		return "'/db/test-svn/checkout'";
 	}
 
 	private String repositoryBaseURI() {
