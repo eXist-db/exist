@@ -860,7 +860,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 */
 	public String getRealPath(String path)
 	{
-		return request.getRealPath(path);
+		return request.getSession().getServletContext().getRealPath(path);
 	}
 
 	/**
