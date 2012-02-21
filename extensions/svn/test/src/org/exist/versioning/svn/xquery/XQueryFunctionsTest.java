@@ -64,10 +64,6 @@ public class XQueryFunctionsTest {
 
 	@Test
 	public void test_001() {
-		System.out.println(repositoryBaseURI());
-		System.out.println(destinationPath());
-		System.out.println(testAccount());
-		System.out.println(testPassword());
 		test(
 			"xquery version \"1.0\"; " +
 			"let $destination-path := '/db/test/svn/checkout' " +
@@ -83,14 +79,13 @@ public class XQueryFunctionsTest {
 		test(
 			"xquery version \"1.0\"; " +
 
-			"(: get the data from the module :) " +
-			"let $test-url := "+repositoryBaseURI()+" " +
-			"let $test-user := "+testAccount()+" " +
-			"let $test-password := "+testPassword()+" " +
+			"let $url := "+repositoryBaseURI()+" " +
+			"let $user := "+testAccount()+" " +
+			"let $password := "+testPassword()+" " +
 			
-			"let $target-file := '1.xml' " +
-			"let $checkout-collection := "+destinationPath()+" " +
-			"let $file-path := concat($checkout-collection, '/', $target-file) " +
+			"let $target-file := 'test.xml' " +
+			"let $collection := "+destinationPath()+" " +
+			"let $file-path := concat($collection, '/', $target-file) " +
 			
 			"let $file := " +
 				"if (doc-available($file-path)) " +
@@ -99,13 +94,13 @@ public class XQueryFunctionsTest {
 			
 			"let $add := subversion:add($file-path) " +
 			
-			"let $commit-1 := subversion:commit($checkout-collection, 'Test of Commit after Add', $test-user, $test-password) " +
-			"let $list1 := subversion:info($checkout-collection) " +
+			"let $commit-1 := subversion:commit($collection, 'Test of Commit after Add', $user, $password) " +
+			"let $list1 := subversion:info($collection) " +
 			
 			"let $delete := subversion:delete($file-path) " +
-			"let $commit-2 := subversion:commit($checkout-collection, 'Test of Commit after Delete', $test-user, $test-password) " +
+			"let $commit-2 := subversion:commit($collection, 'Test of Commit after Delete', $user, $password) " +
 			
-			"let $list2 := subversion:info($checkout-collection) " +
+			"let $list2 := subversion:info($collection) " +
 			
 			"return " +
 			"<result pass=\"true\">" +
@@ -113,6 +108,132 @@ public class XQueryFunctionsTest {
 				"<list2>{$list2}</list2>" +
 			"</result>"
 		);
+	}
+	
+	@Test
+	public void test_003() {
+		test(
+			"xquery version \"1.0\"; " +
+			"<result pass=\"true\">" +
+			"subversion:get-latest-revision-number(" +
+			destinationPath()+", " +
+			testAccount()+", " +
+			testPassword()+")" +
+			"</result>"
+		);
+	}
+
+	@Test
+	public void test_004() {
+		test(
+			"xquery version \"1.0\"; " +
+			"<result pass=\"true\">" +
+			"subversion:clean-up(" +
+			destinationPath()+")" +
+			"</result>"
+		);
+	}
+
+	@Test
+	public void test_010() {
+		test(
+			"xquery version \"3.0\"; " +
+			"let $collection := '/db/test/svn/checkout' " +
+			"let $target-file := 'test.xml'" +
+			"let $file-path := concat($collection, '/', $target-file) " +
+
+			"let $url := "+repositoryBaseURI()+" " +
+			"let $user := "+testAccount()+" " +
+			"let $password := "+testPassword()+" " +
+
+			"let $file := " +
+			"if (doc-available($file-path)) " +
+				"then () " +
+				"else xmldb:store($collection, $target-file, <test>{current-dateTime()}</test>) " +
+
+			"let $initial-owner := xmldb:get-owner($collection, $target-file) " +
+			"let $initial-group := xmldb:get-group($collection, $target-file) " +
+			"let $initial-permissions := xmldb:get-permissions($collection, $target-file) " +
+
+			"let $commit := system:as-user('guest', 'guest', subversion:commit($file-path, 'Test Commit', $user, $password)) " +
+
+			"let $final-owner := xmldb:get-owner($collection, $target-file) " +
+			"let $final-group := xmldb:get-group($collection, $target-file) " +
+			"let $final-permissions := xmldb:get-permissions($collection, $target-file) " +
+
+			"return <result pass=\"true\"> " +
+				"<BeforeCommit owner='{$initial-owner}' group='{$initial-group}' perms='{xmldb:permissions-to-string($initial-permissions)}'/>" +
+				"<AfterCommit owner='{$final-owner}' group='{$final-group}' perms='{xmldb:permissions-to-string($final-permissions)}'/>" +
+				"<revision>{$commit}</revision>" +
+			"</result>"   
+		);
+	}
+
+	@Test
+	public void test_011() {
+		String common = "xquery version \"3.0\"; " +
+
+			"let $collection := '/db/test/commit' " +
+			"let $target-file := 'test.xml'" +
+			"let $file-path := concat($collection, '/', $target-file) " +
+
+			"let $url := "+repositoryBaseURI()+" " +
+			"let $user := "+testAccount()+" " +
+			"let $password := "+testPassword()+" " +
+
+			"let $checkout-rel-path := concat($url, '/commit') " +
+
+			"let $login := xmldb:login($collection, 'guest', 'guest') " +
+			"return <result pass='true'>";
+
+		test(
+			common +
+			"{if (xmldb:collection-available($collection)) " +
+				"then ('Removing Old Files', xmldb:remove($collection)) " +
+				"else()}" +
+			"</result>");
+
+		test(
+			common +
+	    	"{subversion:checkout($checkout-rel-path, $collection, $test-user, $test-password)}" +
+			"</result>"
+		);
+		
+		test(
+			common +
+		    "{let $result := xmldb:get-child-collections($collection) " +
+		    "return " +
+		    	"if ( $result = '.svn') " +
+		    	"then " +
+		    		"<test>" +
+		            	"result = {$result} (expecting '.svn') "+
+		            	"passed" +
+		          	"</test> " +
+	          	"else <test>fail</test>" +
+		    "}" +
+			"</result>"
+		);
+
+		test(
+			common +
+		    "{"+
+		        "let $timestamp := current-dateTime() " +
+		        
+		        "let $new-message := concat('Updated Message ', $timestamp) " +
+		        "let $update := update value doc($new-file-path) " +
+		        "return " +
+		           "doc($new-file-path) "+
+		    "}"+
+			"</result>"
+	    );
+					    
+		test(
+			common +
+		    "{"+
+		        "subversion:commit($collection, 'Test Modify Commit From Unit Test', $user, $password)" +
+		    "}"+
+		    "</result>"
+	    );
 	}
 
 	private String destinationPath() {
