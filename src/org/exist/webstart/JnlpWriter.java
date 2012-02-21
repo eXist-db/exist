@@ -190,7 +190,9 @@ public class JnlpWriter {
             writer.writeEndElement(); // jnlp
 
             writer.writeEndDocument();
-
+            
+            writer.flush();
+            writer.close();
 
         } catch (Throwable ex) {
             logger.error(ex);
