@@ -1141,7 +1141,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 LOG.error("Internal error: servletPath = " + sp + " is longer than path = " + path);
                 return null;
             }
-            return path.length() == sp.length() ? null : path.substring(sp.length());
+            return path.length() == sp.length() ? path : path.substring(sp.length());
        }
 
         @Override
