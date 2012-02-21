@@ -145,6 +145,8 @@ public class XQueryFunctionsTest {
 			"let $url := "+repositoryBaseURI()+" " +
 			"let $user := "+testAccount()+" " +
 			"let $password := "+testPassword()+" " +
+			
+			"let $tmp := subversion:checkout("+repositoryBaseURI()+", "+destinationPath()+", "+testAccount()+", "+testPassword()+") " +
 
 			"let $file := " +
 			"if (doc-available($file-path)) " +
