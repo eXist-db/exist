@@ -28,115 +28,135 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * an ant task to list the sub-collections or resources in a collection
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class XMLDBListTask extends AbstractXMLDBTask {
 
+/**
+ * an ant task to list the sub-collections or resources in a collection.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class XMLDBListTask extends AbstractXMLDBTask
+{
     private boolean hasCollections = false;
-    private boolean hasResources = false;
-    private String separator = ",";
-    private String outputproperty;
+    private boolean hasResources   = false;
+    private String  separator      = ",";
+    private String  outputproperty;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("You have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
-        if (hasCollections == false && hasResources == false) {
-            throw new BuildException("You have at least one of collections or resources or both");
+        if( ( hasCollections == false ) && ( hasResources == false ) ) {
+            throw( new BuildException( "You have at least one of collections or resources or both" ) );
         }
 
         registerDatabase();
-        try {
-            log("Get base collection: " + uri, Project.MSG_DEBUG);
-            Collection base = DatabaseManager.getCollection(uri, user, password);
 
-            if (base == null) {
+        try {
+            log( "Get base collection: " + uri, Project.MSG_DEBUG );
+            Collection base = DatabaseManager.getCollection( uri, user, password );
+
+            if( base == null ) {
                 String msg = "Collection " + uri + " could not be found.";
-                if (failonerror) {
-                    throw new BuildException(msg);
+
+                if( failonerror ) {
+                    throw( new BuildException( msg ) );
                 } else {
-                    log(msg, Project.MSG_ERR);
+                    log( msg, Project.MSG_ERR );
                 }
             }
 
             StringBuilder buffer = new StringBuilder();
-            
-            if (hasCollections) {
+
+            if( hasCollections ) {
                 String[] childCollections = base.listChildCollections();
-                if (childCollections != null) {
-                    log("Listing child collections", Project.MSG_DEBUG);
-                    boolean isFirst=true;
-                    
-                    for (String col : childCollections) {
+
+                if( childCollections != null ) {
+                    log( "Listing child collections", Project.MSG_DEBUG );
+                    boolean isFirst = true;
+
+                    for( String col : childCollections ) {
+
                         // only insert separator for 2nd or later item
-                        if(isFirst){
-                            isFirst=false;
+                        if( isFirst ) {
+                            isFirst = false;
                         } else {
-                            buffer.append(separator);
+                            buffer.append( separator );
                         }
 
-                        buffer.append(col);
+                        buffer.append( col );
                     }
                 }
             }
 
-            if (hasResources) {
-                log("Listing resources", Project.MSG_DEBUG);
+            if( hasResources ) {
+                log( "Listing resources", Project.MSG_DEBUG );
                 String[] resources = base.listResources();
-                if (resources != null) {
-                    if (buffer.length() > 0) {
-                        buffer.append(separator);
+
+                if( resources != null ) {
+
+                    if( buffer.length() > 0 ) {
+                        buffer.append( separator );
                     }
 
-                    boolean isFirst=true;
-                    for (String resource : resources) {
+                    boolean isFirst = true;
+
+                    for( String resource : resources ) {
+
                         // only insert separator for 2nd or later item
-                        if(isFirst){
-                            isFirst=false;
+                        if( isFirst ) {
+                            isFirst = false;
                         } else {
-                            buffer.append(separator);
+                            buffer.append( separator );
                         }
 
-                        buffer.append(resource);
+                        buffer.append( resource );
                     }
                 }
             }
 
-            if (buffer.length() > 0) {
-                log("Set property " + outputproperty, Project.MSG_INFO);
-                getProject().setNewProperty(outputproperty, buffer.toString());
+            if( buffer.length() > 0 ) {
+                log( "Set property " + outputproperty, Project.MSG_INFO );
+                getProject().setNewProperty( outputproperty, buffer.toString() );
             }
-            
-        } catch (XMLDBException e) {
+
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception during list: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
-    public void setCollections(boolean collections) {
+
+    public void setCollections( boolean collections )
+    {
         this.hasCollections = collections;
     }
 
-    public void setResources(boolean resources) {
+
+    public void setResources( boolean resources )
+    {
         this.hasResources = resources;
     }
 
-    public void setSeparator(String separator) {
+
+    public void setSeparator( String separator )
+    {
         this.separator = separator;
     }
 
-    public void setOutputproperty(String outputproperty) {
+
+    public void setOutputproperty( String outputproperty )
+    {
         this.outputproperty = outputproperty;
     }
 }

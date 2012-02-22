@@ -30,60 +30,73 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * an ant task to check for the existance of a collection or resource
- * to be used as a ant condition
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class XMLDBExistTask extends AbstractXMLDBTask implements Condition {
 
+/**
+ * an ant task to check for the existance of a collection or resource to be used as a ant condition.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
+{
     private String resource = null;
 
     /**
-     * @return returns true if the eval is successful.
-     * @throws BuildException
-     * @see org.apache.tools.ant.taskdefs.condition.Condition#eval()
+     * DOCUMENT ME!
+     *
+     * @return  returns true if the eval is successful.
+     *
+     * @throws  BuildException
+     *
+     * @see     org.apache.tools.ant.taskdefs.condition.Condition#eval()
      */
-    public boolean eval() throws BuildException {
+    public boolean eval() throws BuildException
+    {
         boolean exist = false;
 
-        if (uri == null) {
-            throw new BuildException("You have to specify an XMLDB collection URI");
+        if( uri == null ) {
+            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
         registerDatabase();
-        try {
-            log("Checking collection: " + uri, Project.MSG_INFO);
-            Collection base = DatabaseManager.getCollection(uri, user, password);
 
-            if (base != null) {
-                log("Base collection found", Project.MSG_DEBUG);
+        try {
+            log( "Checking collection: " + uri, Project.MSG_INFO );
+            Collection base = DatabaseManager.getCollection( uri, user, password );
+
+            if( base != null ) {
+                log( "Base collection found", Project.MSG_DEBUG );
                 exist = true;
             }
 
-            if (base != null && resource != null) {
-                log("Checking resource: " + resource, Project.MSG_INFO);
-                Resource res = base.getResource(resource);
-                if (res == null) {
-                    log("Resource not found", Project.MSG_DEBUG);
+            if( ( base != null ) && ( resource != null ) ) {
+                log( "Checking resource: " + resource, Project.MSG_INFO );
+                Resource res = base.getResource( resource );
+
+                if( res == null ) {
+                    log( "Resource not found", Project.MSG_DEBUG );
                     exist = false;
                 }
             }
 
-        } catch (XMLDBException e) {
+        }
+        catch( XMLDBException e ) {
+
             // ignore is false already
-            log("Resource or collection cannot be retrieved", Project.MSG_DEBUG);
+            log( "Resource or collection cannot be retrieved", Project.MSG_DEBUG );
             exist = false;
         }
 
-        return exist;
+        return( exist );
     }
 
+
     /**
-     * @param resource
+     * DOCUMENT ME!
+     *
+     * @param  resource
      */
-    public void setResource(String resource) {
+    public void setResource( String resource )
+    {
         this.resource = resource;
     }
 }

@@ -24,52 +24,58 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
-import org.exist.xmldb.UserManagementService;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * abstract base class for all user-related tasks
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public abstract class UserTask extends AbstractXMLDBTask {
+import org.exist.xmldb.UserManagementService;
 
+
+/**
+ * abstract base class for all user-related tasks.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public abstract class UserTask extends AbstractXMLDBTask
+{
     protected UserManagementService service = null;
-    protected Collection base = null;
+    protected Collection            base    = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("you have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
         }
 
         registerDatabase();
-        try {
-            log("Get base collection: " + uri, Project.MSG_DEBUG);
-            base = DatabaseManager.getCollection(uri, user, password);
 
-            if (base == null) {
+        try {
+            log( "Get base collection: " + uri, Project.MSG_DEBUG );
+            base = DatabaseManager.getCollection( uri, user, password );
+
+            if( base == null ) {
                 String msg = "Collection " + uri + " could not be found.";
-                if (failonerror) {
-                    throw new BuildException(msg);
+
+                if( failonerror ) {
+                    throw( new BuildException( msg ) );
                 } else {
-                    log(msg, Project.MSG_ERR);
+                    log( msg, Project.MSG_ERR );
                 }
             } else {
-                service = (UserManagementService) base.getService("UserManagementService", "1.0");
+                service = (UserManagementService)base.getService( "UserManagementService", "1.0" );
             }
-            
-        } catch (XMLDBException e) {
+
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }

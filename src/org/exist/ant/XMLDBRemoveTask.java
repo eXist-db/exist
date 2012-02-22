@@ -30,81 +30,96 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
-/**
- * an ant task to remove a collection or resource
- *
- * @author wolf
- *         <p/>
- *         modified by
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class XMLDBRemoveTask extends AbstractXMLDBTask {
 
-    private String resource = null;
+/**
+ * an ant task to remove a collection or resource.
+ *
+ * @author  wolf
+ *
+ *          <p>modified by</p>
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class XMLDBRemoveTask extends AbstractXMLDBTask
+{
+    private String resource   = null;
     private String collection = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("You have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
-        if (resource == null && collection == null) {
-            throw new BuildException("Missing parameter: either resource or collection should be specified");
+        if( ( resource == null ) && ( collection == null ) ) {
+            throw( new BuildException( "Missing parameter: either resource or collection should be specified" ) );
         }
 
         registerDatabase();
-        try {
-            log("Get base collection: " + uri, Project.MSG_DEBUG);
-            Collection base = DatabaseManager.getCollection(uri, user, password);
 
-            if (base == null) {
-                throw new BuildException("Collection " + uri + " could not be found.");
+        try {
+            log( "Get base collection: " + uri, Project.MSG_DEBUG );
+            Collection base = DatabaseManager.getCollection( uri, user, password );
+
+            if( base == null ) {
+                throw( new BuildException( "Collection " + uri + " could not be found." ) );
             }
 
-            if (resource != null) {
-                log("Removing resource: " + resource, Project.MSG_INFO);
-                Resource res = base.getResource(resource);
-                if (res == null) {
+            if( resource != null ) {
+                log( "Removing resource: " + resource, Project.MSG_INFO );
+                Resource res = base.getResource( resource );
+
+                if( res == null ) {
                     String msg = "Resource " + resource + " not found.";
-                    if (failonerror) {
-                        throw new BuildException(msg);
+
+                    if( failonerror ) {
+                        throw( new BuildException( msg ) );
                     } else {
-                        log(msg, Project.MSG_ERR);
+                        log( msg, Project.MSG_ERR );
                     }
                 } else {
-                    base.removeResource(res);
+                    base.removeResource( res );
                 }
 
             } else {
-                log("Removing collection: " + collection, Project.MSG_INFO);
-                CollectionManagementService service = (CollectionManagementService) base.getService("CollectionManagementService", "1.0");
-                service.removeCollection(collection);
+                log( "Removing collection: " + collection, Project.MSG_INFO );
+                CollectionManagementService service = (CollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
+                service.removeCollection( collection );
             }
-            
-        } catch (XMLDBException e) {
+
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception during remove: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
+
     /**
-     * @param collection
+     * DOCUMENT ME!
+     *
+     * @param  collection
      */
-    public void setCollection(String collection) {
+    public void setCollection( String collection )
+    {
         this.collection = collection;
     }
 
+
     /**
-     * @param resource
+     * DOCUMENT ME!
+     *
+     * @param  resource
      */
-    public void setResource(String resource) {
+    public void setResource( String resource )
+    {
         this.resource = resource;
     }
 }
