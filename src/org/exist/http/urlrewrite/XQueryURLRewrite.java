@@ -1148,7 +1148,7 @@ public class XQueryURLRewrite extends HttpServlet {
         public String getPathTranslated() {
 			String pathInfo = getPathInfo();
 			if (pathInfo == null)
-				pathInfo = ".";
+				super.getPathTranslated();
             return super.getSession().getServletContext().getRealPath(pathInfo);
         }
         
