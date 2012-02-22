@@ -21,8 +21,6 @@
  */
 package org.exist.ant;
 
-import java.io.File;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -32,125 +30,153 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
-/**
- * @author wolf
- */
-public class RestoreTask extends AbstractXMLDBTask {
+import java.io.File;
 
-    private File zipFile = null;
-    private File dir = null;
-    private DirSet dirSet = null;
+
+/**
+ * DOCUMENT ME!
+ *
+ * @author  wolf
+ */
+public class RestoreTask extends AbstractXMLDBTask
+{
+    private File   zipFile         = null;
+    private File   dir             = null;
+    private DirSet dirSet          = null;
     private String restorePassword = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("You have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
-        if (dir == null && dirSet == null && zipFile == null) {
-            throw new BuildException("Missing required argument: either dir, dirset or file required");
+        if( ( dir == null ) && ( dirSet == null ) && ( zipFile == null ) ) {
+            throw( new BuildException( "Missing required argument: either dir, dirset or file required" ) );
         }
 
-        if (dir != null && !dir.canRead()) {
+        if( ( dir != null ) && !dir.canRead() ) {
             String msg = "Cannot read restore file: " + dir.getAbsolutePath();
-            if (failonerror) {
-                throw new BuildException(msg);
+
+            if( failonerror ) {
+                throw( new BuildException( msg ) );
             } else {
-                log(msg, Project.MSG_ERR);
+                log( msg, Project.MSG_ERR );
             }
 
         } else {
             registerDatabase();
+
             try {
-                if (dir != null) {
-                    log("Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO);
-                    File file = new File(dir, "__contents__.xml");
-                    if (!file.exists()) {
+
+                if( dir != null ) {
+                    log( "Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO );
+                    File file = new File( dir, "__contents__.xml" );
+
+                    if( !file.exists() ) {
                         String msg = "Did not found file " + file.getAbsolutePath();
-                        if (failonerror) {
-                            throw new BuildException(msg);
+
+                        if( failonerror ) {
+                            throw( new BuildException( msg ) );
                         } else {
-                            log(msg, Project.MSG_ERR);
+                            log( msg, Project.MSG_ERR );
                         }
                     } else {
-                        final Restore restore = new Restore();
+                        final Restore         restore  = new Restore();
                         final RestoreListener listener = new DefaultRestoreListener();
-                        restore.restore(listener, user, password, restorePassword, file, uri);
+                        restore.restore( listener, user, password, restorePassword, file, uri );
                     }
 
-                } else if (dirSet != null) {
-                    DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
+                } else if( dirSet != null ) {
+                    DirectoryScanner scanner = dirSet.getDirectoryScanner( getProject() );
                     scanner.scan();
                     String[] includedFiles = scanner.getIncludedFiles();
-                    log("Found " + includedFiles.length + " files.\n");
+                    log( "Found " + includedFiles.length + " files.\n" );
 
-                    for (String included : includedFiles) {
-                        dir = new File(scanner.getBasedir() + File.separator + included);
-                        File contentsFile = new File(dir, "__contents__.xml");
-                        if (!contentsFile.exists()) {
+                    for( String included : includedFiles ) {
+                        dir = new File( scanner.getBasedir() + File.separator + included );
+                        File contentsFile = new File( dir, "__contents__.xml" );
+
+                        if( !contentsFile.exists() ) {
                             String msg = "Did not found file " + contentsFile.getAbsolutePath();
-                            if (failonerror) {
-                                throw new BuildException(msg);
+
+                            if( failonerror ) {
+                                throw( new BuildException( msg ) );
                             } else {
-                                log(msg, Project.MSG_ERR);
+                                log( msg, Project.MSG_ERR );
                             }
                         } else {
-                            log("Restoring from " + contentsFile.getAbsolutePath() + " ...\n");
+                            log( "Restoring from " + contentsFile.getAbsolutePath() + " ...\n" );
+
                             // TODO subdirectories as sub-collections?
-                            final Restore restore = new Restore();
+                            final Restore         restore  = new Restore();
                             final RestoreListener listener = new DefaultRestoreListener();
-                            restore.restore(listener, user, password, restorePassword, contentsFile, uri);
+                            restore.restore( listener, user, password, restorePassword, contentsFile, uri );
                         }
                     }
 
-                } else if (zipFile != null) {
-                    log("Restoring from " + zipFile.getAbsolutePath(), Project.MSG_INFO);
-                    if (!zipFile.exists()) {
+                } else if( zipFile != null ) {
+                    log( "Restoring from " + zipFile.getAbsolutePath(), Project.MSG_INFO );
+
+                    if( !zipFile.exists() ) {
                         String msg = "File not found: " + zipFile.getAbsolutePath();
-                        if (failonerror) {
-                            throw new BuildException(msg);
+
+                        if( failonerror ) {
+                            throw( new BuildException( msg ) );
                         } else {
-                            log(msg, Project.MSG_ERR);
+                            log( msg, Project.MSG_ERR );
                         }
                     } else {
-                        final Restore restore = new Restore();
+                        final Restore         restore  = new Restore();
                         final RestoreListener listener = new DefaultRestoreListener();
-                        restore.restore(listener, user, password, restorePassword, zipFile, uri);
+                        restore.restore( listener, user, password, restorePassword, zipFile, uri );
                     }
                 }
-                
-            } catch (Exception e) {
+
+            }
+            catch( Exception e ) {
                 e.printStackTrace();
                 String msg = "Exception during restore: " + e.getMessage();
-                if (failonerror) {
-                    throw new BuildException(msg, e);
+
+                if( failonerror ) {
+                    throw( new BuildException( msg, e ) );
                 } else {
-                    log(msg, e, Project.MSG_ERR);
+                    log( msg, e, Project.MSG_ERR );
                 }
             }
         }
     }
 
-    public DirSet createDirSet() {
+
+    public DirSet createDirSet()
+    {
         this.dirSet = new DirSet();
-        return dirSet;
+        return( dirSet );
     }
 
+
     /**
-     * @param dir
+     * DOCUMENT ME!
+     *
+     * @param  dir
      */
-    public void setDir(File dir) {
+    public void setDir( File dir )
+    {
         this.dir = dir;
     }
 
-    public void setFile(File file) {
+
+    public void setFile( File file )
+    {
         this.zipFile = file;
     }
 
-    public void setRestorePassword(String pass) {
+
+    public void setRestorePassword( String pass )
+    {
         this.restorePassword = pass;
     }
 }

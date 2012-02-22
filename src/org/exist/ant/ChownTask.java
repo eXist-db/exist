@@ -24,59 +24,71 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
-import org.exist.security.Account;
-
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * an ant task to change permissions on a resource
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class ChownTask extends UserTask {
+import org.exist.security.Account;
 
-    private String name = null;
-    private String group = null;
+
+/**
+ * an ant task to change permissions on a resource.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class ChownTask extends UserTask
+{
+    private String name     = null;
+    private String group    = null;
     private String resource = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
+    public void execute() throws BuildException
+    {
         super.execute();
-        if (name == null || group == null) {
-            throw new BuildException("Must specify user and group");
+
+        if( ( name == null ) || ( group == null ) ) {
+            throw( new BuildException( "Must specify user and group" ) );
         }
 
         try {
-            Account usr = service.getAccount(name);
-            if (resource != null) {
-                Resource res = base.getResource(resource);
-                service.chown(res, usr, group);
+            Account usr = service.getAccount( name );
+
+            if( resource != null ) {
+                Resource res = base.getResource( resource );
+                service.chown( res, usr, group );
             } else {
-                service.chown(usr, group);
+                service.chown( usr, group );
             }
-            
-        } catch (XMLDBException e) {
+
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
-    public void setName(String user) {
+
+    public void setName( String user )
+    {
         this.name = user;
     }
 
-    public void setResource(String resource) {
+
+    public void setResource( String resource )
+    {
         this.resource = resource;
     }
 
-    public void setGroup(String group) {
+
+    public void setGroup( String group )
+    {
         this.group = group;
     }
 }

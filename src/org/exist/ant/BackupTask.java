@@ -27,47 +27,58 @@ import org.apache.tools.ant.Project;
 import org.exist.backup.Backup;
 import org.exist.xmldb.XmldbURI;
 
-/**
- * @author wolf
- */
-public class BackupTask extends AbstractXMLDBTask {
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author  wolf
+ */
+public class BackupTask extends AbstractXMLDBTask
+{
     private String dir = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("you have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
         }
 
-        if (dir == null) {
-            throw new BuildException("missing required parameter: dir");
+        if( dir == null ) {
+            throw( new BuildException( "missing required parameter: dir" ) );
         }
 
         registerDatabase();
-        log("Creating backup of collection: " + uri);
-        log("Backup directory: " + dir);
+        log( "Creating backup of collection: " + uri );
+        log( "Backup directory: " + dir );
+
         try {
-            Backup backup = new Backup(user, password, dir, XmldbURI.create(uri));
-            backup.backup(false, null);
-            
-        } catch (Exception e) {
+            Backup backup = new Backup( user, password, dir, XmldbURI.create( uri ) );
+            backup.backup( false, null );
+
+        }
+        catch( Exception e ) {
             e.printStackTrace();
             String msg = "Exception during backup: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
+
     /**
-     * @param dir
+     * DOCUMENT ME!
+     *
+     * @param  dir
      */
-    public void setDir(String dir) {
+    public void setDir( String dir )
+    {
         this.dir = dir;
     }
 }

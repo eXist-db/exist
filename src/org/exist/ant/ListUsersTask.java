@@ -24,68 +24,77 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
-import org.exist.security.Account;
-
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * an ant task to list users
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class ListUsersTask extends UserTask {
+import org.exist.security.Account;
 
+
+/**
+ * an ant task to list users.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class ListUsersTask extends UserTask
+{
     private String outputproperty = null;
-    private String separator = ",";
+    private String separator      = ",";
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-
+    public void execute() throws BuildException
+    {
         super.execute();
 
         try {
-            log("Listing all users", Project.MSG_DEBUG);
+            log( "Listing all users", Project.MSG_DEBUG );
             Account[] users = service.getAccounts();
-            if (users != null) {
 
-                boolean isFirst=true;
-                StringBuilder buffer = new StringBuilder();
+            if( users != null ) {
 
-                for (Account user : users) {
+                boolean       isFirst = true;
+                StringBuilder buffer  = new StringBuilder();
+
+                for( Account user : users ) {
+
                     // only insert separator for 2nd or later item
-                    if(isFirst){
-                        isFirst=false;
+                    if( isFirst ) {
+                        isFirst = false;
                     } else {
-                        buffer.append(separator);
+                        buffer.append( separator );
                     }
 
-                    buffer.append(user.getName());
+                    buffer.append( user.getName() );
 
                 }
-                
-                if (buffer.length() > 0) {
-                    log("Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG);
-                    getProject().setNewProperty(outputproperty, buffer.toString());
+
+                if( buffer.length() > 0 ) {
+                    log( "Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG );
+                    getProject().setNewProperty( outputproperty, buffer.toString() );
                 }
             }
 
-        } catch (XMLDBException e) {
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
-    public void setOutputproperty(String outputproperty) {
+
+    public void setOutputproperty( String outputproperty )
+    {
         this.outputproperty = outputproperty;
     }
 
-    public void setSeparator(String separator) {
+
+    public void setSeparator( String separator )
+    {
         this.separator = separator;
     }
 }

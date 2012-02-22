@@ -21,23 +21,24 @@
  */
 package org.exist.ant;
 
-import java.net.URISyntaxException;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+
+import org.xmldb.api.base.XMLDBException;
 
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.XmldbURI;
 
-import org.xmldb.api.base.XMLDBException;
+import java.net.URISyntaxException;
+
 
 /**
- * an ant task to add a user
+ * an ant task to add a user.
  *
- * @author peter.klotz@blue-elephant-systems.com
+ * @author  peter.klotz@blue-elephant-systems.com
  */
-public class AddUserTask extends UserTask {
-
+public class AddUserTask extends UserTask
+{
     private String name;
     private String primaryGroup;
     private String home;
@@ -46,60 +47,75 @@ public class AddUserTask extends UserTask {
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
+    public void execute() throws BuildException
+    {
         super.execute();
-        if (name == null) {
-            throw new BuildException("Must specify at leat a user name");
+
+        if( name == null ) {
+            throw( new BuildException( "Must specify at leat a user name" ) );
         }
 
         try {
-        	UserAider usr = new UserAider(name);
-            if (secret != null) {
-                usr.setPassword(secret);
+            UserAider usr = new UserAider( name );
+
+            if( secret != null ) {
+                usr.setPassword( secret );
             }
 
-            if (home != null) {
-                usr.setHome(XmldbURI.xmldbUriFor(home));
+            if( home != null ) {
+                usr.setHome( XmldbURI.xmldbUriFor( home ) );
             }
 
-            if (primaryGroup != null) {
-                usr.addGroup(primaryGroup);
+            if( primaryGroup != null ) {
+                usr.addGroup( primaryGroup );
             }
 
-            log("Adding user " + name, Project.MSG_INFO);
-            service.addAccount(usr);
+            log( "Adding user " + name, Project.MSG_INFO );
+            service.addAccount( usr );
 
-        } catch (XMLDBException e) {
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
-            
-        } catch (URISyntaxException e) {
+
+        }
+        catch( URISyntaxException e ) {
             String msg = "URI syntax exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
-    public void setName(String name) {
+
+    public void setName( String name )
+    {
         this.name = name;
     }
 
-    public void setPrimaryGroup(String primaryGroup) {
+
+    public void setPrimaryGroup( String primaryGroup )
+    {
         this.primaryGroup = primaryGroup;
     }
 
-    public void setHome(String home) {
+
+    public void setHome( String home )
+    {
         this.home = home;
     }
 
-    public void setSecret(String secret) {
+
+    public void setSecret( String secret )
+    {
         this.secret = secret;
     }
 }

@@ -23,71 +23,85 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermissionAider;
-import org.exist.util.SyntaxException;
 
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-/**
- * an ant task to change permissions on a resource
- *
- * @author peter.klotz@blue-elephant-systems.com
- */
-public class ChmodTask extends UserTask {
+import org.exist.security.Permission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
+import org.exist.util.SyntaxException;
 
+
+/**
+ * an ant task to change permissions on a resource.
+ *
+ * @author  peter.klotz@blue-elephant-systems.com
+ */
+public class ChmodTask extends UserTask
+{
     private String resource = null;
-    private String mode = null;
+    private String mode     = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
+    public void execute() throws BuildException
+    {
         super.execute();
-        
+
         try {
-        	// if the mode string contains an '=', we assume permissions are specified
-        	// in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
-        	// permission string
-        	if (mode.indexOf('=') < 0) {
-        		Permission perm = UnixStylePermissionAider.fromString(mode);
-        		if (resource != null) {
-                    Resource res = base.getResource(resource);
-                    service.chmod(res, perm.getMode());
+
+            // if the mode string contains an '=', we assume permissions are specified
+            // in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
+            // permission string
+            if( mode.indexOf( '=' ) < 0 ) {
+                Permission perm = UnixStylePermissionAider.fromString( mode );
+
+                if( resource != null ) {
+                    Resource res = base.getResource( resource );
+                    service.chmod( res, perm.getMode() );
                 } else {
-                    service.chmod(perm.getMode());
+                    service.chmod( perm.getMode() );
                 }
-        	} else {
-	            if (resource != null) {
-	                Resource res = base.getResource(resource);
-	                service.chmod(res, mode);
-	            } else {
-	                service.chmod(mode);
-	            }
-        	}
-        } catch (XMLDBException e) {
+            } else {
+
+                if( resource != null ) {
+                    Resource res = base.getResource( resource );
+                    service.chmod( res, mode );
+                } else {
+                    service.chmod( mode );
+                }
+            }
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
-        } catch (SyntaxException e) {
-        	String msg = "Syntax error in permissions: " + mode;
-        	if (failonerror) {
-                throw new BuildException(msg, e);
+        }
+        catch( SyntaxException e ) {
+            String msg = "Syntax error in permissions: " + mode;
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
-		}
+        }
     }
 
-    public void setResource(String resource) {
+
+    public void setResource( String resource )
+    {
         this.resource = resource;
     }
 
-    public void setMode(String mode) {
+
+    public void setMode( String mode )
+    {
         this.mode = mode;
     }
 }

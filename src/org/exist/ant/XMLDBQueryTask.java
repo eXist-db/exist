@@ -31,76 +31,87 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
+
 /**
  * Ant task to execute an XQuery.
- * 
- * The query is either passed as nested text in the element,
- * or via an attribute "query".
- * 
- * Please note that the task doesn't output the query results.
- * 
- * @author wolf
+ *
+ * <p>The query is either passed as nested text in the element, or via an attribute "query".</p>
+ *
+ * <p>Please note that the task doesn't output the query results.</p>
+ *
+ * @author  wolf
  */
-public class XMLDBQueryTask extends AbstractXMLDBTask {
-
+public class XMLDBQueryTask extends AbstractXMLDBTask
+{
     private String query = null;
-    private String text = null;
+    private String text  = null;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException {
-        if (uri == null) {
-            throw new BuildException("you have to specify an XMLDB collection URI");
+    public void execute() throws BuildException
+    {
+        if( uri == null ) {
+            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
         }
 
-        if (text != null) {
-            PropertyHelper helper = PropertyHelper.getPropertyHelper(getProject());
-            query = helper.replaceProperties(null, text, null);
+        if( text != null ) {
+            PropertyHelper helper = PropertyHelper.getPropertyHelper( getProject() );
+            query = helper.replaceProperties( null, text, null );
         }
 
-        if (query == null) {
-            throw new BuildException("you have to specify a query");
+        if( query == null ) {
+            throw( new BuildException( "you have to specify a query" ) );
         }
 
-        log("XQuery is:\n" + query, org.apache.tools.ant.Project.MSG_DEBUG);
+        log( "XQuery is:\n" + query, org.apache.tools.ant.Project.MSG_DEBUG );
 
         registerDatabase();
-        try {
-            Collection collection = DatabaseManager.getCollection(uri, user, password);
 
-            if (collection == null) {
+        try {
+            Collection collection = DatabaseManager.getCollection( uri, user, password );
+
+            if( collection == null ) {
                 String msg = "Collection " + uri + " could not be found.";
-                if (failonerror) {
-                    throw new BuildException(msg);
+
+                if( failonerror ) {
+                    throw( new BuildException( msg ) );
                 } else {
-                    log(msg, Project.MSG_ERR);
+                    log( msg, Project.MSG_ERR );
                 }
 
             } else {
-                XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
-                ResourceSet results = service.query(query);
-                log("Found " + results.getSize());
+                XPathQueryService service = (XPathQueryService)collection.getService( "XPathQueryService", "1.0" );
+                ResourceSet       results = service.query( query );
+                log( "Found " + results.getSize() );
             }
-            
-        } catch (XMLDBException e) {
+
+        }
+        catch( XMLDBException e ) {
             String msg = "XMLDB exception caught while executing query: " + e.getMessage();
-            if (failonerror) {
-                throw new BuildException(msg, e);
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
             } else {
-                log(msg, e, Project.MSG_ERR);
+                log( msg, e, Project.MSG_ERR );
             }
         }
     }
 
+
     /**
-     * @param query
+     * DOCUMENT ME!
+     *
+     * @param  query
      */
-    public void setQuery(String query) {
+    public void setQuery( String query )
+    {
         this.query = query;
     }
 
-    public void addText(String text) {
+
+    public void addText( String text )
+    {
         this.text = text;
     }
 }
