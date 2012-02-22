@@ -83,7 +83,7 @@
 	<classpathentry kind="lib" path="lib/optional/axis-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
@@ -120,10 +120,10 @@
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-regex-2.9.2.jar"/>
 	<classpathentry kind="lib" path="lib/user/icu4j-4.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/jcommon-1.0.16.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-codec-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.0.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/ehcache-1.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
