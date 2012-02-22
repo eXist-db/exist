@@ -85,6 +85,10 @@ exclude-result-prefixes="webxml">
       <servlet-class>
       de.betterform.agent.web.resources.ResourceServlet</servlet-class>
     </servlet>
+    <servlet>
+      <servlet-name>error</servlet-name>
+      <servlet-class>de.betterform.agent.web.servlet.ErrorServlet</servlet-class>
+    </servlet>
   </xsl:template>
   <xsl:template match="/webxml:web-app/webxml:filter-mapping[webxml:filter-name/text()='XQueryURLRewrite']">
 
@@ -133,6 +137,10 @@ exclude-result-prefixes="webxml">
     <servlet-mapping>
       <servlet-name>ResourceServlet</servlet-name>
       <url-pattern>/bfResources/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>error</servlet-name>
+      <url-pattern>/error/*</url-pattern>
     </servlet-mapping>
   </xsl:template>
   <xsl:template match="node()|@*">
