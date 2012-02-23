@@ -87,7 +87,7 @@
                 
                 <para>Within the collection's <filename>.xconf</filename>, you should register
                     the trigger class <classname>org.exist.versioning.VersioningTrigger</classname>
-                    for the "store", "update" and "remove" events:</para>
+                    for the "create", "update", "delete", "copy" and "move" events:</para>
                 
                 <example>
                     <title>Registering trigger in collection.xconf</title>
@@ -97,7 +97,7 @@
         </fulltext>
     </index>
     <triggers>
-        <trigger event="store,remove,update"
+        <trigger event="create,delete,update"
             class="org.exist.versioning.VersioningTrigger">
             <parameter name="overwrite" value="yes"/>
         </trigger>
