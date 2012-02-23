@@ -400,6 +400,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	    // need to catch all runtime exceptions here to be able to release locked documents
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} finally {
+              context.cleanupBinaryValueInstances();
 //            if (keepLocks)
 //                reservedBroker = broker;
 //            else

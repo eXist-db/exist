@@ -339,6 +339,9 @@ public class RpcConnection implements RpcAPI {
             if(lockedDocuments != null) {
                 lockedDocuments.unlock();
             }
+            
+            compiled.getContext().cleanupBinaryValueInstances();
+            
             if(compiled != null)
                 pool.returnCompiledXQuery(source, compiled);
         }

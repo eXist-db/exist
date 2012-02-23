@@ -55,6 +55,8 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         }
 
         buf.force();
+        
+        //TODO revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well! Adam
         int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
         buf.position(position); //setting the position in the map() call above does not seem to work!
