@@ -246,7 +246,9 @@ public abstract class AbstractXMLDBTask extends Task
     protected final void setPermissions( Collection col ) throws BuildException
     {
         try {
+        	if( permissions != null ) {
                  setPermissions( null, (UserManagementService)col.getService( "UserManagementService", "1.0" ) );
+            }
         }
         catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
@@ -263,26 +265,27 @@ public abstract class AbstractXMLDBTask extends Task
     protected final void setPermissions( Resource res, UserManagementService service ) throws BuildException
     {
     	 try {
-
-            // if the permissions string doesn't match the Unix Perms Regex, we assume permissions are specified
-            // in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
-            // permission string
-            if( !permissions.matches( UNIX_PERMS_REGEX ) ) {
-                Permission perm = UnixStylePermissionAider.fromString( permissions );
-
-                if( res != null ) {
-                    service.chmod( res, perm.getMode() );
-                } else {
-                    service.chmod( perm.getMode() );
-                }
-            } else {
-
-                if( res != null ) {
-                     service.chmod( res, permissions );
-                } else {
-                    service.chmod( permissions );
-                }
-            }
+    	 	if( permissions != null ) {
+				// if the permissions string doesn't match the Unix Perms Regex, we assume permissions are specified
+				// in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
+				// permission string
+				if( !permissions.matches( UNIX_PERMS_REGEX ) ) {
+					Permission perm = UnixStylePermissionAider.fromString( permissions );
+	
+					if( res != null ) {
+						service.chmod( res, perm.getMode() );
+					} else {
+						service.chmod( perm.getMode() );
+					}
+				} else {
+	
+					if( res != null ) {
+						 service.chmod( res, permissions );
+					} else {
+						service.chmod( permissions );
+					}
+				}
+			}
         }
         catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
