@@ -29,8 +29,14 @@ import org.apache.tools.ant.Task;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import org.exist.security.Permission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
+import org.exist.util.SyntaxException;
+import org.exist.xmldb.UserManagementService;
 
 import java.util.StringTokenizer;
 
@@ -43,13 +49,16 @@ import java.util.StringTokenizer;
  */
 public abstract class AbstractXMLDBTask extends Task
 {
-    protected String  driver         = "org.exist.xmldb.DatabaseImpl";
-    protected String  user           = "guest";
-    protected String  password       = "guest";
-    protected String  uri            = null;
-    protected boolean createDatabase = false;
-    protected String  configuration  = null;
-    protected boolean failonerror    = true;
+    protected String  		driver         		= "org.exist.xmldb.DatabaseImpl";
+    protected String  		user           		= "guest";
+    protected String  		password       		= "guest";
+    protected String  		uri            		= null;
+    protected boolean 	createDatabase 		= false;
+    protected String  		configuration  		= null;
+    protected boolean 	failonerror    		= true;
+    protected String		permissions	   		= null;
+    
+    private final String	UNIX_PERMS_REGEX 	= "([r-][w-][x-]){3}";
 
     /**
      * DOCUMENT ME!
@@ -115,6 +124,12 @@ public abstract class AbstractXMLDBTask extends Task
     public void setFailonerror( boolean failonerror )
     {
         this.failonerror = failonerror;
+    }
+    
+    
+    public void setPermissions( String permissions )
+    {
+        this.permissions = permissions;
     }
 
 
@@ -185,5 +200,107 @@ public abstract class AbstractXMLDBTask extends Task
             }
         }
         return( current );
+    }
+    
+    
+    protected final void setPermissions( Resource res ) throws BuildException
+    {
+    	Collection            base    = null;
+    	UserManagementService service = null;
+    	
+    	if( uri == null ) {
+            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
+        }
+
+        try {
+            log( "Get base collection: " + uri, Project.MSG_DEBUG );
+            base = DatabaseManager.getCollection( uri, user, password );
+
+            if( base == null ) {
+                String msg = "Collection " + uri + " could not be found.";
+
+                if( failonerror ) {
+                    throw( new BuildException( msg ) );
+                } else {
+                    log( msg, Project.MSG_ERR );
+                }
+            } else {
+                service = (UserManagementService)base.getService( "UserManagementService", "1.0" );
+                
+                setPermissions( res, service );
+            }
+
+        }
+        catch( XMLDBException e ) {
+            String msg = "XMLDB exception caught: " + e.getMessage();
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
+            } else {
+                log( msg, e, Project.MSG_ERR );
+            }
+        }
+    }
+    
+    
+    protected final void setPermissions( Collection col ) throws BuildException
+    {
+        try {
+                 setPermissions( null, (UserManagementService)col.getService( "UserManagementService", "1.0" ) );
+        }
+        catch( XMLDBException e ) {
+            String msg = "XMLDB exception caught: " + e.getMessage();
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
+            } else {
+                log( msg, e, Project.MSG_ERR );
+            }
+        }
+    }
+    
+    
+    protected final void setPermissions( Resource res, UserManagementService service ) throws BuildException
+    {
+    	 try {
+
+            // if the permissions string doesn't match the Unix Perms Regex, we assume permissions are specified
+            // in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
+            // permission string
+            if( !permissions.matches( UNIX_PERMS_REGEX ) ) {
+                Permission perm = UnixStylePermissionAider.fromString( permissions );
+
+                if( res != null ) {
+                    service.chmod( res, perm.getMode() );
+                } else {
+                    service.chmod( perm.getMode() );
+                }
+            } else {
+
+                if( res != null ) {
+                     service.chmod( res, permissions );
+                } else {
+                    service.chmod( permissions );
+                }
+            }
+        }
+        catch( XMLDBException e ) {
+            String msg = "XMLDB exception caught: " + e.getMessage();
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
+            } else {
+                log( msg, e, Project.MSG_ERR );
+            }
+        }
+        catch( SyntaxException e ) {
+            String msg = "Syntax error in permissions: " + permissions;
+
+            if( failonerror ) {
+                throw( new BuildException( msg, e ) );
+            } else {
+                log( msg, e, Project.MSG_ERR );
+            }
+        }
     }
 }

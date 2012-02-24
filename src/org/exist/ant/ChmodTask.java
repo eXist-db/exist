@@ -27,15 +27,12 @@ import org.apache.tools.ant.Project;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermissionAider;
-import org.exist.util.SyntaxException;
-
 
 /**
  * an ant task to change permissions on a resource.
  *
  * @author  peter.klotz@blue-elephant-systems.com
+ * @author  andrzej@chaeron.com
  */
 public class ChmodTask extends UserTask
 {
@@ -47,43 +44,28 @@ public class ChmodTask extends UserTask
      */
     public void execute() throws BuildException
     {
+    	Resource res		= null;
+    	
         super.execute();
+        
+        if( permissions == null ) {
+        	if( mode == null ) {
+        		throw( new BuildException( "you have to specify permissions" ) );
+            } else {
+            	permissions = mode;
+            }
+        }
+
 
         try {
-
-            // if the mode string contains an '=', we assume permissions are specified
-            // in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
-            // permission string
-            if( mode.indexOf( '=' ) < 0 ) {
-                Permission perm = UnixStylePermissionAider.fromString( mode );
-
-                if( resource != null ) {
-                    Resource res = base.getResource( resource );
-                    service.chmod( res, perm.getMode() );
-                } else {
-                    service.chmod( perm.getMode() );
-                }
-            } else {
-
-                if( resource != null ) {
-                    Resource res = base.getResource( resource );
-                    service.chmod( res, mode );
-                } else {
-                    service.chmod( mode );
-                }
-            }
-        }
+			if( resource != null ) {
+			    res = base.getResource( resource );
+			}
+			
+			setPermissions( res, service );
+		}            
         catch( XMLDBException e ) {
             String msg = "XMLDB exception caught: " + e.getMessage();
-
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
-            } else {
-                log( msg, e, Project.MSG_ERR );
-            }
-        }
-        catch( SyntaxException e ) {
-            String msg = "Syntax error in permissions: " + mode;
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -98,10 +80,13 @@ public class ChmodTask extends UserTask
     {
         this.resource = resource;
     }
-
-
+    
+    
     public void setMode( String mode )
     {
         this.mode = mode;
+        
+        log( "WARNING: mode attribute is deprecated, please use new permissions attribute instead!", Project.MSG_WARN );
     }
+
 }

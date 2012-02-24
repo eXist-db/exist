@@ -35,6 +35,7 @@ import org.exist.xmldb.UserManagementService;
  * abstract base class for all user-related tasks.
  *
  * @author  peter.klotz@blue-elephant-systems.com
+ * @author  andrzej@chaeron.com
  */
 public abstract class UserTask extends AbstractXMLDBTask
 {
@@ -46,12 +47,12 @@ public abstract class UserTask extends AbstractXMLDBTask
      */
     public void execute() throws BuildException
     {
-        if( uri == null ) {
+    	if( uri == null ) {
             throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
         }
-
+        
         registerDatabase();
-
+        
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
             base = DatabaseManager.getCollection( uri, user, password );

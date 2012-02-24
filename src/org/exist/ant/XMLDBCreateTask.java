@@ -76,6 +76,9 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
                 } else {
                     root = base;
                 }
+                
+                setPermissions( root );
+                
                 log( "Created collection " + root.getName(), Project.MSG_INFO );
             }
 
