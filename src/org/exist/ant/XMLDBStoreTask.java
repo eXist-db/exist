@@ -188,6 +188,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                         ( (EXistResource)res ).setMimeType( mime.getName() );
                         col.storeResource( res );
                     }
+                    
+                    if( permissions != null ) {
+                    	setPermissions( res );
+                    }
                 }
                 catch( XMLDBException e ) {
                     String msg = "XMLDB exception caught: " + e.getMessage();
@@ -319,7 +323,10 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                             res.setContent( file );
                             ( (EXistResource)res ).setMimeType( currentMime.getName() );
                             col.storeResource( res );
-
+                            
+                            if( permissions != null ) {
+								setPermissions( res );
+							}
 
                         }
                         catch( XMLDBException e ) {
