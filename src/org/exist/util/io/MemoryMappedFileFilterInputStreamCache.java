@@ -67,6 +67,12 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
             externalFile = true;
         }
         
+        /**
+         * Check the applicability of these bugs to this code:
+         *  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4724038
+         *  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6417205 (fixed in 1.6)
+         */
+        
         this.raf =  new RandomAccessFile(tempFile, "rw");
         this.channel = raf.getChannel();
         this.buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, getMemoryMapSize());
