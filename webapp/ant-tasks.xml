@@ -215,6 +215,12 @@
                       <para>a single source file to store, use instead of filesets</para>
                   </listitem>
               </varlistentry>
+              <varlistentry>
+                  <term>permissions</term>
+                  <listitem>
+                      <para>The permissions to be applied to the resource, expressed in a Unix-style form, e.g. 'rwxr-xr-x'; permissions will be applied to the resource/collection after it is created.</para>
+                  </listitem>
+              </varlistentry>
             </variablelist>
         </section>
         <section>
@@ -267,6 +273,12 @@
                   <term>collection</term>
                   <listitem>
                       <para>The name of the subcollection which should be created.</para>
+                  </listitem>
+              </varlistentry>
+              <varlistentry>
+                  <term>permissions</term>
+                  <listitem>
+                      <para>The permissions to be applied to the resource, expressed in a Unix-style form, e.g. 'rwxr-xr-x'; permissions will be applied to the resource/collection after it is created.</para>
                   </listitem>
               </varlistentry>
           </variablelist>
@@ -921,12 +933,12 @@ uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
               <listitem>
                   <para>Permission modification string. The string should either use the unix-style
                             syntax, e.g.:</para>
-                        <synopsis>rwurwu---</synopsis>
+                        <synopsis>rwxrwx---</synopsis>
                         <para>or eXist's own syntax:</para>
-		  <synopsis>[user|group|other]=[+|-][read|write|update]</synopsis>
+		  <synopsis>[user|group|other]=[+|-][read|write|execute]</synopsis>
 		  <para>For example, to set read and write permissions for the group, but not for others:</para>
 		  <synopsis>group=+read,+write,other=-read,-write</synopsis>
-		  <para>The new settings are or'ed with the existing settings.</para>
+          <para>The new settings are or'ed with the existing settings.</para>
               </listitem>
           </varlistentry>
         </variablelist>
