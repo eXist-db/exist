@@ -929,18 +929,33 @@ uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
               </listitem>
           </varlistentry>
           <varlistentry>
-              <term>mode</term>
+              <term>permissions</term>
               <listitem>
-                  <para>Permission modification string. The string should either use the unix-style
-                            syntax, e.g.:</para>
-                        <synopsis>rwxrwx---</synopsis>
-                        <para>or eXist's own syntax:</para>
-		  <synopsis>[user|group|other]=[+|-][read|write|execute]</synopsis>
-		  <para>For example, to set read and write permissions for the group, but not for others:</para>
-		  <synopsis>group=+read,+write,other=-read,-write</synopsis>
-          <para>The new settings are or'ed with the existing settings.</para>
+                  <para>Permission modification string. Use either Unix-style syntax, e.g.:</para>
+                  <synopsis>rwxrwx---</synopsis>
+                  <para>or additive/subtractive syntax, e.g.:</para>
+                  <synopsis>[user|group|other]=[+|-][read|write|execute]</synopsis>
+                  <para>For example, to set read and write permissions for the group, but not for others:</para>
+                  <synopsis>group=+read,+write,other=-read,-write</synopsis>
+                  <para>The new settings are or'ed with the existing settings.</para>
               </listitem>
           </varlistentry>
+          <varlistentry>
+              <term>mode</term>
+              <listitem>
+                  <para>Permission modification string. Use either Unix-style syntax, e.g.:</para>
+                  <synopsis>rwxrwx---</synopsis>
+                  <para>or additive/subtractive syntax, e.g.:</para>
+                  <synopsis>[user|group|other]=[+|-][read|write|execute]</synopsis>
+                  <para>For example, to set read and write permissions for the group, but not for others:</para>
+                  <synopsis>group=+read,+write,other=-read,-write</synopsis>
+                  <para>The new settings are or'ed with the existing settings.</para>
+                  <para>NOTE: The mode attribute on the chown ANT task is deprecated in favor
+                       of the "permissions" attribute. In the case that both "mode" and
+                       "permissions" are specfied, then the permissions attribute is the only
+                       one used.</para>
+              </listitem>
+            </varlistentry>
         </variablelist>
       </section>
       <section>
@@ -953,7 +968,7 @@ uri="${backup.uri}/db" name="guest" />]]></markup></programlisting>
                 <title>Chown</title>
                 <programlisting>
 <markup><![CDATA[<xdb:chown xmlns:xdb="http://exist-db.org/ant"
-uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" name="guest" group="guest"/>]]></markup></programlisting>
+uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest" group="guest"/>]]></markup></programlisting>
             </example>
 
             <variablelist>
