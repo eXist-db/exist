@@ -73,7 +73,7 @@
         <store collection="/db/test" name="test6.xml"><![CDATA[
             <book xmlns:xi="http://www.w3.org/2001/XInclude">
                 <title>Book Title</title>
-                <xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml">
+                <xi:include href="http://data.exist-db.org/testdata/disclaimer.xml">
                     <xi:fallback><p>Not found</p></xi:fallback>
                 </xi:include>
             </book>
@@ -81,7 +81,7 @@
         <store collection="/db/test" name="test7.xml"><![CDATA[
             <book xmlns:xi="http://www.w3.org/2001/XInclude">
                 <title>Book Title</title>
-                <xi:include href="http://demo.exist-db.org/rest/db/xinclude/disclaimer.xml"
+                <xi:include href="http://data.exist-db.org/testdata/disclaimer.xml"
                     xpointer="xpointer(//comment:comment)xmlns(comment=http://test.org)">
                     <xi:fallback><p>Not found</p></xi:fallback>
                 </xi:include>
