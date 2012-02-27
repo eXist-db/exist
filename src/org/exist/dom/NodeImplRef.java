@@ -6,12 +6,12 @@ package org.exist.dom;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class NodeImplRef {	
-	
+
     public NodeImplRef() {this.node = null;}
     public NodeImplRef(StoredNode node) {this.node = node;}
     public void setNode(StoredNode node) {this.node = node;}    
     public StoredNode getNode() {return this.node;}
-	
-	private StoredNode node;
+
+    private StoredNode node;
 
 }

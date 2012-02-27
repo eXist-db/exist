@@ -75,6 +75,7 @@ import java.util.Arrays;
  * @author  wolf
  */
 public class DocumentImpl extends NodeImpl implements DocumentAtExist {
+
     private static long        nextDocId        = 0;
 
     private final static int   NODE_SIZE        = 16;
@@ -87,7 +88,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     protected NamePool         namePool;
 
     // holds the node type of a node
-    protected short[]          nodeKind         = null;
+    protected short[]          nodeKind = null;
 
     // the tree level of a node
     protected short[]          treeLevel;
@@ -104,9 +105,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     protected int[]            alphaLen;
 
-    protected char[]           characters       = null;
+    protected char[]           characters = null;
 
-    protected int              nextChar         = 0;
+    protected int              nextChar = 0;
 
     // attributes
     protected QName[]          attrName;
@@ -145,27 +146,26 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     
     private Database db = null;
 
-    public DocumentImpl( XQueryContext context, boolean explicitCreation ) {
-        super( null, 0 );
-        this.context          = context;
+    public DocumentImpl(XQueryContext context, boolean explicitCreation) {
+        super(null, 0);
+        this.context = context;
         this.explicitCreation = explicitCreation;
-        this.docId            = createDocId();
-        if( context == null ) {
+        this.docId = createDocId();
+        if(context == null) {
             namePool = new NamePool();
         } else {
-        	db = context.getDatabase();
+            db = context.getDatabase();
             namePool = context.getSharedNamePool();
         }
     }
-    
+
     public Database getDatabase() {
-    	if (db == null)
-			try {
-				db = BrokerPool.getInstance();
-			} catch (EXistException e) {
-				e.printStackTrace();
-				throw new NullPointerException();
-			}
+        if (db == null)
+            try {
+                db = BrokerPool.getInstance();
+            } catch (EXistException e) {
+                throw new NullPointerException();
+            }
         return db;
     }
 
@@ -177,19 +177,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         nodeKind  = new short[NODE_SIZE];
         treeLevel = new short[NODE_SIZE];
         next      = new int[NODE_SIZE];
-        Arrays.fill( next, -1 );
+        Arrays.fill(next, -1);
         nodeName = new QName[NODE_SIZE];
         nodeId   = new NodeId[NODE_SIZE];
         alpha    = new int[NODE_SIZE];
         alphaLen = new int[NODE_SIZE];
-        Arrays.fill( alphaLen, -1 );
-
+        Arrays.fill(alphaLen, -1);
         attrName     = new QName[ATTR_SIZE];
         attrParent   = new int[ATTR_SIZE];
         attrValue    = new String[ATTR_SIZE];
         attrType     = new int[ATTR_SIZE];
         attrNodeId   = new NodeId[NODE_SIZE];
-
         treeLevel[0] = 0;
         nodeKind[0]  = Node.DOCUMENT_NODE;
         document     = this;
@@ -203,329 +201,320 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         references = null;
     }
 
-    public int getSize()
-    {
+    public int getSize() {
         return( size );
     }
 
-    public int addNode( short kind, short level, QName qname ) {
-        if( nodeKind == null ) {
+    public int addNode(short kind, short level, QName qname) {
+        if (nodeKind == null) {
             init();
         }
-        if( size == nodeKind.length ) {
+        if (size == nodeKind.length) {
             grow();
         }
         nodeKind[size]  = kind;
         treeLevel[size] = level;
-        nodeName[size]  = ( ( qname != null ) ? namePool.getSharedName( qname ) : null );
+        nodeName[size]  = qname != null ? namePool.getSharedName(qname) : null;
         alpha[size]     = -1; // undefined
         next[size]      = -1;
-        return( size++ );
+        return(size++);
     }
 
-    public void addChars( int nodeNr, char[] ch, int start, int len ) {
-        if( nodeKind == null ) {
+    public void addChars(int nodeNum, char[] ch, int start, int len) {
+        if (nodeKind == null) {
             init();
         }
-        if( characters == null ) {
-            characters = new char[( len > CHAR_BUF_SIZE ) ? len : CHAR_BUF_SIZE];
-        } else if( ( nextChar + len ) >= characters.length ) {
-            int newLen = ( characters.length * 3 ) / 2;
-            if( newLen < ( nextChar + len ) ) {
+        if(characters == null) {
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
+        } else if ((nextChar + len) >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < (nextChar + len)) {
                 newLen = nextChar + len;
             }
             char[] nc = new char[newLen];
-            System.arraycopy( characters, 0, nc, 0, characters.length );
+            System.arraycopy(characters, 0, nc, 0, characters.length);
             characters = nc;
         }
-        alpha[nodeNr]    = nextChar;
-        alphaLen[nodeNr] = len;
-        System.arraycopy( ch, start, characters, nextChar, len );
+        alpha[nodeNum] = nextChar;
+        alphaLen[nodeNum] = len;
+        System.arraycopy(ch, start, characters, nextChar, len);
         nextChar += len;
     }
 
-    public void addChars( int nodeNr, CharSequence s ) {
-        if( nodeKind == null ) {
+    public void addChars(int nodeNum, CharSequence s) {
+        if (nodeKind == null) {
             init();
         }
-        int len = ( s == null ? 0 : s.length() );
-        if( characters == null ) {
-            characters = new char[( len > CHAR_BUF_SIZE ) ? len : CHAR_BUF_SIZE];
-        } else if( ( nextChar + len ) >= characters.length ) {
-            int newLen = ( characters.length * 3 ) / 2;
-            if( newLen < ( nextChar + len ) ) {
+        int len = (s == null) ? 0 : s.length();
+        if (characters == null) {
+            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+        } else if ((nextChar + len) >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < (nextChar + len)) {
                 newLen = nextChar + len;
             }
             char[] nc = new char[newLen];
-            System.arraycopy( characters, 0, nc, 0, characters.length );
+            System.arraycopy(characters, 0, nc, 0, characters.length);
             characters = nc;
         }
-        alpha[nodeNr]    = nextChar;
-        alphaLen[nodeNr] = len;
-        for( int i = 0; i < len; i++ ) {
+        alpha[nodeNum] = nextChar;
+        alphaLen[nodeNum] = len;
+        for (int i = 0; i < len; i++) {
             characters[nextChar++] = s.charAt( i );
         }
     }
 
-    public void appendChars( int nodeNr, char[] ch, int start, int len ) {
-        if( characters == null ) {
-            characters = new char[( len > CHAR_BUF_SIZE ) ? len : CHAR_BUF_SIZE];
-        } else if( ( nextChar + len ) >= characters.length ) {
-            int newLen = ( characters.length * 3 ) / 2;
-            if( newLen < ( nextChar + len ) ) {
+    public void appendChars(int nodeNum, char[] ch, int start, int len) {
+        if (characters == null) {
+            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+        } else if((nextChar + len) >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < (nextChar + len)) {
                 newLen = nextChar + len;
             }
             char[] nc = new char[newLen];
-            System.arraycopy( characters, 0, nc, 0, characters.length );
+            System.arraycopy(characters, 0, nc, 0, characters.length);
             characters = nc;
         }
-        alphaLen[nodeNr] = alphaLen[nodeNr] + len;
-        System.arraycopy( ch, start, characters, nextChar, len );
+        alphaLen[nodeNum] = alphaLen[nodeNum] + len;
+        System.arraycopy(ch, start, characters, nextChar, len);
         nextChar += len;
     }
 
-    public void appendChars( int nodeNr, CharSequence s ) {
+    public void appendChars(int nodeNum, CharSequence s) {
         int len = s.length();
-        if( characters == null ) {
-            characters = new char[( len > CHAR_BUF_SIZE ) ? len : CHAR_BUF_SIZE];
-        } else if( ( nextChar + len ) >= characters.length ) {
-            int newLen = ( characters.length * 3 ) / 2;
-            if( newLen < ( nextChar + len ) ) {
+        if (characters == null) {
+            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+        } else if ((nextChar + len) >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < (nextChar + len)) {
                 newLen = nextChar + len;
             }
             char[] nc = new char[newLen];
-            System.arraycopy( characters, 0, nc, 0, characters.length );
+            System.arraycopy(characters, 0, nc, 0, characters.length);
             characters = nc;
         }
-        alphaLen[nodeNr] = alphaLen[nodeNr] + len;
-        for( int i = 0; i < len; i++ ) {
-            characters[nextChar++] = s.charAt( i );
+        alphaLen[nodeNum] = alphaLen[nodeNum] + len;
+        for (int i = 0; i < len; i++) {
+            characters[nextChar++] = s.charAt(i);
         }
     }
 
-    public void addReferenceNode( int nodeNr, NodeProxy proxy ) {
-        if( nodeKind == null ) {
+    public void addReferenceNode(int nodeNum, NodeProxy proxy) {
+        if (nodeKind == null) {
             init();
         }
-        if( ( references == null ) || ( nextRef == references.length ) ) {
+        if (( references == null ) || ( nextRef == references.length)) {
             growReferences();
         }
         references[nextRef] = proxy;
-        alpha[nodeNr]       = nextRef++;
+        alpha[nodeNum] = nextRef++;
     }
 
-    public void replaceReferenceNode( int nodeNr, CharSequence ch ) {
-        nodeKind[nodeNr]          = Node.TEXT_NODE;
-        references[alpha[nodeNr]] = null;
-        addChars( nodeNr, ch );
+    public void replaceReferenceNode(int nodeNum, CharSequence ch) {
+        nodeKind[nodeNum] = Node.TEXT_NODE;
+        references[alpha[nodeNum]] = null;
+        addChars(nodeNum, ch);
     }
 
     public boolean hasReferenceNodes() {
-        return( ( references != null ) && ( references[0] != null ) );
+        return (references != null) && (references[0] != null);
     }
 
-    public int addAttribute( int nodeNr, QName qname, String value, int type ) throws DOMException {
-        if( nodeKind == null ) {
+    public int addAttribute(int nodeNum, QName qname, String value, int type) throws DOMException {
+        if (nodeKind == null) {
             init();
         }
-        if( ( nodeNr > 0 ) && ( nodeKind[nodeNr] != Node.ELEMENT_NODE ) ) {
-            throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node." ) );
+        if ((nodeNum > 0 ) && (nodeKind[nodeNum] != Node.ELEMENT_NODE)) {
+            throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR,
+                "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node."));
         }
-        int prevAttr = nextAttr - 1; int attrN;
-        // check if an attribute with the same qname exists in the parent element
-        while( ( nodeNr > 0 ) && ( prevAttr > -1 ) && ( attrParent[prevAttr] == nodeNr ) ) {
-        	attrN = prevAttr--;
+        int prevAttr = nextAttr - 1;
+        int attrN;
+        //Check if an attribute with the same qname exists in the parent element
+        while ((nodeNum > 0) && (prevAttr > -1) && (attrParent[prevAttr] == nodeNum)) {
+            attrN = prevAttr--;
             QName prevQn = attrName[attrN];
-            if( prevQn.equalsSimple( qname ) ) {
-            	if (replaceAttribute) {
-            		attrValue[attrN] = value;
-            		attrType[attrN] = type;
-            		return attrN;
-            	} else
-            		throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR, "err:XQDY0025: element has more than one attribute '" + qname + "'" ) );
+            if (prevQn.equalsSimple(qname)) {
+                if (replaceAttribute) {
+                    attrValue[attrN] = value;
+                    attrType[attrN] = type;
+                    return attrN;
+                } else
+                    throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+                        "err:XQDY0025: element has more than one attribute '" + qname + "'");
             }
         }
-        if( nextAttr == attrName.length ) {
+        if (nextAttr == attrName.length) {
             growAttributes();
         }
-        qname.setNameType( ElementValue.ATTRIBUTE );
-        attrParent[nextAttr] = nodeNr;
-        attrName[nextAttr]   = namePool.getSharedName( qname );
+        qname.setNameType(ElementValue.ATTRIBUTE);
+        attrParent[nextAttr] = nodeNum;
+        attrName[nextAttr]   = namePool.getSharedName(qname);
         attrValue[nextAttr]  = value;
         attrType[nextAttr]   = type;
-        if( alpha[nodeNr] < 0 ) {
-            alpha[nodeNr] = nextAttr;
+        if (alpha[nodeNum] < 0) {
+            alpha[nodeNum] = nextAttr;
         }
         return( nextAttr++ );
     }
 
-    public int addNamespace( int nodeNr, QName qname ) {
-        if( nodeKind == null ) {
+    public int addNamespace(int nodeNum, QName qname) {
+        if (nodeKind == null) {
             init();
         }
-        if( ( namespaceCode == null ) || ( nextNamespace == namespaceCode.length ) ) {
+        if ((namespaceCode == null) || (nextNamespace == namespaceCode.length)) {
             growNamespaces();
         }
-        namespaceCode[nextNamespace]   = namePool.getSharedName( qname );
-        namespaceParent[nextNamespace] = nodeNr;
-        if( alphaLen[nodeNr] < 0 ) {
-            alphaLen[nodeNr] = nextNamespace;
+        namespaceCode[nextNamespace] = namePool.getSharedName(qname);
+        namespaceParent[nextNamespace] = nodeNum;
+        if (alphaLen[nodeNum] < 0) {
+            alphaLen[nodeNum] = nextNamespace;
         }
-        return( nextNamespace++ );
+        return nextNamespace++;
     }
 
-    public short getTreeLevel( int nodeNr ) {
-        return( treeLevel[nodeNr] );
+    public short getTreeLevel(int nodeNum) {
+        return treeLevel[nodeNum];
     }
 
     public int getLastNode() {
-        return( size - 1 );
+        return size - 1;
     }
 
     @Override
     public DocumentImpl getDocument() {
-        return( this );
+        return this;
     }
 
-    public short getNodeType( int nodeNr ) {
-        if( ( nodeKind == null ) || ( nodeNr < 0 ) ) {
-            return( -1 );
+    public short getNodeType(int nodeNum) {
+        if ((nodeKind == null) || (nodeNum < 0)) {
+            return -1;
         }
-        return( nodeKind[nodeNr] );
+        return nodeKind[nodeNum];
     }
 
     private void grow() {
-        int     newSize     = ( size * 3 ) / 2;
+        int newSize = (size * 3) / 2;
         short[] newNodeKind = new short[newSize];
-        System.arraycopy( nodeKind, 0, newNodeKind, 0, size );
+        System.arraycopy(nodeKind, 0, newNodeKind, 0, size);
         nodeKind = newNodeKind;
         short[] newTreeLevel = new short[newSize];
-        System.arraycopy( treeLevel, 0, newTreeLevel, 0, size );
+        System.arraycopy(treeLevel, 0, newTreeLevel, 0, size);
         treeLevel = newTreeLevel;
         int[] newNext = new int[newSize];
-        Arrays.fill( newNext, -1 );
-        System.arraycopy( next, 0, newNext, 0, size );
+        Arrays.fill(newNext, -1);
+        System.arraycopy(next, 0, newNext, 0, size);
         next = newNext;
         QName[] newNodeName = new QName[newSize];
-        System.arraycopy( nodeName, 0, newNodeName, 0, size );
+        System.arraycopy(nodeName, 0, newNodeName, 0, size);
         nodeName = newNodeName;
         NodeId[] newNodeId = new NodeId[newSize];
-        System.arraycopy( nodeId, 0, newNodeId, 0, size );
+        System.arraycopy(nodeId, 0, newNodeId, 0, size);
         nodeId = newNodeId;
         int[] newAlpha = new int[newSize];
-        System.arraycopy( alpha, 0, newAlpha, 0, size );
+        System.arraycopy(alpha, 0, newAlpha, 0, size);
         alpha = newAlpha;
         int[] newAlphaLen = new int[newSize];
-        Arrays.fill( newAlphaLen, -1 );
-        System.arraycopy( alphaLen, 0, newAlphaLen, 0, size );
+        Arrays.fill(newAlphaLen, -1);
+        System.arraycopy(alphaLen, 0, newAlphaLen, 0, size);
         alphaLen = newAlphaLen;
     }
 
     private void growAttributes() {
-        int     size        = attrName.length;
-        int     newSize     = ( size * 3 ) / 2;
+        int size = attrName.length;
+        int newSize = (size * 3) / 2;
         QName[] newAttrName = new QName[newSize];
-        System.arraycopy( attrName, 0, newAttrName, 0, size );
+        System.arraycopy(attrName, 0, newAttrName, 0, size);
         attrName = newAttrName;
         int[] newAttrParent = new int[newSize];
-        System.arraycopy( attrParent, 0, newAttrParent, 0, size );
+        System.arraycopy(attrParent, 0, newAttrParent, 0, size);
         attrParent = newAttrParent;
         String[] newAttrValue = new String[newSize];
-        System.arraycopy( attrValue, 0, newAttrValue, 0, size );
+        System.arraycopy(attrValue, 0, newAttrValue, 0, size);
         attrValue = newAttrValue;
         int[] newAttrType = new int[newSize];
-        System.arraycopy( attrType, 0, newAttrType, 0, size );
+        System.arraycopy(attrType, 0, newAttrType, 0, size);
         attrType = newAttrType;
         NodeId[] newNodeId = new NodeId[newSize];
-        System.arraycopy( attrNodeId, 0, newNodeId, 0, size );
+        System.arraycopy(attrNodeId, 0, newNodeId, 0, size);
         attrNodeId = newNodeId;
     }
 
     private void growReferences() {
-        if( references == null ) {
+        if (references == null) {
             references = new NodeProxy[REF_SIZE];
         } else {
-            int         size            = references.length;
-            int         newSize         = ( size * 3 ) / 2;
-            NodeProxy[] newReferences   = new NodeProxy[newSize];
-            System.arraycopy( references, 0, newReferences, 0, size );
+            int size = references.length;
+            int newSize = (size * 3) / 2;
+            NodeProxy[] newReferences = new NodeProxy[newSize];
+            System.arraycopy(references, 0, newReferences, 0, size);
             references = newReferences;
         }
     }
 
-
     private void growNamespaces() {
-        if( namespaceCode == null ) {
-            namespaceCode   = new QName[5];
+        if (namespaceCode == null) {
+            namespaceCode = new QName[5];
             namespaceParent = new int[5];
         } else {
-            int     size     = namespaceCode.length;
-            int     newSize  = ( size * 3 ) / 2;
+            int size = namespaceCode.length;
+            int newSize = (size * 3) / 2;
             QName[] newCodes = new QName[newSize];
-            System.arraycopy( namespaceCode, 0, newCodes, 0, size );
+            System.arraycopy(namespaceCode, 0, newCodes, 0, size);
             namespaceCode = newCodes;
             int[] newParents = new int[newSize];
-            System.arraycopy( namespaceParent, 0, newParents, 0, size );
+            System.arraycopy(namespaceParent, 0, newParents, 0, size);
             namespaceParent = newParents;
         }
     }
 
-    public NodeImpl getAttribute( int nodeNr ) throws DOMException {
-        return( new AttributeImpl( this, nodeNr ) );
+    public NodeImpl getAttribute( int nodeNum ) throws DOMException {
+        return new AttributeImpl(this, nodeNum);
     }
 
-    public NodeImpl getNamespaceNode( int nodeNr ) throws DOMException {
-        return( new NamespaceNode( this, nodeNr ) );
+    public NodeImpl getNamespaceNode( int nodeNum ) throws DOMException {
+        return new NamespaceNode(this, nodeNum);
     }
 
-    public NodeImpl getNode( int nodeNr ) throws DOMException {
-        if( nodeNr == 0 ) {
-            return( this );
+    public NodeImpl getNode( int nodeNum ) throws DOMException {
+        if (nodeNum == 0) {
+            return this;
         }
-
-        if( nodeNr >= size ) {
-            throw( new DOMException( DOMException.HIERARCHY_REQUEST_ERR, "node not found" ) );
+        if (nodeNum >= size) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "node not found");
         }
         NodeImpl node;
-
-        switch( nodeKind[nodeNr] ) {
-            case Node.ELEMENT_NODE: {
-                node = new ElementImpl( this, nodeNr );
-                break;
-            }
-            case Node.TEXT_NODE: {
-                node = new TextImpl( this, nodeNr );
-                break;
-            }
-            case Node.COMMENT_NODE: {
-                node = new CommentImpl( this, nodeNr );
-                break;
-            }
-            case Node.PROCESSING_INSTRUCTION_NODE: {
-                node = new ProcessingInstructionImpl( this, nodeNr );
-                break;
-            }
-            case Node.CDATA_SECTION_NODE: {
-                node = new CDATASectionImpl( this, nodeNr );
-                break;
-            }
-            case NodeImpl.REFERENCE_NODE: {
-                node = new ReferenceNode( this, nodeNr );
-                break;
-            }
-            default: {
-                throw( new DOMException( DOMException.NOT_FOUND_ERR, "node not found" ) );
-            }
+        switch (nodeKind[nodeNum]) {
+        case Node.ELEMENT_NODE:
+            node = new ElementImpl(this, nodeNum);
+            break;
+        case Node.TEXT_NODE:
+            node = new TextImpl(this, nodeNum);
+            break;
+        case Node.COMMENT_NODE:
+            node = new CommentImpl(this, nodeNum);
+            break;
+        case Node.PROCESSING_INSTRUCTION_NODE:
+            node = new ProcessingInstructionImpl(this, nodeNum);
+            break;
+        case Node.CDATA_SECTION_NODE:
+            node = new CDATASectionImpl(this, nodeNum);
+            break;
+        case NodeImpl.REFERENCE_NODE:
+            node = new ReferenceNode(this, nodeNum);
+            break;
+        default:
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
         }
-        return( node );
+        return node;
     }
 
-
     public NodeImpl getLastAttr() {
-        if( nextAttr == 0 ) {
-            return( null );
+        if (nextAttr == 0) {
+            return null;
         }
-        return( new AttributeImpl( this, nextAttr - 1 ) );
+        return new AttributeImpl(this, nextAttr - 1);
     }
 
     /*
@@ -535,7 +524,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public Node getParentNode() {
-        return( null );
+        return null;
     }
 
     /*
@@ -544,7 +533,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getDoctype()
      */
     public DocumentType getDoctype() {
-        return( null );
+        return null;
     }
 
     /*
@@ -553,22 +542,29 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getImplementation()
      */
     public DOMImplementation getImplementation() {
-        return( new DOMImplementation() {
-            public Document createDocument( String namespaceURI, String qualifiedName, 
-                    DocumentType doctype ) throws DOMException {
-                return( null );
+        return (
+            new DOMImplementation() {
+
+                public Document createDocument(String namespaceURI, 
+                    String qualifiedName, DocumentType doctype) throws DOMException {
+                    return null;
+                }
+
+                public DocumentType createDocumentType( String qualifiedName, 
+                        String publicId, String systemId ) throws DOMException {
+                    return null;
+                }
+
+                public Object getFeature( String feature, String version ) {
+                    return null;
+                }
+
+                public boolean hasFeature( String feature, String version ) {
+                    return ("XML".equals(feature) && ("1.0".equals(version) ||
+                        "2.0".equals(version)));
+                }
             }
-            public DocumentType createDocumentType( String qualifiedName, 
-                    String publicId, String systemId ) throws DOMException {
-                return( null );
-            }
-            public Object getFeature( String feature, String version ) {
-                return( null );
-            }
-            public boolean hasFeature( String feature, String version ) {
-                return( "XML".equals( feature ) && ( "1.0".equals( version ) || "2.0".equals( version ) ) );
-            }
-        } );
+        );
     }
 
     /*
@@ -578,15 +574,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public Element getDocumentElement() {
         if( size == 1 ) {
-            return( null );
+            return null;
         }
-        int nodeNr = 1;
-        while( nodeKind[nodeNr] != Node.ELEMENT_NODE ) {
-            if( next[nodeNr] < nodeNr )
-                return( null );
-            nodeNr = next[nodeNr];
+        int nodeNum = 1;
+        while (nodeKind[nodeNum] != Node.ELEMENT_NODE) {
+            if (next[nodeNum] < nodeNum)
+                return null;
+            nodeNum = next[nodeNum];
         }
-        return( (Element)getNode( nodeNr ) );
+        return (Element)getNode(nodeNum);
     }
 
     /*
@@ -596,60 +592,58 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public Node getFirstChild() {
-        if( size > 1 )
-            return( getNode( 1 ) );
-        return( null );
+        if (size > 1)
+            return getNode(1);
+        return null;
     }
-    
+
     public Node getLastChild() {
-    	return getFirstChild();
+        return getFirstChild();
     }
 
-
-    public int getAttributesCountFor( int nodeNumber )
-    {
+    public int getAttributesCountFor(int nodeNumber) {
         int count = 0;
-        int attr  = alpha[nodeNumber];
-        if( -1 < attr ) {
-            while( ( attr < nextAttr ) && ( attrParent[attr++] == nodeNumber ) ) {
+        int attr = alpha[nodeNumber];
+        if(-1 < attr) {
+            while ((attr < nextAttr) && (attrParent[attr++] == nodeNumber)) {
                 ++count;
             }
         }
-        return( count );
+        return count;
     }
 
-    public int getNamespacesCountFor( int nodeNumber ) {
+    public int getNamespacesCountFor(int nodeNumber) {
         int count = 0;
-        int ns    = alphaLen[nodeNumber];
-        if( -1 < ns ) {
-            while( ( ns < nextNamespace ) && ( namespaceParent[ns++] == nodeNumber ) ) {
+        int ns = alphaLen[nodeNumber];
+        if(-1 < ns) {
+            while((ns < nextNamespace) && (namespaceParent[ns++] == nodeNumber)) {
                 ++count;
             }
         }
-        return( count );
+        return count;
     }
 
-    public int getChildCountFor( int nr ) {
-        int count    = 0;
-        int nextNode = getFirstChildFor( nr );
-        while( nextNode > nr ) {
+    public int getChildCountFor(int nr) {
+        int count = 0;
+        int nextNode = getFirstChildFor(nr);
+        while (nextNode > nr) {
             ++count;
             nextNode = next[nextNode];
         }
-        return( count );
+        return count;
     }
 
-    public int getFirstChildFor( int nodeNumber ) {
-        short level    = treeLevel[nodeNumber];
-        int   nextNode = nodeNumber + 1;
-        if( ( nextNode < size ) && ( treeLevel[nextNode] > level ) )
-            return( nextNode );
-        return( -1 );
+    public int getFirstChildFor(int nodeNumber) {
+        short level = treeLevel[nodeNumber];
+        int nextNode = nodeNumber + 1;
+        if ((nextNode < size) && (treeLevel[nextNode] > level))
+            return nextNode;
+        return -1;
     }
 
-    public int getNextSiblingFor( int nodeNumber ) {
+    public int getNextSiblingFor(int nodeNumber) {
         int nextNr = next[nodeNumber];
-        return( ( nextNr < nodeNumber ) ? -1 : nextNr );
+        return (nextNr < nodeNumber ) ? -1 : nextNr;
     }
 
     /**
@@ -659,181 +653,184 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  an <code>int</code> value
      */
-    public int getParentNodeFor( int nodeNumber ) {
+    public int getParentNodeFor(int nodeNumber) {
         int nextNode = next[nodeNumber];
-        while( nextNode > nodeNumber ) {
+        while (nextNode > nodeNumber) {
             nextNode = next[nextNode];
         }
-        return( nextNode );
+        return nextNode;
     }
 
     @Override
-    public void selectChildren( NodeTest test, Sequence result ) throws XPathException {
-        if( size == 1 ) {
+    public void selectChildren(NodeTest test, Sequence result) throws XPathException {
+        if (size == 1) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                result.add( next );
+        while (next != null) {
+            if (test.matches(next)) {
+                result.add(next);
             }
             next = (NodeImpl)next.getNextSibling();
         }
     }
 
     @Override
-    public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result )
+    public void selectDescendants(boolean includeSelf, NodeTest test, Sequence result)
             throws XPathException {
-        if( includeSelf && test.matches( this ) ) {
-            result.add( this );
+        if (includeSelf && test.matches(this)) {
+            result.add(this);
         }
-        if( size == 1 ) {
+        if (size == 1) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                result.add( next );
+        while (next != null) {
+            if (test.matches(next)) {
+                result.add(next);
             }
-            next.selectDescendants( includeSelf, test, result );
+            next.selectDescendants(includeSelf, test, result);
             next = (NodeImpl)next.getNextSibling();
         }
     }
 
     @Override
-    public void selectDescendantAttributes( NodeTest test, Sequence result )
+    public void selectDescendantAttributes(NodeTest test, Sequence result)
             throws XPathException {
-        if( size == 1 ) {
+        if (size == 1) {
             return;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                result.add( next );
+        while (next != null) {
+            if (test.matches(next)) {
+                result.add(next);
             }
-            next.selectDescendantAttributes( test, result );
+            next.selectDescendantAttributes(test, result);
             next = (NodeImpl)next.getNextSibling();
         }
     }
 
-    public NodeImpl selectById( String id ) {
-        if( size == 1 ) {
-            return( null );
+    public NodeImpl selectById(String id) {
+        if (size == 1) {
+            return null;
         }
         ElementImpl root = (ElementImpl)getDocumentElement();
-        if( hasIdAttribute( root.getNodeNumber(), id ) ) {
-            return( root );
+        if (hasIdAttribute(root.getNodeNumber(), id)) {
+            return root;
         }
         int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode  = root.getNodeNumber();
-        while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
-            if( ( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) && hasIdAttribute( nextNode, id ) ) {
-                return( getNode( nextNode ) );
+        while ((++nextNode < document.size) && (document.treeLevel[nextNode] > treeLevel)) {
+            if ((document.nodeKind[nextNode] == Node.ELEMENT_NODE) &&
+                    hasIdAttribute(nextNode, id)) {
+                return getNode(nextNode);
             }
         }
-        return( null );
+        return null;
     }
 
-    public NodeImpl selectByIdref( String id ) {
-        if( size == 1 ) {
-            return( null );
+    public NodeImpl selectByIdref(String id) {
+        if (size == 1) {
+            return null;
         }
-        ElementImpl   root = (ElementImpl)getDocumentElement();
-        AttributeImpl attr = getIdrefAttribute( root.getNodeNumber(), id );
-        if( attr != null ) {
-            return( attr );
+        ElementImpl root = (ElementImpl)getDocumentElement();
+        AttributeImpl attr = getIdrefAttribute(root.getNodeNumber(), id);
+        if (attr != null) {
+            return attr;
         }
         int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode  = root.getNodeNumber();
-        while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
-            if( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) {
-                attr = getIdrefAttribute( nextNode, id );
-                if( attr != null ) {
-                    return( attr );
+        while ((++nextNode < document.size ) && (document.treeLevel[nextNode] > treeLevel)) {
+            if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+                attr = getIdrefAttribute(nextNode, id);
+                if (attr != null) {
+                    return attr;
                 }
             }
         }
-        return( null );
+        return null;
     }
 
-    private boolean hasIdAttribute( int nodeNumber, String id ) {
+    private boolean hasIdAttribute(int nodeNumber, String id) {
         int attr = document.alpha[nodeNumber];
-        if( -1 < attr ) {
-            while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-                if( ( document.attrType[attr] == AttributeImpl.ATTR_ID_TYPE ) && id.equals( document.attrValue[attr] ) ) {
-                    return( true );
+        if (-1 < attr) {
+            while ((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
+                if ((document.attrType[attr] == AttributeImpl.ATTR_ID_TYPE) &&
+                        id.equals(document.attrValue[attr])) {
+                    return true;
                 }
                 ++attr;
             }
         }
-        return( false );
+        return false;
     }
 
-    private AttributeImpl getIdrefAttribute( int nodeNumber, String id ) {
+    private AttributeImpl getIdrefAttribute(int nodeNumber, String id) {
         int attr = document.alpha[nodeNumber];
-        if( -1 < attr ) {
-            while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-                if( ( document.attrType[attr] == AttributeImpl.ATTR_IDREF_TYPE ) && id.equals( document.attrValue[attr] ) ) {
-                    return( new AttributeImpl( this, attr ) );
+        if (-1 < attr) {
+            while ((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
+                if ((document.attrType[attr] == AttributeImpl.ATTR_IDREF_TYPE) &&
+                        id.equals(document.attrValue[attr])) {
+                    return new AttributeImpl(this, attr);
                 }
                 ++attr;
             }
         }
-        return( null );
+        return null;
     }
 
     @Override
-    public boolean matchChildren( NodeTest test ) throws XPathException {
-        if( size == 1 ) {
-            return( false );
+    public boolean matchChildren(NodeTest test) throws XPathException {
+        if (size == 1) {
+            return false;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                return( true );
+        while (next != null) {
+            if (test.matches(next)) {
+                return true;
             }
             next = (NodeImpl)next.getNextSibling();
         }
-        return( false );
+        return false;
     }
 
     @Override
-    public boolean matchDescendants( boolean includeSelf, NodeTest test ) throws XPathException {
-        if( includeSelf && test.matches( this ) ) {
-            return( true );
+    public boolean matchDescendants(boolean includeSelf, NodeTest test) throws XPathException {
+        if (includeSelf && test.matches(this)) {
+            return true;
         }
-        if( size == 1 ) {
-            return( true );
+        if (size == 1) {
+            return true;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                return( true );
+        while (next != null) {
+            if (test.matches(next)) {
+                return true;
             }
-            if( next.matchDescendants( includeSelf, test ) ) {
-                return( true );
+            if (next.matchDescendants(includeSelf, test)) {
+                return true;
             }
             next = (NodeImpl)next.getNextSibling();
         }
-        return( false );
+        return false;
     }
 
     @Override
-    public boolean matchDescendantAttributes( NodeTest test ) throws XPathException {
-        if( size == 1 ) {
-            return( false );
+    public boolean matchDescendantAttributes(NodeTest test) throws XPathException {
+        if (size == 1) {
+            return false;
         }
         NodeImpl next = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            if( test.matches( next ) ) {
-                return( true );
+        while (next != null) {
+            if (test.matches(next)) {
+                return true;
             }
-            if( next.matchDescendantAttributes( test ) ) {
-                return( true );
+            if (next.matchDescendantAttributes(test)) {
+                return true;
             }
             next = (NodeImpl)next.getNextSibling();
         }
-        return( false );
+        return false;
     }
 
     /*
@@ -841,16 +838,16 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     *
     * @see org.w3c.dom.Document#createElement(java.lang.String)
     */
-    public Element createElement( String tagName ) throws DOMException {
+    public Element createElement(String tagName) throws DOMException {
         QName qn;
         try {
-            qn = QName.parse( getContext(), tagName );
+            qn = QName.parse(getContext(), tagName);
         }
-        catch( XPathException e ) {
-            throw( new DOMException( DOMException.NAMESPACE_ERR, e.getMessage() ) );
+        catch (XPathException e) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
         }
-        int nodeNr = addNode( Node.ELEMENT_NODE, (short)1, qn );
-        return( new ElementImpl( this, nodeNr ) );
+        int nodeNum = addNode(Node.ELEMENT_NODE, (short)1, qn);
+        return new ElementImpl(this, nodeNum);
     }
 
     /*
@@ -860,7 +857,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public DocumentFragment createDocumentFragment() {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -868,9 +865,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createTextNode(java.lang.String)
      */
-    public Text createTextNode( String arg0 ) {
+    public Text createTextNode(String arg0) {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -878,9 +875,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createComment(java.lang.String)
      */
-    public Comment createComment( String arg0 ) {
+    public Comment createComment(String arg0) {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -888,9 +885,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createCDATASection(java.lang.String)
      */
-    public CDATASection createCDATASection( String arg0 ) throws DOMException {
+    public CDATASection createCDATASection(String arg0) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -899,10 +896,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createProcessingInstruction(java.lang.String,
      *           java.lang.String)
      */
-    public ProcessingInstruction createProcessingInstruction( String arg0, String arg1 )
+    public ProcessingInstruction createProcessingInstruction(String arg0, String arg1)
             throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -910,9 +907,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createAttribute(java.lang.String)
      */
-    public Attr createAttribute( String arg0 ) throws DOMException {
+    public Attr createAttribute(String arg0) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -920,9 +917,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createEntityReference(java.lang.String)
      */
-    public EntityReference createEntityReference( String arg0 ) throws DOMException {
+    public EntityReference createEntityReference(String arg0) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -930,18 +927,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
      */
-    public NodeList getElementsByTagName( String name ) {
+    public NodeList getElementsByTagName(String name) {
         NodeListImpl nl = new NodeListImpl();
-        //int nodeNr = 1;
-        for( int i = 1; i < size; i++ ) {
-            if( nodeKind[i] == Node.ELEMENT_NODE ) {
+        for (int i = 1; i < size; i++) {
+            if (nodeKind[i] == Node.ELEMENT_NODE) {
                 QName qn = nodeName[i];
-                if( qn.getStringValue().equals( name ) ) {
-                    nl.add( getNode( i ) );
+                if (qn.getStringValue().equals(name)) {
+                    nl.add(getNode(i));
                 }
             }
         }
-        return( nl );
+        return nl;
     }
 
     /*
@@ -949,9 +945,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#importNode(org.w3c.dom.Node, boolean)
      */
-    public Node importNode( Node arg0, boolean arg1 ) throws DOMException {
+    public Node importNode(Node arg0, boolean arg1) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -960,9 +956,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createElementNS(java.lang.String,
      *           java.lang.String)
      */
-    public Element createElementNS( String arg0, String arg1 ) throws DOMException {
+    public Element createElementNS(String arg0, String arg1) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -971,9 +967,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createAttributeNS(java.lang.String,
      *           java.lang.String)
      */
-    public Attr createAttributeNS( String arg0, String arg1 ) throws DOMException {
+    public Attr createAttributeNS(String arg0, String arg1) throws DOMException {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -982,9 +978,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String,
      *           java.lang.String)
      */
-    public NodeList getElementsByTagNameNS( String arg0, String arg1 ) {
+    public NodeList getElementsByTagNameNS(String arg0, String arg1) {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -992,9 +988,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getElementById(java.lang.String)
      */
-    public Element getElementById( String arg0 ) {
+    public Element getElementById(String arg0) {
         // TODO Auto-generated method stub
-        return( null );
+        return null;
     }
 
     /*
@@ -1004,7 +1000,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public org.w3c.dom.Document getOwnerDocument() {
-        return( this );
+        return this;
     }
 
     /**
@@ -1015,35 +1011,33 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  SAXException  DOCUMENT ME!
      */
-    public void copyTo( NodeImpl node, DocumentBuilderReceiver receiver ) throws SAXException {
-        copyTo( node, receiver, false );
+    public void copyTo(NodeImpl node, DocumentBuilderReceiver receiver) throws SAXException {
+        copyTo(node, receiver, false);
     }
 
-    protected void copyTo( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs )
+    protected void copyTo(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs)
             throws SAXException {
         NodeImpl top = node;
-        while( node != null ) {
-            copyStartNode( node, receiver, expandRefs );
+        while (node != null) {
+            copyStartNode(node, receiver, expandRefs);
             NodeImpl nextNode;
-            if( node instanceof ReferenceNode ) {
+            if (node instanceof ReferenceNode) {
                 //Nothing more to stream ?
                 nextNode = null;
             } else {
                 nextNode = (NodeImpl)node.getFirstChild();
             }
-            while( nextNode == null ) {
-                copyEndNode( node, receiver );
-                if( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) {
+            while (nextNode == null) {
+                copyEndNode(node, receiver);
+                if ((top != null) && (top.nodeNumber == node.nodeNumber)) {
                     break;
                 }
                 //No nextNode if the top node is a Document node
-//                if (top != null && top.nodeNumber == 0)
-//                    break;
                 nextNode = (NodeImpl)node.getNextSibling();
-                if( nextNode == null ) {
+                if (nextNode == null) {
                     node = (NodeImpl)node.getParentNode();
-                    if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
-                        copyEndNode( node, receiver );
+                    if ((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
+                        copyEndNode(node, receiver);
                         break;
                     }
                 }
@@ -1052,75 +1046,75 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-    private void copyStartNode( NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs )
+    private void copyStartNode(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs)
             throws SAXException {
         int nr = node.nodeNumber;
-        switch( node.getNodeType() ) {
+        switch(node.getNodeType()) {
         case Node.ELEMENT_NODE: {
             QName nodeName = document.nodeName[nr];
-            receiver.startElement( nodeName, null );
+            receiver.startElement(nodeName, null);
             int attr = document.alpha[nr];
-            if( -1 < attr ) {
-                while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
+            if(-1 < attr) {
+                while ((attr < document.nextAttr) && (document.attrParent[attr] == nr)) {
                     QName attrQName = document.attrName[attr];
                     receiver.attribute( attrQName, attrValue[attr] );
                     ++attr;
                 }
             }
             int ns = document.alphaLen[nr];
-            if( -1 < ns ) {
-                while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
+            if (-1 < ns) {
+                while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
                     QName nsQName = document.namespaceCode[ns];
-                    receiver.addNamespaceNode( nsQName );
+                    receiver.addNamespaceNode(nsQName);
                     ++ns;
                 }
             }
             break;
         }
         case Node.TEXT_NODE:
-            receiver.characters( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.characters(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.CDATA_SECTION_NODE:
-            receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.cdataSection(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.ATTRIBUTE_NODE:
             QName attrQName = document.attrName[nr];
-            receiver.attribute( attrQName, attrValue[nr] );
+            receiver.attribute(attrQName, attrValue[nr]);
             break;
         case Node.COMMENT_NODE:
-            receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.comment(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.PROCESSING_INSTRUCTION_NODE:
-            QName  qn   = document.nodeName[nr];
-            String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
-            receiver.processingInstruction( qn.getLocalName(), data );
+            QName qn   = document.nodeName[nr];
+            String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
+            receiver.processingInstruction(qn.getLocalName(), data);
             break;
         case NodeImpl.REFERENCE_NODE:
-            if( expandRefs ) {
-            	DBBroker broker = null;
-            	try {
-					broker = getDatabase().get(null);
+            if (expandRefs) {
+                DBBroker broker = null;
+                try {
+                    broker = getDatabase().get(null);
                     Serializer serializer = broker.getSerializer();
                     serializer.reset();
-                    serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
-                    serializer.setReceiver( receiver );
-                    serializer.toReceiver( document.references[document.alpha[nr]], false, false );
-				} catch (EXistException e) {
-					throw new SAXException(e);
-            	} finally {
-            		getDatabase().release(broker);
-            	}
+                    serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+                    serializer.setReceiver(receiver);
+                    serializer.toReceiver(document.references[document.alpha[nr]], false, false);
+                } catch (EXistException e) {
+                    throw new SAXException(e);
+                } finally {
+                    getDatabase().release(broker);
+                }
             } else {
-                receiver.addReferenceNode( document.references[document.alpha[nr]] );
+                receiver.addReferenceNode(document.references[document.alpha[nr]]);
             }
             break;
         }
     }
 
-    private void copyEndNode( NodeImpl node, DocumentBuilderReceiver receiver )
+    private void copyEndNode(NodeImpl node, DocumentBuilderReceiver receiver)
             throws SAXException {
-        if( node.getNodeType() == Node.ELEMENT_NODE ) {
-            receiver.endElement( node.getQName() );
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            receiver.endElement(node.getQName());
         }
     }
 
@@ -1134,85 +1128,85 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public void expand() throws DOMException {
-        if( size == 0 ) {
+        if (size == 0) {
             return;
         }
-        DocumentImpl newDoc = expandRefs( null );
-        copyDocContents( newDoc );
+        DocumentImpl newDoc = expandRefs(null);
+        copyDocContents(newDoc);
     }
 
-    public DocumentImpl expandRefs( NodeImpl rootNode ) throws DOMException {
+    public DocumentImpl expandRefs(NodeImpl rootNode) throws DOMException {
         try {
-            if( nextRef == 0 ) {
+            if (nextRef == 0) {
                 computeNodeIds();
                 return( this );
             }
-            MemTreeBuilder          builder  = new MemTreeBuilder( context );
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder );
+            MemTreeBuilder builder = new MemTreeBuilder(context);
+            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
             try {
                 builder.startDocument();
-                NodeImpl node = ( rootNode == null ) ? (NodeImpl)getFirstChild() : rootNode;
-                while( node != null ) {
-                    copyTo( node, receiver, true );
+                NodeImpl node = (rootNode == null) ? (NodeImpl)getFirstChild() : rootNode;
+                while (node != null) {
+                    copyTo(node, receiver, true);
                     node = (NodeImpl)node.getNextSibling();
                 }
                 receiver.endDocument();
-            } catch( SAXException e ) {
-                throw( new DOMException( DOMException.INVALID_STATE_ERR, e.getMessage() ) );
+            } catch (SAXException e) {
+                throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
             }
             DocumentImpl newDoc = builder.getDocument();
             newDoc.computeNodeIds();
-            return( newDoc );
+            return newDoc;
         } catch (EXistException e) {
-            throw( new DOMException( DOMException.INVALID_STATE_ERR, e.getMessage() ) );
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         }
     }
 
-    public NodeImpl getNodeById( NodeId id ) {
+    public NodeImpl getNodeById(NodeId id) {
         expand();
-        for( int i = 0; i < size; i++ ) {
-            if( id.equals( nodeId[i] ) ) {
-                return( getNode( i ) );
+        for (int i = 0; i < size; i++) {
+            if (id.equals( nodeId[i])) {
+                return getNode(i);
             }
         }
-        return( null );
+        return null;
     }
 
     private void computeNodeIds() throws EXistException {
-        if( nodeId[0] != null ) {
+        if (nodeId[0] != null) {
             return;
         }
         NodeIdFactory nodeFactory = getDatabase().getNodeFactory();
         nodeId[0] = nodeFactory.documentNodeId();
-        if( size == 1 ) {
+        if (size == 1) {
             return;
         }
-        NodeId   nextId = nodeFactory.createInstance();
-        NodeImpl next   = (NodeImpl)getFirstChild();
-        while( next != null ) {
-            computeNodeIds( nextId, next.nodeNumber );
-            next   = (NodeImpl)next.getNextSibling();
+        NodeId nextId = nodeFactory.createInstance();
+        NodeImpl next = (NodeImpl)getFirstChild();
+        while (next != null) {
+            computeNodeIds(nextId, next.nodeNumber);
+            next = (NodeImpl)next.getNextSibling();
             nextId = nextId.nextSibling();
         }
     }
 
-    private void computeNodeIds( NodeId id, int nodeNr ) {
-        nodeId[nodeNr] = id;
-        if( nodeKind[nodeNr] == Node.ELEMENT_NODE ) {
+    private void computeNodeIds(NodeId id, int nodeNum) {
+        nodeId[nodeNum] = id;
+        if (nodeKind[nodeNum] == Node.ELEMENT_NODE) {
             NodeId nextId = id.newChild();
-            int    attr   = document.alpha[nodeNr];
-            if( -1 < attr ) {
-                while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNr ) ) {
+            int attr = document.alpha[nodeNum];
+            if (-1 < attr) {
+                while ((attr < document.nextAttr) && (document.attrParent[attr] == nodeNum)) {
                     attrNodeId[attr] = nextId;
-                    nextId           = nextId.nextSibling();
+                    nextId = nextId.nextSibling();
                     ++attr;
                 }
             }
-            int nextNode = getFirstChildFor( nodeNr );
-            while( nextNode > nodeNr ) {
-                computeNodeIds( nextId, nextNode );
+            int nextNode = getFirstChildFor(nodeNum);
+            while (nextNode > nodeNum) {
+                computeNodeIds(nextId, nextNode);
                 nextNode = document.next[nextNode];
-                if( nextNode > nodeNr ) {
+                if (nextNode > nodeNum) {
                     nextId = nextId.nextSibling();
                 }
             }
@@ -1250,7 +1244,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     /**
-     * Stream the specified document fragment to a receiver. This method is called by the serializer to output in-memory nodes.
+     * Stream the specified document fragment to a receiver. This method
+     * is called by the serializer to output in-memory nodes.
      *
      * @param   serializer
      * @param   node
@@ -1261,25 +1256,25 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     public void streamTo( Serializer serializer, NodeImpl node, Receiver receiver )
             throws SAXException {
         NodeImpl top = node;
-        while( node != null ) {
-            startNode( serializer, node, receiver );
+        while (node != null) {
+            startNode(serializer, node, receiver);
             NodeImpl nextNode;
-            if( node instanceof ReferenceNode ) {
+            if (node instanceof ReferenceNode) {
                 //Nothing more to stream ?
                 nextNode = null;
             } else {
                 nextNode = (NodeImpl)node.getFirstChild();
             }
-            while( nextNode == null ) {
-                endNode( node, receiver );
-                if( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) {
+            while (nextNode == null) {
+                endNode(node, receiver);
+                if ((top != null) && (top.nodeNumber == node.nodeNumber)) {
                     break;
                 }
                 nextNode = (NodeImpl)node.getNextSibling();
-                if( nextNode == null ) {
+                if (nextNode == null) {
                     node = (NodeImpl)node.getParentNode();
-                    if( ( node == null ) || ( ( top != null ) && ( top.nodeNumber == node.nodeNumber ) ) ) {
-                        endNode( node, receiver );
+                    if ((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
+                        endNode(node, receiver);
                         break;
                     }
                 }
@@ -1288,75 +1283,76 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-    private void startNode( Serializer serializer, NodeImpl node, Receiver receiver )
+    private void startNode(Serializer serializer, NodeImpl node, Receiver receiver)
             throws SAXException {
         int nr = node.nodeNumber;
-        switch( node.getNodeType() ) {
+        switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
             QName nodeName = document.nodeName[nr];
-            // output required namespace declarations
-            int   ns       = document.alphaLen[nr];
-            if( -1 < ns ) {
-                while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
+            //Output required namespace declarations
+            int ns = document.alphaLen[nr];
+            if (-1 < ns) {
+                while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
                     QName nsQName = document.namespaceCode[ns];
-                    if( "xmlns".equals( nsQName.getLocalName() ) ) {
-                        receiver.startPrefixMapping( "", nsQName.getNamespaceURI() );
+                    if ("xmlns".equals(nsQName.getLocalName())) {
+                        receiver.startPrefixMapping("", nsQName.getNamespaceURI());
                     } else {
-                        receiver.startPrefixMapping( nsQName.getLocalName(), nsQName.getNamespaceURI() );
+                        receiver.startPrefixMapping(nsQName.getLocalName(), nsQName.getNamespaceURI());
                     }
                     ++ns;
                 }
             }
-            // create the attribute list
+            //Create the attribute list
             AttrList attribs = null;
-            int      attr    = document.alpha[nr];
-            if( -1 < attr ) {
+            int attr = document.alpha[nr];
+            if (-1 < attr) {
                 attribs = new AttrList();
-                while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nr ) ) {
+                while ((attr < document.nextAttr) && (document.attrParent[attr] == nr)) {
                     QName attrQName = document.attrName[attr];
-                    attribs.addAttribute( attrQName, attrValue[attr] );
+                    attribs.addAttribute(attrQName, attrValue[attr]);
                     ++attr;
                 }
             }
-            receiver.startElement( nodeName, attribs );
+            receiver.startElement(nodeName, attribs);
             break;
         case Node.TEXT_NODE:
-            receiver.characters( new String( document.characters, document.alpha[nr], document.alphaLen[nr] ) );
+            receiver.characters(new String(document.characters, document.alpha[nr],
+                document.alphaLen[nr]));
             break;
         case Node.ATTRIBUTE_NODE:
             QName attrQName = document.attrName[nr];
-            receiver.attribute( attrQName, attrValue[nr] );
+            receiver.attribute(attrQName, attrValue[nr]);
             break;
         case Node.COMMENT_NODE:
-            receiver.comment( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.comment(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.PROCESSING_INSTRUCTION_NODE:
-            QName  qn   = document.nodeName[nr];
-            String data = new String( document.characters, document.alpha[nr], document.alphaLen[nr] );
-            receiver.processingInstruction( qn.getLocalName(), data );
+            QName qn = document.nodeName[nr];
+            String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
+            receiver.processingInstruction(qn.getLocalName(), data);
             break;
         case Node.CDATA_SECTION_NODE:
-            receiver.cdataSection( document.characters, document.alpha[nr], document.alphaLen[nr] );
+            receiver.cdataSection(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case NodeImpl.REFERENCE_NODE:
-            serializer.toReceiver( document.references[document.alpha[nr]], true, false );
+            serializer.toReceiver(document.references[document.alpha[nr]], true, false);
             break;
         }
     }
 
-    private void endNode( NodeImpl node, Receiver receiver ) throws SAXException {
-        if( node.getNodeType() == Node.ELEMENT_NODE ) {
-            receiver.endElement( node.getQName() );
-            // end all prefix mappings used for the element
+    private void endNode(NodeImpl node, Receiver receiver) throws SAXException {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            receiver.endElement(node.getQName());
+            //End all prefix mappings used for the element
             int nr = node.nodeNumber;
             int ns = document.alphaLen[nr];
-            if( -1 < ns ) {
-                while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nr ) ) {
+            if (-1 < ns) {
+                while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
                     QName nsQName = document.namespaceCode[ns];
-                    if( "xmlns".equals( nsQName.getLocalName() ) ) {
-                        receiver.endPrefixMapping( "" );
+                    if ("xmlns".equals( nsQName.getLocalName())) {
+                        receiver.endPrefixMapping("");
                     } else {
-                        receiver.endPrefixMapping( nsQName.getLocalName() );
+                        receiver.endPrefixMapping(nsQName.getLocalName());
                     }
                     ++ns;
                 }
@@ -1365,43 +1361,43 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     public org.exist.dom.DocumentImpl makePersistent() throws XPathException {
-        if( size <= 1 ) {
-            return( null );
+        if (size <= 1) {
+            return null;
         }
-        return( context.storeTemporaryDoc( this ) );
+        return context.storeTemporaryDoc(this);
     }
 
     public int getChildCount() {
         int count = 0;
-        int top   = ( size > 1 ) ? 1 : -1;
-        while( top > 0 ) {
+        int top = (size > 1) ? 1 : -1;
+        while (top > 0) {
             ++count;
-            top = getNextSiblingFor( top );
+            top = getNextSiblingFor(top);
         }
-        return( count );
+        return count;
     }
 
     @Override
     public boolean hasChildNodes() {
-        return( getChildCount() > 0 );
+        return (getChildCount() > 0);
     }
-    
+
     public NodeList getChildNodes() {
-		NodeListImpl nl = new NodeListImpl(1);
-		Element el = getDocumentElement();
-		if (el != null)
-			nl.add( el );
-		return nl ;
+        NodeListImpl nl = new NodeListImpl(1);
+        Element el = getDocumentElement();
+        if (el != null)
+            nl.add(el);
+        return nl;
     }
 
     @Override
     public String getLocalName() {
-        return( "" );
+        return "";
     }
 
     @Override
     public String getNamespaceURI() {
-        return( "" );
+        return "";
     }
 
     /**
@@ -1411,7 +1407,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public String getInputEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
     /**
@@ -1421,7 +1417,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public String getXmlEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
     /**
@@ -1431,7 +1427,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public boolean getXmlStandalone() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( false );
+        return false;
     }
 
     /**
@@ -1452,7 +1448,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public String getXmlVersion() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
     /**
@@ -1462,7 +1458,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public void setXmlVersion( String xmlVersion ) throws DOMException {
+    public void setXmlVersion(String xmlVersion) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
 
@@ -1473,7 +1469,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public boolean getStrictErrorChecking() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( false );
+        return false;
     }
 
     /**
@@ -1491,7 +1487,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @return  DOCUMENT ME!
      */
     public String getDocumentURI() {
-        return( documentURI );
+        return documentURI;
     }
 
     /**
@@ -1499,7 +1495,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @param  documentURI  DOCUMENT ME!
      */
-    public void setDocumentURI( String documentURI ) {
+    public void setDocumentURI(String documentURI) {
         this.documentURI = documentURI;
     }
 
@@ -1512,9 +1508,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public Node adoptNode( Node source ) throws DOMException {
+    public Node adoptNode(Node source) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
     /**
@@ -1524,7 +1520,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public DOMConfiguration getDomConfig() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
     /**
@@ -1545,18 +1541,18 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public Node renameNode( Node n, String namespaceURI, String qualifiedName )
+    public Node renameNode(Node n, String namespaceURI, String qualifiedName)
             throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
-    public void setContext( XQueryContext context ) {
+    public void setContext(XQueryContext context) {
         this.context = context;
     }
 
     public XQueryContext getContext() {
-        return( context );
+        return context;
     }
 
     /**
@@ -1566,54 +1562,53 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public String getBaseURI() {
-    	Element el = getDocumentElement();
-    	if (el != null) {
-    		String baseURI = getDocumentElement().getAttributeNS( Namespaces.XML_NS, "base" );
-    		if( baseURI != null )
-    			return baseURI;
-    	}
-    	
-    	String docURI = getDocumentURI();
-    	if (docURI != null)
-    		return docURI;
-    	else {
-    		if( context.isBaseURIDeclared() ) {
-    			try {
-    				return context.getBaseURI().getStringValue();
-    			} catch( Exception e ) {
-    				//System.out.println( "memtree/DocumentImpl::getBaseURI() exception catched: " );
-    			}
-    		}
-    		return XmldbURI.EMPTY_URI.toString();
-    	}
+        Element el = getDocumentElement();
+        if (el != null) {
+            String baseURI = getDocumentElement().getAttributeNS(Namespaces.XML_NS, "base");
+            if (baseURI != null)
+                return baseURI;
+        }
+        String docURI = getDocumentURI();
+        if (docURI != null)
+            return docURI;
+        else {
+            if (context.isBaseURIDeclared()) {
+                try {
+                    return context.getBaseURI().getStringValue();
+                } catch (XPathException e) {
+                    //TODO : make something !
+                }
+            }
+            return XmldbURI.EMPTY_URI.toString();
+        }
     }
 
     @Override
     public int getItemType() {
-        return( Type.DOCUMENT );
+        return Type.DOCUMENT;
     }
 
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append( "in-memory#" );
-        result.append( "document {" );
-        if( size != 1 ) {
-            int nodeNr = 1;
-            while( true ) {
-                result.append( getNode( nodeNr ).toString() );
-                if( next[nodeNr] < nodeNr ) {
+        result.append("in-memory#");
+        result.append("document {");
+        if (size != 1) {
+            int nodeNum = 1;
+            while (true) {
+                result.append(getNode(nodeNum).toString());
+                if (next[nodeNum] < nodeNum) {
                     break;
                 }
-                nodeNr = next[nodeNr];
+                nodeNum = next[nodeNum];
             }
         }
-        result.append( "} " );
-        return( result.toString() );
+        result.append("} ");
+        return(result.toString());
     }
 
-    public int getNextNodeNumber( int nextNode ) throws DOMException {
-        return( document.next[nextNode] );
+    public int getNextNodeNumber(int nextNode) throws DOMException {
+        return document.next[nextNode];
     }
 
     @Override
@@ -1626,12 +1621,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     public void selectAttributes(NodeTest test, Sequence result)
             throws XPathException {
         // TODO Auto-generated method stub
-        
     }
 
-	@Override
-	public int getDocId() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public int getDocId() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

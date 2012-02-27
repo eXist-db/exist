@@ -5,18 +5,18 @@ import org.w3c.dom.Document;
 
 public interface NodeHandle {
 
-	public NodeId getNodeId();
+    public NodeId getNodeId();
 
-	public void setNodeId(NodeId dln);
+    public void setNodeId(NodeId dln);
 
-	public long getInternalAddress();
+    public long getInternalAddress();
 
-	public void setInternalAddress(long internalAddress);
+    public void setInternalAddress(long internalAddress);
 
-	public short getNodeType();
+    public short getNodeType();
 
-	public Document getOwnerDocument();
+    public Document getOwnerDocument();
 
-	public DocumentImpl getDocument();
+    public DocumentImpl getDocument();
 
 }

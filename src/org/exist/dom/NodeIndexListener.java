@@ -9,12 +9,13 @@ package org.exist.dom;
  */
 public interface NodeIndexListener {
 
-	/**
-	 * The internal id of a node has changed. The storage address is
-	 * still the same, so one can find the changed node by comparing
-	 * its storage address.
-	 * 
-	 * @param node
-	 */
-	void nodeChanged(StoredNode node);
+    /**
+     * The internal id of a node has changed. The storage address is
+     * still the same, so one can find the changed node by comparing
+     * its storage address.
+     * 
+     * @param node
+     */
+    void nodeChanged(StoredNode node);
+
 }

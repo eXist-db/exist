@@ -87,7 +87,6 @@ public class SymbolTable {
                     return symbolType;
                 }
             }
-
             throw new IllegalArgumentException("No such enumerated value for type_id:" + type_id);
         }
     }
@@ -105,8 +104,7 @@ public class SymbolTable {
      * Temporary name pool to share QName instances during indexing.
      */
     private QNamePool namePool = new QNamePool();
-    
-    
+
     /** set to true if the symbol table needs to be saved */
     private boolean changed = false;
 
@@ -292,7 +290,6 @@ public class SymbolTable {
      * @throws IOException
      */
     protected final void readLegacy(VariableByteInput istream) throws IOException {
-
         istream.readShort(); //read max, not needed anymore
         istream.readShort(); //read nsMax not needed anymore
         String key;
@@ -400,14 +397,14 @@ public class SymbolTable {
     }
 
     private OutputStream getOutputStream() throws FileNotFoundException {
-        if(os == null) {
+        if (os == null) {
             os = new FileOutputStream(getFile().getAbsolutePath(), true);
         }
         return os;
     }
 
     public void close() throws IOException {
-        if(os != null) {
+        if (os != null) {
             os.close();
         }
     }
@@ -470,7 +467,7 @@ public class SymbolTable {
         */
 
         protected String[] ensureCapacity(String[] array, int max) {
-            if(array.length <= max) {
+            if (array.length <= max) {
                 String[] newArray = new String[(max * 3) / 2];
                 System.arraycopy(array, 0, newArray, 0, array.length);
                 return newArray;
@@ -483,18 +480,19 @@ public class SymbolTable {
         }
 
         public synchronized String getSymbol(int id) {
-            if(id <= 0 || id > offset) {
-                return "";
+            if (id <= 0 || id > offset) {
+                return ""; //TODO : raise an exception ? -pb
             }
             return symbolsById[id];
         }
 
         public synchronized int getId(String name) {
             int id = symbolsByName.get(name);
-            if(id != -1) {
+            if (id != -1) {
                 return id;
             }
-            id = add(++offset, name); //TODO we use "++offset" here instead of "offset++", 
+            id = add(++offset, name); 
+            //we use "++offset" here instead of "offset++", 
             //because the system expects id's to start at 1, not 0
             write(id, name);
             changed = true;
@@ -507,9 +505,10 @@ public class SymbolTable {
             for(Iterator<String> i = symbolsByName.iterator(); i.hasNext();) {
                 symbol = i.next();
                 id = symbolsByName.get(symbol);
-                if(id < 0) {
+                if (id < 0) {
                     LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() +
                         ", symbol='" + symbol + "', id=" + id);
+                    //TODO : raise exception ? -pb
                 }
                 writeEntry(id, symbol, os);
             }
@@ -530,8 +529,10 @@ public class SymbolTable {
                 getOutputStream().flush();
             } catch(FileNotFoundException e) {
                 LOG.error("Symbol table: file not found!", e);
+                //TODO :throw exception -pb
             } catch(IOException e) {
                 LOG.error("Symbol table: caught exception while writing!", e);
+                //TODO : throw exception -pb
             }
         }
 

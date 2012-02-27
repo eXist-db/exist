@@ -180,14 +180,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             int ndocs[] = new int[nsize];
             System.arraycopy(documentIds, 0, ndocs, 0, documentIds.length);
             Arrays.fill(documentIds, -1);
-
             Part nparts[] = new Part[nsize];
             System.arraycopy(parts, 0, nparts, 0, parts.length);
-
             documentIds = ndocs;
             parts = nparts;
         }
-
         if (idx == partCount) {
             // insert at the end
             documentIds[idx] = docId;
@@ -240,13 +237,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         } else {
             hasOne = true;
         }
-
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
         setHasChanged();
         checkItemType(proxy.getType());
-
         lastAdded = proxy;
     }
 
@@ -270,19 +265,17 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         } else {
             hasOne = true;
         }
-
         getPart(proxy.getDocument(), true, 
                 sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(proxy);
         ++size;
         isSorted = false;
         setHasChanged();
         checkItemType(proxy.getType());
-
         lastAdded = proxy;
     }
 
     private void checkItemType(int type) {
-        if(itemType == Type.NODE || itemType == type) {
+        if (itemType == Type.NODE || itemType == type) {
             return;
         }
         if(itemType == Type.ANY_TYPE) {
@@ -480,11 +473,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
-    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, 
-            int contextId, boolean copyMatches) {
+    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly,
+            boolean includeSelf, int mode, int contextId, boolean copyMatches) {
         sort();
         NodeSet result = new ExtArrayNodeSet();
-
         Part part;
         for (NodeProxy node : al) {
             part = getPart(node.getDocument(), false, 0);
@@ -504,7 +496,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @param contextId an <code>int</code> value
      * @return a <code>NodeProxy</code> value
      */
-    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId) {
+    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId,
+            boolean includeSelf, int contextId) {
         sort();
         final Part part = getPart(doc, false, 0);
         return part == null ? null : part.hasDescendantsInSet(ancestorId, contextId, includeSelf);
@@ -539,7 +532,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             int idx = ArrayUtils.binarySearch(documentIds, other.documentIds[i], partCount);
             if (idx > -1) {
                 Part part = parts[idx];
-                int otherIdx = ArrayUtils.binarySearch(result.documentIds, documentIds[idx], result.partCount);
+                int otherIdx = ArrayUtils.binarySearch(result.documentIds,
+                    documentIds[idx], result.partCount);
                 otherIdx = - (otherIdx + 1);
                 result.insertPart(documentIds[idx], part, otherIdx);
             }
@@ -588,7 +582,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     public void sort(boolean mergeContexts) {
         if (isSorted || keepUnOrdered)
             return;
-
         if (hasOne) {
             isSorted = true; // shortcut: don't sort if there's just one item
             size = parts[0].removeDuplicates(mergeContexts);
@@ -603,7 +596,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             size += part.removeDuplicates(mergeContexts);
         }
         isSorted = true;
-        //System.out.println("sort took " + (System.currentTimeMillis() - start) + "ms.");
     }
 
     /**
@@ -627,7 +619,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet, int, boolean, boolean)
+     * @see org.exist.dom.AbstractNodeSet#selectAncestorDescendant(org.exist.dom.NodeSet,
+     * int, boolean, boolean)
      */
     @Override
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
@@ -681,10 +674,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      * @return a <code>NodeProxy</code> value
      */
     @Override
-    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
+    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId,
+            boolean directParent, boolean includeSelf) {
         sort();
         lastPart = getPart(doc, false, initalSize);
-        return lastPart == null ? null : lastPart.parentWithChild(doc, nodeId, directParent, includeSelf);
+        return lastPart == null ? null : lastPart.parentWithChild(doc, nodeId,
+            directParent, includeSelf);
     }
 
     /**
@@ -723,15 +718,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     @Override
     public DocumentSet getDocumentSet() {
         return this;
-        //if(cachedDocuments != null)
-        //  return cachedDocuments;
-        //cachedDocuments = new DefaultDocumentSet(partCount);
-        //sort();
-        //for (int i = 0; i < partCount; i++) {
-        //  cachedDocuments.add(parts[i].getDocument(), false);
-        //}
-        //isSorted = true;
-        //return cachedDocuments;
     }
 
     /**
@@ -868,7 +854,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
     }
 
     private class DocumentIterator implements Iterator<DocumentImpl> {
-
         int currentDoc = 0;
 
         public boolean hasNext() {
@@ -999,8 +984,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @param mode an <code>int</code> value
          * @param contextId an <code>int</code> value
          */
-        public void selectParentChild(NodeSet result, NodeProxy na, NodeSetIterator ia, 
-                int mode, int contextId) {
+        public void selectParentChild(NodeSet result, NodeProxy na, 
+                NodeSetIterator ia, int mode, int contextId) {
             if (length == 0)
                 return;
             int pos = 0;
@@ -1012,7 +997,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 if (na.getDocument().getDocId() != nb.getDocument().getDocId()) {
                     break;
                 }
-
                 // same document
                 NodeId pa = na.getNodeId();
                 NodeId pb = nb.getNodeId();
@@ -1100,7 +1084,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                NodeId nodeId = p.getNodeId();
                if (!NodeId.ROOT_NODE.equals(nodeId)) {
                if (length > 0 &&
-               array[length - 1].getNodeId().equals(nodeId)) {		 
+               array[length - 1].getNodeId().equals(nodeId)) {
             */
             if (length > 0 && array[length - 1].getNodeId().equals(p.getNodeId())) {
                 array[length - 1].addMatches(p);
@@ -1108,7 +1092,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 //} ljo's modification
             }
             if (length == array.length) {
-                //int newLength = (length * 3)/2 + 1;
                 final int newLength = length << 1;
                 NodeProxy temp[] = new NodeProxy[newLength];
                 System.arraycopy(array, 0, temp, 0, length);
@@ -1246,8 +1229,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @return a <code>NodeProxy</code> value
          */
         NodeProxy hasDescendantsInSet(NodeId ancestorId, int contextId, boolean includeSelf) {
-            // do a binary search to pick some node in the range of valid child
-            // ids
+            // do a binary search to pick some node in the range
+            // of valid child ids
             int low = 0;
             int high = length - 1;
             int mid = 0;
@@ -1257,7 +1240,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                 mid = (low + high) / 2;
                 id = array[mid].getNodeId();
                 if (id.isDescendantOrSelfOf(ancestorId)) {
-                    break;	// found a child node, break out.
+                    break; // found a child node, break out.
                 }
                 cmp = id.compareTo(ancestorId);
                 if (cmp > 0) {
@@ -1283,7 +1266,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     if (cmp == NodeId.IS_SELF) {
                         add = includeSelf;
                     }
-
                     if (add) {
                         if (Expression.NO_CONTEXT_ID != contextId) {
                             ancestor.deepCopyContext(array[i], contextId);
@@ -1328,28 +1310,26 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                     }
                     if (add) {
                         switch (mode) {
-                            case NodeSet.DESCENDANT :
-                                if (Expression.NO_CONTEXT_ID != contextId) {
-                                    //array[i].addContextNode(contextId, parent);
-                                    array[i].deepCopyContext(parent, contextId);
-                                } else {
-                                    array[i].copyContext(parent);
-                                }
-                                if (copyMatches)
-                                    array[i].addMatches(parent);
-                                result.add(array[i]);
-                                break;
-                            case NodeSet.ANCESTOR :
-                                if (Expression.NO_CONTEXT_ID != contextId) {
-                                    //parent.addContextNode(contextId, array[i]);
-                                    parent.deepCopyContext(array[i], contextId);
-                                } else {
-                                    parent.copyContext(array[i]);
-                                }
-                                if (copyMatches)
-                                    parent.addMatches(array[i]);
-                                result.add(parent, 1);
-                                break;
+                        case NodeSet.DESCENDANT :
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                array[i].deepCopyContext(parent, contextId);
+                            } else {
+                                array[i].copyContext(parent);
+                            }
+                            if (copyMatches)
+                                array[i].addMatches(parent);
+                            result.add(array[i]);
+                            break;
+                        case NodeSet.ANCESTOR :
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parent.deepCopyContext(array[i], contextId);
+                            } else {
+                                parent.copyContext(array[i]);
+                            }
+                            if (copyMatches)
+                                parent.addMatches(array[i]);
+                            result.add(parent, 1);
+                            break;
                         }
                     }
                 }
@@ -1392,26 +1372,25 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
                         }
                         if (add) {
                             switch (mode) {
-                                case NodeSet.DESCENDANT :
-                                    if (Expression.NO_CONTEXT_ID != contextId) {
-                                        //array[i].addContextNode(contextId, parent);
-                                        array[i].deepCopyContext(parent, contextId);
-                                    } else {
-                                        array[i].copyContext(parent);
-                                    }
-                                    array[i].addMatches(parent);
-                                    result.add(array[i]);
-                                    break;
-                                case NodeSet.ANCESTOR :
-                                    if (Expression.NO_CONTEXT_ID != contextId) {
-                                        //parent.addContextNode(contextId, array[i]);
-                                        parent.deepCopyContext(array[i], contextId);
-                                    } else {
-                                        parent.copyContext(array[i]);
-                                    }
-                                    parent.addMatches(array[i]);
-                                    result.add(parent, 1);
-                                    break;
+                            case NodeSet.DESCENDANT :
+                                if (Expression.NO_CONTEXT_ID != contextId) {
+                                    array[i].deepCopyContext(parent, contextId);
+                                } else {
+                                    array[i].copyContext(parent);
+                                }
+                                array[i].addMatches(parent);
+                                result.add(array[i]);
+                                break;
+                            case NodeSet.ANCESTOR :
+                                if (Expression.NO_CONTEXT_ID != contextId) {
+                                    //parent.addContextNode(contextId, array[i]);
+                                    parent.deepCopyContext(array[i], contextId);
+                                } else {
+                                    parent.copyContext(array[i]);
+                                }
+                                parent.addMatches(array[i]);
+                                result.add(parent, 1);
+                                break;
                             }
                         }
                     } else {
@@ -1658,7 +1637,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             NodeProxy n = next;
             next = null;
             if (++pos < currentPart.length) {
-            	next = currentPart.get(pos);
+                next = currentPart.get(pos);
             }
             return n;
         }

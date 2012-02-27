@@ -317,10 +317,13 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                 }
             } catch (IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+                //TODO : throw exception -pb
             } catch (XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+              //TODO : throw exception -pb
             } catch (EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+              //TODO : throw exception -pb
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
@@ -357,10 +360,13 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                 }
             } catch (IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+                //TODO : throw exception -pb
             } catch (XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+              //TODO : throw exception -pb
             } catch (EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+              //TODO : throw exception -pb
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
@@ -383,10 +389,13 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             return reader.getPreviousNode();
         } catch (IOException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+          //TODO : throw exception -pb
         } catch (XMLStreamException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+          //TODO : throw exception -pb
         } catch (EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+          //TODO : throw exception -pb
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }
@@ -455,6 +464,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             return accept(iterator, visitor);
         } catch (EXistException e) {
             LOG.error("Exception while reading node: " + e.getMessage(), e);
+            //TODO : throw exception -pb
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }

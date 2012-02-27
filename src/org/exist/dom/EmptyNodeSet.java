@@ -41,7 +41,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     public NodeSetIterator iterator() {
         return EMPTY_ITERATOR;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#iterate()
      */
@@ -49,7 +49,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     public SequenceIterator iterate() throws XPathException {
         return SequenceIterator.EMPTY_ITERATOR;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
@@ -137,7 +137,8 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
+    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId,
+            boolean directParent, boolean includeSelf) {
         return null;
     }
 

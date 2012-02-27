@@ -30,6 +30,6 @@ package org.exist.dom;
  */
 public interface NodeVisitor {
 
-	@Deprecated
+    @Deprecated
     public boolean visit(StoredNode node);
 }

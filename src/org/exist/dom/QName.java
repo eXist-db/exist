@@ -34,13 +34,6 @@ import org.exist.xquery.XPathException;
  */
 public class QName implements Comparable<QName> {
 
-    /*
-    public final static QName DOCUMENT_QNAME = new QName("#document", "", null);
-    public final static QName TEXT_QNAME = new QName("#text", "", null);
-    public final static QName COMMENT_QNAME = new QName("#comment", "", null);
-    public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null);
-    */ 
-
     public final static QName EMPTY_QNAME = new QName("", "", null);
     public final static QName DOCUMENT_QNAME = EMPTY_QNAME;
     public final static QName TEXT_QNAME = EMPTY_QNAME;
@@ -50,7 +43,7 @@ public class QName implements Comparable<QName> {
     private String localName_ = null;
     private String namespaceURI_ = null;
     private String prefix_ = null;
-    //TODO : use ElementValue.UNKNOWN and type explicitely ?
+    //TODO : use ElementValue.UNKNOWN and type explicitly ?
     private byte nameType_ = ElementValue.ELEMENT;
 
     /**
@@ -179,8 +172,8 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public boolean equals(Object obj) {
-    	if (obj == null) return false;
-    	
+        if (obj == null)
+            return false;
         QName other = (QName) obj;
         int cmp = compareTo(other);
         if(cmp != 0)
@@ -212,14 +205,14 @@ public class QName implements Comparable<QName> {
     @Override
     public int hashCode() {
         int h = nameType_ + 31 + localName_.hashCode();
-        h += 31*h + (namespaceURI_ == null ? 1 : namespaceURI_.hashCode());
-        h += 31*h + (prefix_ == null ? 1 : prefix_.hashCode());
+        h += 31 * h + (namespaceURI_ == null ? 1 : namespaceURI_.hashCode());
+        h += 31 * h + (prefix_ == null ? 1 : prefix_.hashCode());
         return h;
     }
 
     public javax.xml.namespace.QName toJavaQName() {
-        return new javax.xml.namespace.QName(namespaceURI_ == null ? "" : namespaceURI_, localName_,
-                prefix_ == null ? "" : prefix_);
+        return new javax.xml.namespace.QName(namespaceURI_ == null ?
+            "" : namespaceURI_, localName_, prefix_ == null ? "" : prefix_);
     }
 
     /**
@@ -281,10 +274,12 @@ public class QName implements Comparable<QName> {
             namespaceURI = context.getURIForPrefix(prefix);
             if (namespaceURI == null)
                 throw new XPathException("XPST0081: No namespace defined for prefix " + prefix);
-        } else
+        } else {
             namespaceURI = defaultNS;
-        if (namespaceURI == null)
+        }
+        if (namespaceURI == null) {
             namespaceURI = "";
+        }
         return new QName(extractLocalName(qname), namespaceURI, prefix);
     }
 

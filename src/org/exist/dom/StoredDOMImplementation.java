@@ -24,7 +24,7 @@ package org.exist.dom;
 import org.w3c.dom.*;
 
 public class StoredDOMImplementation implements DOMImplementation {
-    
+
     public Document createDocument(String arg0, String arg1, DocumentType arg2)
             throws DOMException {
         return null;
