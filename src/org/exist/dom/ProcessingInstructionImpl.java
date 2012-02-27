@@ -148,22 +148,22 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public byte[] serialize() {
         byte[] td;
         try {
-            td = target.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+            td = target.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException uee) {
             LOG.warn(uee);
             td = target.getBytes();
         }
         byte[] dd;
         try {
-            dd = data.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+            dd = data.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException uee) {
             LOG.warn(uee);
             dd = data.getBytes();
         }
         int nodeIdLen = nodeId.size();
         byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
-        d[pos] = (byte) ( Signatures.Proc << 0x5 );
+        d[pos] = (byte) (Signatures.Proc << 0x5);
         pos += LENGTH_SIGNATURE_LENGTH; 
         ByteConversion.shortToByte((short) nodeId.units(), d, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -206,8 +206,6 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         ProcessingInstructionImpl pi;
         if(pooled)
             pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
-            //pi = (ProcessingInstructionImpl)
-                //NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
         else
             pi = new ProcessingInstructionImpl();
         pi.setTarget(target);

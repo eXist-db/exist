@@ -331,7 +331,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         for (Iterator<NodeProxy> i = context.iterator(); i.hasNext();) {
             NodeProxy proxy = i.next();
             if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
-                if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
+                if (proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
                     // skip binary resources
                     continue;
                 }
@@ -400,7 +400,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 continue;
             }
-            if((axis == Constants.SELF_AXIS ||
+            if ((axis == Constants.SELF_AXIS ||
                 axis == Constants.ANCESTOR_SELF_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS) &&
                 test.matches(proxy)) {
@@ -473,13 +473,15 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if (node.hasChildNodes()) {
             for (int i = 0; i < node.getChildCount(); i++) {
                 StoredNode child = iter.next();
-                if(child == null) {
+                if (child == null) {
                     LOG.debug("CHILD == NULL; doc = " + 
                           ((DocumentImpl)node.getOwnerDocument()).getURI());
+                    //TODO : throw exception ? -pb
                     return;
                 }
-                if(node.getOwnerDocument() == null) {
+                if (node.getOwnerDocument() == null) {
                     LOG.debug("DOC == NULL");
+                    //TODO : throw exception ? -pb
                     return;
                 }
                 child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());
@@ -544,7 +546,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             test.matches(reader)) {
                             NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                             NodeProxy p = new NodeProxy(contextNode.getDocument(), nodeId,
-                                    reader.getNodeType(), reader.getCurrentPosition());
+                                reader.getNodeType(), reader.getCurrentPosition());
                             p.deepCopyContext(contextNode);
                             if (useSelfAsContext && inPredicate) {
                                 p.addContextNode(contextId, p);
@@ -561,8 +563,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            //TODO : throw exception ,
         } catch (XMLStreamException e) {
             e.printStackTrace();
+            //TODO : throw exception ? -pb
         }
     }
 

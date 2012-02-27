@@ -43,15 +43,15 @@ import org.w3c.dom.UserDataHandler;
 public class TextImpl extends CharacterDataImpl implements Text {
 
     public TextImpl() {
-        super( Node.TEXT_NODE );
+        super(Node.TEXT_NODE);
     }
 
     public TextImpl( String data ) {
-        super( Node.TEXT_NODE, data );
+        super(Node.TEXT_NODE, data);
     }
 
     public TextImpl( NodeId nodeId, String data ) {
-        super( Node.TEXT_NODE, nodeId, data );
+        super(Node.TEXT_NODE, nodeId, data);
     }
 
     public String getLocalName() {
@@ -67,7 +67,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
         byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
             NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
         int pos = 0;
-        data[pos] = (byte) ( Signatures.Char << 0x5 );
+        data[pos] = (byte) (Signatures.Char << 0x5);
         pos += LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -92,20 +92,21 @@ public class TextImpl extends CharacterDataImpl implements Text {
         text.setNodeId(dln);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        text.cdata = UTF8.decode(data, pos, len - (LENGTH_SIGNATURE_LENGTH + nodeIdLen + NodeId.LENGTH_NODE_ID_UNITS));
+        text.cdata = UTF8.decode(data, pos, len - (LENGTH_SIGNATURE_LENGTH +
+            nodeIdLen + NodeId.LENGTH_NODE_ID_UNITS));
         return text;
     }
 
-    public void appendData( String arg ) throws DOMException {
-        super.appendData( arg );
+    public void appendData(String arg) throws DOMException {
+        super.appendData(arg);
     }
 
-    public void appendData( char[] data, int start, int howmany ) throws DOMException {
-        super.appendData( data, start, howmany );
+    public void appendData(char[] data, int start, int howMany) throws DOMException {
+        super.appendData( data, start, howMany );
     }
 
-    public void deleteData( int offset, int count ) throws DOMException {
-        super.deleteData( offset, count );
+    public void deleteData(int offset, int count) throws DOMException {
+        super.deleteData(offset, count);
     }
 
     public int getLength() {
@@ -116,38 +117,38 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return super.getNodeValue();
     }
 
-    public void insertData( int offset, String arg ) throws DOMException {
-        super.insertData( offset, arg );
+    public void insertData(int offset, String arg) throws DOMException {
+        super.insertData(offset, arg);
     }
 
-    public void replaceData( int offset, int count, String arg ) throws DOMException {
-        super.replaceData( offset, count, arg );
+    public void replaceData(int offset, int count, String arg) throws DOMException {
+        super.replaceData(offset, count, arg);
     }
 
-    public void setNodeValue( String value ) throws DOMException {
-        super.setNodeValue( value );
+    public void setNodeValue(String value) throws DOMException {
+        super.setNodeValue(value);
     }
 
-    public Text splitText( int offset ) throws DOMException {
+    public Text splitText(int offset) throws DOMException {
         return null;
     }
 
-    public String substringData( int offset, int count ) throws DOMException {
-        return super.substringData( offset, count );
+    public String substringData(int offset, int count) throws DOMException {
+        return super.substringData(offset, count);
     }
 
-    public String toString( boolean top ) {
+    public String toString(boolean top) {
         if (top) {
             StringBuilder result = new StringBuilder();
-            result.append( "<exist:text " );
-            result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
-            result.append( "exist:id=\"" );
-            result.append( getNodeId() );
-            result.append( "\" exist:source=\"" );
-            result.append( ((DocumentImpl)getOwnerDocument()).getFileURI() );
-            result.append( "\">" );
-            result.append( getData() );
-            result.append( "</exist:text>" );
+            result.append("<exist:text ");
+            result.append("xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ");
+            result.append("exist:id=\"");
+            result.append(getNodeId());
+            result.append("\" exist:source=\"");
+            result.append(((DocumentImpl)getOwnerDocument()).getFileURI());
+            result.append("\">");
+            result.append(getData());
+            result.append("</exist:text>");
             return result.toString();
         } else {
             return toString();
@@ -159,7 +160,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
     }
 
     public int getChildCount() {
-    	return 0;
+        return 0;
     }
 
     public boolean hasChildNodes() {

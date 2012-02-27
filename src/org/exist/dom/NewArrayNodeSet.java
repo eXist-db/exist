@@ -152,7 +152,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @return a <code>boolean</code> value
      */
     public boolean isEmpty() {
-    	return (size == 0);
+        return (size == 0);
     }
 
     /**
@@ -161,14 +161,14 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
      * @return a <code>boolean</code> value
      */
     public boolean hasOne() {
-    	return hasOne;
+        return hasOne;
     }
 
     public NodeSet copy() {
         return new NewArrayNodeSet(this);
     }
 
-	private void ensureCapacity() {
+    private void ensureCapacity() {
         if (size == nodes.length) {
             int nsize = size << 1;
             NodeProxy temp[] = new NodeProxy[nsize];
@@ -191,7 +191,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
                     hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
                 }
             }
-    	} else {
+        } else {
             hasOne = true;
         }
         ensureCapacity();
@@ -323,10 +323,10 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
     }
 
     public ByDocumentIterator iterateByDocument() {
-    	if (!isSorted()) {
+        if (!isSorted()) {
             sort();
         }
-    	return new NewDocIterator();
+        return new NewDocIterator();
     }
 
     private NodeProxy get(int docIdx, NodeId nodeId) {
@@ -639,7 +639,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             --mid;
         }
         NodeProxy ancestor = new NodeProxy(nodes[documentOffsets[docIdx]].getDocument(),
-                ancestorId, Node.ELEMENT_NODE);
+            ancestorId, Node.ELEMENT_NODE);
         // we need to check if self should be included
         boolean foundOne = false;
         for (int i = mid; i < end; i++) {
@@ -1226,7 +1226,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             return this;
         }
     }
-    
+
     public boolean equalDocs(DocumentSet other) {
         if (this == other)
             // we are comparing the same objects
@@ -1311,7 +1311,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
         DocumentImpl doc;
         for (int i = 0; i < documentCount; i++) {
             doc = nodes[documentOffsets[i]].getDocument();
-            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
+            if (doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
                 result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
             }
         }
@@ -1573,7 +1573,7 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             }
         }
 
-    	/**
+        /**
          * The method <code>nextDocument</code>
          *
          * @param document a <code>DocumentImpl</code> value
@@ -1587,16 +1587,16 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             }
         }
 
-    	/**
+        /**
          * The method <code>hasNextNode</code>
          *
          * @return a <code>boolean</code> value
          */
         public boolean hasNextNode() {
             return next != null;
-    	}
+        }
 
-    	/**
+        /**
          * The method <code>nextNode</code>
          *
          * @return a <code>NodeProxy</code> value
@@ -1611,9 +1611,9 @@ public class NewArrayNodeSet extends AbstractNodeSet implements ExtNodeSet, Docu
             	next = nodes[documentOffsets[docIdx] + pos];
             }
             return n;
-    	}
-        
-    	/**
+        }
+
+        /**
          * The method <code>peekNode</code>
          *
          * @return a <code>NodeProxy</code> value

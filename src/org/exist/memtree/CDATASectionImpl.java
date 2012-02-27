@@ -37,121 +37,97 @@ import org.exist.xquery.value.Type;
  *
  * @author  wolf
  */
-public class CDATASectionImpl extends NodeImpl implements CDATASection
-{
+public class CDATASectionImpl extends NodeImpl implements CDATASection {
+
     /**
      * Creates a new CDATASectionImpl object.
      *
      * @param  doc
      * @param  nodeNumber
      */
-    public CDATASectionImpl( DocumentImpl doc, int nodeNumber )
-    {
-        super( doc, nodeNumber );
+    public CDATASectionImpl(DocumentImpl doc, int nodeNumber) {
+        super(doc, nodeNumber);
     }
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Text#splitText(int)
      */
-    public Text splitText( int offset ) throws DOMException
-    {
-        return( null );
+    public Text splitText(int offset) throws DOMException {
+        return null;
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#deleteData(int, int)
      */
-    public void deleteData( int offset, int count ) throws DOMException
-    {
+    public void deleteData(int offset, int count) throws DOMException {
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#getData()
      */
-    public String getData() throws DOMException
-    {
-        return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
+    public String getData() throws DOMException {
+        return new String(document.characters, document.alpha[nodeNumber],
+            document.alphaLen[nodeNumber]);
     }
 
-
-    public String getNodeValue()
-    {
-        return( getData() );
+    public String getNodeValue() {
+        return getData();
     }
 
-
-    public int getLength()
-    {
-        return( getData().length() );
+    public int getLength() {
+        return getData().length();
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#substringData(int, int)
      */
-    public String substringData( int offset, int count ) throws DOMException
-    {
-        return( null );
+    public String substringData(int offset, int count) throws DOMException {
+        return null;
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#replaceData(int, int, java.lang.String)
      */
-    public void replaceData( int offset, int count, String arg ) throws DOMException
-    {
+    public void replaceData(int offset, int count, String arg) throws DOMException {
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#insertData(int, java.lang.String)
      */
-    public void insertData( int offset, String arg ) throws DOMException
-    {
+    public void insertData(int offset, String arg) throws DOMException {
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#appendData(java.lang.String)
      */
-    public void appendData( String arg ) throws DOMException
-    {
+    public void appendData(String arg) throws DOMException {
     }
-
 
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#setData(java.lang.String)
      */
-    public void setData( String data ) throws DOMException
-    {
+    public void setData(String data) throws DOMException {
     }
-
 
     /**
      * ? @see org.w3c.dom.Text#isElementContentWhitespace()
      *
      * @return  DOCUMENT ME!
      */
-    public boolean isElementContentWhitespace()
-    {
+    public boolean isElementContentWhitespace() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( false );
+        return false;
     }
-
 
     /**
      * ? @see org.w3c.dom.Text#getWholeText()
      *
      * @return  DOCUMENT ME!
      */
-    public String getWholeText()
-    {
+    public String getWholeText() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
-
 
     /**
      * ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
@@ -162,57 +138,46 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection
      *
      * @throws  DOMException  DOCUMENT ME!
      */
-    public Text replaceWholeText( String content ) throws DOMException
-    {
+    public Text replaceWholeText(String content) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+        return null;
     }
 
-
-    public int getItemType()
-    {
-        return( Type.CDATA_SECTION );
+    public int getItemType() {
+        return Type.CDATA_SECTION;
     }
 
-
-    public String toString()
-    {
+    public String toString() {
         StringBuilder result = new StringBuilder();
-
-        if( isPersistentSet() ) {
-            result.append( "persistent " );
+        if (isPersistentSet()) {
+            result.append("persistent ");
         }
-        result.append( "in-memory#" );
-        result.append( "CDATA {" );
-        result.append( getData() );
-        result.append( "} " );
-        return( result.toString() );
+        result.append("in-memory#");
+        result.append("CDATA {");
+        result.append(getData());
+        result.append("}");
+        return result.toString();
     }
 
-
-    public Node getFirstChild()
-    {
-        return( null );
+    public Node getFirstChild() {
+        return null;
     }
 
     @Override
     public void selectAttributes(NodeTest test, Sequence result)
             throws XPathException {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void selectChildren(NodeTest test, Sequence result)
             throws XPathException {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void selectDescendantAttributes(NodeTest test, Sequence result)
             throws XPathException {
         // TODO Auto-generated method stub
-        
     }
 }

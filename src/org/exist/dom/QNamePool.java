@@ -26,7 +26,6 @@ import java.util.Iterator;
 
 import org.exist.util.hashtable.AbstractHashtable;
 
-
 /**
  * A pool for QNames. This is a temporary pool for QName objects to avoid
  * allocating the same QName multiple times. If the pool is full, it will just be
@@ -34,11 +33,11 @@ import org.exist.util.hashtable.AbstractHashtable;
  * 
  * @author wolf
  */
-public class QNamePool extends AbstractHashtable{
+public class QNamePool extends AbstractHashtable {
 
     private QName[] values;
     private QName temp = new QName("", "");
-    
+
     public QNamePool() {
         super(512);
         values = new QName[tabSize];
@@ -108,7 +107,7 @@ public class QNamePool extends AbstractHashtable{
             return new QName(temp);
         }
     }
-    
+
     protected QName insert(QName value) throws HashtableOverflowException {
         if (value == null)
             throw new IllegalArgumentException("Illegal value: null");

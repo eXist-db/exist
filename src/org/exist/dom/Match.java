@@ -54,7 +54,7 @@ public abstract class Match implements Comparable<Match> {
     public final static class Offset implements Comparable<Offset> {
         private int offset;
         private final int length;
-        
+
         public Offset(int offset, int length) {
             this.offset = offset;
             this.length = length;
@@ -174,10 +174,9 @@ public abstract class Match implements Comparable<Match> {
     /**
      * Constructs a match starting with this match and continued by the other match if possible
      *
-     * @param other
-     *            a match continuing this match
-     * @return a match starting with this match and continued by the other match if such a match exists or null if no
-     *         continuous match found
+     * @param other a match continuing this match
+     * @return a match starting with this match and continued by the other match
+     * if such a match exists or null if no continuous match found
      */
     public Match continuedBy(final Match other) {
         return followedBy(other, 0, 0);
@@ -217,8 +216,8 @@ public abstract class Match implements Comparable<Match> {
     }
 
     /**
-     * Expand the match backwards by at least minExpand up to maxExpand characters. The match is expanded as much as
-     * possible.
+     * Expand the match backwards by at least minExpand up to maxExpand characters.
+     * The match is expanded as much as possible.
      *
      * @param minExpand The minimum number of characters to expand this match by
      * @param maxExpand The maximum number of characters to expand this match by
@@ -244,8 +243,8 @@ public abstract class Match implements Comparable<Match> {
     }
 
     /**
-     * Expand the match forward by at least minExpand up to maxExpand characters. The match is expanded as much as
-     * possible.
+     * Expand the match forward by at least minExpand up to maxExpand characters.
+     * The match is expanded as much as possible.
      *
      * @param minExpand The minimum number of characters to expand this match by
      * @param maxExpand The maximum number of characters to expand this match by
@@ -329,7 +328,6 @@ public abstract class Match implements Comparable<Match> {
             return newCopy();
         List<Offset> newMatchOffsets = getOffsets();
         Collections.sort(newMatchOffsets, new Comparator<Offset>() {
-
             // Sort by descending length to get greedier matches first, then position for left to right matching
             @Override
             public int compare(Offset o1, Offset o2) {
@@ -416,8 +414,8 @@ public abstract class Match implements Comparable<Match> {
             return false;
         Match om = (Match) other;
         return om.matchTerm != null &&
-                om.matchTerm.equals(matchTerm) &&
-                om.nodeId.equals(nodeId);
+            om.matchTerm.equals(matchTerm) &&
+            om.nodeId.equals(nodeId);
     }
 
     public boolean matchEquals(Match other) {

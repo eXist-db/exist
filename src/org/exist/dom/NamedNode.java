@@ -37,7 +37,7 @@ public class NamedNode extends StoredNode implements QNameable {
     public NamedNode(short nodeType) {
         super(nodeType);
     }
-    
+
     /**
      * @param nodeType
      */
@@ -57,23 +57,23 @@ public class NamedNode extends StoredNode implements QNameable {
         super(nodeType, nodeId);
         this.nodeName = qname;
     }
-    
+
     public NamedNode(NamedNode other) {
         super(other);
         this.nodeName = other.nodeName;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#getQName()
      */
     public QName getQName() {
         return nodeName;
     }
-    
+
     public void setNodeName(QName name) {
         nodeName = name;
-    }    
-    
+    }
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#clear()
      */

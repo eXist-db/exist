@@ -95,13 +95,13 @@ public class SortedNodeSet extends AbstractNodeSet {
                 list.add(item);
             }
         } catch (antlr.RecognitionException re) {
-            LOG.debug(re);
+            LOG.debug(re); //TODO : throw exception ! -pb
         } catch (antlr.TokenStreamException tse) {
-            LOG.debug(tse);
+            LOG.debug(tse); //TODO : throw exception ! -pb
         } catch (EXistException e) {
-            LOG.debug("Exception during sort", e);
+            LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         } catch (XPathException e) {
-            LOG.debug("Exception during sort", e);
+            LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         } finally {
             pool.release(broker);
         }
@@ -156,7 +156,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         return list.size();
     }
 
-    //TODO : evaluate both semantics
+    //TODO : evaluate both semantics (length/item count)
     @Override
     public int getItemCount() {
         return list.size();
@@ -168,6 +168,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         return p == null ? null : p.getDocument().getNode(p);
     }
 
+    //TODO : evaluate both semantics (item/itemAt)
     @Override
     public Item itemAt(int pos) {
         NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
@@ -199,7 +200,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 
         Iterator<IteratorItem> pi;
 
-        public SortedNodeSetIterator(Iterator i) {
+        public SortedNodeSetIterator(Iterator<IteratorItem> i) {
             pi = i;
         }
 
@@ -256,7 +257,7 @@ public class SortedNodeSet extends AbstractNodeSet {
                     buf.append((j.next()).getData());
                 value = buf.toString();
             } catch (XPathException e) {
-                LOG.warn(e.getMessage(), e);
+                LOG.warn(e.getMessage(), e); //TODO : throw exception ! -pb
             }
         }
 

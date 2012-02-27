@@ -48,6 +48,7 @@ import java.util.Map;
  * @author  Wolfgang <wolfgang@exist-db.org>
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
+
     private MemTreeBuilder builder = null;
 
     private Map<String, String> namespaces = null;
@@ -109,19 +110,15 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      */
     @Override
     public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
-        
         if(prefix == null || prefix.length() == 0) {
             builder.setDefaultNamespace(namespaceURI);
         }
-        
-        if(!explicitNSDecl) {
+        if (!explicitNSDecl) {
             return;
         }
-
         if(namespaces == null) {
             namespaces = new HashMap<String, String>();
         }
-        
         namespaces.put(prefix, namespaceURI);
     }
 
@@ -139,14 +136,14 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
     @Override
-    public void startElement(String namespaceURI, String localName, String qName, Attributes attrs) throws SAXException {
+    public void startElement(String namespaceURI, String localName, String qName,
+            Attributes attrs) throws SAXException {
         builder.startElement(namespaceURI, localName, qName, attrs);
         declareNamespaces();
     }
 
     private void declareNamespaces() {
-        if(explicitNSDecl && namespaces != null) {
-
+        if (explicitNSDecl && namespaces != null) {
             for(Map.Entry<String, String> entry : namespaces.entrySet()) {
                 builder.namespaceNode(entry.getKey(), entry.getValue());
             }
@@ -156,14 +153,11 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startElement(QName qname, AttrList attribs) {
-    	qname = checkNS(qname);
-
-    	builder.startElement(qname, null);
-        
-    	declareNamespaces();
-
-        if(attribs != null) {
-            for(int i = 0; i < attribs.getLength(); i++) {
+        qname = checkNS(qname);
+        builder.startElement(qname, null);
+        declareNamespaces();
+        if (attribs != null) {
+            for (int i = 0; i < attribs.getLength(); i++) {
                 builder.addAttribute( attribs.getQName(i), attribs.getValue(i));
             }
         }
@@ -200,13 +194,13 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      */
     @Override
     public void characters(char[] ch, int start, int len) throws SAXException {
-        builder.characters( ch, start, len );
+        builder.characters(ch, start, len);
     }
 
     @Override
     public void attribute(QName qname, String value) throws SAXException {
         try {
-        	qname = checkNS(qname);
+            qname = checkNS(qname);
             builder.addAttribute(qname, value);
         } catch(DOMException e) {
             throw new SAXException(e.getMessage());
@@ -312,33 +306,28 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     
     public QName checkNS(QName qname) {
         if(checkNS) {
-            if(qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null) {
+            if(qname.getPrefix() == null || qname.getPrefix().equals("") ||
+                    qname.getNamespaceURI() == null) {
                 return qname;
             }
-
             XQueryContext context = builder.getContext();
-
             String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
-
             if(inScopeNamespace == null) {
                     context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
                 String prefix = context.getInScopePrefix(qname.getNamespaceURI());
-
                 int i = 0;
-                while(prefix == null) {
+                while (prefix == null) {
                     prefix = "XXX";
                     if(i > 0) {
                         prefix += String.valueOf(i);
                     }
-
                     if(context.getInScopeNamespace(prefix) != null) {
                         prefix = null;
                         i++;
                     }
                 }
                 context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
-
                 qname.setPrefix(prefix);
             }
         }

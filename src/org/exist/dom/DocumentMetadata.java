@@ -22,14 +22,13 @@
  */
 package org.exist.dom;
 
+import java.io.IOException;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
-
-import java.io.IOException;
-import org.exist.security.PermissionRequired;
 
 public class DocumentMetadata {
 
@@ -92,7 +91,7 @@ public class DocumentMetadata {
 
     public void setCreated(long created) {
         this.created = created;
-        if(lastModified == 0)
+        if (lastModified == 0)
             lastModified = created;
     }
 
@@ -166,16 +165,14 @@ public class DocumentMetadata {
         mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
         pageCount = istream.readInt();
         userLock = istream.readInt();
-
         if (istream.readByte() == HAS_DOCTYPE) {
             docType = new DocumentTypeImpl();
             ((DocumentTypeImpl) docType).read(istream);
         } else {
             docType = null;
         }
-
         // TODO added by dwes
-        if(istream.readByte() == HAS_LOCKTOKEN){
+        if (istream.readByte() == HAS_LOCKTOKEN) {
             lockToken = new LockToken();
             lockToken.read(istream);
         } else {

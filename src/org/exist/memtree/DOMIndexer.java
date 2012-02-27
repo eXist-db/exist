@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-
 /**
  * Helper class to make a in-memory document fragment persistent. The class directly accesses the in-memory document structure and writes it into a
  * temporary doc on the database. This is much faster than first serializing the document tree to SAX and passing it to {@link
@@ -57,11 +56,10 @@ import java.util.Stack;
  *
  * @author  wolf
  */
-public class DOMIndexer
-{
-    private static final Logger        LOG         = Logger.getLogger( DOMIndexer.class );
+public class DOMIndexer {
+    private static final Logger        LOG         = Logger.getLogger(DOMIndexer.class);
 
-    public final static QName          ROOT_QNAME  = new QName( "temp", Namespaces.EXIST_NS, "exist" );
+    public final static QName          ROOT_QNAME  = new QName("temp", Namespaces.EXIST_NS, "exist");
 
     private DBBroker                   broker;
     private Txn                        transaction;
@@ -75,15 +73,14 @@ public class DOMIndexer
     private CommentImpl                comment     = new CommentImpl();
     private ProcessingInstructionImpl  pi          = new ProcessingInstructionImpl();
 
-    public DOMIndexer( DBBroker broker, Txn transaction, DocumentImpl doc, org.exist.dom.DocumentImpl targetDoc )
-    {
+    public DOMIndexer(DBBroker broker, Txn transaction, DocumentImpl doc,
+            org.exist.dom.DocumentImpl targetDoc) {
         this.broker      = broker;
         this.transaction = transaction;
         this.doc         = doc;
         this.targetDoc   = targetDoc;
-        CollectionConfiguration config = targetDoc.getCollection().getConfiguration( broker );
-
-        if( config != null ) {
+        CollectionConfiguration config = targetDoc.getCollection().getConfiguration(broker);
+        if (config != null) {
             this.indexSpec = config.getIndexConfiguration();
         }
     }
@@ -93,47 +90,39 @@ public class DOMIndexer
      *
      * @throws  EXistException
      */
-    public void scan() throws EXistException
-    {
+    public void scan() throws EXistException {
         //Creates a dummy DOCTYPE
-        final DocumentTypeImpl dt = new DocumentTypeImpl( "temp", null, "" );
-        targetDoc.setDocumentType( dt );
+        final DocumentTypeImpl dt = new DocumentTypeImpl("temp", null, "");
+        targetDoc.setDocumentType(dt);
     }
-
 
     /**
      * Store the nodes.
      */
-    public void store()
-    {
-        // create a wrapper element as root node
-        ElementImpl elem = new ElementImpl( ROOT_QNAME );
-        elem.setNodeId( broker.getBrokerPool().getNodeFactory().createInstance() );
-        elem.setOwnerDocument( targetDoc );
-        elem.setChildCount( doc.getChildCount() );
-        elem.addNamespaceMapping( "exist", Namespaces.EXIST_NS );
+    public void store() {
+        //Create a wrapper element as root node
+        ElementImpl elem = new ElementImpl(ROOT_QNAME);
+        elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
+        elem.setOwnerDocument(targetDoc);
+        elem.setChildCount(doc.getChildCount());
+        elem.addNamespaceMapping("exist", Namespaces.EXIST_NS);
         NodePath path = new NodePath();
-        path.addComponent( ROOT_QNAME );
-
-        stack.push( elem );
-        broker.storeNode( transaction, elem, path, indexSpec );
-        targetDoc.appendChild( elem );
-        elem.setChildCount( 0 );
-
+        path.addComponent(ROOT_QNAME);
+        stack.push(elem);
+        broker.storeNode(transaction, elem, path, indexSpec);
+        targetDoc.appendChild(elem);
+        elem.setChildCount(0);
         // store the document nodes
-        int top = ( doc.size > 1 ) ? 1 : -1;
-
-        while( top > 0 ) {
-            store( top, path );
-            top = doc.getNextSiblingFor( top );
+        int top = (doc.size > 1) ? 1 : -1;
+        while (top > 0) {
+            store(top, path);
+            top = doc.getNextSiblingFor(top);
         }
-
-        // close the wrapper element
+        //Close the wrapper element
         stack.pop();
-        broker.endElement( elem, path, null );
+        broker.endElement(elem, path, null);
         path.removeLastComponent();
     }
-
 
     private void store( int top, NodePath currentPath )
     {
