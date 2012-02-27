@@ -58,7 +58,7 @@ public class FilterInputStreamCacheFactory {
      * memory: All cache is kept in RAM (very fast for everything)
      */
     public static FilterInputStreamCache getCacheInstance() throws IOException {
-       final String cacheType = System.getProperty("filterInputStreamCache");
+       final String cacheType = System.getProperty("filterInputStreamCache", "");
        
        if(cacheType.equals("file")) {
            return new FileFilterInputStreamCache();
