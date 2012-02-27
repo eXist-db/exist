@@ -48,21 +48,21 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class MemoryMappedTemporaryFileManager {
+public class TemporaryFileManager {
     
-    private final static Log LOG = LogFactory.getLog(MemoryMappedTemporaryFileManager.class);
+    private final static Log LOG = LogFactory.getLog(TemporaryFileManager.class);
     
     private final static String FOLDER_PREFIX = "_mmtfm_";
     private final Stack<File> available = new Stack<File>();
     private final File tmpFolder;
     
-    private final static MemoryMappedTemporaryFileManager instance = new MemoryMappedTemporaryFileManager();
+    private final static TemporaryFileManager instance = new TemporaryFileManager();
     
-    public static MemoryMappedTemporaryFileManager getInstance() {
+    public static TemporaryFileManager getInstance() {
         return instance;
     }
     
-    private MemoryMappedTemporaryFileManager() {
+    private TemporaryFileManager() {
         final String tmpDir = System.getProperty("java.io.tmpdir");
         final File t = new File(tmpDir);
         

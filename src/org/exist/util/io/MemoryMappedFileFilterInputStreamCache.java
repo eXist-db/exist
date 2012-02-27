@@ -43,7 +43,7 @@ import java.nio.channels.FileChannel;
  */
 public class MemoryMappedFileFilterInputStreamCache implements FilterInputStreamCache {
 
-    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
+    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //4MB
 
     private final RandomAccessFile raf;
     private final FileChannel channel;
@@ -60,7 +60,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     public MemoryMappedFileFilterInputStreamCache(final File f) throws FileNotFoundException, IOException {
         
         if(f == null) {
-            tempFile = MemoryMappedTemporaryFileManager.getInstance().getTemporaryFile();
+            tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
             externalFile = false;
         } else {
             tempFile = f;
@@ -170,17 +170,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         //System.gc();
         
         if(tempFile != null && (!externalFile)) {
-           MemoryMappedTemporaryFileManager.getInstance().returnTemporaryFile(tempFile);
+           TemporaryFileManager.getInstance().returnTemporaryFile(tempFile);
         }
     }
-    
-    /*
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-	if(tempFile != null) {
-            boolean deletedFile = tempFile.delete();
-            System.out.println("deleted=" + deletedFile);
-        }
-    }*/
 }
