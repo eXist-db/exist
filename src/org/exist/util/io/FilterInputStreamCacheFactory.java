@@ -71,9 +71,9 @@ public class FilterInputStreamCacheFactory {
            //TODO enable MemoryMappedFileFilterInputStreamCache as the default on non-windows platforms
            
            //if(WINDOWS_PLATFORM) {
-               return new FileFilterInputStreamCache();
+               //return new FileFilterInputStreamCache();
            //} else {
-           //    return new MemoryMappedFileFilterInputStreamCache();
+              return new MemoryMappedFileFilterInputStreamCache();
            //}
        }
     }   
