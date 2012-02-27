@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
-import org.exist.util.io.MemoryMappedFileFilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.XPathException;
 
 /**
@@ -19,17 +20,16 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final static Logger LOG = Logger.getLogger(BinaryValueFromInputStream.class);
 
     private final CachingFilterInputStream is;
-    private MemoryMappedFileFilterInputStreamCache cache;
+    private FilterInputStreamCache cache;
 
 
     protected BinaryValueFromInputStream(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
         super(manager, binaryValueType);
 
         try {
-            this.cache = new MemoryMappedFileFilterInputStreamCache();
-            this.is = new CachingFilterInputStream(cache, is);
             
-            //TODO make sure the cache is shutdown correctly when we are done!
+            this.cache = FilterInputStreamCacheFactory.getCacheInstance();
+            this.is = new CachingFilterInputStream(cache, is);
 
         } catch(IOException ioe) {
             throw new XPathException(ioe.getMessage(), ioe);

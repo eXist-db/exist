@@ -37,7 +37,7 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
-import org.exist.util.io.MemoryMappedFileFilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -118,7 +118,7 @@ public class GetData extends BasicFunction {
         FilterInputStreamCache cache = null;
         try {
             //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-            cache = new MemoryMappedFileFilterInputStreamCache();
+            cache = FilterInputStreamCacheFactory.getCacheInstance();
             is = new CachingFilterInputStream(cache, request.getInputStream());
             is.mark(Integer.MAX_VALUE);
         } catch(IOException ioe) {
