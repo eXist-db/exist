@@ -67,11 +67,14 @@ public class FilterInputStreamCacheFactory {
        } else if(cacheType.equals("memory")) {
             return new MemoryFilterInputStreamCache();
        } else {
-           if(WINDOWS_PLATFORM) {
+           
+           //TODO enable MemoryMappedFileFilterInputStreamCache as the default on non-windows platforms
+           
+           //if(WINDOWS_PLATFORM) {
                return new FileFilterInputStreamCache();
-           } else {
-               return new MemoryMappedFileFilterInputStreamCache();
-           }
+           //} else {
+           //    return new MemoryMappedFileFilterInputStreamCache();
+           //}
        }
     }   
 }

@@ -27,7 +27,8 @@ public class CachingFilterInputStreamTest {
     public static Collection data() throws FileNotFoundException, IOException {
         Object[][] data = new Object[][] {
             { MemoryFilterInputStreamCache.class },
-            { MemoryMappedFileFilterInputStreamCache.class }
+            { MemoryMappedFileFilterInputStreamCache.class },
+            { FileFilterInputStreamCache.class }
         };
         return Arrays.asList(data);
     }

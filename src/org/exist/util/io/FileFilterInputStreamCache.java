@@ -66,13 +66,25 @@ public class FileFilterInputStreamCache implements FilterInputStreamCache {
     
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        //force writing to be append only
+        if(offset != length) {
+            raf.seek(length);
+            offset = length;
+        }
+        
         raf.write(b, off, len);
-        length += (len - off);
-        offset += (len - off);
+        length += len;
+        offset += len;
     }
 
     @Override
     public void write(int i) throws IOException {
+        //force writing to be append only
+        if(offset != length) {
+            raf.seek(length);
+            offset = length;
+        }
+        
         raf.write(i);
         length++;
         offset++;
@@ -94,9 +106,9 @@ public class FileFilterInputStreamCache implements FilterInputStreamCache {
 
     @Override
     public void copyTo(int cacheOffset, byte[] b, int off, int len) throws IOException {
-        if(off != offset) {
-            raf.seek(off);
-            this.offset = off;
+        if(cacheOffset != offset) {
+            raf.seek(cacheOffset);
+            this.offset = cacheOffset;
         }
         raf.readFully(b, off, len);
     }
