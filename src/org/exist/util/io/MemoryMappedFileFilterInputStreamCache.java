@@ -43,7 +43,7 @@ import java.nio.channels.FileChannel;
  */
 public class MemoryMappedFileFilterInputStreamCache implements FilterInputStreamCache {
 
-    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //4MB
+    private final static long DEFAULT_MEMORY_MAP_SIZE = 4 * 1024 * 1024; //4MB
 
     private final RandomAccessFile raf;
     private final FileChannel channel;
