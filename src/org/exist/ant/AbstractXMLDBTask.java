@@ -266,10 +266,12 @@ public abstract class AbstractXMLDBTask extends Task
     {
     	 try {
     	 	if( permissions != null ) {
-				// if the permissions string doesn't match the Unix Perms Regex, we assume permissions are specified
-				// in eXist's own syntax (user=+write,...). Otherwise, we assume a unix style
-				// permission string
-				if( !permissions.matches( UNIX_PERMS_REGEX ) ) {
+				// if the permissions string matches the Unix Perms Regex, we use a unix style
+				// permission string approach, otherwise we assume permissions are specified
+				// in eXist's own syntax (user=+write,...). 
+				
+				if( permissions.matches( UNIX_PERMS_REGEX ) ) {
+					// Unix-style permissions string provided
 					Permission perm = UnixStylePermissionAider.fromString( permissions );
 	
 					if( res != null ) {
@@ -278,7 +280,7 @@ public abstract class AbstractXMLDBTask extends Task
 						service.chmod( perm.getMode() );
 					}
 				} else {
-	
+					// eXist-style syntax for permission string (eg. user=+write,...)
 					if( res != null ) {
 						 service.chmod( res, permissions );
 					} else {
