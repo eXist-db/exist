@@ -107,7 +107,7 @@ public class XQueryFunctionsTest {
 			"let $file := " +
 				"if (doc-available($file-path)) " +
 					"then () " +
-					"else xmldb:store($checkout-collection, $target-file, <test>{current-dateTime()}</test>) " +
+					"else xmldb:store($collection, $target-file, <test>{current-dateTime()}</test>) " +
 			
 			"let $add := subversion:add($file-path) " +
 			
