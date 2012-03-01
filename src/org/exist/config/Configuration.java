@@ -34,45 +34,45 @@ import org.exist.storage.DBBroker;
  *
  */
 public interface Configuration {
-	
-	public String NS = "http://exist-db.org/Configuration";
-	
-	public String ID = "id";
-	
-	public Configuration getConfiguration(String name);
-	
-	public List<Configuration> getConfigurations(String name);
 
-	public Set<String> getProperties();
-	
-	public boolean hasProperty(String name);
+    public String NS = "http://exist-db.org/Configuration";
 
-	public String getProperty(String property);
+    public String ID = "id";
 
-	public Map<String, String> getPropertyMap(String property);
+    public Configuration getConfiguration(String name);
 
-	public Integer getPropertyInteger(String property);
-	public Long getPropertyLong(String property);
-	public Boolean getPropertyBoolean(String property);
-	public Class<?> getPropertyClass(String propertySecurityClass);
+    public List<Configuration> getConfigurations(String name);
 
-	public void setProperty(String property, String value);
-	public void setProperty(String property, Integer value);
+    public Set<String> getProperties();
 
-	public Object putObject(String name, Object object);
-	public Object getObject(String name);
+    public boolean hasProperty(String name);
 
-	public String getName();
+    public String getProperty(String property);
 
-	public String getValue();
+    public Map<String, String> getPropertyMap(String property);
 
-	public ElementAtExist getElement();
+    public Integer getPropertyInteger(String property);
+    public Long getPropertyLong(String property);
+    public Boolean getPropertyBoolean(String property);
+    public Class<?> getPropertyClass(String propertySecurityClass);
 
-	public void checkForUpdates(ElementAtExist document);
+    public void setProperty(String property, String value);
+    public void setProperty(String property, Integer value);
 
-	public void save() throws PermissionDeniedException, ConfigurationException;
-        
-        public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
+    public Object putObject(String name, Object object);
+    public Object getObject(String name);
 
-	public boolean equals(Object obj, String uniqField);
+    public String getName();
+
+    public String getValue();
+
+    public ElementAtExist getElement();
+
+    public void checkForUpdates(ElementAtExist document);
+
+    public void save() throws PermissionDeniedException, ConfigurationException;
+
+    public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
+
+    public boolean equals(Object obj, String uniqField);
 }

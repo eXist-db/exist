@@ -36,44 +36,45 @@ import javax.xml.stream.XMLStreamReader;
  *
  */
 public class AnyNodeTest implements NodeTest {
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#getName()
-	 */
-	public QName getName() {
-		return null;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#isWildcardTest()
-	 */
-	public boolean isWildcardTest() {
-		return true;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.NodeTest#getName()
+     */
+    public QName getName() {
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#matches(org.w3c.dom.Node)
-	 */
-	public boolean matches(Node node) {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.NodeTest#isWildcardTest()
+     */
+    public boolean isWildcardTest() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.NodeTest#matches(org.w3c.dom.Node)
+     */
+    public boolean matches(Node node) {
         return (node.getNodeType() != Node.ATTRIBUTE_NODE);
     }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
-	 */
-	public boolean matches(NodeProxy proxy) {
-	    int type = proxy.getType();
-		if (type == Type.ITEM || type == Type.NODE) {		
-			if (proxy.getNodeType() != NodeProxy.UNKNOWN_NODE_TYPE)
-				return matches(proxy.getNode());
-			return proxy.getNodeType() != Node.ATTRIBUTE_NODE;
-		} else if (type == Type.ATTRIBUTE &&
-			   proxy.getNodeType() == Node.ATTRIBUTE_NODE) {
-		    return true;
-		} else {
-		    return type != Node.ATTRIBUTE_NODE;
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
+     */
+    public boolean matches(NodeProxy proxy) {
+        int type = proxy.getType();
+        if (type == Type.ITEM || type == Type.NODE) {		
+            if (proxy.getNodeType() != NodeProxy.UNKNOWN_NODE_TYPE) {
+                return matches(proxy.getNode());
+            }
+            return proxy.getNodeType() != Node.ATTRIBUTE_NODE;
+        } else if (type == Type.ATTRIBUTE &&
+            proxy.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return true;
+        } else {
+            return type != Node.ATTRIBUTE_NODE;
+        }
+    }
 
     public boolean matches(XMLStreamReader reader) {
         return reader.getEventType() != XMLStreamReader.ATTRIBUTE;
@@ -82,26 +83,27 @@ public class AnyNodeTest implements NodeTest {
     public boolean matches(QName name) {
     	return false;
     }
-    
+
     public void dump(ExpressionDumper dumper) {
-        if(dumper.verbosity() > 1) {            
+        if (dumper.verbosity() > 1) {
             dumper.display("node()"); 
         }
-    }    
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "node()";
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return "node()";
+    }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.NodeTest#setType(int)
      */
     public void setType(int nodeType) {
+        //Nothing to do
     }
-    
+
     public int getType() {
         return Type.NODE;
     }

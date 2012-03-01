@@ -35,7 +35,8 @@ public class AncestorSelector implements NodeSelector {
     private boolean includeSelf;
     private boolean copyMatches;
 
-    public AncestorSelector(NodeSet descendants, int contextId, boolean includeSelf, boolean copyMatches) {
+    public AncestorSelector(NodeSet descendants, int contextId,
+            boolean includeSelf, boolean copyMatches) {
         super();
         this.contextId = contextId;
         this.includeSelf = includeSelf;
@@ -44,13 +45,13 @@ public class AncestorSelector implements NodeSelector {
             this.descendants = descendants;
         else
             this.ancestors = descendants.getAncestors(contextId, includeSelf);
-
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
         if (descendants == null)
             return ancestors.get(doc, nodeId);
         else
-            return ((ExtNodeSet) descendants).hasDescendantsInSet(doc, nodeId, includeSelf, contextId, copyMatches);
+            return ((ExtNodeSet) descendants).hasDescendantsInSet(doc, nodeId,
+                includeSelf, contextId, copyMatches);
     }
 }

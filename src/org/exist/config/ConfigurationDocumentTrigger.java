@@ -49,127 +49,146 @@ import org.xml.sax.helpers.AttributesImpl;
 public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
         protected Logger LOG = Logger.getLogger(getClass());
-    
-	@Override
-	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-	}
 
-	@Override
-	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+    @Override
+    public void prepare(int event, DBBroker broker, Txn transaction,
+            XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
+        //Nothing to do
+    }
 
-		Configuration conf;
-		
-		switch (event) {
-		case REMOVE_DOCUMENT_EVENT:
-			conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
-			if (conf != null) {
-				Configurator.unregister(conf);
-				//XXX: inform object that configuration was deleted
-			}
-			break;
-
-		default:
-			conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
-			if (conf != null) {
-                            conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
-                        }
-			
-			if(documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
-                            try {
-                                ConverterFrom1_0.convert(broker.getSubject(), broker.getBrokerPool().getSecurityManager(), document);
-                            } catch (PermissionDeniedException pde) {
-                                LOG.error(pde.getMessage(), pde);
-                            } catch (EXistException ee) {
-                                LOG.error(ee.getMessage(), ee);
-                            }
-			}
-
-			break;
-		}
-	}
-	
-	private void checkForUpdates(DBBroker broker, XmldbURI uri, DocumentImpl document) {
-            Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
-            if(conf != null) {
-                    conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+    @Override
+    public void finish(int event, DBBroker broker, Txn transaction,
+            XmldbURI documentPath, DocumentImpl document) {
+        Configuration conf;
+        switch (event) {
+        case REMOVE_DOCUMENT_EVENT:
+            conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
+            if (conf != null) {
+                Configurator.unregister(conf);
+                //XXX: inform object that configuration was deleted
             }
-		
-            if(uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+            break;
+        default:
+            conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
+            if (conf != null) {
+                conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+            }
+            if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
                 try {
-                    ConverterFrom1_0.convert(broker.getSubject(), broker.getBrokerPool().getSecurityManager(), document);
+                    ConverterFrom1_0.convert(broker.getSubject(),
+                        broker.getBrokerPool().getSecurityManager(), document);
                 } catch (PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
+                    //TODO : raise exception ? -pb
                 } catch (EXistException ee) {
                     LOG.error(ee.getMessage(), ee);
+                    //TODO : raise exception ? -pb
                 }
             }
-	}
+            break;
+        }
+    }
 
-	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-	}
+    private void checkForUpdates(DBBroker broker, XmldbURI uri, DocumentImpl document) {
+        Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        if (conf != null) {
+            conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+        }
+        //TODO : use XmldbURI methos ! not String.equals()
+        if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+            try {
+                ConverterFrom1_0.convert(broker.getSubject(),
+                    broker.getBrokerPool().getSecurityManager(), document);
+            } catch (PermissionDeniedException pde) {
+                LOG.error(pde.getMessage(), pde);
+                //TODO : raise exception ? -pb
+            } catch (EXistException ee) {
+                LOG.error(ee.getMessage(), ee);
+                //TODO : raise exception ? -pb
+            }
+        }
+    }
 
-	@Override
-	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		//check saving list
-		if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
-			return;
-		
-		checkForUpdates(broker, document.getURI(), document);
-		
-		XmldbURI uri = document.getCollection().getURI();
-		if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI))
-			try {
-				broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
-			} catch (ConfigurationException e) {
-				LOG.error("Configuration can't be proccessed ["+document.getURI()+"]", e);
-			}
-	}
+    @Override
+    public void beforeCreateDocument(DBBroker broker, 
+        Txn transaction, XmldbURI uri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterCreateDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document) throws TriggerException {
+        //check saving list
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
+            return;
+        checkForUpdates(broker, document.getURI(), document);
+        XmldbURI uri = document.getCollection().getURI();
+        if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
+            try {
+                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+            } catch (ConfigurationException e) {
+                LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
+                //TODO : raise exception ? -pb
+            }
+        }
+    }
 
-	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-		checkForUpdates(broker, document.getURI(), document);
-	}
+    @Override
+    public void beforeUpdateDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void afterUpdateDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document) throws TriggerException {
+        checkForUpdates(broker, document.getURI(), document);
+    }
 
-	@Override
-	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
-		checkForUpdates(broker, document.getURI(), document);
-	}
+    @Override
+    public void beforeCopyDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void afterCopyDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+        checkForUpdates(broker, document.getURI(), document);
+    }
 
-	@Override
-	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
-		checkForUpdates(broker, document.getURI(), document);
-	}
+    @Override
+    public void beforeMoveDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterMoveDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+        checkForUpdates(broker, document.getURI(), document);
+    }
 
-	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-		Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
-		if (conf != null) {
-			Configurator.unregister(conf);
-			; //XXX: inform object that configuration was deleted
-		}
-	}
+    @Override
+    public void beforeDeleteDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
 
-        /**
-         * Mappings from User ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
-         */
-        final static Map<Integer, Integer> userIdMappings = new HashMap<Integer, Integer>();
+    @Override
+    public void afterDeleteDocument(DBBroker broker, Txn transaction,
+            XmldbURI uri) throws TriggerException {
+        Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        if (conf != null) {
+            Configurator.unregister(conf);
+            //XXX: inform object that configuration was deleted
+        }
+    }
+
+    /**
+     * Mappings from User ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
+     */
+    final static Map<Integer, Integer> userIdMappings = new HashMap<Integer, Integer>();
         static {
             userIdMappings.put(-1, RealmImpl.UNKNOWN_ACCOUNT_ID);
             userIdMappings.put(0, RealmImpl.SYSTEM_ACCOUNT_ID);
@@ -177,48 +196,50 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             userIdMappings.put(2, RealmImpl.GUEST_ACCOUNT_ID);
         }
 
-        /**
-         * Mappings from group ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
-         */
-        final static Map<Integer, Integer> groupIdMappings = new HashMap<Integer, Integer>();
+    /**
+     * Mappings from group ids that were used in UnixStylePermission version of eXist-db to ACLPermission version of eXist-db
+     */
+    final static Map<Integer, Integer> groupIdMappings = new HashMap<Integer, Integer>();
         static {
             groupIdMappings.put(-1, RealmImpl.UNKNOWN_GROUP_ID);
             groupIdMappings.put(1, RealmImpl.DBA_GROUP_ID);
             groupIdMappings.put(2, RealmImpl.GUEST_GROUP_ID);
         }
-        
-        @Override
-        public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
-            
-            final boolean aclPermissionInUse = PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
 
-            //map unix style user and group ids to acl style
-            if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("account")) {
-                Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
-                super.startElement(namespaceURI, localName, qname, newAttrs);
-            } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("group")) {
-                Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
-                super.startElement(namespaceURI, localName, qname, newAttrs);
-            } else {
-                super.startElement(namespaceURI, localName, qname, attributes);
-            }
+    @Override
+    public void startElement(String namespaceURI, String localName,
+            String qname, Attributes attributes) throws SAXException {
+        final boolean aclPermissionInUse = 
+            PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
+        //map unix style user and group ids to acl style
+        if (aclPermissionInUse && namespaceURI != null &&
+                namespaceURI.equals(Configuration.NS) && localName.equals("account")) {
+            Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
+            super.startElement(namespaceURI, localName, qname, newAttrs);
+        } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("group")) {
+            Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
+            super.startElement(namespaceURI, localName, qname, newAttrs);
+        } else {
+            super.startElement(namespaceURI, localName, qname, attributes);
         }
-        
-        private Attributes modifyUserGroupIdAttribute(final Attributes attrs, final Map<Integer, Integer> idMappings) {
-            String strId = attrs.getValue("id");
-            if(strId != null) {
-                Integer id = Integer.parseInt(strId);
-                Integer newId = idMappings.get(id);
-                if(newId == null) {
-                    newId = id;
-                }
-                AttributesImpl newAttrs = new AttributesImpl(attrs);
-                int idIndex = newAttrs.getIndex("id");
-                newAttrs.setAttribute(idIndex, newAttrs.getURI(idIndex), "id", newAttrs.getQName(idIndex), newAttrs.getType(idIndex), newId.toString());
-                return newAttrs;
+    }
+
+    private Attributes modifyUserGroupIdAttribute(final Attributes attrs,
+            final Map<Integer, Integer> idMappings) {
+        String strId = attrs.getValue("id");
+        if (strId != null) {
+            Integer id = Integer.parseInt(strId);
+            Integer newId = idMappings.get(id);
+            if(newId == null) {
+                newId = id;
             }
-            
-            return attrs;
+            AttributesImpl newAttrs = new AttributesImpl(attrs);
+            int idIndex = newAttrs.getIndex("id");
+            newAttrs.setAttribute(idIndex, newAttrs.getURI(idIndex), "id",
+                newAttrs.getQName(idIndex), newAttrs.getType(idIndex), newId.toString());
+            return newAttrs;
         }
-        
+        return attrs;
+    }
+
 }

@@ -33,116 +33,117 @@ import org.exist.xquery.value.Type;
  *
  */
 public class AnalyzeContextInfo {
-	
-	private XQueryContext context = null;
-	
-	private Expression parent = null;
-	private int flags = 0;
-	private int contextId = Expression.NO_CONTEXT_ID;
-	
-	private int staticType = Type.ITEM;
+
+    private XQueryContext context = null;
+
+    private Expression parent = null;
+    private int flags = 0;
+    private int contextId = Expression.NO_CONTEXT_ID;
+
+    private int staticType = Type.ITEM;
     private int staticReturnType = Type.ITEM;
 
     private Expression contextStep = null;
 
     public AnalyzeContextInfo() {
-	}
-	
-	/**
-	 * Create a new AnalyzeContextInfo using the given parent and flags.
-	 * 
-	 * @param parent the parent expression which calls this method
+        //Nothing to do
+    }
+
+    /**
+     * Create a new AnalyzeContextInfo using the given parent and flags.
+     * 
+     * @param parent the parent expression which calls this method
      * @param flags int value containing a set of flags. See the constants defined
      * in this class.
 	 */
-	public AnalyzeContextInfo(Expression parent, int flags) {
-		this.parent = parent;
-		this.flags = flags;
-	}
+    public AnalyzeContextInfo(Expression parent, int flags) {
+        this.parent = parent;
+        this.flags = flags;
+    }
 
-	/**
-	 * Create a new object as a clone of other.
-	 * 
-	 * @param other
-	 */
-	public AnalyzeContextInfo(AnalyzeContextInfo other) {
-		this.parent = other.parent;
-		this.flags = other.flags;
-		this.contextId = other.contextId;
+    /**
+     * Create a new object as a clone of other.
+     * 
+     * @param other
+     */
+    public AnalyzeContextInfo(AnalyzeContextInfo other) {
+        this.parent = other.parent;
+        this.flags = other.flags;
+        this.contextId = other.contextId;
         this.contextStep = other.contextStep;
         this.staticType = other.staticType;
         this.context = other.context;
     }
-	
-	public AnalyzeContextInfo(XQueryContext context) {
-		this.context = context;
+
+    public AnalyzeContextInfo(XQueryContext context) {
+        this.context = context;
     }
 
-	public XQueryContext getContext() {
-		return context;
-	}
+    public XQueryContext getContext() {
+        return context;
+    }
 
-	/**
-	 * Returns the current context id. The context id is used
-	 * to keep track of the context node set within a predicate
-	 * expression or where-clause. The id identifies the ancestor 
-	 * expression to which the context applies.
-	 * 
-	 * @return  current context id.
-	 */
-	public int getContextId() {
-		return contextId;
-	}
+    /**
+     * Returns the current context id. The context id is used
+     * to keep track of the context node set within a predicate
+     * expression or where-clause. The id identifies the ancestor 
+     * expression to which the context applies.
+     * 
+     * @return  current context id.
+     */
+    public int getContextId() {
+        return contextId;
+    }
 
-	public void setContextId(int contextId) {
-		this.contextId = contextId;
-	}
+    public void setContextId(int contextId) {
+        this.contextId = contextId;
+    }
 
-	/**
-	 * Returns the processing flags. Every expression may pass
-	 * execution hints to its child expressions, encoded as bit flags. 
-	 * 
-	 * @return processing flags
-	 */
-	public int getFlags() {
-		return flags;
-	}
+    /**
+     * Returns the processing flags. Every expression may pass
+     * execution hints to its child expressions, encoded as bit flags. 
+     * 
+     * @return processing flags
+     */
+    public int getFlags() {
+        return flags;
+    }
 
-	/**
-	 * Sets the processing flags to be passed to a child expression.
-	 * 
-	 * @param flags
-	 */
-	public void setFlags(int flags) {
-		this.flags = flags;
-	}
+    /**
+     * Sets the processing flags to be passed to a child expression.
+     * 
+     * @param flags
+     */
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-	public void addFlag(int flag) {
-		flags |= flag;
-	}
-	
-	public void removeFlag(int flag) {
-		flags &= ~flag;
-	}
-	
-	/**
-	 * Returns the parent of the current expression.
-	 */
-	public Expression getParent() {
-		return parent;
-	}
+    public void addFlag(int flag) {
+        flags |= flag;
+    }
 
-	public void setParent(Expression parent) {
-		this.parent = parent;
-	}
+    public void removeFlag(int flag) {
+        flags &= ~flag;
+    }
 
-	public int getStaticType() {
-		return staticType;
-	}
+    /**
+     * Returns the parent of the current expression.
+     */
+    public Expression getParent() {
+        return parent;
+    }
 
-	public void setStaticType(int staticType) {
-		this.staticType = staticType;
-	}
+    public void setParent(Expression parent) {
+        this.parent = parent;
+    }
+
+    public int getStaticType() {
+        return staticType;
+    }
+
+    public void setStaticType(int staticType) {
+        this.staticType = staticType;
+    }
 
     public int getStaticReturnType() {
         return staticReturnType;
@@ -151,7 +152,7 @@ public class AnalyzeContextInfo {
     public void setStaticReturnType(int type) {
         this.staticReturnType = type;
     }
-    
+
     public void setContextStep(Expression step) {
         this.contextStep = step;
     }
@@ -159,22 +160,22 @@ public class AnalyzeContextInfo {
     public Expression getContextStep() {
         return contextStep;
     }
-    
+
     public String toString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append("ID: ").append(contextId);
-		buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");
-		if ((flags & Expression.SINGLE_STEP_EXECUTION) > 0)
-			buf.append("single ");
-		if ((flags & Expression.IN_PREDICATE) > 0)
-			buf.append("in-predicate ");
-		if ((flags & Expression.IN_WHERE_CLAUSE) > 0)
-			buf.append("in-where-clause ");
-		if ((flags & Expression.IN_UPDATE) > 0)
-			buf.append("in-update ");
-		if ((flags & Expression.DOT_TEST) > 0)
-			buf.append("dot-test ");
-		buf.append('(').append(flags).append(')');
-		return buf.toString();
-	}
+        StringBuilder buf = new StringBuilder();
+        buf.append("ID: ").append(contextId);
+        buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");
+        if ((flags & Expression.SINGLE_STEP_EXECUTION) > 0)
+            buf.append("single ");
+        if ((flags & Expression.IN_PREDICATE) > 0)
+            buf.append("in-predicate ");
+        if ((flags & Expression.IN_WHERE_CLAUSE) > 0)
+            buf.append("in-where-clause ");
+        if ((flags & Expression.IN_UPDATE) > 0)
+            buf.append("in-update ");
+        if ((flags & Expression.DOT_TEST) > 0)
+            buf.append("dot-test ");
+        buf.append('(').append(flags).append(')');
+        return buf.toString();
+    }
 }

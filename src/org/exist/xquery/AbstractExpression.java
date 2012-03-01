@@ -34,6 +34,7 @@ public abstract class AbstractExpression implements Expression {
     protected int line = -1;
     protected int column = -1;
     protected DocumentSet contextDocSet = null;
+
     /**
      * Holds the context id for the context of this expression.
      */
@@ -91,10 +92,10 @@ public abstract class AbstractExpression implements Expression {
     }
 
     public boolean needsReset() {
-    	// always return true unless a subclass overwrites this
-    	return true;
+        // always return true unless a subclass overwrites this
+        return true;
     }
-    
+
     /**
      * The default cardinality is {@link Cardinality#EXACTLY_ONE}.
      */
@@ -196,13 +197,13 @@ public abstract class AbstractExpression implements Expression {
         return false;
     }
 
-	@Override
-	public Expression simplify() {
-		return this;
-	}
-	
-	@Override
-	public Expression getParent() {
-		return null;
-	}
+    @Override
+    public Expression simplify() {
+        return this;
+    }
+
+    @Override
+    public Expression getParent() {
+        return null;
+    }
 }
