@@ -50,158 +50,146 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
-	// Declare it in Namespaces instead? /ljo
-	public final static String BUILTIN_FUNCTION_NS =
-		"http://www.w3.org/2005/xpath-functions";
-	
-	// The signature of the function.	
-	protected FunctionSignature mySignature;
-	
-	// The parent expression from which this function is called.
-	private Expression parent;
+    // Declare it in Namespaces instead? /ljo
+    public final static String BUILTIN_FUNCTION_NS =
+            "http://www.w3.org/2005/xpath-functions";
+    // The signature of the function.
+    protected FunctionSignature mySignature;
+
+    // The parent expression from which this function is called.
+    private Expression parent;
 
     private boolean argumentsChecked = false;
-    
-//	private XQueryAST astNode = null;
-	
-	/**
-	 * Internal constructor. Subclasses should <b>always</b> call this and
-	 * pass the current context and their function signature.
-	 * 
-	 * @param context
-	 * @param signature
-	 */
-	protected Function(XQueryContext context, FunctionSignature signature) {
-		super(context);
-		this.mySignature = signature;
-	}
 
-	protected Function(XQueryContext context) {
+    /**
+     * Internal constructor. Subclasses should <b>always</b> call this and
+     * pass the current context and their function signature.
+     * 
+     * @param context
+     * @param signature
+     */
+    protected Function(XQueryContext context, FunctionSignature signature) {
+        super(context);
+        this.mySignature = signature;
+    }
+
+    protected Function(XQueryContext context) {
             super(context);
-	}
+    }
 
-        /**
-         * Returns the module to which this function belongs
-         */
-        protected Module getParentModule() {
-            return context.getModule(mySignature.getName().getNamespaceURI());
+    /**
+     * Returns the module to which this function belongs
+     */
+    protected Module getParentModule() {
+        return context.getModule(mySignature.getName().getNamespaceURI());
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#returnsType()
+     */
+    public int returnsType() {
+        if (mySignature == null)
+            return Type.ITEM; // Type is not known yet
+        if (mySignature.getReturnType() == null)
+            throw new IllegalArgumentException("Return type for function " +
+                mySignature.getName() + " is not defined");
+        return mySignature.getReturnType().getPrimaryType();
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#getCardinality()
+     */
+    public int getCardinality() {
+        if (mySignature.getReturnType() == null)
+            throw new IllegalArgumentException("Return type for function " +
+                mySignature.getName() + " is not defined");
+        return mySignature.getReturnType().getCardinality();
+    }
+
+    /**
+     * Create a built-in function from the specified class.
+     * @return the created function or null if the class could not be initialized.
+     */
+    public static Function createFunction(XQueryContext context, XQueryAST ast,
+            FunctionDef def) throws XPathException {
+        if (def == null)
+            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+        Class<? extends Function> fclass = def.getImplementingClass();
+        if (fclass == null)
+            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+        try {
+            Object initArgs[] = { context };
+            Class<?> constructorArgs[] = { XQueryContext.class }; 
+            Constructor<?> construct = null;
+            try {
+                construct = fclass.getConstructor(constructorArgs);
+            } catch(NoSuchMethodException e) {
+                //Ignore ? -pb
+            }
+            // not found: check if the constructor takes two arguments
+            if (construct == null) {
+                constructorArgs = new Class[2];
+                constructorArgs[0] = XQueryContext.class;
+                constructorArgs[1] = FunctionSignature.class;
+                construct = fclass.getConstructor(constructorArgs);
+                if (construct == null)
+                    throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
+                initArgs = new Object[2];
+                initArgs[0] = context;
+                initArgs[1] = def.getSignature();
+            }
+            Object obj = construct.newInstance(initArgs);
+            if (obj instanceof Function) {
+                ((Function)obj).setLocation(ast.getLine(), ast.getColumn());
+                return (Function) obj;
+            } else
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                    "Function object does not implement interface function");
+        } catch (Exception e) {
+            LOG.debug(e.getMessage(), e);
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Function implementation class " + fclass.getName() + " not found");
         }
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.PathExpr#returnsType()
-	 */
-	public int returnsType() {
-		if(mySignature == null)
-			return Type.ITEM;		// Type is not known yet
-		if(mySignature.getReturnType() == null)
-			throw new IllegalArgumentException("Return type for function " + mySignature.getName() +
-					" is not defined");
-		return mySignature.getReturnType().getPrimaryType();
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
-		if(mySignature.getReturnType() == null)
-			throw new IllegalArgumentException("Return type for function " + mySignature.getName() +
-					" is not defined");
-		return mySignature.getReturnType().getCardinality();
-	}
-	
-	/**
-	 * Create a built-in function from the specified class.
-	 * @return the created function or null if the class could not be initialized.
-	 */
-	public static Function createFunction(
-		XQueryContext context,
-		XQueryAST ast,
-		FunctionDef def) throws XPathException {
+    /**
+     * Set the parent expression of this function, i.e. the
+     * expression from which the function is called.
+     * 
+     * @param parent
+     */
+    public void setParent(Expression parent) {
+        this.parent = parent;
+    }
 
-		if (def == null)
-			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+    /**
+     * Returns the expression from which this function gets called.
+     */
+    public Expression getParent() {
+        return parent;
+    }
 
-		Class<? extends Function> fclass = def.getImplementingClass();
-		
-		if (fclass == null)
-			throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
-
-		try {
-			Object initArgs[] = { context };
-			Class<?> constructorArgs[] = { XQueryContext.class }; 
-			Constructor<?> construct = null;
-			try {
-				construct = fclass.getConstructor(constructorArgs);
-			} catch(NoSuchMethodException e) {
-			}
-			// not found: check if the constructor takes two arguments
-			if (construct == null) {
-				constructorArgs = new Class[2];
-				constructorArgs[0] = XQueryContext.class;
-				constructorArgs[1] = FunctionSignature.class;
-				construct = fclass.getConstructor(constructorArgs);
-				if(construct == null)
-					throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
-				initArgs = new Object[2];
-				initArgs[0] = context;
-				initArgs[1] = def.getSignature();
-			}
-			Object obj = construct.newInstance(initArgs);
-			if (obj instanceof Function) {
-				((Function)obj).setLocation(ast.getLine(), ast.getColumn());
-				return (Function) obj;
-			} else
-				throw new XPathException(ast.getLine(), ast.getColumn(), "Function object does not implement interface function");
-		} catch (Exception e) {
-			LOG.debug(e.getMessage(), e);
-			throw new XPathException(ast.getLine(), ast.getColumn(), "Function implementation class " + fclass.getName() + " not found");
-		}
-	}
-
-	/**
-	 * Set the parent expression of this function, i.e. the
-	 * expression from which the function is called.
-	 * 
-	 * @param parent
-	 */
-	public void setParent(Expression parent) {
-		this.parent = parent;
-	}
-	
-	/**
-	 * Returns the expression from which this function
-	 * gets called.
-         */
-	public Expression getParent() {
-		return parent;
-	}
-	
-	/**
-	 * Set the (static) arguments for this function from a list of expressions.
-	 * 
-	 * This will also check the type and cardinality of the
-	 * passed argument expressions.
-	 * 
-	 * @param arguments
-	 * @throws XPathException
-	 */
-	public void setArguments(List<Expression> arguments) throws XPathException {
-		if ((!mySignature.isOverloaded())
-			&& arguments.size() != mySignature.getArgumentCount())
-			throw new XPathException(this, "err:XPST0017: "+
-				"number of arguments to function "
-					+ getName()
-					+ " doesn't match function signature (expected "
-					+ mySignature.getArgumentCount()
-					+ ", got "
-					+ arguments.size()
-					+ ')');
+    /**
+     * Set the (static) arguments for this function from a list of expressions.
+     * 
+     * This will also check the type and cardinality of the
+     * passed argument expressions.
+     * 
+     * @param arguments
+     * @throws XPathException
+     */
+    public void setArguments(List<Expression> arguments) throws XPathException {
+        if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount())
+            throw new XPathException(this, "err:XPST0017: "+
+                "number of arguments of function " + getName() +
+                " doesn't match function signature (expected " +
+                mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
         steps = new ArrayList<Expression>(arguments.size());
         for (int i = 0; i < arguments.size(); i++) {
-        	steps.add(arguments.get(i).simplify());
+            steps.add(arguments.get(i).simplify());
         }
         argumentsChecked = false;
-	}
+    }
 
     /**
      * @throws XPathException
@@ -221,204 +209,188 @@ public abstract class Function extends PathExpr {
         argumentsChecked = true;
     }
 
-	/**
-	 * Statically check an argument against the sequence type specified in
-	 * the signature.
-	 * 
-	 * @param expr
-	 * @param type
-	 * @return The passed expression
-	 * @throws XPathException
-	 */
-	protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
-		throws XPathException {
-		if (type == null)
-			return expr;
-		// check cardinality if expected cardinality is not zero or more
-		boolean cardinalityMatches =
-			type.getCardinality() == Cardinality.ZERO_OR_MORE;
-		if (!cardinalityMatches) {
-			cardinalityMatches =
-				(expr.getCardinality() | type.getCardinality())
-					== type.getCardinality();
-			if (!cardinalityMatches) {
-				if(expr.getCardinality() == Cardinality.ZERO
-				&& (type.getCardinality() & Cardinality.ZERO) == 0)
-				    throw new XPathException(this,
-				            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
-				                    Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
-			}
-		}
-		expr =
-			new DynamicCardinalityCheck(
-				context,
-				type.getCardinality(),
-				expr, new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(argPosition), mySignature));
-
-		// check return type if both types are not Type.ITEM
-		int returnType = expr.returnsType();
+    /**
+     * Statically check an argument against the sequence type specified in
+     * the signature.
+     * 
+     * @param expr
+     * @param type
+     * @return The passed expression
+     * @throws XPathException
+     */
+    protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
+            throws XPathException {
+        if (type == null)
+            return expr;
+        // check cardinality if expected cardinality is not zero or more
+        boolean cardinalityMatches = type.getCardinality() == Cardinality.ZERO_OR_MORE;
+        if (!cardinalityMatches) {
+            cardinalityMatches =
+                (expr.getCardinality() | type.getCardinality()) == type.getCardinality();
+            if (!cardinalityMatches) {
+                if(expr.getCardinality() == Cardinality.ZERO
+                        && (type.getCardinality() & Cardinality.ZERO) == 0)
+                    throw new XPathException(this,
+                        Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
+                        Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
+            }
+        }
+        expr = new DynamicCardinalityCheck(context, type.getCardinality(), expr,
+            new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(argPosition), mySignature));
+        // check return type if both types are not Type.ITEM
+        int returnType = expr.returnsType();
         if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY)
             returnType = Type.ITEM;
-        
-		boolean typeMatches = type.getPrimaryType() == Type.ITEM;
-		typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
-
-		if (typeMatches && cardinalityMatches) {
-			if(type.getNodeName() != null)
-				expr = new DynamicNameCheck(context, 
-						new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
-			return expr;
-		}
-	
-		//Loose argument check : we may move this, or a part hereof, to UntypedValueCheck
-		if (context.isBackwardsCompatible()) {
-			if (Type.subTypeOf(type.getPrimaryType(), Type.STRING)) {
-				if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-					expr = new Atomize(context, expr);
-					returnType = Type.ATOMIC;
-				}
-				expr = new AtomicToString(context, expr);
-				returnType = Type.STRING;
-			} else if (type.getPrimaryType() == Type.NUMBER
-					|| Type.subTypeOf(type.getPrimaryType(), Type.DOUBLE)) {
-				if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-					expr = new Atomize(context, expr);
-					returnType = Type.ATOMIC;
-				}
-				expr =
-					new UntypedValueCheck(context, type.getPrimaryType(), expr, 
-                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-				returnType = type.getPrimaryType();
-			}
-			// if the required type is an atomic type, convert the argument to an atomic 
-			if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
-				if(!Type.subTypeOf(returnType, Type.ATOMIC))
-					expr = new Atomize(context, expr);
-				if (!(type.getPrimaryType() == Type.ATOMIC))
-					expr =
-						new UntypedValueCheck(context, type.getPrimaryType(), expr, 
-	                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-				returnType = expr.returnsType();
-			}
-		//Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
-		} else {
-			// if the required type is an atomic type, convert the argument to an atomic 
-			if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
-				if(!Type.subTypeOf(returnType, Type.ATOMIC))
-					expr = new Atomize(context, expr);
-				//if (!(type.getPrimaryType() == Type.ATOMIC))
-					expr =
-						new UntypedValueCheck(context, type.getPrimaryType(), expr, 
-	                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-				returnType = expr.returnsType();
-			}
-		}
-
-		if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
-			if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
-					//because () is seen as a node					
-					(type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
-                LOG.debug(ExpressionDumper.dump(expr));
-                throw new XPathException(this,
-                        Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
-                                String.valueOf(argPosition), mySignature,
-                                type.toString(), Type.getTypeName(returnType)));
+        boolean typeMatches = type.getPrimaryType() == Type.ITEM;
+        typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
+        if (typeMatches && cardinalityMatches) {
+            if (type.getNodeName() != null)
+                expr = new DynamicNameCheck(context, 
+                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+            return expr;
+        }
+        //Loose argument check : we may move this, or a part hereof, to UntypedValueCheck
+        if (context.isBackwardsCompatible()) {
+            if (Type.subTypeOf(type.getPrimaryType(), Type.STRING)) {
+                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                    expr = new Atomize(context, expr);
+                    returnType = Type.ATOMIC;
+                }
+                expr = new AtomicToString(context, expr);
+                returnType = Type.STRING;
+            } else if (type.getPrimaryType() == Type.NUMBER
+                    || Type.subTypeOf(type.getPrimaryType(), Type.DOUBLE)) {
+                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                    expr = new Atomize(context, expr);
+                    returnType = Type.ATOMIC;
+                }
+                expr = new UntypedValueCheck(context, type.getPrimaryType(), expr,
+                    new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+                returnType = type.getPrimaryType();
             }
-		}
-		if (!typeMatches) {
-			if(type.getNodeName() != null)
-				expr = new DynamicNameCheck(context, 
-						new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
-			else
-				expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
-		}
-		return expr;
-	}
+            // if the required type is an atomic type, convert the argument to an atomic 
+            if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
+                if(!Type.subTypeOf(returnType, Type.ATOMIC))
+                    expr = new Atomize(context, expr);
+                if (!(type.getPrimaryType() == Type.ATOMIC))
+                    expr = new UntypedValueCheck(context, type.getPrimaryType(),
+                        expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+                returnType = expr.returnsType();
+            }
+        //Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
+        } else {
+            // if the required type is an atomic type, convert the argument to an atomic 
+            if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
+                if(!Type.subTypeOf(returnType, Type.ATOMIC))
+                    expr = new Atomize(context, expr);
+                expr = new UntypedValueCheck(context, type.getPrimaryType(),
+                    expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+                returnType = expr.returnsType();
+            }
+        }
+        if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
+            if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
+                    //because () is seen as a node
+                    (type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
+                LOG.debug(ExpressionDumper.dump(expr));
+                throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
+                    String.valueOf(argPosition), mySignature, type.toString(), Type.getTypeName(returnType)));
+            }
+        }
+        if (!typeMatches) {
+            if (type.getNodeName() != null)
+                expr = new DynamicNameCheck(context, 
+                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+            else
+                expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
+        }
+        return expr;
+    }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         // statically check the argument list
         checkArguments();
         // call analyze for each argument
-    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
-    	contextId = contextInfo.getContextId();
-    	contextInfo.setParent(this);
+        contextId = contextInfo.getContextId();
+        contextInfo.setParent(this);
         for(int i = 0; i < getArgumentCount(); i++) {
             AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
             getArgument(i).analyze(argContextInfo);
         }
     }
-	public abstract Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException;
 
-	public Sequence[] getArguments(Sequence contextSequence, Item contextItem) throws XPathException {
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-		final int argCount = getArgumentCount();
-		Sequence[] args = new Sequence[argCount];
-		for(int i = 0; i < argCount; i++) {
-			args[i] = getArgument(i).eval(contextSequence, contextItem);
-		}
-		return args;
-	}
-	
-	/**
-	 * Get an argument expression by its position in the
-	 * argument list.
-	 * 
-	 * @param pos
-	 */
-	public Expression getArgument(int pos) {
-		return getExpression(pos);
-	}
+    public abstract Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException;
 
-	/**
-	 * Get the number of arguments passed to this function.
-	 * 
-	 * @return number of arguments
-	 */
-	public int getArgumentCount() {
-		return steps.size();
-	}
+    public Sequence[] getArguments(Sequence contextSequence, Item contextItem)
+            throws XPathException {
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
+        final int argCount = getArgumentCount();
+        Sequence[] args = new Sequence[argCount];
+        for (int i = 0; i < argCount; i++) {
+            args[i] = getArgument(i).eval(contextSequence, contextItem);
+        }
+        return args;
+    }
 
-	public void setPrimaryAxis(int axis) {
-	}
-	
-	/**
-	 * Return the name of this function.
-	 * 
-	 * @return name of this function
-	 */
-	public QName getName() {
-		return mySignature.getName();
-	}
+    /**
+     * Get an argument expression by its position in the
+     * argument list.
+     * 
+     * @param pos
+     */
+    public Expression getArgument(int pos) {
+        return getExpression(pos);
+    }
 
-	/**
-	 * Get the signature of this function.
-	 * 
-	 * @return signature of this function
-	 */
-	public FunctionSignature getSignature() {
-		return mySignature;
-	}
+    /**
+     * Get the number of arguments passed to this function.
+     * 
+     * @return number of arguments
+     */
+    public int getArgumentCount() {
+        return steps.size();
+    }
 
-	public boolean isCalledAs(String localName) {
-		return localName.equals(mySignature.getName().getLocalName());
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
-	}
-	
-	/* (non-Javadoc)
+    public void setPrimaryAxis(int axis) {
+    }
+
+    /**
+     * Return the name of this function.
+     * 
+     * @return name of this function
+     */
+    public QName getName() {
+        return mySignature.getName();
+    }
+
+    /**
+     * Get the signature of this function.
+     * 
+     * @return signature of this function
+     */
+    public FunctionSignature getSignature() {
+        return mySignature;
+    }
+
+    public boolean isCalledAs(String localName) {
+        return localName.equals(mySignature.getName().getLocalName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#getDependencies()
+     */
+    public int getDependencies() {
+        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
@@ -426,32 +398,34 @@ public abstract class Function extends PathExpr {
         dumper.display('(');
         boolean moreThanOne = false;
         for (Expression e : steps) {
-			if (moreThanOne) dumper.display(", ");
-			moreThanOne = true;			
-			e.dump(dumper);
+            if (moreThanOne)
+                dumper.display(", ");
+            moreThanOne = true;			
+            e.dump(dumper);
         }
         dumper.display(')');
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-    	result.append(getName());
-    	result.append('(');
-    	boolean moreThanOne = false;
+        StringBuilder result = new StringBuilder();
+        result.append(getName());
+        result.append('(');
+        boolean moreThanOne = false;
         for (Expression step : steps) {
-			if (moreThanOne) result.append(", ");
-			moreThanOne = true;
-			result.append(step.toString());				
+            if (moreThanOne)
+                result.append(", ");
+            moreThanOne = true;
+            result.append(step.toString());
         }
-        result.append(')');   
+        result.append(')');
         return result.toString();
     }
-    
+
     public void accept(ExpressionVisitor visitor) {
         visitor.visitBuiltinFunction(this);
     }
-    
+
     public Expression simplify() {
-    	return this;
+        return this;
     }
 }

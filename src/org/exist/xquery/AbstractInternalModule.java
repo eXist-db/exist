@@ -59,16 +59,18 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     protected final TreeMap<QName, Variable> mGlobalVariables = new TreeMap<QName, Variable>();
 
-    public AbstractInternalModule(FunctionDef[] functions, Map<String, List<? extends Object>> parameters) {
+    public AbstractInternalModule(FunctionDef[] functions,
+            Map<String, List<? extends Object>> parameters) {
         this(functions, parameters, false);
     }
 
-    public AbstractInternalModule(FunctionDef[] functions, Map<String, List<? extends Object>> parameters, boolean functionsOrdered) {
+    public AbstractInternalModule(FunctionDef[] functions, Map<String,
+            List<? extends Object>> parameters, boolean functionsOrdered) {
         this.mFunctions = functions;
         this.ordered = functionsOrdered;
         this.parameters = parameters;
     }
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Module#isInternalModule()
      */
@@ -86,13 +88,13 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public boolean isReady() {
-        return true;    // internal modules don't need to be compiled
+        return true; // internal modules don't need to be compiled
     }
 
     @Override
     public FunctionSignature[] listFunctions() {
         FunctionSignature signatures[] = new FunctionSignature[mFunctions.length];
-        for(int i = 0; i < signatures.length; i++) {
+        for (int i = 0; i < signatures.length; i++) {
             signatures[i] = mFunctions[i].getSignature();
         }
         return signatures;
@@ -101,25 +103,25 @@ public abstract class AbstractInternalModule implements InternalModule {
     @Override
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
         List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
-        for(int i = 0; i < mFunctions.length; i++) {
+        for (int i = 0; i < mFunctions.length; i++) {
             FunctionSignature signature = mFunctions[i].getSignature();
-            if(signature.getName().compareTo(qname) == 0){
+            if (signature.getName().compareTo(qname) == 0){
                 signatures.add(signature);
             }
         }
         return signatures.iterator();
     }
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
      */
     @Override
     public FunctionDef getFunctionDef(QName qname, int arity) {
         FunctionId id = new FunctionId(qname, arity);
-        if(ordered) {
+        if (ordered) {
             return binarySearch(id);
         } else {
-            for(int i = 0; i < mFunctions.length; i++) {
+            for (int i = 0; i < mFunctions.length; i++) {
                 if (id.compareTo(mFunctions[i].getSignature().getFunctionId()) == 0) {
                     return mFunctions[i];
                 }
@@ -132,28 +134,27 @@ public abstract class AbstractInternalModule implements InternalModule {
         int low = 0;
         int high = mFunctions.length - 1;
 
-        while(low <= high) {
+        while (low <= high) {
             int mid = (low + high) >>> 1;
             FunctionDef midVal = mFunctions[mid];
             int cmp = midVal.getSignature().getFunctionId().compareTo(id);
-
-            if(cmp < 0) {
+            if (cmp < 0) {
                 low = mid + 1;
-            } else if(cmp > 0) {
+            } else if (cmp > 0) {
                 high = mid - 1;
             } else {
                 return midVal; // key found
             }
         }
-        return null;  // key not found.
+        return null; // key not found.
     }
 
     @Override
     public List<FunctionSignature> getFunctionsByName(QName qname) {
         List<FunctionSignature> funcs = new ArrayList<FunctionSignature>();
-        for(int i = 0; i < mFunctions.length; i++) {
+        for (int i = 0; i < mFunctions.length; i++) {
             FunctionSignature sig = mFunctions[i].getSignature();
-            if(sig.getName().compareTo(qname) == 0) {
+            if (sig.getName().compareTo(qname) == 0) {
                 funcs.add(sig);
             }
         }
@@ -161,14 +162,14 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     public Iterator<QName> getGlobalVariables() {
-		return mGlobalVariables.keySet().iterator();
-	}
-    
+        return mGlobalVariables.keySet().iterator();
+    }
+
     @Override
     public Variable declareVariable(QName qname, Object value) throws XPathException {
         Sequence val = XPathUtil.javaObjectToXPath(value, null);
         Variable var = mGlobalVariables.get(qname);
-        if(var == null){
+        if (var == null){
             var = new VariableImpl(qname);
             mGlobalVariables.put(qname, var);
         }
@@ -183,8 +184,8 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     /* (non-Javadoc)
-	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
-	 */
+     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
+     */
     @Override
     public Variable resolveVariable(QName qname) throws XPathException {
         return mGlobalVariables.get(qname);
@@ -197,5 +198,6 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public void reset(XQueryContext xqueryContext) {
+        //Nothing to do
     }
 }
