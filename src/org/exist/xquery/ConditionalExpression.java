@@ -36,25 +36,23 @@ import org.exist.xquery.value.Type;
 public class ConditionalExpression extends AbstractExpression implements RewritableExpression {
 
     private Expression testExpr;
-
     private Expression thenExpr;
-
     private Expression elseExpr;
 
-    public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
-		Expression elseExpr) {
-		super(context);
-		this.testExpr = testExpr.simplify();
-		this.thenExpr = thenExpr.simplify();
-		this.elseExpr = elseExpr.simplify();
-	}
+    public ConditionalExpression(XQueryContext context, Expression testExpr,
+            Expression thenExpr, Expression elseExpr) {
+        super(context);
+        this.testExpr = testExpr.simplify();
+        this.thenExpr = thenExpr.simplify();
+        this.elseExpr = elseExpr.simplify();
+    }
 
     /* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
-	}
+     * @see org.exist.xquery.AbstractExpression#getDependencies()
+     */
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+    }
 
     public Expression getTestExpr() {
         return testExpr;
@@ -69,13 +67,13 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     }
 
     /* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
-		return thenExpr.getCardinality() | elseExpr.getCardinality();
-	}
-	
-	/* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#getCardinality()
+     */
+    public int getCardinality() {
+        return thenExpr.getCardinality() | elseExpr.getCardinality();
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -85,22 +83,20 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         thenExpr.analyze(contextInfo);
         elseExpr.analyze(contextInfo);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, 
+     * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         context.expressionStart(this);
-		Sequence testSeq = testExpr.eval(contextSequence, contextItem);
+        Sequence testSeq = testExpr.eval(contextSequence, contextItem);
         try {
-    		if (testSeq.effectiveBooleanValue()) {
-    			return thenExpr.eval(contextSequence, contextItem);
-    		} else {
-    			return elseExpr.eval(contextSequence, contextItem);
-    		}
+            if (testSeq.effectiveBooleanValue()) {
+                return thenExpr.eval(contextSequence, contextItem);
+            } else {
+                return elseExpr.eval(contextSequence, contextItem);
+            }
         } catch (XPathException e) {
             if (e.getLine() == 0)
                 e.setLocation(line, column);
@@ -108,16 +104,16 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         } finally {
             context.expressionEnd(this);
         }
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return in_docs;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet)
+     */
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+        return in_docs;
+    }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
@@ -134,70 +130,70 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         elseExpr.dump(dumper);
         dumper.endIndent();
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-    	result.append("if ( ");
-    	result.append(testExpr.toString());       
-    	result.append(" ) then ");        
-    	result.append(thenExpr.toString());        
-    	result.append(" else ");       
-    	result.append(elseExpr.toString());
+        StringBuilder result = new StringBuilder();
+        result.append("if ( ");
+        result.append(testExpr.toString());
+        result.append(" ) then ");
+        result.append(thenExpr.toString());
+        result.append(" else ");
+        result.append(elseExpr.toString());
         return result.toString();
-    }    
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.getCommonSuperType(thenExpr.returnsType(), elseExpr.returnsType());
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-		testExpr.resetState(postOptimization);
-		thenExpr.resetState(postOptimization);
-		elseExpr.resetState(postOptimization);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#returnsType()
+     */
+    public int returnsType() {
+        return Type.getCommonSuperType(thenExpr.returnsType(), elseExpr.returnsType());
+    }
 
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        testExpr.resetState(postOptimization);
+        thenExpr.resetState(postOptimization);
+        elseExpr.resetState(postOptimization);
+    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitConditional(this);
     }
 
     /* RewritableExpression API */
-    
-	@Override
-	public void replace(Expression oldExpr, Expression newExpr) {
-		if (testExpr == oldExpr)
-			testExpr = newExpr;
-		else if (thenExpr == oldExpr)
-			thenExpr = newExpr;
-		else if (elseExpr == oldExpr)
-			elseExpr = newExpr;
-	}
-	
-	@Override
-	public Expression getPrevious(Expression current) {
-		return null;
-	}
-	
-	@Override
-	public Expression getFirst() {
-		return null;
-	}
-	
-	@Override
-	public void remove(Expression oldExpr) throws XPathException {
-	}
-	
-	@Override
-	public void insertAfter(Expression exprBefore, Expression newExpr)
-			throws XPathException {
-	}
-	
-	/* END RewritableExpression API */
+    @Override
+    public void replace(Expression oldExpr, Expression newExpr) {
+        if (testExpr == oldExpr)
+            testExpr = newExpr;
+        else if (thenExpr == oldExpr)
+            thenExpr = newExpr;
+        else if (elseExpr == oldExpr)
+            elseExpr = newExpr;
+    }
+
+    @Override
+    public Expression getPrevious(Expression current) {
+        return null;
+    }
+
+    @Override
+    public Expression getFirst() {
+        return null;
+    }
+
+    @Override
+    public void remove(Expression oldExpr) throws XPathException {
+        //Nothing to do
+    }
+
+    @Override
+    public void insertAfter(Expression exprBefore, Expression newExpr)
+            throws XPathException {
+        //Nothing to do
+    }
+
+    /* END RewritableExpression API */
 }

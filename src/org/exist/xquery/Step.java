@@ -32,8 +32,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class Step extends AbstractExpression {
 
-	protected final static Logger LOG = Logger.getLogger(Step.class);
-	
+    protected final static Logger LOG = Logger.getLogger(Step.class);
+
     protected int axis = Constants.UNKNOWN_AXIS;
 
     protected boolean abbreviatedStep = false;
@@ -78,49 +78,47 @@ public abstract class Step extends AbstractExpression {
     public List<Predicate> getPredicates() {
         return predicates;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	//context.("t")
-    	if (test != null && test.getName() != null && test.getName().getPrefix() != null &&
-    			!test.getName().getPrefix().equals("") && context.inScopePrefixes !=  null && 
-    			context.getURIForPrefix(test.getName().getPrefix()) == null)
-    		throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '" + 
-    				test.getName().getPrefix() + "'");
-    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
-    	this.contextId = contextInfo.getContextId();
-    	
-    	if (predicates.size() > 0) {
-	    	AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
-	        newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
-	    	newContext.setParent(this);
+        if (test != null && test.getName() != null &&
+                test.getName().getPrefix() != null &&
+                !test.getName().getPrefix().equals("") && context.inScopePrefixes !=  null &&
+                context.getURIForPrefix(test.getName().getPrefix()) == null)
+            throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '"
+                + test.getName().getPrefix() + "'");
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        this.contextId = contextInfo.getContextId();
+        if (predicates.size() > 0) {
+            AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+            newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
+            newContext.setParent(this);
             newContext.setContextStep(this);
             for (Predicate pred : predicates) {
-            	pred.analyze(newContext);
-	        }
+                pred.analyze(newContext);
+            }
             if (predicates.size() == 1 && (newContext.getFlags() & POSITIONAL_PREDICATE) != 0)
                 hasPositionalPredicate = true;
-    	}
+        }
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)
             staticReturnType = contextInfo.getStaticType();
-
     }
-    
+
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
 
     public int getAxis() {
         return axis;
     }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
-	 */
-	public void setPrimaryAxis(int axis) {
-		this.axis = axis;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
+     */
+    public void setPrimaryAxis(int axis) {
+        this.axis = axis;
+    }
 
     public int getPrimaryAxis() {
         return this.axis;
@@ -142,54 +140,43 @@ public abstract class Step extends AbstractExpression {
             dumper.display( Constants.AXISSPECIFIERS[axis] );
         dumper.display( "::" );
         if ( test != null )
-        	//TODO : toString() or... dump ?
+            //TODO : toString() or... dump ?
             dumper.display( test.toString() );
         else
             dumper.display( "node()" );
         if ( predicates.size() > 0 )
             for (Predicate pred : predicates) {
-            	pred.dump(dumper);
+                pred.dump(dumper);
             }
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-        if ( axis != Constants.UNKNOWN_AXIS)
-        	result.append( Constants.AXISSPECIFIERS[axis] );
+        StringBuilder result = new StringBuilder();
+        if (axis != Constants.UNKNOWN_AXIS)
+            result.append( Constants.AXISSPECIFIERS[axis] );
         result.append( "::" );
-        if ( test != null )
-        	result.append( test.toString() );
+        if (test != null )
+            result.append( test.toString() );
         else
-        	result.append( "node()" );
-        if ( predicates.size() > 0 )
+            result.append( "node()" );
+        if (predicates.size() > 0 )
             for (Predicate pred : predicates) {
-            	result.append(pred.toString());
+                result.append(pred.toString());
             }
         return result.toString();
-    }    
+    }
 
-	//TODO : not sure about this one...
-	/*    
-	public int getDependencies() {
-		if (test == null)
-			return Dependency.CONTEXT_SET;
-		else
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
-	}
-	*/
-	
-	public int returnsType() {
-    	//Polysemy of "." which might be atomic if the context sequence is atomic itself
-    	if (axis == Constants.SELF_AXIS) {
-    		//Type.ITEM by default : this may change *after* evaluation
-//            LOG.debug("My static type: " + Type.getTypeName(staticReturnType));
+    public int returnsType() {
+        //Polysemy of "." which might be atomic if the context sequence is atomic itself
+        if (axis == Constants.SELF_AXIS) {
+            //Type.ITEM by default : this may change *after* evaluation
             return staticReturnType;
         } else
-    		return Type.NODE;
+            return Type.NODE;
     }
-    
+
     public int getCardinality() {
-   	return Cardinality.ZERO_OR_MORE;
+        return Cardinality.ZERO_OR_MORE;
    }
 
     public void setAxis( int axis ) {
@@ -203,14 +190,14 @@ public abstract class Step extends AbstractExpression {
     public NodeTest getTest() {
         return test;
     }
-    
+
     /* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-		for (Predicate pred : predicates) {
-			pred.resetState(postOptimization);
-		}
-	}
+     * @see org.exist.xquery.AbstractExpression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        for (Predicate pred : predicates) {
+            pred.resetState(postOptimization);
+        }
+    }
 }
