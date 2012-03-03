@@ -44,22 +44,22 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FilteredExpression extends AbstractExpression {
 
-	final protected Expression expression;
+    final protected Expression expression;
     protected boolean abbreviated = false;
 	final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
     private Expression parent;
-    
-    /**
-	 * @param context
-	 */
-	public FilteredExpression(XQueryContext context, Expression expr) {
-		super(context);
-		this.expression = expr;
-	}
 
-	public void addPredicate(Predicate pred) {
-		predicates.add(pred);
-	}
+    /**
+     * @param context
+     */
+    public FilteredExpression(XQueryContext context, Expression expr) {
+        super(context);
+        this.expression = expr;
+    }
+
+    public void addPredicate(Predicate pred) {
+        predicates.add(pred);
+    }
 
     public List<Predicate> getPredicates() {
         return predicates;
@@ -79,36 +79,37 @@ public class FilteredExpression extends AbstractExpression {
         contextInfo.setParent(this);
         expression.analyze(contextInfo);
         for (Predicate pred : predicates) {
-			pred.analyze(contextInfo);
+            pred.analyze(contextInfo);
         }
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         Sequence result;
-		Sequence seq = expression.eval(contextSequence, contextItem);
-		if (seq.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
+        Sequence seq = expression.eval(contextSequence, contextItem);
+        if (seq.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
         else {
             Predicate pred = predicates.get(0);
             // If the current step is an // abbreviated step, we have to treat the predicate
-            // specially to get the context position right. //a[1] translates to /descendant-or-self::node()/a[1],
-            // so we need to return the 1st a from any parent of a.
-            //
+            // specially to get the context position right. //a[1] translates 
+            //to /descendant-or-self::node()/a[1], so we need to return the
+            //1st a from any parent of a.
             // If the predicate is known to return a node set, no special treatment is required.
             if (abbreviated &&
                     (pred.getExecutionMode() != Predicate.NODE || !seq.isPersistentSet())) {
@@ -119,7 +120,8 @@ public class FilteredExpression extends AbstractExpression {
                     for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
                         NodeValue node = (NodeValue) i.nextItem();
                         Sequence newContextSeq =
-                                contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT, getExpressionId());
+                            contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT,
+                            getExpressionId());
                         Sequence temp = processPredicate(outerSequence, newContextSeq);
                         result.addAll(temp);
                     }
@@ -133,15 +135,14 @@ public class FilteredExpression extends AbstractExpression {
                         result.addAll(temp);
                     }
                 }
-            } else
+            } else {
                 result = processPredicate(contextSequence, seq);
+            }
         }
-        
-        if (context.getProfiler().isEnabled())           
+        if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result); 
-        
-		return result;
-	}
+        return result;
+    }
 
     private Sequence processPredicate(Sequence contextSequence, Sequence seq) throws XPathException {
         for (Predicate pred : predicates) {
@@ -161,40 +162,40 @@ public class FilteredExpression extends AbstractExpression {
             pred.dump(dumper);
         }
     }
-    
+
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(expression.toString());
         for (Predicate pred : predicates) {
-        	result.append(pred.toString());
+            result.append(pred.toString());
         }
         return result.toString();
-    }    
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return expression.returnsType();
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-		expression.resetState(postOptimization);
-		for (Predicate pred : predicates) {
-			pred.resetState(postOptimization);
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#returnsType()
+     */
+    public int returnsType() {
+        return expression.returnsType();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
-	 */
-	public void setPrimaryAxis(int axis) {
-		expression.setPrimaryAxis(axis);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        expression.resetState(postOptimization);
+        for (Predicate pred : predicates) {
+            pred.resetState(postOptimization);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
+     */
+    public void setPrimaryAxis(int axis) {
+        expression.setPrimaryAxis(axis);
+    }
 
     public int getPrimaryAxis() {
         return expression.getPrimaryAxis();
@@ -203,17 +204,17 @@ public class FilteredExpression extends AbstractExpression {
     public void setAbbreviated(boolean abbrev) {
         abbreviated = abbrev;
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getDependencies()
-	 */
-	public int getDependencies() {
-		int deps = Dependency.CONTEXT_SET;
-		for (Predicate pred : predicates) {
-			deps |= pred.getDependencies();
-		}
-		return deps;
-	}
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#getDependencies()
+     */
+    public int getDependencies() {
+        int deps = Dependency.CONTEXT_SET;
+        for (Predicate pred : predicates) {
+            deps |= pred.getDependencies();
+        }
+        return deps;
+    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitFilteredExpr(this);

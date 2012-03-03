@@ -41,7 +41,7 @@ public class ExtensionExpression extends AbstractExpression {
 
     private Expression innerExpression;
     private List<Pragma> pragmas = new ArrayList<Pragma>(3);
-    
+
     public ExtensionExpression(XQueryContext context) {
         super(context);
     }
@@ -49,11 +49,11 @@ public class ExtensionExpression extends AbstractExpression {
     public void setExpression(Expression inner) {
         this.innerExpression = inner;
     }
-    
+
     public void addPragma(Pragma pragma) {
         pragmas.add(pragma);
     }
-    
+
     /**
      * For every pragma in the list, calls {@link Pragma#before(XQueryContext, Expression)} before evaluation.
      * The method then tries to call {@link Pragma#eval(Sequence, Item)} on every pragma.
@@ -74,7 +74,6 @@ public class ExtensionExpression extends AbstractExpression {
                 result = temp;
             }
         }
-        
         if (result == null)
             result = innerExpression.eval(contextSequence, contextItem);
         callAfter();
@@ -118,29 +117,28 @@ public class ExtensionExpression extends AbstractExpression {
         dumper.endIndent();
         dumper.nl().display('}').nl();
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#getDependencies()
      */
     public int getDependencies() {
         return innerExpression.getDependencies();
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#getCardinality()
      */
     public int getCardinality() {
         return innerExpression.getCardinality();
     }
-    
+
     public void setContextDocSet(DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
         innerExpression.setContextDocSet(contextSet);
     }
 
-
     public void setPrimaryAxis(int axis) {
-        innerExpression.setPrimaryAxis(axis);            
+        innerExpression.setPrimaryAxis(axis);
     }
 
     public int getPrimaryAxis() {
