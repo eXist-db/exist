@@ -492,15 +492,7 @@ public class Predicate extends PathExpr {
             case Constants.DESCENDANT_AXIS:
             case Constants.DESCENDANT_SELF_AXIS:
             case Constants.DESCENDANT_ATTRIBUTE_AXIS: {
-                NodeSet outerNodeSet;
-                // Ugly and costly processing of VirtualNodeSets
-                // TODO : CORRECT THIS !!!
-                if (outerSequence instanceof VirtualNodeSet) {
-                    // Looks like we don't need to treat VirtualNodeSet
-                    // specially here.
-                    outerNodeSet = outerSequence.toNodeSet();
-                } else
-                    outerNodeSet = outerSequence.toNodeSet();
+                NodeSet outerNodeSet = outerSequence.toNodeSet();
                 // TODO: in some cases, especially with in-memory nodes,
                 // outerSequence.toNodeSet() will generate a document
                 // which will be different from the one(s) in contextSet

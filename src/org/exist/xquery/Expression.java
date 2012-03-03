@@ -68,7 +68,7 @@ public interface Expression {
     public final static int POSITIONAL_PREDICATE = 64;
     public final static int DOT_TEST = 128;
     public final static int IN_NODE_CONSTRUCTOR = 256;
-    
+
     /**
      * Indicates that the expression will redirect subexpressions evaluation 
      * result to output stream after some manipulations.
@@ -176,7 +176,7 @@ public interface Expression {
     public int getDependencies();
 
     public Expression simplify();
-    
+
     /**
      * Called to inform an expression that it should reset to its initial state.
      *
@@ -193,7 +193,7 @@ public interface Expression {
      * @return
      */
     public boolean needsReset();
-    
+
     /**
      * Start traversing the expression tree using the specified {@link ExpressionVisitor}.
      * @param visitor
@@ -237,6 +237,6 @@ public interface Expression {
     public Boolean match(Sequence contextSequence, Item item) throws XPathException;
 
     public boolean allowMixNodesInReturn();
-    
+
     public Expression getParent();
 }

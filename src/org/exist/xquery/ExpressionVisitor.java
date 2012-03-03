@@ -11,22 +11,22 @@ import org.exist.xquery.functions.fn.ExtFulltext;
  */
 public interface ExpressionVisitor {
 
-	/**
-	 * Default fallback method if no other method matches
-	 * the object's type.
-	 * 
-	 * @param expression
-	 */
-	public void visit(Expression expression);
-	
-	/** Found a PathExpr */
-	public void visitPathExpr(PathExpr expression);
+    /**
+     * Default fallback method if no other method matches
+     * the object's type.
+     * 
+     * @param expression
+     */
+    public void visit(Expression expression);
+
+    /** Found a PathExpr */
+    public void visitPathExpr(PathExpr expression);
 
     /** Found a LocationStep */
     public void visitLocationStep(LocationStep locationStep);
 
     public void visitFilteredExpr(FilteredExpression filtered);
-    
+
     public void visitPredicate(Predicate predicate);
 
     public void visitGeneralComparison(GeneralComparison comparison);
@@ -37,11 +37,11 @@ public interface ExpressionVisitor {
     public void visitUnionExpr(Union union);
 
     public void visitIntersectionExpr(Intersection intersect);
-    
+
     public void visitAndExpr(OpAnd and);
 
     public void visitOrExpr(OpOr or);
-    
+
     public void visitFtExpression(ExtFulltext fulltext);
 
     public void visitForExpression(ForExpr forExpr);
@@ -57,7 +57,7 @@ public interface ExpressionVisitor {
     public void visitTryCatch(TryCatchExpression tryCatch);
 
     public void visitDocumentConstructor(DocumentConstructor constructor);
-    
+
     public void visitElementConstructor(ElementConstructor constructor);
 
     public void visitTextConstructor(DynamicTextConstructor constructor);
@@ -67,6 +67,6 @@ public interface ExpressionVisitor {
     public void visitAttribConstructor(DynamicAttributeConstructor constructor);
 
     public void visitVariableReference(VariableReference ref);
-    
+
     public void visitVariableDeclaration(VariableDeclaration decl);
 }
