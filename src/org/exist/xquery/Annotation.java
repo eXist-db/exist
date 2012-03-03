@@ -28,4 +28,22 @@ public class Annotation {
     public LiteralValue[] getValue() {
         return value;
     }
+    
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("%");
+    	sb.append(name);
+    	sb.append(" ");
+    	
+    	for (int i = 0; i < value.length; i++) {
+    		sb.append(value[i].toString());
+    		if (i != value.length - 1)
+    			sb.append(", ");
+    	}
+    	return sb.toString();
+    }
+
+	public AnnotationTrigger getTrigger() {
+		return Annotations.getTrigger(this);
+	}
 }
