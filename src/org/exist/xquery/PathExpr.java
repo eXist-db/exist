@@ -281,7 +281,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (!staticContext)
                     currentContext = result;
             }
-            if (gotAtomicResult && !expr.allowMixNodesInReturn() &&
+            if (gotAtomicResult && !expr.allowMixedNodesInReturn() &&
                     !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
                 throw new XPathException(this, ErrorCodes.XPTY0018,
                     "Cannot mix nodes and atomic values in the result of a path expression.");
@@ -325,10 +325,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     @Override
-    public boolean allowMixNodesInReturn() {
+    public boolean allowMixedNodesInReturn() {
         if (steps.size() == 1)
-            return steps.get(0).allowMixNodesInReturn();
-        return super.allowMixNodesInReturn();
+            return steps.get(0).allowMixedNodesInReturn();
+        return super.allowMixedNodesInReturn();
     }
 
     public void setUseStaticContext(boolean staticContext) {

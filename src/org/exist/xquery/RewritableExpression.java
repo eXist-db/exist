@@ -23,13 +23,15 @@ package org.exist.xquery;
 
 public interface RewritableExpression {
 
-	public void replace(Expression oldExpr, Expression newExpr);
-	
-	public void remove(Expression oldExpr) throws XPathException;
-	
-	public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException;
-	
-	public Expression getPrevious(Expression current);
+    public void replace(Expression oldExpr, Expression newExpr);
 
-	public Expression getFirst();
+    public void remove(Expression oldExpr) throws XPathException;
+
+    public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException;
+
+    public Expression getPrevious(Expression current);
+
+    public Expression getFirst();
+
+    boolean allowMixedNodesInReturn();
 }

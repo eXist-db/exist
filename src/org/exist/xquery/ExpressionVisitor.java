@@ -30,9 +30,8 @@ public interface ExpressionVisitor {
     public void visitPredicate(Predicate predicate);
 
     public void visitGeneralComparison(GeneralComparison comparison);
-    
-    /** Found a CastExpression */
-	public void visitCastExpr(CastExpression expression);
+
+    public void visitCastExpr(CastExpression expression);
 
     public void visitUnionExpr(Union union);
 

@@ -46,7 +46,7 @@ public class FilteredExpression extends AbstractExpression {
 
     final protected Expression expression;
     protected boolean abbreviated = false;
-	final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
+    final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
     private Expression parent;
 
     /**
@@ -111,8 +111,8 @@ public class FilteredExpression extends AbstractExpression {
             //to /descendant-or-self::node()/a[1], so we need to return the
             //1st a from any parent of a.
             // If the predicate is known to return a node set, no special treatment is required.
-            if (abbreviated &&
-                    (pred.getExecutionMode() != Predicate.NODE || !seq.isPersistentSet())) {
+            if (abbreviated && (pred.getExecutionMode() != Predicate.NODE ||
+                    !seq.isPersistentSet())) {
                 result = new ValueSequence();
                 if (seq.isPersistentSet()) {
                     NodeSet contextSet = seq.toNodeSet();

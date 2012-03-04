@@ -39,14 +39,14 @@ public interface NodeTest {
      * @param nodeType an <code>int</code> value
      */
     public void setType(int nodeType);
-    
+
     /**
      * The method <code>getType</code>
      *
      * @return an <code>int</code> value
      */
     public int getType();
-    
+
     /**
      * The method <code>matches</code>
      *
@@ -54,7 +54,7 @@ public interface NodeTest {
      * @return a <code>boolean</code> value
      */
     public boolean matches(NodeProxy proxy);
-    
+
     /**
      * The method <code>matches</code>
      *
@@ -64,16 +64,16 @@ public interface NodeTest {
     public boolean matches(Node node);
 
     public boolean matches(XMLStreamReader reader);
-    
+
     public boolean matches(QName name);
-    
+
     /**
      * The method <code>isWildcardTest</code>
      *
      * @return a <code>boolean</code> value
      */
     public boolean isWildcardTest();
-    
+
     /**
      * The method <code>getName</code>
      *

@@ -32,48 +32,45 @@ import org.exist.xquery.value.Type;
  */
 public abstract class NodeConstructor extends AbstractExpression {
 
-	protected MemTreeBuilder builder = null;
-	protected boolean newDocumentContext = false;
+    protected MemTreeBuilder builder = null;
+    protected boolean newDocumentContext = false;
 
     public NodeConstructor(XQueryContext context) {
-		super(context);
-	}
-	
-	public void setDocumentBuilder(MemTreeBuilder builder) {
-		this.builder = builder;
-	}
+        super(context);
+    }
+
+    public void setDocumentBuilder(MemTreeBuilder builder) {
+        this.builder = builder;
+    }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         newDocumentContext = (contextInfo.getFlags() & IN_NODE_CONSTRUCTOR) == 0;
     }
 
     /* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public abstract Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException;
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public abstract Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs)
-		throws XPathException {
-		return in_docs;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
+     */
+    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+        return in_docs;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.NODE;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#returnsType()
+     */
+    public int returnsType() {
+        return Type.NODE;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+    }
 }

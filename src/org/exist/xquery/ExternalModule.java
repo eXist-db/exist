@@ -36,56 +36,56 @@ public interface ExternalModule extends Module {
 
     public void setNamespace(String prefix, String namespace);
 
-	/**
-	 * Declare a new function. Called by the XQuery compiler
-	 * when parsing a library module for every function declaration.
-	 * 
-	 * @param func
-	 */
-	public void declareFunction(UserDefinedFunction func);
-	
-	/**
-	 * Try to find the function identified by qname. Returns null
-	 * if the function is undefined.
-	 * 
-	 * @param qname
-	 */
-	public UserDefinedFunction getFunction(QName qname, int arity);
-	
-	public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
+    /**
+     * Declare a new function. Called by the XQuery compiler
+     * when parsing a library module for every function declaration.
+     * 
+     * @param func
+     */
+    public void declareFunction(UserDefinedFunction func);
+
+    /**
+     * Try to find the function identified by qname. Returns null
+     * if the function is undefined.
+     * 
+     * @param qname
+     */
+    public UserDefinedFunction getFunction(QName qname, int arity);
+
+    public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 
     public void analyzeGlobalVars() throws XPathException;
-    
-	/**
-	 * Get the source object this module has been read from.
-	 *
-	 * This is required for query access control.
-	 * @return The source object this module has been read from.
-	 */
-	public Source getSource();
-	
-	/**
-	 * Set the source object this module has been read from.
-	 * 
-	 * This is required to check the validity of a compiled expression.
-	 * @param source
-	 */
-	public void setSource(Source source);
-	
-	public XQueryContext getContext();
-	
-	/**
-	 * Set the XQueryContext of this module. This will be a sub-context
-	 * of the main context as parts of the static context are shared. 
-	 * 
-	 * @param context
-	 */
-	public void setContext(XQueryContext context);
-	
-	/**
-	 * Is this module still valid or should it be reloaded from its source?
-	 */
-	public boolean moduleIsValid(DBBroker broker);
+
+    /**
+     * Get the source object this module has been read from.
+     *
+     * This is required for query access control.
+     * @return The source object this module has been read from.
+     */
+    public Source getSource();
+
+    /**
+     * Set the source object this module has been read from.
+     * 
+     * This is required to check the validity of a compiled expression.
+     * @param source
+     */
+    public void setSource(Source source);
+
+    public XQueryContext getContext();
+
+    /**
+     * Set the XQueryContext of this module. This will be a sub-context
+     * of the main context as parts of the static context are shared. 
+     * 
+     * @param context
+     */
+    public void setContext(XQueryContext context);
+
+    /**
+     * Is this module still valid or should it be reloaded from its source?
+     */
+    public boolean moduleIsValid(DBBroker broker);
 
     /**
      * Returns the root expression associated with this context.

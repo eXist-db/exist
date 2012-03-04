@@ -219,75 +219,82 @@ public class OpNumeric extends BinaryOp {
         Constants.PLUS,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
         Constants.PLUS,     Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE,
         Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.DATE,                  Type.DATE,
-        Constants.PLUS,     Type.DATE,                  Type.DAY_TIME_DURATION,		Type.DATE,
-   	 Constants.PLUS,	Type.DAY_TIME_DURATION, 	Type.DATE,					Type.DATE,
-   	 Constants.PLUS,	Type.TIME, 					Type.DAY_TIME_DURATION,		Type.TIME,
-   	 Constants.PLUS,	Type.DAY_TIME_DURATION, 	Type.TIME,					Type.TIME,
-   	 Constants.PLUS,	Type.DATE_TIME, 			Type.YEAR_MONTH_DURATION, 	Type.DATE_TIME,
-   	 Constants.PLUS,	Type.YEAR_MONTH_DURATION, 	Type.DATE_TIME, 			Type.DATE_TIME,
-   	 Constants.PLUS,	Type.DATE_TIME, 			Type.DAY_TIME_DURATION,		Type.DATE_TIME,
-   	 Constants.PLUS,	Type.DAY_TIME_DURATION, 	Type.DATE_TIME,				Type.DATE_TIME,
-   	 Constants.PLUS,	Type.YEAR_MONTH_DURATION, 	Type.YEAR_MONTH_DURATION, 	Type.YEAR_MONTH_DURATION,
-   	 Constants.PLUS,	Type.DAY_TIME_DURATION, 	Type.DAY_TIME_DURATION, 	Type.DAY_TIME_DURATION,
-   	 Constants.MINUS,	Type.NUMBER, 				Type.NUMBER,				Type.NUMBER,
-   	 Constants.MINUS,	Type.DATE, 					Type.DATE,					Type.DAY_TIME_DURATION,
-   	 Constants.MINUS,	Type.DATE, 					Type.YEAR_MONTH_DURATION,	Type.DATE,
-   	 Constants.MINUS,	Type.DATE, 					Type.DAY_TIME_DURATION,		Type.DATE,
-   	 Constants.MINUS,	Type.TIME, 					Type.TIME,					Type.DAY_TIME_DURATION,
-   	 Constants.MINUS,	Type.TIME, 					Type.DAY_TIME_DURATION,		Type.TIME,
-   	 Constants.MINUS,	Type.DATE_TIME, 			Type.DATE_TIME,				Type.DAY_TIME_DURATION,
-   	 Constants.MINUS,	Type.DATE_TIME, 			Type.YEAR_MONTH_DURATION, 	Type.DATE_TIME,
-   	 Constants.MINUS,	Type.DATE_TIME, 			Type.DAY_TIME_DURATION,		Type.DATE_TIME,
-   	 Constants.MINUS,	Type.YEAR_MONTH_DURATION, 	Type.YEAR_MONTH_DURATION, 	Type.YEAR_MONTH_DURATION,
-   	 Constants.MINUS,	Type.DAY_TIME_DURATION, 	Type.DAY_TIME_DURATION, 	Type.DAY_TIME_DURATION,
-   	 
-   	 Constants.MULT,	Type.NUMBER, 				Type.NUMBER,				Type.NUMBER,
-   	 Constants.MULT,	Type.YEAR_MONTH_DURATION, 	Type.NUMBER,				Type.YEAR_MONTH_DURATION,
-   	 Constants.MULT,	Type.NUMBER, 				Type.YEAR_MONTH_DURATION,	Type.YEAR_MONTH_DURATION,
-   	 Constants.MULT,	Type.DAY_TIME_DURATION, 	Type.NUMBER,				Type.DAY_TIME_DURATION,
-   	 Constants.MULT,	Type.NUMBER, 				Type.DAY_TIME_DURATION,		Type.DAY_TIME_DURATION,
-   	 
-   	 Constants.IDIV,	Type.NUMBER, 				Type.NUMBER,				Type.INTEGER,
-   	 
-   	 Constants.DIV,		Type.NUMBER,				Type.NUMBER,				Type.NUMBER,  // except for integer -> decimal
-   	 Constants.DIV,		Type.YEAR_MONTH_DURATION, 	Type.NUMBER,				Type.YEAR_MONTH_DURATION,
-   	 Constants.DIV,		Type.DAY_TIME_DURATION, 	Type.NUMBER,				Type.DAY_TIME_DURATION,
-   	 Constants.DIV,		Type.YEAR_MONTH_DURATION, 	Type.YEAR_MONTH_DURATION, 	Type.DECIMAL,
-   	 Constants.DIV,		Type.DAY_TIME_DURATION, 	Type.DAY_TIME_DURATION, 	Type.DECIMAL,
-   	 
-   	 Constants.MOD,		Type.NUMBER, 				Type.NUMBER,				Type.NUMBER,
+        Constants.PLUS,     Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE,
+        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DATE,                  Type.DATE,
+        Constants.PLUS,     Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME,
+        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.TIME,                  Type.TIME,
+        Constants.PLUS,     Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,
+        Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,             Type.DATE_TIME,
+        Constants.PLUS,     Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME,
+        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DATE_TIME,             Type.DATE_TIME,
+        Constants.PLUS,     Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
+        Constants.PLUS,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
+        Constants.MINUS,    Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
+        Constants.MINUS,    Type.DATE,                  Type.DATE,                  Type.DAY_TIME_DURATION,
+        Constants.MINUS,    Type.DATE,                  Type.YEAR_MONTH_DURATION,   Type.DATE,
+        Constants.MINUS,    Type.DATE,                  Type.DAY_TIME_DURATION,     Type.DATE,
+        Constants.MINUS,    Type.TIME,                  Type.TIME,                  Type.DAY_TIME_DURATION,
+        Constants.MINUS,    Type.TIME,                  Type.DAY_TIME_DURATION,     Type.TIME,
+        Constants.MINUS,    Type.DATE_TIME,             Type.DATE_TIME,             Type.DAY_TIME_DURATION,
+        Constants.MINUS,    Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,
+        Constants.MINUS,    Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME,
+        Constants.MINUS,    Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
+        Constants.MINUS,    Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
+        Constants.MULT,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
+        Constants.MULT,     Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION,
+        Constants.MULT,     Type.NUMBER,                Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,
+        Constants.MULT,     Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION,
+        Constants.MULT,     Type.NUMBER,                Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,
+        Constants.IDIV,     Type.NUMBER,                Type.NUMBER,                Type.INTEGER,
+        Constants.DIV,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER,  // except for integer -> decimal
+        Constants.DIV,      Type.YEAR_MONTH_DURATION,   Type.NUMBER,                Type.YEAR_MONTH_DURATION,
+        Constants.DIV,      Type.DAY_TIME_DURATION,     Type.NUMBER,                Type.DAY_TIME_DURATION,
+        Constants.DIV,      Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.DECIMAL,
+        Constants.DIV,      Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DECIMAL,
+        Constants.MOD,      Type.NUMBER,                Type.NUMBER,                Type.NUMBER,
     };
-    
+
     private static class OpEntry implements Comparable<OpEntry> {
-   	 public final int op, typeA, typeB, typeResult;
-   	 public OpEntry(int op, int typeA, int typeB) {
-   		 this(op, typeA, typeB, Type.ATOMIC);
+        public final int op, typeA, typeB, typeResult;
+
+        public OpEntry(int op, int typeA, int typeB) {
+            this(op, typeA, typeB, Type.ATOMIC);
+        }
+
+        public OpEntry(int op, int typeA, int typeB, int typeResult) {
+            this.op = op; this.typeA = typeA; this.typeB = typeB; this.typeResult = typeResult;
+        }
+
+        public int compareTo(OpEntry that) {
+            if (this.op != that.op)
+                return this.op - that.op;
+            else if (this.typeA != that.typeA)
+                return this.typeA - that.typeA;
+            else if (this.typeB != that.typeB)
+                return this.typeB - that.typeB;
+            else return 0;
    	 }
-   	 public OpEntry(int op, int typeA, int typeB, int typeResult) {
-   		 this.op = op; this.typeA = typeA; this.typeB = typeB; this.typeResult = typeResult;
-   	 }
-   	 public int compareTo(OpEntry that) {
-   		 if (this.op != that.op) return this.op - that.op;
-   		 else if (this.typeA != that.typeA) return this.typeA - that.typeA;
-   		 else if (this.typeB != that.typeB) return this.typeB - that.typeB;
-   		 else return 0;
-   	 }
-   	 public boolean equals(Object o) {
-   		 try {
-      		 OpEntry that = (OpEntry) o;
-      		 return this.op == that.op && this.typeA == that.typeA && this.typeB == that.typeB;
-   		 } catch (ClassCastException e) {
-   			 return false;
-   		 }
-   	 }
-   	 // TODO: implement hashcode, if needed
+
+        public boolean equals(Object o) {
+            try {
+                OpEntry that = (OpEntry) o;
+                return this.op == that.op && this.typeA == that.typeA &&
+                    this.typeB == that.typeB;
+            } catch (ClassCastException e) {
+                return false;
+            }
+   	     }
+
+// TODO: implement hashcode, if needed
+
     }
-    
+
     private static final Map<OpEntry, OpEntry> OP_TYPES = new TreeMap<OpEntry, OpEntry>();
+
     static {
-   	 for (int i=0; i<OP_TABLE.length; i+=4) {
-   		 OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);
-   		 OP_TYPES.put(entry, entry);
-   	 }
+        for (int i=0; i < OP_TABLE.length; i+=4) {
+            OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);
+            OP_TYPES.put(entry, entry);
+        }
     }
 }

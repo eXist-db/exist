@@ -28,7 +28,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 
-
 /**
  * Implements a dynamic comment constructor. Contrary to {@link org.exist.xquery.CommentConstructor},
  * the character content of a DynamicCommentConstructor is determined only at evaluation time.
@@ -38,7 +37,6 @@ import org.exist.xquery.value.SequenceIterator;
 public class DynamicCommentConstructor extends NodeConstructor {
 
     final private Expression content;
-    
 
     /**
      * @param context

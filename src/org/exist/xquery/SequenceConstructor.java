@@ -34,22 +34,21 @@ import org.exist.xquery.value.ValueSequence;
  * @author wolf
  */
 public class SequenceConstructor extends PathExpr {
-	
-	/**
-	 * @param context
-	 */
-	public SequenceConstructor(XQueryContext context) {
-		super(context);
-	}
-	
+
+    /**
+     * @param context
+     */
+    public SequenceConstructor(XQueryContext context) {
+        super(context);
+    }
+
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
-
         int staticType = Type.ANY_TYPE;
-        for (int i = 0; i < steps.size(); i++) {
+        for (int i = 0 ; i < steps.size() ; i++) {
             Expression expr = steps.get(i);
             //Create a new context info because each sequence expression could modify it (add/remove flags...)
             AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
@@ -61,20 +60,22 @@ public class SequenceConstructor extends PathExpr {
         }
         contextInfo.setStaticReturnType(staticType);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
         ValueSequence result = new ValueSequence();
         result.keepUnOrdered(unordered);
         for(Expression step : steps) {
@@ -87,66 +88,66 @@ public class SequenceConstructor extends PathExpr {
             } finally {
                 context.popDocumentContext();
             }
-        } 
-		
+        }
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
-        
-		return result;
-	}
+        return result;
+    }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
         dumper.display("(");
         dumper.startIndent();
-    	boolean moreThanOne = false;
+        boolean moreThanOne = false;
         for(Expression step : steps) {
-            if (moreThanOne) dumper.display(", ");
-        	moreThanOne = true;
-        	step.dump(dumper);
+            if (moreThanOne)
+                dumper.display(", ");
+            moreThanOne = true;
+            step.dump(dumper);
         }
         dumper.endIndent();
         dumper.nl().display(")");
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-    	result.append("( ");
-    	boolean moreThanOne = false;
-        for(Expression step : steps) {
-        	if (moreThanOne) result.append(", ");
-        	moreThanOne = true;
-        	result.append(step.toString());        	
-        }        
+        StringBuilder result = new StringBuilder();
+        result.append("( ");
+        boolean moreThanOne = false;
+        for (Expression step : steps) {
+            if (moreThanOne)
+                result.append(", ");
+            moreThanOne = true;
+            result.append(step.toString());
+        }
         result.append(" )");
         return result.toString();
-    }    
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
-	 */
-	public int returnsType() {
-		return Type.ITEM;
-	}
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
-		return Cardinality.ZERO_OR_MORE;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#returnsType()
+     */
+    public int returnsType() {
+        return Type.ITEM;
+    }
 
-	@Override
-	public boolean allowMixNodesInReturn() {
-		return true;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#getCardinality()
+     */
+    public int getCardinality() {
+        return Cardinality.ZERO_OR_MORE;
+    }
+
+    @Override
+    public boolean allowMixedNodesInReturn() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#resetState()
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+    }
 }

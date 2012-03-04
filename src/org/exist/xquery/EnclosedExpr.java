@@ -40,92 +40,89 @@ import org.xml.sax.SAXException;
  */
 public class EnclosedExpr extends PathExpr {
 
-	/**
-	 * 
-	 */
-	public EnclosedExpr(XQueryContext context) {
-		super(context);
-	}
+    /**
+     * 
+     */
+    public EnclosedExpr(XQueryContext context) {
+        super(context);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext,
+     * org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());
         }
-
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
         // evaluate the expression
-		context.pushDocumentContext();
+        context.pushDocumentContext();
         Sequence result;
         try {
             result = super.eval(contextSequence, null);
         } finally {
             context.popDocumentContext();
         }
-        
-		// create the output
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-		receiver.checkNS = true;
-		try {
-			SequenceIterator i = result.iterate();
-			Item next = i.nextItem();			
-			StringBuilder buf = null;
+        // create the output
+        MemTreeBuilder builder = context.getDocumentBuilder();
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        receiver.checkNS = true;
+        try {
+            SequenceIterator i = result.iterate();
+            Item next = i.nextItem();
+            StringBuilder buf = null;
             boolean allowAttribs = true;
             while (next != null) {
-			    context.proceed(this, builder);
-				// if item is an atomic value, collect the string values of all
-				// following atomic values and seperate them by a space. 
-				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-				    if(buf == null)
-				        buf = new StringBuilder();
-					else if (buf.length() > 0)
-						buf.append(' ');
-					buf.append(next.getStringValue());
+                context.proceed(this, builder);
+                // if item is an atomic value, collect the string values of all
+                // following atomic values and separate them by a space.
+                if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+                    if (buf == null)
+                        buf = new StringBuilder();
+                    else if (buf.length() > 0)
+                        buf.append(' ');
+                    buf.append(next.getStringValue());
                     allowAttribs = false;
                     next = i.nextItem();
-                // if item is a node, flush any collected character data and
-				//	copy the node to the target doc. 
-				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                //If the item is a node, flush any collected character data and
+                //copy the node to the target doc. 
+                } else if (Type.subTypeOf(next.getType(), Type.NODE)) {
                     if (buf != null && buf.length() > 0) {
-						receiver.characters(buf);
-						buf.setLength(0);
-					}
+                        receiver.characters(buf);
+                        buf.setLength(0);
+                    }
                     if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
-                        throw new XPathException(this, ErrorCodes.XQTY0024, "An attribute may not appear after " +
-                            "another child node.");
+                        throw new XPathException(this, ErrorCodes.XQTY0024,
+                            "An attribute may not appear after another child node.");
                     next.copyTo(context.getBroker(), receiver);
                     allowAttribs = next.getType() == Type.ATTRIBUTE;
                     next = i.nextItem();
-				}
-			}
-			// flush remaining character data
-			if (buf != null && buf.length() > 0)
-				receiver.characters(buf);
-		} catch (SAXException e) {
-		    LOG.warn("SAXException during serialization: " + e.getMessage(), e);
+                }
+            }
+            // flush remaining character data
+            if (buf != null && buf.length() > 0)
+                receiver.characters(buf);
+        } catch (SAXException e) {
+            LOG.warn("SAXException during serialization: " + e.getMessage(), e);
             throw new XPathException(this, e);
-			//throw new XPathException(getASTNode(),
-			//	"Encountered SAX exception while serializing enclosed expression: "
-			//		+ ExpressionDumper.dump(this));
-		}
-        
-       if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);              
-           
-		return result;
-	}
-	
-	/* (non-Javadoc)
+        }
+       if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+       return result;
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
@@ -135,27 +132,27 @@ public class EnclosedExpr extends PathExpr {
         dumper.endIndent();
         dumper.nl().display("}");
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-    	result.append("{");    	
-    	result.append(super.toString());        
-    	result.append("}");
-    	return result.toString();
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        result.append(super.toString());
+        result.append("}");
+        return result.toString();
     }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitPathExpr(this);
     }
 
-	@Override
-	public boolean allowMixNodesInReturn() {
-		return true;
-	}
-	
-	@Override
-	public Expression simplify() {
-		return this;
-	}
-	
+    @Override
+    public boolean allowMixedNodesInReturn() {
+        return true;
+    }
+
+    @Override
+    public Expression simplify() {
+        return this;
+    }
+
 }
