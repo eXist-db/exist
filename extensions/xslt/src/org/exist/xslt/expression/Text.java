@@ -163,7 +163,7 @@ public class Text extends SimpleConstructor {
     }    
 
 	@Override
-	public boolean allowMixNodesInReturn() {
+	public boolean allowMixedNodesInReturn() {
 		return true;
 	}
 
