@@ -143,19 +143,75 @@ public class XMLUtil {
     }
 
     public final static String getXMLDecl(byte[] data) {
-        boolean foundTag = false;
-        for (int i = 0; i < data.length && !foundTag; i++)
-            if (data[i] == '<') {
-                foundTag = true;
-                if (data[i + 1] == '?' && data[i + 2] == 'x' && data[i + 3] == 'm' && data[i + 4] == 'l')
-                    for (int j = i + 5; j < data.length; j++)
-                        if (data[j] == '?' && data[j + 1] == '>') {
-                            String xmlDecl = new String(data, i, j - i + 2);
-                            return xmlDecl;
-                        }
-            }
-        return null;
-    }
+		boolean foundTag = false;
+		for (int i = 0; i < data.length && !foundTag; i++)
+			if (data[i] == '<') {
+				foundTag = true;
+
+				/*
+				 * Need to gather the next 4 non-zero values and test them
+				 * because greater than 8-bytes character encodings will be
+				 * represented with two bits
+				 */
+				boolean foundQuestionMark = false;
+				int placeInDeclString = 0;
+				byte[] declString = new byte[4];
+				int x = (i+1);
+				for (; x < data.length; x++)
+				{
+
+					if(data[x] == 0) continue;
+
+					if(!foundQuestionMark && data[x] != '?') break;
+					else foundQuestionMark = true;
+
+					declString[placeInDeclString] = data[x];
+					placeInDeclString++;
+					
+					if(placeInDeclString >= 4) break;
+				}
+				
+				if (placeInDeclString == 4
+					&& declString[0] == '?'
+					&& declString[1] == 'x'
+					&& declString[2] == 'm'
+					&& declString[3] == 'l')
+					
+				{
+
+					ByteArrayOutputStream out = new ByteArrayOutputStream(150);
+					
+					out.write('<');
+					out.write(declString, 0, 4);
+					
+					for (int j = (x+1); j < data.length; j++)
+					{
+						if(data[j] != 0) out.write(data[j]);
+						
+						if (data[j] == '?')
+						{
+							j++;
+							/*
+							 * When we find this we have to start looking for the end tag
+							 */
+							for (; j < data.length; j++)
+							{
+								if(data[j] == 0) continue;
+								
+								out.write(data[j]);
+								
+								if(data[j] != '>') break;
+								
+								String xmlDecl = new String(out.toByteArray());
+								return xmlDecl;
+							}
+							
+						}
+					}
+				}
+			}
+		return null;
+	}
 
     public final static String readFile(File file) throws IOException {
         return readFile(file, "ISO-8859-1");
