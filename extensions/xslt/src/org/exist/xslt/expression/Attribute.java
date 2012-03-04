@@ -270,7 +270,7 @@ public class Attribute extends SimpleConstructor {
         return node;
 	}
 	
-	public boolean allowMixNodesInReturn() {
+	public boolean allowMixedNodesInReturn() {
 		return true;
 	}
 
