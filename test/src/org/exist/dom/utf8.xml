@@ -1,0 +1,7 @@
+<?xml version="1.0"?><lc:filter version="1.0" xmlns:lc="http://www.sdlxysoft.com/LiveContent/lc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<features>
+<feature name="Role" value="Author"></feature>
+<feature name="Role" value="Reviewer"></feature>
+<feature name="Role" value="TrisoftHelp"></feature>
+</features>
+</lc:filter>
