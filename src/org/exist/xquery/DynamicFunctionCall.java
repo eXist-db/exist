@@ -57,7 +57,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 
     @Override
     public int returnsType() {
-        return Type.ITEM;	// unknown until the reference is resolved
+        return Type.ITEM; // Unknown until the reference is resolved
     }
 
     @Override

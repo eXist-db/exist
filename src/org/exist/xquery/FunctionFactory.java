@@ -49,7 +49,6 @@ public class FunctionFactory {
      * contains.
      */
     public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-
         QName qname = null;
         try {
             qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
@@ -57,311 +56,285 @@ public class FunctionFactory {
             xpe.setLocation(ast.getLine(), ast.getColumn());
             throw xpe;
         }
-
         String local = qname.getLocalName();
         String uri = qname.getNamespaceURI();
-
         Expression step = null;
-        
-        if(Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri)) {
-
+        if (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri)) {
             //TODO : move to text:near()
-            
-            if(local.equals("near")) {
-                // near(node-set, string)
+            if (local.equals("near")) {
                 step = near(context, ast, params);
-
             } else if(local.equals("phrase")) {
-                // phrase(node-set, string)
                 step = phrase(context, ast, params);
-
             } else if(local.equals("starts-with")) {
-                // starts-with(node-set, string)
                 step = startsWith(context, ast, parent, params);
-
             } else if(local.equals("ends-with")) {
-                // ends-with(node-set, string)
                 step = endsWith(context, ast, parent, params);
-
             } else if(local.equals("contains")) {
-                // contains(node-set, string)
                 step = contains(context, ast, parent, params);
-
             } else if(local.equals("equals")) {
-                // equals(node-set, string)
                 step = equals(context, ast, parent, params);
             }
-
-            // Check if the namespace belongs to one of the schema namespaces.
-            // If yes, the function is a constructor function
-        } else if(uri.equals(Namespaces.SCHEMA_NS) || uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
+        //Check if the namespace belongs to one of the schema namespaces.
+        //If yes, the function is a constructor function
+        } else if (uri.equals(Namespaces.SCHEMA_NS) ||
+                uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
             step = castExpression(context, ast, params, qname);
-
-            // Check if the namespace URI starts with "java:". If yes, treat the function call as a call to
-            // an arbitrary Java function.
-        } else if(uri.startsWith("java:")) {
+        //Check if the namespace URI starts with "java:". If yes, treat
+        //the function call as a call to an arbitrary Java function.
+        } else if (uri.startsWith("java:")) {
             step = javaFunctionBinding(context, ast, params, qname);
         }
-
-        // None of the above matched: function is either a builtin function or
-        // a user-defined function
-        if(step == null) {
+        //None of the above matched: function is either a built-in function or
+        //a user-defined function
+        if (step == null) {
             step = functionCall(context, ast, params, qname);
         }
-        
         return step;
     }
 
     /**
      * near(node-set, string)
      */
-    private static ExtNear near(XQueryContext context, XQueryAST ast, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function near() requires two arguments");
+    private static ExtNear near(XQueryContext context, XQueryAST ast,
+            List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function near() requires two arguments");
         }
-
         PathExpr p1 = (PathExpr) params.get(1);
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to near is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of near() is empty");
         }
-
         Expression e1 = p1.getExpression(0);
         ExtNear near = new ExtNear(context);
         near.setLocation(ast.getLine(), ast.getColumn());
         near.addTerm(e1);
         near.setPath((PathExpr) params.get(0));
-
-        if(params.size() > 2) {
+        if (params.size() > 2) {
             p1 = (PathExpr) params.get(2);
-            if(p1.getLength() == 0) {
-                throw new XPathException(ast.getLine(), ast.getColumn(), "Max distance argument to near is empty");
+            if (p1.getLength() == 0) {
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                    "Max distance argument of near() is empty");
             }
             near.setMaxDistance(p1);
-
-            if(params.size() == 4) {
+            if (params.size() == 4) {
                 p1 = (PathExpr) params.get(3);
                 if(p1.getLength() == 0) {
-                    throw new XPathException(ast.getLine(), ast.getColumn(), "Min distance argument to near is empty");
+                    throw new XPathException(ast.getLine(), ast.getColumn(),
+                        "Min distance argument of near() is empty");
                 }
                 near.setMinDistance(p1);
             }
         }
-
         return near;
     }
 
     /**
      * phrase(node-set, string)
      */
-    private static ExtPhrase phrase(XQueryContext context, XQueryAST ast, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function phrase() requires two arguments");
+    private static ExtPhrase phrase(XQueryContext context, XQueryAST ast,
+            List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function phrase() requires two arguments");
         }
-
         PathExpr p1 = (PathExpr) params.get(1);
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to phrase is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of phrase() is empty");
         }
-
         Expression e1 = p1.getExpression(0);
         ExtPhrase phrase = new ExtPhrase(context);
         phrase.setLocation(ast.getLine(), ast.getColumn());
         phrase.addTerm(e1);
         phrase.setPath((PathExpr) params.get(0));
-
         return phrase;
     }
 
     /**
      * starts-with(node-set, string)
      */
-    private static GeneralComparison startsWith(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function starts-with() requires two or three arguments");
+    private static GeneralComparison startsWith(XQueryContext context,
+            XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function starts-with() requires two or three arguments");
         }
-
-        if(params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function starts-with() requires two or three arguments");
+        if (params.size() > 3) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function starts-with() requires two or three arguments");
         }
-
         PathExpr p0 = (PathExpr) params.get(0);
         PathExpr p1 = (PathExpr) params.get(1);
-
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to starts-with is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of starts-with() is empty");
         }
-
-        GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
+        GeneralComparison op = new GeneralComparison(context, p0, p1,
+            Constants.EQ, Constants.TRUNC_RIGHT);
         op.setLocation(ast.getLine(), ast.getColumn());
         //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Rewritten start-with as a general comparison with a right truncations");
-        if(params.size() == 3) {
+        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
+                "OPTIMIZATION", "Rewritten start-with as a general comparison with a right truncations");
+        if (params.size() == 3) {
             op.setCollation((Expression) params.get(2));
         }
-
         return op;
     }
 
     /**
      * ends-with(node-set, string)
      */
-    private static GeneralComparison endsWith(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017 : Function ends-with() requires two or three arguments");
+    private static GeneralComparison endsWith(XQueryContext context, XQueryAST ast,
+            PathExpr parent, List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017 : Function ends-with() requires two or three arguments");
         }
-
-        if(params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017 : Function ends-with() requires two or three arguments");
+        if (params.size() > 3) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017 : Function ends-with() requires two or three arguments");
         }
-
         PathExpr p0 = (PathExpr) params.get(0);
         PathExpr p1 = (PathExpr) params.get(1);
-
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to ends-with is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of ends-with() is empty");
         }
-
         GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
         //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Rewritten ends-with as a general comparison with a left truncations");
+        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
+            "OPTIMIZATION", "Rewritten ends-with as a general comparison with a left truncations");
         op.setLocation(ast.getLine(), ast.getColumn());
         if(params.size() == 3) {
             op.setCollation((Expression) params.get(2));
         }
-
         return op;
     }
 
     /**
      * contains(node-set, string)
      */
-    private static GeneralComparison contains(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function contains() requires two or three arguments");
+    private static GeneralComparison contains(XQueryContext context, XQueryAST ast,
+            PathExpr parent, List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function contains() requires two or three arguments");
         }
-
-        if(params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function contains() requires two or three arguments");
+        if (params.size() > 3) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function contains() requires two or three arguments");
         }
-
         PathExpr p0 = (PathExpr) params.get(0);
         PathExpr p1 = (PathExpr) params.get(1);
-
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to contains is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of contains() is empty");
         }
-
-        GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
+        GeneralComparison op = new GeneralComparison(context, p0, p1,
+            Constants.EQ, Constants.TRUNC_BOTH);
         //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Rewritten contains as a general comparison with left and right truncations");
+        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
+            "OPTIMIZATION", "Rewritten contains() as a general comparison with left and right truncations");
         op.setLocation(ast.getLine(), ast.getColumn());
-        if(params.size() == 3) {
+        if (params.size() == 3) {
             op.setCollation((Expression) params.get(2));
         }
-
         return op;
     }
 
     /**
      * equals(node-set, string)
      */
-    private static GeneralComparison equals(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-
-        if(params.size() < 2) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function equals() requires two or three arguments");
+    private static GeneralComparison equals(XQueryContext context, XQueryAST ast,
+            PathExpr parent, List<Expression> params) throws XPathException {
+        if (params.size() < 2) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function equals() requires two or three arguments");
         }
-
-        if(params.size() > 3) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function equals() requires two or three arguments");
+        if (params.size() > 3) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Function equals() requires two or three arguments");
         }
-
         PathExpr p0 = (PathExpr) params.get(0);
         PathExpr p1 = (PathExpr) params.get(1);
-
-        if(p1.getLength() == 0) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Second argument to equals is empty");
+        if (p1.getLength() == 0) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Second argument of equals() is empty");
         }
-
-        GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_EQUALS);
+        GeneralComparison op = new GeneralComparison(context, p0, p1,
+            Constants.EQ, Constants.TRUNC_EQUALS);
         //TODO : not sure for parent -pb
-        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Rewritten contains as a general comparison with no truncations");
+        context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
+            "OPTIMIZATION", "Rewritten contains() as a general comparison with no truncations");
         op.setLocation(ast.getLine(), ast.getColumn());
-        if(params.size() == 3) {
+        if (params.size() == 3) {
             op.setCollation((Expression) params.get(2));
         } else {
             op.setCollation(new StringValue("?strength=identical"));
         }
-
         return op;
     }
 
-    private static CastExpression castExpression(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-
-        if(params.size() != 1) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Wrong number of arguments for constructor function");
+    private static CastExpression castExpression(XQueryContext context,
+            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
+        if (params.size() != 1) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "err:XPST0017: Wrong number of arguments for constructor function");
         }
-
         PathExpr arg = (PathExpr) params.get(0);
         int code = Type.getType(qname);
         CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
-
         return castExpr;
     }
 
-    private static JavaCall javaFunctionBinding(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-
+    private static JavaCall javaFunctionBinding(XQueryContext context,
+            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         //Only allow java binding if specified in config file <xquery enable-java-binding="yes">
-        String javabinding = (String) context.getBroker().getConfiguration().getProperty(PROPERTY_ENABLE_JAVA_BINDING);
-
+        String javabinding = (String) context.getBroker().getConfiguration()
+            .getProperty(PROPERTY_ENABLE_JAVA_BINDING);
         if(javabinding == null || !javabinding.equals("yes")) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Java binding is disabled in the current configuration (see conf.xml)." +
+                " Call to " + qname.getStringValue() + " denied.");
         }
-
         JavaCall call = new JavaCall(context, qname);
         call.setLocation(ast.getLine(), ast.getColumn());
         call.setArguments(params);
-
         return call;
     }
 
-    private static Function functionCall(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-
+    private static Function functionCall(XQueryContext context,
+            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         final Function fn;
-
         String uri = qname.getNamespaceURI();
         Module module = context.getModule(uri);
-        if(module != null) {
-            // Function belongs to a module
-            if(module.isInternalModule()) {
+        if (module != null) {
+            //Function belongs to a module
+            if (module.isInternalModule()) {
                 fn = getInternalModuleFunction(context, ast, params, qname, module);
             } else {
-                // function is from an imported XQuery module
+                //Function is from an imported XQuery module
                 fn = getXQueryModuleFunction(context, ast, params, qname, module);
             }
         } else {
             fn = getUserDefinedFunction(context, ast, params, qname);
         }
-
         return fn;
     }
 
     /**
      * Gets a Java function from an Java XQuery Extension Module
      */
-    private static Function getInternalModuleFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
-
-        // for internal modules: create a new function instance from the class
+    private static Function getInternalModuleFunction(XQueryContext context,
+            XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
+        //For internal modules: create a new function instance from the class
         FunctionDef def = ((InternalModule) module).getFunctionDef(qname, params.size());
-
         //TODO: rethink: xsl namespace function should search xpath one too
-        if(def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
-            //search xpath namespace
+        if (def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
+            //Search xpath namespace
             Module _module_ = context.getModule(Namespaces.XPATH_FUNCTIONS_NS);
             if(_module_ != null) {
                 module = _module_;
@@ -369,11 +342,12 @@ public class FunctionFactory {
                 def = ((InternalModule) module).getFunctionDef(qname, params.size());
             }
         }
-
-        if(def == null) {
+        if (def == null) {
             List<FunctionSignature> funcs = ((InternalModule) module).getFunctionsByName(qname);
-            if(funcs.isEmpty()) {
-                throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function " + qname.getStringValue() + "() " + " is not defined in module namespace: " + qname.getNamespaceURI());
+            if (funcs.isEmpty()) {
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                    "err:XPST0017: Function " + qname.getStringValue() + "() " +
+                    " is not defined in module namespace: " + qname.getNamespaceURI());
             } else {
                 StringBuilder buf = new StringBuilder();
                 buf.append("err:XPST0017: ");
@@ -384,23 +358,21 @@ public class FunctionFactory {
                 buf.append(qname.getStringValue());
                 buf.append("()'. ");
                 buf.append("Defined function signatures are:\r\n");
-
-                for(FunctionSignature sig : funcs) {
+                for (FunctionSignature sig : funcs) {
                     buf.append(sig.toString()).append("\r\n");
                 }
-
                 throw new XPathException(ast.getLine(), ast.getColumn(), buf.toString());
             }
         }
-
-        if(((Boolean) context.getBroker().getConfiguration().getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue() && def.getSignature().isDeprecated()) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
+        if (((Boolean) context.getBroker().getConfiguration()
+                .getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue() &&
+                def.getSignature().isDeprecated()) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
-
         Function fn = Function.createFunction(context, ast, def);
         fn.setArguments(params);
         fn.setASTNode(ast);
-
         return new InternalFunctionCall(fn);
     }
 
@@ -408,40 +380,38 @@ public class FunctionFactory {
      * Gets an user defined function from the XQuery
      */
     private static FunctionCall getUserDefinedFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-
         final FunctionCall fc;
-
         UserDefinedFunction func = context.resolveFunction(qname, params.size());
-        if(func != null) {
+        if (func != null) {
             fc = new FunctionCall(context, func);
             fc.setLocation(ast.getLine(), ast.getColumn());
             fc.setArguments(params);
         } else {
-            // create a forward reference which will be resolved later
+            //Create a forward reference which will be resolved later
             fc = new FunctionCall(context, qname, params);
             fc.setLocation(ast.getLine(), ast.getColumn());
             context.addForwardReference(fc);
         }
-
         return fc;
     }
 
     /**
      * Gets an XQuery function from an XQuery Module
      */
-    private static FunctionCall getXQueryModuleFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
-
+    private static FunctionCall getXQueryModuleFunction(XQueryContext context,
+            XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
         final FunctionCall fc;
-
         UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size());
-        if(func == null) {
+        if (func == null) {
             // check if the module has been compiled already
-            if(module.isReady()) {
-                throw new XPathException(ast.getLine(), ast.getColumn(), "err:XPST0017: Function " + qname.getStringValue() + "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
-            } // if not, postpone the function resolution
-            // register a forward reference with the root module, so it gets resolved
+            if (module.isReady()) {
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                    "err:XPST0017: Function " + qname.getStringValue() +
+                    "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
+            // If not, postpone the function resolution
+            // Register a forward reference with the root module, so it gets resolved
             // when the main query has been compiled.
-            else {
+            } else {
                 fc = new FunctionCall(((ExternalModule) module).getContext(), qname, params);
                 fc.setLocation(ast.getLine(), ast.getColumn());
                 if(((ExternalModule) module).getContext() == context) {
@@ -455,7 +425,6 @@ public class FunctionFactory {
             fc.setArguments(params);
             fc.setLocation(ast.getLine(), ast.getColumn());
         }
-
         return fc;
     }
 }

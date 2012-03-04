@@ -35,7 +35,7 @@ public class DebuggableExpression implements Expression {
 
     protected int line = -1;
     protected int column = -1;
-    
+
     public DebuggableExpression(Expression expression) {
         this.expression = expression.simplify();
         this.line = this.expression.getLine();
@@ -90,7 +90,7 @@ public class DebuggableExpression implements Expression {
     public boolean needsReset() {
     	return true;
     }
-    
+
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
     }
@@ -120,7 +120,7 @@ public class DebuggableExpression implements Expression {
             line = ast.getLine();
             column = ast.getColumn();
         }
-	}
+   }
 
     public void setLocation(int line, int column) {
         this.line = line;
@@ -144,34 +144,34 @@ public class DebuggableExpression implements Expression {
     }
 
     public int getSubExpressionCount() {
-    	return expression.getSubExpressionCount();
+        return expression.getSubExpressionCount();
     }
-    
+
     public Expression getSubExpression(int index) {
-    	return expression.getSubExpression(index);
+        return expression.getSubExpression(index);
     }
 
-	public Boolean match(Sequence contextSequence, Item item) throws XPathException {
-		return expression.match(contextSequence, item);
-	}
+    public Boolean match(Sequence contextSequence, Item item) throws XPathException {
+        return expression.match(contextSequence, item);
+    }
 
-	@Override
-	public boolean allowMixNodesInReturn() {
-		return false;
-	}
+    @Override
+    public boolean allowMixedNodesInReturn() {
+        return false;
+    }
 
-	@Override
-	public String toString() {
-		return expression.toString();
-	}
+    @Override
+    public String toString() {
+        return expression.toString();
+    }
 
-	@Override
-	public Expression simplify() {
-		return this;
-	}
+    @Override
+    public Expression simplify() {
+        return this;
+    }
 
-	@Override
-	public Expression getParent() {
-		return null;
-	}
+    @Override
+    public Expression getParent() {
+        return null;
+    }
 }

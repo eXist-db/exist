@@ -193,7 +193,7 @@ public abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public boolean allowMixNodesInReturn() {
+    public boolean allowMixedNodesInReturn() {
         return false;
     }
 

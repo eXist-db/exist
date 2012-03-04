@@ -50,6 +50,7 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
+
     // Declare it in Namespaces instead? /ljo
     public final static String BUILTIN_FUNCTION_NS =
             "http://www.w3.org/2005/xpath-functions";
@@ -124,9 +125,9 @@ public abstract class Function extends PathExpr {
             try {
                 construct = fclass.getConstructor(constructorArgs);
             } catch(NoSuchMethodException e) {
-                //Ignore ? -pb
+                //Don't ignore ? -pb
             }
-            // not found: check if the constructor takes two arguments
+            //Not found: check if the constructor takes two arguments
             if (construct == null) {
                 constructorArgs = new Class[2];
                 constructorArgs[0] = XQueryContext.class;
@@ -180,8 +181,8 @@ public abstract class Function extends PathExpr {
      */
     public void setArguments(List<Expression> arguments) throws XPathException {
         if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount())
-            throw new XPathException(this, "err:XPST0017: "+
-                "number of arguments of function " + getName() +
+            throw new XPathException(this, ErrorCodes.XPST0017, 
+                "Number of arguments of function " + getName() +
                 " doesn't match function signature (expected " +
                 mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
         steps = new ArrayList<Expression>(arguments.size());
@@ -268,7 +269,7 @@ public abstract class Function extends PathExpr {
                     new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
                 returnType = type.getPrimaryType();
             }
-            // if the required type is an atomic type, convert the argument to an atomic 
+            //If the required type is an atomic type, convert the argument to an atomic 
             if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
                 if(!Type.subTypeOf(returnType, Type.ATOMIC))
                     expr = new Atomize(context, expr);
@@ -279,7 +280,7 @@ public abstract class Function extends PathExpr {
             }
         //Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
         } else {
-            // if the required type is an atomic type, convert the argument to an atomic 
+            //If the required type is an atomic type, convert the argument to an atomic 
             if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
                 if(!Type.subTypeOf(returnType, Type.ATOMIC))
                     expr = new Atomize(context, expr);
@@ -290,7 +291,7 @@ public abstract class Function extends PathExpr {
         }
         if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
             if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
-                    //because () is seen as a node
+                    //Because () is seen as a node
                     (type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(expr));
                 throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 

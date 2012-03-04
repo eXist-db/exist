@@ -69,10 +69,11 @@ public class ForExpr extends BindingExpression {
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
-    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
+    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[],
+            GroupSpec groupBy[]) throws XPathException { 
         // bv : Declare the grouping variable 
         if(groupVarName != null){ 
-            LocalVariable groupVar = new LocalVariable(QName.parse(context, groupVarName, null)); 
+            LocalVariable groupVar = new LocalVariable(QName.parse(context, groupVarName, null));
             groupVar.setSequenceType(sequenceType); 
             context.declareVariableBinding(groupVar); 
         } 
@@ -107,7 +108,7 @@ public class ForExpr extends BindingExpression {
                 posVar.setStaticType(Type.INTEGER);
                 context.declareVariableBinding(posVar);
             }
-            if(whereExpr != null) {
+            if (whereExpr != null) {
                 AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
                 newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
                 newContextInfo.setContextId(getExpressionId());
@@ -182,7 +183,7 @@ public class ForExpr extends BindingExpression {
             }
         }
         // Check if we can speed up the processing of the "order by" clause.
-        boolean fastOrderBy = false; // checkOrderSpecs(in);
+        boolean fastOrderBy = false;
         LocalVariable var;
         Sequence in;
         // Save the local variable stack
@@ -361,7 +362,9 @@ public class ForExpr extends BindingExpression {
                         ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
                         ", got " +Type.getTypeName(resultSequence.getItemType()));
             //trigger the old behaviour
-            } else var.checkType();
+            } else {
+                var.checkType();
+            }
         }
         actualReturnType = resultSequence.getItemType();
         context.expressionEnd(this);
@@ -415,7 +418,7 @@ public class ForExpr extends BindingExpression {
             } 
             dumper.nl(); 
         } 
-        if(orderSpecs != null) {
+        if (orderSpecs != null) {
             dumper.display("order by ");
             for (int i = 0; i < orderSpecs.length; i++) {
                 if (i > 0)
@@ -458,7 +461,7 @@ public class ForExpr extends BindingExpression {
             result.append("$").append(groupVarName);
             result.append(" by ");
             for(int i = 0; i < groupSpecs.length; i++) {
-                if(i > 0)
+                if (i > 0)
                     result.append(", ");
                 result.append(groupSpecs[i].getGroupExpression().toString());
                 result.append(" as ");

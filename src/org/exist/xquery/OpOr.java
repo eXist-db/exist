@@ -33,78 +33,75 @@ import org.exist.xquery.value.Sequence;
  */
 public class OpOr extends LogicalOp {
 
-	public OpOr(XQueryContext context) {
-		super(context);
-	}
+    public OpOr(XQueryContext context) {
+        super(context);
+    }
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		if (getLength() == 0)
-			return Sequence.EMPTY_SEQUENCE;
-        
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-
+        if (getLength() == 0)
+            return Sequence.EMPTY_SEQUENCE;
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         boolean doOptimize = optimize;
         if (contextSequence != null && !contextSequence.isPersistentSet())
             doOptimize = false;
         Sequence result;
-		Expression left = getLeft();
-		Expression right = getRight();
-		Sequence ls = left.eval(contextSequence, null);
-		// first check if left operand is a persistent set
-		doOptimize = doOptimize && ls.isPersistentSet();
-		if(doOptimize) {
-			// yes: try to optimize by looking at right operand
-			Sequence rs = right.eval(contextSequence, null);
-			if (rs.isPersistentSet()) {
-				NodeSet rl = ls.toNodeSet();
-				rl = rl.getContextNodes(contextId);
-				NodeSet rr = rs.toNodeSet();
-				rr = rr.getContextNodes(contextId);
-				result = rl.union(rr);
-				//<test>{() or ()}</test> should return <test>false</test>			
-				if (getParent() instanceof EnclosedExpr ||
-					//First, the intermediate PathExpr
-					(getParent() != null && getParent().getParent() == null)) {					
-					result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-				}
-			} else {
-				// fall back
-				boolean rl = ls.effectiveBooleanValue();
-				if (rl)
-	                result = BooleanValue.TRUE;
-	            else {
-	                boolean rr = rs.effectiveBooleanValue();
-	                result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;                
-	            }
-			}
-        } else {
-        	// no: default evaluation based on boolean value
-			boolean rl = ls.effectiveBooleanValue();
-			if (rl)
-                result = BooleanValue.TRUE;
-            else {
-            	Sequence rs = right.eval(contextSequence, null);
-                boolean rr = rs.effectiveBooleanValue();
-                result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;                
+        Expression left = getLeft();
+        Expression right = getRight();
+        Sequence ls = left.eval(contextSequence, null);
+        // first check if left operand is a persistent set
+        doOptimize = doOptimize && ls.isPersistentSet();
+        if (doOptimize) {
+            // yes: try to optimize by looking at right operand
+            Sequence rs = right.eval(contextSequence, null);
+            if (rs.isPersistentSet()) {
+                NodeSet rl = ls.toNodeSet();
+                rl = rl.getContextNodes(contextId);
+                NodeSet rr = rs.toNodeSet();
+                rr = rr.getContextNodes(contextId);
+                result = rl.union(rr);
+                //<test>{() or ()}</test> should return <test>false</test>			
+                if (getParent() instanceof EnclosedExpr ||
+                    //First, the intermediate PathExpr
+                    (getParent() != null && getParent().getParent() == null)) {
+                    result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+                }
+            } else {
+                // fall back
+                boolean rl = ls.effectiveBooleanValue();
+                if (rl) {
+                    result = BooleanValue.TRUE;
+                } else {
+                    boolean rr = rs.effectiveBooleanValue();
+                    result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;
+                }
             }
-		}
-        
+        } else {
+            // no: default evaluation based on boolean value
+            boolean rl = ls.effectiveBooleanValue();
+            if (rl) {
+                result = BooleanValue.TRUE;
+            } else {
+                Sequence rs = right.eval(contextSequence, null);
+                boolean rr = rs.effectiveBooleanValue();
+                result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;
+            }
+        }
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
-        
         return result;
-	}
-
+    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitOrExpr(this);
@@ -124,17 +121,17 @@ public class OpOr extends LogicalOp {
         }
         dumper.display(")");
     }
-    
+
     public String toString() {
         if (getLength() == 0)
             return "";
         StringBuilder result = new StringBuilder("(");
         result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
-        	result.append(") or (");
-        	result.append(getExpression(i).toString());
+            result.append(") or (");
+            result.append(getExpression(i).toString());
         }
         result.append(")");
         return result.toString();
-    }    
+    }
 }

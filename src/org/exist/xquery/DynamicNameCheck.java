@@ -170,7 +170,7 @@ public class DynamicNameCheck extends AbstractExpression {
 
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("dynamic-name-check");   
+        result.append("dynamic-name-check");
         result.append("["); 
         result.append(Type.getTypeName(test.nodeType));
         result.append(", "); 

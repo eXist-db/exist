@@ -36,28 +36,26 @@ import org.exist.xquery.value.StringValue;
  */
 public class TextConstructor extends NodeConstructor {
 
-	private final String text;
-	private boolean isWhitespaceOnly = true;
+    private final String text;
+    private boolean isWhitespaceOnly = true;
 
     public TextConstructor(XQueryContext context, String text) throws XPathException {
-		super(context);
-		this.text = StringValue.expand(text);
-		for(int i = 0; i < text.length(); i++)
-			if(!isWhiteSpace(text.charAt(i))) {
-				isWhitespaceOnly = false;
-				break;
-			}
-	}
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		if(isWhitespaceOnly && context.stripWhitespace())
-			return Sequence.EMPTY_SEQUENCE;
+        super(context);
+        this.text = StringValue.expand(text);
+        for (int i = 0; i < text.length(); i++) {
+            if (!isWhiteSpace(text.charAt(i))) {
+                isWhitespaceOnly = false;
+                break;
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (isWhitespaceOnly && context.stripWhitespace())
+            return Sequence.EMPTY_SEQUENCE;
         if (newDocumentContext)
             context.pushDocumentContext();
         try {
@@ -72,7 +70,7 @@ public class TextConstructor extends NodeConstructor {
         }
     }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
@@ -82,25 +80,25 @@ public class TextConstructor extends NodeConstructor {
         dumper.endIndent();
         dumper.nl().display("}");
     }
-    
+
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-    	result.append("text {");
-    	result.append(text.toString());
+        StringBuilder result = new StringBuilder();
+        result.append("text {");
+        result.append(text.toString());
         result.append("}");
         return result.toString();
-    }    
-    
-	protected final static boolean isWhiteSpace(char ch) {
-		return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
-	}
+    }
 
-	public String getText() {
-		return text;
-	}
+    protected final static boolean isWhiteSpace(char ch) {
+        return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
+    }
 
-	@Override
-	public boolean allowMixNodesInReturn() {
-		return true;
-	}
+    public String getText() {
+        return text;
+    }
+
+    @Override
+    public boolean allowMixedNodesInReturn() {
+        return true;
+    }
 }
