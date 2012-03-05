@@ -71,6 +71,10 @@
                 de.betterform.agent.web.resources.ResourceServlet
             </servlet-class>
         </servlet>
+        <servlet>
+            <servlet-name>error</servlet-name>
+            <servlet-class>de.betterform.agent.web.servlet.ErrorServlet</servlet-class>
+        </servlet>
         <xsl:text>
 </xsl:text>
 
@@ -100,6 +104,10 @@
         <servlet-mapping>
             <servlet-name>ResourceServlet</servlet-name>
             <url-pattern>/bfResources/*</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+            <servlet-name>error</servlet-name>
+            <url-pattern>/error/*</url-pattern>
         </servlet-mapping>
         <xsl:text>
 </xsl:text>
