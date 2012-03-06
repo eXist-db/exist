@@ -35,7 +35,7 @@ public abstract class Annotations {
     //workaround
     static {
     	try {
-			Class<?> clazz = Class.forName("org.exist.xquery.test.Annotations");
+			Class<?> clazz = Class.forName("org.exist.xquery.xUnit.Annotations");
 			clazz.newInstance();
 		} catch (Exception e) {
 		}
