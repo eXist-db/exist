@@ -2125,7 +2125,9 @@ public class NativeBroker extends DBBroker {
             //TODO : exception ? -pb
         } finally {
             //TOUNDERSTAND : by whom is this lock acquired ? -pb
-            collection.release(lockMode);
+        	// If we don't check for the NO_LOCK we'll pop someone else's lock off
+            if(lockMode != Lock.NO_LOCK)
+            	collection.release(lockMode);
         }
         return null;
     }
