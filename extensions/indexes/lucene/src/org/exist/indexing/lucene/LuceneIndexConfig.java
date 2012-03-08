@@ -44,10 +44,14 @@ public class LuceneIndexConfig {
             isQNameIndex = true;
         } else {
             String matchPath = config.getAttribute(MATCH_ATTR);
-            path = new NodePath(namespaces, matchPath);
-            if (path.length() == 0)
-                throw new DatabaseConfigurationException("Lucene module: Invalid match path in collection config: " +
-                    matchPath);
+            try {
+				path = new NodePath(namespaces, matchPath);
+				if (path.length() == 0)
+				    throw new DatabaseConfigurationException("Lucene module: Invalid match path in collection config: " +
+				        matchPath);
+			} catch (IllegalArgumentException e) {
+				throw new DatabaseConfigurationException("Lucene module: invalid qname in configuration: " + e.getMessage());
+			}
         }
         String name = config.getAttribute(FIELD_ATTR);
         if (name != null && name.length() > 0)
