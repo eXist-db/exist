@@ -37,9 +37,7 @@
                 <step>
                     <para>Before building eXist, you need to enable the Lucene module by editing
                             <code>extensions/indexes/build.properties</code> (also see the
-                        documentation on <ulink
-                            url="http://www.exist-db.org/indexing.html#moduleconf">index
-                            modules</ulink>):</para>
+                        documentation on <ulink href="indexing.xml#moduleconf">index modules</ulink>):</para>
                     <example>
                         <title>build.properties</title>
                         <programlisting><![CDATA[# Lucene integration
@@ -94,7 +92,7 @@ include.index.lucene = true
             <title>Configuring the Index</title>
             <para>Like other indexes, you create a lucene index by configuring it in a <filename
                     >collection.xconf</filename> document. If you have never done that before, read
-                the corresponding <ulink url="http://www.exist-db.org/indexing.html#idxconf"
+                the corresponding <ulink href="indexing.xml#idxconf"
                     >documentation</ulink>. An example <filename>collection.xconf</filename> is
                 shown below:</para>
             <example>
