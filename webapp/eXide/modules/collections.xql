@@ -16,7 +16,7 @@
  :  You should have received a copy of the GNU General Public License
  :  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  :)
-xquery version "1.0";
+xquery version "3.0";
 
 declare namespace json="http://www.json.org";
 
@@ -231,18 +231,81 @@ declare function local:delete-resource($collection as xs:string, $resources as x
         </response>
 };
 
+declare function local:delete($collection as xs:string, $selection as xs:string+, $user as xs:string) {
+    for $docOrColl in $selection
+    let $path :=
+        if (starts-with($docOrColl, "/")) then
+            $docOrColl
+        else
+            $collection || "/" || $docOrColl
+    let $isCollection := xmldb:collection-available($path)
+    let $response :=
+        if (exists($isCollection)) then
+            local:delete-collection($path, $user)
+        else
+            local:delete-resource($collection, $docOrColl, $user)
+    where $response/@status = "ok"
+    return
+        $response
+};
+
+declare function local:copyOrMove($operation as xs:string, $target as xs:string, $sources as xs:string+, 
+    $user as xs:string) {
+    if (local:canWrite($target, $user)) then
+        for $source in $sources
+        let $isCollection := xmldb:collection-available($source)
+        return
+            try {
+                if ($isCollection) then
+                    let $null := 
+                        switch ($operation)
+                            case "move" return
+                                xmldb:move($source, $target)
+                            default return
+                                xmldb:copy($source, $target)
+                    return
+                        <response status="ok"/>
+                else
+                    let $split := text:groups($source, "^(.*)/([^/]+)$")
+                    let $null := 
+                        switch ($operation)
+                            case "move" return
+                                xmldb:move($split[2], $target, $split[3])
+                            default return
+                                xmldb:copy($split[2], $target, $split[3])
+                    return
+                        <response status="ok"/>
+            } catch * {
+                <response status="fail">
+                    <message>{ $err:description }</message>
+                </response>
+            }
+    else
+        <response status="fail">
+            <message>You are not allowed to write to collection {xmldb:decode-uri(xs:anyURI($target))}</message>
+        </response>
+};
+
 let $deleteCollection := request:get-parameter("remove", ())
 let $deleteResource := request:get-parameter("remove[]", ())
+let $copy := request:get-parameter("copy[]", ())
+let $move := request:get-parameter("move[]", ())
 let $createCollection := request:get-parameter("create", ())
 let $view := request:get-parameter("view", "c")
 let $collection := request:get-parameter("root", "/db")
 let $collName := replace($collection, "^.*/([^/]+$)", "$1")
 let $user := if (session:get-attribute('myapp.user')) then session:get-attribute('myapp.user') else "guest"
 return
-    if ($deleteCollection) then
-        local:delete-collection(xmldb:encode-uri($deleteCollection), $user)
+    if (exists($copy)) then
+        let $result := local:copyOrMove("copy", xmldb:encode-uri($collection), $copy, $user)
+        return
+            ($result[@status = "fail"], $result[1])[1]
+    else if (exists($move)) then
+        let $result := local:copyOrMove("move", xmldb:encode-uri($collection), $move, $user)
+        return
+            ($result[@status = "fail"], $result[1])[1]
     else if (exists($deleteResource)) then
-        local:delete-resource(xmldb:encode-uri($collection), xmldb:encode-uri($deleteResource), $user)
+        local:delete(xmldb:encode-uri($collection), $deleteResource, $user)
     else if ($createCollection) then
         local:create-collection(xmldb:encode-uri($createCollection), $user)
     else if ($view eq "c") then

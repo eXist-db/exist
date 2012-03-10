@@ -23,8 +23,9 @@ declare option exist:serialize "indent=yes";
 let $path := xmldb:encode(request:get-parameter("path", ()))
 let $download := request:get-parameter("download", ())
 let $mime := xmldb:get-mime-type($path)
-let $log := util:log("INFO", ("MIME: ", $mime))
 let $isBinary := util:is-binary-doc($path)
+(: Disable betterFORM filter :)
+let $attribute := request:set-attribute("betterform.filter.ignoreResponseBody", "true")
 let $header := response:set-header("Content-Type", if ($mime) then $mime else "application/binary")
 let $header2 :=
     if ($download) then
