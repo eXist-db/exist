@@ -32,10 +32,13 @@ declare variable $app-root := request:get-attribute("app-root");
 
 declare variable $deploy:ANT_FILE :=
     <project default="xar" name="$$app$$">
+        <property name="project.version" value="$$version$$"/>
+        <property name="project.app" value="$$app$$"/>
         <property name="build.dir" value="build"/>
         <target name="xar">
             <mkdir dir="${{build.dir}}"/>
-            <zip basedir="." destfile="${{build.dir}}/$$app$$-$$version$$.xar" excludes="${{build.dir}}/*"/>
+            <zip basedir="." destfile="${{build.dir}}/${{project.app}}-${{project.version}}.xar" 
+                excludes="${{build.dir}}/*"/>
         </target>
     </project>;
     
@@ -302,8 +305,8 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                             <li>
                                 <div class="hint">The template to use for generating the basic app structure.</div>
                                 <select name="template">
+                                    <option value="templating" selected="selected">HTML Templates</option>
                                     <option value="basic">Basic</option>
-                                    <option value="templating">HTML Templates</option>
                                 </select>
                                 <label for="template">Template:</label>
                             </li>

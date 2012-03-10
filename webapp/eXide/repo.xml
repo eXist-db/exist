@@ -11,4 +11,5 @@
     <repo:prepare>pre-install.xql</repo:prepare>
     <repo:finish/>
     <repo:permissions user="eXide" password="eXide" group="dba" mode="0775"/>
+    <deployed>2012-03-09T17:42:22.97+01:00</deployed>
 </repo:meta>

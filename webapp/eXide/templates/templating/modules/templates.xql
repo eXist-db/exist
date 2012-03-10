@@ -1,3 +1,5 @@
+xquery version "3.0";
+
 module namespace templates="http://exist-db.org/xquery/templates";
 
 (:~
@@ -126,8 +128,14 @@ declare function templates:include($node as node(), $params as element(parameter
 declare function templates:surround($node as node(), $params as element(parameters)?, $model as item()*) {
     let $with := $params/param[@name = "with"]/@value
     let $at := $params/param[@name = "at"]/@value
+    let $using := $params/param[@name = "using"]/@value
     let $path := concat($config:app-root, "/", $with)
-    let $merged := templates:process-surround(doc($path), $node, $at)
+    let $content :=
+        if ($using) then
+            doc($path)//*[@id = $using]
+        else
+            doc($path)
+    let $merged := templates:process-surround($content, $node, $at)
     return
         templates:process($merged, $model)
 };
@@ -167,6 +175,18 @@ declare function templates:if-parameter-unset($node as node(), $params as elemen
             $node
         else
             ()
+};
+
+declare function templates:if-module-missing($node as node(), $params as element(parameters)?, $model as item()*) {
+    let $at := $params/param[@name = "at"]/@value/string()
+    let $uri := $params/param[@name = "uri"]/@value/string()
+    return
+        try {
+            util:import-module($uri, "testmod", $at)
+        } catch * {
+            (: Module was not found: process content :)
+            templates:process($node/node(), $model)
+        }
 };
 
 declare function templates:load-source($node as node(), $params as element(parameters), $model as item()*) as node()* {
@@ -216,18 +236,55 @@ declare function templates:form-control($node as node(), $params as element(para
             $node
 };
 
-(:~
- : Retrieve error description - if any - from HTTP request. Use within an error handler page in
- : combination with an <error-handler> in controller.xql
-:)
 declare function templates:error-description($node as node(), $params as element(parameters)?, $model as item()*) {
     let $input := request:get-attribute("org.exist.forward.error")
     return
-        if (exists($input)) then
+        element { node-name($node) } {
+            $node/@*,
+            util:parse($input)//message/string()
+        }
+};
+
+declare function templates:fix-links($node as node(), $params as element(parameters)?, $model as item()*) {
+    let $root := substring-after(util:collection-name($node), $config:app-root)
+    let $steps := tokenize($root, "/")
+    let $prefix := 
+        concat(request:get-context-path(), request:get-attribute("$exist:prefix"), request:get-attribute("$exist:controller"))
+    let $temp := 
+        element { node-name($node) } {
+            $node/@* except $node/@class,
+            for $child in $node/node() return templates:fix-links($child, $prefix)
+        }
+    return
+        templates:process($temp, $model)
+};
+
+declare function templates:fix-links($node as node(), $prefix as xs:string) {
+    typeswitch ($node)
+        case element(a) return
+            let $href := $node/@href
+            return
+                if (starts-with($href, "/")) then
+                    <a href="{$prefix}{$href}">
+                    { $node/@* except $href, $node/node() }
+                    </a>
+                else
+                    $node
+        case element() return
             element { node-name($node) } {
-                $node/@*,
-                util:parse($input)//message/string()
+                $node/@*, for $child in $node/node() return templates:fix-links($child, $prefix)
             }
-        else
-            ()
+        default return
+            $node
+};
+
+(:~
+ : Determine the absolute path to the application root and output it as an 
+ : HTML <base> tag.
+ :)
+declare function templates:base($node as node(), $params as element(parameters)?, $model as item()*) {
+	    let $context := request:get-context-path()
+		    let $app-root := substring-after($config:app-root, "/db/")
+			    return
+				        <base href="{$context}/apps/{$app-root}/"/>
 };
