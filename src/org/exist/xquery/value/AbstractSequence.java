@@ -88,6 +88,19 @@ public abstract class AbstractSequence implements Sequence {
         return !isEmpty() && !hasOne();
     }
 
+    @Override
+    public Sequence tail() throws XPathException {
+    	ValueSequence tmp = new ValueSequence(getItemCount() - 1);
+    	Item item;
+        SequenceIterator iterator = iterate();
+        iterator.nextItem();
+        while (iterator.hasNext()) {
+            item = iterator.nextItem();
+            tmp.add(item);
+        }
+        return tmp;
+    }
+    
     public String getStringValue() throws XPathException {
         if(isEmpty())
             return "";

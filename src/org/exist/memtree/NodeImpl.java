@@ -299,6 +299,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         }
     }
 
+    public Sequence tail() throws XPathException {
+    	return Sequence.EMPTY_SEQUENCE;
+    }
+    
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getChildNodes()
      */

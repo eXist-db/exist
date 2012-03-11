@@ -65,6 +65,11 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	 */
 	public abstract String getStringValue() throws XPathException;
 
+	@Override
+	public Sequence tail() throws XPathException {
+		return Sequence.EMPTY_SEQUENCE;
+	}
+	
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	public abstract boolean compareTo(Collator collator, int operator, AtomicValue other)

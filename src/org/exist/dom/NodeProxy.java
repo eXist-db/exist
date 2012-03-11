@@ -227,6 +227,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return this;
     }
 
+    @Override
+    public Sequence tail() throws XPathException {
+    	return Sequence.EMPTY_SEQUENCE;
+    }
+    
     /**
      * Ordering first according to document ID; then if equal
      * according to node gid.

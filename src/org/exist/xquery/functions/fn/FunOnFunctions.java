@@ -57,6 +57,15 @@ public class FunOnFunctions extends BasicFunction {
 	}
 	
 	@Override
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
+		if (getContext().getXQueryVersion()<30) {
+			throw new XPathException(this, ErrorCodes.EXXQDY0003, "Function '" + 
+					getSignature().getName() + "' is only supported for xquery version \"3.0\" and later.");
+		}
+	}
+	
+	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		if (isCalledAs("function-lookup")) {
