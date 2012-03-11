@@ -8,10 +8,16 @@
 <project basedir="../.." name="SubVersion">
 
   <description>Subversion tasks</description>
+  
+  <property name="svnkit.repo"    value="http://maven.tmatesoft.com/content/repositories/releases"/>
+  <property name="svnkit.version" value="1.3.7"/>
 
-  <property name="svn.svnkit.jar" value="${lib.user}/svnkit.jar"/>
-  <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli.jar"/>
+  <property name="svn.svnkit.jar" value="${lib.user}/svnkit-${svnkit.version}.jar"/>
+  <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli-${svnkit.version}.jar"/>
+  
   <property name="svn.patch.file" value="exist.patch"/>
+  
+
  
   <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present"/>
    
@@ -46,13 +52,16 @@
 
 		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
     
+    <echo>Old svnkit files will be remove automagically from "${lib.user}"</echo>
+    <delete verbose="true">
+      <fileset dir="${lib.user}" includes="svnkit*jar" excludes="svnkit*${svnkit.version}*jar"></fileset>
+    </delete>
+    
 		<fetch classpathref="classpath.core" dest="${lib.user}" 
-					 url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
-	 		 <patternset>
-			    <include name="**/svnkit.jar"/>
-			    <include name="**/svnkit-cli.jar"/>
-	     </patternset>
-    </fetch>
+		  url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit-cli/${svnkit.version}/svnkit-cli-${svnkit.version}.jar" classname="org.tmatesoft.svn.cli.SVN"/>
+    
+    <fetch classpathref="classpath.core" dest="${lib.user}" 
+      url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit/${svnkit.version}/svnkit-${svnkit.version}.jar" classname="org.tmatesoft.svn.util.Version"/>
 
   </target>
 
@@ -79,8 +88,7 @@
   <target name="svn-update" description="Update project from SubVersion archive.">
     <property name="source-root" value="."/>
     <property name="repository.URL" value="https://exist.svn.sourceforge.net/svnroot/exist"/>
-    <java classname="org.tmatesoft.svn.cli.SVN"
-       dir="." fork="true">
+    <java classname="org.tmatesoft.svn.cli.SVN" dir="." fork="true">
       <arg value="co"/>
       <arg value="${repository.URL}/trunk/eXist"/>
       <arg value="${source-root}"/>
