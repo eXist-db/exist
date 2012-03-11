@@ -39,7 +39,7 @@ import java.util.*;
 public class IndexManager {
 
     private final static Logger LOG = Logger.getLogger(IndexManager.class);
-    
+
     public static final String CONFIGURATION_ELEMENT_NAME = "modules";
     public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     public static final String INDEXER_MODULES_CLASS_ATTRIBUTE = "class";
@@ -70,7 +70,6 @@ public class IndexManager {
         Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
                 config.getProperty(PROPERTY_INDEXER_MODULES);
         String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-
         if (modConf != null) {
             for (int i = 0; i < modConf.length; i++) {
                 String className = modConf[i].getClassName();
@@ -111,12 +110,9 @@ public class IndexManager {
 
     public Index registerIndex(Index index) throws DatabaseConfigurationException {
         index.open();
-
         indexers.put(index.getIndexId(), index);
-
         if (LOG.isInfoEnabled())
             LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
-
         return index;
     }
 
@@ -126,7 +122,7 @@ public class IndexManager {
      * @return the broker pool
      */
     public BrokerPool getBrokerPool() {
-    	return pool;
+        return pool;
     }
 
     /**
@@ -145,12 +141,12 @@ public class IndexManager {
      * @return the index
      */
     public synchronized Index getIndexById(String indexId) {
-    	for (Iterator<Index> i = iterator(); i.hasNext(); ) {
-    		Index indexer = i.next();
+        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
+            Index indexer = i.next();
             if (indexId.equals(indexer.getIndexId()))
-    			return indexer;
-    	}
-    	return null;
+                return indexer;
+        }
+        return null;
     }
 
     /** 
@@ -161,7 +157,7 @@ public class IndexManager {
     public synchronized Index getIndexByName(String indexName) {
         return indexers.get(indexName);
     }
-    
+
     /**
      * Returns a set of IndexWorkers, one for each registered index. The
      * returned IndexWorkers are used by the DBBroker instances to perform the

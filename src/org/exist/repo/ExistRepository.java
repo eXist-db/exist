@@ -35,37 +35,33 @@ import org.expath.pkg.repo.URISpace;
  * @author Florent Georges
  * @since  2010-09-22
  */
-public class ExistRepository
-{
-    public ExistRepository(FileSystemStorage storage)
-            throws PackageException
-    {
+public class ExistRepository {
+
+    public ExistRepository(FileSystemStorage storage) throws PackageException {
         myParent = new Repository(storage);
         myParent.registerExtension(new ExistPkgExtension());
     }
 
-    public Repository getParentRepo()
-    {
+    public Repository getParentRepo() {
         return myParent;
     }
 
     public Module resolveJavaModule(String namespace, XQueryContext ctxt)
-            throws XPathException
-    {
+            throws XPathException {
         // the URI
         URI uri;
         try {
             uri = new URI(namespace);
         }
-        catch ( URISyntaxException ex ) {
+        catch (URISyntaxException ex) {
             throw new XPathException("Invalid URI: " + namespace, ex);
         }
-        for ( Packages pp : myParent.listPackages() ) {
+        for (Packages pp : myParent.listPackages()) {
             Package pkg = pp.latest();
             ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-            if ( info != null ) {
+            if (info != null) {
                 String clazz = info.getJava(uri);
-                if ( clazz != null ) {
+                if (clazz != null) {
                     return getModule(clazz, namespace, ctxt);
                 }
             }
@@ -77,95 +73,82 @@ public class ExistRepository
      * Load a module instance from its class name.  Check the namespace is consistent.
      */
     private Module getModule(String name, String namespace, XQueryContext ctxt)
-            throws XPathException
-    {
+            throws XPathException {
         try {
             Class clazz = Class.forName(name);
             Module module = instantiateModule(clazz);
             String ns = module.getNamespaceURI();
-            if ( ! ns.equals(namespace) ) {
-                throw new XPathException("The namespace in the Java module does not match the namespace in the package descriptor: " + namespace + " - " + ns);
+            if (!ns.equals(namespace)) {
+                throw new XPathException("The namespace in the Java module " +
+                    "does not match the namespace in the package descriptor: " +
+                    namespace + " - " + ns);
             }
             return ctxt.loadBuiltInModule(namespace, name);
-        }
-        catch ( ClassNotFoundException ex ) {
+        } catch ( ClassNotFoundException ex ) {
             throw new XPathException("Cannot find module class from EXPath repository: " + name, ex);
-        }
-        catch ( InstantiationException ex ) {
+        } catch ( InstantiationException ex ) {
             throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
-        }
-        catch ( IllegalAccessException ex ) {
+        } catch ( IllegalAccessException ex ) {
             throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
-        }
-        catch ( InvocationTargetException ex ) {
+        } catch ( InvocationTargetException ex ) {
             throw new XPathException("Problem instantiating module class from EXPath repository: " + name, ex);
-        }
-        catch ( ClassCastException ex ) {
+        } catch ( ClassCastException ex ) {
             throw new XPathException("The class configured in EXPath repository is not a Module: " + name, ex);
-        }
-        catch ( IllegalArgumentException ex ) {
+        } catch ( IllegalArgumentException ex ) {
             throw new XPathException("Illegal argument passed to the module ctor", ex);
         }
     }
 
     /**
-     * Try to instantiate the class using the ctor with a Map parameter, or the default ctor.
+     * Try to instantiate the class using the constructor with a Map parameter, 
+     * or the default constructor.
      */
-    private Module instantiateModule(Class clazz)
-            throws XPathException
-                 , InstantiationException
-                 , IllegalAccessException
-                 , InvocationTargetException
-    {
+    private Module instantiateModule(Class clazz) throws XPathException,
+        InstantiationException, IllegalAccessException, InvocationTargetException {
         try {
             Constructor ctor = clazz.getConstructor(Map.class);
             return (Module) ctor.newInstance(EMPTY_MAP);
-        }
-        catch ( NoSuchMethodException ex ) {
+        } catch (NoSuchMethodException ex) {
             try {
                 Constructor ctor = clazz.getConstructor();
                 return (Module) ctor.newInstance();
             }
-            catch ( NoSuchMethodException exx ) {
-                throw new XPathException("Cannot find suitable constructor for module from expath repository", exx);
+            catch (NoSuchMethodException exx) {
+                throw new XPathException("Cannot find suitable constructor " +
+                    "for module from expath repository", exx);
             }
         }
     }
 
-    public File resolveXQueryModule(String namespace)
-            throws XPathException
-    {
+    public File resolveXQueryModule(String namespace) throws XPathException {
         // the URI
         URI uri;
         try {
             uri = new URI(namespace);
-        }
-        catch ( URISyntaxException ex ) {
+        } catch (URISyntaxException ex) {
             throw new XPathException("Invalid URI: " + namespace, ex);
         }
-        for ( Packages pp : myParent.listPackages() ) {
+        for (Packages pp : myParent.listPackages()) {
             Package pkg = pp.latest();
-            // FIXME: Rely on having a filesystem storage, that's probably a bad design!
+            // FIXME: Rely on having a file system storage, that's probably a bad design!
             FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
             ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-            if ( info != null ) {
+            if (info != null) {
                 String f = info.getXQuery(uri);
-                if ( f != null ) {
+                if (f != null) {
                     return resolver.resolveComponentAsFile(f);
                 }
             }
             String sysid = null; // declared here to be used in catch
             try {
                 StreamSource src = pkg.resolve(namespace, URISpace.XQUERY);
-                if ( src != null ) {
+                if (src != null) {
                     sysid = src.getSystemId();
                     return new File(new URI(sysid));
                 }
-            }
-            catch ( URISyntaxException ex ) {
+            } catch (URISyntaxException ex) {
                 throw new XPathException("Error parsing the URI of the query library: " + sysid, ex);
-            }
-            catch ( PackageException ex ) {
+            } catch (PackageException ex) {
                 throw new XPathException("Error resolving the query library: " + namespace, ex);
             }
         }
@@ -177,7 +160,6 @@ public class ExistRepository
     /** An empty map for constructors expecting a parameter map. */
     private static final Map<String, List<Object>> EMPTY_MAP = new HashMap<String, List<Object>>();
 }
-
 
 /* ------------------------------------------------------------------------ */
 /*  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS COMMENT.               */

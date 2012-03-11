@@ -26,8 +26,8 @@ package org.exist.scheduler;
  *
  * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
-public interface JobDescription
-{
+public interface JobDescription {
+
     /**
      * Get the name of the job.
      *
@@ -35,14 +35,12 @@ public interface JobDescription
      */
     String getName();
 
-
     /**
      * Set the name of the job.
      *
      * @param  name  The job's new name
      */
     void setName( String name );
-
 
     /**
      * Get the name group for the job.

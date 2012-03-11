@@ -11,7 +11,7 @@ public interface QNamedKeysIndex extends IndexWorker {
 
     /**
      * A key to a QName {@link java.util.List} "hint" to be used when the index scans its index entries
-     */	
-	public static final String QNAMES_KEY = "qnames_key";
-	
+     */
+    public static final String QNAMES_KEY = "qnames_key";
+
 }

@@ -39,21 +39,21 @@ public interface Index {
      * Returns an id which uniquely identifies this index.  This is usually the class name. 
      * @return a unique name identifying this index.
      */
-    String getIndexId();	
+    String getIndexId();
 
     /**
      * Returns a human-readable name which uniquely identifies this index. This is configured by the user
      * @return a unique name identifying this index.
      */
     String getIndexName();
-    
+
     /**
      * Returns the {@link org.exist.storage.BrokerPool} on with this Index operates.
      * 
      * @return the broker pool
-     */    
-    BrokerPool getBrokerPool();    
-    
+     */
+    BrokerPool getBrokerPool();
+
 	/**
      * Configure the index and all resources associated with it. This method
      * is called while the database instance is initializing and receives the
@@ -74,7 +74,7 @@ public interface Index {
      * @throws DatabaseConfigurationException
      */
     void open() throws DatabaseConfigurationException;
-    
+
     /**
      * Closes the index and all associated resources.
      *
@@ -94,10 +94,10 @@ public interface Index {
     /**
      * Closes the index and removes it completely, including all resources and files
      * associated to it. This method is called during database repair before the
-     * db contents are reindexed.
+     * db contents are re-indexed.
      */
     void remove() throws DBException;
-    
+
     /**
      * Returns a new IndexWorker, which is used to access the index in a multi-threaded
      * environment.
@@ -111,7 +111,7 @@ public interface Index {
      * @return a new IndexWorker that can be used for concurrent access to the index.
      */
     IndexWorker getWorker(DBBroker broker);
-    
+
     /**
      * Convenience method that allows to check index consistency.
      * 

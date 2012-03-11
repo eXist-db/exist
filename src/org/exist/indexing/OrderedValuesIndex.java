@@ -17,6 +17,6 @@ public interface OrderedValuesIndex extends IndexWorker {
     /**
      * A key to the value "hint" to end with when the index scans its index entries
      */
-    public static final String END_VALUE = "end_value";  	
+    public static final String END_VALUE = "end_value";
 
 }

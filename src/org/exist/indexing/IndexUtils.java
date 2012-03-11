@@ -23,38 +23,38 @@ public class IndexUtils {
         scanNode(transaction, iterator, node, listener, path);
     }
 
-    private static void scanNode(Txn transaction, Iterator<StoredNode> iterator, StoredNode node, StreamListener listener,
-                                 NodePath currentPath) {
+    private static void scanNode(Txn transaction, Iterator<StoredNode> iterator,
+            StoredNode node, StreamListener listener, NodePath currentPath) {
         switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-                if (listener != null) {
-                    listener.startElement(transaction, (ElementImpl) node, currentPath);
+        case Node.ELEMENT_NODE:
+            if (listener != null) {
+                listener.startElement(transaction, (ElementImpl) node, currentPath);
+            }
+            if (node.hasChildNodes()) {
+                int childCount = node.getChildCount();
+                for (int i = 0; i < childCount; i++) {
+                    StoredNode child = iterator.next();
+                    if (child.getNodeType() == Node.ELEMENT_NODE)
+                        currentPath.addComponent(child.getQName());
+                    scanNode(transaction, iterator, child, listener, currentPath);
+                    if (child.getNodeType() == Node.ELEMENT_NODE)
+                        currentPath.removeLastComponent();
                 }
-                if (node.hasChildNodes()) {
-                    int childCount = node.getChildCount();
-                    for (int i = 0; i < childCount; i++) {
-                    	StoredNode child = iterator.next();
-                        if (child.getNodeType() == Node.ELEMENT_NODE)
-                            currentPath.addComponent(child.getQName());
-                        scanNode(transaction, iterator, child, listener, currentPath);
-                        if (child.getNodeType() == Node.ELEMENT_NODE)
-                            currentPath.removeLastComponent();
-                    }
-                }
-                if (listener != null) {
-                    listener.endElement(transaction, (ElementImpl) node, currentPath);
-                }
-                break;
-            case Node.TEXT_NODE :
-                if (listener != null) {
-                    listener.characters(transaction, (TextImpl) node, currentPath);
-                }
-                break;
-            case Node.ATTRIBUTE_NODE :
-                if (listener != null) {
-                    listener.attribute(transaction, (AttrImpl) node, currentPath);
-                }
-                break;
+            }
+            if (listener != null) {
+                listener.endElement(transaction, (ElementImpl) node, currentPath);
+            }
+            break;
+        case Node.TEXT_NODE :
+            if (listener != null) {
+                listener.characters(transaction, (TextImpl) node, currentPath);
+            }
+            break;
+        case Node.ATTRIBUTE_NODE :
+            if (listener != null) {
+                listener.attribute(transaction, (AttrImpl) node, currentPath);
+            }
+            break;
         }
     }
 }
