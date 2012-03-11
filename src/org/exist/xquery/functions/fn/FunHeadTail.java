@@ -72,13 +72,7 @@ public class FunHeadTail extends BasicFunction {
             }
             
             
-            Item item;
-            SequenceIterator iterator = seq.iterate();
-            iterator.nextItem();
-            while (iterator.hasNext()) {
-                item = iterator.nextItem();
-                tmp.add(item);
-            }
+            tmp = seq.tail();
 		}
 		return tmp;
 	}

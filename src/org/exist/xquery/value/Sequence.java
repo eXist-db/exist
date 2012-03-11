@@ -154,6 +154,8 @@ public interface Sequence {
 	 */
 	public Item itemAt(int pos);
 	
+	public Sequence tail() throws XPathException;
+	
 	/**
 	 * Try to convert the sequence into an atomic value. The target type should be specified by
 	 * using one of the constants defined in class {@link Type}. An {@link XPathException}

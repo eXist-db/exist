@@ -207,7 +207,12 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunAnalyzeString.signatures[0], FunAnalyzeString.class),
         new FunctionDef(FunAnalyzeString.signatures[1], FunAnalyzeString.class),
         new FunctionDef(FunHeadTail.signatures[0], FunHeadTail.class),
-        new FunctionDef(FunHeadTail.signatures[1], FunHeadTail.class)
+        new FunctionDef(FunHeadTail.signatures[1], FunHeadTail.class),
+        new FunctionDef(FunHigherOrderFun.signatures[0], FunHigherOrderFun.class),
+        new FunctionDef(FunHigherOrderFun.signatures[1], FunHigherOrderFun.class),
+        new FunctionDef(FunHigherOrderFun.signatures[2], FunHigherOrderFun.class),
+        new FunctionDef(FunHigherOrderFun.signatures[3], FunHigherOrderFun.class),
+		new FunctionDef(FunHigherOrderFun.signatures[4], FunHigherOrderFun.class)
                 
 	};
     

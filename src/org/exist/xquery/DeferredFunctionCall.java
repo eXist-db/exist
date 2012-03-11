@@ -145,6 +145,12 @@ public abstract class DeferredFunctionCall implements Sequence {
         return sequence.getStringValue();
     }
 
+    @Override
+    public Sequence tail() throws XPathException {
+    	realize();
+    	return sequence.tail();
+    }
+    
     public boolean hasMany() {
         try {
             realize();

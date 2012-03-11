@@ -292,7 +292,8 @@ return
     </test>
     <test output="text">
         <task>fn:function-lookup on function in imported module</task>
-        <code><![CDATA[
+        <code><![CDATA[xquery version "3.0";
+            
 import module namespace ex2="http://exist-db.org/xquery/ex2"
 at "xmldb:exist:///db/xq3-test/test1.xql";
 
@@ -351,5 +352,40 @@ return
 ]]>
         </code>
         <expected></expected>
+    </test>
+    <test output="text">
+        <task>fn:map function</task>
+        <code>fn:map(function($a) { $a * $a }, 1 to 5)</code>
+        <expected>1 4 9 16 25</expected>
+    </test>
+    <test output="text">
+        <task>fn:filter function</task>
+        <code>fn:filter(function($a) {$a mod 2 = 0}, 1 to 10)</code>
+        <expected>2 4 6 8 10</expected>
+    </test>
+    <test output="text">
+        <task>fn:fold-left function 1</task>
+        <code> fn:fold-left(function($a, $b) {($b, $a)}, (), 1 to 5)</code>
+        <expected>5 4 3 2 1</expected>
+    </test>
+    <test output="text">
+        <task>fn:fold-left function 2</task>
+        <code>fold-left(function($a, $b) { $a * $b }, 1, (2,3,5,7))</code>
+        <expected>210</expected>
+    </test>
+    <test output="text">
+        <task>fn:fold-right function 1</task>
+        <code>fn:fold-right(function($a, $b) { $a + $b }, 0, 1 to 5)</code>
+        <expected>15</expected>
+    </test>
+    <test output="text">
+        <task>fn:fold-right function 2</task>
+        <code>fn:fold-right(function($a, $b) { concat($a, ".", $b) }, "", 1 to 5)</code>
+        <expected>1.2.3.4.5.</expected>
+    </test>
+    <test output="text">
+        <task>fn:map-pairs function</task>
+        <code>fn:map-pairs(function($a, $b){10*$a + $b}, 1 to 5, 1 to 5)</code>
+        <expected>11 22 33 44 55</expected>
     </test>
 </TestSet>
