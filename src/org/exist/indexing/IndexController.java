@@ -90,7 +90,7 @@ public class IndexController {
                 map.put(indexWorker.getIndexId(), conf);
         }
         return map;
-    }    
+    }
 
     /**
      * Returns an {@link org.exist.indexing.IndexWorker} instance corresponding
@@ -130,7 +130,6 @@ public class IndexController {
             //Reset listener
             listener = null;
         currentDoc = doc;
-
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setDocument(currentDoc);
         }
@@ -147,7 +146,6 @@ public class IndexController {
             //Reset listener
             listener = null;
         currentMode = mode;
-
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setMode(currentMode);
         }
@@ -198,18 +196,19 @@ public class IndexController {
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
      */
-    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
+    public void removeCollection(Collection collection, DBBroker broker)
+            throws PermissionDeniedException {
         for (IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.removeCollection(collection, broker);
         }
     }
 
     /**
-     * Reindex all nodes below the specified root node, using the given mode.
+     * Re-index all nodes below the specified root node, using the given mode.
      *
      * @param transaction the current transaction
      * @param reindexRoot the node from which reindexing should occur
-     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
+     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
      * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
     public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
@@ -224,14 +223,14 @@ public class IndexController {
 
     /**
      * When adding or removing nodes to or from the document tree, it might become
-     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * necessary to re-index some parts of the tree, in particular if indexes are defined
      * on mixed content nodes. This method will call
      * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
      * on each configured index. It will then return the top-most root.
      *
      * @param node the node to be modified.
      * @param path the NodePath of the node
-     * @return the top-most root node to be reindexed
+     * @return the top-most root node to be re-indexed
      */
     public StoredNode getReindexRoot(StoredNode node, NodePath path) {
         return getReindexRoot(node, path, false);
@@ -239,7 +238,7 @@ public class IndexController {
 
     /**
      * When adding or removing nodes to or from the document tree, it might become
-     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * necessary to re-index some parts of the tree, in particular if indexes are defined
      * on mixed content nodes. This method will call
      * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
      * on each configured index. It will then return the top-most root.
@@ -247,7 +246,7 @@ public class IndexController {
      * @param node the node to be modified.
      * @param path path the NodePath of the node
      * @param includeSelf if set to true, the current node itself will be included in the check
-     * @return the top-most root node to be reindexed
+     * @return the top-most root node to be re-indexed
      */
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         StoredNode next, top = null;
@@ -282,7 +281,6 @@ public class IndexController {
         }
         StreamListener first = null;
         StreamListener current, previous = null;
-
         for (IndexWorker worker : indexWorkers.values()) {
             // wolf: setDocument() should have been called before
             //worker.setDocument(currentDoc, currentMode);
@@ -311,15 +309,15 @@ public class IndexController {
     public void indexNode(Txn transaction, StoredNode node, NodePath path, StreamListener listener) {
         if (listener != null) {
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    listener.startElement(transaction, (ElementImpl) node, path);
-                    break;
-                case Node.TEXT_NODE :
-                    listener.characters(transaction, (TextImpl) node, path);
-                    break;
-                case Node.ATTRIBUTE_NODE :
-                    listener.attribute(transaction, (AttrImpl) node, path);
-                    break;
+            case Node.ELEMENT_NODE:
+                listener.startElement(transaction, (ElementImpl) node, path);
+                break;
+            case Node.TEXT_NODE :
+                listener.characters(transaction, (TextImpl) node, path);
+                break;
+            case Node.ATTRIBUTE_NODE :
+                listener.attribute(transaction, (AttrImpl) node, path);
+                break;
             }
         }
     }
@@ -385,7 +383,6 @@ public class IndexController {
     public MatchListener getMatchListener(NodeProxy proxy) {
         MatchListener first = null;
         MatchListener current, previous = null;
-
         for (IndexWorker worker : indexWorkers.values()) {
             current = worker.getMatchListener(broker, proxy);
             if (current != null) {

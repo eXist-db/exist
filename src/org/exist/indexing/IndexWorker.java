@@ -81,7 +81,8 @@ public interface IndexWorker {
      * @return an arbitrary configuration object to be kept for this index in the collection configuration
      * @throws DatabaseConfigurationException if a configuration error occurs
      */
-    Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException;
+    Object configure(IndexController controller, NodeList configNodes,
+        Map<String, String> namespaces) throws DatabaseConfigurationException;
 
     /**
      * Notify this worker to operate on the specified document.
@@ -125,7 +126,7 @@ public interface IndexWorker {
 
     /**
      * When adding or removing nodes to or from the document tree, it might become
-     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * necessary to re-index some parts of the tree, in particular if indexes are defined
      * on mixed content nodes. This method will call
      * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
      * on each configured index. It will then return the top-most root.
@@ -175,7 +176,7 @@ public interface IndexWorker {
      * @param broker The broker that will perform the operation
      */
     void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException;
-    
+
     /** 
      * Checking index could be delegated to a worker. Use this method to do so.
      * @param broker The broker that will perform the operation
@@ -188,7 +189,7 @@ public interface IndexWorker {
      * index entries for the specified document set. Aggregation can only occur if
      * the index entries can be compared, i.e. if the index implements 
      * {@link org.exist.indexing.OrderedValuesIndex}, otherwise each entry will be considered
-     * as a single occurence.
+     * as a single occurrence.
      * @param context 
      * @param docs The documents to which the index entries belong
      * @param contextSet

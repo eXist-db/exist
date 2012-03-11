@@ -33,16 +33,16 @@ public abstract class AbstractIndex implements Index {
      * Holds an id which uniquely identifies this index. This is usually the class name. 
      */
     protected static String ID = "Give me an ID !";
-    
-    
+
     protected BrokerPool pool;    
     //Probably not useful for every kind of index. Anyway...
     private String dataDir = null; 
     protected String name = null;    
-    
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-    	this.pool = pool;
-    	this.dataDir = dataDir; 
+
+    public void configure(BrokerPool pool, String dataDir, Element config)
+            throws DatabaseConfigurationException {
+        this.pool = pool;
+        this.dataDir = dataDir; 
         if (config != null && config.hasAttribute("id"))
             name = config.getAttribute("id");
     }
@@ -50,34 +50,34 @@ public abstract class AbstractIndex implements Index {
     public String getIndexId() {
     	return ID;
     }
-    
+
     public String getIndexName() {
-    	return name;
+        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public BrokerPool getBrokerPool() {
-    	return pool;
+        return pool;
     }
-    
+
     //TODO : declare in interface ?
     public String getDataDir() {
-    	return dataDir;
-    } 	
-    
+        return dataDir;
+    } 
+
     public abstract void open() throws DatabaseConfigurationException;
-	
-	public abstract void close() throws DBException;
-	
-	public abstract void sync() throws DBException;	
-	
-	public abstract void remove() throws DBException;
-	
-	public abstract IndexWorker getWorker(DBBroker broker);
-	
-	public abstract boolean checkIndex(DBBroker broker);
-	
+
+    public abstract void close() throws DBException;
+
+    public abstract void sync() throws DBException;	
+
+    public abstract void remove() throws DBException;
+
+    public abstract IndexWorker getWorker(DBBroker broker);
+
+    public abstract boolean checkIndex(DBBroker broker);
+
 }

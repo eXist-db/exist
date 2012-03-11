@@ -36,13 +36,13 @@ public interface StreamListener {
     /**
      * Undefined mode
      */	
-	public final static int UNKNOWN = -1;
-	
+    public final static int UNKNOWN = -1;
+
     /**
      * Mode for storing nodes of a document
      */	
-	public final static int STORE = 0;
-	
+    public final static int STORE = 0;
+
     /**
      * Mode for removing all the nodes of a document
      */
@@ -52,15 +52,15 @@ public interface StreamListener {
      * Mode for removing some nodes of a document
      */
     public final static int REMOVE_SOME_NODES = 2;
-    
+
     public final static int REMOVE_BINARY = 3;
-    
+
     /**
-     * Retunrs the IndexWorker that owns this listener.
+     * Returns the IndexWorker that owns this listener.
      * 
      * @return the IndexWorker
      */
-    IndexWorker getWorker();     
+    IndexWorker getWorker();
 
     /**
      * Set the next stream listener in the chain. Events should always be forwarded
@@ -103,7 +103,7 @@ public interface StreamListener {
      * @param path the current node path
      */
     void characters(Txn transaction, CharacterDataImpl text, NodePath path);
-    
+
     /**
      * Processed the closing tag of an element.
      *
@@ -111,6 +111,6 @@ public interface StreamListener {
      * @param element the element which has been stored to the db
      * @param path the current node path
      */
-    void endElement(Txn transaction, ElementImpl element, NodePath path);    
-    
+    void endElement(Txn transaction, ElementImpl element, NodePath path);
+
 }

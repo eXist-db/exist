@@ -16,23 +16,24 @@ public interface StructuralIndex {
     public final static String STRUCTURAL_INDEX_ID = "structural-index";
 
     public final static String DEFAULT_CLASS = "org.exist.storage.structural.NativeStructuralIndex";
-    
+
     public boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 
-    public boolean matchDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, ExtNodeSet contextSet,
-                                             int contextId);
+    public boolean matchDescendantsByTagName(byte type, QName qname, int axis,
+        DocumentSet docs, ExtNodeSet contextSet, int contextId);
 
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
         DocumentSet docs, NodeSet contextSet,  int contextId);
 
-    public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId);
-    
+    public NodeSet findAncestorsByTagName(byte type, QName qname, int axis,
+            DocumentSet docs, NodeSet contextSet, int contextId);
+
     /**
      * Find all nodes matching a given node test, axis and type. Used to evaluate wildcard
      * expressions like //*, //pfx:*.
      */
     public NodeSet scanByType(byte type, int axis, NodeTest test, boolean useSelfAsContext, 
-    		DocumentSet docs, NodeSet contextSet, int contextId);
+            DocumentSet docs, NodeSet contextSet, int contextId);
 }
