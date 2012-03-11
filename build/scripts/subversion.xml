@@ -3,7 +3,23 @@
 <!-- ======================================================================= -->
 <!-- eXist build file : Subversion                                            -->
 <!-- ======================================================================= -->
+
 <!-- $Id$ -->
+
+<!-- 
+  Note: 
+  Both svnkit jar files are written into the user.lib directory. Unfortunately
+  not all ant tasks can find the jar files via the classpath. As a work around in
+  build.sh and build.xml the jar files are added to the LOCALCLASSPATH variable.
+  
+  I realize that this is not the best solution, we'll need to think of a better way.
+  [e.g. copy jars into both lib/user and ant/lib] 
+  
+  
+  Note:
+  svnkit 1.7.0 has some more jar-dependancies compared to 1.3.x ; therefore it probably
+  a better idea to download the complete jar set using a tool like ivy.
+-->
 
 <project basedir="../.." name="SubVersion">
 
@@ -12,8 +28,11 @@
   <property name="svnkit.repo"    value="http://maven.tmatesoft.com/content/repositories/releases"/>
   <property name="svnkit.version" value="1.3.7"/>
 
-  <property name="svn.svnkit.jar" value="${lib.user}/svnkit-${svnkit.version}.jar"/>
-  <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli-${svnkit.version}.jar"/>
+  <property name="svn.svnkit.jar" value="${lib.user}/svnkit.jar"/>
+  <property name="svn.tmp.svnkit.jar" value="${lib.user}/svnkit-${svnkit.version}.jar"/>
+  
+  <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli.jar"/>
+  <property name="svn.tmp.svnkitcli.jar" value="${lib.user}/svnkit-cli-${svnkit.version}.jar"/>
   
   <property name="svn.patch.file" value="exist.patch"/>
   
@@ -52,17 +71,22 @@
 
 		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
     
-    <echo>Old svnkit files will be remove automagically from "${lib.user}"</echo>
+    <!--echo>Old svnkit files will be remove automagically from "${lib.user}"</echo>
     <delete verbose="true">
       <fileset dir="${lib.user}" includes="svnkit*jar" excludes="svnkit*${svnkit.version}*jar"></fileset>
-    </delete>
+    </delete-->
     
-		<fetch classpathref="classpath.core" dest="${lib.user}" 
+    <!-- Get file and rename  -->
+		<fetch  dest="${lib.user}" 
 		  url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit-cli/${svnkit.version}/svnkit-cli-${svnkit.version}.jar" classname="org.tmatesoft.svn.cli.SVN"/>
     
+    <move file="${svn.tmp.svnkitcli.jar}" tofile="${svn.svnkitcli.jar}" failonerror="false"/>
+    
+    <!-- Get file and rename  -->
     <fetch classpathref="classpath.core" dest="${lib.user}" 
       url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit/${svnkit.version}/svnkit-${svnkit.version}.jar" classname="org.tmatesoft.svn.util.Version"/>
 
+    <move file="${svn.tmp.svnkit.jar}" tofile="${svn.svnkit.jar}" failonerror="false"/>
   </target>
 
   <!-- 
