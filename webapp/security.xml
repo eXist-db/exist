@@ -102,7 +102,73 @@
             </section>
             <section>
                 <title>OpenID Realm</title>
-                <para>TODO</para>
+                <para><ulink url="http://openid.net/">OpenID</ulink> is an authentication mechanism
+                    where the identity of the user is maintained by trusted external providers. This
+                    takes the burden in maintaining and securing passwords for users off of the eXist
+                    database and on to the Identity Provider (IdP).</para> 
+                <section>
+                    <title>Glossary</title>
+                    <para>This is a glossary of terms associated with OpenID.</para>
+                    <para>
+                        
+                        <glosslist id="openid">
+                            <glossentry>
+                                <glossterm>IdP</glossterm>                    
+                                <glossdef>OpenID Provider</glossdef>
+                            </glossentry>
+                            <glossentry>
+                                <glossterm>OpenID Provider</glossterm>
+                                <glossdef>An IdP that provides an OpenID authentication service on which a Relying Party (an eXist application for these purposes) relies for an assertion.</glossdef>
+                            </glossentry>
+                            
+                        </glosslist>
+                    </para>
+                </section>
+                <section>
+                    <title>Configuration</title>
+                    <para/>
+                    <section>
+                        <title>Building from Source</title>
+                        <para>By default, the OpenID service is not built and thus is also not enabled.  To
+                            recompile the source with OpenID enabled, edit local.build.properties in the
+                            extensions directory and change the include.feature.security.openid property
+                            from false to true.  Then recompile.</para>
+                        <example>
+                            <title>extensions/local.build.properties</title>
+                            <programlisting><![CDATA[#Security OpenID extensions for eXist
+include.feature.security.openid = true
+]]></programlisting>
+                        </example>
+                        <para>This extension compiles into <filename>[EXIST_HOME]/lib/extensions/exist-security-openid.jar</filename>.</para>
+                    </section>
+                    <section>
+                        <title>Enabling the Service</title>
+                        <para>The use of the OpenID realm is enabled by </para>
+                        <para>In the SecurityManager's <filename>/db/system/security/config.xml</filename>, add the realm entry for
+                            OpenID.</para>
+                        <programlisting><markup><![CDATA[<security-manager xmlns="http://exist-db.org/Configuration" last-account-id="10" last-group-id="10" version="2.0">
+    <Authentication-Entry-Point>/authentication/login</Authentication-Entry-Point>
+<!--<realm></realm>-->
+    <realm id="OpenID"/>
+</security-manager>]]></markup>
+                    </programlisting>
+                    </section>
+                    <section>
+                        <title>Disabling the Service</title>
+                        <para>The only way to disable this service once it is enabled is to remove the
+                            <filename>[EXIST_HOME]/lib/extensions/exist-security-openid.jar</filename>
+                            file.</para>
+                    </section>
+                </section>
+                <section>
+                    <title>Using</title>
+                    <para>To use OpenID to log into eXist, please review the code in <filename>[EXIST_HOME]/webapp/authentication/login.xql</filename></para>
+                    <note>This section is yet to be developed.  Please stay tuned!</note>
+                </section>
+                <section>
+                    <title>Conclusion</title>
+                    <para></para>
+                </section>
             </section>
             <section>
                 <title>Legacy Internal Realm</title>
