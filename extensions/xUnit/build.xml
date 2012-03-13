@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="jar" name="xUnit">
+    
+    <property name="src" value="./src/main/java"/>
+    <property name="classes" value="./classes"/>
+    <property name="test" value="./src/test"/>
+    <property name="top.dir" value="../.."/>
+    
+    <property file="${top.dir}/build.properties"/>
+
+    <property file="../local.build.properties"/>
+    <property file="../build.properties"/>
+    
+    <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
+    
+    <condition property="include.feature.xUnit.config">
+        <istrue value="${include.feature.xUnit}"/>
+    </condition>
+    
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.endorsed}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/extensions">
+            <include name="**/lib/*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <path id="classpath.jar">
+        <pathelement path="${top.dir}/${lib.extensions}/exist-xUnit.jar"/>
+    </path>
+    <path id="classpath.test-libs">
+         <fileset dir="${top.dir}/${lib.test}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <path id="classpath.test">
+        <pathelement path="${test}/classes"/>
+    </path>
+    
+    <target name="prepare">
+        <mkdir dir="${classes}"/>
+        <mkdir dir="${test}/classes"/>
+    </target>
+    
+    <target name="compile" depends="prepare" if="include.feature.xUnit.config">
+        <echo message="---------------------------"/>
+        <echo message="Compiling xUnit extension"/>
+        <echo message="---------------------------"/>
+        
+        <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+        
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
+            destdir="${classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${src}" 
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+
+        <echo message="----------------------"/>
+        <echo message="Compiling xUnit extension tests"/>
+        <echo message="----------------------"/>
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+               destdir="${test}/classes" encoding="UTF-8"
+               optimize="${build.optimize}" srcdir="${test}/src"
+               source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.test-libs"/>
+                <pathelement path="${classes}"  />
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="jar" depends="compile" if="include.feature.xUnit.config">
+        <echo message="Creating exist-xUnit.jar ..."/>
+        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-xUnit.jar">  
+            <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
+        </jar>
+    </target>
+    
+    <target name="clean">
+        <delete dir="${classes}"/>
+        <delete dir="${test}/classes"/>
+        <delete file="${top.dir}/${lib.extensions}/exist-xUnit.jar" failonerror="false"/>
+    </target>
+
+    <target name="test" depends="compile" if="include.feature.xUnit.config">
+        <echo message="Running xUnit extension tests"/>
+
+        <mkdir dir="${junit.index.reports}"/>
+
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
+               maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}"/>
+
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.aspectj"/>
+                <path refid="classpath.jar"/>
+                <path refid="classpath.test"/>
+                <path refid="classpath.test-libs"/>
+                <pathelement path="${classes}"  />
+            </classpath>
+
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <batchtest fork="yes" todir="${junit.index.reports}">
+                <fileset dir="${test}/classes">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="test-xUnit">
+	    <property name="include.feature.xUnit.config" value="true"/>
+	    <antcall target="test"/>
+    </target>
+</project>
