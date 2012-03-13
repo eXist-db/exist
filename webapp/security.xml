@@ -153,12 +153,6 @@ include.feature.security.openid = true
 </security-manager>]]></markup>
                     </programlisting>
                     </section>
-                    <section>
-                        <title>Disabling the Service</title>
-                        <para>The only way to disable this service once it is enabled is to remove the
-                            <filename>[EXIST_HOME]/lib/extensions/exist-security-openid.jar</filename>
-                            file.</para>
-                    </section>
                 </section>
                 <section>
                     <title>Using</title>
