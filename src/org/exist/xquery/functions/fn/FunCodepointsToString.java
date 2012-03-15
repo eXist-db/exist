@@ -48,58 +48,59 @@ import org.exist.xquery.value.Type;
  * 
  */
 public class FunCodepointsToString extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(FunCodepointsToString.class);
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-				new QName("codepoints-to-string", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				"Creates an xs:string from a sequence of code points. Returns the zero-length string if " +
-				"$codepoints is the empty sequence. If any of the code points in $codepoints is not a legal XML character, " +
-				"an error is raised",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("codepoints", Type.INTEGER, Cardinality.ZERO_OR_MORE, "The codepoints as a sequence of xs:integer values"),
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the string constructed from the codepoints if valid"));
-	
-	public FunCodepointsToString(XQueryContext context) {
-		super(context, signature);
-	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    protected static final Logger logger = Logger.getLogger(FunCodepointsToString.class);
+
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("codepoints-to-string", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+            "Creates an xs:string from a sequence of code points. Returns the " +
+            "zero-length string if $codepoints is the empty sequence. " +
+            "If any of the code points in $codepoints is not a " +
+            "legal XML character, an error is raised",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("codepoints", Type.INTEGER,
+                    Cardinality.ZERO_OR_MORE, "The codepoints as a sequence of xs:integer values"),
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
+                "The string constructed from the codepoints if valid"));
+
+    public FunCodepointsToString(XQueryContext context) {
+        super(context, signature);
+    }
+
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result;
-		if (args[0].isEmpty())
-			result = StringValue.EMPTY_STRING;
-        else {
-    		StringBuilder buf = new StringBuilder();    		
-    		for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+        if (args[0].isEmpty()) {
+            result = StringValue.EMPTY_STRING;
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 long next = ((NumericValue)i.nextItem()).getLong();
-    			if (next < 0 || next > Integer.MAX_VALUE || !XMLChar.isValid((int)next)) {
-                    logger.error("err:FOCH0001: Codepoint " +
-                                 next +
-                                 " is not a valid character.");
-    				throw new XPathException(this, "err:FOCH0001: Codepoint " + next + 
-                            " is not a valid character.");
-    			}
-    			if (next < 65536) {
+                if (next < 0 || next > Integer.MAX_VALUE ||
+                        !XMLChar.isValid((int)next)) {
+                    throw new XPathException("err:FOCH0001: Codepoint " +
+                        next + " is not a valid character.");
+                }
+                if (next < 65536) {
                     buf.append((char)next);
+                } else { // output a surrogate pair
+                    buf.append(XMLChar.highSurrogate((int)next));
+                    buf.append(XMLChar.lowSurrogate((int)next));
                 }
-                else {  // output a surrogate pair
-                	buf.append(XMLChar.highSurrogate((int) next));
-                    buf.append(XMLChar.lowSurrogate((int) next));
-                }
-    		}
-    		result = new StringValue(buf.toString());
+            }
+            result = new StringValue(buf.toString());
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         return result;
-	}
+    }
 }

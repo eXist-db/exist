@@ -42,49 +42,52 @@ import org.exist.xquery.value.Type;
  */
 public class FunAbs extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("abs", Function.BUILTIN_FUNCTION_NS),
-			"Returns the absolute value of the argument $number. If the argument is negative " +
-			"returns -$number otherwise returns $number.",
-			new SequenceType[] { 
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number") },
-			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE, "the absolute value of the argument")
-		);
-				
-	/**
-	 * @param context
-	 */
-	public FunAbs(XQueryContext context) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("abs", Function.BUILTIN_FUNCTION_NS),
+            "Returns the absolute value of the argument $number." +
+            "If the argument is negative returns -$number otherwise returns $number.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("number", Type.NUMBER, 
+                    Cardinality.ZERO_OR_ONE, "The number")
+            },
+            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE,
+                "The absolute value of the argument")
+        );
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /**
+     * @param context
+     */
+    public FunAbs(XQueryContext context) {
+        super(context, signature);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());
         }
-        
         Sequence result;
         Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
+        if (seq.isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
         else {
-    		NumericValue value = (NumericValue)seq.itemAt(0).convertTo(Type.NUMBER);
-    		result = value.abs();
+            NumericValue value = (NumericValue)seq.itemAt(0).convertTo(Type.NUMBER);
+            result = value.abs();
         }
-        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
         return result;
-	}
+    }
 
 }

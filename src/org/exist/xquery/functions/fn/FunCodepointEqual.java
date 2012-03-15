@@ -45,46 +45,49 @@ import org.exist.xquery.value.Type;
  */
 public class FunCodepointEqual extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-				new QName("codepoint-equal", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				"Returns true or false depending on whether the value of $string-1 is equal to the value of $string-2, " +
-				"according to the Unicode code point collation.",
-				new SequenceType[] {
-                    new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "The first string"),
-                    new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "The second string"),
-				},
-				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if the codepoints are equal, false() otherwise"));
-	
-	public FunCodepointEqual(XQueryContext context) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("codepoint-equal", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+            "Returns true or false depending on whether the value of $string-1 " +
+            "is equal to the value of $string-2, according to the Unicode " +
+            "code point collation.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("string-1", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The first string"),
+                new FunctionParameterSequenceType("string-2", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The second string"),
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
+                "true() if the codepoints are equal, false() otherwise"));
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public FunCodepointEqual(XQueryContext context) {
+        super(context, signature);
+    }
+
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result;
-		if (args[0].isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
-		else if (args[1].isEmpty())
-			result =  Sequence.EMPTY_SEQUENCE;
+        if (args[0].isEmpty())
+            result = Sequence.EMPTY_SEQUENCE;
+        else if (args[1].isEmpty())
+            result =  Sequence.EMPTY_SEQUENCE;
         else {
-    		result = new BooleanValue(Collations.compare(
-    				//TODO : how ugly ! WE should be able to use Collations.CODEPOINT here ! -pb
-    					context.getDefaultCollator(),
-    					getArgument(0).eval(contextSequence).getStringValue(), 
-    					getArgument(1).eval(contextSequence).getStringValue()
-    				) == Constants.EQUAL);
+            result = new BooleanValue(Collations.compare(
+                //TODO : how ugly ! We should be able to use Collations.CODEPOINT here ! -pb
+                context.getDefaultCollator(),
+                getArgument(0).eval(contextSequence).getStringValue(), 
+                getArgument(1).eval(contextSequence).getStringValue())
+                == Constants.EQUAL);
         }
-        
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
+            context.getProfiler().end(this, "", result);
         return result;
-	}
+    }
 }

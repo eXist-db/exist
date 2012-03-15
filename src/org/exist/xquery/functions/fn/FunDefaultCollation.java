@@ -42,32 +42,32 @@ import org.exist.xquery.value.Type;
  */
 public class FunDefaultCollation extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("default-collation", Function.BUILTIN_FUNCTION_NS),
-			"Returns the context's default collation. E.g. http://www.w3.org/2005/xpath-functions/collation/codepoint.",
-			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the default collation from the context"));
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("default-collation", Function.BUILTIN_FUNCTION_NS),
+            "Returns the context's default collation. E.g. http://www.w3.org/" +
+            "2005/xpath-functions/collation/codepoint.",
+            null,
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
+                "the default collation from the context"));
 
-	public FunDefaultCollation(XQueryContext context) {
-		super(context, signature);
-	}
+    public FunDefaultCollation(XQueryContext context) {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result = new StringValue(context.getDefaultCollation());
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+        return result;
         
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
-        return result;           
-		
-	}
-
+    }
 }

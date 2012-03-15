@@ -50,84 +50,82 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunDateTime extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-				new QName("dateTime", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				"Creates an xs:dateTime from an xs:date, $date, and an xs:time, $time.",
-				new SequenceType[] {
-					new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date"),
-					new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time")
-				},
-				new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the combined date and time as xs:dateTime")
-			);
-	
-	public FunDateTime(XQueryContext context) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("dateTime", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+            "Creates an xs:dateTime from an xs:date, $date, and an xs:time, $time.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("date", Type.DATE,
+                    Cardinality.ZERO_OR_ONE, "The date as xs:date"),
+                new FunctionParameterSequenceType("time", Type.TIME,
+                    Cardinality.ZERO_OR_ONE, "The time as xs:time")
+            },
+            new FunctionReturnSequenceType(Type.DATE_TIME,
+                Cardinality.ZERO_OR_ONE, "the combined date and time as xs:dateTime")
+        );
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public FunDateTime(XQueryContext context) {
+        super(context, signature);
+    }
+
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result;
-		if (args[0].isEmpty() || args[1].isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
-		else if (args[0].hasMany())
-			throw new XPathException(this, ErrorCodes.XPTY0004, "Expected at most one xs:date", args[0]);
-		else if (args[1].hasMany())
-			throw new XPathException(this, ErrorCodes.XPTY0004, "Expected at most one xs:time", args[1]);
-        else {  
-        	DateValue dv = (DateValue)args[0].itemAt(0);
-        	TimeValue tv = (TimeValue)args[1].itemAt(0);
-        	if (!dv.getTimezone().isEmpty()) {
-        		//Apparently, the specs have changes in this area
-        		if (!tv.getTimezone().isEmpty()) {
-        			if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
-                                    ValueSequence argsSeq = new ValueSequence(args[0]);
-                                    argsSeq.addAll(args[2]);
-                                    throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones", argsSeq);
-    				}
-    			} /* else {
-    				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    	        		throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones");
-    			} */
-    		} else {
-    			/*
-    			if (!tv.getTimezone().isEmpty()) {
-    				if (!((DayTimeDurationValue)tv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-    					throw new XPathException(this, ErrorCodes.FORG0008, "Operands have different timezones");
-    			}
-    			*/
-    		}
-        	String dtv = dv.convertTo(Type.DATE_TIME).getStringValue();
-        	if (dv.getTimezone().isEmpty()) {
-        		dtv = dtv.substring(0, dtv.length() - 8);
-        		result = new DateTimeValue(dtv + tv.getStringValue());
-        	} else if (((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S")) {
-        		dtv = dtv.substring(0, dtv.length() - 9);
-        		if (tv.getTimezone().isEmpty())
-        			result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
-        		else
-        			result = new DateTimeValue(dtv + tv.getStringValue());
-        	} else {        		
-        		if (tv.getTimezone().isEmpty()) {
-        			String tz = dtv.substring(19);
-        			dtv = dtv.substring(0, dtv.length() - 14);
-        			result = new DateTimeValue(dtv + tv.getStringValue() + tz);
-        		} else {
-        			dtv = dtv.substring(0, dtv.length() - 14);
-        			result = new DateTimeValue(dtv + tv.getStringValue());
-        		}
-        	}
+        if (args[0].isEmpty() || args[1].isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else if (args[0].hasMany()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Expected at most one xs:date", args[0]);
+        } else if (args[1].hasMany()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Expected at most one xs:time", args[1]);
+        } else {
+            DateValue dv = (DateValue)args[0].itemAt(0);
+            TimeValue tv = (TimeValue)args[1].itemAt(0);
+            if (!dv.getTimezone().isEmpty()) {
+                if (!tv.getTimezone().isEmpty()) {
+                    if (!((DayTimeDurationValue)dv.getTimezone()
+                        .itemAt(0)).compareTo(null, Constants.EQ,
+                        ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
+                        ValueSequence argsSeq = new ValueSequence(args[0]);
+                        argsSeq.addAll(args[2]);
+                        throw new XPathException(this, ErrorCodes.FORG0008,
+                            "Operands have different timezones", argsSeq);
+                    }
+                }
+            }
+            String dtv = dv.convertTo(Type.DATE_TIME).getStringValue();
+            if (dv.getTimezone().isEmpty()) {
+                dtv = dtv.substring(0, dtv.length() - 8);
+                result = new DateTimeValue(dtv + tv.getStringValue());
+            } else if (((DayTimeDurationValue)dv.getTimezone()
+                    .itemAt(0)).getStringValue().equals("PT0S")) {
+                dtv = dtv.substring(0, dtv.length() - 9);
+                if (tv.getTimezone().isEmpty()) {
+                    result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
+                } else {
+                    result = new DateTimeValue(dtv + tv.getStringValue());
+                }
+            } else {
+                if (tv.getTimezone().isEmpty()) {
+                    String tz = dtv.substring(19);
+                    dtv = dtv.substring(0, dtv.length() - 14);
+                    result = new DateTimeValue(dtv + tv.getStringValue() + tz);
+                } else {
+                    dtv = dtv.substring(0, dtv.length() - 14);
+                    result = new DateTimeValue(dtv + tv.getStringValue());
+                }
+            }
         }
-        
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
-        
         return result;
-	}
+    }
 }

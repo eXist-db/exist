@@ -43,52 +43,55 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunData extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("data", Function.BUILTIN_FUNCTION_NS),
-			"Returns the sequence of atomic values from the items in $items.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items")
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("data", Function.BUILTIN_FUNCTION_NS),
+            "Returns the sequence of atomic values from the items in $items.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("items", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The items")
             },
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items"));
+            new FunctionReturnSequenceType(Type.ATOMIC,
+                Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items"));
 
-	/**
-	 * @param context
-	 */
-	public FunData(XQueryContext context) {
-		super(context, signature);
-	}
+    /**
+     * @param context
+     */
+    public FunData(XQueryContext context) {
+        super(context, signature);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence,
+     * org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        Sequence arg = getArgument(0).eval(contextSequence, contextItem);        
+        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
         Sequence result;
-		if(arg.isEmpty())
+        if (arg.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-        else {
+        } else {
             result = new ValueSequence();
-    		Item item;
-    		for(SequenceIterator i = arg.iterate(); i.hasNext(); ) {
-    			item = i.nextItem();
-    			result.add(item.atomize());
-    		}
+            Item item;
+            for (SequenceIterator i = arg.iterate(); i.hasNext(); ) {
+                item = i.nextItem();
+                result.add(item.atomize());
+            }
         }
-        
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
+            context.getProfiler().end(this, "", result);
         return result;
-	}
-
+    }
 }

@@ -42,69 +42,72 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class FunDocAvailable extends Function {
-	protected static final Logger logger = Logger.getLogger(FunDocAvailable.class);
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
-			"Returns whether or not the document, $document-uri, specified in the input sequence is available. " +
+
+    protected static final Logger logger = Logger.getLogger(FunDocAvailable.class);
+
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
+            "Returns whether or not the document, $document-uri, " +
+            "specified in the input sequence is available. " +
             XMLDBModule.ANY_URI,
-			new SequenceType[] { 
-                new FunctionParameterSequenceType("document-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The document URI")
+            new SequenceType[] { 
+                new FunctionParameterSequenceType("document-uri", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The document URI")
             },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the document is available, false() otherwise"));	
-	
-	public FunDocAvailable(XQueryContext context) {
-		super(context, signature);		
-	}
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                "true() if the document is available, false() otherwise"));	
 
-	/**
-	 * @see org.exist.xquery.Function#getDependencies()
-	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET;
-	}
+    public FunDocAvailable(XQueryContext context) {
+        super(context, signature);
+    }
 
-	/**
-	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
+    /**
+     * @see org.exist.xquery.Function#getDependencies()
+     */
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET;
+    }
+
+    /**
+     * @see org.exist.xquery.Expression#eval(Sequence, Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }       
-        
-        Sequence result;
-		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-		if (arg.isEmpty())
-            result = BooleanValue.FALSE;
-        else {		
-    		String path = arg.itemAt(0).getStringValue();    		
-    		try {
-    			result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
-    		}
-    		catch (Exception e) {
-                logger.error(e.getMessage());
-    			throw new XPathException(this, e.getMessage(), e);			
-    		}            
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
+        Sequence result;
+        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        if (arg.isEmpty()) {
+            result = BooleanValue.FALSE;
+        } else {
+            String path = arg.itemAt(0).getStringValue();
+            try {
+                result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
+            } catch (Exception e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
+        }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
-        return result;        
-		
-	}	
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 
-	/**
-	 * @see org.exist.xquery.Expression#resetState(boolean)
+    /**
+     * @see org.exist.xquery.Expression#resetState(boolean)
      * @param postOptimization
-	 */
-	public void resetState(boolean postOptimization) {
-		super.resetState(postOptimization);
-		getArgument(0).resetState(postOptimization);
-	}
+     */
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        getArgument(0).resetState(postOptimization);
+    }
 }

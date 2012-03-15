@@ -49,96 +49,101 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunAvg extends Function {
-	protected static final Logger logger = Logger.getLogger(FunAvg.class);	
-	//Used to detect overflows : currently not used.
-	private boolean gotInfinity = false;
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("avg", Function.BUILTIN_FUNCTION_NS),
-			"Returns the average of the values in the input sequence $values, that is, the "
-				+ "sum of the values divided by the number of values.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The values")},
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the average of the values in the input sequence"));
+    protected static final Logger logger = Logger.getLogger(FunAvg.class);	
 
-	/**
-	 * @param context
-	 */
-	public FunAvg(XQueryContext context) {
-		super(context, signature);
-	}
+    private boolean gotInfinity = false;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("avg", Function.BUILTIN_FUNCTION_NS),
+            "Returns the average of the values in the input sequence $values, " +
+            "that is, the sum of the values divided by the number of values.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("values", Type.ATOMIC,
+                    Cardinality.ZERO_OR_MORE, "The values")},
+            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE,
+                "The average of the values in the input sequence"));
+
+    /**
+     * @param context
+     */
+    public FunAvg(XQueryContext context) {
+        super(context, signature);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());
         }
-        
         Sequence result;
-		Sequence inner = getArgument(0).eval(contextSequence, contextItem);      
-		if (inner.isEmpty())
+        Sequence inner = getArgument(0).eval(contextSequence, contextItem);
+        if (inner.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-        else {
-    		SequenceIterator iter = inner.iterate();
-    		Item item = iter.nextItem();
-    		AtomicValue value = item.atomize();
-            //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+        } else {
+            SequenceIterator iter = inner.iterate();
+            Item item = iter.nextItem();
+            AtomicValue value = item.atomize();
+            //Any values of type xdt:untypedAtomic are cast to xs:double
             if (value.getType() == Type.UNTYPED_ATOMIC) 
-            	value = value.convertTo(Type.DOUBLE);
-    		if (!(value instanceof ComputableValue)) {
-                logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-				throw new XPathException(this, ErrorCodes.FORG0006, "" + Type.getTypeName(value.getType()) + "(" + value + ") can not be an operand in a sum", value);
+                value = value.convertTo(Type.DOUBLE);
+            if (!(value instanceof ComputableValue)) {
+                throw new XPathException(this, ErrorCodes.FORG0006,
+                    Type.getTypeName(value.getType()) + "(" + value + ") " +
+                    "can not be an operand in a sum", value);
             }
-    		//Set the first value
-    		ComputableValue sum = (ComputableValue) value;
-    		while (iter.hasNext()) {
-    			item = iter.nextItem();
-    			value = item.atomize();
-                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+            //Set the first value
+            ComputableValue sum = (ComputableValue) value;
+            while (iter.hasNext()) {
+                item = iter.nextItem();
+                value = item.atomize();
+                //Any value of type xdt:untypedAtomic are cast to xs:double
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
-                	value = value.convertTo(Type.DOUBLE);
-        		if (!(value instanceof ComputableValue)) {
-                    logger.error("err:FORG0006: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-    				throw new XPathException(this, ErrorCodes.FORG0006, "" + Type.getTypeName(value.getType()) + "(" + value + ") can not be an operand in a sum", value);
+                    value = value.convertTo(Type.DOUBLE);
+                if (!(value instanceof ComputableValue)) {
+                    throw new XPathException(this, ErrorCodes.FORG0006, "" +
+                        Type.getTypeName(value.getType()) + "(" + value +
+                        ") can not be an operand in a sum", value);
                 }
-    			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
-    				if (((NumericValue)value).isInfinite())
-    					gotInfinity = true;    					
-    				if (((NumericValue)value).isNaN()) {
-    					sum = DoubleValue.NaN;
-    					break;
-    				}
-    			}
-    			try {
-    				sum = (ComputableValue) sum.promote(value);
-	    			//Aggregate next values	    	
-    				sum = sum.plus((ComputableValue) value);
-				} catch(XPathException e) {
-                                    logger.error(ErrorCodes.FORG0006  + e.getMessage(), e);
-                                    throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage());
-				}
-    		}
-    		result = sum.div(new IntegerValue(inner.getItemCount()));
+                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+                    if (((NumericValue)value).isInfinite())
+                        gotInfinity = true;
+                    if (((NumericValue)value).isNaN()) {
+                        sum = DoubleValue.NaN;
+                        break;
+                    }
+                }
+                try {
+                    sum = (ComputableValue) sum.promote(value);
+                    //Aggregate next values	
+                    sum = sum.plus((ComputableValue) value);
+                } catch(XPathException e) {
+                    throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage());
+                }
+            }
+            result = sum.div(new IntegerValue(inner.getItemCount()));
         }
-        
-		if (!gotInfinity) {
-			if (Type.subTypeOf(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
-				//Throw an overflow eception here since we get an infinity 
-				//whereas is hasn't been provided by the sequence
-			}
-		}
-
-		if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);  
-        
-        return result;        
-	}
+        if (!gotInfinity) {
+            if (Type.subTypeOf(result.getItemType(), Type.NUMBER) &&
+                ((NumericValue)result).isInfinite()) {
+                //Throw an overflow exception here since we get an infinity 
+                //whereas is hasn't been provided by the sequence
+                //TODO ? -pb
+            }
+        }
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 }
