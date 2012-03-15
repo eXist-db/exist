@@ -64,35 +64,32 @@ import org.exist.security.PermissionDeniedException;
  * @author wolf
  */
 public class ExtCollection extends Function {
-	protected static final Logger logger = Logger.getLogger(ExtCollection.class);
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("collection", Function.BUILTIN_FUNCTION_NS),
-            "Returns the documents contained in the collections " +
-            "specified in the input sequence. " +           
-            XMLDBModule.COLLECTION_URI +
-			" Documents contained in subcollections are also included.",
-			new SequenceType[] {
-				//Different from the offical specs
-                new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ZERO_OR_MORE, "The collection-uris for which to include the documents")},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes contained in or under the given collections"),
-			true);
 
-	private boolean includeSubCollections = false;
-	
-	@SuppressWarnings("unused")
-	private List<?> cachedArgs = null;
+    protected static final Logger logger = Logger.getLogger(ExtCollection.class);
 
-	@SuppressWarnings("unused")
-	private Sequence cached = null;
-	private UpdateListener listener = null;
-	
-	/**
-	 * @param context
-	 */
-	public ExtCollection(XQueryContext context) {
-		this(context, signature, true);
-	}
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("collection", Function.BUILTIN_FUNCTION_NS),
+            "Returns the documents contained in the collections specified in " +
+            "the input sequence. " + XMLDBModule.COLLECTION_URI +
+            " Documents contained in subcollections are also included.",
+            new SequenceType[] {
+                //Different from the offical specs
+                new FunctionParameterSequenceType("collection-uris", Type.STRING,
+                    Cardinality.ZERO_OR_MORE, "The collection-URIs for which to include the documents")},
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, 
+                    "The document nodes contained in or under the given collections"),
+            true);
+
+    private boolean includeSubCollections = false;
+    private UpdateListener listener = null;
+
+    /**
+     * @param context
+     */
+    public ExtCollection(XQueryContext context) {
+        this(context, signature, true);
+    }
 
 	public ExtCollection(XQueryContext context, FunctionSignature signature, boolean inclusive) {
 		super(context, signature);
@@ -110,67 +107,61 @@ public class ExtCollection extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }       
-        
-	    List<String> args = getParameterValues(contextSequence, contextItem);
+        }
+        List<String> args = getParameterValues(contextSequence, contextItem);
         // TODO: disabled cache for now as it may cause concurrency issues
         // better use compile-time inspection and maybe a pragma to mark those
         // sections in the query that can be safely cached
-//		boolean cacheIsValid = false;
-//		if(cachedArgs != null)
-//		    cacheIsValid = compareArguments(cachedArgs, args);
-//		if(cacheIsValid) {
-//		    // if the expression occurs in a nested context, we might have cached the
-//            // document set
-//            if (context.getProfiler().isEnabled())
-//                context.getProfiler().end(this, "fn:collection: loading documents", cached);
-//		    return cached;
-//        }
-        
-		// build the document set
+        // boolean cacheIsValid = false;
+        // if (cachedArgs != null)
+        //    cacheIsValid = compareArguments(cachedArgs, args);
+        // if (cacheIsValid) {
+             //If the expression occurs in a nested context, we might have cached the
+             //document set
+             //if (context.getProfiler().isEnabled())
+                 //context.getProfiler().end(this, "fn:collection: loading documents", cached);
+             //return cached;
+        // }
+        //Build the document set
         DocumentSet docs = null;
-//        DocumentSet docs = new DocumentSet(521);
-	    try {
-   			if (args.size() == 0) {
-	    		//TODO : add default collection to the context
-    			//If the value of the default collection is undefined an error is raised [err:FODC0002].
-    			//throw new XPathException("FODC0002: unknown collection '" + uri + "'");	
-    			docs = context.getStaticallyKnownDocuments();
-		    } else {
+        try {
+            if (args.size() == 0) {
+                //TODO : add default collection to the context
+                //If the value of the default collection is undefined an error is raised [err:FODC0002].
+                docs = context.getStaticallyKnownDocuments();
+            } else {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
                 for (String next : args) {
-					XmldbURI uri = new AnyURIValue(next).toXmldbURI();
-				    Collection coll = context.getBroker().getCollection(uri);            
-				    if(coll == null) {
-				    	if (context.isRaiseErrorOnFailedRetrieval()) {
-                            logger.error("FODC0002: can not access collection '" + uri + "'");
-		    				throw new XPathException(this, "FODC0002: can not access collection '" + uri + "'");
-		    			}					    	
-				    } else {
-	                    if (context.inProtectedMode())
-	                        context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
-	                    else
-	                        coll.allDocs(context.getBroker(), ndocs, includeSubCollections, context.getProtectedDocs());
-	                }
-	            }
+                    XmldbURI uri = new AnyURIValue(next).toXmldbURI();
+                    Collection coll = context.getBroker().getCollection(uri);
+                    if (coll == null) {
+                        if (context.isRaiseErrorOnFailedRetrieval()) {
+                            throw new XPathException("FODC0002: can not access collection '" + uri + "'");
+                        }
+                    } else {
+                        if (context.inProtectedMode())
+                            context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
+                        else
+                            coll.allDocs(context.getBroker(), ndocs,
+                                includeSubCollections, context.getProtectedDocs());
+                    }
+                }
                 docs = ndocs;
             }
         } catch (XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
-            logger.error("FODC0002: can not access collection '" + e.getMessage() + "'");
-            throw new XPathException(this, "FODC0002: " + e.getMessage(), e);
+            throw new XPathException("FODC0002: " + e.getMessage());
         } catch(PermissionDeniedException pde) {
-            logger.error("FODC0002: can not access collection '" + pde.getMessage() + "'", pde);
-            throw new XPathException(line, column, "FODC0002: can not access collection '" + pde.getMessage() + "'", pde);
+            throw new XPathException("FODC0002: can not access collection '" + pde.getMessage() + "'");
             
         }
         // iterate through all docs and create the node set
-		NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
-		Lock dlock;
-		DocumentImpl doc;
-		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
-		    doc = i.next();
-		    dlock = doc.getUpdateLock();
+        NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
+        Lock dlock;
+        DocumentImpl doc;
+        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+            doc = i.next();
+            dlock = doc.getUpdateLock();
             boolean lockAcquired = false;
             try {
                 if (!context.inProtectedMode() && !dlock.hasLock()) {
@@ -178,62 +169,43 @@ public class ExtCollection extends Function {
                     lockAcquired = true;
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
-		    } catch (LockException e) {
-                logger.error("Could not acquire lock on document " + doc.getURI());
+            } catch (LockException e) {
+                throw new XPathException(e.getMessage());
             } finally {
                 if (lockAcquired)
                     dlock.release(Lock.READ_LOCK);
-		    }
-		}
-		cached = result;
-		cachedArgs = args;
+            }
+        }
         registerUpdateListener();
-        
-        if (context.getProfiler().isEnabled())           
+        if (context.getProfiler().isEnabled())
                context.getProfiler().end(this, "", result);
-       
-		return result;
-	}
-	
-	
+        return result;
+    }
+
     /**
      * @param contextSequence
      * @param contextItem
      * @throws XPathException
      */
-    private List<String> getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
+    private List<String> getParameterValues(Sequence contextSequence,
+            Item contextItem) throws XPathException {
         List<String> args = new ArrayList<String>(getArgumentCount() + 10);
-	    for(int i = 0; i < getArgumentCount(); i++) {
-	        Sequence seq =
-				getArgument(i).eval(contextSequence, contextItem);
-			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-				Item next = j.nextItem();
-				args.add(next.getStringValue());
-			}
-	    }
-	    return args;
+        for (int i = 0; i < getArgumentCount(); i++) {
+            Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            for (SequenceIterator j = seq.iterate(); j.hasNext();) {
+                Item next = j.nextItem();
+                args.add(next.getStringValue());
+            }
+        }
+        return args;
     }
 
-    @SuppressWarnings("unused")
-	private boolean compareArguments(List<String> args1, List<String> args2) {
-        if(args1.size() != args2.size())
-            return false;
-        for(int i = 0; i < args1.size(); i++) {
-            String arg1 = args1.get(i);
-            String arg2 = args2.get(i);
-            if(!arg1.equals(arg2))
-                return false;
-        }
-        return true;
-    }
-    
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
+
                 public void documentUpdated(DocumentImpl document, int event) {
-                    // clear all
-                    cached = null;
-                    cachedArgs = null;
+                    //Nothing to do (previously was cache management)
                 }
 
                 public void unsubscribe() {
@@ -245,19 +217,19 @@ public class ExtCollection extends Function {
                 }
 
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + getLine() + ": " + ExtCollection.this.toString());
+                    LOG.debug("UpdateListener: Line: " + getLine() + ": " +
+                        ExtCollection.this.toString());
                 }
             };
             context.registerUpdateListener(listener);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#resetState()
      */
     public void resetState(boolean postOptimization) {
-    	super.resetState(postOptimization);
-        cached = null;
-        cachedArgs = null;
+        super.resetState(postOptimization);
+        //Nothing more to do (previously was cache management)
     }
 }

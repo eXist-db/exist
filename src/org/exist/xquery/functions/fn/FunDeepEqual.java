@@ -58,210 +58,235 @@ import org.w3c.dom.Node;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class FunDeepEqual extends CollatingFunction {
-	protected static final Logger logger = Logger.getLogger(FunDeepEqual.class);
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
-			"Returns true iff every item in $items-1 is deep-equal to the item at the same position in $items-2, " +
-			"false otherwise. If both $items-1 and $items-2 are the empty sequence, returns true(). ",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "The first item sequence"), 
-                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "The second item sequence")
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
-		),
-		new FunctionSignature(
-			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
-			"Returns true iff every item in $items-1 is deep-equal to the item at the same position in $items-2, " +
-			"false otherwise. If both $items-1 and $items-2 are the empty sequence, returns true(). " +
-			"Comparison collation is specified by $collation-uri. " + 
+
+    protected static final Logger logger = Logger.getLogger(FunDeepEqual.class);
+
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
+            "Returns true() iff every item in $items-1 is deep-equal to the item " +
+            "at the same position in $items-2, false() otherwise. " +
+            "If both $items-1 and $items-2 are the empty sequence, returns true(). ",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("items-1", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The second item sequence")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+                "true() if the sequences are deep-equal, false() otherwise")
+            ),
+        new FunctionSignature(
+            new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
+            "Returns true() iff every item in $items-1 is deep-equal to the item " +
+            "at the same position in $items-2, false() otherwise. " +
+            "If both $items-1 and $items-2 are the empty sequence, returns true(). " +
+            "Comparison collation is specified by $collation-uri. " + 
             THIRD_REL_COLLATION_ARG_EXAMPLE,
-			new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM, Cardinality.ZERO_OR_MORE, "The first item sequence"), 
-                new FunctionParameterSequenceType("items-2", Type.ITEM, Cardinality.ZERO_OR_MORE, "The second item sequence"),
-				new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if the sequences are deep-equal, false() otherwise")
-		)
-	};
+            new SequenceType[] {
+                new FunctionParameterSequenceType("items-1", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                new FunctionParameterSequenceType("items-2", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The second item sequence"),
+                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The collation URI")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+                "true() if the sequences are deep-equal, false() otherwise")
+        )
+    };
 
-	public FunDeepEqual(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunDeepEqual(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
-	}
-	
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-        throws XPathException {
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }       
-        
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+        }
         Sequence result;
-		Sequence[] args = getArguments(contextSequence, contextItem);
-		Collator collator = getCollator(contextSequence, contextItem, 3);		
-		int length = args[0].getItemCount();
-		if (length != args[1].getItemCount()) 
+        Sequence[] args = getArguments(contextSequence, contextItem);
+        Collator collator = getCollator(contextSequence, contextItem, 3);
+        int length = args[0].getItemCount();
+        if (length != args[1].getItemCount()) {
             result = BooleanValue.FALSE;
-        else {
-        	result = BooleanValue.TRUE;
-    		for (int i = 0; i < length; i++) {
-    			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i), collator)) {
+        } else {
+            result = BooleanValue.TRUE;
+            for (int i = 0; i < length; i++) {
+                if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i), collator)) {
                     result = BooleanValue.FALSE;
                     break;
                 }
-    		}
+            }
         }
-        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
         return result;
-	}
-	
-	public static boolean deepEquals(Item a, Item b, Collator collator) {
-		try {
-			final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
-			final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
-			if (aAtomic || bAtomic) {
-				if (!aAtomic || !bAtomic) return false;
-				try {
-					AtomicValue av = (AtomicValue) a;
-					AtomicValue bv = (AtomicValue) b;
-					if (Type.subTypeOf(av.getType(), Type.NUMBER) && Type.subTypeOf(bv.getType(), Type.NUMBER)) {
-						//or if both values are NaN
-						if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
-							return true;
-					}
-					return ValueComparison.compareAtomic(
-						collator, av, bv, Constants.TRUNC_NONE, Constants.EQ);
-				} catch (XPathException e) {
-					return false;
-				}
-			}
-//		assert Type.subTypeOf(a.getType(), Type.NODE);
-//		assert Type.subTypeOf(b.getType(), Type.NODE);
-			if (a.getType() != b.getType()) return false;
-			NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
-			if (nva == nvb) return true;
-			try {				
-				//Don't use this shortcut for in-memory nodes since the symbol table is ignored.
-				if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE && nva.equals(nvb)) return true;		// shortcut!
-			} catch (XPathException e) {
-				// apparently incompatible values, do manual comparison
-			}
-			Node na, nb;
-			switch(a.getType()) {
-				case Type.DOCUMENT:
-					// NodeValue.getNode() doesn't seem to work for document nodes
-					na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
-					nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
-					return compareContents(na, nb);
-				case Type.ELEMENT:
-					na = nva.getNode(); nb = nvb.getNode();
-					return compareElements(na, nb);
-				case Type.ATTRIBUTE:
-					na = nva.getNode(); nb = nvb.getNode();
-					return
-						compareNames(na, nb)
-						&& safeEquals(na.getNodeValue(), nb.getNodeValue());
-				case Type.PROCESSING_INSTRUCTION:
-				case Type.NAMESPACE:
-					na = nva.getNode(); nb = nvb.getNode();
-					return
-						safeEquals(na.getNodeName(), nb.getNodeName())
-						&& safeEquals(nva.getStringValue(), nvb.getStringValue());
-				case Type.TEXT:
-				case Type.COMMENT:
-					return safeEquals(nva.getStringValue(), nvb.getStringValue());
-				
-				default: {
-                    logger.error("unexpected item type " + Type.getTypeName(a.getType()));
-                    throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
+    }
+
+    public static boolean deepEquals(Item a, Item b, Collator collator) {
+        try {
+            final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
+            final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
+            if (aAtomic || bAtomic) {
+                if (!aAtomic || !bAtomic)
+                    return false;
+                try {
+                    AtomicValue av = (AtomicValue) a;
+                    AtomicValue bv = (AtomicValue) b;
+                    if (Type.subTypeOf(av.getType(), Type.NUMBER) &&
+                        Type.subTypeOf(bv.getType(), Type.NUMBER)) {
+                        //or if both values are NaN
+                        if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
+                            return true;
+                    }
+                    return ValueComparison.compareAtomic(collator, av, bv,
+                        Constants.TRUNC_NONE, Constants.EQ);
+                } catch (XPathException e) {
+                    return false;
                 }
-			}
-		} catch (XPathException e) {
+            }
+            if (a.getType() != b.getType())
+                return false;
+            NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
+            if (nva == nvb) return true;
+            try {
+                //Don't use this shortcut for in-memory nodes
+                //since the symbol table is ignored.
+                if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE &&
+                    nva.equals(nvb))
+                    return true; // shortcut!
+            } catch (XPathException e) {
+                // apparently incompatible values, do manual comparison
+            }
+            Node na, nb;
+            switch(a.getType()) {
+            case Type.DOCUMENT:
+                // NodeValue.getNode() doesn't seem to work for document nodes
+                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
+                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
+                return compareContents(na, nb);
+            case Type.ELEMENT:
+                na = nva.getNode();
+                nb = nvb.getNode();
+                return compareElements(na, nb);
+            case Type.ATTRIBUTE:
+                na = nva.getNode();
+                nb = nvb.getNode();
+                return compareNames(na, nb)
+                    && safeEquals(na.getNodeValue(), nb.getNodeValue());
+            case Type.PROCESSING_INSTRUCTION:
+            case Type.NAMESPACE:
+                na = nva.getNode(); nb = nvb.getNode();
+                return safeEquals(na.getNodeName(), nb.getNodeName()) &&
+                    safeEquals(nva.getStringValue(), nvb.getStringValue());
+            case Type.TEXT:
+            case Type.COMMENT:
+                return safeEquals(nva.getStringValue(), nvb.getStringValue());
+            default:
+                throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
+            }
+        } catch (XPathException e) {
             logger.error(e.getMessage());
             e.printStackTrace();
-			return false;
-		}
-	}
-	
-	private static boolean compareElements(Node a, Node b) {
-		return
-			compareNames(a, b)
-			&& compareAttributes(a, b)
-			&& compareContents(a, b);
-	}
-	
-	private static boolean compareContents(Node a, Node b) {
-		a = findNextTextOrElementNode(a.getFirstChild());
-		b = findNextTextOrElementNode(b.getFirstChild());
-		while (!(a == null || b == null)) {
-			int nodeTypeA = getEffectiveNodeType(a);
-			int nodeTypeB = getEffectiveNodeType(b);
-			if (nodeTypeA != nodeTypeB) return false;
-			switch (nodeTypeA) {
-				case Node.TEXT_NODE:
-					if (a.getNodeType() == NodeImpl.REFERENCE_NODE && b.getNodeType() == NodeImpl.REFERENCE_NODE) {
-						if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;
-					} else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
-						if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(), b.getNodeValue())) return false;						
-					} else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
-						if (!safeEquals(a.getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;						
-					} else
-						if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
-					break;
-				case Node.ELEMENT_NODE:
-					if (!compareElements(a, b)) return false;
-					break;
-				default: {
-					logger.error("unexpected node type " + nodeTypeA);
-                    throw new RuntimeException("unexpected node type " + nodeTypeA);
+            return false;
+        }
+    }
+
+    private static boolean compareElements(Node a, Node b) {
+        return compareNames(a, b) && compareAttributes(a, b) &&
+            compareContents(a, b);
+    }
+
+    private static boolean compareContents(Node a, Node b) {
+        a = findNextTextOrElementNode(a.getFirstChild());
+        b = findNextTextOrElementNode(b.getFirstChild());
+        while (!(a == null || b == null)) {
+            int nodeTypeA = getEffectiveNodeType(a);
+            int nodeTypeB = getEffectiveNodeType(b);
+            if (nodeTypeA != nodeTypeB)
+                return false;
+            switch (nodeTypeA) {
+            case Node.TEXT_NODE:
+                if (a.getNodeType() == NodeImpl.REFERENCE_NODE &&
+                        b.getNodeType() == NodeImpl.REFERENCE_NODE) {
+                    if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
+                            ((ReferenceNode)b).getReference().getNodeValue()))
+                        return false;
+                } else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
+                    if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
+                            b.getNodeValue()))
+                        return false;
+                } else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
+                    if (!safeEquals(a.getNodeValue(), 
+                            ((ReferenceNode)b).getReference().getNodeValue()))
+                        return false;
+                } else {
+                    if (!safeEquals(a.getNodeValue(), b.getNodeValue()))
+                        return false;
                 }
-			}
-			a = findNextTextOrElementNode(a.getNextSibling());
-			b = findNextTextOrElementNode(b.getNextSibling());
-		}
-		return a == b;		// both null
-	}
-	
-	private static Node findNextTextOrElementNode(Node n) {
-		for(;;) {
-			if (n == null) return null;
-			int nodeType = getEffectiveNodeType(n);
-			if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE) return n;
-			n = n.getNextSibling();
-		}
-	}
-	
-	private static int getEffectiveNodeType(Node n) {
-		int nodeType = n.getNodeType();
-		if (nodeType == NodeImpl.REFERENCE_NODE) {
-			nodeType = ((ReferenceNode) n).getReference().getNode().getNodeType();
-		}
-		return nodeType;
-	}
-	
-	private static boolean compareAttributes(Node a, Node b) {
-		NamedNodeMap nnma = a.getAttributes(), nnmb = b.getAttributes();
-		if (getAttrCount(nnma) != getAttrCount(nnmb)) return false;
-        for (int i=0; i<nnma.getLength(); i++) {
-			Node ta = nnma.item(i);
+                break;
+            case Node.ELEMENT_NODE:
+                if (!compareElements(a, b))
+                    return false;
+                break;
+            default:
+                throw new RuntimeException("unexpected node type " + nodeTypeA);
+            }
+            a = findNextTextOrElementNode(a.getNextSibling());
+            b = findNextTextOrElementNode(b.getNextSibling());
+        }
+        return a == b; // both null
+    }
+
+    private static Node findNextTextOrElementNode(Node n) {
+        for(;;) {
+            if (n == null)
+                return null;
+            int nodeType = getEffectiveNodeType(n);
+            if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)
+                return n;
+            n = n.getNextSibling();
+        }
+    }
+
+    private static int getEffectiveNodeType(Node n) {
+        int nodeType = n.getNodeType();
+        if (nodeType == NodeImpl.REFERENCE_NODE) {
+            nodeType = ((ReferenceNode) n).getReference().getNode().getNodeType();
+        }
+        return nodeType;
+    }
+
+    private static boolean compareAttributes(Node a, Node b) {
+        NamedNodeMap nnma = a.getAttributes();
+        NamedNodeMap nnmb = b.getAttributes();
+        if (getAttrCount(nnma) != getAttrCount(nnmb)) return false;
+        for (int i = 0; i < nnma.getLength(); i++) {
+            Node ta = nnma.item(i);
             if (Namespaces.XMLNS_NS.equals(ta.getNamespaceURI()))
                 continue;
-            Node tb = ta.getLocalName() == null ? nnmb.getNamedItem(ta.getNodeName()) : nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
-			if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue())) return false;
-		}
-		return true;
-	}
+            Node tb = ta.getLocalName() == null ?
+                nnmb.getNamedItem(ta.getNodeName()) :
+                nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
+            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue()))
+                return false;
+        }
+        return true;
+    }
 
     /**
      * Return the number of real attributes in the map. Filter out
@@ -281,14 +306,15 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static boolean compareNames(Node a, Node b) {
-		if (a.getLocalName() != null || b.getLocalName() != null) {
-			return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) && safeEquals(a.getLocalName(), b.getLocalName());
-		}
-		return safeEquals(a.getNodeName(), b.getNodeName());
-	}
-	
-	private static boolean safeEquals(Object a, Object b) {
-		return a == null ? b == null : a.equals(b);
-	}
+        if (a.getLocalName() != null || b.getLocalName() != null) {
+            return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) &&
+                safeEquals(a.getLocalName(), b.getLocalName());
+        }
+        return safeEquals(a.getNodeName(), b.getNodeName());
+    }
+
+    private static boolean safeEquals(Object a, Object b) {
+        return a == null ? b == null : a.equals(b);
+    }
 
 }

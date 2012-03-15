@@ -55,128 +55,128 @@ import org.exist.xquery.value.ValueSequence;
  * @author perig
  */
 public class FunDistinctValues extends CollatingFunction {
-	protected static final Logger logger = Logger.getLogger(FunDistinctValues.class);
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-			"Returns a sequence where duplicate values of $atomic-values, based on value equality, " + 
-			"have been deleted.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The atomic values")
+
+    protected static final Logger logger = Logger.getLogger(FunDistinctValues.class);
+
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+            "Returns a sequence where duplicate values of $atomic-values, " +
+            "based on value equality, have been deleted.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC,
+                    Cardinality.ZERO_OR_MORE, "The atomic values")
             },
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the distinct values sequence")
-		),
-		new FunctionSignature(
-				new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-				"Returns a sequence where duplicate values of $atomic-values, based on value equality specified by collation $collation-uri, " + 
-				"have been deleted.",
-				new SequenceType[] { 
-					new FunctionParameterSequenceType("atomic-values", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The atomic values"),
-					new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
-				},
-				new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE, "the distinct values sequence")
-		)		
-	};
+            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                "the distinct values sequence")
+        ),
+        new FunctionSignature(
+            new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
+            "Returns a sequence where duplicate values of $atomic-values, " +
+            "based on value equality specified by collation $collation-uri, " + 
+            "have been deleted.",
+            new SequenceType[] { 
+                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC,
+                    Cardinality.ZERO_OR_MORE, "The atomic values"),
+                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The collation URI")
+            },
+            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                "the distinct values sequence")
+        )
+    };
 
-	public FunDistinctValues(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunDistinctValues(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.PathExpr#returnsType()
-	 */
-	public int returnsType() {
-		return Type.ATOMIC;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.xquery.PathExpr#returnsType()
+     */
+    public int returnsType() {
+        return Type.ATOMIC;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.Function#getDependencies()
-	 */
-	/*
-	public int getDependencies() {
-		int deps = Dependency.CONTEXT_SET;
-		if (getArgumentCount() == 1)
-			deps |= getArgument(0).getDependencies();
-		return deps;
-	}
-	*/
-
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }       
-        
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		Collator collator = getCollator(contextSequence, contextItem, 2);		
-		TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
-		ValueSequence result = new ValueSequence();
-		Item item;
-		AtomicValue value;
-		boolean hasAlreadyNaN = false;
-		for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-			item = i.nextItem();
-			value = item.atomize();
-			if (!set.contains(value)) {
-				if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
-					if (((NumericValue)value).isNaN()) {
-						//although NaN does not equal itself, if $arg contains multiple NaN values a single NaN is returned.
-						if (!hasAlreadyNaN) {
-							set.add(value);
-							result.add(value);	
-							hasAlreadyNaN = true;
-						}
-					} else {
-						set.add(value);
-						result.add(value);
-					}
-				} else {
-					set.add(value);
-					result.add(value);
-				}
-			}			
-		}
-
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+        }
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        Collator collator = getCollator(contextSequence, contextItem, 2);		
+        TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
+        ValueSequence result = new ValueSequence();
+        Item item;
+        AtomicValue value;
+        boolean hasAlreadyNaN = false;
+        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+            item = i.nextItem();
+            value = item.atomize();
+            if (!set.contains(value)) {
+                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+                    if (((NumericValue)value).isNaN()) {
+                        //although NaN does not equal itself, if $arg 
+                        //contains multiple NaN values a single NaN is returned.
+                        if (!hasAlreadyNaN) {
+                            set.add(value);
+                            result.add(value);	
+                            hasAlreadyNaN = true;
+                        }
+                    } else {
+                        set.add(value);
+                        result.add(value);
+                    }
+                } else {
+                    set.add(value);
+                    result.add(value);
+                }
+            }
+        }
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         return result;
-	}
+    }
 
-	public final static class ValueComparator implements Comparator<AtomicValue> {
-		
-		Collator collator;
-		
-		public ValueComparator(Collator collator) {
-			this.collator = collator;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		 */
-		public int compare(AtomicValue o1, AtomicValue o2) {
-			try {
-				if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.EQ))
-					return Constants.EQUAL;
-				else if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.LT))
-					return Constants.INFERIOR;
-				else if (ValueComparison.compareAtomic(collator, o1, o2, Constants.TRUNC_NONE, Constants.GT))
-					return Constants.SUPERIOR;
-				//Fallback
-				else
-					return o1.compareTo(collator, o2);
-			} catch (XPathException e) {
-				//throw new IllegalArgumentException("cannot compare values");
-                //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct
+    public final static class ValueComparator implements Comparator<AtomicValue> {
+        Collator collator;
+
+        public ValueComparator(Collator collator) {
+            this.collator = collator;
+        }
+
+        /* (non-Javadoc)
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
+        public int compare(AtomicValue o1, AtomicValue o2) {
+            try {
+                if (ValueComparison.compareAtomic(collator, o1, o2,
+                        Constants.TRUNC_NONE, Constants.EQ))
+                    return Constants.EQUAL;
+                else if (ValueComparison.compareAtomic(collator, o1, o2,
+                        Constants.TRUNC_NONE, Constants.LT))
+                    return Constants.INFERIOR;
+                else if (ValueComparison.compareAtomic(collator, o1, o2,
+                        Constants.TRUNC_NONE, Constants.GT))
+                    return Constants.SUPERIOR;
+                //Fallback
+                else
+                    return o1.compareTo(collator, o2);
+            } catch (XPathException e) {
+                //Values that cannot be compared, i.e. the eq operator
+                //is not defined for their types, are considered to be distinct
                 return Constants.INFERIOR;
-			}
-		}
-	}
+            }
+        }
+    }
 }

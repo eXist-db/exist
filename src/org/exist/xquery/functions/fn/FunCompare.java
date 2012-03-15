@@ -49,70 +49,82 @@ import org.exist.xquery.value.Type;
  */
 public class FunCompare extends CollatingFunction {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature (
-			new QName("compare", Function.BUILTIN_FUNCTION_NS),
-            "Returns the collatable comparison between $string-1 and $string-2, " +
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature (
+            new QName("compare", Function.BUILTIN_FUNCTION_NS),
+            "Returns the collatable comparison between $string-1 and $string-2, using $collation-uri. " +
             "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal " +
             "to $string-2, 1 if $string-1 is superior to $string-2. " + 
             "If either comparand is the empty sequence, the empty sequence is " +
             "returned. " +
-            "Please remember to specify the collation in the context or use " +
+            "Please remember to specify the collation in the context or use, " +
             "the three argument version if you don't want the system default.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "The first string"),
-                new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "The second string")
-			},
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal to $string-2, 1 if $string-1 is superior to $string-2. If either comparand is the empty sequence, the empty sequence is returned.")),
-		new FunctionSignature (
-			new QName("compare", Function.BUILTIN_FUNCTION_NS),
-            "Returns the collatable comparison using $collation-uri between $string-1 and $string-2, " +
+            new SequenceType[] {
+                new FunctionParameterSequenceType("string-1", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The first string"),
+                new FunctionParameterSequenceType("string-2", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The second string")
+            },
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
+                "-1 if $string-1 is inferior to $string-2, " +
+                "0 if $string-1 is equal to $string-2, " +
+                "1 if $string-1 is superior to $string-2. " +
+                "If either comparand is the empty sequence, the empty sequence is returned.")),
+        new FunctionSignature (
+            new QName("compare", Function.BUILTIN_FUNCTION_NS),
+            "Returns the collatable comparison between $string-1 and $string-2, using $collation-uri. " +
             "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal " +
             "to $string-2, 1 if $string-1 is superior to $string-2. " +
             "If either comparand is the empty sequence, the empty sequence is returned. " +
             THIRD_REL_COLLATION_ARG_EXAMPLE,
-			new SequenceType[] {
-                new FunctionParameterSequenceType("string-1", Type.STRING, Cardinality.ZERO_OR_ONE, "The first string"),
-                new FunctionParameterSequenceType("string-2", Type.STRING, Cardinality.ZERO_OR_ONE, "The second string"),
-				 new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The relative collation URI")
-			},
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "-1 if $string-1 is inferior to $string-2, 0 if $string-1 is equal to $string-2, 1 if $string-1 is superior to $string-2. If either comparand is the empty sequence, the empty sequence is returned."))
-	};
-					
-	public FunCompare(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+            new SequenceType[] {
+                new FunctionParameterSequenceType("string-1", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The first string"),
+                new FunctionParameterSequenceType("string-2", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The second string"),
+                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The relative collation URI")
+            },
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
+                "-1 if $string-1 is inferior to $string-2, " +
+                "0 if $string-1 is equal to $string-2, " +
+                "1 if $string-1 is superior to $string-2. " +
+                "If either comparand is the empty sequence, the empty sequence is returned."))
+    };
+
+    public FunCompare(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
-		Sequence seq2 =	getArgument(1).eval(contextSequence, contextItem);
-		
-		Sequence result;		
-		if (seq1.isEmpty() || seq2.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
-		else {
-			Collator collator = getCollator(contextSequence, contextItem, 3);		
-			int comparison = Collations.compare(collator, seq1.getStringValue(), seq2.getStringValue());
-			if (comparison == Constants.EQUAL) 
-				result = new IntegerValue(Constants.EQUAL);	        
-			else if (comparison < 0)
-				result = new IntegerValue(Constants.INFERIOR);
-			else 
-				result = new IntegerValue(Constants.SUPERIOR);
-		}
-        
+        Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
+        Sequence seq2 =	getArgument(1).eval(contextSequence, contextItem);
+        Sequence result;
+        if (seq1.isEmpty() || seq2.isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            Collator collator = getCollator(contextSequence, contextItem, 3);		
+            int comparison = Collations.compare(collator, seq1.getStringValue(), seq2.getStringValue());
+            if (comparison == Constants.EQUAL) 
+                result = new IntegerValue(Constants.EQUAL);
+            else if (comparison < 0)
+                result = new IntegerValue(Constants.INFERIOR);
+            else 
+                result = new IntegerValue(Constants.SUPERIOR);
+        }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
-        return result;        
+            context.getProfiler().end(this, "", result);
+        return result;
 	}
 }

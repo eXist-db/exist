@@ -43,41 +43,43 @@ import org.exist.xquery.value.Type;
  */
 public class FunBoolean extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("boolean", Function.BUILTIN_FUNCTION_NS),
-            "Computes the xs:boolean value of the sequence $items.",
-			new SequenceType[] { 
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items")
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("boolean", Function.BUILTIN_FUNCTION_NS),
+            "Computes the xs:boolean value of the sequence items.",
+            new SequenceType[] { 
+                new FunctionParameterSequenceType("items", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The items")
             },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "the boolean value, ebv, of the items")
-		);
-		
-	public FunBoolean(XQueryContext context) {
-		super(context, signature);
-	}
-	
-	public int returnsType() {
-		return Type.BOOLEAN;
-	}
-	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+                "The boolean value, ebv, of the items")
+        );
+
+    public FunBoolean(XQueryContext context) {
+        super(context, signature);
+    }
+
+    public int returnsType() {
+        return Type.BOOLEAN;
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        Sequence arg = getArgument(0).eval(contextSequence, contextItem);        
-		Sequence result =  arg.effectiveBooleanValue() ? 
-				BooleanValue.TRUE : BooleanValue.FALSE;
-        
+        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        Sequence result =  arg.effectiveBooleanValue() ? 
+                BooleanValue.TRUE : BooleanValue.FALSE;
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
-        return result;        
-	}
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 }

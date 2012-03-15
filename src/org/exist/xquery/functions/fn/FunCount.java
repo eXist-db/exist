@@ -39,50 +39,51 @@ import org.exist.xquery.value.Type;
 
 public class FunCount extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("count", Function.BUILTIN_FUNCTION_NS),
-			"Returns the number of items in the argument sequence, $items.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items") 
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("count", Function.BUILTIN_FUNCTION_NS),
+            "Returns the number of items in the argument sequence, $items.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("items", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The items") 
             },
-			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "the number of items in the argument sequence")
-		);
-			
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE,
+                "The number of items in the argument sequence")
+        );
+
     public FunCount(XQueryContext context) {
-		super(context, signature);
+        super(context, signature);
     }
 
     public int returnsType() {
-		return Type.INTEGER;
+        return Type.INTEGER;
     }
-	
+
     public int getDependencies() {
-    	return Dependency.CONTEXT_SET;
+        return Dependency.CONTEXT_SET;
     }
-    
+
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }        
-
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());
+        }
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         Sequence result;
         if (getArgumentCount() == 0)
             result = IntegerValue.ZERO;
         else
             result = new IntegerValue(getArgument(0).eval(contextSequence).getItemCount());
-        
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
-        return result;        
-	}
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 }

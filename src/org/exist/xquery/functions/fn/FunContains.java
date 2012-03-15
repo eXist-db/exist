@@ -43,73 +43,81 @@ import org.exist.xquery.value.Type;
 
 public class FunContains extends CollatingFunction {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("contains", Function.BUILTIN_FUNCTION_NS),
-			"Returns an xs:boolean indicating whether or not the value of $source-string " +
-			"contains (at the beginning, at the end, or anywhere within) at least " +
-			"one sequence of collation units that provides a minimal match to the " +
-			"collation units in the value of $substring, according to the default collation.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
-                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The substring")
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if $source-string contains $substring, false() otherwise")),
-		new FunctionSignature(
-			new QName("contains", Function.BUILTIN_FUNCTION_NS),
-			"Returns an xs:boolean indicating whether or not the value of $source-string " +
-			"contains (at the beginning, at the end, or anywhere within) at least " +
-			"one sequence of collation units that provides a minimal match to the " +
-			"collation units in the value of $substring, according to the collation that is " +
-			"specified in $collation-uri." + THIRD_REL_COLLATION_ARG_EXAMPLE,
-			new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING, Cardinality.ZERO_OR_ONE, "The source-string"),
-                new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The substring"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
-					
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true() if $source-string contains $substring, false() otherwise"))
-	};
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("contains", Function.BUILTIN_FUNCTION_NS),
+            "Returns an xs:boolean indicating whether or not the value of " +
+            "$source-string contains (at the beginning, at the end, " +
+            "or anywhere within) at least one sequence of collation units " +
+            "that provides a minimal match to the collation units in " +
+            "the value of $substring, according to the default collation.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("source-string", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The source-string"),
+                new FunctionParameterSequenceType("substring", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The substring")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+                "true() if $source-string contains $substring, false() otherwise")),
+        new FunctionSignature(
+            new QName("contains", Function.BUILTIN_FUNCTION_NS),
+            "Returns an xs:boolean indicating whether or not the value of " +
+            "$source-string contains (at the beginning, at the end, " +
+            "or anywhere within) at least one sequence of collation units " +
+            "that provides a minimal match to the collation units in " +
+            "the value of $substring, according to the collation that is " +
+            "specified in $collation-uri." + THIRD_REL_COLLATION_ARG_EXAMPLE,
+            new SequenceType[] {
+                new FunctionParameterSequenceType("source-string", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The source-string"),
+                new FunctionParameterSequenceType("substring", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The substring"),
+                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The collation URI")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+                "true() if $source-string contains $substring, false() otherwise"))
+    };
 
-	public FunContains(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunContains(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	public int returnsType() {
-		return Type.BOOLEAN;
-	}
+    public int returnsType() {
+        return Type.BOOLEAN;
+    }
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        } 
-        
-		Sequence result;
-		//s2 takes precedence over s1
-		String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-		if ("".equals(s2))
-			result = BooleanValue.TRUE;
-		else {
-			String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-			if ("".equals(s1))
-				result = BooleanValue.FALSE;
-			else {
-				Collator collator = getCollator(contextSequence, contextItem, 3);
-				if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
-					return BooleanValue.TRUE;
-				else
-					return BooleanValue.FALSE;
-			}
-		}
-
-		if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
-        return result;        
-	}
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());
+        }
+        Sequence result;
+        //s2 takes precedence over s1
+        String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        if ("".equals(s2)) {
+            result = BooleanValue.TRUE;
+        } else {
+            String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+            if ("".equals(s1)) {
+                result = BooleanValue.FALSE;
+            } else {
+                Collator collator = getCollator(contextSequence, contextItem, 3);
+                if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
+                    return BooleanValue.TRUE;
+                else
+                    return BooleanValue.FALSE;
+            }
+        }
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 }

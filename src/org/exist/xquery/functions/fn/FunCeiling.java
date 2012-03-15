@@ -39,48 +39,50 @@ import org.exist.xquery.value.Type;
 
 public class FunCeiling extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("ceiling", Function.BUILTIN_FUNCTION_NS),
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("ceiling", Function.BUILTIN_FUNCTION_NS),
             "Returns a value of the same type as the argument. Specifically, " +
             "returns the smallest (closest to negative infinity) number " +
             "with no fractional part that is not less than the value of the argument, $number.",
-			new SequenceType[] { 
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number")
+            new SequenceType[] { 
+                new FunctionParameterSequenceType("number", Type.NUMBER,
+                    Cardinality.ZERO_OR_ONE, "The number")
             },
-			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE, "the non-fractional number not less than $number")
-		);
-			
+            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ONE,
+                "The non-fractional number not less than $number")
+        );
+
     public FunCeiling(XQueryContext context) {
-		super(context, signature);
+        super(context, signature);
     }
 
     public int returnsType() {
-		return Type.NUMBER;
+        return Type.NUMBER;
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-    	Sequence seq = getArgument(0).eval(contextSequence, contextItem);        
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         Sequence result;
-    	if(seq.isEmpty())
+        if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE; 
-        else {
-    		NumericValue value = (NumericValue)	seq.itemAt(0).convertTo(Type.NUMBER);
+        } else {
+            NumericValue value = (NumericValue)	seq.itemAt(0).convertTo(Type.NUMBER);
             result = value.ceiling();
         }
-        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
-        return result;        
-	}
+        return result;
+    }
 }

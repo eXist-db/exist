@@ -52,80 +52,84 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunConcat extends Function {
-		protected static final Logger logger = Logger.getLogger(FunConcat.class);
-	public final static FunctionSignature signature =
-			new FunctionSignature(
-				new QName("concat", Function.BUILTIN_FUNCTION_NS),
-				"Accepts two or more xdt:anyAtomicType arguments, $atomizable-values, and converts them " +
-				"to xs:string. Returns the xs:string that is the concatenation of the values " +
-				"of its arguments after conversion. If any of the arguments is the empty sequence, " +
-				"the argument is treated as the zero-length string.",
-				new SequenceType[] {
-                    //More complicated : see below
-				    new FunctionParameterSequenceType("atomizable-values", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The atomizable values")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the concatenated values"),
-				true
-			);
-			
-	public FunConcat(XQueryContext context) {
-		super(context, signature);
-	}
 
-	//Why a specific method here ?
-	public int returnsType() {
-		return Type.STRING;
-	}
-	
-	/**
-	 * Overloaded function: no static type checking.
-	 * 
-	 * @see org.exist.xquery.Function#setArguments(java.util.List)
-	 */
-	public void setArguments(List<Expression> arguments) throws XPathException {
-		for(Expression argument : arguments) {
-			Expression next = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, argument,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));                
+    protected static final Logger logger = Logger.getLogger(FunConcat.class);
+
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("concat", Function.BUILTIN_FUNCTION_NS),
+            "Accepts two or more xdt:anyAtomicType arguments, $atomizable-values, " +
+            "and converts them to xs:string. Returns the xs:string that is the " +
+            "concatenation of the values of its arguments after conversion. " +
+            "If any of the arguments is the empty sequence, the argument " +
+            "is treated as the zero-length string.",
+            new SequenceType[] {
+                //More complicated : see below
+                new FunctionParameterSequenceType("atomizable-values",
+                    Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The atomizable values")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE,
+                "The concatenated values"),
+            true
+        );
+
+    public FunConcat(XQueryContext context) {
+        super(context, signature);
+    }
+
+    public int returnsType() {
+        return Type.STRING;
+    }
+
+    /**
+     * Overloaded function: no static type checking.
+     * 
+     * @see org.exist.xquery.Function#setArguments(java.util.List)
+     */
+    public void setArguments(List<Expression> arguments) throws XPathException {
+        for (Expression argument : arguments) {
+            Expression next = new DynamicCardinalityCheck(context,
+                Cardinality.ZERO_OR_ONE, argument,
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
             if (!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
                 next = new Atomize(context, next);
-			steps.add(next);
-		}
-	}
-    
-	//Why a specific method here ?
+            steps.add(next);
+        }
+    }
+
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        contextInfo.setParent(this);
         // call analyze for each argument
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         for(int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(contextInfo);
-        }        
-    }
-	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-       if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-           
-		if(getArgumentCount() < 2) {
-            logger.error("fn:concat() requires at least two arguments");
-			throw new XPathException (this, ErrorCodes.XPST0017, "Concat requires at least two arguments");
-		}
-        
-		StringBuilder concat = new StringBuilder();     
-		for (int i = 0; i < getArgumentCount(); i++) {
-            concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
-		}
-		Sequence result = new StringValue(concat.toString());
+    }
 
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
+       if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+        }
+       if (getArgumentCount() < 2) {
+           throw new XPathException (this, ErrorCodes.XPST0017,
+               "concat() requires at least two arguments");
+       }
+       StringBuilder concat = new StringBuilder();
+       for (int i = 0; i < getArgumentCount(); i++) {
+            concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
+       }
+       Sequence result = new StringValue(concat.toString());
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
-        
-        return result;  
-	}
+        return result;
+    }
 }

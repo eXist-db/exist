@@ -35,24 +35,30 @@ import org.exist.xquery.value.Sequence;
  * @author wolf
  */
 public abstract class CollatingFunction extends Function {
-    public final static String THIRD_REL_COLLATION_ARG_EXAMPLE = "The third argument $collation-uri is relative so you only need to " +
+
+    public final static String THIRD_REL_COLLATION_ARG_EXAMPLE =
+        "The third argument $collation-uri is relative so you only need to " +
         "specify the last part of a valid full collation-uri, e.g. " + 
         "'?lang=sv-SE', " +
         "'lang=sv-SE;strength=primary;decomposition=standard' "+
         "or 'swedish'.";
-	/**
-	 * @param context
-	 * @param signature
-	 */
-	public CollatingFunction(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
 
-	protected Collator getCollator(Sequence contextSequence, Item contextItem, int arg) throws XPathException {
-		if(getSignature().getArgumentCount() == arg) {
-			String collationURI = getArgument(arg - 1).eval(contextSequence, contextItem).getStringValue();
-			return context.getCollator(collationURI);
-		} else
-			return context.getDefaultCollator();
-	}
+    /**
+     * @param context
+     * @param signature
+     */
+    public CollatingFunction(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    protected Collator getCollator(Sequence contextSequence, Item contextItem,
+            int arg) throws XPathException {
+        if (getSignature().getArgumentCount() == arg) {
+            String collationURI = getArgument(arg - 1).eval(contextSequence,
+                contextItem).getStringValue();
+            return context.getCollator(collationURI);
+        } else {
+            return context.getDefaultCollator();
+        }
+    }
 }

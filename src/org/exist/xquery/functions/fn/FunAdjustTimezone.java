@@ -43,6 +43,7 @@ import org.exist.xquery.value.Type;
  *
  */
 public class FunAdjustTimezone extends BasicFunction {
+
     public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time");
     public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
     public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
@@ -52,96 +53,94 @@ public class FunAdjustTimezone extends BasicFunction {
     public final static FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");
     public final static FunctionReturnSequenceType TIME_01_RETURN = new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_ONE, "the adjusted time");
 
-	public final static FunctionSignature fnAdjustDateTimeToTimezone[] = {
-		new FunctionSignature(
-			new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
-			"Adjusts the xs:dateTime value $date-time to the implicit timezone of the current locale.",
-			new SequenceType[] { 
+    public final static FunctionSignature fnAdjustDateTimeToTimezone[] = {
+        new FunctionSignature(
+            new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:dateTime value $date-time to the implicit timezone of the current locale.",
+            new SequenceType[] { 
                 DATE_TIME_01_PARAM
-			},
-			DATE_TIME_01_RETURN),
-		new FunctionSignature(
-				new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
-				"Adjusts the xs:dateTime value $date-time to a specific timezone, or to no timezone at all. " +
-				"If $duration is the empty sequence, returns an xs:dateTime without a timezone.",
-				new SequenceType[] {
-                    DATE_TIME_01_PARAM,
-                    DURATION_01_PARAM
-				},
-				DATE_TIME_01_RETURN)
-	};
+            },
+            DATE_TIME_01_RETURN),
+        new FunctionSignature(
+            new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:dateTime value $date-time to a specific timezone, or to no timezone at all. " +
+            "If $duration is the empty sequence, returns an xs:dateTime without a timezone.",
+            new SequenceType[] {
+                DATE_TIME_01_PARAM,
+                DURATION_01_PARAM
+            },
+            DATE_TIME_01_RETURN)
+    };
 
-	public final static FunctionSignature fnAdjustDateToTimezone[] = {
-		new FunctionSignature(
-			new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
-			"Adjusts the xs:date value $date to the implicit timezone of the current locale.",
-			new SequenceType[] {
+    public final static FunctionSignature fnAdjustDateToTimezone[] = {
+        new FunctionSignature(
+            new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:date value $date to the implicit timezone of the current locale.",
+            new SequenceType[] {
                 DATE_01_PARAM
-			},
-			DATE_01_RETURN),
-		new FunctionSignature(
-				new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
-				"Adjusts the xs:date value $date to a specific timezone, or to no timezone at all. " +
-				"If $duration is the empty sequence, returns an xs:date without a timezone.",
-				new SequenceType[] { 
-                    DATE_01_PARAM,
-                    DURATION_01_PARAM
-				},
-				DATE_01_RETURN)
-	};
-	
-	public final static FunctionSignature fnAdjustTimeToTimezone[] = {
-		new FunctionSignature(
-			new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
-			"Adjusts the xs:time value $time to the implicit timezone of the current locale.",
-			new SequenceType[] { 
+            },
+            DATE_01_RETURN),
+        new FunctionSignature(
+            new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:date value $date to a specific timezone, or to no timezone at all. " +
+            "If $duration is the empty sequence, returns an xs:date without a timezone.",
+            new SequenceType[] { 
+                DATE_01_PARAM,
+                DURATION_01_PARAM
+            },
+            DATE_01_RETURN)
+    };
+
+    public final static FunctionSignature fnAdjustTimeToTimezone[] = {
+        new FunctionSignature(
+            new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:time value $time to the implicit timezone of the current locale.",
+            new SequenceType[] { 
                 TIME_01_PARAM
-			},
-			TIME_01_RETURN),
-		new FunctionSignature(
-				new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
-				"Adjusts the xs:time value $time to a specific timezone, or to no timezone at all. " +
-				"If $duration is the empty sequence, returns an xs:time without a timezone.",
-				new SequenceType[] { 
-                    TIME_01_PARAM,
-                    DURATION_01_PARAM
-				},
-				TIME_01_RETURN)
-	};
+            },
+            TIME_01_RETURN),
+        new FunctionSignature(
+            new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
+            "Adjusts the xs:time value $time to a specific timezone, or to no timezone at all. " +
+            "If $duration is the empty sequence, returns an xs:time without a timezone.",
+            new SequenceType[] { 
+                TIME_01_PARAM,
+                DURATION_01_PARAM
+            },
+            TIME_01_RETURN)
+    };
 
-	public FunAdjustTimezone(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunAdjustTimezone(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result;
-		if (args[0].isEmpty()) 
+        if (args[0].isEmpty()) 
             result =Sequence.EMPTY_SEQUENCE;
         else {
-    		AbstractDateTimeValue time = (AbstractDateTimeValue) args[0].itemAt(0);    		 
-    		if (getSignature().getArgumentCount() == 2) {
-    			if (args[1].isEmpty()) 
-    			    result = time.withoutTimezone();
-                else {
+            AbstractDateTimeValue time = (AbstractDateTimeValue) args[0].itemAt(0);
+            if (getSignature().getArgumentCount() == 2) {
+                if (args[1].isEmpty()) {
+                    result = time.withoutTimezone();
+                } else {
                     DayTimeDurationValue offset = (DayTimeDurationValue) args[1].itemAt(0);
                     result = time.adjustedToTimezone(offset);
                 }
-    		}
-            else
+            } else {
                 result = time.adjustedToTimezone(null);
+            }
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         return result;
-	}
-
+    }
 }

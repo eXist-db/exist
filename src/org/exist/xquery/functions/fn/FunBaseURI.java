@@ -50,75 +50,81 @@ import org.w3c.dom.Node;
  * @author wolf
  */
 public class FunBaseURI extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(FunBaseURI.class);
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature(
-			new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base URI property for the context item.",
-			null,
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from the context item")
-		),
+
+    protected static final Logger logger = Logger.getLogger(FunBaseURI.class);
+
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base URI property for $uri. If $uri is the empty " +
-            "sequence, the empty sequence is returned.",
+            "Returns the value of the base URI property for the context item.",
+            null,
+            new FunctionReturnSequenceType(Type.ANY_URI,
+                Cardinality.ZERO_OR_ONE, "The base URI from the context item")
+        ),
+        new FunctionSignature(
+            new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
+            "Returns the value of the base URI property for $uri. " +
+            "If $uri is the empty sequence, the empty sequence is returned.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.NODE, Cardinality.ZERO_OR_ONE, "The URI") },
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from $uri")
+                new FunctionParameterSequenceType("uri", Type.NODE,
+                    Cardinality.ZERO_OR_ONE, "The URI")
+            },
+            new FunctionReturnSequenceType(Type.ANY_URI, 
+                Cardinality.ZERO_OR_ONE, "the base URI from $uri")
         ),
         new FunctionSignature(
             new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
             "Returns the value of the base URI property from the static context. " +
             "If the base-uri property is undefined, the empty sequence is returned.",
             null,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the base URI from the static context")
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE,
+                "The base URI from the static context")
         )
     };
-			
+
     /**
      * 
      * 
      * @param context 
      * @param signature 
      */
-	public FunBaseURI(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunBaseURI(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
+     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
+     * org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
         }
-        
         Sequence result = null;
         NodeValue node = null;
         if (isCalledAs("static-base-uri")) {
             if (context.isBaseURIDeclared()) {
                 result = context.getBaseURI();
-
-            	
-            	if ( !((AnyURIValue) result).toURI().isAbsolute() )
-            		throw new XPathException(this, ErrorCodes.XPST0001, "");
-
+                if (!((AnyURIValue) result).toURI().isAbsolute() )
+                    throw new XPathException(this, ErrorCodes.XPST0001, "");
             } else {
                 result = Sequence.EMPTY_SEQUENCE;
             }
         } else {
             if (args.length == 0) {
                 if (contextSequence == null || contextSequence.isEmpty()) {
-                    logger.error("err:XPDY0002: context sequence is empty and no argument specified");
-                    throw new XPathException(this, ErrorCodes.XPDY0002, "context sequence is empty and no argument specified");
+                    throw new XPathException(this, ErrorCodes.XPDY0002,
+                        "Context sequence is empty and no argument specified");
                 }
                 Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                    logger.error("err:XPTY0004: context item is not a node");
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "context item is not a node");
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Context item is not a node");
                 }
                 node = (NodeValue) item;
             } else {
@@ -130,56 +136,53 @@ public class FunBaseURI extends BasicFunction {
             }
         }
         if (result == null && node != null) {
-        	
-        	result = Sequence.EMPTY_SEQUENCE;
-        	
+            result = Sequence.EMPTY_SEQUENCE;
             // This is implemented to be a recursive ascent according to
             // section 2.5 in www.w3.org/TR/xpath-functions 
             // see memtree/ElementImpl and dom/ElementImpl. /ljo
-
             Node domNode = node.getNode();
             short type = domNode.getNodeType();
             //A direct processing instruction constructor creates a processing instruction node 
             //whose target property is PITarget and whose content property is DirPIContents. 
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
-            if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null )
-            	;
-            
-            else if ((type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) 
-            		&& (domNode.getParentNode() != null && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
-            	;
-            	
-            } else if (type == Node.ATTRIBUTE_NODE || type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE || type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {
+            if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null)
+                ;
+            else if ((type == Node.PROCESSING_INSTRUCTION_NODE ||
+                type == Node.COMMENT_NODE) && (domNode.getParentNode() != null
+                && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
+                //Nothing to do
+                ;
+            } else if (type == Node.ATTRIBUTE_NODE ||
+                    type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
+                    type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {
                 URI relativeURI = null;
                 URI baseURI = null;
                 try {
-                	String uri = domNode.getBaseURI();
-                	if (uri != null) { 
-                		relativeURI = new URI(uri);
-                		baseURI = new URI(context.getBaseURI() + "/");
-                	}
+                    String uri = domNode.getBaseURI();
+                    if (uri != null) { 
+                        relativeURI = new URI(uri);
+                        baseURI = new URI(context.getBaseURI() + "/");
+                    }
                 } catch (URISyntaxException e) {
-                    logger.error(e.getMessage());
-                    throw new XPathException(this, e);
+                    throw new XPathException(e.getMessage());
                 }
                 if (relativeURI != null) {
-                	if (!(("".equals(relativeURI.toString()) || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
-                		if (relativeURI.isAbsolute()) {
-                			result = new AnyURIValue(relativeURI);
-                		} else {
-                			result = new AnyURIValue(baseURI.resolve(relativeURI));
-                		}
-                	} else {
-                		result = new AnyURIValue(baseURI);
-                	}
-            	}
+                    if (!(("".equals(relativeURI.toString()) ||
+                            (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
+                        if (relativeURI.isAbsolute()) {
+                            result = new AnyURIValue(relativeURI);
+                        } else {
+                            result = new AnyURIValue(baseURI.resolve(relativeURI));
+                        }
+                    } else {
+                        result = new AnyURIValue(baseURI);
+                    }
+                }
             }
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
-        
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().end(this, "", result);
         return result;
     }
 }
