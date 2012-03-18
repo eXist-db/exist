@@ -504,8 +504,8 @@ let $collection :=
 let $info := request:get-parameter("info", ())
 let $deploy := request:get-parameter("deploy", ())
 let $download := request:get-parameter("download", ())
-let $expathConf := if ($collection) then xcollection($collection)/expath:package else ()
-let $repoConf := if ($collection) then xcollection($collection)/repo:meta else ()
+let $expathConf := if ($collection) then xmldb:xcollection($collection)/expath:package else ()
+let $repoConf := if ($collection) then xmldb:xcollection($collection)/repo:meta else ()
 let $abbrev := request:get-parameter("abbrev", ())
 return
     try {
