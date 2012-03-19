@@ -81,11 +81,9 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.zip.DeflaterOutputStream;
 import org.exist.security.PermissionFactory.PermissionModifier;
 import org.exist.security.internal.aider.ACEAider;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * This class implements the actual methods defined by
@@ -313,13 +311,12 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>QueryResult</code> value
      * @exception Exception if an error occurs
      */
-    protected QueryResult doQuery(DBBroker broker, String xpath,
+    protected QueryResult doQuery(DBBroker broker, CompiledXQuery compiled,
             NodeSet contextSet, HashMap<String, Object> parameters)
             throws Exception {
         XQuery xquery = broker.getXQueryService();
         XQueryPool pool = xquery.getXQueryPool();
-        Source source = new StringSource(xpath);
-        CompiledXQuery compiled = compile(broker, source, parameters);
+        
         checkPragmas(compiled.getContext(), parameters);
         LockedDocumentMap lockedDocuments = null;
         try {
@@ -339,11 +336,6 @@ public class RpcConnection implements RpcAPI {
             if(lockedDocuments != null) {
                 lockedDocuments.unlock();
             }
-            
-            compiled.getContext().cleanupBinaryValueInstances();
-            
-            if(compiled != null)
-                pool.returnCompiledXQuery(source, compiled);
         }
     }
 
@@ -509,9 +501,13 @@ public class RpcConnection implements RpcAPI {
     public int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
+        Source source = null;
+        CompiledXQuery compiled = null;
         try {
+            source = new StringSource(xpath);
+            compiled = compile(broker, source, parameters);
             broker = factory.getBrokerPool().get(user);
-            QueryResult result = doQuery(broker, xpath, null,
+            QueryResult result = doQuery(broker, compiled, null,
                     parameters);
             if(result.hasErrors())
                 throw result.getException();
@@ -522,6 +518,10 @@ public class RpcConnection implements RpcAPI {
             handleException(e);
 
         } finally {
+            if(compiled != null) {
+                compiled.getContext().cleanupBinaryValueInstances();
+                broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
+            }
             factory.getBrokerPool().release(broker);
         }
         return -1;
@@ -2571,9 +2571,13 @@ public class RpcConnection implements RpcAPI {
         long startTime = System.currentTimeMillis();
         String result = null;
         DBBroker broker = null;
+        Source source = null;
+        CompiledXQuery compiled = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = doQuery(broker, xpath, null, parameters);
+            source = new StringSource(xpath);
+            compiled = compile(broker, source, parameters);
+            QueryResult qr = doQuery(broker, compiled, null, parameters);
             if (qr == null)
                 return "<?xml version=\"1.0\"?>\n"
                         + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
@@ -2588,6 +2592,10 @@ public class RpcConnection implements RpcAPI {
             handleException(e);
 
         } finally {
+            if(compiled != null) {
+                compiled.getContext().cleanupBinaryValueInstances();
+                broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
+            }
             factory.getBrokerPool().release(broker);
         }
         return result;
@@ -2632,6 +2640,8 @@ public class RpcConnection implements RpcAPI {
         QueryResult queryResult;
         Sequence resultSeq = null;
         DBBroker broker = null;
+        CompiledXQuery compiled = null;
+        Source source = null;
         try {
             broker = factory.getBrokerPool().get(user);
             if (docUri != null && s_id != null) {
@@ -2647,7 +2657,10 @@ public class RpcConnection implements RpcAPI {
                     nodes.add(node);
                 }
             }
-            queryResult = doQuery(broker, xpath, nodes, parameters);
+            source = new StringSource(xpath);
+            compiled = compile(broker, source, parameters);
+            
+            queryResult = doQuery(broker, compiled, nodes, parameters);
             if (queryResult == null)
                 return ret;
             if (queryResult.hasErrors()) {
@@ -2703,6 +2716,12 @@ public class RpcConnection implements RpcAPI {
             return null;
 
         } finally {
+            
+            if(compiled != null) {
+                compiled.getContext().cleanupBinaryValueInstances();
+                broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
+            }
+            
             factory.getBrokerPool().release(broker);
         }
         
@@ -2742,10 +2761,13 @@ public class RpcConnection implements RpcAPI {
         QueryResult queryResult;
         Sequence resultSeq = null;
         DBBroker broker = null;
+        Source source = null;
+        CompiledXQuery compiled = null;
         try {
             broker = factory.getBrokerPool().get(user);
-            
-            queryResult = doQuery(broker, xpath, nodes, parameters);
+            source = new StringSource(xpath);
+            compiled = compile(broker, source, parameters);
+            queryResult = doQuery(broker, compiled, nodes, parameters);
             if (queryResult == null)
                 return ret;
             if (queryResult.hasErrors()) {
@@ -2804,6 +2826,10 @@ public class RpcConnection implements RpcAPI {
             return null;
 
         } finally {
+            if(compiled != null) {
+                compiled.getContext().cleanupBinaryValueInstances();
+                broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
+            }
             factory.getBrokerPool().release(broker);
         }
         queryResult.result = resultSeq;
@@ -4068,9 +4094,14 @@ public class RpcConnection implements RpcAPI {
     public HashMap<String, Object> summary(String xpath) throws EXistException, PermissionDeniedException {
         long startTime = System.currentTimeMillis();
         DBBroker broker = null;
+        Source source = null;
+        CompiledXQuery compiled = null;
+        HashMap<String, Object> parameters = new HashMap<String, Object>();
         try {
             broker = factory.getBrokerPool().get(user);
-            QueryResult qr = doQuery(broker, xpath, null, new HashMap<String, Object>());
+            source = new StringSource(xpath);
+            compiled = compile(broker, source, parameters);
+            QueryResult qr = doQuery(broker, compiled, null, parameters);
             if (qr == null)
                 return new HashMap<String, Object>();
             if (qr.hasErrors())
@@ -4141,6 +4172,10 @@ public class RpcConnection implements RpcAPI {
             return null;
 
         } finally {
+            if(compiled != null) {
+                compiled.getContext().cleanupBinaryValueInstances();
+                broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
