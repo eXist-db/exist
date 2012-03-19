@@ -27,54 +27,59 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.util.io;
 
 import java.io.IOException;
+import org.apache.log4j.Logger;
 
 /**
  * Factory to instantiate a cache object
- * takes a different behaviour on Windows to Unix.
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class FilterInputStreamCacheFactory {
 
-    private final static boolean WINDOWS_PLATFORM;
-    static {
-        final String osName = System.getProperty("os.name");
-        WINDOWS_PLATFORM = (osName != null && osName.toLowerCase().startsWith("windows"));   
+    private final static Logger LOG = Logger.getLogger(FilterInputStreamCacheFactory.class);
+    
+    public interface FilterInputStreamCacheConfiguration {
+        public String getCacheClass();
+    }
+    
+    private FilterInputStreamCacheFactory() {
     }
     
     /**
      * Get a suitable Cache instance
      * 
-     * By default, on Windows platforms FileFilterInputStreamCache is used
-     * on other platforms MemoryMappedFileFilterInputStreamCache.
-     * This is because Users reported problems with the
-     * memory use of MemoryMappedFileFilterInputStreamCache on Windows.
-     * 
-     * The class used can be overriden by setting the system property 'filterInputStreamCache=type'
-     * where type is one of 'file', 'memoryMapped', or 'memory'.
-     * 
-     * file: Random IO on a temporary file
-     * memoryMapped: Memory Mapped IO on a temporary file (fast for multiple reads)
-     * memory: All cache is kept in RAM (very fast for everything)
      */
-    public static FilterInputStreamCache getCacheInstance() throws IOException {
-       final String cacheType = System.getProperty("filterInputStreamCache", "");
+    public static FilterInputStreamCache getCacheInstance(FilterInputStreamCacheConfiguration cacheConfiguration) throws IOException {
        
-       if(cacheType.equals("file")) {
-           return new FileFilterInputStreamCache();
-       } else if (cacheType.equals("memoryMapped")) {
-           return new MemoryMappedFileFilterInputStreamCache();
-       } else if(cacheType.equals("memory")) {
-            return new MemoryFilterInputStreamCache();
-       } else {
-           
-           //TODO enable MemoryMappedFileFilterInputStreamCache as the default on non-windows platforms
-           
-           //if(WINDOWS_PLATFORM) {
-               //return new FileFilterInputStreamCache();
-           //} else {
-              return new MemoryMappedFileFilterInputStreamCache();
-           //}
-       }
-    }   
+        final FilterInputStreamCache cache = new FilterInputStreamCacheFactory().instantiate(cacheConfiguration);
+        if(cache == null) {
+            throw new IOException("Could not load cache for class: " + cacheConfiguration.getCacheClass());
+        }
+        return cache;
+    }
+    
+    private FilterInputStreamCache instantiate(FilterInputStreamCacheConfiguration cacheConfiguration) {
+        try {
+            final Class clazz = Class.forName(cacheConfiguration.getCacheClass());
+            
+            final Object obj = clazz.newInstance();
+            
+            if(!(obj instanceof FilterInputStreamCache)) {
+                LOG.error("Invalid cache class: " + clazz.getName());
+                return null;
+            }
+            
+            return (FilterInputStreamCache)obj;
+            
+        } catch (ClassNotFoundException cnfe) {
+           LOG.error(cnfe.getMessage(), cnfe);
+           return null;
+        } catch (InstantiationException ie) {
+           LOG.error(ie.getMessage(), ie);
+           return null;
+        } catch (IllegalAccessException iae) {
+           LOG.error(iae.getMessage(), iae);
+           return null;
+        }
+    }
 }

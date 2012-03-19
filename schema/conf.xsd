@@ -96,6 +96,17 @@
                         <xs:attribute name="cacheShrinkThreshold" type="xs:integer" default="10000"/>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="binary-manager">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="cache">
+                                <xs:complexType>
+                                    <xs:attribute name="class" type="xs:string" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="indexer">
                     <xs:complexType>
                         <xs:sequence>

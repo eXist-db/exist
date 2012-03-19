@@ -33,11 +33,13 @@ import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
+import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -118,7 +120,13 @@ public class GetData extends BasicFunction {
         FilterInputStreamCache cache = null;
         try {
             //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-            cache = FilterInputStreamCacheFactory.getCacheInstance();
+            cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration(){
+
+                @Override
+                public String getCacheClass() {
+                    return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
+                }
+            });
             is = new CachingFilterInputStream(cache, request.getInputStream());
             is.mark(Integer.MAX_VALUE);
         } catch(IOException ioe) {
