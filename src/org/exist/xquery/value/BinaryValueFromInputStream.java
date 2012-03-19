@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
+import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.XPathException;
 
 /**
@@ -23,12 +24,18 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private FilterInputStreamCache cache;
 
 
-    protected BinaryValueFromInputStream(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
+    protected BinaryValueFromInputStream(final BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
         super(manager, binaryValueType);
 
         try {
             
-            this.cache = FilterInputStreamCacheFactory.getCacheInstance();
+            this.cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration(){
+
+                @Override
+                public String getCacheClass() {
+                    return manager.getCacheClass();
+                }
+            });
             this.is = new CachingFilterInputStream(cache, is);
 
         } catch(IOException ioe) {

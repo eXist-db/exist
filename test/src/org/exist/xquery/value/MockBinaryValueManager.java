@@ -30,4 +30,9 @@ public class MockBinaryValueManager implements BinaryValueManager {
         }
         values.clear();
     }
+
+    @Override
+    public String getCacheClass() {
+        return "org.exist.util.io.MemoryFilterInputStreamCache";
+    }
 }

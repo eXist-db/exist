@@ -43,7 +43,6 @@ import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.internal.RealmImpl;
-import org.exist.security.internal.AccountImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
@@ -103,6 +102,8 @@ public class Configuration implements ErrorHandler
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
 
+    public final static String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    
     public Configuration() throws DatabaseConfigurationException
     {
         this( DatabaseImpl.CONF_XML, null );
@@ -221,6 +222,11 @@ public class Configuration implements ErrorHandler
                 configureBackend( existHomeDirname, (Element)dbcon.item( 0 ) );
             }
 
+            NodeList binaryManager = doc.getElementsByTagName("binary-manager");
+            if(binaryManager.getLength() > 0) {
+                configureBinaryManager((Element)binaryManager.item(0));
+            }
+            
             //transformer settings
             NodeList transformers = doc.getElementsByTagName( TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME );
 
@@ -280,6 +286,16 @@ public class Configuration implements ErrorHandler
     }
 
    
+    private void configureBinaryManager(Element binaryManager) throws DatabaseConfigurationException {
+        final NodeList nlCache = binaryManager.getElementsByTagName("cache");
+        if(nlCache.getLength() > 0) {
+            final Element cache = (Element)nlCache.item(0);
+            final String binaryCacheClass = cache.getAttribute("class");
+            config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
+            LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": " + config.get(BINARY_CACHE_CLASS_PROPERTY));
+        }
+    }
+    
     private void configureXQuery( Element xquery ) throws DatabaseConfigurationException
     {
         //java binding

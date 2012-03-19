@@ -13,6 +13,7 @@
                 recovery
                 security
                 watchdog
+            binary-manager
             indexer
             scheduler
                 job
@@ -294,6 +295,35 @@
 
     </db-connection>
 
+    <!--
+        Settings for the Binary Manager:
+        
+        - cache 
+            Defines the class to use to Cache InputStreams when reading binary documents
+            from the database or from a read once source such as a http request (e.g. request:get-data()).
+            There are currently three options available:
+            
+            - org.exist.util.io.FileFilterInputStreamCache
+                Default. Temporary binary streams are cached to a temporary file on disk.
+            
+            - org.exist.util.io.MemoryMappedFileFilterInputStreamCach
+                Temporary binary streams are cached to a temporary file on disk which
+                has been mapped into memory. Faster than FileFilterInputStreamCache.
+                Not reliable on Windows platforms.
+                
+            - org.exist.util.io.MemoryFilterInputStreamCache
+                Temporary binary streams are cached in memory.
+                This is the fastest approach. However it can result in out of memory
+                errors under heavy load or if using large binary files. 
+            
+           Where temporary files are used, they will be deleted after use.
+           However, due to a bug in the JVM on Windows platforms, temporary files cannot be deleted, so instead
+           they are re-cycled and re-used and deleted if the database is restarted.
+    -->
+    <binary-manager>
+        <cache class="org.exist.util.io.FileFilterInputStreamCache"/>
+    </binary-manager>
+    
     <!-- 
         Settings for the indexer:
         
