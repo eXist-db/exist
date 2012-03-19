@@ -574,6 +574,9 @@ public class QueryDialog extends JFrame {
 						Messages.getString("QueryDialog.queryrunerrormessage")+": "
 						+ InteractiveClient.getExceptionMessage(e), e);
 			} finally {
+                                if(context != null) {
+                                    context.cleanupBinaryValueInstances();
+                                }
 				context = null;
                 if (result != null)
                     try {
