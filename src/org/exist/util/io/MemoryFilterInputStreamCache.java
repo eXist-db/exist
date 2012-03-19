@@ -71,8 +71,10 @@ public class MemoryFilterInputStreamCache implements FilterInputStreamCache {
 
     @Override
     public void invalidate() throws IOException {
-        cache.close();
-        cache = null;
+        if(cache != null) {
+            cache.close();
+            cache = null;
+        }
     }
 
     /**
