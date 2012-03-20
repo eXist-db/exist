@@ -29,6 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,6 +73,7 @@ public abstract class TestRunner {
                 Document doc = parse(file);
 
                 xqs.declareVariable("doc", doc);
+				xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
                 ResourceSet result = xqs.execute(query);
                 XMLResource resource = (XMLResource) result.getResource(0);
                 results.append(resource.getContent()).append('\n');
