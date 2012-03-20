@@ -17,8 +17,6 @@
       <meta http-equiv="expires" content="Wed, 9 Feb 2011 12:21:57 GMT" />
       <meta name="revisit-after" content="2 days" />
       <link rev="made" href="mailto:info@betterform.de" />
-      <link rel="SHORTCUT ICON" href="bfResources/images/betterform.ico" />
-      <link rel="ICON" href="bfResources/images/betterform.ico" type="image/x-icon" />
       <link rel="stylesheet" type="text/css" href="bfResources/styles/dashboard.css" />
       <style type="text/css">
 		  @import "bfResources/scripts/dijit/themes/tundra/tundra.css";
@@ -239,7 +237,7 @@
 					},
 					onPlay:function(){
 						console.debug("onPlay");
-						var uri = "rest/db/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
+						var uri = "apps/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
 						load(uri);
 					},
 					onEnd:function(){
@@ -354,14 +352,14 @@
 			}
 
 			dojo.addOnLoad(function() {
-				var uri = "rest/db/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
+				var uri = "apps/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
 				animateOne(uri);
 			});
 
 			// -->
             function login() {
 					dojo.io.iframe.send({
-						url: "rest/db/betterform/utils/login.xql",
+						url: "apps/betterform/utils/login.xql",
 						method: "post",
 						handleAs: "text",
 						form: dojo.query(".login")[0],
@@ -395,7 +393,7 @@
 
 				} else {
 					dojo.io.iframe.send({
-						url:  "rest/db/betterform/utils/upload-document.xql",
+						url:  "apps/betterform/utils/upload-document.xql",
 						method: "post",
 						handleAs: "text",
 						form: dojo.query(".upload")[0],
@@ -430,7 +428,7 @@
 					emptyCollectionNameDialog.show();
 				} else {
 					dojo.io.iframe.send({
-						url: "rest/db/betterform/utils/create-collection.xql",
+						url: "apps/betterform/utils/create-collection.xql",
 						method: "post",
 						handleAs: "text",
 						form: dojo.query(".createCollection")[0],

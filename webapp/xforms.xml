@@ -68,7 +68,7 @@
                     <programlisting><markup><![CDATA[
                         <filter-mapping>
                             <filter-name>XFormsFilter</filter-name>
-                            <url-pattern>/rest/db/*</url-pattern>
+                            <url-pattern>/apps/*</url-pattern>
                         </filter-mapping>
                         <filter-mapping>
                             <filter-name>XFormsFilter</filter-name>
@@ -95,7 +95,7 @@
                             database and to create collections.</para>
                     </listitem>
                     <listitem>
-                        <para><ulink href="rest/db/betterform/forms/reference/FeatureExplorer.xhtml">
+                        <para><ulink href="apps/betterform/forms/reference/FeatureExplorer.xhtml">
                             <emphasis role="bold">FeatureExplorer</emphasis></ulink> is the live documentation of 
                             betterFORM. It is itself a XForms document that offers a navigation menu with links to
                             many sample XForms that show working examples along with the relevant links to the Spec. 
@@ -103,7 +103,7 @@
                             FeatureExplorer will be enhanced continuously as the feature-set grows.</para>
                     </listitem>
                     <listitem>
-                        <para><ulink href="rest/db/betterform/apps/timetracker/index.xql">
+                        <para><ulink href="apps/betterform/apps/timetracker/index.xql">
                             <emphasis role="bold">Timetracker</emphasis></ulink> is a small but complete demo application. It
                             shows a basic <emphasis role="bold">XRX application</emphasis> and can give some 
                             hints for writing your own single-page applications with eXist and betterFORM.</para>
