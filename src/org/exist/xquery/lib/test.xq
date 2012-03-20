@@ -153,6 +153,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         	   deep-equal($xn, $en)
     return
         <test n="{$count}" pass="{$OK}">
+        { $test/@id }
         {
             if (not($OK)) then
                 ($test/task, $test/expected, <result>{$expanded}</result>)
@@ -195,15 +196,20 @@ declare function t:xpath($output as item()*, $xpath as element()) {
             util:eval($expr)
 };
 
-declare function t:run-testSet($set as element(TestSet)) {
+declare function t:run-testSet($set as element(TestSet), $id as xs:string?) {
     let $copy := util:expand($set)
     let $null := t:setup($copy/setup)
+    let $tests :=
+        if ($id) then
+            $copy/test[@id = $id]
+        else
+            $copy/test[empty(@ignore) or @ignore = "no"]
     let $result := util:expand(
            <TestSet>
            {$copy/testName}
            {$copy/description}
            {
-               for $test at $p in $copy/test[empty(@ignore) or @ignore = "no"]
+               for $test at $p in $tests
                return
                    t:run-test($test, $p)
            }

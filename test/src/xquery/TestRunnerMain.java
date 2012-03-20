@@ -24,12 +24,19 @@ package xquery;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.avalon.excalibur.cli.CLArgsParser;
+import org.apache.avalon.excalibur.cli.CLOption;
+import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
+import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -41,6 +48,14 @@ import org.xmldb.api.modules.XMLResource;
 
 public class TestRunnerMain {
 
+	private final static int HELP_OPT = 'h';
+	private final static int SINGLE_OPT = 's';
+	
+	private final static CLOptionDescriptor[] OPTIONS = new CLOptionDescriptor[] {
+		new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
+		new CLOptionDescriptor( "single", CLOptionDescriptor.ARGUMENT_REQUIRED, SINGLE_OPT, "run a single test identified by its id attribute." )
+	};
+	
 	private static Collection rootCollection;
 
 	/**
@@ -48,13 +63,41 @@ public class TestRunnerMain {
 	 */
 	public static void main(String[] args) {
 		init();
-		
-		runTests(args);
+	
+		CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
+
+        if( optParser.getErrorString() != null ) {
+            System.err.println( "ERROR: " + optParser.getErrorString() );
+            return;
+        }
+        List<String> files = new ArrayList<String>();
+        String id = null;
+        
+        List<CLOption> opts = optParser.getArguments();
+
+        for( CLOption option : opts ) {
+
+            switch( option.getId() ) {
+	            case HELP_OPT:
+	                System.out.println( "Usage: java " + TestRunnerMain.class.getName() + " [options]" );
+	                System.out.println( CLUtil.describeOptions( OPTIONS ).toString() );
+	                System.exit( 0 );
+	                break;
+	            case SINGLE_OPT: 
+	            	id = option.getArgument();
+	            	break;
+	            case CLOption.TEXT_ARGUMENT :
+                    files.add(option.getArgument());
+                    break;
+            }
+        }
+        
+		runTests(files, id);
 		
 		shutdown();
 	}
 
-	private static void runTests(String[] files) {
+	private static void runTests(List<String> files, String id) {
 		try {
 			StringBuilder results = new StringBuilder();
 			XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
@@ -69,6 +112,13 @@ public class TestRunnerMain {
 				Document doc = TestRunner.parse(file);
 				
 				xqs.declareVariable("doc", doc);
+				
+				if (id != null) {
+					xqs.declareVariable("id", id);
+				} else {
+					xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
+				}
+				
 				ResourceSet result = xqs.execute(query);
 				XMLResource resource = (XMLResource) result.getResource(0);
                 results.append(resource.getContent()).append('\n');
