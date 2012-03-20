@@ -129,7 +129,7 @@
 </xsl:text>
         <filter-mapping>
             <filter-name>XFormsFilter</filter-name>
-            <url-pattern>/rest/db/*</url-pattern>
+            <url-pattern>/apps/*</url-pattern>
         </filter-mapping>
         <filter-mapping>
             <filter-name>XFormsFilter</filter-name>

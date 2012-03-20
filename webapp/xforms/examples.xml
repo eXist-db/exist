@@ -42,7 +42,7 @@
                 <title>Reference &amp; Demo Forms</title>
                 <variablelist>
                     <varlistentry>
-                        <term><ulink href="../rest/db/betterform/forms/reference/FeatureExplorer.xhtml">
+                        <term><ulink href="../apps/betterform/forms/reference/FeatureExplorer.xhtml">
                             FeatureExplorer</ulink></term>
                         <listitem>
                             <para>betterFORM live documentation. The FeatureExplorer itself is a XForms document 
@@ -54,7 +54,7 @@
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><ulink url="../rest/db/betterform/forms/demo/registration.xhtml">Registration</ulink></term>
+                        <term><ulink url="../apps/betterform/forms/demo/registration.xhtml">Registration</ulink></term>
                         <listitem>
                             <para>A simple registration form inspired by twitter demonstrating constraints and custom
                                 alerts</para>
@@ -62,13 +62,13 @@
                     </varlistentry>
 
                     <varlistentry>
-                        <term><ulink url="../rest/db/betterform/forms/demo/contacts.xhtml">Contacts</ulink></term>
+                        <term><ulink url="../apps/betterform/forms/demo/contacts.xhtml">Contacts</ulink></term>
                         <listitem>
                             <para>Demonstrates usage of subforms including updating of the sub- and masterform.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term><ulink url="../rest/db/betterform/forms/demo/orderlist.xhtml">Shopping Cart</ulink></term>
+                        <term><ulink url="../apps/betterform/forms/demo/orderlist.xhtml">Shopping Cart</ulink></term>
                         <listitem>
                             <para>A simple calculated shopping cart demonstrating the usage of (dependent) calculations,
                                 typing, XForms functions and XForms repeat actions.</para>
@@ -81,7 +81,7 @@
                 <title>XRX Sample App</title>
                 <variablelist>
                     <varlistentry>
-                        <term><ulink href="../rest/db/betterform/apps/timetracker/index.xql">
+                        <term><ulink href="../apps/betterform/apps/timetracker/index.xql">
                             Timetracker</ulink></term>
                         <listitem>
                             <para>A basic <ulink href="http://en.wikibooks.org/wiki/XRX">XRX application</ulink> to 

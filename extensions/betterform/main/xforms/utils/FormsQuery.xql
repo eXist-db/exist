@@ -175,14 +175,14 @@ declare function local:handleFile($uri as xs:string, $contextPath as xs:string, 
 	let $fileLink := if ($referenceLink eq 'Demo.xhtml' and not(contains($path, 'forms/demo'))) then ( fn:concat('forms/demo/', $referenceLink)) else ($referenceLink)
 	let $fileName := if (fn:contains($fileName, '.xhtml')) then( functx:substring-before-last($fileName, '.xhtml') ) else ( $fileName )
 	let $shortendFileName := if (fn:string-length($fileName) gt 15 and $shorten eq 'true') then (fn:concat(fn:substring($fileName,0,10), '...', fn:substring($fileName, fn:string-length($fileName) -5))) else ($fileName)  
-	let $filePath := functx:substring-before-last($uri, 'db')
+	let $filePath := functx:substring-before-last($uri, 'betterform/utils')
 	return
 	<div class="file">
-		<a class="bfIconFile" href="{fn:concat($filePath, 'db/', $path, '/', $fileLink)}" target="_blank">
+		<a class="bfIconFile" href="{fn:concat($filePath, $path, '/', $fileLink)}" target="_blank">
 			<img src="{fn:concat($contextPath, '/bfResources/images/', $icon)}" border="0" />
 		</a>
-		<a class="textLink" title="{$fileName}" href="{fn:concat($filePath, 'db/', $path, '/', $fileLink)}" target="_blank">{$shortendFileName}</a>
-		<a class="sourceLink" title="view" href="{fn:concat($filePath, 'db/', $path, '/', $fileLink, '?source=true')}" target="_blank">source</a>
+		<a class="textLink" title="{$fileName}" href="{fn:concat($filePath, $path, '/', $fileLink)}" target="_blank">{$shortendFileName}</a>
+		<a class="sourceLink" title="view" href="{fn:concat($filePath, $path, '/', $fileLink, '?source=true')}" target="_blank">source</a>
 		<!-- <a class="editorLink" title="editor" href="{fn:concat($filePath, 'db/', $path, '/', $fileLink, '?_xsl=', '/betterform/apps/editor/xf2jsTree.xsl')}" target="_blank">editor</a> -->
 	</div>
 };
@@ -279,7 +279,7 @@ let $contextPath := request:get-context-path()
 
 
 
-let $restRoot := fn:concat($contextPath, '/rest/db/', $path)
+let $restRoot := fn:concat($contextPath, '/apps/', $path)
 
 
 let $uri := request:get-uri()
