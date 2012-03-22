@@ -14,7 +14,7 @@ declare option exist:serialize "method=xhtml media-type=text/html indent=yes omi
 		
 		<!-- Simple OpenID Selector -->
 		<link rel="stylesheet" href="../scripts/openid-selector/css/openid.css" />
-		<script type="text/javascript" src="../scripts/jquery/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="../scripts/jquery/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="../scripts/openid-selector/js/openid-jquery.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {{

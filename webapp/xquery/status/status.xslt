@@ -9,7 +9,7 @@
                 
                 <productname>Open Source Native XML Database</productname>
                 <title>Server Status (via JMX)</title>
-                <script language="javascript" type="text/javascript" src="../../scripts/jquery/jquery-1.6.2.min.js"></script>
+                <script language="javascript" type="text/javascript" src="../../scripts/jquery/jquery-1.7.1.min.js"></script>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.min.js"></script>
                 <script language="javascript" type="text/javascript" src="../../scripts/jquery/flot/jquery.flot.stack.min.js"></script>
                 <script id="source" language="javascript" type="text/javascript">
