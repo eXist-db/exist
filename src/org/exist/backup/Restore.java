@@ -480,7 +480,7 @@ public class Restore extends DefaultHandler {
          if (dialog != null)
             dialog.displayMessage(message);
          else
-            System.err.println(message);
+            System.out.println(message);
       }
 
       public void warn(String message) {
