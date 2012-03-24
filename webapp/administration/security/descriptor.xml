@@ -1,8 +1,0 @@
-<package xmlns="http://exist-db.org/application">
-    <application id="84a9cb3d-84c4-4005-94fa-c90394ac3f2a" version="0.1">
-        <title>Security Panel</title>
-        <plug-to-application ref="aea0e743-f7eb-400c-a0f0-61d8436ca59e"/>
-        <path>security/</path>
-        <logo>logo.png</logo>
-    </application>
-</package>
