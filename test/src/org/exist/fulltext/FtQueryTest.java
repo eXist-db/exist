@@ -123,7 +123,7 @@ public class FtQueryTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
 	        assertEquals(1, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[match-all(mods:title, '.*ploy.*')]");
+	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
 	        assertEquals(2, result.getSize());
 
             result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
@@ -140,14 +140,14 @@ public class FtQueryTest extends XMLTestCase {
 	    	System.out.println("----- testFtOperators -----");
 	        XQueryService service = (XQueryService)
 	            testCollection.getService("XQueryService", "1.0");
-	        ResourceSet result = service.query("//SPEECH[match-all(LINE, 'love')]");
+	        ResourceSet result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
 	        assertEquals(160, result.getSize());
             result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
 	        assertEquals(190, result.getSize());
             result = service.query("//SPEECH[text:match-all(LINE, 'love$')]");
 	        assertEquals(160, result.getSize());
 
-            result = service.query("//SPEECH[match-all(LINE, 'fenny', 'snake')]/LINE[1]");
+            result = service.query("//SPEECH[text:match-all(LINE, 'fenny', 'snake')]/LINE[1]");
 	        assertEquals(1, result.getSize());
 	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
             //assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>fenny</exist:match> <exist:match xmlns:exist='http://exist.sourceforge.net/NS/exist'>snake</exist:match>,</LINE>");

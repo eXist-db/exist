@@ -113,7 +113,7 @@
     <test output="xml" ignore="yes">
         <task>[query, old FT index, qname, direct] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(qname)[match-any(., 'test')]
+            collection('/db/coll')//test/(qname)[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -123,7 +123,7 @@
         <task>[query, old FT index, qname, indirect] parenthesized element node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/(qname)
-            return $a[match-any(., 'test')]
+            return $a[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -132,7 +132,7 @@
     <test output="xml">
         <task>[query, old FT index, path, direct] parenthesized element node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(path)[match-any(., 'test')]
+            collection('/db/coll')//test/(path)[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -142,7 +142,7 @@
         <task>[query, old FT index, path, indirect] parenthesized element node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/(path)
-            return $a[match-any(., 'test')]
+            return $a[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -151,7 +151,7 @@
     <test output="xml" ignore="yes">
         <task>[query, old FT index, qname, direct] parenthesized element node + self axis</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(qname)/self::*[match-any(., 'test')]
+            collection('/db/coll')//test/(qname)/self::*[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -161,7 +161,7 @@
         <task>[query, old FT index, qname, indirect] parenthesized element node + self axis</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/(qname)/self::*
-            return $a[match-any(., 'test')]
+            return $a[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <qname att.qname="test">this is a test document</qname>
@@ -170,7 +170,7 @@
     <test output="xml">
         <task>[query, old FT index, path, direct] parenthesized element node + self axis</task>
         <code><![CDATA[
-            collection('/db/coll')//test/(path)/self::*[match-any(., 'test')]
+            collection('/db/coll')//test/(path)/self::*[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -180,7 +180,7 @@
         <task>[query, old FT index, path, indirect] parenthesized element node + self axis</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/(path)/self::*
-            return $a[match-any(., 'test')]
+            return $a[text:match-any(., 'test')]
             ]]></code>
         <expected>
             <path att.path="test">this is a test document</path>
@@ -189,7 +189,7 @@
     <test output="text">
         <task>[query, old FT index, qname, direct] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname/(@att.qname)[match-any(., 'test')]/string()
+            collection('/db/coll')//test/qname/(@att.qname)[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
@@ -197,14 +197,14 @@
         <task>[query, old FT index, qname, indirect] child step with parenthesized attribute node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/qname/(@att.qname)
-            return $a[match-any(., 'test')]/string()
+            return $a[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text" ignore="yes">
         <task>[query, old FT index, qname, direct] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/qname//(@att.qname)[match-any(., 'test')]/string()
+            collection('/db/coll')//test/qname//(@att.qname)[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
@@ -212,14 +212,14 @@
         <task>[query, old FT index, qname, indirect] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/qname//(@att.qname)
-            return $a[match-any(., 'test')]/string()
+            return $a[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[query, old FT index, path, direct] child step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path/(@att.path)[match-any(., 'test')]/string()
+            collection('/db/coll')//test/path/(@att.path)[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
@@ -227,14 +227,14 @@
         <task>[query, old FT index, path, indirect] child step with parenthesized attribute node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/path/(@att.path)
-            return $a[match-any(., 'test')]/string()
+            return $a[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
     <test output="text">
         <task>[query, old FT index, path, direct] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
-            collection('/db/coll')//test/path/(@att.path)[match-any(., 'test')]/string()
+            collection('/db/coll')//test/path/(@att.path)[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
@@ -242,7 +242,7 @@
         <task>[query, old FT index, path, indirect] descendant step with parenthesized attribute node</task>
         <code><![CDATA[
             let $a := collection('/db/coll')//test/path/(@att.path)
-            return $a[match-any(., 'test')]/string()
+            return $a[text:match-any(., 'test')]/string()
             ]]></code>
         <expected>test</expected>
     </test>
