@@ -1,8 +1,0 @@
-<package xmlns="http://exist-db.org/application">
-    <application id="4e07172f-aa59-4066-a2a4-1ee2e9edb19b" version="0.1">
-        <title>Accounts Management</title>
-        <plug-to-application ref="84a9cb3d-84c4-4005-94fa-c90394ac3f2a"/>
-        <path>accounts/</path>
-		<logo>images/logo.png</logo>
-    </application>
-</package>
