@@ -46,35 +46,35 @@
     <test output="text">
         <task>[query] old FT index (qname), attribute context (@)</task>
         <code><![CDATA[
-            collection('/db/coll')//p/@att1[match-any(., 'val1')]/string()
+            collection('/db/coll')//p/@att1[text:match-any(., 'val1')]/string()
             ]]></code>
         <expected>val1</expected>
     </test>
     <test output="text">
         <task>[query] old FT index (path), attribute context (@)</task>
         <code><![CDATA[
-            collection('/db/coll')//p/@att2[match-any(., 'val2')]/string()
+            collection('/db/coll')//p/@att2[text:match-any(., 'val2')]/string()
             ]]></code>
         <expected>val2</expected>
     </test>
     <test output="text" ignore="yes">
         <task>[query] old FT index (qname), attribute context (attribute::)</task>
         <code><![CDATA[
-            collection('/db/coll')//p/attribute::att1[match-any(., 'val1')]/string()
+            collection('/db/coll')//p/attribute::att1[text:match-any(., 'val1')]/string()
             ]]></code>
         <expected>val1</expected>
     </test>
     <test output="text">
         <task>[query] old FT index (path), attribute context, path (attribute::)</task>
         <code><![CDATA[
-            collection('/db/coll')//p/attribute::att2[match-any(., 'val2')]/string()
+            collection('/db/coll')//p/attribute::att2[text:match-any(., 'val2')]/string()
             ]]></code>
         <expected>val2</expected>
     </test>
     <test output="xml">
         <task>[query] old FT index (qname), element context</task>
         <code><![CDATA[
-            collection('/db/coll')//p[match-any(@att1, 'val1')]
+            collection('/db/coll')//p[text:match-any(@att1, 'val1')]
             ]]></code>
         <expected>
             <p att1="val1" att2="val2">this is a test document</p>
@@ -83,7 +83,7 @@
     <test output="xml">
         <task>[query] old FT index (path), element context</task>
         <code><![CDATA[
-            collection('/db/coll')//p[match-any(@att2, 'val2')]
+            collection('/db/coll')//p[text:match-any(@att2, 'val2')]
             ]]></code>
         <expected>
             <p att1="val1" att2="val2">this is a test document</p>
@@ -92,7 +92,7 @@
     <test output="xml">
         <task>[query] old FT index (qname), attribute context inside predicate</task>
         <code><![CDATA[
-            collection('/db/coll')/*[descendant-or-self::p/@att1[match-any(., 'val1')]]
+            collection('/db/coll')/*[descendant-or-self::p/@att1[text:match-any(., 'val1')]]
             ]]></code>
         <expected>
             <p att1="val1" att2="val2">this is a test document</p>
@@ -101,7 +101,7 @@
     <test output="xml">
         <task>[query] old FT index (path), attribute context inside predicate</task>
         <code><![CDATA[
-            collection('/db/coll')/*[descendant-or-self::p/@att2[match-any(., 'val2')]]
+            collection('/db/coll')/*[descendant-or-self::p/@att2[text:match-any(., 'val2')]]
             ]]></code>
         <expected>
             <p att1="val1" att2="val2">this is a test document</p>

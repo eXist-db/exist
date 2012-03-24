@@ -56,8 +56,8 @@
         <code><![CDATA[
             let $query := 'qname'
             let $hits := collection('/db/coll')//p1
-            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p1[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
@@ -80,8 +80,8 @@
         <code><![CDATA[
             let $query := 'value1'
             let $hits := collection('/db/coll')//p1
-            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p1[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
@@ -100,8 +100,8 @@
         <code><![CDATA[
             let $query := 'value2'
             let $hits := collection('/db/coll')//p1
-            let $hits_direct := collection('/db/coll')//p1[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p1[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
@@ -120,8 +120,8 @@
         <code><![CDATA[
             let $query := 'path'
             let $hits := collection('/db/coll')//p2
-            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p2[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
@@ -144,8 +144,8 @@
         <code><![CDATA[
             let $query := 'value2'
             let $hits := collection('/db/coll')//p2
-            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p2[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
@@ -164,8 +164,8 @@
         <code><![CDATA[
             let $query := 'value1'
             let $hits := collection('/db/coll')//p2
-            let $hits_direct := collection('/db/coll')//p2[match-any(., $query)]
-            let $hits_indirect := $hits[match-any(., $query)]
+            let $hits_direct := collection('/db/coll')//p2[text:match-any(., $query)]
+            let $hits_indirect := $hits[text:match-any(., $query)]
             return
             <results>
               <direct>{$hits_direct}</direct>
