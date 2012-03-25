@@ -95,18 +95,16 @@ public class XMPPChatFunction extends BasicFunction
         
         FunctionReference chatListenerFunctionRef = (FunctionReference)args[2].itemAt(0);
         
-        FunctionCall chatListenerFunction = chatListenerFunctionRef.getFunctionCall();
-        
-        FunctionSignature chatListenerFunctionSig = chatListenerFunction.getSignature();
+        FunctionSignature chatListenerFunctionSig = chatListenerFunctionRef.getSignature();
         if(chatListenerFunctionSig.getArgumentCount() < 3)
             throw new XPathException("Chat listener function must take at least 3 arguments.");
-        chatListenerFunction.setContext(context.copyContext());
+        chatListenerFunctionRef.setContext(context.copyContext());
         
         Sequence listenerParam = args[3];
         
         long chatHandle = XMPPModule.getHandle();
 		
-        Listener listener = new Listener(chatHandle, contextSequence, chatListenerFunction, listenerParam);
+        Listener listener = new Listener(chatHandle, contextSequence, chatListenerFunctionRef, listenerParam);
         
 		Chat chat = connection.getChatManager().createChat(jid, listener);
 		
@@ -121,10 +119,10 @@ public class XMPPChatFunction extends BasicFunction
 		private Sequence contextSequence;
 		private long chatHandle;
 		
-		private FunctionCall chatListenerFunction;
+		private FunctionReference chatListenerFunction;
 	    private Sequence listenerParam;
 
-		public Listener(long chatHandle, Sequence contextSequence, FunctionCall chatListenerFunction, Sequence listenerParam){
+		public Listener(long chatHandle, Sequence contextSequence, FunctionReference chatListenerFunction, Sequence listenerParam){
 			this.chatHandle = chatHandle;
 			this.contextSequence = contextSequence;
 			this.chatListenerFunction = chatListenerFunction;

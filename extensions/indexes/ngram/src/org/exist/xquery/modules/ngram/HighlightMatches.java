@@ -81,12 +81,11 @@ public class HighlightMatches extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
 
         FunctionReference func = (FunctionReference) args[1].itemAt(0);
-        FunctionCall call = func.getFunctionCall();
 
         NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
         MemTreeBuilder builder = context.getDocumentBuilder();
         DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(builder);
-        MatchCallback matchCb = new MatchCallback(call, docBuilder);
+        MatchCallback matchCb = new MatchCallback(func, docBuilder);
         Serializer serializer = context.getBroker().getSerializer();
         serializer.reset();
         ValueSequence result = new ValueSequence();
@@ -119,10 +118,10 @@ public class HighlightMatches extends BasicFunction {
     }
 
     private class MatchCallback implements NGramMatchCallback {
-        private FunctionCall callback;
+        private FunctionReference callback;
         private DocumentBuilderReceiver docBuilder;
 
-        private MatchCallback(FunctionCall callback, DocumentBuilderReceiver docBuilder) {
+        private MatchCallback(FunctionReference callback, DocumentBuilderReceiver docBuilder) {
             this.callback = callback;
             this.docBuilder = docBuilder;
         }

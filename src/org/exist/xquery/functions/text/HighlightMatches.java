@@ -85,7 +85,6 @@ public class HighlightMatches extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         
         FunctionReference func = (FunctionReference) args[1].itemAt(0);
-        FunctionCall call = func.getFunctionCall();
         
         context.pushDocumentContext();
         
@@ -97,7 +96,7 @@ public class HighlightMatches extends BasicFunction {
                 result.add(v);
             } else {
                 NodeProxy p = (NodeProxy) v;
-                processText(builder, p, result, call, args[2]);
+                processText(builder, p, result, func, args[2]);
             }
         }
         context.popDocumentContext();
@@ -105,7 +104,7 @@ public class HighlightMatches extends BasicFunction {
     }
 
     private final void processText(MemTreeBuilder builder, NodeProxy proxy, Sequence result, 
-            FunctionCall callback, Sequence extraArgs) 
+            FunctionReference callback, Sequence extraArgs) 
     throws DOMException, XPathException {
         TextImpl text = (TextImpl) proxy.getNode();
         Match match = proxy.getMatches();

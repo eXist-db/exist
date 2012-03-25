@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
@@ -428,5 +429,33 @@ public abstract class Function extends PathExpr {
 
     public Expression simplify() {
         return this;
+    }
+    
+    public final static class Placeholder extends AbstractExpression {
+
+    	public Placeholder(XQueryContext context) {
+    		super(context);
+		}
+    	
+		@Override
+		public void analyze(AnalyzeContextInfo contextInfo)
+				throws XPathException {
+		}
+
+		@Override
+		public void dump(ExpressionDumper dumper) {
+			dumper.display('?');			
+		}
+
+		@Override
+		public Sequence eval(Sequence contextSequence, Item contextItem)
+				throws XPathException {
+			throw new XPathException(this, ErrorCodes.EXXQDY0001, "Internal error: function argument placeholder not expanded.");
+		}
+
+		@Override
+		public int returnsType() {
+			return Type.ITEM;
+		}
     }
 }

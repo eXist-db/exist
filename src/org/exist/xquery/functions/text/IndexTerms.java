@@ -119,7 +119,6 @@ public class IndexTerms extends BasicFunction {
             start = args[arg].getStringValue();
         FunctionReference ref = (FunctionReference) args[++arg].itemAt(0);
         int max = ((IntegerValue) args[++arg].itemAt(0)).getInt();
-        FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         try {
             Occurrences occur[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
@@ -160,7 +159,7 @@ public class IndexTerms extends BasicFunction {
 
                 params[1] = data;
 
-                result.addAll(call.evalFunction(contextSequence, null, params));
+                result.addAll(ref.evalFunction(contextSequence, null, params));
                 data.clear();
             }
             if (LOG.isDebugEnabled())

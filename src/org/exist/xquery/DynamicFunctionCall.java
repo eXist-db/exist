@@ -48,11 +48,10 @@ public class DynamicFunctionCall extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         FunctionReference ref = (FunctionReference)item0;
-        FunctionCall call = ref.getFunctionCall();
-        call.setArguments(arguments);
-        call.analyze(cachedContextInfo);
+        ref.setArguments(arguments);
+        ref.analyze(cachedContextInfo);
         // Evaluate the function
-        return call.eval(contextSequence);
+        return ref.eval(contextSequence);
     }
 
     @Override

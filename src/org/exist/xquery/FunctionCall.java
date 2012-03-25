@@ -46,16 +46,16 @@ import java.util.*;
  */
 public class FunctionCall extends Function {
 
-	private UserDefinedFunction functionDef;
-	private Expression expression;
+	protected UserDefinedFunction functionDef;
+	protected Expression expression;
 
     // the name of the function. Used for forward references.
-	private QName name = null;
-	private List<Expression> arguments = null;
+	protected QName name = null;
+	protected List<Expression> arguments = null;
 	
 	private boolean recursive = false;
-
-    private VariableReference varDeps[];
+	
+    protected VariableReference varDeps[];
 
     public FunctionCall(XQueryContext context, QName name, List<Expression> arguments) {
 		super(context);
