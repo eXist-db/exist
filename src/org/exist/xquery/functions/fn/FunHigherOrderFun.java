@@ -91,21 +91,20 @@ public class FunHigherOrderFun extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		FunctionReference ref = (FunctionReference)args[0];
-        FunctionCall call = ref.getFunctionCall();
         
-        call.analyze(cachedContextInfo);
+        ref.analyze(cachedContextInfo);
         
         Sequence result = new ValueSequence();
         if (isCalledAs("map")) {
 	        for (SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
 	        	Item item = i.nextItem();
-	        	Sequence r = call.evalFunction(contextSequence, null, new Sequence[] { item.toSequence() });
+	        	Sequence r = ref.evalFunction(contextSequence, null, new Sequence[] { item.toSequence() });
 	        	result.addAll(r);
 	        }
         } else if (isCalledAs("filter")) {
         	for (SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
 	        	Item item = i.nextItem();
-	        	Sequence r = call.evalFunction(contextSequence, null, new Sequence[] { item.toSequence() });
+	        	Sequence r = ref.evalFunction(contextSequence, null, new Sequence[] { item.toSequence() });
 	        	if (r.effectiveBooleanValue())
 	        		result.add(item);
 	        }
@@ -114,7 +113,7 @@ public class FunHigherOrderFun extends BasicFunction {
         	Sequence input = args[2];
         	while (!input.isEmpty()) {
         		SequenceIterator i = input.iterate();
-        		zero = call.evalFunction(contextSequence, null, new Sequence[] { zero, i.nextItem().toSequence() });
+        		zero = ref.evalFunction(contextSequence, null, new Sequence[] { zero, i.nextItem().toSequence() });
         		ValueSequence tail = new ValueSequence();
         		while (i.hasNext()) {
         			tail.add(i.nextItem());
@@ -125,12 +124,12 @@ public class FunHigherOrderFun extends BasicFunction {
         } else if (isCalledAs("fold-right")) {
         	Sequence zero = args[1];
         	Sequence input = args[2];
-        	result = foldRight(call, zero, input, contextSequence);
+        	result = foldRight(ref, zero, input, contextSequence);
         } else if (isCalledAs("map-pairs")) {
         	SequenceIterator i1 = args[1].iterate();
         	SequenceIterator i2 = args[2].iterate();
         	while (i1.hasNext() && i2.hasNext()) {
-        		Sequence r = call.evalFunction(contextSequence, null, 
+        		Sequence r = ref.evalFunction(contextSequence, null, 
         				new Sequence[] { i1.nextItem().toSequence(), i2.nextItem().toSequence() });
         		result.addAll(r);
         	}
@@ -138,11 +137,11 @@ public class FunHigherOrderFun extends BasicFunction {
 		return result;
 	}
 
-	private Sequence foldRight(FunctionCall call, Sequence zero, Sequence seq, Sequence contextSequence) throws XPathException {
+	private Sequence foldRight(FunctionReference ref, Sequence zero, Sequence seq, Sequence contextSequence) throws XPathException {
 		if (seq.isEmpty())
 			return zero;
 		Sequence head = seq.itemAt(0).toSequence();
-		Sequence tailResult = foldRight(call, zero, seq.tail(), contextSequence);
-		return call.evalFunction(contextSequence, null, new Sequence[] { head, tailResult });
+		Sequence tailResult = foldRight(ref, zero, seq.tail(), contextSequence);
+		return ref.evalFunction(contextSequence, null, new Sequence[] { head, tailResult });
 	}
 }

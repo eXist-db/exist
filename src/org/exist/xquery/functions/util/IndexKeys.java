@@ -133,7 +133,6 @@ public class IndexKeys extends BasicFunction {
         int max = -1;
         if (args[3].hasOne())
             max = ((IntegerValue) args[3].itemAt(0)).getInt();
-        FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         // if we have 5 arguments, query the user-specified index
         if (this.getArgumentCount() == 5) {
@@ -171,7 +170,7 @@ public class IndexKeys extends BasicFunction {
 	            data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
 	            params[1] = data;
 	
-	            result.addAll(call.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
+	            result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
 	            data.clear();
 	        }
 	    // no index specified: use the range index
@@ -206,7 +205,7 @@ public class IndexKeys extends BasicFunction {
 		        data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
 		        params[1] = data;
 		
-		        result.addAll(call.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
+		        result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));
 		        data.clear();
 		    }
         }

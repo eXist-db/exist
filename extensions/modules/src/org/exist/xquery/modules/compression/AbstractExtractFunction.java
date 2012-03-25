@@ -61,9 +61,9 @@ import org.xmldb.api.modules.XMLResource;
  */
 public abstract class AbstractExtractFunction extends BasicFunction
 {
-    private FunctionCall entryFilterFunction = null;
+    private FunctionReference entryFilterFunction = null;
     protected Sequence filterParam = null;
-    private FunctionCall entryDataFunction = null;
+    private FunctionReference entryDataFunction = null;
     protected Sequence storeParam = null;
     private Sequence contextSequence;
     
@@ -83,8 +83,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
         //get the entry-filter function and check its types
         if(!(args[1].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-filter function provided.");
-        FunctionReference entryFilterFunctionRef = (FunctionReference)args[1].itemAt(0);
-        entryFilterFunction = entryFilterFunctionRef.getFunctionCall();
+        entryFilterFunction = (FunctionReference)args[1].itemAt(0);
         FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
         if(entryFilterFunctionSig.getArgumentCount() < 3)
             throw new XPathException("entry-filter function must take at least 3 arguments.");
@@ -94,8 +93,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
         //get the entry-data function and check its types
         if(!(args[3].itemAt(0) instanceof FunctionReference))
             throw new XPathException("No entry-data function provided.");
-        FunctionReference entryDataFunctionRef = (FunctionReference)args[3].itemAt(0);
-        entryDataFunction = entryDataFunctionRef.getFunctionCall();
+        entryDataFunction = (FunctionReference)args[3].itemAt(0);
         FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
         if(entryDataFunctionSig.getArgumentCount() < 3)
             throw new XPathException("entry-data function must take at least 3 arguments");

@@ -1196,21 +1196,15 @@ inlineFunctionExpr throws XPathException
 functionCall throws XPathException
 { String fnName= null; }
 :
-	fnName=q:qName l:LPAREN!
+	fnName=q:qName
 	{ 
         #functionCall = #[FUNCTION, fnName];
     }
 	(
-		params:functionParameters
+		params:argumentList
 		{ #functionCall= #(#[FUNCTION, fnName], #params); }
 	)?
     { #functionCall.copyLexInfo(#q); }
-	RPAREN!
-	;
-
-functionParameters throws XPathException
-:
-	exprSingle ( COMMA! exprSingle )*
 	;
 
 argumentList throws XPathException
@@ -1220,7 +1214,12 @@ argumentList throws XPathException
 
 argument throws XPathException
 :
-	exprSingle
+	exprSingle | argumentPlaceholder
+	;
+
+argumentPlaceholder throws XPathException
+:
+	QUESTION
 	;
 
 contextItemExpr : SELF^ ;

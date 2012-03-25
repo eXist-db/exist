@@ -22,9 +22,14 @@
 package org.exist.xquery.value;
 
 import java.text.Collator;
+import java.util.List;
 
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionCall;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Represents a reference to a function created by util:function that can be
@@ -34,16 +39,40 @@ import org.exist.xquery.XPathException;
  */
 public class FunctionReference extends AtomicValue {
 
-    private FunctionCall functionCall;
+    protected FunctionCall functionCall;
     
     public FunctionReference(FunctionCall fcall) {
         this.functionCall = fcall;
     }
     
-    public FunctionCall getFunctionCall() {
-        return functionCall;
+    /**
+     * Get the signature of the function.
+     * 
+     * @return signature of this function
+     */
+    public FunctionSignature getSignature() {
+        return functionCall.getSignature();
     }
     
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	functionCall.analyze(contextInfo);
+    }
+    
+    public Sequence eval(Sequence contextSequence) throws XPathException {
+    	return functionCall.eval(contextSequence);
+    }
+    
+    public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
+    	return functionCall.evalFunction(contextSequence, contextItem, seq);
+    }
+    
+    public void setArguments(List<Expression> arguments) throws XPathException {
+    	functionCall.setArguments(arguments);
+    }
+    
+    public void setContext(XQueryContext context) {
+    	functionCall.setContext(context);
+    }
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AtomicValue#getType()
      */

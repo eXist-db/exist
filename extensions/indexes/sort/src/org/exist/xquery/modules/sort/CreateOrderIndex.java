@@ -70,10 +70,9 @@ public class CreateOrderIndex extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         String id = args[0].getStringValue();
         // check how the function was called and prepare callback
-        FunctionCall call = null;
+        FunctionReference call = null;
         if (isCalledAs("create-index-callback")) {
-            FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-            call = ref.getFunctionCall();
+            call = (FunctionReference) args[2].itemAt(0);
         } else if (args[2].getItemCount() != args[1].getItemCount())
             throw new XPathException(this, "$nodes and $values sequences need to have the same length.");
 

@@ -77,8 +77,7 @@ public class FunOnFunctions extends BasicFunction {
 	        return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
 		} else if (isCalledAs("function-name")) {
 			FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-			FunctionCall call = ref.getFunctionCall();
-			QName qname = call.getSignature().getName();
+			QName qname = ref.getSignature().getName();
 			if (qname == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else
@@ -86,8 +85,7 @@ public class FunOnFunctions extends BasicFunction {
 		} else {
 			// isCalledAs("function-arity")
 			FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-			FunctionCall call = ref.getFunctionCall();
-			return new IntegerValue(call.getSignature().getArgumentCount());
+			return new IntegerValue(ref.getSignature().getArgumentCount());
 		}
 	}
 

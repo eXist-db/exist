@@ -119,13 +119,11 @@ public class KWICDisplay extends BasicFunction {
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         
-        FunctionReference func = (FunctionReference) args[2].itemAt(0);
-        FunctionCall call = func.getFunctionCall();
+        FunctionReference call = (FunctionReference) args[2].itemAt(0);
         
-        FunctionCall resultCallback = null;
+        FunctionReference resultCallback = null;
         if (getArgumentCount() == 5) {
-            func = (FunctionReference) args[3].itemAt(0);
-            resultCallback = func.getFunctionCall();
+            resultCallback = (FunctionReference) args[3].itemAt(0);
         }
         
         int width = ((IntegerValue)args[1].itemAt(0)).getInt();
@@ -139,7 +137,7 @@ public class KWICDisplay extends BasicFunction {
     }
 
     private final Sequence processText(MemTreeBuilder builder, Sequence nodes, int width, 
-            FunctionCall callback, FunctionCall resultCallback, Sequence extraArgs) throws XPathException {
+            FunctionReference callback, FunctionReference resultCallback, Sequence extraArgs) throws XPathException {
         StringBuilder str = new StringBuilder();
         NodeValue node;
         List<Match.Offset> offsets = null;
