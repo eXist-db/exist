@@ -25,12 +25,16 @@ public class PartialFunctionReference extends FunctionReference {
 		for (int i = 0; i < argValues.length; i++) {
 			if (argValues[i] == null) {
 				if (!iter.hasNext())
-					throw new XPathException("Number of argument to partially applied function does not match");
+					throw new XPathException(functionCall, ErrorCodes.XPTY0004, "Wrong number of arguments to partially applied " +
+							"function.");
 				Expression nextArg = iter.next();
 				arguments[i] = nextArg.eval(contextSequence);
 			} else
 				arguments[i] = argValues[i];
 		}
+		if (iter.hasNext())
+			throw new XPathException(functionCall, ErrorCodes.XPTY0004, "Wrong number of arguments to partially applied " +
+					"function.");
 		return functionCall.evalFunction(contextSequence, null, arguments);
 	}
 	
@@ -42,6 +46,9 @@ public class PartialFunctionReference extends FunctionReference {
 		int j = 0;
 		for (int i = 0; i < arguments.length; i++) {
 			if (argValues[i] == null) {
+				if (j == seq.length)
+					throw new XPathException(functionCall, ErrorCodes.XPTY0004, "Wrong number of arguments to partially applied " +
+							"function.");
 				arguments[i] = seq[j++];
 			} else {
 				arguments[i] = argValues[i];
@@ -58,8 +65,12 @@ public class PartialFunctionReference extends FunctionReference {
 			int j = 0;
 			for (int i = 0; i < functionCall.getArgumentCount(); i++) {
 				Expression arg = functionCall.getArgument(i);
-				if (arg instanceof Function.Placeholder)
+				if (arg instanceof Function.Placeholder) {
+					if (j == unfixedArgs.size())
+						throw new XPathException(functionCall, ErrorCodes.XPTY0004, "Wrong number of arguments to partially applied " +
+							"function.");
 					arg = unfixedArgs.get(j++);
+				}
 				updatedArgs.add(arg);
 			}
 			functionCall.setArguments(updatedArgs);
