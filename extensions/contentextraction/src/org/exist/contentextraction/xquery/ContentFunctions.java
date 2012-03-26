@@ -256,9 +256,8 @@ public class ContentFunctions extends BasicFunction {
 					params[0] = root;
 					params[1] = userData;
 					params[2] = prevReturnData;
-					FunctionCall call = ref.getFunctionCall();
 					try {
-						Sequence ret = call.evalFunction(null, null, params);
+						Sequence ret = ref.evalFunction(null, null, params);
 						prevReturnData = ret;
 						result.addAll(ret);
 					} catch (XPathException e) {
