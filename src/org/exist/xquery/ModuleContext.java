@@ -36,6 +36,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -389,8 +390,16 @@ public class ModuleContext extends XQueryContext {
     	return parentContext.getLocalVariables();
     }
 
+    public List<Variable> getLocalStack() {
+    	return parentContext.getLocalStack();
+    }
+    
     public Map<QName, Variable> getGlobalVariables() {
     	return parentContext.getGlobalVariables();
+    }
+
+    public void restoreStack(List<Variable> stack) throws XPathException {
+    	parentContext.restoreStack(stack);
     }
     
     public int getCurrentStackSize() {

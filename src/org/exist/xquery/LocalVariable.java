@@ -39,6 +39,10 @@ public class LocalVariable extends VariableImpl {
 		super(qname);
 	}
 
+	public LocalVariable(LocalVariable other) {
+		super(other);
+	}
+	
 	public void addAfter(LocalVariable var) {
 		this.after = var;
 		var.before = this;

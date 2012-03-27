@@ -30,6 +30,7 @@ import org.exist.xquery.value.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wolf
@@ -49,6 +50,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
     private FunctionCall call;
     
     private boolean reseted = false;
+    
+    private List<Variable> closureVariables = null;
     
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -87,6 +90,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 		if(call != null && !call.isRecursive()) {
 			// Save the local variable stack
 			LocalVariable mark = context.markLocalVariables(true);
+			if (closureVariables != null)
+				// if this is a inline function, context variables are known
+	        	context.restoreStack(closureVariables);
 			try {
 				LocalVariable var;
 				for(QName varName : parameters) {
@@ -114,6 +120,8 @@ public class UserDefinedFunction extends Function implements Cloneable {
         context.stackEnter(this);
         // Save the local variable stack
         LocalVariable mark = context.markLocalVariables(true);
+        if (closureVariables != null)
+        	context.restoreStack(closureVariables);
 		try {
 			QName varName;
 			LocalVariable var;
@@ -249,6 +257,10 @@ public class UserDefinedFunction extends Function implements Cloneable {
     
     public void setCaller(FunctionCall call){
     	this.call = call;
+    }
+    
+    public void setClosureVariables(List<Variable> vars) {
+    	this.closureVariables = vars;
     }
     
     protected Sequence[] getCurrentArguments() {
