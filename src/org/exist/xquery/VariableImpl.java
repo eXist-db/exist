@@ -67,7 +67,15 @@ public class VariableImpl implements Variable {
 	public VariableImpl(QName qname) {
 		this.qname = qname;
 	}
-    
+	
+	public VariableImpl(VariableImpl var) {
+		this(var.qname);
+		this.value = var.value;
+		this.contextDocs = var.contextDocs;
+		this.type = var.type;
+		this.staticType = var.staticType;
+	}
+	
 	public void setValue(Sequence val) {
 		this.value = val;
         if (val instanceof NodeImpl) {

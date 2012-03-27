@@ -2056,24 +2056,59 @@ public class XQueryContext implements BinaryValueManager, Context
 
         LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
 
-        for( LocalVariable var = lastVar; var != null; var = var.before ) {
+        for ( LocalVariable var = lastVar; var != null; var = var.before ) {
 
-            if( var == end ) {
+            if ( var == end ) {
                 break;
             }
 
             variables.put( var.getQName(), var );
         }
 
-        return( variables );
+        return ( variables );
     }
 
+    /**
+     * Return a copy of all currently visible local variables.
+     * Used by {@link InlineFunction} to implement closures.
+     * 
+     * @return currently visible local variables as a stack
+     */
+    public List<Variable> getLocalStack() {
+    	List<Variable> variables = new ArrayList<Variable>(10);
+    	
+    	LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
+
+        for ( LocalVariable var = lastVar; var != null; var = var.before ) {
+
+            if ( var == end ) {
+                break;
+            }
+
+            variables.add( new LocalVariable(var) );
+        }
+
+        return ( variables );
+    }
+    
     public Map<QName, Variable> getGlobalVariables() {
         Map<QName, Variable> variables = new HashMap<QName, Variable>();
 
         variables.putAll( globalVariables );
 
         return( variables );
+    }
+    
+    /**
+     * Restore a saved stack of local variables. Used to implement closures.
+     * 
+     * @param stack
+     * @throws XPathException
+     */
+    public void restoreStack(List<Variable> stack) throws XPathException {
+    	for (Variable var : stack) {
+    		declareVariableBinding((LocalVariable) var);
+    	}
     }
     
     /**
