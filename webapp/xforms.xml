@@ -118,21 +118,22 @@
         
         <!-- XSLT FORMS SECTION -->
         <section>
-            <title>Using XSLTForms inside of eXist</title>
+            <title>Using XSLTForms inside eXist</title>
             <para>eXist now directly supports XForms via Alain Couthures' excellent <ulink
-                href="http://www.agencexml.com">XSLTForms</ulink> processor. XSLTForms implements the XForms 
-                standard within the browser and is thus easy to integrate. XSLTForms transforms the XForms xml 
-                into an XHTML page with javascript that can process XForms.</para>
+                    href="http://www.agencexml.com">XSLTForms</ulink> processor. XSLTForms
+                implements the XForms standard within the browser and is thus easy to integrate.
+                XSLTForms transforms the XForms XML into an XHTML page using JavaScript.</para>
             <section>
-                <title>Using XSLTForms inside of eXist</title>
+                <title>Using XSLTForms inside eXist</title>
                 <para>XSLTForms mainly consists of two components:</para>
                 <itemizedlist>
                     <listitem>
-                        <para>the XSLT stylesheet <filename>xsltforms.xsl</filename>, which transforms
-                            the XForms markup into HTML and javascript understood by the browser</para>
+                        <para>the XSLT stylesheet <filename>xsltforms.xsl</filename>, which
+                            transforms the XForms markup into XHTML and JavaScript understood by the
+                            browser</para>
                     </listitem>
                     <listitem>
-                        <para>a javascript library</para>
+                        <para>a JavaScript library, <filename>xsltforms.js</filename></para>
                     </listitem>
                 </itemizedlist>
                 <para>The XSLT stylesheet can either be applied <emphasis role="bold"
@@ -150,6 +151,10 @@
                 </example>
                 <para>Please have a look at <ulink url="xforms/hello.xml">hello.xml</ulink> for a very basic
                     example using client-side transformation.</para>
+                <para>If betterFORM is installed, you will have to disable betterFORM by inserting the following code in your app config file to make betterFORM ignore XForms requests:</para>
+                <synopsis format="linespecific">request:set-attribute("betterform.filter.ignoreResponseBody", "true"),</synopsis>
+                <para>or by declaring an attribute to the same effect in your XQuery:</para>
+                <synopsis format="linespecific">declare variable $null := request:set-attribute("betterform.filter.ignoreResponseBody", "true");</synopsis>
                 <para>When applying the stylesheet server-side, you need to make sure serialization
                     parameters are correctly set. For example, you can apply the stylesheet within an
                     <ulink url="urlrewrite.xml">XQueryURLRewrite</ulink> controller pipeline:</para>
@@ -173,18 +178,18 @@
     </dispatch>]]></markup></programlisting>
                 </example>
                 <para>It is important to set the <option>indent</option> serialization parameter to
-                    "no", otherwise you'll get javascript errors when viewing the page. Also, if you
-                    apply the stylesheet server-side, make sure you removed the processing instruction
-                    from the source file or the browser will try to run the stylesheet as well (which
-                    most likely leads to errors).</para>
+                    "no", otherwise you'll get JavaScript errors when viewing the page. Also, if you
+                    apply the stylesheet server-side, make sure you removed the processing
+                    instruction from the source file or the browser will try to run the stylesheet
+                    as well (which most likely leads to errors).</para>
             </section>
             <section>
                 <title>Known Issues</title>
-                <para>Loading an XForms document through eXist's REST interface: when the REST server
-                    finds an xsl-stylesheet processing instruction in a document, it tries to apply the
-                    referenced stylesheet server-side. Unfortunately, the default serialization settings
-                    of the REST interface set <option>indent="yes"</option>, which leads to problems
-                    with the XForms javascript library.</para>
+                <para>Loading an XForms document through eXist's REST interface: when the REST
+                    server finds an xsl-stylesheet processing instruction in a document, it tries to
+                    apply the referenced stylesheet server-side. Unfortunately, the default
+                    serialization settings of the REST interface set <option>indent="yes"</option>,
+                    which leads to problems with the XForms JavaScript library.</para>
                 <para>As a workaround, you can append a request parameter <option>?_indent=no</option>
                     to the REST URI. However, the recommended approach would be to use XQueryURLRewrite
                     to properly handle those requests and apply the stylesheet.</para>
