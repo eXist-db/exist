@@ -214,7 +214,7 @@
                             <tr>
                                 <td class="doclink"><ulink url="xforms.xml"
                                     >XForms</ulink>:</td>
-                                <td>XForms support in eXist (using betterFORM or xsltforms).</td>
+                                <td>XForms support in eXist (using betterFORM or XSLTForms).</td>
                             </tr>
                             <tr>
                                 <td class="doclink"><ulink url="xproc/xproc.xml">XProc</ulink>:</td>
