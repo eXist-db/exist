@@ -123,8 +123,8 @@ public class Optimize extends Pragma {
                 if (selection.isEmpty())
                 	ancestors = selection;
                 else if (contextStep == null || current > 0) {
-                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
-                        true, contextId, true);
+                		ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
+                				true, contextId, true);
                 } else {
 //                    NodeSelector selector;
                     long start = System.currentTimeMillis();

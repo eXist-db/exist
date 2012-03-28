@@ -508,6 +508,13 @@ public class LocationStep extends Step {
 			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getSelf(test);
 		}
+		if (hasPreloadedData()) {
+			for (Iterator<NodeProxy> i = currentSet.iterator(); i.hasNext(); ) {
+				NodeProxy p = i.next();
+				p.addContextNode(contextId, p);
+			}
+			return currentSet;
+		}
 		NodeSet contextSet = contextSequence.toNodeSet();
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
 			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
