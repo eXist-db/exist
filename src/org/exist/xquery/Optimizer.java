@@ -113,6 +113,11 @@ public class Optimizer extends DefaultExpressionVisitor {
                 	List<Step> prevSteps = new ArrayList<Step>();
                 	while (previous != null && previous != path.getFirst() && previous instanceof Step) {
                 		Step prevStep = (Step) previous;
+                		if (prevStep.getAxis() == Constants.CHILD_AXIS && !(path.getPrevious(prevStep) instanceof LocationStep)) {
+                			// Do not rewrite this step if it is the first step after a root step and 
+                			// the axis is the child axis! 
+                			break;
+                		}
                 		reverseAxis = reverseAxis(prevStep.getAxis());
                 		if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
                 			!prevStep.getTest().isWildcardTest()) {
