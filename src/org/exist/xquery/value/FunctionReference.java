@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-12 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -32,8 +32,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
 /**
- * Represents a reference to a function created by util:function that can be
- * used with util:call.
+ * Represents a function item, i.e. a reference to a function that can be called dynamically.
  * 
  * @author wolf
  */
@@ -54,14 +53,36 @@ public class FunctionReference extends AtomicValue {
         return functionCall.getSignature();
     }
     
+    /**
+     * Calls {@link FunctionCall#analyze(AnalyzeContextInfo)}.
+     * 
+     * @param contextInfo
+     * @throws XPathException
+     */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	functionCall.analyze(contextInfo);
     }
     
+    /**
+     * Calls {@link FunctionCall#eval(Sequence)}.
+     * 
+     * @param contextSequence
+     * @return
+     * @throws XPathException
+     */
     public Sequence eval(Sequence contextSequence) throws XPathException {
     	return functionCall.eval(contextSequence);
     }
     
+    /**
+     * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
+     * 
+     * @param contextSequence
+     * @param contextItem
+     * @param seq
+     * @return
+     * @throws XPathException
+     */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
     	return functionCall.evalFunction(contextSequence, contextItem, seq);
     }
