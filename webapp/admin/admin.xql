@@ -81,7 +81,7 @@ declare function admin:menu-panel() as element()
                       <li><a href="{$link}?panel=backup">Backups</a></li>
                       <li><a href="{$link}?panel=repo">Package Repository</a></li>
                       <li><a href="{$link}?panel=trace">Query Profiling</a></li>
-                      <li><a href="{$link}?panel=users">User Management</a></li>
+                      <!--li><a href="{$link}?panel=users">User Management</a></li-->
                   </ul>
               </li>
               
@@ -108,7 +108,7 @@ declare function admin:panel() as element()
     let $panel := request:get-parameter("panel", "status")[1] return
         switch ($panel)
             case "browse"    return  browse:main()
-            case "users"     return  users:main()
+            (:case "users"     return  users:main():)
             case "xqueries"  return  xqueries:main()
             case "shutdown"  return  shut:main()
             case "setup"     return  setup:main()
