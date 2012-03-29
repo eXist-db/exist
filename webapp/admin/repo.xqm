@@ -95,7 +95,8 @@ declare function repomanager:upload() as element()
                     let $package := $meta//package:package/string(@name)
                     let $type := $meta//repo:meta//repo:type/string()
                     let $install := 
-                        repo:install(concat('http://localhost:',request:get-server-port(),request:get-context-path(), '/rest',$stored))
+                        (:repo:install(concat('http://localhost:',request:get-server-port(),request:get-context-path(), '/rest',$stored)):)
+                        repo:install-from-db($stored)
                     let $deployed :=
                         if ($type eq "application") then
                             repo:deploy($package)
