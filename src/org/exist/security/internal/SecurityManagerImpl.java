@@ -322,6 +322,9 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Account getAccount(String name) {
+//    	if (SYSTEM.equals(name))
+//    		return defaultRealm.ACCOUNT_SYSTEM;
+    	
         for(Realm realm : realms) {
             Account account = realm.getAccount(name);
             if (account != null) {
@@ -965,10 +968,36 @@ public class SecurityManagerImpl implements SecurityManager {
         return groupNames;
     }
     
+    private Map<XmldbURI, Integer> saving = new HashMap<XmldbURI, Integer>();
+    
+    @Override
+    public void processPramatterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException {
+        XmldbURI uri = document.getCollection().getURI();
+        
+        boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
+        if(isRemoved) {
+            uri = uri.removeLastSegment();
+        }
+		
+        boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
+        boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
+		
+        if(isAccount || isGroup) {
+            //uri = uri.removeLastSegment();
+            //String realmId = uri.lastSegment().toString();
+            //AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
+            Configuration conf = Configurator.parse(document);
+
+        	saving.put(document.getURI(), conf.getPropertyInteger("id"));
+        }
+    }
+
     @Override
     public void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException {
 
         XmldbURI uri = document.getCollection().getURI();
+        
+        //System.out.println(document);
 
         boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
         if(isRemoved) {
@@ -998,10 +1027,34 @@ public class SecurityManagerImpl implements SecurityManager {
                     AccountImpl account = new AccountImpl( realm, conf );
                     account.removed = true;
                     addUser(account.getId(), account);
-                } else if(name != null && !realm.hasAccount(name)) {
-                    Account account = new AccountImpl( realm, conf );
-                    addUser(account.getId(), account);
-                    realm.registerAccount(account);
+                } else if(name != null) {
+                	if (realm.hasAccount(name)) {
+                		final Integer oldId = saving.get(document.getURI());
+                		
+            			final Integer newId = conf.getPropertyInteger("id");
+            			
+            			//XXX: resolve conflicts on ids!!! 
+            			
+            			if (!newId.equals(oldId)) {
+                    		final Account current = realm.getAccount(name);
+	            	        accountLocks.getWriteLock(current).lock();
+	            	        try {
+	            	            usersById.modify(new PrincipalDbModify<Account>(){
+	            	                @Override
+	            	                public void execute(final Int2ObjectHashMap<Account> principalDb) {
+	            	                    principalDb.remove(oldId);
+	            	                    principalDb.put(newId, current);
+	            	                }
+	            	            });
+	            	        } finally {
+	            	            accountLocks.getWriteLock(current).unlock();
+	            	        }
+            			}
+                	} else {
+                		Account account = new AccountImpl( realm, conf );
+                		addUser(account.getId(), account);
+                		realm.registerAccount(account);
+                	}
                 } else {
                     //this can't be! log any way
                     LOG.error("Account '"+name+"' pressent at '"+realmId+"' realm, but get event that new one created.");
@@ -1022,6 +1075,7 @@ public class SecurityManagerImpl implements SecurityManager {
                 }
                             
             }
+            saving.remove(document.getURI());
         }
     }
 

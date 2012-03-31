@@ -121,7 +121,9 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
             return;
+
         checkForUpdates(broker, document.getURI(), document);
+
         XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
@@ -136,13 +138,40 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
     @Override
     public void beforeUpdateDocument(DBBroker broker, Txn transaction,
             DocumentImpl document) throws TriggerException {
-        //Nothing to do
+        //check saving list
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
+            return;
+
+        XmldbURI uri = document.getCollection().getURI();
+        if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
+            try {
+                broker.getBrokerPool().getSecurityManager()
+                .processPramatterBeforeSave(broker, document);
+            } catch (ConfigurationException e) {
+                LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
+                //TODO : raise exception ? -pb
+            }
+        }
     }
 
     @Override
     public void afterUpdateDocument(DBBroker broker, Txn transaction,
             DocumentImpl document) throws TriggerException {
-        checkForUpdates(broker, document.getURI(), document);
+        //check saving list
+        if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
+            return;
+
+    	checkForUpdates(broker, document.getURI(), document);
+
+        XmldbURI uri = document.getCollection().getURI();
+        if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
+            try {
+                broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
+            } catch (ConfigurationException e) {
+                LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
+                //TODO : raise exception ? -pb
+            }
+        }
     }
 
     @Override
