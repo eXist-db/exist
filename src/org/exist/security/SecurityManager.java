@@ -164,6 +164,7 @@ public interface SecurityManager extends Configurable {
     * @throws ConfigurationException 
     */
    void processPramatter(DBBroker broker, DocumentImpl document) throws ConfigurationException;
+   void processPramatterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException;
    
    /**
     * Particular web page for authentication.
