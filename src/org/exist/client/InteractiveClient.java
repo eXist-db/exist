@@ -342,6 +342,20 @@ public class InteractiveClient {
         }
     }
     
+    private String getOwnerName(Permission perm) {
+        if (perm.getOwner() == null)
+        	return "?";
+        else
+        	return perm.getOwner().getName();
+    }
+    
+    private String getGroupName(Permission perm) {
+        if (perm.getOwner() == null)
+        	return "?";
+        else
+        	return perm.getGroup().getName();
+    }
+
     /**
      * Get list of resources contained in collection.
      *
@@ -372,8 +386,8 @@ public class InteractiveClient {
             
             if (properties.getProperty("permissions").equals("true")) {
                 cols[0] = perm.toString();
-                cols[1] = perm.getOwner().getName();
-                cols[2] = perm.getGroup().getName();
+            	cols[1] = getOwnerName(perm);
+            	cols[2] = getGroupName(perm);
                 cols[3] = URIUtils.urlDecodeUtf8(childCollections[i]);
                 resources[i] = 'd' + formatString(cols, colSizes);
             } else {
@@ -385,8 +399,8 @@ public class InteractiveClient {
             if (startGUI) {
                 tableData.add( new ResourceDescriptor.Collection(
                         XmldbURI.create(childCollections[i]),
-                        perm.getOwner().getName(),
-                        perm.getGroup().getName(),
+                        getOwnerName(perm),
+                        getGroupName(perm),
                         (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
                         created ) );
             }
@@ -411,8 +425,8 @@ public class InteractiveClient {
             if (startGUI) {
                 tableData.add(new ResourceDescriptor.Document(
                         XmldbURI.create(childResources[j]),
-                        perm.getOwner().getName(),
-                        perm.getGroup().getName(),
+                        getOwnerName(perm),
+                        getGroupName(perm),
                         (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
                         lastModificationTime ) );
             }
