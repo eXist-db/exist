@@ -505,8 +505,8 @@ public class RpcConnection implements RpcAPI {
         CompiledXQuery compiled = null;
         try {
             source = new StringSource(xpath);
-            compiled = compile(broker, source, parameters);
             broker = factory.getBrokerPool().get(user);
+            compiled = compile(broker, source, parameters);
             QueryResult result = doQuery(broker, compiled, null,
                     parameters);
             if(result.hasErrors())
