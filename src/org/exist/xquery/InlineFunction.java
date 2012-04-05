@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import java.util.List;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
@@ -37,6 +38,8 @@ import org.exist.xquery.value.Type;
  */
 public class InlineFunction extends AbstractExpression {
 
+	public final static QName INLINE_FUNCTION_QNAME = new QName("inline");
+	
 	private UserDefinedFunction function;
 	
 	public InlineFunction(XQueryContext context, UserDefinedFunction function) {
