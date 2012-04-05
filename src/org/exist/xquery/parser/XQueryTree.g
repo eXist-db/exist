@@ -622,6 +622,8 @@ throws PermissionDeniedException, EXistException, XPathException
 			try {
 				if (!inline)
 					qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+				else
+					qn = InlineFunction.INLINE_FUNCTION_QNAME;
 			} catch(XPathException e) {
 				// throw exception with correct source location
 				e.setLocation(name.getLine(), name.getColumn());
