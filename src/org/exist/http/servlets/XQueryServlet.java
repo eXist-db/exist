@@ -566,7 +566,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //        if (t != null)
 //            out.print(XMLUtil.encodeAttrMarkup(t.getMessage()));
 //        else
-            out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
+        if (e.getMessage() != null)
+        	out.print(XMLUtil.encodeAttrMarkup(e.getMessage()));
         out.println("</error>");
     }
 
