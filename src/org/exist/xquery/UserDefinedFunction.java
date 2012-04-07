@@ -67,12 +67,16 @@ public class UserDefinedFunction extends Function implements Cloneable {
     
     public void addVariable(String varName) throws XPathException {
 		QName qname = QName.parse(context, varName, null);
-		if (parameters.contains(qname))
-			throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);
-
-		parameters.add(qname);
+		addVariable(qname);
 	}
 	
+    public void addVariable(QName varName) throws XPathException {
+    	if (parameters.contains(varName))
+			throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);
+
+		parameters.add(varName);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */

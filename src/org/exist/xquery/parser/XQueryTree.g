@@ -2246,8 +2246,11 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	{ 
 		step = FunctionFactory.createFunction(context, fn, path, params);
-		if (isPartial)
+		if (isPartial) {
+			if (step instanceof Function)
+				step = FunctionFactory.wrap(context, (Function)step);
 			step = new PartialFunctionApplication(context, (FunctionCall) step);
+		}
 	}
 	;
 
@@ -2257,6 +2260,7 @@ throws PermissionDeniedException, EXistException, XPathException
 {
 	PathExpr pathExpr;
 	step = null;
+	boolean isPartial = false;
 }
 :
 	#(
@@ -2266,11 +2270,17 @@ throws PermissionDeniedException, EXistException, XPathException
 		{ List<Expression> params= new ArrayList<Expression>(2); }
 		(
 			{ pathExpr= new PathExpr(context); }
-			expr [pathExpr]
-			{ params.add(pathExpr); }
+			( 
+				QUESTION { 
+					params.add(new Function.Placeholder(context));
+					isPartial = true;
+				}
+				| 
+				expr [pathExpr] { params.add(pathExpr); }
+			)
 		)*
 	)
-	{ step = new DynamicFunctionCall(context, name, params); }
+	{ step = new DynamicFunctionCall(context, name, params, isPartial); }
 	;
 			
 functionReference [PathExpr path]

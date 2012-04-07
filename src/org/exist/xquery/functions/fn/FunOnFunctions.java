@@ -9,6 +9,7 @@ import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.InlineFunction;
 import org.exist.xquery.Module;
 import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XPathException;
@@ -78,7 +79,7 @@ public class FunOnFunctions extends BasicFunction {
 		} else if (isCalledAs("function-name")) {
 			FunctionReference ref = (FunctionReference) args[0].itemAt(0);
 			QName qname = ref.getSignature().getName();
-			if (qname == null)
+			if (qname == null || qname == InlineFunction.INLINE_FUNCTION_QNAME)
 				return Sequence.EMPTY_SEQUENCE;
 			else
 				return new QNameValue(context, qname);

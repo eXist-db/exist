@@ -87,13 +87,16 @@ public class FunConcat extends Function {
      * @see org.exist.xquery.Function#setArguments(java.util.List)
      */
     public void setArguments(List<Expression> arguments) throws XPathException {
+    	steps.clear();
         for (Expression argument : arguments) {
-            Expression next = new DynamicCardinalityCheck(context,
-                Cardinality.ZERO_OR_ONE, argument,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
-            if (!Type.subTypeOf(next.returnsType(), Type.ATOMIC))
-                next = new Atomize(context, next);
-            steps.add(next);
+        	if (!(argument instanceof Placeholder)) {
+	            argument = new DynamicCardinalityCheck(context,
+	                Cardinality.ZERO_OR_ONE, argument,
+	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+	            if (!Type.subTypeOf(argument.returnsType(), Type.ATOMIC))
+	                argument = new Atomize(context, argument);
+        	}
+            steps.add(argument);
         }
     }
 

@@ -12,13 +12,15 @@ public class DynamicFunctionCall extends AbstractExpression {
 
     private Expression functionExpr;
     private List<Expression> arguments;
-
+    private boolean isPartial = false;
+    
     private AnalyzeContextInfo cachedContextInfo;
 
-    public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args) {
+    public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args, boolean partial) {
         super(context);
         this.functionExpr = fun;
         this.arguments = args;
+        this.isPartial = partial;
     }
 
     @Override
@@ -48,10 +50,23 @@ public class DynamicFunctionCall extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         FunctionReference ref = (FunctionReference)item0;
-        ref.setArguments(arguments);
-        ref.analyze(cachedContextInfo);
-        // Evaluate the function
-        return ref.eval(contextSequence);
+        // if the call is a partial application, create a new function
+        if (isPartial) {
+        	try {
+	        	FunctionCall call = ref.getCall();
+	        	call.setArguments(arguments);
+	        	PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
+	        	return partialApp.eval(contextSequence, contextItem);
+        	} catch (XPathException e) {
+				e.setLocation(line, column, getSource());
+				throw e;
+        	}
+        } else {
+	        ref.setArguments(arguments);
+	        ref.analyze(cachedContextInfo);
+	        // Evaluate the function
+	        return ref.eval(contextSequence);
+        }
     }
 
     @Override

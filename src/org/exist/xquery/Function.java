@@ -222,7 +222,7 @@ public abstract class Function extends PathExpr {
      */
     protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
             throws XPathException {
-        if (type == null)
+        if (type == null || expr instanceof Placeholder)
             return expr;
         // check cardinality if expected cardinality is not zero or more
         boolean cardinalityMatches = type.getCardinality() == Cardinality.ZERO_OR_MORE;
