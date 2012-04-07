@@ -55,6 +55,16 @@ return
         </code>
         <expected>70</expected>
     </test>
+    <test output="text" id="nfrint1">
+        <task>Named function reference on internal standard function</task>
+        <code><![CDATA[xquery version "1.0";
+
+let $f := sum#1
+return
+    $f((1, 2))]]>
+        </code>
+        <expected>3</expected>
+    </test>
     <test output="text">
         <task>Backwards compatibility test 1</task>
         <code><![CDATA[xquery version "3.0";
@@ -388,7 +398,8 @@ return
         <code>fn:map-pairs(function($a, $b){10*$a + $b}, 1 to 5, 1 to 5)</code>
         <expected>11 22 33 44 55</expected>
     </test>
-    <test output="text">
+    <!-- Partial function applications -->
+    <test output="text" id="partial1">
         <task>Partial function with fn:map</task>
         <code><![CDATA[xquery version "3.0";
             
@@ -404,7 +415,7 @@ return
     map($fMultiply, 1 to 10)]]></code>
         <expected>10 20 30 40 50 60 70 80 90 100</expected>
     </test>
-    <test output="text">
+    <test output="text" id="partial2">
         <task>Partial function with flwor</task>
         <code><![CDATA[xquery version "3.0";
             
@@ -421,6 +432,63 @@ return
     $fMultiply($i)]]></code>
         <expected>10 20 30 40 50 60 70 80 90 100</expected>
     </test>
+    <test output="text" id="partial3">
+    	<task>Partial function application on dynamic call using named function reference</task>
+    	<code><![CDATA[xquery version "1.0";
+
+declare function local:func($a, $b, $c) {
+    $a + $b + $c
+};
+
+let $f := local:func#3
+let $ff := $f(5, ?, ?)
+return
+    $ff(5, 3)]]></code>
+    	<expected>13</expected>
+    </test>
+    <test output="text" id="partiald1">
+    	<task>Partial function application: dynamic call with partial application</task>
+    	<code><![CDATA[xquery version "1.0";
+
+declare function local:func($a, $b, $c) {
+    $a + $b + $c
+};
+
+let $f := local:func(10, ?, ?)
+let $ff := $f(5, ?)
+return
+    $ff(3)]]></code>
+    	<expected>18</expected>
+    </test>
+    <test output="text" id="partiald2">
+    	<task>Partial function application on inline function using map</task>
+    	<code><![CDATA[xquery version "1.0";
+
+let $f := function ($a, $b) { $a * $b }
+let $ff := $f(5, ?)
+return
+    map($ff, (1, 2))]]></code>
+    	<expected>5 10</expected>
+    </test>
+    <test output="text" id="internal1">
+    	<task>Partial function application on internal function</task>
+    	<code><![CDATA[xquery version "1.0";
+
+let $f := string-join(?, ":")
+return
+    $f(("a", "b"))]]></code>
+    	<expected>a:b</expected>
+    </test>
+    <test output="text" id="internal2">
+    	<task>Partial function application on internal overloaded function</task>
+    	<code><![CDATA[xquery version "1.0";
+
+let $f := concat("Hello ", ?)
+return
+    map($f, ("world!", "Wolf!"))]]></code>
+    	<expected>Hello world! Hello Wolf!</expected>
+    </test>
+    <!-- Closures -->
     <test output="xml">
         <task>Simple closure</task>
         <code><![CDATA[xquery version "3.0";
