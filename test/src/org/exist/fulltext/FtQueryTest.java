@@ -140,11 +140,11 @@ public class FtQueryTest extends XMLTestCase {
 	    	System.out.println("----- testFtOperators -----");
 	        XQueryService service = (XQueryService)
 	            testCollection.getService("XQueryService", "1.0");
-	        ResourceSet result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
+	        ResourceSet result = service.query("//SPEECH[text:match-all(LINE, 'love', 'w')]");
 	        assertEquals(160, result.getSize());
             result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
 	        assertEquals(190, result.getSize());
-            result = service.query("//SPEECH[text:match-all(LINE, 'love$')]");
+            result = service.query("//SPEECH[text:match-all(LINE, 'love', 'w')]");
 	        assertEquals(160, result.getSize());
 
             result = service.query("//SPEECH[text:match-all(LINE, 'fenny', 'snake')]/LINE[1]");
