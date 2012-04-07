@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.Namespaces;
@@ -29,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.functions.fn.ExtNear;
 import org.exist.xquery.functions.fn.ExtPhrase;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -40,6 +42,17 @@ public class FunctionFactory {
     public static final String PROPERTY_DISABLE_DEPRECATED_FUNCTIONS = "xquery.disable-deprecated-functions";
     public static final boolean DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT = false;
 
+    public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
+    	QName qname = null;
+        try {
+            qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
+        } catch(XPathException xpe) {
+            xpe.setLocation(ast.getLine(), ast.getColumn());
+            throw xpe;
+        }
+        return createFunction(context, qname, ast, parent, params);
+    }
+    
     /**
      * Create a function call.
      *
@@ -48,14 +61,7 @@ public class FunctionFactory {
      * optimizes some function calls like starts-with, ends-with or
      * contains.
      */
-    public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
-        QName qname = null;
-        try {
-            qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
-        } catch(XPathException xpe) {
-            xpe.setLocation(ast.getLine(), ast.getColumn());
-            throw xpe;
-        }
+    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
         String local = qname.getLocalName();
         String uri = qname.getNamespaceURI();
         Expression step = null;
@@ -427,4 +433,55 @@ public class FunctionFactory {
         }
         return fc;
     }
+ 
+    /**
+     * Wrap a function call into a user defined function.
+     * This is used to handle dynamic function calls or partial
+     * function applications on built in functions.
+     * 
+     * @param context
+     * @param call the function call to be wrapped
+     * @return a new function call referencing an inline function
+     * @throws XPathException
+     */
+    public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
+		int argCount = call.getArgumentCount();
+		QName[] variables = new QName[argCount];
+		List<Expression> innerArgs = new ArrayList<Expression>(argCount);
+		List<Expression> wrapperArgs = new ArrayList<Expression>(argCount);
+		FunctionSignature signature = call.getSignature();
+		// the parameters of the newly created inline function:
+		List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
+		SequenceType[] paramTypes = signature.getArgumentTypes();
+		for (int i = 0; i < argCount; i++) {
+			Expression param = call.getArgument(i);
+			wrapperArgs.add(param);
+			QName varName = new QName("vp" + i);
+			variables[i] = varName;
+			VariableReference ref = new VariableReference(context, varName.toString());
+			innerArgs.add(ref);
+			
+			// copy parameter sequence types
+			// overloaded functions like concat may have an arbitrary number of arguments
+			if (i < paramTypes.length)
+				newParamTypes.add(paramTypes[i]);
+			else
+				// overloaded function: add last sequence type
+				newParamTypes.add(paramTypes[paramTypes.length - 1]);
+		}
+		SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
+		FunctionSignature newSignature = new FunctionSignature(signature.getName(), newParamArray, signature.getReturnType());
+		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		for (QName varName: variables) {
+			func.addVariable(varName);
+		}
+		
+		call.setArguments(innerArgs);
+		
+		func.setFunctionBody(call);
+		
+		FunctionCall wrappedCall = new FunctionCall(context, func);
+		wrappedCall.setArguments(wrapperArgs);
+		return wrappedCall;
+	}
 }

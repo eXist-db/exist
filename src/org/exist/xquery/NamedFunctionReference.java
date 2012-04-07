@@ -1,6 +1,10 @@
 package org.exist.xquery;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.exist.dom.QName;
+import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
@@ -28,22 +32,26 @@ public class NamedFunctionReference extends AbstractExpression {
 	}
 
 	private FunctionCall lookupFunction(QName funcName, int arity) throws XPathException {
-	    // check if the function is from a module 
-	    Module module = context.getModule(qname.getNamespaceURI());
-	    UserDefinedFunction func;
-	    if(module == null) {
-	        func = context.resolveFunction(qname, arity);
-	    } else {
-	        if(module.isInternalModule()) {
-                throw new XPathException(this, ErrorCodes.XPST0017, "Cannot create a reference to an internal Java function");
-            }
-	        func = ((ExternalModule)module).getFunction(qname, arity);
-	    }
-        if (func == null)
+		XQueryAST ast = new XQueryAST();
+		ast.setLine(line);
+		ast.setColumn(column);
+		List<Expression> args = new ArrayList<Expression>(arity);
+		for (int i = 0; i < arity; i++) {
+			args.add(new Function.Placeholder(context));
+		}
+		Expression fun = FunctionFactory.createFunction(context, funcName, ast, null, args);
+        if (fun == null)
             throw new XPathException(this, ErrorCodes.XPST0017, "Function not found: " + qname);
-	    FunctionCall funcCall = new FunctionCall(context, func);
-        funcCall.setLocation(line, column);
-	    return funcCall;
+        if (fun instanceof FunctionCall) {
+        	FunctionCall func = (FunctionCall) fun;
+        	return func;
+        } else if (fun instanceof Function) {
+        	InternalFunctionCall funcCall = new InternalFunctionCall((Function)fun);
+	        funcCall.setLocation(line, column);
+	        return FunctionFactory.wrap(context, funcCall);
+        } else
+        	throw new XPathException(this, ErrorCodes.XPST0017, "Named function reference should point to a function; found: " + 
+        			fun.getClass().getName());
 	}
 	
 	@Override

@@ -38,7 +38,7 @@ import org.exist.xquery.value.Type;
  */
 public class InlineFunction extends AbstractExpression {
 
-	public final static QName INLINE_FUNCTION_QNAME = new QName("inline");
+	public final static QName INLINE_FUNCTION_QNAME = new QName("", "");
 	
 	private UserDefinedFunction function;
 	

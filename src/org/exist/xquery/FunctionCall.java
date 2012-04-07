@@ -68,6 +68,15 @@ public class FunctionCall extends Function {
 		setFunction(functionDef);
 	}
 	
+	public FunctionCall(FunctionCall other) {
+		super(other.getContext());
+		this.name = other.name;
+		this.recursive = other.recursive;
+		this.functionDef = other.functionDef;
+		this.expression = other.expression;
+		this.mySignature = other.mySignature;
+	}
+	
 	private void setFunction(UserDefinedFunction functionDef) {
 		this.functionDef = (UserDefinedFunction) functionDef.clone();
 		this.mySignature = this.functionDef.getSignature();
@@ -203,15 +212,16 @@ public class FunctionCall extends Function {
             }
 		}
 		Sequence result = evalFunction(contextSequence, contextItem, seq, contextDocs);
-		
-		for (Annotation ann : functionDef.getSignature().getAnnotations()) {
-			AnnotationTrigger trigger = ann.getTrigger();
-			if (trigger instanceof AnnotationTriggerOnResult) {
-				try {
-					((AnnotationTriggerOnResult) trigger).trigger(result);
-				} catch (Throwable e) {
-					throw new XPathException(this, "function '" + getSignature().getName() + "'. " +
-							e.getMessage(), e);
+		if (functionDef.getSignature().getAnnotations() != null) {
+			for (Annotation ann : functionDef.getSignature().getAnnotations()) {
+				AnnotationTrigger trigger = ann.getTrigger();
+				if (trigger instanceof AnnotationTriggerOnResult) {
+					try {
+						((AnnotationTriggerOnResult) trigger).trigger(result);
+					} catch (Throwable e) {
+						throw new XPathException(this, "function '" + getSignature().getName() + "'. " +
+								e.getMessage(), e);
+					}
 				}
 			}
 		}

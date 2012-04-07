@@ -44,6 +44,10 @@ public class FunctionReference extends AtomicValue {
         this.functionCall = fcall;
     }
     
+    public FunctionCall getCall() {
+    	return functionCall;
+    }
+    
     /**
      * Get the signature of the function.
      * 
