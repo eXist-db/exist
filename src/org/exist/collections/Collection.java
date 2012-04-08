@@ -1414,6 +1414,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
+        
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Permission denied to write collection: " + path);
+        }
+        
         return validateXMLResourceInternal(transaction, broker, docUri, colconf, new ValidateBlock() {
             @Override
             public void run(IndexInfo info) throws SAXException, EXistException {
@@ -1499,6 +1504,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+    	if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Permission denied to write collection: " + path);
+        }
+    	
         return validateXMLResourceInternal(transaction, broker, docUri, getConfiguration(broker), new ValidateBlock() {
             @Override
             public void run(IndexInfo info) throws SAXException {
