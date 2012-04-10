@@ -30,11 +30,13 @@ body {
 .ui-layout-pane { /* all 'panes' */
 	background:	#FFF; 
 	border:		1px solid #BBB;
-	/* DO NOT add scrolling (or padding) to 'panes' that have a content-div,
-	   otherwise you may get double-scrollbars - on the pane AND on the content-div
-	*/
 	padding:	10px; 
 	overflow:	auto;
+	/* DO NOT add scrolling (or padding) to 'panes' that have a content-div,
+	   otherwise you may get double-scrollbars - on the pane AND on the content-div
+	   - use ui-layout-wrapper class if pane has a content-div
+	   - use ui-layout-container if pane has an inner-layout
+	*/
 	}
 	/* (scrolling) content-div inside pane allows for fixed header(s) and/or footer(s) */
 	.ui-layout-content {
@@ -42,6 +44,26 @@ body {
 		position:	relative; /* contain floated or positioned elements */
 		overflow:	auto; /* add scrolling to content-div */
 	}
+
+/*
+ *	UTILITY CLASSES
+ *	Must come AFTER pane-class above so will override
+ *	These classes are NOT auto-generated and are NOT used by Layout
+ */
+.layout-child-container,
+.layout-content-container {
+	padding:	0;
+	overflow:	hidden;
+}
+.layout-child-container {
+	border:		0; /* remove border because inner-layout-panes probably have borders */
+}
+.layout-scroll {
+	overflow:	auto;
+}
+.layout-hide {
+	display:	none;
+}
 
 /*
  *	RESIZER-BARS
@@ -62,8 +84,7 @@ body {
 		background: #C4E1A4;
 	}
 	.ui-layout-resizer-dragging {	/* CLONED resizer being dragged */
-		border-left:  1px solid #BBB;
-		border-right: 1px solid #BBB;
+		border: 	 1px solid #BBB;
 	}
 	/* NOTE: Add a 'dragging-limit' color to provide visual feedback when resizer hits min/max size limits */
 	.ui-layout-resizer-dragging-limit {	/* CLONED resizer at min or max size-limit */
@@ -114,7 +135,7 @@ body {
 		border-width: 1px 0; /* top/bottom borders */
 	}
 	/* hide the toggler-button when the pane is 'slid open' */
-	.ui-layout-resizer-sliding  ui-layout-toggler {
+	.ui-layout-resizer-sliding  .ui-layout-toggler {
 		display: none;
 	}
 	/*
@@ -127,4 +148,27 @@ body {
 		width:			100%;
 		padding-bottom:	0.35ex; /* to 'vertically center' text inside text-span */
 	}
+
+/*
+ *	PANE-MASKS
+ *	these styles are hard-coded on mask elems, but are also 
+ *	included here as !important to ensure will overrides any generic styles
+ */
+.ui-layout-mask {
+	border:		none !important;
+	padding:	0 !important;
+	margin:		0 !important;
+	overflow:	hidden !important;
+	position:	absolute !important;
+	opacity:	0 !important;
+	filter:		Alpha(Opacity="0") !important;
+}
+.ui-layout-mask-inside-pane { /* masks always inside pane EXCEPT when pane is an iframe */
+	top:		0 !important;
+	left:		0 !important;
+	width:		100% !important;
+	height:		100% !important;
+}
+div.ui-layout-mask {}		/* standard mask for iframes */
+iframe.ui-layout-mask {}	/* extra mask for objects/applets */
 
