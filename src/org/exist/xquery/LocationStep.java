@@ -1391,20 +1391,18 @@ public class LocationStep extends Step {
 		if (listener == null) {
 			listener = new UpdateListener() {
 				public void documentUpdated(DocumentImpl document, int event) {
-					synchronized (context) {
-						cached = null;
-						if (document == null || event == UpdateListener.ADD
-								|| event == UpdateListener.REMOVE) {
-							// clear all
+					cached = null;
+					if (document == null || event == UpdateListener.ADD
+							|| event == UpdateListener.REMOVE) {
+						// clear all
+						currentDocs = null;
+						currentSet = null;
+					} else {
+						if (currentDocs != null
+								&& currentDocs
+										.contains(document.getDocId())) {
 							currentDocs = null;
 							currentSet = null;
-						} else {
-							if (currentDocs != null
-									&& currentDocs
-											.contains(document.getDocId())) {
-								currentDocs = null;
-								currentSet = null;
-							}
 						}
 					}
 				}
