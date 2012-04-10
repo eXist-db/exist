@@ -468,6 +468,12 @@ ul.dynatree-container {
 	margin: 0px 0px 8px 0px;
 }
 
+.help img {
+    float: right;
+    width: 260px;
+    padding: 0 8px 8px 8px;
+}
+
 .ui-pnotify.stack-bottomright {
 	/* These are just CSS default values to reset the pnotify CSS. */
 	right: auto;
@@ -563,6 +569,18 @@ fieldset input:required:valid {
 
 #synchronize-report td {
 	margin-left: 8px;
+}
+
+#eXide-dialog-help-body {
+    line-height: 1.66em;
+}
+
+#eXide-dialog-help-body code {
+    font-family: inherit;
+    padding: 2px 4px;
+    color: #d14;
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
 }
 
 /* File Upload Form */

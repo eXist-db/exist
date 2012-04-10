@@ -43,13 +43,16 @@
         <script type="text/javascript" src="src/outline.js"/>
         <script type="text/javascript" src="src/editor.js"/>
         <script type="text/javascript" src="src/deployment.js"/>
+        <script type="text/javascript" src="src/menu.js"/>
+        <script type="text/javascript" src="src/help.js"/>
+        <script type="text/javascript" src="src/preferences.js"/>
         <script type="text/javascript" src="src/eXide.js"/>
         <script type="text/javascript" src="src/templates.js"/>
         <script type="text/javascript" src="src/resources.js"/>
         <script type="text/javascript" src="src/find.js"/-->
     
     <!-- Compressed version -->
-    	<script type="text/javascript" src="resources/scripts/eXide-1.0.min.js"/>
+        <script type="text/javascript" src="resources/scripts/eXide-1.0.min.js"/>
     </head>
     <body>
         <div class="ui-layout-north">
@@ -136,6 +139,9 @@
                             <a href="#">Help</a>
                             <ul>
                                 <li>
+                                    <a href="#" id="menu-help-hints">Hints</a>
+                                </li>
+                                <li>
                                     <a href="#" id="menu-help-keyboard">Keyboard shortcuts</a>
                                 </li>
                                 <li>
@@ -175,7 +181,7 @@
                 <button id="tab-prev">Previous</button>
                 <button id="tab-next">Next</button>
             </div>
-            <pre class="content" id="editor"/>
+            <div class="content" id="editor"/>
             <div id="status-bar">
                 <input id="search-box" type="text"/>
                 <a href="#" id="error-status"/>
@@ -338,6 +344,7 @@
                                 <option>12px</option>
                                 <option>13px</option>
                                 <option>14px</option>
+                                <option>15px</option>
                                 <option>16px</option>
                                 <option>20px</option>
                             </select>
@@ -371,7 +378,7 @@
             <p>eXide Version 1.0</p>
             <p>Website: <a href="https://github.com/wolfgangmm/eXide">https://github.com/wolfgangmm/eXide</a>
             </p>
-            <p>Copyright (C) 2011 Wolfgang Meier, <a href="http://www.existsolutions.com">eXist Solutions GmbH</a>
+            <p>Copyright (C) 2012 Wolfgang Meier, <a href="http://www.existsolutions.com">eXist Solutions GmbH</a>
             </p>
             <p>Licensed under the GPLv3 license</p>
             <p>Uses the <a href="http://ace.ajax.org">Ajax.org Code Editor (ACE)</a>, originally developed by Ajax.org
