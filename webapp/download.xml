@@ -59,25 +59,25 @@
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.jar/download"
-                                >eXist-setup-1.4.1-rev15155.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev16237.jar/download"
+                                >eXist-setup-1.4.1-rev16237.jar</ulink>
                         </td>
                         <td> Installer based on IzPack. Includes source. Run with <code>java -jar
-                                eXist-1.4.1-rev15155.jar</code></td>
+                                eXist-1.4.1-rev16237.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.exe/download"
-                                >eXist-setup-1.4.1-rev15155.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev16237.exe/download"
+                                >eXist-setup-1.4.1-rev16237.exe</ulink>
                         </td>
                         <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev15155.war/download"
-                                >exist-1.4.1-rev15155.war</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev16237.war/download"
+                                >exist-1.4.1-rev16237.war</ulink>
                         </td>
                         <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
