@@ -14,7 +14,7 @@ import org.exist.xquery.value.Type;
 
 public class PartialFunctionApplication extends AbstractExpression {
 
-	public final static QName PARTIAL_FUN_NAME = new QName("partial");
+	public final static String PARTIAL_FUN_PREFIX = "partial";
 	
 	protected FunctionCall function;
 	
@@ -93,7 +93,8 @@ public class PartialFunctionApplication extends AbstractExpression {
 			}
 		}
 		SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
-		FunctionSignature newSignature = new FunctionSignature(PARTIAL_FUN_NAME, newParamArray, signature.getReturnType());
+		QName name = new QName(PARTIAL_FUN_PREFIX + hashCode());
+		FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
 		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		// add the created parameter variables to the function
 		for (QName varName: variables) {
