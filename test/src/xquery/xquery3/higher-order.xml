@@ -266,7 +266,70 @@ return
         </code>
         <expected>210</expected>
     </test>
-    
+    <test output="text" id="dynfcall1">
+        <task>Dynamic function call syntax test 1</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:seq() {
+    (1, 2, 3)
+};
+
+let $seq := local:seq#0
+return
+    $seq()[2]
+]]></code>
+        <expected>2</expected>
+    </test>
+    <test output="text" id="dynfcall2">
+        <task>Dynamic function call syntax test 2</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:seq() {
+    (1, 2, 3)
+};
+
+let $seq := local:seq#0
+return
+    $seq[1]()[3]
+]]></code>
+        <expected>3</expected>
+    </test>
+    <test output="text" id="dynfcall3">
+        <task>Dynamic function call syntax test 3</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:seq() {
+    (1, 2, 3)
+};
+
+let $seq := local:seq#0
+return
+    ($seq)()[1]
+]]></code>
+        <expected>1</expected>
+    </test>
+    <test output="text" id="dynfcall4">
+        <task>Dynamic function call syntax test 4</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:seq() {
+    (1, 2, 3)
+};
+
+let $seq := local:seq#0
+return
+    $seq()[. > 1]
+]]></code>
+        <expected>2 3</expected>
+    </test>
+    <test output="text" id="dynfcall5">
+        <task>Dynamic function call syntax test 5</task>
+        <code><![CDATA[xquery version "3.0";
+(: Immediate function evaluation :)
+(function($a) { "Hello " || $a })("you")
+]]></code>
+        <expected>Hello you</expected>
+    </test>
     <test output="text">
         <task>fn:function-lookup</task>
         <code><![CDATA[xquery version "3.0";

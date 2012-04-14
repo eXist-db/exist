@@ -1750,7 +1750,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	step = null;
 }:
 	step=constructor [path]
-	step=predicates [step]
+	step=postfixExpr [step]
 	{
 		path.add(step);
 	}
@@ -1760,11 +1760,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		{ PathExpr pathExpr= new PathExpr(context); }
 		( step=expr [pathExpr] )?
 	)
-	step=predicates [pathExpr]
+	step=postfixExpr [pathExpr]
 	{ path.add(step); }
 	|
 	step=literalExpr [path]
-	step=predicates [step]
+	step=postfixExpr [step]
 	{ path.add(step); }
 	|
 	v:VARIABLE_REF
@@ -1772,15 +1772,11 @@ throws PermissionDeniedException, EXistException, XPathException
         step= new VariableReference(context, v.getText());
         step.setASTNode(v);
     }
-	step=predicates [step]
+	step=postfixExpr [step]
 	{ path.add(step); }
 	|
 	step=functionCall [path]
-	step=predicates [step]
-	{ path.add(step); }
-	|
-	step=dynamicFunctionCall [path]
-	step=predicates [step]
+	step=postfixExpr [step]
 	{ path.add(step); }
 	|
 	step=functionReference [path]
@@ -2183,22 +2179,23 @@ throws PermissionDeniedException, EXistException, XPathException
 	}
 	;
 
-predicates [Expression expression]
+/**
+ * Handles predicates and dynamic function calls:
+ * PostfixExpr	   ::=   	PrimaryExpr (Predicate | ArgumentList)*
+ */
+postfixExpr [Expression expression]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
 {
-	FilteredExpression filter= null;
 	step= expression;
 }
 :
-	(
+    (
 		#(
-			PREDICATE
+        	PREDICATE
 			{
-				if (filter == null) {
-					filter= new FilteredExpression(context, step);
-					step= filter;
-				}
+				FilteredExpression filter = new FilteredExpression(context, step);
+				step= filter;
 				Predicate predicateExpr= new Predicate(context);
 			}
 			expr [predicateExpr]
@@ -2206,8 +2203,30 @@ throws PermissionDeniedException, EXistException, XPathException
 				filter.addPredicate(predicateExpr);
 			}
 		)
+		|
+		#(
+			fn:DYNAMIC_FCALL
+			{
+				List<Expression> params= new ArrayList<Expression>(5);
+				boolean isPartial = false;
+			}
+			(
+				( 
+					QUESTION { 
+						params.add(new Function.Placeholder(context));
+						isPartial = true;
+					}
+					| 
+					{ PathExpr pathExpr = new PathExpr(context); }
+					expr [pathExpr] { params.add(pathExpr); }
+				)
+			)*
+			{ 
+				step = new DynamicFunctionCall(context, step, params, isPartial);
+			}
+		)
 	)*
-	;
+;
 
 predicate [LocationStep step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -2247,40 +2266,11 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ 
 		step = FunctionFactory.createFunction(context, fn, path, params);
 		if (isPartial) {
-			if (step instanceof Function)
+			if (!(step instanceof FunctionCall))
 				step = FunctionFactory.wrap(context, (Function)step);
 			step = new PartialFunctionApplication(context, (FunctionCall) step);
 		}
 	}
-	;
-
-dynamicFunctionCall [PathExpr path]
-returns [Expression step]
-throws PermissionDeniedException, EXistException, XPathException
-{
-	PathExpr pathExpr;
-	step = null;
-	boolean isPartial = false;
-}
-:
-	#(
-		fn:DYNAMIC_FCALL
-		{ PathExpr name = new PathExpr(context); }
-		expr [name]
-		{ List<Expression> params= new ArrayList<Expression>(2); }
-		(
-			{ pathExpr= new PathExpr(context); }
-			( 
-				QUESTION { 
-					params.add(new Function.Placeholder(context));
-					isPartial = true;
-				}
-				| 
-				expr [pathExpr] { params.add(pathExpr); }
-			)
-		)*
-	)
-	{ step = new DynamicFunctionCall(context, name, params, isPartial); }
 	;
 			
 functionReference [PathExpr path]

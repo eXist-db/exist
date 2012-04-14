@@ -128,7 +128,7 @@ imaginaryTokenDefinitions
 	UNARY_PLUS
 	XPOINTER
 	XPOINTER_ID
-	VARIABLE_REF 
+	VARIABLE_REF
 	VARIABLE_BINDING
 	ELEMENT
 	ATTRIBUTE
@@ -985,13 +985,13 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | 
 	"comment" | "ordered" | "unordered" ) LCURLY ) => 
-	filterStep
+	postfixExpr
 	|
-	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => filterStep
+	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI )
-	=> filterStep
+	=> postfixExpr
 	|
 	axisStep
 	;
@@ -1078,16 +1078,21 @@ wildcard
 	}
 	;
 
-filterStep throws XPathException:
-	primaryExpr ( 
+postfixExpr throws XPathException:
+	primaryExpr (
 		(LPPAREN) => predicate
 		|
-		(LPAREN) => argumentList 
-		{
-			#filterStep = #(#[DYNAMIC_FCALL, "DynamicFunction"], #filterStep);
-		}
+		(LPAREN) => dynamicFunCall
 	)*
 	;
+
+dynamicFunCall throws XPathException:
+	args:argumentList	
+	{
+		#dynamicFunCall = #(#[DYNAMIC_FCALL, "DynamicFunction"], #args);
+	}
+	;
+
 
 primaryExpr throws XPathException
 { String varName= null; }
