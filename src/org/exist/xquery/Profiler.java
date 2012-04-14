@@ -178,6 +178,7 @@ public class Profiler {
                 source = ((InternalFunctionCall) function).getFunction().getClass().getName();
             else
                 source = function.getContext().getSourceKey();
+            source = String.format("%s [%d:%d]", source, function.getLine(), function.getColumn());
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
         if (isLogEnabled()) {

@@ -238,7 +238,7 @@ public abstract class Function extends PathExpr {
             }
         }
         expr = new DynamicCardinalityCheck(context, type.getCardinality(), expr,
-            new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(argPosition), mySignature));
+            new Error(Error.FUNC_PARAM_CARDINALITY, argPosition, mySignature));
         // check return type if both types are not Type.ITEM
         int returnType = expr.returnsType();
         if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY)

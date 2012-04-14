@@ -77,6 +77,7 @@ public class InlineFunction extends AbstractExpression {
 		function.setClosureVariables(closureVars);
 		
 		FunctionCall call = new FunctionCall(context, function);
+		call.setLocation(function.getLine(), function.getColumn());
 		function.setCaller(call);
 		return new FunctionReference(call);
 	}
