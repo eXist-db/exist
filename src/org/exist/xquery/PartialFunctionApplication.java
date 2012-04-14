@@ -96,6 +96,8 @@ public class PartialFunctionApplication extends AbstractExpression {
 		QName name = new QName(PARTIAL_FUN_PREFIX + hashCode());
 		FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
 		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		func.setLocation(staticCall.getLine(), staticCall.getColumn());
+		
 		// add the created parameter variables to the function
 		for (QName varName: variables) {
 			func.addVariable(varName);
@@ -107,6 +109,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 		func.setFunctionBody(innerCall);
 		
 		FunctionCall newCall = new FunctionCall(context, func);
+		newCall.setLocation(staticCall.getLine(), staticCall.getColumn());
 		return new FunctionReference(newCall);
 	}
 	

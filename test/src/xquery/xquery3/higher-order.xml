@@ -330,6 +330,17 @@ return
 ]]></code>
         <expected>Hello you</expected>
     </test>
+    <test output="text" id="dynfcall6">
+        <task>Dynamic function call syntax test 6</task>
+        <code><![CDATA[xquery version "3.0";
+declare function local:get-function() as function(xs:string) as xs:string {
+	function($str as xs:string) { upper-case($str) }
+};
+
+local:get-function()("Hello")
+]]></code>
+        <expected>HELLO</expected>
+    </test>
     <test output="text">
         <task>fn:function-lookup</task>
         <code><![CDATA[xquery version "3.0";
