@@ -49,7 +49,7 @@
     <test output="xml">
         <task>[old FT] element match, match-highlighting=none</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(., 'tree')]/util:expand(., 'highlight-matches=none')
+            doc('/db/coll/test.xml')//el[text:match-any(., 'tree')]/util:expand(., 'highlight-matches=none')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two tree</c></el>
@@ -58,7 +58,7 @@
     <test output="xml" ignore="yes">
         <task>[old FT] element match, match-highlighting=attributes</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(., 'tree')]/util:expand(., 'highlight-matches=attributes')
+            doc('/db/coll/test.xml')//el[text:match-any(., 'tree')]/util:expand(., 'highlight-matches=attributes')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two tree</c></el>
@@ -67,7 +67,7 @@
     <test output="xml">
         <task>[old FT] element match, match-highlighting=elements</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(., 'tree')]/util:expand(., 'highlight-matches=elements')
+            doc('/db/coll/test.xml')//el[text:match-any(., 'tree')]/util:expand(., 'highlight-matches=elements')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two <exist:match>tree</exist:match></c></el>
@@ -76,7 +76,7 @@
     <test output="xml" ignore="yes">
         <task>[old FT] element match, match-highlighting=both</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(., 'tree')]/util:expand(., 'highlight-matches=both')
+            doc('/db/coll/test.xml')//el[text:match-any(., 'tree')]/util:expand(., 'highlight-matches=both')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two <exist:match>tree</exist:match></c></el>
@@ -85,7 +85,7 @@
     <test output="xml">
         <task>[old FT] attribute match, match-highlighting=none</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(@att, 'val')]/util:expand(., 'highlight-matches=none')
+            doc('/db/coll/test.xml')//el[text:match-any(@att, 'val')]/util:expand(., 'highlight-matches=none')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two tree</c></el>
@@ -94,7 +94,7 @@
     <test output="xml" ignore="yes">
         <task>[old FT] attribute match, match-highlighting=attributes</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(@att, 'val')]/util:expand(., 'highlight-matches=attributes')
+            doc('/db/coll/test.xml')//el[text:match-any(@att, 'val')]/util:expand(., 'highlight-matches=attributes')
             ]]></code>
         <expected>
             <el att="|||val|||"><a><b>one</b></a><c>two tree</c></el>
@@ -103,7 +103,7 @@
     <test output="xml">
         <task>[old FT] attribute match, match-highlighting=elements</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(@att, 'val')]/util:expand(., 'highlight-matches=elements')
+            doc('/db/coll/test.xml')//el[text:match-any(@att, 'val')]/util:expand(., 'highlight-matches=elements')
             ]]></code>
         <expected>
             <el att="val"><a><b>one</b></a><c>two tree</c></el>
@@ -112,7 +112,7 @@
     <test output="xml" ignore="yes">
         <task>[old FT] attribute match, match-highlighting=both</task>
         <code><![CDATA[
-            doc('/db/coll/test.xml')//el[match-any(@att, 'val')]/util:expand(., 'highlight-matches=both')
+            doc('/db/coll/test.xml')//el[text:match-any(@att, 'val')]/util:expand(., 'highlight-matches=both')
             ]]></code>
         <expected>
             <el att="|||val|||"><a><b>one</b></a><c>two tree</c></el>
