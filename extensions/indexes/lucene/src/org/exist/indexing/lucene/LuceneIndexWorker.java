@@ -60,6 +60,7 @@ import org.exist.indexing.QNamedKeysIndex;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
@@ -350,7 +351,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 QueryParser parser = new QueryParser(field, analyzer);
                 setOptions(options, parser);
                 Query query = parser.parse(queryStr);
-                searchAndProcess(contextId, docs, contextSet, resultSet,
+                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                     returnAncestor, searcher, query);
             }
         } finally {
@@ -422,7 +423,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
                 if (query != null) {
-	                searchAndProcess(contextId, docs, contextSet, resultSet,
+	                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                         returnAncestor, searcher, query);
                 }
             }
@@ -443,7 +444,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             analyzer = getAnalyzer(field, null, context.getBroker(), docs);
             Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
-                searchAndProcess(contextId, docs, contextSet, resultSet,
+                searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     returnAncestor, searcher, query);
             }
         } finally {
@@ -452,12 +453,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    private void searchAndProcess(int contextId, DocumentSet docs,
+    private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
             NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
             IndexSearcher searcher, Query query) throws IOException {
         LuceneHitCollector collector = new LuceneHitCollector();
         searcher.search(query, collector);
-        processHits(collector.getDocs(), searcher, contextId, docs, contextSet, resultSet, returnAncestor, query);
+        processHits(collector.getDocs(), searcher, contextId, qname, docs, contextSet, resultSet, returnAncestor, query);
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
@@ -473,7 +474,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             QueryParser parser = new QueryParser(field, analyzer);
             setOptions(options, parser);
             Query query = parser.parse(queryString);
-            searchAndProcess(contextId, docs, contextSet, resultSet,
+            searchAndProcess(contextId, null, docs, contextSet, resultSet,
                 returnAncestor, searcher, query);
         } finally {
             index.releaseSearcher(searcher);
@@ -485,7 +486,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Process the query results collected from the Lucene index and
      * map them to the corresponding XML nodes in eXist.
      */
-    private void processHits(List<ScoreDoc> hits, IndexSearcher searcher, int contextId, DocumentSet docs, NodeSet contextSet,
+    private void processHits(List<ScoreDoc> hits, IndexSearcher searcher, int contextId, QName qname, DocumentSet docs, NodeSet contextSet,
                              NodeSet resultSet, boolean returnAncestor, Query query) {
         for (ScoreDoc scoreDoc : hits) {
             try {
@@ -497,6 +498,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     continue;
                 NodeId nodeId = readNodeId(doc);
                 NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                if (qname != null)
+                	storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
                 // if a context set is specified, we can directly check if the
                 // matching node is a descendant of one of the nodes
                 // in the context set.
