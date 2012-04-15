@@ -120,7 +120,7 @@ public class FunNot extends Function {
     			if (inPredicate) {
     				for (SequenceIterator i = result.iterate(); i.hasNext();) {
     					NodeProxy item = (NodeProxy) i.nextItem();
-    					item.addContextNode(getExpressionId(), item);
+//    					item.addContextNode(getExpressionId(), item);
     					if (contextId != Expression.NO_CONTEXT_ID)
                             item.addContextNode(contextId, item);
     					else
@@ -131,10 +131,11 @@ public class FunNot extends Function {
     			// evaluate argument expression
     			Sequence argSeq = arg.eval(result);
     			NodeSet argSet;
-    			if (contextId != Expression.NO_CONTEXT_ID)
+    			if (contextId != Expression.NO_CONTEXT_ID) {
 	    			argSet = argSeq.toNodeSet().getContextNodes(contextId);
-	    		else
+    			} else {
 		    		argSet = argSeq.toNodeSet().getContextNodes(getExpressionId());
+    			}
     			result = ((NodeSet)result).except(argSet);
             }
 			
