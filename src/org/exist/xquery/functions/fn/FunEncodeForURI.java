@@ -45,45 +45,46 @@ import org.exist.xquery.value.Type;
  */
 public class FunEncodeForURI extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("encode-for-uri", Function.BUILTIN_FUNCTION_NS),
-            "Escapes reserved characters in $uri-part by replacing it with its percent-encoded form as described in [RFC 3986]. If $uri-part is the empty sequence, returns the zero-length string.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("uri-part", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI part to encode")
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("encode-for-uri", Function.BUILTIN_FUNCTION_NS),
+            "Escapes reserved characters in $uri-part by replacing it " +
+                "with its percent-encoded form as described in [RFC 3986]. " +
+                "If $uri-part is the empty sequence, returns the zero-length string.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("uri-part", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The URI part to encode")
             },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the URI part with reserved characters percent encoded"));
-	
-	public FunEncodeForURI(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
+                "the URI part with reserved characters percent encoded"));
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public FunEncodeForURI(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
         Sequence result;
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if(seq.isEmpty())
-			//If $uri-part is the empty sequence, returns the zero-length string.
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        if (seq.isEmpty()) {
+            //If $uri-part is the empty sequence, returns the zero-length string.
             result = StringValue.EMPTY_STRING;
-        else {
-    		String value; 
-   			value = URIUtils.encodeForURI(seq.getStringValue());
+        } else {
+            String value; 
+            value = URIUtils.encodeForURI(seq.getStringValue());
             result = new StringValue(value);
         }
-        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
         return result;
-	}
-
+    }
 }
-
