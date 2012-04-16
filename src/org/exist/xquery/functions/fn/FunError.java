@@ -43,47 +43,60 @@ import org.exist.xquery.value.Type;
 public class FunError extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(FunError.class);
-    
-    	public final static FunctionSignature signature[] = {
-		new FunctionSignature(
-			new QName("error", Function.BUILTIN_FUNCTION_NS),
-			"Indicates that an irrecoverable error has occurred. The "
-				+ "script will terminate immediately with an exception using the default qname, 'http://www.w3.org/2004/07/xqt-errors#err:FOER0000', and the default error message, 'An error has been raised by the query'.",
-			null,
-			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
-		new FunctionSignature(
-			new QName("error", Function.BUILTIN_FUNCTION_NS),
-			"Indicates that an irrecoverable error has occurred. The "
-				+ "script will terminate immediately with an exception using $qname and the default message, 'An error has been raised by the query'.",
+
+    public final static FunctionSignature signature[] = {
+        new FunctionSignature(
+            new QName("error", Function.BUILTIN_FUNCTION_NS),
+            "Indicates that an irrecoverable error has occurred. " +
+            "The script will terminate immediately with an exception using " +
+            "the default qname, 'http://www.w3.org/2004/07/xqt-errors#err:FOER0000', " +
+            "and the default error message, 'An error has been raised by the query'.",
+            null,
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        ),
+        new FunctionSignature(
+            new QName("error", Function.BUILTIN_FUNCTION_NS),
+            "Indicates that an irrecoverable error has occurred. " +
+            "The script will terminate immediately with an exception using " +
+            "$qname and the default message, 'An error has been raised by the query'.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.EXACTLY_ONE, "The qname")
-			},
-			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
-		new FunctionSignature(
-			new QName("error", Function.BUILTIN_FUNCTION_NS),
-			"Indicates that an irrecoverable error has occurred. The "
-				+ "script will terminate immediately with an exception using $qname and $message.",
+                new FunctionParameterSequenceType("qname", Type.QNAME,
+                    Cardinality.EXACTLY_ONE, "The qname")
+            },
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        ),
+        new FunctionSignature(
+            new QName("error", Function.BUILTIN_FUNCTION_NS),
+            "Indicates that an irrecoverable error has occurred. " +
+            "The script will terminate immediately with an exception using " +
+            "$qname and $message.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "The qname"),
-				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "The message")
-			},
-			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
-		new FunctionSignature(
-			new QName("error", Function.BUILTIN_FUNCTION_NS),
-			"Indicates that an irrecoverable error has occurred. The "
-				+ "script will terminate immediately with an exception using $qname and $message with $error-object appended.",
+                new FunctionParameterSequenceType("qname", Type.QNAME,
+                    Cardinality.ZERO_OR_ONE, "The qname"),
+                new FunctionParameterSequenceType("message", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The message")
+            },
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+        new FunctionSignature(
+            new QName("error", Function.BUILTIN_FUNCTION_NS),
+            "Indicates that an irrecoverable error has occurred. " +
+            "The script will terminate immediately with an exception using " +
+            "$qname and $message with $error-object appended.",
             new SequenceType[] {
-				new FunctionParameterSequenceType("qname", Type.QNAME, Cardinality.ZERO_OR_ONE, "The qname"),
-				new FunctionParameterSequenceType("message", Type.STRING, Cardinality.EXACTLY_ONE, "The message"),
-				new FunctionParameterSequenceType("error-object", Type.ITEM, Cardinality.ZERO_OR_MORE, "The error object")
-			},
-			new SequenceType(Type.EMPTY, Cardinality.ZERO)),
-	};
+                new FunctionParameterSequenceType("qname", Type.QNAME,
+                    Cardinality.ZERO_OR_ONE, "The qname"),
+                new FunctionParameterSequenceType("message", Type.STRING,
+                    Cardinality.EXACTLY_ONE, "The message"),
+                new FunctionParameterSequenceType("error-object", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The error object")
+            },
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)),
+    };
 
     public FunError(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
-    
+
     public final static ErrorCode DEFAULT_ERROR = ErrorCodes.FOER0000;
     public static final String DEFAULT_DESCRIPTION = "An error has been raised by the query";
 
@@ -94,43 +107,34 @@ public class FunError extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-
         // Define default values
         ErrorCode errorCode = DEFAULT_ERROR;
         String errorDesc = DEFAULT_DESCRIPTION;
         Sequence errorVal = Sequence.EMPTY_SEQUENCE;
-
         // Enter if one or more parameters are supplied
         if (args.length > 0) {
-
             // If there are 2 arguments or more supplied
             // use 2nd argument for error description
             if (args.length > 1) {
                 errorDesc = args[1].getStringValue();
             }
-
             // If first argument is not empty, get qname from argument
             // and construct error code
             if (!args[0].isEmpty()) {
                 QName errorQName = ((QNameValue) args[0].itemAt(0)).getQName();
-
-//                 Set prefix if present
                 String prefix = errorQName.getPrefix();
-                if(prefix==null){
+                if (prefix==null){
                     String ns = errorQName.getNamespaceURI();
                     prefix = getContext().getPrefixForURI(ns);
                     errorQName.setPrefix(prefix);
                 }
-
                 errorCode = new ErrorCode(errorQName, errorDesc);
             }
-
-            // If there is a third argument, us it.
+            // If there is a third argument, use it.
             if (args.length == 3) {
                 errorVal = args[2];
             }
         }
-
         logger.error(errorDesc + ": " + errorCode.toString());
         throw new XPathException(this, errorCode, errorDesc, errorVal);
     }

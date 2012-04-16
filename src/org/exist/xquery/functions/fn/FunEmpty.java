@@ -42,39 +42,41 @@ import org.exist.xquery.value.Type;
  */
 public class FunEmpty extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("empty", Function.BUILTIN_FUNCTION_NS),
-			"Returns true() if the value of $items is the empty sequence, false() otherwise.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
-			},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the empty sequence, false() otherwise"));
-	
-	public FunEmpty(XQueryContext context) {
-		super(context, signature);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem)
-        throws XPathException {
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("empty", Function.BUILTIN_FUNCTION_NS),
+            "Returns true() if the value of $items is the empty sequence, false() otherwise.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("items", Type.ITEM,
+                    Cardinality.ZERO_OR_MORE, "The item sequence")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                "true() if the empty sequence, false() otherwise"));
+
+    public FunEmpty(XQueryContext context) {
+        super(context, signature);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		Sequence result = seq.isEmpty() ? BooleanValue.TRUE : BooleanValue.FALSE;
-        
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        Sequence result = seq.isEmpty() ? BooleanValue.TRUE : BooleanValue.FALSE;
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
-        
-        return result;             
-	}
+        return result;
+    }
 }

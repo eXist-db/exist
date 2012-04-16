@@ -46,59 +46,64 @@ import org.exist.xquery.value.Type;
  */
 public class FunDocumentURI extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("document-uri", Function.BUILTIN_FUNCTION_NS),
-			"Returns the absolute URI of the resource from which the document node $document-node " + 
-			"was constructed, if none such URI exists returns the empty sequence. " +
-			"If $document-node is the empty sequence, returns the empty sequence.",
-			new SequenceType[] {
-                new FunctionParameterSequenceType("document-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The document node")
-			},
-			new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the document URI of $document-node"));
-			
-	/**
-	 * 
-	 */
-	public FunDocumentURI(XQueryContext context) {
-		super(context, signature);
-	}
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("document-uri", Function.BUILTIN_FUNCTION_NS),
+            "Returns the absolute URI of the resource from which the " +
+            "document node $document-node was constructed. " +
+            "If none such URI exists returns the empty sequence. " +
+            "If $document-node is the empty sequence, returns the empty sequence.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("document-node", Type.NODE,
+                    Cardinality.ZERO_OR_ONE, "The document node")
+            },
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE,
+                "the document URI of $document-node")
+        );
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /**
+     * 
+     */
+    public FunDocumentURI(XQueryContext context) {
+        super(context, signature);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence contextSequence, Item contextItem)
+            throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }          
-        
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+        }
+        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         Sequence result = Sequence.EMPTY_SEQUENCE;
         if (!seq.isEmpty()) {
             NodeValue value = (NodeValue) seq.itemAt(0);
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
-        		NodeProxy node = (NodeProxy) value;
-        		//Returns the empty sequence if the node is not a document node. 
-        		if (node.isDocument()) {
-        			XmldbURI path = node.getDocument().getURI(); 
-        			result = new AnyURIValue(path);
-        		}        		
+                NodeProxy node = (NodeProxy) value;
+                //Returns the empty sequence if the node is not a document node. 
+                if (node.isDocument()) {
+                    XmldbURI path = node.getDocument().getURI(); 
+                    result = new AnyURIValue(path);
+                }
             } else {
-        		if (value instanceof DocumentImpl && ((DocumentImpl)value).getDocumentURI() != null) {
-        			result = new AnyURIValue(((DocumentImpl)value).getDocumentURI());
-        		}        		
+                if (value instanceof DocumentImpl &&
+                    ((DocumentImpl)value).getDocumentURI() != null) {
+                    result = new AnyURIValue(((DocumentImpl)value).getDocumentURI());
+                }
             }
         }
-        
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
-        
-        return result;           
-	}
-
+            context.getProfiler().end(this, "", result);
+        return result;
+    }
 }
