@@ -193,6 +193,10 @@ public class FileLock {
     public File getFile() {
         return lockFile;
     }
+    
+    public long getFreeSpace() {
+    	return lockFile.getFreeSpace();
+    }
 
     /**
      * Check if the lock has an active heartbeat, i.e. if it was updated
