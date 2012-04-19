@@ -1208,11 +1208,19 @@ public class BrokerPool extends Observable implements Database {
         return !isReadOnly && transactionsEnabled;
     }
 	
+    private static long minFreeSpace = 50 * 1024 * 1024;
+    
     public boolean isReadOnly() {
+    	if (dataLock.getFreeSpace() < minFreeSpace) {
+            LOG.info("Partition have "+(dataLock.getFreeSpace() / (1024 * 1024))+" Mb.");
+            setReadOnly();
+    	}
+    	
         return isReadOnly;
     }
 
     public void setReadOnly() {
+        LOG.info("Switching to read-only mode!!!");
     	isReadOnly = true;
     }
     
