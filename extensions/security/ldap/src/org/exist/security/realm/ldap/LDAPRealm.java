@@ -563,10 +563,17 @@ public class LDAPRealm extends AbstractRealm {
     
     private String getPrimaryGroupSID(SearchResult ldapUser) throws NamingException {
         LDAPSearchContext search = ensureContextFactory().getSearch();
-        byte[] objectSID = (byte[])ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get();
-        String strPrimaryGroupID = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.PRIMARY_GROUP_ID)).get();
         
-        String strObjectSid = decodeSID(objectSID);
+        String strObjectSid;
+
+        Object objSID = ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get();
+        if (objSID instanceof String) {
+            strObjectSid = objSID.toString();
+		} else {
+	        strObjectSid = decodeSID((byte[])objSID);
+		}
+	        
+        String strPrimaryGroupID = (String)ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.PRIMARY_GROUP_ID)).get();
         
         return strObjectSid.substring(0, strObjectSid.lastIndexOf('-') + 1) + strPrimaryGroupID;
     }
