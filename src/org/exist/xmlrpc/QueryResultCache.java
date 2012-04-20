@@ -61,13 +61,16 @@ public class QueryResultCache {
         	// Perhaps we should not free resources here
         	// but an explicit remove implies you want
         	// to free resources
-        	results[pos].free();
-            results[pos] = null;
+        	
+        	if (results[pos] != null) { // Prevent NPE
+        		results[pos].free();
+        		results[pos] = null;
+        	}
         }
     }
 
     public void remove(int pos, int hash) {
-        if (pos > -1 && pos < results.length && (results[pos] == null || results[pos].hashCode() == hash)) {
+        if (pos > -1 && pos < results.length && (results[pos] != null && results[pos].hashCode() == hash)) {
         	// Perhaps we should not free resources here
         	// but an explicit remove implies you want
         	// to free resources
