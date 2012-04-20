@@ -35,6 +35,8 @@
 <!ELEMENT gdp_serv (#PCDATA)>
 <!ELEMENT inflation (#PCDATA)>
 <!ELEMENT indep_date (#PCDATA)>
+  <!ATTLIST indep_date from CDATA #IMPLIED>
+  <!-- usually idref to a country, but not always (e.g. "Ottoman Empire") -->
 <!ELEMENT dependent EMPTY>
   <!ATTLIST dependent country IDREF #REQUIRED>
 <!ELEMENT government (#PCDATA)>
@@ -51,18 +53,19 @@
 <!ATTLIST border country IDREF #REQUIRED
                  length CDATA #REQUIRED>
 
-<!ELEMENT province (name,area?,population,city*)>
+<!ELEMENT province (name,area?,population+,city*)>
 <!ATTLIST province id ID #REQUIRED
                    country IDREF #REQUIRED
                    capital IDREF #IMPLIED>
 
-<!ELEMENT city (name,longitude?,latitude?,population*,
+<!ELEMENT city (name,elevation?,longitude?,latitude?,population*,
                 located_at*,located_on*)>
 <!ATTLIST city id ID #REQUIRED
                is_country_cap CDATA #IMPLIED
                is_state_cap CDATA #IMPLIED
                country IDREF #REQUIRED
                province IDREF #IMPLIED>
+<!ELEMENT elevation (#PCDATA)>
 <!ELEMENT longitude (#PCDATA)>
 <!ELEMENT latitude (#PCDATA)>
 <!ELEMENT located_at EMPTY>
@@ -87,22 +90,21 @@
 
 <!-- just as a pattern that is never used -->
 <!ELEMENT geo (name,islands?,mountains?,located*,to*,from?,
-               area?,length?,height?,altitude?,depth?,
-               longitude?,latitude?,
+               area?,length?,elevation?,depth?,longitude?,latitude?,
                source?,estuary?)>
 <!ATTLIST geo id ID #REQUIRED
               country IDREFS #IMPLIED
               type NMTOKEN #IMPLIED
               sea IDREFS #IMPLIED
+              lake IDREFS #IMPLIED
               island IDREF #IMPLIED
               bordering IDREFS #IMPLIED>
-<!ELEMENT source (mountains?,located*,from?,altitude?,longitude?,latitude?)>
+
+<!ELEMENT source (mountains?,located*,from?,elevation?,longitude?,latitude?)>
 <!ATTLIST source country IDREFS #REQUIRED>
 <!ELEMENT estuary (located*,longitude?,latitude?)>
 <!ATTLIST estuary country IDREFS #REQUIRED>
 <!ELEMENT length (#PCDATA)>
-<!ELEMENT height (#PCDATA)>
-<!ELEMENT altitude (#PCDATA)>
 <!ELEMENT depth (#PCDATA)>
 
 <!ELEMENT river (name,located*,to*,area?,length?,source?,estuary?)>
@@ -121,7 +123,7 @@
 <!ATTLIST located country IDREF #REQUIRED
                   province IDREFS #IMPLIED>
 
-<!ELEMENT lake (name,located*,to*,area?,altitude?,depth?,longitude?,latitude?)>
+<!ELEMENT lake (name,located*,to*,area?,elevation?,depth?,longitude?,latitude?)>
 <!ATTLIST lake id ID #REQUIRED
                country IDREFS #REQUIRED
                island IDREF #IMPLIED
@@ -137,7 +139,7 @@
                  country IDREFS #REQUIRED
                  type (sand|rocks|lime|ice) #IMPLIED>
 
-<!ELEMENT island (name,islands?,located*,area?,height?,longitude?,latitude?)>
+<!ELEMENT island (name,islands?,located*,area?,elevation?,longitude?,latitude?)>
 <!ATTLIST island id ID #REQUIRED
                  sea IDREFS #IMPLIED
                  lake IDREF #IMPLIED
@@ -145,10 +147,9 @@
                  type (volcanic|coral|atoll|lime) #IMPLIED>
 <!ELEMENT islands (#PCDATA)>
 
-<!ELEMENT mountain (name,mountains?,located*,height?,longitude?,latitude?)>
+<!ELEMENT mountain (name,mountains?,located*,elevation?,longitude?,latitude?)>
 <!ATTLIST mountain id ID #REQUIRED
                    country IDREFS #REQUIRED
                    island IDREF #IMPLIED
                    type (volcanic|volcano|monolith|granite) #IMPLIED>
 <!ELEMENT mountains (#PCDATA)>
-
