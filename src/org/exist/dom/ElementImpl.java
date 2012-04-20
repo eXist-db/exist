@@ -419,6 +419,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker = ownerDocument.getBrokerPool().get(null);
             appendChildren(transaction, nl, 0);
             broker.storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
+            transact.commit(transaction); // bugID 3419602
             return getLastChild();
         } catch (Exception e) {
             transact.abort(transaction);
