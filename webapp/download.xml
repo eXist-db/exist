@@ -20,12 +20,15 @@
         <title>Download</title>
         <section id="versions">
             <title>Versions</title>
-            <para>Release <emphasis>1.4.1</emphasis> is our current production quality release. Among other things, it
-                features better Referential Integrity, revised Database Shutdown and Crash Protection, a completely new WebDAV implementation based on the Milton WebDAV library. The Lucene Full-Text Indexing has been made more robust and performant. In addition it now also includes configurable analyzers and parameters, better match highlighting and additional functions for working with Lucene document fields. The betterFORM server-side XForms 1.1 engine is integrated and enabled by default.</para>
-            <para>1.4.1 replaces the <emphasis>1.4.0</emphasis> version from 2009. Release <emphasis>1.5</emphasis>
-
-                is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
-                development release, which will relabeled to 1.6 when ready. New features will be added to this release only.</para>
+            <para>Release <emphasis>1.4.2</emphasis> is a production quality release. Among other things, it
+                features better Referential Integrity, revised Database Shutdown and Crash Protection, a completely new WebDAV 
+                implementation based on the Milton WebDAV library. The Lucene Full-Text Indexing has been made more robust and 
+                performant. In addition it now also includes configurable analyzers and parameters, better match highlighting and 
+                additional functions for working with Lucene document fields. The betterFORM server-side XForms 1.1 engine is 
+                integrated and enabled by default.</para>
+            <para>1.4.2 replaces the <emphasis>1.4.1</emphasis> version. Release <emphasis>2.0</emphasis>
+                is the current production quality release, version 2.1 is the <ulink url="http://en.wikipedia.org/wiki/Bleeding_edge">bleeding edge</ulink>
+                development release, which will relabeled to 2.2 when ready. New features will be added to this release only.</para>
         </section>
         <section>
             <title>Donations, Consulting, Training</title>
@@ -65,48 +68,48 @@
                 </table>
             </section>
             <section>
-                <title>Stable Release 1.4 (Codename: <ulink
-                        url="http://en.wikipedia.org/wiki/Eindhoven">Eindhoven</ulink>)</title>
+                <title>Stable Release 1.4.2 (Codename: <ulink url="http://en.wikipedia.org/wiki/Eindhoven"
+                    >Eindhoven</ulink>)</title>
                 <table cellpadding="5" cellspacing="5">
                     <caption/>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4.1 (Stable Release)</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">1.4.2 (Stable Release)</th>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.jar/download"
-                                >eXist-setup-1.4.1-rev15155.jar</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.2/eXist-setup-1.4.2-rev16251.jar/download"
+                                >eXist-setup-1.4.2-rev16251.jar</ulink>
                         </td>
-                        <td>Stand alone distribution, installer based on IzPack. Includes source. Run with <code>java -jar
-                            eXist-1.4.1-rev15155.jar</code></td>
+                        <td> Installer based on IzPack. Includes source. Run with <code>java -jar
+                            eXist-1.4.2-rev16251.jar</code></td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/eXist-setup-1.4.1-rev15155.exe/download"
-                                >eXist-setup-1.4.1-rev15155.exe</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.2/eXist-setup-1.4.2-rev16251.exe/download"
+                                >eXist-setup-1.4.2-rev16251.exe</ulink>
                         </td>
-                        <td>Stand alone distribution, installer based on IzPack. Includes source. Required for MS Vista.</td>
+                        <td>Installer based on IzPack. Includes source. Required for MS Vista.</td>
                     </tr>
                     <tr>
                         <td>
                             <ulink
-                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.1/exist-1.4.1-rev15155.war/download"
-                                >exist-1.4.1-rev15155.war</ulink>
+                                url="http://sourceforge.net/projects/exist/files/Stable/1.4.2/exist-1.4.2-rev16251.war/download"
+                                >exist-1.4.2-rev16251.war</ulink>
                         </td>
-                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.
-                            Note: We would like to encourage new users to start with the stand alone
-                            distribution. Running eXist within an isolated environment helps to
-                            identify issues and avoid unnecessary problems. </td>
+                        <td>WAR archive for deployment in Tomcat or Jetty. Please read the notes regarding tomcat.</td>
                     </tr>
                     <tr>
                         <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2">The 1.4.1 release still includes Cocoon 2.1.11.
-                            Starting with release 1.5 cocoon has been removed and replaced with
-                            Url rewriting feature.</td>
+                        <td align="left" colspan="2">The 1.4.2 release still includes Cocoon 2.1.11.
+                            Starting with release 1.5 cocoon will only available as an optional
+                            block. The development team is looking for a maintainer for this code.
+                            If you have experience with Cocoon please drop us a message on the
+                            developer's list, otherwise this feature will be removed in the
+                            future.</td>
                     </tr>
                 </table>
             </section>
