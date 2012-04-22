@@ -95,7 +95,7 @@ public class FunDateTime extends BasicFunction {
                         .itemAt(0)).compareTo(null, Constants.EQ,
                         ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
                         ValueSequence argsSeq = new ValueSequence(args[0]);
-                        argsSeq.addAll(args[2]);
+                        argsSeq.addAll(args[1]);
                         throw new XPathException(this, ErrorCodes.FORG0008,
                             "Operands have different timezones", argsSeq);
                     }
