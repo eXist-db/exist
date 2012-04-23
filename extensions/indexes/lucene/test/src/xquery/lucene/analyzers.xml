@@ -59,9 +59,9 @@
     </test>
     <test output="xml">
         <task>German Analyzer: stemmed verb</task>
-        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'studieren')]</code>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'jahre')]</code>
         <expected>
-            <l n="l1.4">Durchaus studiert, mit heißem Bemühn.</l>
+            <l n="l1.8">Und ziehe schon an die zehen Jahr</l>
         </expected>
     </test>
     <test output="xml">

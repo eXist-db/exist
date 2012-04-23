@@ -6853,7 +6853,7 @@ public XQueryTreeParser() {
 				
 							QName qname= QName.parse(staticContext, qn.getText());
 							if (axis == Constants.ATTRIBUTE_AXIS) {
-				qname.setNamespaceURI(null);
+				//qname.setNamespaceURI(null);
 				test= new NameTest(Type.ATTRIBUTE, qname);
 				qname.setNameType(ElementValue.ATTRIBUTE);
 				} else {

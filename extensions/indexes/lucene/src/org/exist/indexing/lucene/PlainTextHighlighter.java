@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
 import org.exist.memtree.MemTreeBuilder;
 
@@ -46,12 +48,12 @@ public class PlainTextHighlighter {
 	public List<Offset> getOffsets(String content, Analyzer analyzer) throws IOException {
 		TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(content));
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
-        Token token;
+        //Token token;
         List<Offset> offsets = null;
         try {
-        	int lastOffset = 0;
-            while ((token = stream.next()) != null) {
-                String text = token.term();
+            int lastOffset = 0;
+            while (stream.incrementToken()) {
+                String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query termQuery = termMap.get(text);
                 if (termQuery != null) {
                     // phrase queries need to be handled differently to filter
@@ -65,12 +67,12 @@ public class PlainTextHighlighter {
                             // they are part of the phrase
                             stream.mark();
                             int t = 1;
-                            List<Token> tokenList = new ArrayList<Token>(terms.length);
-                            tokenList.add(token);
-                            while ((token = stream.next()) != null && t < terms.length) {
-                                text = token.term();
+                            List<State> stateList = new ArrayList<State>(terms.length);
+                            stateList.add(stream.captureState());
+                            while(stream.incrementToken() && t < terms.length) {
+                                text = text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
-                                    tokenList.add(token);
+                                    stateList.add(stream.captureState());
                                     if (++t == terms.length) {
                                         break;
                                     }
@@ -79,18 +81,28 @@ public class PlainTextHighlighter {
                                     break;
                                 }
                             }
-                            if (tokenList.size() == terms.length) {
+                            if (stateList.size() == terms.length) {
                             	if (offsets == null)
                             		offsets = new ArrayList<Offset>();
-                            	int start = tokenList.get(0).startOffset();
-                            	int end = tokenList.get(terms.length - 1).endOffset();
+                            	
+                                
+                                
+                                stream.restoreState(stateList.get(0));
+                                int start = stream.getAttribute(OffsetAttribute.class).startOffset();
+                                stream.restoreState(stateList.get(terms.length - 1));
+                            	int end = stream.getAttribute(OffsetAttribute.class).endOffset();
                             	offsets.add(new Offset(start, end));
+                                
+                                //restore state as before
+                                stream.restoreState(stateList.get(stateList.size() -1));
                             }
                         }
                     } else {
                     	if (offsets == null)
                     		offsets = new ArrayList<Offset>();
-                    	offsets.add(new Offset(token.startOffset(), token.endOffset()));
+                        
+                        OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+                        offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
                     }
                 }
             }

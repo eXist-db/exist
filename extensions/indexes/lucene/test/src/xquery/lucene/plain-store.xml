@@ -162,7 +162,7 @@ let $doc := doc($path)
 let $index := 
     for $scene in $doc//SCENE return ft:index($path, local:index-data($scene))
 return
-    ft:search($path, 'speech:"boil bake"')//field
+    ft:search($path, 'speech:"boil and bake"')//field
         ]]></code>
         <expected>
             <field name="speech">Second Witch Fillet of a fenny snake, In the cauldron <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">boil and bake</exist:match>; Eye of newt and toe of frog, Wool of bat and tongue of dog, Adder's fork and blind-worm's sting, Lizard's leg and owlet's wing, For a charm of powerful trouble, Like a hell-broth boil and bubble.</field>
