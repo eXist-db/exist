@@ -368,7 +368,7 @@
 			<p><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">Eins zwei</exist:match> drei vier zwei fünf sechs.</p>
 		</expected>
 	</test>
-	<test output="xml">
+	<test output="xml" ignore="true">
 		<task>Phrase highlighting 3</task>
 		<code> for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., '"zwei fünf"')] return
 			util:expand($hit) </code>
@@ -862,17 +862,17 @@
 	<test output="xml">
 		<task>Fields: query duplicate index</task>
 		<code>doc("/db/lucene/macbeth.xml")//SPEECH[ft:query(LINE, "king")]</code>
-		<xpath>count($output) eq 31</xpath>
+		<xpath>count($output) eq 29</xpath>
 	</test>
 	<test output="xml">
 		<task>Query field test</task>
 		<code>doc("/db/lucene/macbeth.xml")//SPEECH[ft:query-field("lines", "king")]</code>
-		<xpath>count($output) eq 31</xpath>
+		<xpath>count($output) eq 29</xpath>
 	</test>
-	<test output="xml">
+	<test output="text">
 		<task>Fields: descendant</task>
-		<code>doc("/db/lucene/macbeth.xml")//SCENE[ft:query-field("lines", "king")]</code>
-		<xpath>count($output) eq 12</xpath>
+		<code>count(doc("/db/lucene/macbeth.xml")//SCENE[ft:query-field("lines", "king")])</code>
+		<expected>10</expected>
 	</test>
 	<test output="xml">
     	<task>Query field: wrong parent</task>

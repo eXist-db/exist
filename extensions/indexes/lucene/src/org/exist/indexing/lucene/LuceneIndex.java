@@ -19,8 +19,13 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.IOException;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.util.Version;
 
 public class LuceneIndex extends AbstractIndex {
+    
+    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_34;
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
@@ -68,7 +73,7 @@ public class LuceneIndex extends AbstractIndex {
         }
 
         if (defaultAnalyzer == null)
-            defaultAnalyzer = new StandardAnalyzer();
+            defaultAnalyzer = new StandardAnalyzer(LUCENE_VERSION_IN_USE);
         if (LOG.isDebugEnabled())
             LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
     }
@@ -86,7 +91,7 @@ public class LuceneIndex extends AbstractIndex {
             dir.mkdirs();
         IndexWriter writer = null;
         try {
-            directory = FSDirectory.getDirectory(dir);
+            directory = FSDirectory.open(dir);
             writer = getWriter();
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
@@ -99,8 +104,10 @@ public class LuceneIndex extends AbstractIndex {
     @Override
     public void close() throws DBException {
         try {
-            if (cachedWriter != null)
+            if (cachedWriter != null) {
                 cachedWriter.close();
+                cachedWriter = null;
+            }
             directory.close();
         } catch (IOException e) {
             throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
@@ -110,12 +117,21 @@ public class LuceneIndex extends AbstractIndex {
     @Override
     public void sync() throws DBException {
         //Nothing special to do
+    	//TODO consider if this is the correct place to commit index changes?
+        try {
+        	if (cachedWriter != null)
+        		cachedWriter.commit();
+        } catch(CorruptIndexException cie) {
+            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
+        } catch(IOException ioe) {
+            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
+        }
     }
 
     @Override
     public void remove() throws DBException {
         try {
-            String[] files = directory.list();
+            String[] files = directory.listAll();
             for (int i = 0; i < files.length; i++) {
                 String file = files[i];
                 directory.deleteFile(file);
@@ -151,8 +167,14 @@ public class LuceneIndex extends AbstractIndex {
         if (cachedWriter != null) {
             writerUseCount++;
         } else {
-            cachedWriter = new IndexWriter(directory, true, defaultAnalyzer);
-            cachedWriter.setRAMBufferSizeMB(bufferSize);
+            final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
+            idxWriterConfig.setRAMBufferSizeMB(bufferSize);
+            
+            /**
+             With Lucene 2.9.4 we had auto-commit = true set on the IndexWriter constructor here,
+             now we have to commit ourselves, this is done manually in releaseWriter()
+             */
+            cachedWriter = new IndexWriter(directory, idxWriterConfig);
             writerUseCount = 1;
         }
         notifyAll();
@@ -165,16 +187,25 @@ public class LuceneIndex extends AbstractIndex {
         if (writer != cachedWriter)
             throw new IllegalStateException("IndexWriter was not obtained from getWriter().");
         
-        writerUseCount--;
-        if (writerUseCount == 0) {
-            try {
-                cachedWriter.close();
-            } catch (IOException e) {
-                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-            } finally {
-                cachedWriter = null;
-            }
+        //TODO consider if this is the correct place to commit index changes?
+        try {
+            writer.commit();
+        } catch(CorruptIndexException cie) {
+            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
+        } catch(IOException ioe) {
+            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
         }
+        
+        writerUseCount--;
+//        if (writerUseCount == 0) {
+//            try {
+//                cachedWriter.close();
+//            } catch (IOException e) {
+//                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+//            } finally {
+//                cachedWriter = null;
+//            }
+//        }
         notifyAll();
 
         waitForReadersAndReopen();
@@ -214,10 +245,19 @@ public class LuceneIndex extends AbstractIndex {
                 //Nothing special to do
             }
         }
+        if (cachedWriter != null) {
+        	try {
+                cachedWriter.close();
+            } catch (IOException e) {
+                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
+            } finally {
+                cachedWriter = null;
+            }
+        }
         if (cachedWritingReader != null) {
             writingReaderUseCount++;
         } else {
-            cachedWritingReader = IndexReader.open(directory);
+            cachedWritingReader = IndexReader.open(directory, false);
             writingReaderUseCount = 1;
         }
         notifyAll();

@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.Analyzer;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.apache.lucene.util.Version;
 import org.exist.collections.CollectionConfiguration;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
@@ -64,26 +65,50 @@ public class AnalyzerConfig {
                 }
                 
                 final List<KeyTypedValue> cParams = getConstructorParameters(config);
-                final Class<?>[] cParamClasses = new Class<?>[cParams.size()];
-                final Object[] cParamValues = new Object[cParams.size()];
+                final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
+                final Object cParamValues[] = new Object[cParams.size()];
                 for(int i = 0; i < cParams.size(); i++) {
                     KeyTypedValue ktv = cParams.get(i);
                     cParamClasses[i] = ktv.getValueClass();
                     cParamValues[i] = ktv.getValue();
                 }
                 
-                final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                cstr.setAccessible(true);
-                
-                return (Analyzer)cstr.newInstance(cParamValues);
+                //try and get a matching constructor
+                try {
+                    final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
+                    cstr.setAccessible(true);                
+                    return (Analyzer)cstr.newInstance(cParamValues);
+                } catch (NoSuchMethodException nsme) {
+                    
+//                    LOG.warn("Could not find matching analyzer class constructor" + className + ": " + nsme.getMessage() + " now looking for similar constructor with Version paramater", nsme);
+                    
+                    //couldnt find a matching constructor,
+                    //if a version parameter wasnt already specified
+                    //see if there is one with a Version parameter 
+                    if(cParamClasses.length == 0 || (cParamClasses.length > 0 && cParamClasses[0] != Version.class)) {
+                        final Class<?> vcParamClasses[] = new Class<?>[cParamClasses.length + 1];
+                        vcParamClasses[0] = Version.class;
+                        System.arraycopy(cParamClasses, 0, vcParamClasses, 1, cParamClasses.length);
+                        final Object vcParamValues[] = new Object[cParamValues.length + 1];
+                        vcParamValues[0] = LuceneIndex.LUCENE_VERSION_IN_USE;
+                        System.arraycopy(cParamValues, 0, vcParamValues, 1, cParamValues.length);
+                        
+                        try {
+                            final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
+                            cstr.setAccessible(true);        
+                            LOG.warn("Using analyzer " + clazz.getName());
+                            return (Analyzer)cstr.newInstance(vcParamValues);
+                        } catch (NoSuchMethodException vnsme) {
+                            LOG.error("Could not find matching analyzer class constructor" + className + ": " + vnsme.getMessage(), vnsme);
+                        }
+                    }
+                }
             } catch (ClassNotFoundException e) {
                 LOG.error("Lucene index: analyzer class " + className + " not found.");
             } catch (IllegalAccessException e) {
                 LOG.error("Exception while instantiating analyzer class " + className + ": " + e.getMessage(), e);
             } catch (InstantiationException e) {
                 LOG.error("Exception while instantiating analyzer class " + className + ": " + e.getMessage(), e);
-            } catch (NoSuchMethodException nsme) {
-                LOG.error("Exception while instantiating analyzer class " + className + ": " + nsme.getMessage(), nsme);
             } catch (InvocationTargetException ite) {
                 LOG.error("Exception while instantiating analyzer class " + className + ": " + ite.getMessage(), ite);
             } catch (ParameterException pe) {
@@ -125,11 +150,12 @@ public class AnalyzerConfig {
         final KeyTypedValue parameter;
         if(type != null && type.equals("java.lang.reflect.Field")){
             final String clazzName = value.substring(0, value.lastIndexOf("."));
-            final String fieldName = value.substring(value.indexOf(".") + 1);
+            final String fieldName = value.substring(value.lastIndexOf(".") + 1);
 
             try {
                 final Class fieldClazz = Class.forName(clazzName);
                 final Field field = fieldClazz.getField(fieldName);
+                field.setAccessible(true);
                 final Object fValue = field.get(fieldClazz.newInstance());
                 parameter = new KeyTypedValue(name, fValue);
             } catch(NoSuchFieldException nsfe) {
@@ -154,8 +180,20 @@ public class AnalyzerConfig {
             final boolean b = Boolean.parseBoolean(value);
             parameter = new KeyTypedValue(name, b);
         } else {
-            //assume java.lang.String
-            parameter = new KeyTypedValue(name, value);
+            
+            try {
+                //if the type is an Enum then use valueOf()
+                final Class clazz = Class.forName(type);
+                if(clazz.isEnum()) {
+                    parameter = new KeyTypedValue(name, Enum.valueOf(clazz, value), clazz);
+                } else {
+                    
+                    //default, assume java.lang.String
+                    parameter = new KeyTypedValue(name, value);
+                }
+            } catch(ClassNotFoundException cnfe) {
+                throw new ParameterException("Class for type: " + type + " not found. " + cnfe.getMessage(), cnfe);
+            }
         }
         
         return parameter;

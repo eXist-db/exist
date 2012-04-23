@@ -23,7 +23,6 @@ package org.exist.indexing.lucene;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -45,6 +44,9 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
@@ -207,11 +209,11 @@ public class LuceneMatchListener extends AbstractMatchListener {
         String str = extractor.getText().toString();
         TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
-        Token token;
+        //Token token;
         try {
 
-            while ((token = stream.next()) != null) {
-                String text = token.term();
+            while(stream.incrementToken()) {
+                String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query query = termMap.get(text);
                 if (query != null) {
                     // phrase queries need to be handled differently to filter
@@ -225,12 +227,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
                             // they are part of the phrase
                             stream.mark();
                             int t = 1;
-                            List<Token> tokenList = new ArrayList<Token>(terms.length);
-                            tokenList.add(token);
-                            while ((token = stream.next()) != null && t < terms.length) {
-                                text = token.term();
+                            List<State> stateList = new ArrayList<State>(terms.length);
+                            stateList.add(stream.captureState());
+                            
+                            while(stream.incrementToken() && t < terms.length) {
+                                text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
-                                    tokenList.add(token);
+                                    stateList.add(stream.captureState());
                                     if (++t == terms.length) {
                                         break;
                                     }
@@ -239,37 +242,43 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                     break;
                                 }
                             }
-                            if (tokenList.size() == terms.length) {
+                            
+                            if(stateList.size() == terms.length) {
                                 // we indeed have a phrase match. record the offsets of its terms.
                                 int lastIdx = -1;
                                 for (int i = 0; i < terms.length; i++) {
-                                    Token nextToken = tokenList.get(i);
-                                    int idx = offsets.getIndex(nextToken.startOffset());
+                                    stream.restoreState(stateList.get(i));
+                                    
+                                    OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+                                    int idx = offsets.getIndex(offsetAttr.startOffset());
+                                    
                                     NodeId nodeId = offsets.ids[idx];
                                     Offset offset = nodesWithMatch.get(nodeId);
                                     if (offset != null)
                                         if (lastIdx == idx)
-                                            offset.setEndOffset(nextToken.endOffset() - offsets.offsets[idx]);
+                                            offset.setEndOffset(offsetAttr.endOffset() - offsets.offsets[idx]);
                                         else
-                                            offset.add(nextToken.startOffset() - offsets.offsets[idx],
-                                                nextToken.endOffset() - offsets.offsets[idx]);
+                                            offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
+                                                offsetAttr.endOffset() - offsets.offsets[idx]);
                                     else
-                                        nodesWithMatch.put(nodeId, new Offset(nextToken.startOffset() - offsets.offsets[idx],
-                                            nextToken.endOffset() - offsets.offsets[idx]));
+                                        nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
+                                            offsetAttr.endOffset() - offsets.offsets[idx]));
                                     lastIdx = idx;
                                 }
                             }
                         }
                     } else {
-                        int idx = offsets.getIndex(token.startOffset());
+                        
+                        OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
+                        int idx = offsets.getIndex(offsetAttr.startOffset());
                         NodeId nodeId = offsets.ids[idx];
                         Offset offset = nodesWithMatch.get(nodeId);
                         if (offset != null)
-                            offset.add(token.startOffset() - offsets.offsets[idx],
-                                token.endOffset() - offsets.offsets[idx]);
+                            offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
+                                offsetAttr.endOffset() - offsets.offsets[idx]);
                         else {
-                            nodesWithMatch.put(nodeId, new Offset(token.startOffset() - offsets.offsets[idx],
-                                token.endOffset() - offsets.offsets[idx]));
+                            nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
+                                offsetAttr.endOffset() - offsets.offsets[idx]));
                         }
                     }
                 }

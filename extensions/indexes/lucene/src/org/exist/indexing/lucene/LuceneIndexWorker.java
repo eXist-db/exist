@@ -44,6 +44,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.document.NumericField;
+import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -52,8 +53,12 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
@@ -64,6 +69,7 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.util.BitVector;
 import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.OpenBitSet;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 
 import org.exist.collections.Collection;
@@ -301,32 +307,30 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removeDocument(int docId) {
-        IndexReader reader = null;
+    	IndexWriter writer = null;
         try {
-            reader = index.getWritingReader();
+            writer = index.getWriter();
             Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
-            reader.deleteDocuments(dt);
-            reader.flush();
+            writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
-            index.releaseWritingReader(reader);
+            index.releaseWriter(writer);
             mode = StreamListener.STORE;
         }
     }
 
     protected void removePlainTextIndexes() {
-    	IndexReader reader = null;
+    	IndexWriter writer = null;
         try {
-            reader = index.getWritingReader();
+            writer = index.getWriter();
             String uri = currentDoc.getURI().toString();
             Term dt = new Term(FIELD_DOC_URI, uri);
-            reader.deleteDocuments(dt);
-            reader.flush();
+            writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
-            index.releaseWritingReader(reader);
+            index.releaseWriter(writer);
             mode = StreamListener.STORE;
         }
     }
@@ -334,24 +338,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void removeCollection(Collection collection, DBBroker broker) {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection " + collection.getURI());
-        IndexReader reader = null;
+        IndexWriter writer = null;
         try {
-            reader = index.getWritingReader();
+            writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
                 Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(doc.getDocId()));
-                TermDocs td = reader.termDocs(dt);
-                while (td.next()) {
-                    reader.deleteDocument(td.doc());
-                }
+                writer.deleteDocuments(dt);
             }
-            reader.flush();
         } catch (IOException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } catch (PermissionDeniedException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
-            index.releaseWritingReader(reader);
+            index.releaseWriter(writer);
             mode = StreamListener.STORE;
         }
         if (LOG.isDebugEnabled())
@@ -364,7 +364,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * mode.
      */
     protected void removeNodes() {
-        if (nodesToRemove == null)
+    	if (nodesToRemove == null)
             return;
         IndexReader reader = null;
         try {
@@ -379,7 +379,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
             nodesToRemove = null;
-            reader.flush();
         } catch (IOException e) {
             LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
         } finally {
@@ -387,6 +386,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
+    private class NodeIdFilter extends Filter {
+    	
+		@Override
+		public DocIdSet getDocIdSet(IndexReader reader) throws IOException {
+			LOG.debug("Reader: " + reader.getClass().getName());
+			OpenBitSet bits = new OpenBitSet(reader.maxDoc());
+        	Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(currentDoc.getDocId()));
+			TermDocs docsEnum = reader.termDocs(dt);
+            while (docsEnum.next()) {
+            	LOG.debug("docsEnum: " + docsEnum.doc());
+                Document doc = reader.document(docsEnum.doc());
+                NodeId nodeId = readNodeId(doc);
+                if (nodesToRemove.contains(nodeId)) {
+                	LOG.debug("Removing node " + nodeId);
+                    bits.set(docsEnum.doc());
+                }
+            }
+			return bits;
+		}
+    }
+    
     /**
      * Query the index. Returns a node set containing all matching nodes. Each node
      * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
@@ -417,7 +437,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : qnames) {
                 String field = encodeQName(qname);
                 Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
-                QueryParser parser = new QueryParser(field, analyzer);
+                QueryParser parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
                 setOptions(options, parser);
                 Query query = parser.parse(queryStr);
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
@@ -540,7 +560,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             searcher = index.getSearcher();
             Analyzer analyzer = getAnalyzer(field, null, context.getBroker(), docs);
             LOG.debug("Using analyzer " + analyzer + " for " + queryString);
-            QueryParser parser = new QueryParser(field, analyzer);
+            QueryParser parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
             setOptions(options, parser);
             Query query = parser.parse(queryString);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
@@ -973,10 +993,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            java.util.Collection<String> fields = reader.getFieldNames(IndexReader.FieldOption.INDEXED);
-            for (String field: fields) {
-                if (!FIELD_DOC_ID.equals(field)) {
-                    QName name = decodeQName(field);
+            for (FieldInfo info: ReaderUtil.getMergedFieldInfos(reader)) {
+            	if (!FIELD_DOC_ID.equals(info.name)) {
+                    QName name = decodeQName(info.name);
                     if (name != null && (qname == null || matchQName(qname, name)))
                         indexes.add(name);
                 }
@@ -1096,7 +1115,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     oc.addOccurrences(termDocs.freq());
                                 }
                             }
-                            termDocs.close();
+                            // termDocs.close();
                         }
                     }
                     if (map.size() >= max)
