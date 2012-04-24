@@ -1743,9 +1743,8 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @return  the PDP for this database instance, or null if XACML is disabled
      */
-    public ExistPDP getPDP()
-    {
-        return( getBroker().getBrokerPool().getSecurityManager().getPDP() );
+    public ExistPDP getPDP() {
+    	return db.getSecurityManager().getPDP();
     }
 
 
