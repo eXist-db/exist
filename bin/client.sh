@@ -5,6 +5,10 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
+# This will enable Java debugging via JDWP on port 4000 in Server mode
+#DEBUG_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=4000"
+
+
 ## @UNIX_INSTALLER_1@ 
 
 #
