@@ -23,6 +23,8 @@
 package org.exist.xquery.util;
 
 
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -49,8 +51,8 @@ public class HTTPUtils {
 		try {
 			DocumentSet documentSet = result.getDocumentSet();
 			long mostRecentDocumentTime = 0;
-			for (int i = 0; i < documentSet.getDocumentCount(); i++) {
-				DocumentImpl doc = documentSet.getDocumentAt(i);
+			for (Iterator<DocumentImpl> i = documentSet.getDocumentIterator(); i.hasNext(); ) {
+				DocumentImpl doc = i.next();
 				if (doc != null) {
 					mostRecentDocumentTime = Math.max(doc.getMetadata().getLastModified(),
 							mostRecentDocumentTime);

@@ -29,6 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.exist.security.PermissionDeniedException;
@@ -71,8 +72,8 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
             throw new TriggerException(pde.getMessage(), pde);
         }
         
-        for(int i = 0; i < docs.getDocumentCount(); i++) {
-            System.out.println("\t" + docs.getDocumentAt(i).getFileURI());
+        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+            System.out.println("\t" + i.next().getFileURI());
         }
     }
 

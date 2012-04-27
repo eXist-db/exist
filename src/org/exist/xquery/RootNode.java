@@ -79,7 +79,7 @@ public class RootNode extends Step {
 //        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        NodeSet result = new NewArrayNodeSet(2);
+        NewArrayNodeSet result = new NewArrayNodeSet(2);
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
@@ -102,7 +102,7 @@ public class RootNode extends Step {
             if (!context.inProtectedMode())
                 ds.unlock(false);
         }
-        
+        result.updateNoSort();
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         

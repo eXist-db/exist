@@ -22,22 +22,19 @@
 
 package org.exist.dom;
 
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.TreeSet;
+
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
-import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.TreeSet;
-import org.exist.security.PermissionDeniedException;
 
 /**
  * Manages a set of documents.
@@ -50,7 +47,8 @@ import org.exist.security.PermissionDeniedException;
  */
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
 
-    private ArrayList<DocumentImpl> list = null;
+    private BitSet docIds = new BitSet();
+    private BitSet collectionIds = new BitSet();
     private TreeSet<Collection> collections = new TreeSet<Collection>();
 
     public DefaultDocumentSet() {
@@ -64,8 +62,9 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @Override
     public void clear() {
         super.clear();
+        docIds = new BitSet();
+        collectionIds = new BitSet();
         collections = new TreeSet<Collection>();
-        list = null;
     }
 
     @Override
@@ -76,13 +75,17 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @Override
     public void add(DocumentImpl doc, boolean checkDuplicates) {
         final int docId = doc.getDocId();
-        if (checkDuplicates && containsKey(docId))
+        if (checkDuplicates && contains(docId))
             return;
+        docIds.set(docId);
         put(docId, doc);
-        if (list != null)
-            list.add(doc);
-        if (doc.getCollection() != null && (!collections.contains(doc.getCollection())))
-            collections.add(doc.getCollection());
+        final Collection collection = doc.getCollection();
+        if (collection != null) {
+	        if (!collectionIds.get(collection.getId())) {
+	        	collectionIds.set(collection.getId());
+	            collections.add(collection);
+	        }
+        }
     }
 
     public void add(Node node) {
@@ -93,78 +96,17 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public void addAll(DocumentSet other) {
-        for (int i = 0; i < other.getDocumentCount(); i++)
-            add(other.getDocumentAt(i));
-    }
-
-    /**
-     * Fast method to add a bunch of documents from a
-     * Java collection.
-     * 
-     * The method assumes that no duplicate entries are
-     * in the input collection.
-     */
-    @Override
-    public void addAll(DBBroker broker, Collection collection, String[] paths) {
-        DocumentImpl doc;
-        for(String path : paths) {
-            try {
-                doc = collection.getDocumentNoLock(broker, path);
-            } catch (PermissionDeniedException pde) {
-                continue;
-            }
-            
-            if (doc == null) {
-                continue;
-            }
-            
-            // WM: we don't have a lock on the document, so we should not change its broker:
-            // doc.setBroker(broker);
-            put(doc.getDocId(), doc);
-        }
-    }
-
-    /**
-     * Fast method to add a bunch of documents from a Java collection.
-     * A lock will be acquired on each document. The locked document is added to the
-     * specified LockedDocumentMap in order to keep track of the locks..
-     *
-     * @param broker
-     * @param collection
-     * @param paths
-     * @param lockMap
-     * @param lockType
-     * @throws LockException
-     */
-    @Override
-    public void addAll(DBBroker broker, Collection collection, String[] paths, LockedDocumentMap lockMap, int lockType) throws LockException {
-        DocumentImpl doc;
-        Lock lock;
-        for(String path : paths) {
-            
-            try {
-                doc = collection.getDocumentNoLock(broker, path);
-            } catch(PermissionDeniedException pde) {
-                continue;
-            }
-            
-            if(doc == null) {
-                continue;
-            }
-            
-            if (doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
-                lock = doc.getUpdateLock();
-
-                lock.acquire(Lock.WRITE_LOCK);
-                put(doc.getDocId(), doc);
-                lockMap.add(doc);
-            }
-        }
+    	for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext(); ) {
+    		add(i.next());
+    	}
     }
 
     @Override
     public void addCollection(Collection collection) {
-        collections.add(collection);
+    	if (!collectionIds.get(collection.getId())) {
+    		collectionIds.set(collection.getId());
+    		collections.add(collection);
+    	}
     }
 
     @Override
@@ -184,17 +126,6 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     public int getCollectionCount() {
         return collections.size();
-    }
-
-    @Override
-    public DocumentImpl getDocumentAt(int pos) {
-        //UNDERSTAND: do we need that list??? (shabanovd)
-        if (list == null) {
-            list = new ArrayList<DocumentImpl>();
-            for(Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); )
-                list.add(i.next());
-        }
-        return list.get(pos);
     }
 
     @Override
@@ -248,9 +179,10 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     public boolean contains(DocumentSet other) {
         if (other.getDocumentCount() > size())
             return false;
-        DocumentImpl d;
-        for (Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
-            d = i.next();
+        for (int idx = 0; idx < tabSize; idx++) {
+            if(values[idx] == null || values[idx] == REMOVED)
+                continue;
+            DocumentImpl d = (DocumentImpl) values[idx];
             if (!contains(d.getDocId()))
                 return false;
         }
@@ -259,7 +191,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     @Override
     public boolean contains(int id) {
-        return containsKey(id);
+    	return docIds.get(id);
     }
 
     @Override
@@ -354,8 +286,8 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for( int i=0; i< getDocumentCount(); i++ ) {
-            result.append(getDocumentAt(i));
+        for (Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
+            result.append(i.next());
             result.append(", ");
         }
         return result.toString();
