@@ -475,8 +475,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             for (XmldbURI childName : subColls) {
                 //TODO : resolve URI !
                 try {
-                    final Collection child = broker.openCollection(
-                        path.appendInternal(childName), Lock.NO_LOCK);
+                    final Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
                     //A collection may have been removed in the meantime, so check first
                     if (child != null) {
                         child.allDocs(broker, docs, recursive, protectedDocs);
@@ -550,7 +549,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
-            docs.addAll(broker, this, getDocumentPaths());
+            addDocumentsToSet(docs);
         } catch (LockException le) {
             //TODO this should not be caught - it should be thrown - lock errors are bad!!!
             LOG.error(le.getMessage(), le);
@@ -562,7 +561,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public DocumentSet getDocumentsNoLock(DBBroker broker, MutableDocumentSet docs) {
         docs.addCollection(this);
-        docs.addAll(broker, this, getDocumentPaths());
+        addDocumentsToSet(docs);
         return docs;
     }
 
@@ -573,13 +572,31 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
-            docs.addAll(broker, this, getDocumentPaths(), lockMap, lockType);
+            addDocumentsToSet(broker, docs, lockMap, lockType);
         } finally {
             getLock().release(Lock.READ_LOCK);
         }
         return docs;
     }
 
+    private void addDocumentsToSet(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, int lockType) throws LockException {
+    	for (DocumentImpl doc : documents.values()) {
+    		if (doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
+                lock = doc.getUpdateLock();
+
+                lock.acquire(Lock.WRITE_LOCK);
+                docs.add(doc);
+                lockMap.add(doc);
+            }
+    	}
+    }
+    
+    private void addDocumentsToSet(MutableDocumentSet docs) {
+    	for (DocumentImpl doc : documents.values()) {
+    		docs.add(doc);
+    	}
+    }
+    
     private String[] getDocumentPaths() {
         final String paths[] = new String[documents.size()];
         int i = 0;

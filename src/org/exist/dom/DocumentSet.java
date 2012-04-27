@@ -19,8 +19,6 @@ public interface DocumentSet {
 
     public int getDocumentCount();
 
-    DocumentImpl getDocumentAt(int pos);
-
     public DocumentImpl getDoc(int docId);
 
     public XmldbURI[] getNames();

@@ -1538,7 +1538,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return false;
         if (other.getDocumentCount() == 0)
             return true;
-        return other.getDocumentAt(0).getDocId() == doc.getDocId();
+        return other.contains(doc.getDocId());
     }
 
     public boolean contains(int docId) {
@@ -1571,7 +1571,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return true;
         if (other.getDocumentCount() != 1)
             return false;
-        return other.getDocumentAt(0).getDocId() == doc.getDocId();
+        return other.contains(doc.getDocId());
     }
 
     public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId) {
