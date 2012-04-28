@@ -72,24 +72,6 @@ public abstract class DBBroker extends Observable {
 	public final static int MATCH_STARTSWITH 	= 4;
 	public final static int MATCH_ENDSWITH 		= 5;
 	
-	@Deprecated //use XmldbURI.ROOT_COLLECTION_NAME, remove after 1.6
-	public final static String ROOT_COLLECTION_NAME = "db";
-
-	@Deprecated //use XmldbURI.ROOT_COLLECTION, remove after 1.6
-	public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
-
-	@Deprecated //use XmldbURI.SYSTEM_COLLECTION_NAME, remove after 1.6
-	public final static String SYSTEM_COLLECTION_NAME = "system";
-	
-	@Deprecated //use XmldbURI.SYSTEM_COLLECTION, remove after 1.6
-	public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/" + SYSTEM_COLLECTION_NAME;
-
-	@Deprecated //use XmldbURI.TEMP_COLLECTION_NAME, remove after 1.6
-	public final static String TEMP_COLLECTION_NAME = "temp";
-	
-	@Deprecated //use XmldbURI.TEMP_COLLECTION, remove after 1.6
-	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
-
 	//TODO : move elsewhere
 	public static final String CONFIGURATION_ELEMENT_NAME = "xupdate";
     
