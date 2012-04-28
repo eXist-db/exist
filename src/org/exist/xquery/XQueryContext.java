@@ -1216,8 +1216,10 @@ public class XQueryContext implements BinaryValueManager, Context
 
                         if( doc != null ) {
 
-                            if( doc.getPermissions().validate( getBroker().getSubject(), Permission.READ ) ) {
-                                ndocs.add( doc );
+                            if( doc.getPermissions().validate( 
+                            		getBroker().getSubject(), Permission.READ ) ) {
+                                
+                            	ndocs.add( doc );
                             }
                             doc.getUpdateLock().release( Lock.READ_LOCK );
                         }
