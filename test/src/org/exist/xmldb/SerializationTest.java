@@ -2,7 +2,6 @@ package org.exist.xmldb;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.Namespaces;
-import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -86,7 +85,7 @@ public class SerializationTest extends XMLTestCase {
             DatabaseManager.registerDatabase(database);
             
             Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
@@ -113,7 +112,7 @@ public class SerializationTest extends XMLTestCase {
     protected void tearDown() {
     	try {
 	        Collection root =
-	            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+	            DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        CollectionManagementService service =
 	            (CollectionManagementService) root.getService(
 	                "CollectionManagementService",

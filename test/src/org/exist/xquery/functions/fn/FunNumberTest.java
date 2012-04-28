@@ -1,7 +1,7 @@
 package org.exist.xquery.functions.fn;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import org.xmldb.api.modules.XPathQueryService;
 public class FunNumberTest {
     
     private final static String TEST_DB_USER = "admin";
-    private final static String TEST_DB_PWD = null;
+    private final static String TEST_DB_PWD = "";
 	
     private XPathQueryService service;
     private Collection root = null;
@@ -69,7 +69,7 @@ public class FunNumberTest {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, TEST_DB_USER, TEST_DB_PWD);
+        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TEST_DB_USER, TEST_DB_PWD);
         service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
     }
 

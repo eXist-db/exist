@@ -25,10 +25,10 @@ import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Document;
@@ -116,7 +116,7 @@ public abstract class TestRunner {
         DatabaseManager.registerDatabase(database);
 
         rootCollection =
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
     }
 
     @After

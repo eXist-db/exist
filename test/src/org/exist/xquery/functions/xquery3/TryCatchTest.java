@@ -2,7 +2,6 @@ package org.exist.xquery.functions.xquery3;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XMLAssert;
-import org.junit.Ignore;
 import org.xmldb.api.base.ResourceSet;
 
 import org.exist.test.EmbeddedExistTester;

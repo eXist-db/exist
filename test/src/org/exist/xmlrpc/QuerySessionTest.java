@@ -119,7 +119,6 @@ public class QuerySessionTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
 	@BeforeClass
     public static void startServer() throws Exception {
         

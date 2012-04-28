@@ -8,8 +8,6 @@ import java.util.ArrayList;
 
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
-
 import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -78,7 +76,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	public void testGetPath() {
 		try {
-			assertEquals(DBBroker.ROOT_COLLECTION + "/" + getTestCollectionName(), URIUtils.urlDecodeUtf8(getCollection().getPath()));
+			assertEquals(XmldbURI.ROOT_COLLECTION + "/" + getTestCollectionName(), URIUtils.urlDecodeUtf8(getCollection().getPath()));
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }
@@ -149,7 +147,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	 */ 
 	public void testParent() {
 		try {
-			Collection c = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+			Collection c = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 			assertNull(c.getChildCollection("b"));
 			
 			System.err.println("col="+ c.getName());

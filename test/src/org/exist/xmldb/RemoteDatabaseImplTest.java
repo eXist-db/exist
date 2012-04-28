@@ -23,8 +23,6 @@ package org.exist.xmldb;
 import junit.textui.TestRunner;
 
 import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
-import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -61,7 +59,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
             Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);
 
-            Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", "");
+            Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 	
             CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
             Collection adminCollection = cms.createCollection(ADMIN_COLLECTION_NAME);
@@ -71,7 +69,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
                 p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
                 ums.setPermissions(adminCollection, p);
 
-                Collection guestCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
+                Collection guestCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
 
                 Resource resource = guestCollection.createResource("testguest", "BinaryResource");
                 resource.setContent("123".getBytes());

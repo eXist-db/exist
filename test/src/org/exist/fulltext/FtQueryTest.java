@@ -22,20 +22,18 @@
 package org.exist.fulltext;
 
 import java.io.File;
-import java.util.Arrays;
 
 import junit.textui.TestRunner;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.FunctionFactory;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -93,7 +91,7 @@ public class FtQueryTest extends XMLTestCase {
     private final static File MODS_DIR = new File(existDir,"samples" + File.separator + "mods");
 
 	private static final String TEST_COLLECTION_NAME = "testft";
-    private static final String TEST_COLLECTION_PATH = DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION_NAME;
+    private static final String TEST_COLLECTION_PATH = XmldbURI.ROOT_COLLECTION + "/" + TEST_COLLECTION_NAME;
     
     private Database database;
     private Collection testCollection;
@@ -617,7 +615,7 @@ public class FtQueryTest extends XMLTestCase {
             DatabaseManager.registerDatabase(database);         
             
             Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(

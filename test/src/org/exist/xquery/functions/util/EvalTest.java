@@ -5,11 +5,11 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
@@ -18,7 +18,6 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
@@ -30,7 +29,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class EvalTest {
 
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = XmldbURI.LOCAL_DB;
     
     private XQueryService service;
     private Collection root = null;
@@ -50,7 +49,7 @@ public class EvalTest {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         service = (XQueryService) root.getService("XQueryService", "1.0");
 
         invokableQuery = root.createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
@@ -99,7 +98,6 @@ public class EvalTest {
     @Test
     public void testEvalWithExternalVars() throws XPathException {
         ResourceSet result = null;
-        String r = "";
         try {
             String query = "let $value := 'world' return\n" +
                     "\tutil:eval(xs:anyURI('/db/" + INVOKABLE_QUERY_FILENAME + "'), false(), (xs:QName('" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "'), $value))";
@@ -235,7 +233,7 @@ public class EvalTest {
     @Test
     public void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
         
-        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        createCollection("testEvalInContextWithPreDeclaredNamespace");
         
         final String query =
             "xquery version \"1.0\";\r\n" +
@@ -244,13 +242,13 @@ public class EvalTest {
             "let $q := \"/db:article\" return\r\n" +
             "util:eval($q)";
 
-        final ResourceSet result = executeQuery(query);
+        executeQuery(query);
     }
     
     @Test
     public void evalInContextWithPreDeclaredNamespaceAcrossLocalFunctionBoundary() throws XMLDBException {
         
-        Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
+        createCollection("testEvalInContextWithPreDeclaredNamespace");
         
         final String query =
             "xquery version \"1.0\";\r\n" +
@@ -262,7 +260,7 @@ public class EvalTest {
             "let $q := \"/db:article\" return\r\n" +
             "local:process($q)";
 
-        final ResourceSet result = executeQuery(query);
+        executeQuery(query);
     }
     
     //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
@@ -288,7 +286,7 @@ public class EvalTest {
             "let $q := \"/db:article\" return\r\n" +
             "processor:process($q)";
 
-        final ResourceSet result = executeQuery(query);
+        executeQuery(query);
     }
     
     private Collection createCollection(String collectionName) throws XMLDBException {

@@ -22,17 +22,15 @@
  */
 package org.exist.xmldb.concurrent;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.TextUpdateAction;
-
-
 
 /**
  * @author wolf
  */
 public class TextUpdateTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	
 	private final static String XML =
 		"<article/>";

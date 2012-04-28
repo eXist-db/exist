@@ -28,9 +28,8 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import org.exist.storage.DBBroker;
-
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -95,7 +94,7 @@ public class CollectionConfigurationTest {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         xpqservice = (XPathQueryService) root.getService("XQueryService", "1.0");
         cmservice = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 

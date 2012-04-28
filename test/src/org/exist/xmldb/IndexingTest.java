@@ -14,7 +14,6 @@ import javax.xml.transform.sax.SAXResult;
 
 import junit.framework.TestCase;
 
-import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +41,7 @@ public class IndexingTest extends TestCase {
 	private Random random;
 	
 //	private static String driver = "org.exist.xmldb.DatabaseImpl";
-	private static String baseURI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private static String baseURI = XmldbURI.LOCAL_DB;
 
 	private static String username = "admin";
 	private static String password = ""; // <<<

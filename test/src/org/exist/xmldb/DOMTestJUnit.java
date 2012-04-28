@@ -6,7 +6,6 @@ package org.exist.xmldb;
 
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,7 +21,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class DOMTestJUnit extends RemoteDBTest {
 	
-	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION;
+	private static String baseURI = "xmldb:exist://localhost:8088/xmlrpc" + XmldbURI.ROOT_COLLECTION;
 	private static String name = "test.xml";
 	private Collection rootColl;
 	private Database database;

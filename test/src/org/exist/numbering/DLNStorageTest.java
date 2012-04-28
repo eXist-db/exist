@@ -21,7 +21,7 @@ import org.w3c.dom.Text;
 
 public class DLNStorageTest extends TestCase {
 
-    private static XmldbURI TEST_COLLECTION = XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test");
+    private static XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
 
     private static String TEST_XML =
             "<test>\n" +

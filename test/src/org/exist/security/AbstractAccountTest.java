@@ -1,7 +1,6 @@
 package org.exist.security;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.easymock.classextension.EasyMock;
 import static org.easymock.classextension.EasyMock.expect;

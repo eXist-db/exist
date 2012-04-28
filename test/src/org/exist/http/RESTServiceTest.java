@@ -39,7 +39,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.exist.jetty.JettyStart;
 import org.exist.Namespaces;
 import org.exist.memtree.SAXAdapter;
-import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
@@ -391,7 +390,7 @@ public class RESTServiceTest {
                 + URLEncoder
                         .encode(
                                 "doc('"
-                                        + DBBroker.ROOT_COLLECTION
+                                        + XmldbURI.ROOT_COLLECTION
                                         + "/test/test.xml')//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()",
                                 "UTF-8");
         HttpURLConnection connect = getConnection(uri);
@@ -415,7 +414,7 @@ public class RESTServiceTest {
         assertEquals("Server returned response code " + r, 200, r);
 
         String response = readResponse(connect.getInputStream()).trim();
-        assertEquals(response, DBBroker.ROOT_COLLECTION + "/test");
+        assertEquals(response, XmldbURI.ROOT_COLLECTION + "/test");
 
         uri = COLLECTION_URI + "?_query=request:get-url()&_wrap=no";
         connect = getConnection(uri);
@@ -427,7 +426,7 @@ public class RESTServiceTest {
 
         response = readResponse(connect.getInputStream()).trim();
         //TODO : the server name may have been renamed by the Web server
-        assertEquals(response, SERVER_URI + DBBroker.ROOT_COLLECTION + "/test");
+        assertEquals(response, SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test");
     }
     
     @Test

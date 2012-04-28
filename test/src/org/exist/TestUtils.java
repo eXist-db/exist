@@ -2,7 +2,6 @@ package org.exist;
 
 import org.apache.commons.io.FileUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.DocumentImpl;
 import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
@@ -10,14 +9,12 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -64,7 +61,7 @@ public class TestUtils {
 
             // Remove /db/system/config/db and all collection configurations with it
             Collection config = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
+                XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
             assertNotNull(config);
             broker.removeCollection(transaction, config);
 
@@ -110,8 +107,8 @@ public class TestUtils {
 		
 		dataDirPath = dataDirPath.replaceAll("/$", "");
 		
-		java.util.GregorianCalendar cal = new java.util.GregorianCalendar();
-		String dateString = cal.toString();
+//		java.util.GregorianCalendar cal = new java.util.GregorianCalendar();
+//		String dateString = cal.toString();
 		
 		File data = new File(dataDirPath);
 		File dataBackup = new File(dataDirPath + ".temp-test-bak");

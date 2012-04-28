@@ -169,7 +169,7 @@ public class XQTS_case extends TestCase {
             String folder = "";
             String scenario = "";
             String script = "";
-            DateTimeValue scriptDateTime = null;
+            //DateTimeValue scriptDateTime = null;
             NodeListImpl inputFiles = new NodeListImpl();
             NodeListImpl outputFiles = new NodeListImpl();
             ElementImpl contextItem = null;

@@ -6,15 +6,14 @@ import junit.framework.TestCase;
 import org.xmldb.api.*;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
-import org.exist.storage.DBBroker;
 
 public class ResourceSetTest extends TestCase {
 
-		String XPathPrefix;
-		String query1;
-		String query2;
-	    int expected;
-		private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	String XPathPrefix;
+	String query1;
+	String query2;
+    int expected;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     /** JUnit style constructor */
@@ -29,22 +28,13 @@ public class ResourceSetTest extends TestCase {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (XMLDBException e) {
-			// TODO Auto-generated catch block
 			fail(e.getMessage());
 		}
 
         // Currently (2003-04-02) fires an exception in FunPosition:
-        XPathPrefix = "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
+        XPathPrefix = "xmldb:document('" + XmldbURI.ROOT_COLLECTION + "/test/shakes.xsl')/*/*"; // "xmldb:document('" + DBBroker.ROOT_COLLECTION + "/test/macbeth.xml')/*/*";
    		query1 = XPathPrefix + "[position()>=5 ]";
    		query2 = XPathPrefix + "[position()<=10]";
         expected = 87;

@@ -144,7 +144,8 @@ public class MarshallerTest {
         try {
         	 Node n = Marshaller.streamToNode(TEST_DOC);
             StringWriter writer = new StringWriter();
-            SAXSerializer serializer = new SAXSerializer(writer, new Properties());
+//            SAXSerializer serializer = 
+            		new SAXSerializer(writer, new Properties());
             //n.toSAX(null, serializer, new Properties());
             
             assertEquals("test",n.getLocalName());

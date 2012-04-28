@@ -26,9 +26,9 @@ import org.exist.security.Permission;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -43,7 +43,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class DatabaseCollectionTest {
     
-    private final static String ROOT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String ROOT_URI = XmldbURI.LOCAL_DB;
     private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     private final static String TEST_COLLECTION = "testValidationDatabaseCollection";

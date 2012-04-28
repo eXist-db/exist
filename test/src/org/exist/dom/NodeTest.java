@@ -256,7 +256,7 @@ public class NodeTest extends XMLTestCase {
             assertNotNull(transaction);            
             System.out.println("NodeTest#setUp ...");
             
-            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
@@ -303,7 +303,7 @@ public class NodeTest extends XMLTestCase {
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
-            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.removeCollection(transaction, root);
             

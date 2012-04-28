@@ -24,7 +24,6 @@ package org.exist.xmldb;
 
 import java.io.File;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -42,7 +41,7 @@ import junit.framework.TestCase;
  */
 public class ShutdownTest extends TestCase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	
 	protected final static String XML =
 		"<config>" +

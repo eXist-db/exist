@@ -187,14 +187,14 @@ public class RecoveryTest extends TestCase {
             serializer.reset();
             
             DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), Lock.READ_LOCK);
-            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
+            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
-            assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
+            assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             assertNotNull(data);
             System.out.println(data);            
@@ -204,7 +204,7 @@ public class RecoveryTest extends TestCase {
             assertNotNull(files);
             
             doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(files[files.length - 1].getName()), Lock.READ_LOCK);
-            assertNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
+            assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);

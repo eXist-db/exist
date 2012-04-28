@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb.concurrent;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
 
@@ -34,7 +34,7 @@ public class FragmentsTest extends ConcurrentTestBase {
         junit.textui.TestRunner.run(FragmentsTest.class);
     }
 
-    private final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc" + XmldbURI.ROOT_COLLECTION;
     
     private final static String QUERY =
         "let $node := " +

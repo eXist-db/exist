@@ -249,7 +249,7 @@ public void testReadAborted() {
 	    res.setContent(f);
 	    test2.storeResource(res);
 
-	    mgr.moveResource(XmldbURI.create(DBBroker.ROOT_COLLECTION +  "/test2/test3.xml"),
+	    mgr.moveResource(XmldbURI.create(XmldbURI.ROOT_COLLECTION +  "/test2/test3.xml"),
                 TestConstants.TEST_COLLECTION_URI, XmldbURI.create("new_test3.xml"));
 	}
 
@@ -258,12 +258,12 @@ public void testReadAborted() {
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
 
-	    org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION +  "/test", "admin", "");
+	    org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB +  "/test", "admin", "");
 	    Resource res = test.getResource("new_test3.xml");
 	    assertNotNull("Document should not be null", res);
 	    System.out.println(res.getContent());
 
-        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	    CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
 	    	root.getService("CollectionManagementService", "1.0");
         mgr.removeCollection(XmldbURI.create("test"));

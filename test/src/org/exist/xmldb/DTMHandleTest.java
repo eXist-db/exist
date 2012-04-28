@@ -7,7 +7,6 @@
 package org.exist.xmldb;
 
 import org.xmldb.api.base.CompiledExpression;
-import org.exist.storage.DBBroker;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmldb.api.DatabaseManager;
@@ -123,8 +122,8 @@ public class DTMHandleTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $isLoggedIn := xdb:login(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", \"admin\", \"admin\"),");
-		query.append("$doc := xdb:store(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $document, $survey)");
+		query.append("let $isLoggedIn := xdb:login(\"" + eXistUrl + XmldbURI.ROOT_COLLECTION + "\", \"admin\", \"admin\"),");
+		query.append("$doc := xdb:store(\"" + eXistUrl + XmldbURI.ROOT_COLLECTION + "\", $document, $survey)");
 		query.append("return <result/>");
 
 		try {
@@ -146,7 +145,7 @@ public class DTMHandleTest extends TestCase {
 	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $survey := xmldb:document(concat('" + DBBroker.ROOT_COLLECTION + "', '/', $document))");
+		query.append("let $survey := xmldb:document(concat('" + XmldbURI.ROOT_COLLECTION + "', '/', $document))");
 		query.append("return ($survey)");		
 		try {
 			service.declareVariable("document", document);
@@ -189,7 +188,7 @@ public class DTMHandleTest extends TestCase {
 	 */
 	private final XQueryService getXQueryService(Database db) {
 		try {
-			Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
+			Collection collection = DatabaseManager.getCollection(eXistUrl + XmldbURI.ROOT_COLLECTION, "admin", "admin");
 			assertNotNull(collection);
 			XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 			collection.close();

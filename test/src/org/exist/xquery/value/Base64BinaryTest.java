@@ -1,7 +1,7 @@
 package org.exist.xquery.value;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class Base64BinaryTest {
         database = (Database)cl.newInstance();
         database.setProperty( "create-database", "true" );
         DatabaseManager.registerDatabase(database);
-        root    = DatabaseManager.getCollection( "xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null );
+        root    = DatabaseManager.getCollection( XmldbURI.LOCAL_DB, "admin", "" );
         service = (XPathQueryService)root.getService( "XQueryService", "1.0" );
     }
 

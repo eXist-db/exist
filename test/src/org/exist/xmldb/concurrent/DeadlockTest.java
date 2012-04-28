@@ -24,8 +24,8 @@ package org.exist.xmldb.concurrent;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -39,7 +39,7 @@ public class DeadlockTest extends TestCase {
             + "  <element3>value3</element3>\n"
             + "  <element4>value4</element4>\n" + "</document>\n";
 
-    private String rootCollection = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private String rootCollection = XmldbURI.LOCAL_DB;
     private Collection root;
     
     public void testDeadlock() {

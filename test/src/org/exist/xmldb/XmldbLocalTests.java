@@ -22,7 +22,6 @@
 package org.exist.xmldb;
 
 import java.io.File;
-import org.exist.storage.DBBroker;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -42,7 +41,7 @@ import org.junit.runners.Suite;
 })
 public class XmldbLocalTests {
 
-    public final static String ROOT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    public final static String ROOT_URI = XmldbURI.LOCAL_DB;
     public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
     public final static String ADMIN_UID = "admin";

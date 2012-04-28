@@ -31,11 +31,9 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.security.internal.RealmImpl;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -44,6 +42,7 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
@@ -88,7 +87,7 @@ public class DOMIndexerTest {
         "       <section>" +
         "           <title>Section 2</title>" +
         "           <para>First paragraph in second section.</para>" +
-        "           {collection('" + DBBroker.ROOT_COLLECTION + "/test')//f:item[@itemno='2']/f:name}" +
+        "           {collection('" + XmldbURI.ROOT_COLLECTION + "/test')//f:item[@itemno='2']/f:name}" +
         "       </section>" +
         "   ) " +
         "return" +

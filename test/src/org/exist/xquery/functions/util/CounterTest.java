@@ -3,8 +3,8 @@ package org.exist.xquery.functions.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.counter.CounterModule;
 import org.junit.After;
@@ -39,7 +39,7 @@ public class CounterTest {
         database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
-        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         service = (XPathQueryService) root.getService("XQueryService", "1.0");
     }
 
