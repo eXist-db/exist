@@ -24,7 +24,6 @@ package org.exist.security.xacml;
 
 import java.net.URI;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
 import com.sun.xacml.EvaluationCtx;
@@ -106,7 +105,7 @@ public final class XACMLConstants
 	/**
 	* The location of the top-level Policy and/or PolicySet documents.
 	*/
-	public static final String POLICY_COLLECTION = DBBroker.SYSTEM_COLLECTION + '/' + POLICY_COLLECTION_NAME;
+	public static final String POLICY_COLLECTION = XmldbURI.SYSTEM_COLLECTION + '/' + POLICY_COLLECTION_NAME;
 
 	/**
 	* The location of the top-level Policy and/or PolicySet documents.

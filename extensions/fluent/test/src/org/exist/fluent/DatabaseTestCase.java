@@ -9,7 +9,6 @@ import org.exist.dom.*;
 import org.exist.fluent.Database;
 import org.exist.fluent.DatabaseException;
 import org.exist.fluent.Transaction;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
@@ -65,7 +64,7 @@ public abstract class DatabaseTestCase {
 			Collection root = tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
 			for (Iterator<XmldbURI> it = root.collectionIterator(tx.broker); it.hasNext(); ) {
 				XmldbURI childName = it.next();
-				if (!childName.getCollectionPath().equals(DBBroker.SYSTEM_COLLECTION_NAME)) {
+				if (!childName.getCollectionPath().equals(XmldbURI.SYSTEM_COLLECTION_NAME)) {
 					tx.broker.removeCollection(tx.tx, tx.broker.getCollection(root.getURI().append(childName)));
 				}
 			}
