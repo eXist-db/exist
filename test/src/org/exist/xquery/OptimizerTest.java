@@ -23,11 +23,11 @@ package org.exist.xquery;
 
 import org.exist.TestUtils;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -149,7 +149,8 @@ public class OptimizerTest {
         //Test old and new functions
         r = execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", false);
         execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false, "Query should return same number of results.", r);
+        
+        r = execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false);
         execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
 
@@ -161,16 +162,6 @@ public class OptimizerTest {
         execute("//SPEECH[ends-with(SPEAKER, 'EO')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", false);
         execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
-    public void ttt() {
-        //Test old and new functions
-        int r = 78;//execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", false);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false, "Query should return same number of results.", r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
     }
 
     @Test
@@ -347,8 +338,7 @@ public class OptimizerTest {
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 
-			Collection root =
-				DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
+			Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 			CollectionManagementService service =
 				(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			testCollection = service.createCollection("test");
