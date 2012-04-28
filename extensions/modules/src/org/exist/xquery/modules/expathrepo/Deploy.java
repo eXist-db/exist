@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.SyntaxException;
 import org.exist.util.serializer.AttrList;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -116,6 +117,7 @@ public class Deploy extends BasicFunction {
 	private String password = null;
 	private String group = null;
 	private int perms = -1;
+	private String permsStr = null;
 	
 	public Deploy(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -198,7 +200,9 @@ public class Deploy extends BasicFunction {
 						try {
 							perms = Integer.parseInt(mode, 8);
 						} catch (NumberFormatException e) {
-							throw new XPathException(this, "Bad format for mode attribute in <permissions>: " + mode);
+							permsStr = mode;
+							if (!permsStr.matches("^[rwx-]{9}"))
+								throw new XPathException(this, EXPathErrorCode.EXPDY002, "Bad format for mode attribute in <permissions>: " + mode);
 						}
 					}
 
@@ -477,7 +481,15 @@ public class Deploy extends BasicFunction {
             }
 
             int mode;
-            if (perms > -1) {
+            if (permsStr != null) {
+            	try {
+					permission.setMode(permsStr);
+					mode = permission.getMode();
+				} catch (SyntaxException e) {
+					LOG.warn("Incorrect permissions string: " + permsStr + ". Falling back to default.");
+					mode = permission.getMode();
+				}
+            } else if (perms > -1) {
                 mode = perms;
             } else {
                 mode = permission.getMode();
