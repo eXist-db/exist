@@ -30,8 +30,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -45,8 +45,6 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class XQueryUseCase {
 
-	@SuppressWarnings("unused")
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String baseDir = "samples/xquery/use-cases";
 
 	private Collection root = null;
@@ -60,7 +58,7 @@ public class XQueryUseCase {
 		Database database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	}
 
 	public void doTest(String useCase) throws Exception {

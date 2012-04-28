@@ -3,7 +3,7 @@ package org.exist.xquery;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
@@ -11,7 +11,7 @@ import org.xmldb.api.modules.*;
 
 public class DeepEqualTest extends TestCase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 
 	private XPathQueryService query;

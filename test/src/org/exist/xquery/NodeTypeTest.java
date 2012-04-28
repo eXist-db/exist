@@ -1,7 +1,7 @@
 package org.exist.xquery;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -79,8 +79,8 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
-		query.append("$doc := xdb:store(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", $document, $data)");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + XmldbURI.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("$doc := xdb:store(\"" + eXistUrl + XmldbURI.ROOT_COLLECTION + "\", $document, $data)");
 		query.append("return <result/>");
 		try {
 			service.declareVariable("document", document);
@@ -129,7 +129,7 @@ public class NodeTypeTest extends TestCase {
 		query.append("		              ()\n");
 		
 		try {
-			service.declareVariable("collection", DBBroker.ROOT_COLLECTION);
+			service.declareVariable("collection", XmldbURI.ROOT_COLLECTION);
 			CompiledExpression cQuery = service.compile(query.toString());
 			service.execute(cQuery);
 		} catch (XMLDBException e) {
@@ -147,8 +147,8 @@ public class NodeTypeTest extends TestCase {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
 		query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + DBBroker.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
-		query.append("$mods := xdb:remove(\"" + eXistUrl + DBBroker.ROOT_COLLECTION + "\", \"" + doc + "\")");
+		query.append("let $isLoggedIn := xdb:login('" + eXistUrl + XmldbURI.ROOT_COLLECTION + "', \"admin\", \"admin\"),");
+		query.append("$mods := xdb:remove(\"" + eXistUrl + XmldbURI.ROOT_COLLECTION + "\", \"" + doc + "\")");
 		query.append("return <modifications>{$mods}</modifications>");
 
 		try {
@@ -169,7 +169,7 @@ public class NodeTypeTest extends TestCase {
 	private final Node load(XQueryService service, String document) {
 		StringBuffer query = new StringBuffer();
 		query.append("xquery version \"1.0\";");
-		query.append("let $result := xmldb:document(concat('" + DBBroker.ROOT_COLLECTION + "', $document))");
+		query.append("let $result := xmldb:document(concat('" + XmldbURI.ROOT_COLLECTION + "', $document))");
 		query.append("return ($result)");
 
 		try {
@@ -212,7 +212,7 @@ public class NodeTypeTest extends TestCase {
 	 */
 	private final XQueryService getXQueryService(Database db) {
 		try {
-			Collection collection = DatabaseManager.getCollection(eXistUrl + DBBroker.ROOT_COLLECTION, "admin", "admin");
+			Collection collection = DatabaseManager.getCollection(eXistUrl + XmldbURI.ROOT_COLLECTION, "admin", "admin");
 			if (collection != null) {
 				XQueryService service = (XQueryService)collection.getService("XQueryService", "1.0");
 				collection.close();

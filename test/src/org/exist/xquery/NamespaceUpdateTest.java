@@ -1,6 +1,6 @@
 package org.exist.xquery;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -14,7 +14,7 @@ import junit.framework.TestCase;
 
 public class NamespaceUpdateTest extends TestCase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	
 	private final static String namespaces =
 		"<test xmlns='http://www.foo.com'>"

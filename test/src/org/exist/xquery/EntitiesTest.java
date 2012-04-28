@@ -2,9 +2,9 @@ package org.exist.xquery;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.jetty.JettyStart;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -13,7 +13,7 @@ import org.xmldb.api.modules.XQueryService;
 
 public class EntitiesTest extends XMLTestCase {
     
-    private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private static String uri = XmldbURI.LOCAL_DB;
     
     public static void setURI(String collectionURI) {
         uri = collectionURI;

@@ -22,8 +22,8 @@
 package org.exist.xquery;
 
 import org.exist.TestUtils;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import static org.junit.Assert.*;
@@ -52,7 +52,7 @@ public class AnnotationsTest {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
-        Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
         Collection testCollection = service.createCollection("test");
         assertNotNull(testCollection);
@@ -136,7 +136,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
     
     @Test(expected = XMLDBException.class)
@@ -154,7 +154,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
     
     @Test(expected = XMLDBException.class)
@@ -172,7 +172,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
     
     @Test(expected = XMLDBException.class)
@@ -190,7 +190,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
     
     @Test(expected = XMLDBException.class)
@@ -208,7 +208,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
     
     @Test(expected = XMLDBException.class)
@@ -226,7 +226,7 @@ public class AnnotationsTest {
                 + "local:hello()";
             
         final XPathQueryService service = getQueryService();
-        final ResourceSet result = service.query(query);
+        service.query(query);
     }
    
     private XPathQueryService getQueryService() throws XMLDBException {

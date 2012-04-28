@@ -8,9 +8,9 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
@@ -43,7 +43,7 @@ public class SAXStorageTest extends TestCase {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-			root = DatabaseManager.getCollection( "xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
+			root = DatabaseManager.getCollection( XmldbURI.LOCAL_DB, "admin", "");
 			CollectionManagementService service =
 				(CollectionManagementService) root.getService(
 					"CollectionManagementService",

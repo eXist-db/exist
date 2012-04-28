@@ -25,7 +25,7 @@ package org.exist.xquery;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 
 public class XqueryRemoteTests {
     
@@ -36,7 +36,7 @@ public class XqueryRemoteTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for org.exist.xquery");
         //$JUnit-BEGIN$
-        XPathQueryTest.setURI("xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION);
+        XPathQueryTest.setURI("xmldb:exist://localhost:8088/xmlrpc" + XmldbURI.ROOT_COLLECTION);
         suite.addTestSuite(XPathQueryTest.class);
         //$JUnit-END$
         return suite;

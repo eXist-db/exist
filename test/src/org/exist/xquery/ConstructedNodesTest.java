@@ -23,8 +23,8 @@ package org.exist.xquery;
 
 import javax.xml.transform.OutputKeys;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -42,7 +42,7 @@ import junit.textui.TestRunner;
 public class ConstructedNodesTest extends TestCase
 {
 	private final static String TEST_DB_USER = "admin";
-	private final static String TEST_DB_PWD = null;
+	private final static String TEST_DB_PWD = "";
 	
 	private XPathQueryService service;
 	private Collection root = null;
@@ -249,7 +249,7 @@ public class ConstructedNodesTest extends TestCase
 		database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, TEST_DB_USER, TEST_DB_PWD);
+		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TEST_DB_USER, TEST_DB_PWD);
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 	}
 

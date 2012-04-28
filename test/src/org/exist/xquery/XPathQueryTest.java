@@ -4,10 +4,10 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.jetty.JettyStart;
 import org.exist.TestUtils;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -142,7 +142,7 @@ public class XPathQueryTest extends XMLTestCase {
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
     
-    private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private static String uri = XmldbURI.LOCAL_DB;
 
     public static void setURI(String collectionURI) {
         uri = collectionURI;
