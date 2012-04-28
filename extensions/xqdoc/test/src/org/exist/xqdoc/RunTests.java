@@ -11,6 +11,7 @@ import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -70,7 +71,7 @@ public class RunTests {
 		DatabaseManager.registerDatabase(database);
 
 		Collection root =
-			DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",	null);
+			DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin",	null);
 		CollectionManagementService service =
 			(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		testCollection = service.createCollection("test");
