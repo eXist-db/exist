@@ -142,13 +142,13 @@ public class OptimizerTest {
         execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", true, MSG_OPT_ERROR, r);
 
         //Test old and new functions
-        r = execute("//SPEECH[text:match-all(LINE, 'skirts', 'nor.*')]", false);
-        execute("//SPEECH[text:match-all(LINE, 'skirts', 'nor.*')]", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", false);
+        execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", false, "Query should return same number of results.", r);
 
         //Test old and new functions
-        r = execute("//SPEECH[text:match-any(LINE, 'skirts', 'nor.*')]", false);
-        execute("//SPEECH[text:match-any(LINE, 'skirts', 'nor.*')]", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", false);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false, "Query should return same number of results.", r);
         execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
@@ -161,6 +161,16 @@ public class OptimizerTest {
         execute("//SPEECH[ends-with(SPEAKER, 'EO')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", false);
         execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
+    }
+
+    @Test
+    public void ttt() {
+        //Test old and new functions
+        int r = 78;//execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", false);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false, "Query should return same number of results.", r);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
     }
 
     @Test
