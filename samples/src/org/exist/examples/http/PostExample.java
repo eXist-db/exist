@@ -29,7 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.exist.Namespaces;
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * PostExample
@@ -63,7 +63,7 @@ public class PostExample {
 	}
 	
 	private void doPost(String request) throws IOException {
-		URL url = new URL("http://localhost:8080/exist/rest" + DBBroker.ROOT_COLLECTION);
+		URL url = new URL("http://localhost:8080/exist/rest" + XmldbURI.ROOT_COLLECTION);
 		HttpURLConnection connect = (HttpURLConnection) url.openConnection();
 		connect.setRequestMethod("POST");
 		connect.setDoOutput(true);

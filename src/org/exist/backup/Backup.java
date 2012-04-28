@@ -33,8 +33,6 @@ import org.xmldb.api.modules.XMLResource;
 
 import org.exist.Namespaces;
 import org.exist.security.Permission;
-import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -103,7 +101,7 @@ public class Backup
 
     public Backup( String user, String pass, String target )
     {
-        this( user, pass, target, XmldbURI.create( "xmldb:exist://" + DBBroker.ROOT_COLLECTION ) );
+        this( user, pass, target, XmldbURI.LOCAL_DB_URI );
     }
 
 
@@ -393,7 +391,7 @@ public class Backup
 
         for( int i = 0; i < collections.length; i++ ) {
 
-            if( current.getName().equals( NativeBroker.SYSTEM_COLLECTION ) && collections[i].equals( "temp" ) ) {
+            if( current.getName().equals( XmldbURI.SYSTEM_COLLECTION ) && collections[i].equals( "temp" ) ) {
                 continue;
             }
             attr.clear();
@@ -417,7 +415,7 @@ public class Backup
         for( int i = 0; i < collections.length; i++ ) {
             child = current.getChildCollection( collections[i] );
 
-            if( child.getName().equals( NativeBroker.TEMP_COLLECTION ) ) {
+            if( child.getName().equals( XmldbURI.TEMP_COLLECTION ) ) {
                 continue;
             }
             output.newCollection( encode( URIUtils.urlDecodeUtf8( collections[i] ) ) );

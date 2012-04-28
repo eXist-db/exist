@@ -8,10 +8,10 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -62,7 +62,7 @@ public class XQueryExample {
             
             // get root-collection
             Collection col =
-                DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION);
+                DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION);
             // get query-service
             XQueryService service =
                 (XQueryService) col.getService( "XQueryService", "1.0" );

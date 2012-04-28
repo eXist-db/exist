@@ -70,7 +70,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
@@ -122,7 +121,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
-import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -944,7 +942,7 @@ public class ClientFrame extends JFrame
     	//get an array of collection paths
         try
 		{    
-        	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
@@ -1028,7 +1026,7 @@ public class ClientFrame extends JFrame
     	//get an array of collection paths
         try
 		{    
-        	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
@@ -1304,7 +1302,7 @@ public class ClientFrame extends JFrame
         };   
              
         final ExecutorService executor = Executors.newSingleThreadExecutor();
-        final Future<Void> future = executor.submit(callable);
+        executor.submit(callable);
     }
     
     private void editUsersAction(ActionEvent ev) {
@@ -1398,7 +1396,7 @@ public class ClientFrame extends JFrame
     private void editPolicies() {
         Collection systemCollection;
         try {
-            systemCollection = client.getCollection(DBBroker.SYSTEM_COLLECTION);
+            systemCollection = client.getCollection(XmldbURI.SYSTEM_COLLECTION);
         } catch (XMLDBException e) {
             showErrorMessage(Messages.getString("ClientFrame.187"), e); //$NON-NLS-1$
             return;

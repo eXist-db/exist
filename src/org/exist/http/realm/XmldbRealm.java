@@ -15,10 +15,10 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Account;
 import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -31,7 +31,7 @@ public class XmldbRealm extends org.apache.catalina.realm.RealmBase {
 
 	private String configuration = "conf.xml";
 	
-	private String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private String uri = XmldbURI.LOCAL_DB;
 	
 	private String driver = "org.exist.xmldb.DatabaseImpl";
 	

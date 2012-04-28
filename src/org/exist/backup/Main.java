@@ -21,10 +21,7 @@
  */
 package org.exist.backup;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
@@ -37,7 +34,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
@@ -55,7 +51,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.prefs.Preferences;
@@ -63,7 +58,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
 import org.exist.backup.restore.listener.GuiRestoreListener;
@@ -262,7 +256,7 @@ public class Main
                         properties.setProperty( "backup-dir", dialog.getBackupTarget() );
                     }
                 } else {
-                    optionBackup = DBBroker.ROOT_COLLECTION;
+                    optionBackup = XmldbURI.ROOT_COLLECTION;
                 }
             }
 
@@ -311,9 +305,9 @@ public class Main
         }
 
         try {
-            String uri = properties.getProperty( "uri", "xmldb:exist://" );
-            if(!(uri.contains(DBBroker.ROOT_COLLECTION) || uri.endsWith( DBBroker.ROOT_COLLECTION))) {
-                uri +=  DBBroker.ROOT_COLLECTION;
+            String uri = properties.getProperty( "uri", XmldbURI.EMBEDDED_SERVER_URI_PREFIX );
+            if(!(uri.contains(XmldbURI.ROOT_COLLECTION) || uri.endsWith( XmldbURI.ROOT_COLLECTION))) {
+                uri += XmldbURI.ROOT_COLLECTION;
             }
             
             Collection root = DatabaseManager.getCollection(uri, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );

@@ -2,9 +2,9 @@ package org.exist.examples.xmldb;
 
 import java.io.File;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -28,8 +28,8 @@ public class MultipleDatabases {
 
 	protected static String driver = "org.exist.xmldb.DatabaseImpl";
 
-	protected static String URI_DB1 = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
-	protected static String URI_DB2 = "xmldb:test://" + DBBroker.ROOT_COLLECTION;
+	protected static String URI_DB1 = "xmldb:exist://" + XmldbURI.ROOT_COLLECTION;
+	protected static String URI_DB2 = "xmldb:test://" + XmldbURI.ROOT_COLLECTION;
 
 	protected static String XUPDATE_1 =
 		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +

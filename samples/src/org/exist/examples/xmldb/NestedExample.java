@@ -2,8 +2,8 @@ package org.exist.examples.xmldb;
 
 import javax.xml.transform.OutputKeys;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -33,7 +33,7 @@ public class NestedExample {
 		database.setProperty( "create-database", "true" );
 		DatabaseManager.registerDatabase( database );
 		Collection col =
-			DatabaseManager.getCollection( URI + DBBroker.ROOT_COLLECTION, "admin", "" );
+			DatabaseManager.getCollection( URI + XmldbURI.ROOT_COLLECTION, "admin", "" );
 		XMLResource res = (XMLResource)col.createResource("test.xml", "XMLResource");
 		res.setContent(data);
 		col.storeResource(res);

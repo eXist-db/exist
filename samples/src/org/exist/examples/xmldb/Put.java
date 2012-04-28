@@ -2,7 +2,7 @@ package org.exist.examples.xmldb;
 
 import java.io.File;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -45,10 +45,10 @@ public class Put {
             // for simplicity, we assume that the new collection is a
             // direct child of the root collection, e.g. /db/test.
             // the example will fail otherwise.
-            Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION);
+            Collection root = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION);
             CollectionManagementService mgtService = 
                 (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
-            col = mgtService.createCollection(collection.substring((DBBroker.ROOT_COLLECTION + "/").length()));
+            col = mgtService.createCollection(collection.substring((XmldbURI.ROOT_COLLECTION + "/").length()));
         }
 		File f = new File(file);
         // create new XMLResource

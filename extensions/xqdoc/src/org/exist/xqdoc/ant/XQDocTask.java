@@ -14,8 +14,8 @@ import org.apache.tools.ant.types.FileSet;
 import org.exist.ant.AbstractXMLDBTask;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -49,7 +49,7 @@ public class XQDocTask extends AbstractXMLDBTask {
     public void execute() throws BuildException {
         registerDatabase();
         try {
-            int p = uri.indexOf(DBBroker.ROOT_COLLECTION);
+            int p = uri.indexOf(XmldbURI.ROOT_COLLECTION);
             if (p == Constants.STRING_NOT_FOUND)
                 throw new BuildException("invalid uri: '" + uri + "'");
             String baseURI = uri.substring(0, p);
@@ -62,8 +62,8 @@ public class XQDocTask extends AbstractXMLDBTask {
             Collection root = null;
             if (createCollection)
             {
-                root = DatabaseManager.getCollection(baseURI + DBBroker.ROOT_COLLECTION, user, password);
-                root = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION, path);
+                root = DatabaseManager.getCollection(baseURI + XmldbURI.ROOT_COLLECTION, user, password);
+                root = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION, path);
             } else
                 root = DatabaseManager.getCollection(uri, user, password);
 

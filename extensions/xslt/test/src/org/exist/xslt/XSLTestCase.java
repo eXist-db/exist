@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,7 +59,7 @@ import org.xmldb.api.modules.XPathQueryService;
  */
 public class XSLTestCase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	private final static String XSLT_COLLECTION = "xslt_tests";
 

@@ -22,7 +22,6 @@ package org.exist.xmldb;
 
 import org.apache.log4j.Logger;
 
-import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
@@ -930,8 +929,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             name2 = "/" + name2;
         }
 
-        if (!name2.startsWith(DBBroker.ROOT_COLLECTION)) {
-            name2 = DBBroker.ROOT_COLLECTION + name2;
+        if (!name2.startsWith(XmldbURI.ROOT_COLLECTION)) {
+            name2 = XmldbURI.ROOT_COLLECTION + name2;
         }
 
         if (name2.endsWith("/") && (name2.length() > 1)) {
@@ -971,8 +970,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             name2 = "/" + name2;
         }
 
-        if (!name2.startsWith(DBBroker.ROOT_COLLECTION)) {
-            name2 = DBBroker.ROOT_COLLECTION + name2;
+        if (!name2.startsWith(XmldbURI.ROOT_COLLECTION)) {
+            name2 = XmldbURI.ROOT_COLLECTION + name2;
         }
 
         if (name2.endsWith("/") && (name2.length() > 1)) {

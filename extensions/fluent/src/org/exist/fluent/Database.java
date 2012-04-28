@@ -88,7 +88,7 @@ public class Database {
 		// If the config is already *exactly* how we want it, no need to reload and reindex.
 		try {
 			Node currentConfig =
-				db.getFolder(CollectionConfigurationManager.CONFIG_COLLECTION + Database.ROOT_PREFIX).documents()
+				db.getFolder(XmldbURI.CONFIG_COLLECTION + Database.ROOT_PREFIX).documents()
 					.get(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE).xml().root();
 			if (currentConfig.query().presub().single("deep-equal(., $1)", configXml.toString()).booleanValue()) return;
 		} catch (DatabaseException e) {
@@ -249,7 +249,7 @@ public class Database {
 	}
 
 	private static String dbName = "exist";
-	public static final String ROOT_PREFIX = DBBroker.ROOT_COLLECTION;
+	public static final String ROOT_PREFIX = XmldbURI.ROOT_COLLECTION;
 	private static volatile BrokerPool pool;
 	private static TransactionManager txManager;
 	private static final ThreadLocal<Transaction> localTransaction = new ThreadLocal<Transaction>();

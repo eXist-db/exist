@@ -369,7 +369,7 @@ public class LuceneIndexTest {
 
     @Test
     public void boosts() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
+        configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -392,7 +392,7 @@ public class LuceneIndexTest {
 
     @Test
     public void queryTranslation() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
+        configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -594,7 +594,7 @@ public class LuceneIndexTest {
     @Test
     public void dropDocuments() {
         System.out.println("Test removal of multiple documents ...");
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+        configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         DBBroker broker = null;
         TransactionManager transact = null;
         Txn transaction = null;

@@ -27,7 +27,7 @@ import org.exist.soap.AdminServiceLocator;
 import org.exist.soap.Query;
 import org.exist.soap.QueryService;
 import org.exist.soap.QueryServiceLocator;
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.XUpdateProcessor;
 
 /**
@@ -61,11 +61,11 @@ public class XUpdateExample {
         Query query = queryService.getQuery();
         
 		String session = admin.connect("guest", "guest");
-		admin.store(session, document.getBytes("UTF-8"), "UTF-8", DBBroker.ROOT_COLLECTION + "/test/notes.xml", true);
-		admin.xupdateResource(session, DBBroker.ROOT_COLLECTION + "/test/notes.xml", xupdate);
+		admin.store(session, document.getBytes("UTF-8"), "UTF-8", XmldbURI.ROOT_COLLECTION + "/test/notes.xml", true);
+		admin.xupdateResource(session, XmldbURI.ROOT_COLLECTION + "/test/notes.xml", xupdate);
 		
 		String data = query.getResource(session, 
-			DBBroker.ROOT_COLLECTION + "/test/notes.xml",
+				XmldbURI.ROOT_COLLECTION + "/test/notes.xml",
 			true, true);
 		System.out.println(data);
 		admin.disconnect(session);

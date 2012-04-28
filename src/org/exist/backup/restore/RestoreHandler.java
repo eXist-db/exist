@@ -37,7 +37,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
-import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
@@ -494,8 +493,8 @@ public class RestoreHandler extends DefaultHandler {
         final XmldbURI[] segments = Arrays.copyOfRange(allSegments, 1, allSegments.length); //drop the first 'db' segment
         final XmldbURI dbUri;
 
-        if(!dbBaseUri.endsWith(DBBroker.ROOT_COLLECTION)) {
-            dbUri = XmldbURI.xmldbUriFor(dbBaseUri + DBBroker.ROOT_COLLECTION);
+        if(!dbBaseUri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+            dbUri = XmldbURI.xmldbUriFor(dbBaseUri + XmldbURI.ROOT_COLLECTION);
         } else {
             dbUri = XmldbURI.xmldbUriFor(dbBaseUri);
         }

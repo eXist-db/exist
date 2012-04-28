@@ -27,7 +27,7 @@ import org.xmldb.api.base.XMLDBException;
 
 import org.exist.client.Messages;
 import org.exist.client.MimeTypeFileFilter;
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -155,7 +155,7 @@ public class CreateBackupDialog extends JPanel
         Vector<String> list = new Vector<String>();
 
         try {
-            Collection root = DatabaseManager.getCollection( uri + DBBroker.ROOT_COLLECTION, user, passwd );
+            Collection root = DatabaseManager.getCollection( uri + XmldbURI.ROOT_COLLECTION, user, passwd );
             getAllCollections( root, list );
         }
         catch( XMLDBException e ) {

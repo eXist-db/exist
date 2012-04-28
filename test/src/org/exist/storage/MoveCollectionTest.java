@@ -199,7 +199,7 @@ public class MoveCollectionTest extends TestCase {
         try {
 	        pool = startDB();
 	        assertNotNull(pool);
-	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        assertNotNull(root);	        
 	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
 	            root.getService("CollectionManagementService", "1.0");
