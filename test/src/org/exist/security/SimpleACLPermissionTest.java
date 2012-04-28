@@ -73,7 +73,7 @@ public class SimpleACLPermissionTest {
         //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
-        expect(mockSecurityManager.getAccount(null, userName)).andReturn(mockAccount);
+        expect(mockSecurityManager.getAccount(userName)).andReturn(mockAccount);
         expect(mockAccount.getId()).andReturn(userId);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject, mockAccount);
@@ -107,7 +107,7 @@ public class SimpleACLPermissionTest {
         //expect(mockDatabase.getSubject()).andReturn(mockCurrentSubject);
         //expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
         
-        expect(mockSecurityManager.getGroup(null, groupName)).andReturn(mockGroup);
+        expect(mockSecurityManager.getGroup(groupName)).andReturn(mockGroup);
         expect(mockGroup.getId()).andReturn(groupId);
 
         replay(mockSecurityManager, mockDatabase, mockCurrentSubject, mockGroup);

@@ -33,9 +33,9 @@ import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -147,7 +147,7 @@ public class TestRunnerMain {
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
 			
-			rootCollection = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+			rootCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

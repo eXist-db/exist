@@ -199,7 +199,7 @@ public class CopyCollectionTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        assertNotNull(root);
 	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
 	            root.getService("CollectionManagementService", "1.0");
@@ -240,13 +240,13 @@ public class CopyCollectionTest extends TestCase {
         try {
         	pool = startDB();
         	assertNotNull(pool);
-	        org.xmldb.api.base.Collection test = DatabaseManager.getCollection("xmldb:exist://"+ DBBroker.ROOT_COLLECTION + "/destination/test3", "admin", "");
+	        org.xmldb.api.base.Collection test = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/destination/test3", "admin", "");
 	        assertNotNull(test);
 	        Resource res = test.getResource("test_xmldb.xml");
 	        assertNotNull("Document should not be null", res);
 	        System.out.println(res.getContent());
 	        
-	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        assertNotNull(root);
 	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 
 	            root.getService("CollectionManagementService", "1.0");

@@ -22,7 +22,6 @@ package org.exist.xmldb;
 
 import junit.framework.TestCase;
 import org.exist.jetty.JettyStart;
-import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -70,7 +69,7 @@ public abstract class RemoteDBTest extends TestCase {
 	        assertNotNull(database);
 	        DatabaseManager.registerDatabase(database);
 	        //Get the root collection...
-	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 	        assertNotNull(rootCollection);  
             CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
                     "CollectionManagementService", "1.0");
@@ -87,7 +86,7 @@ public abstract class RemoteDBTest extends TestCase {
 
     protected void removeCollection() {
     	try {
-	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 	        assertNotNull(rootCollection);
 	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
 	                "CollectionManagementService", "1.0");

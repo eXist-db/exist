@@ -21,8 +21,6 @@
  */
 package org.exist.xmldb;
 
-import static org.junit.Assert.*;
-import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.SingleInstanceConfiguration;
@@ -61,7 +59,7 @@ public class MultiDBTest extends TestCase {
        throws Exception
     {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
-            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + DBBroker.ROOT_COLLECTION);
+            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION);
             Collection test = root.getChildCollection("test");
             if (test == null) {
                 CollectionManagementService service = (CollectionManagementService)
@@ -154,7 +152,7 @@ public class MultiDBTest extends TestCase {
         long total = rt.totalMemory() / 1024;
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             System.out.println("Shutting down instance test"+i);
-            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", null);
             CollectionManagementService service = (CollectionManagementService)
                 root.getService("CollectionManagementService", "1.0");
             service.removeCollection("test");

@@ -22,7 +22,6 @@
 package org.exist.xmldb;
 
 import org.junit.Test;
-import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.junit.After;
 import org.junit.Before;

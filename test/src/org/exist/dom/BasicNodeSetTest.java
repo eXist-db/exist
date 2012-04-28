@@ -435,7 +435,7 @@ public class BasicNodeSetTest {
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
-            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
             String existHome = System.getProperty("exist.home");
@@ -489,7 +489,7 @@ public class BasicNodeSetTest {
         try {    
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
-            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
 //          broker.removeCollection(transaction, root);
             
             transact.commit(transaction);

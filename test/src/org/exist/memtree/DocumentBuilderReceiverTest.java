@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 public class DocumentBuilderReceiverTest {
 
     private static String ATOM_NS = "http://www.w3.org/2005/Atom";
-    private static String ATOM_PREFIX = "atom";
+//    private static String ATOM_PREFIX = "atom";
     
     @Test
     public void when_prefix_is_known_in_context_dont_use_if_namespace_equals_default_namespace() throws SAXException {

@@ -32,11 +32,11 @@ import java.io.InputStream;
 import javax.xml.transform.OutputKeys;
 import org.apache.log4j.*;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -61,7 +61,7 @@ import org.xmldb.api.modules.XQueryService;
 public class EmbeddedExistTester {
 
     protected final static Logger LOG = Logger.getLogger(EmbeddedExistTester.class);
-    protected final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    protected final static String URI = XmldbURI.LOCAL_DB;
     protected final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
     protected static Collection rootCollection = null;
@@ -96,7 +96,7 @@ public class EmbeddedExistTester {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            rootCollection = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            rootCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             xpxqService = (XPathQueryService) rootCollection.getService("XPathQueryService", "1.0");
             cmService = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
             xqService = (XQueryService) rootCollection.getService("XQueryService", "1.0");

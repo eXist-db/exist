@@ -26,7 +26,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -48,7 +48,7 @@ public class StressTest extends TestCase {
     
     private final static String XML = "<root><a/><b/><c/></root>";
     
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = XmldbURI.LOCAL_DB;
     
     private final static int RUNS = 1000;
     
@@ -125,7 +125,7 @@ public class StressTest extends TestCase {
     private void fetchDb() throws Exception {
         XPathQueryService xquery = (XPathQueryService)
             testCol.getService("XPathQueryService", "1.0");
-        ResourceSet result = xquery.query("for $n in collection('" + DBBroker.ROOT_COLLECTION + "/test')//* return local-name($n)");
+        ResourceSet result = xquery.query("for $n in collection('" + XmldbURI.ROOT_COLLECTION + "/test')//* return local-name($n)");
         
         for (int i = 0; i < result.getSize(); i++) {
             Resource r = result.getResource(i);
@@ -143,10 +143,10 @@ public class StressTest extends TestCase {
         rootCol = DBUtils.setupDB(URI);
         
 
-        testCol = rootCol.getChildCollection(DBBroker.ROOT_COLLECTION + "/test");
+        testCol = rootCol.getChildCollection(XmldbURI.ROOT_COLLECTION + "/test");
         if(testCol != null) {
             CollectionManagementService mgr = DBUtils.getCollectionManagementService(rootCol);
-            mgr.removeCollection(DBBroker.ROOT_COLLECTION + "/test");
+            mgr.removeCollection(XmldbURI.ROOT_COLLECTION + "/test");
         }
         
         testCol = DBUtils.addCollection(rootCol, "test");

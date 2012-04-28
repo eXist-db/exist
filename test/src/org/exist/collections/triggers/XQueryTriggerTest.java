@@ -98,8 +98,8 @@ public class XQueryTriggerTest {
         "</xu:update>" +
       "</xu:modifications>";
     
-    private final static String MODIFIED_DOCUMENT_CONTENT = 
-    	DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
+//    private final static String MODIFIED_DOCUMENT_CONTENT = 
+//    	DOCUMENT_CONTENT.replaceAll("<price>18.4</price>", "<price>15.2</price>");
    
     private final static String BINARY_DOCUMENT_NAME = "1x1.gif";
     private final static String BINARY_DOCUMENT_CONTENT = "R0lGODlhAQABAIABAAD/AP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAAQABAAACAkQBADs=";    

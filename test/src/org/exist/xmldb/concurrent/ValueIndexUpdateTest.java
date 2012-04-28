@@ -22,17 +22,15 @@
 package org.exist.xmldb.concurrent;
 
 import org.exist.collections.CollectionConfiguration;
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.ValueAppendAction;
-
-
 
 /**
  * @author wolf
  */
 public class ValueIndexUpdateTest extends ConcurrentTestBase {
 
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = XmldbURI.LOCAL_DB;
     
     private final static String XCONF =
         "<exist:collection xmlns:exist=\"http://exist-db.org/collection-config/1.0\">" +

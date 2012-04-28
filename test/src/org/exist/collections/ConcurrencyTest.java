@@ -1,8 +1,8 @@
 package org.exist.collections;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -102,7 +102,7 @@ public class ConcurrencyTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             Collection test = mgmt.createCollection("test");
 
@@ -125,7 +125,7 @@ public class ConcurrencyTest {
     @AfterClass
     public static void closeDB() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             cmgr.removeCollection("test");
 

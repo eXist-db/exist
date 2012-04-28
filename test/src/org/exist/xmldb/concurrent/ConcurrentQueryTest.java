@@ -23,7 +23,7 @@ package org.exist.xmldb.concurrent;
 
 import java.io.File;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryAction;
 
 /**
@@ -31,7 +31,7 @@ import org.exist.xmldb.concurrent.action.XQueryAction;
  */
 public class ConcurrentQueryTest extends ConcurrentTestBase {
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(ConcurrentQueryTest.class);

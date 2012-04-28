@@ -1,7 +1,6 @@
 package org.exist.xmldb;
 
 import org.junit.After;
-import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.junit.Before;
 import org.junit.Test;

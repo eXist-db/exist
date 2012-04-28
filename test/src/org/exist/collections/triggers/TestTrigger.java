@@ -21,7 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;

@@ -21,29 +21,29 @@
  */
 package org.exist.validation;
 
-import org.junit.*;
-import static org.junit.Assert.*;
-
-import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.exist.security.Permission;
-import org.exist.security.UnixStylePermission;
-
-import org.exist.storage.DBBroker;
-import org.exist.util.ConfigurationHelper;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.UserManagementService;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XPathQueryService;
+//import org.junit.*;
+//import static org.junit.Assert.*;
+//
+//import org.apache.log4j.Appender;
+//import org.apache.log4j.BasicConfigurator;
+//import org.apache.log4j.ConsoleAppender;
+//import org.apache.log4j.Layout;
+//import org.apache.log4j.Logger;
+//import org.apache.log4j.PatternLayout;
+//import org.exist.security.Permission;
+//import org.exist.security.UnixStylePermission;
+//
+//import org.exist.storage.DBBroker;
+//import org.exist.util.ConfigurationHelper;
+//import org.exist.xmldb.DatabaseInstanceManager;
+//import org.exist.xmldb.UserManagementService;
+//
+//import org.xmldb.api.DatabaseManager;
+//import org.xmldb.api.base.Collection;
+//import org.xmldb.api.base.Database;
+//import org.xmldb.api.base.ResourceSet;
+//import org.xmldb.api.modules.CollectionManagementService;
+//import org.xmldb.api.modules.XPathQueryService;
 
 /**
  *  Set of Tests for validation:validate($a) and validation:validate($a, $b)
@@ -54,20 +54,20 @@ import org.xmldb.api.modules.XPathQueryService;
 public class ValidationFunctions_XSD_Test {
     
     
-    private final static Logger logger = Logger.getLogger(ValidationFunctions_XSD_Test.class);
-
-    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
-
-    private static CollectionManagementService  cmservice = null;
-    private static UserManagementService  umservice = null;
-    private static XPathQueryService service;
-    private static Collection root = null;
-    private static Database database = null;
-
-    @Test
-    public void noTest() {
-        
-    }
+//    private final static Logger logger = Logger.getLogger(ValidationFunctions_XSD_Test.class);
+//
+//    private static String eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
+//
+//    private static CollectionManagementService  cmservice = null;
+//    private static UserManagementService  umservice = null;
+//    private static XPathQueryService service;
+//    private static Collection root = null;
+//    private static Database database = null;
+//
+//    @Test
+//    public void noTest() {
+//        
+//    }
 
 //    public static void initLog4J(){
 //        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");

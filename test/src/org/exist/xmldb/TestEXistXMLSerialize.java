@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import org.exist.security.Permission;
 import org.exist.security.Account;
 import org.xmldb.api.modules.CollectionManagementService;
 import java.io.File;

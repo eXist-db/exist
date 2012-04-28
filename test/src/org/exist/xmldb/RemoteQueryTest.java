@@ -23,7 +23,6 @@ package org.exist.xmldb;
 
 import java.io.File;
 
-import org.exist.storage.DBBroker;
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
 import org.exist.xmlrpc.XmlRpcTest;
@@ -43,7 +42,7 @@ import junit.textui.TestRunner;
 
 public class RemoteQueryTest extends RemoteDBTest {
 
-	private static String uri = "xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION;
+	private static String uri = "xmldb:exist://localhost:8088/xmlrpc" + XmldbURI.ROOT_COLLECTION;
 	
 	private Collection testCollection;
 	private Collection xmlrpcCollection;

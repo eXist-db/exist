@@ -11,8 +11,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.DocumentTraversal;
@@ -40,7 +40,7 @@ public class XUpdateTest {
     //TODO should be moved to JUnit 4 and should not execute as 'admin' user
     //also additional tests needed to verify update permissions
 
-	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private final static String URI = XmldbURI.LOCAL_DB;
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	private final static String XUPDATE_COLLECTION = "xupdate_tests";
 

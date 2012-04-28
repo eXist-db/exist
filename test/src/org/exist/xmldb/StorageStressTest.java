@@ -24,7 +24,6 @@ package org.exist.xmldb;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 import org.exist.jetty.JettyStart;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -83,7 +82,6 @@ public class StorageStressTest extends TestCase {
         setUpRemoteDatabase();
     }
     
-	@SuppressWarnings("unchecked")
 	private void initServer() {
 		try {
 			if (server == null) {
@@ -103,7 +101,7 @@ public class StorageStressTest extends TestCase {
 	        database.setProperty("create-database", "true");
 	        DatabaseManager.registerDatabase(database);
 	        
-	        Collection rootCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
+	        Collection rootCollection = DatabaseManager.getCollection(URI + XmldbURI.ROOT_COLLECTION, "admin", "");
 	        
 	        Collection childCollection = rootCollection.getChildCollection(COLLECTION_NAME);
 	        if (childCollection == null) {

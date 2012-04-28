@@ -431,7 +431,6 @@ public class XIncludeSerializerTest {
      * SetUp / TearDown functions
      *
      */
-    @SuppressWarnings("unchecked")
 	@BeforeClass
     public static void startDB() {
         //Don't worry about closing the server : the shutdown hook will do the job

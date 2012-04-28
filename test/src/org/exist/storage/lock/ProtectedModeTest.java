@@ -22,10 +22,10 @@
 package org.exist.storage.lock;
 
 import org.exist.TestDataGenerator;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -137,7 +137,7 @@ public class ProtectedModeTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             Collection collection = mgmt.createCollection("protected");
 
@@ -169,7 +169,7 @@ public class ProtectedModeTest {
     @AfterClass
     public static void closeDB() {
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService cmgr = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             cmgr.removeCollection("protected");
             

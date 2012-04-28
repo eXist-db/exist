@@ -1,8 +1,5 @@
 package org.exist.xquery.functions.request;
 
-import org.exist.security.internal.aider.ACEAider;
-import java.util.ArrayList;
-import org.exist.security.Permission;
 import org.exist.xmldb.UserManagementService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

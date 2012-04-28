@@ -886,7 +886,7 @@ public class FTIndexTest {
             assertNotNull(transaction);
 
             Collection config = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
+                XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
             assertNotNull(config);
             broker.removeCollection(transaction, config);
 

@@ -3,15 +3,12 @@ package org.exist.security;
 import java.lang.reflect.Method;
 import org.easymock.classextension.ConstructorArgs;
 import org.easymock.classextension.EasyMock;
-import org.exist.config.ConfigurationException;
 import org.exist.security.internal.AccountImpl;
-import org.exist.security.realm.Realm;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 import org.exist.Database;
 import org.exist.config.Configuration;
-import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,7 +23,7 @@ public class AccountTest {
     @Test
     public void testGroupFallback() throws NoSuchMethodException, PermissionDeniedException {
 
-        final String mockRealmId = "mock";
+//        final String mockRealmId = "mock";
         final String testAccountName = "testUser";
         final String testGroupName = "testGroup";
 
