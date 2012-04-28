@@ -24,9 +24,9 @@ package org.exist.xquery;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.TestUtils;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
@@ -70,7 +70,7 @@ public class XQueryTest extends XMLTestCase {
     private static final String CHILD1_MODULE_NAME = "child1.xqm";
     private static final String CHILD2_MODULE_NAME = "child2.xqm";
     private static final String NAMESPACED_NAME = "namespaced.xml";
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = XmldbURI.LOCAL_DB;
     private final static String numbers =
             "<test>" + "<item id='1'><price>5.6</price><stock>22</stock></item>" + "<item id='2'><price>7.4</price><stock>43</stock></item>" + "<item id='3'><price>18.4</price><stock>5</stock></item>" + "<item id='4'><price>65.54</price><stock>16</stock></item>" + "</test>";
     private final static String module1 =
@@ -150,7 +150,7 @@ public class XQueryTest extends XMLTestCase {
             DatabaseManager.registerDatabase(database);
 
             Collection root =
-                    DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                    DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService service =
                     (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             Collection testCollection = service.createCollection("test");
@@ -769,7 +769,7 @@ public class XQueryTest extends XMLTestCase {
             assertTrue(exceptionThrown);
 
             System.out.println("testTypedVariables 15: ========");
-            query = "let $v as document-node() :=  doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "') \n" + "return $v";
+            query = "let $v as document-node() :=  doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "') \n" + "return $v";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             //TODO : no way to test the node type ?
@@ -1086,7 +1086,7 @@ public class XQueryTest extends XMLTestCase {
 
             System.out.println("testNamespace 6: ========");
             query = "declare namespace x = \"http://www.foo.com\"; \n" +
-                    "let $a := doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
+                    "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                     "return $a//x:edition";
             result = service.query(query);
             assertEquals("XQuery: " + query, 0, result.getSize());
@@ -1094,7 +1094,7 @@ public class XQueryTest extends XMLTestCase {
             System.out.println("testNamespace 7: ========");
             query = "declare namespace x = \"http://www.foo.com\"; \n" +
                     "declare namespace y = \"http://exist.sourceforge.net/dc-ext\"; \n" +
-                    "let $a := doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
+                    "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                     "return $a//y:edition";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
@@ -1475,7 +1475,7 @@ public class XQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
             System.out.println("testFunctionDoc 1: ========");
-            query = "doc('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
+            query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             try {
@@ -1496,7 +1496,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, 0, result.getSize());
 
             System.out.println("testFunctionDoc 3: ========");
-            query = "doc('" + DBBroker.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
+            query = "doc('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
             try {
                 exceptionThrown = false;
                 result = service.query(query);
@@ -1509,7 +1509,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals(0, result.getSize());
 
             System.out.println("testFunctionDoc 4: ========");
-            query = "doc-available('" + DBBroker.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
+            query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "')";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
@@ -1521,7 +1521,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
 
             System.out.println("testFunctionDoc 6: ========");
-            query = "doc-available('" + DBBroker.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
+            query = "doc-available('" + XmldbURI.ROOT_COLLECTION + "/test/dummy" + NUMBERS_XML + "')";
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
 
@@ -3258,7 +3258,7 @@ public class XQueryTest extends XMLTestCase {
 
             XPathQueryService service = (XPathQueryService)
                     getTestCollection().getService("XPathQueryService", "1.0");
-            ResourceSet result = service.query(query);
+            service.query(query);
 
         } catch (XMLDBException ex) {
             // should not yield into NPE
@@ -3278,7 +3278,7 @@ public class XQueryTest extends XMLTestCase {
 
             XPathQueryService service = (XPathQueryService)
                     getTestCollection().getService("XPathQueryService", "1.0");
-            ResourceSet result = service.query(query);
+            service.query(query);
 
         } catch (XMLDBException ex) {
             // should not yield into NPE

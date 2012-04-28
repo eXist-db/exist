@@ -6,9 +6,9 @@ package org.exist.xquery;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -68,7 +68,7 @@ public class JavaFunctionsTest extends TestCase {
 		database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 		
 		//Check the configuration file to see if Java binding is enabled

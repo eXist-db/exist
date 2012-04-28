@@ -26,8 +26,8 @@ package org.exist.xquery;
 import java.io.File;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -119,7 +119,7 @@ public class XQueryGroupByTest  extends XMLTestCase {
             DatabaseManager.registerDatabase(database); 
              
             Collection root = 
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin",    null); 
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", ""); 
             testService = 
                 (CollectionManagementService) root.getService("CollectionManagementService", "1.0"); 
             testCollection = testService.createCollection("testGB"); 

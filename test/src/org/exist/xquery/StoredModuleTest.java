@@ -30,9 +30,9 @@ import java.io.PrintWriter;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -54,7 +54,7 @@ import static org.junit.Assert.*;
 public class StoredModuleTest {
 
     private final static Logger LOG = Logger.getLogger(StoredModuleTest.class);
-    private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+    private final static String URI = XmldbURI.LOCAL_DB;
 //    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String MODULE =
             "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
@@ -141,7 +141,7 @@ public class StoredModuleTest {
         writeModule(c, "test.xqm", MODULE);
 
         String query = "import module namespace itg-modules = \"http://localhost:80/itg/xquery\" at " +
-                "\"xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test.xqm\"; itg-modules:check-coll()";
+                "\"xmldb:exist://" + XmldbURI.ROOT_COLLECTION + "/test/test.xqm\"; itg-modules:check-coll()";
 
         String cols[] = {"one", "two", "three"};
 
@@ -205,11 +205,11 @@ public class StoredModuleTest {
     "'hi from module 4'" +
     "};";
 
-    private static final String module5 = "module namespace mod5 = 'urn:module5';" +
-    "declare variable $mod5:testvar := 'variable works' ;"+
-    "declare function mod5:showMe() as xs:string {" +
-    "concat('hi from module 5: ',$mod5:testvar)" +
-    "};";
+//    private static final String module5 = "module namespace mod5 = 'urn:module5';" +
+//    "declare variable $mod5:testvar := 'variable works' ;"+
+//    "declare function mod5:showMe() as xs:string {" +
+//    "concat('hi from module 5: ',$mod5:testvar)" +
+//    "};";
 
     @Test(expected=XMLDBException.class)
     public void testModule23_missingRelativeContext() throws XMLDBException {
@@ -365,7 +365,7 @@ public class StoredModuleTest {
         writeModule(testHome, "controller.xqy", controller_module);
         
         CompiledExpression query = xqService.compile(index_module);
-        ResourceSet execute = xqService.execute(query);
+        xqService.execute(query);
     }
 
     @Test
@@ -390,7 +390,7 @@ public class StoredModuleTest {
         writeModule(testHome, "module1.xqm", module1_module);
 
         CompiledExpression query = xqService.compile(index_module);
-        ResourceSet execute = xqService.execute(query);
+        xqService.execute(query);
     }
     
     @Test

@@ -29,9 +29,9 @@ import java.util.Locale;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -988,7 +988,7 @@ public class XQueryFunctionsTest extends TestCase {
     public void testCollectionAvailable1() {
     	//remove the test collection if it already exists
     	String collectionName = "testCollectionAvailable";
-    	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
+    	String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
     	String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
 
     	try
@@ -1015,7 +1015,7 @@ public class XQueryFunctionsTest extends TestCase {
     public void testCollectionAvailable2() {
     	//add the test collection
     	String collectionName = "testCollectionAvailable";
-    	String collectionPath = DBBroker.ROOT_COLLECTION + "/" + collectionName;
+    	String collectionPath = XmldbURI.ROOT_COLLECTION + "/" + collectionName;
     	String collectionURI = ROOT_COLLECTION_URI + "/" + collectionName;
     	try {
     		Collection testCollection = root.getChildCollection(collectionName);
@@ -1112,7 +1112,7 @@ public class XQueryFunctionsTest extends TestCase {
 		database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
-		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+		root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
 	}
 

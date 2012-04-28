@@ -31,7 +31,7 @@ public class XQueryUpdateTest extends TestCase {
         TestRunner.run(XQueryUpdateTest.class);
     }
 
-    protected static XmldbURI TEST_COLLECTION = XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test");
+    protected static XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
     
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +

@@ -110,7 +110,7 @@ public class DeferredFunctionCallTest {
         
         // 3) Call functionCall.eval, if we dont get an NPE on reading currentArguments, then success :-)
         DeferredFunctionCall dfc = (DeferredFunctionCall)functionCall.evalFunction(mockContextSequence, mockContextItem, mockSeq);
-        Sequence result = dfc.execute();
+        dfc.execute();
         
         /** end interesting bit ***/
         

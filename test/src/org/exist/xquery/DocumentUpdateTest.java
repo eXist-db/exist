@@ -3,8 +3,8 @@ package org.exist.xquery;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -160,7 +160,7 @@ public class DocumentUpdateTest extends TestCase {
             DatabaseManager.registerDatabase(database);
             
             Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(
                     "CollectionManagementService",
@@ -181,7 +181,7 @@ public class DocumentUpdateTest extends TestCase {
     protected void tearDown() {
     	try {
 	        Collection root =
-	            DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+	            DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        CollectionManagementService service =
 	            (CollectionManagementService) root.getService(
 	                "CollectionManagementService",
