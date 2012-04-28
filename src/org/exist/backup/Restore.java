@@ -35,7 +35,6 @@ import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
-import org.exist.storage.DBBroker;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -55,7 +54,6 @@ import org.xmldb.api.base.XMLDBException;
 public class Restore {
     
     private final static Logger LOG = Logger.getLogger(Restore.class);
-
 
     public void restore(RestoreListener listener, String username, String password, String newAdminPass, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         
@@ -150,8 +148,8 @@ public class Restore {
     private String setAdminCredentials(String uri, String username, String password, String adminPassword) throws XMLDBException, URISyntaxException {
         final XmldbURI dbUri;
 
-        if(!uri.endsWith(DBBroker.ROOT_COLLECTION)) {
-            dbUri = XmldbURI.xmldbUriFor(uri + DBBroker.ROOT_COLLECTION);
+        if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+            dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
         } else {
             dbUri = XmldbURI.xmldbUriFor(uri);
         }

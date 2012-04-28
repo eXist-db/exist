@@ -20,9 +20,9 @@ import java.io.OutputStream;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.exist.storage.DBBroker;
 import org.exist.versioning.svn.Resource;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -721,7 +721,7 @@ public class WorkingCopyTesting {
 //		    myWorkingCopyPath = "/"+myWorkingCopyName;
 			
 			org.xmldb.api.base.Collection root = DatabaseManager.getCollection(
-					"xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+					XmldbURI.LOCAL_DB, "admin", "");
 			CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			try {
 				mgmt.removeCollection(myWorkingCopyName);
@@ -741,7 +741,7 @@ public class WorkingCopyTesting {
 			if (repositoryID != null)
 				deleteRepository(repositoryID);
 
-		    Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+		    Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 			// CollectionManagementService cmgr = (CollectionManagementService)
 			// root.getService("CollectionManagementService", "1.0");
 			// cmgr.removeCollection("test");

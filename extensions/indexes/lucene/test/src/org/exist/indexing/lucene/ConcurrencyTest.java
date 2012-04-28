@@ -32,12 +32,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.exist.TestUtils;
-import org.exist.storage.DBBroker;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -194,7 +194,7 @@ public class ConcurrencyTest {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
 
-            org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService mgmt = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
             test = mgmt.createCollection("test");
         } catch (Exception e) {
@@ -207,7 +207,7 @@ public class ConcurrencyTest {
     public static void closeDB() {
         TestUtils.cleanupDB();
         try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+            Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
             mgr.shutdown();
         } catch (XMLDBException e) {

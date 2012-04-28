@@ -43,6 +43,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.geotools.gml.GMLFilterDocument;
@@ -1061,7 +1062,7 @@ public class GMLIndexTest extends TestCase {
             DatabaseManager.registerDatabase(database);
             
             Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
+                DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
             CollectionManagementService service =
                 (CollectionManagementService) root.getService(
                         "CollectionManagementService",

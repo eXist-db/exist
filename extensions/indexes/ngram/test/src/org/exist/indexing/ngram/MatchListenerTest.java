@@ -145,6 +145,32 @@ public class MatchListenerTest {
     }
 
     @Test
+    public void nestedContent1() {
+        DBBroker broker = null;
+        try {
+            configureAndStore(CONF1, XML);
+
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+
+            Sequence seq = xquery.execute("//para[ngram:contains(., 'content') and ngram:contains(., 'mixed')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            String result = queryResult2String(broker, seq, 0);
+            System.out.println("RESULT: " + result);
+            XMLAssert.assertEquals("<para>some paragraph with <hi>" + MATCH_START + "mixed" + MATCH_END +
+                    "</hi> " + MATCH_START + "content" + MATCH_END + ".</para>", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
     public void matchInParent() {
         DBBroker broker = null;
         try {

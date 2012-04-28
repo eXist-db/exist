@@ -22,7 +22,6 @@
 package org.exist.client;
 
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
@@ -110,7 +109,7 @@ class IndexDialog extends JFrame {
 		setupComponents();
 		
 		//Get the indexes for the root collection
-		actionGetIndexes(DBBroker.ROOT_COLLECTION);
+		actionGetIndexes(XmldbURI.ROOT_COLLECTION);
 	}
 
 	private void setupComponents()
@@ -139,7 +138,7 @@ class IndexDialog extends JFrame {
 		ArrayList alCollections = new ArrayList();
         try
         {
-            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+            Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             ArrayList alAllCollections = getCollections(root, new ArrayList());
             for(int i = 0; i < alAllCollections.size(); i++)
             {

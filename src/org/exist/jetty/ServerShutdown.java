@@ -12,9 +12,9 @@ import org.apache.avalon.excalibur.cli.CLUtil;
 
 import org.apache.xmlrpc.XmlRpcException;
 
-import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -96,8 +96,8 @@ public class ServerShutdown {
             // create the default database
             Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);
-            if (!uri.endsWith(DBBroker.ROOT_COLLECTION))
-                uri = uri + DBBroker.ROOT_COLLECTION;
+            if (!uri.endsWith(XmldbURI.ROOT_COLLECTION))
+                uri = uri + XmldbURI.ROOT_COLLECTION;
             Collection root = DatabaseManager.getCollection(uri, user, passwd);
             DatabaseInstanceManager manager = (DatabaseInstanceManager) root
                     .getService("DatabaseInstanceManager", "1.0");

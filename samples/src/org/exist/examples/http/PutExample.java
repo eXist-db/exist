@@ -21,7 +21,8 @@
  */
 package org.exist.examples.http;
 
-import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +60,7 @@ public class PutExample {
 
         try {
             URL url = new URL("http://localhost:8080/exist/rest" 
-                    + DBBroker.ROOT_COLLECTION + "/test/" + docName);
+                    + XmldbURI.ROOT_COLLECTION + "/test/" + docName);
             
             System.out.println("PUT file to "+url.toString());
             HttpURLConnection connect = (HttpURLConnection) url.openConnection();

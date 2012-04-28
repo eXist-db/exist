@@ -86,7 +86,7 @@ public class SystemExport
 {
     private final static Logger     LOG                     = Logger.getLogger( SystemExport.class );
 
-    private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal( NativeBroker.TEMP_COLLECTION );
+    private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal( XmldbURI.TEMP_COLLECTION );
     private static final XmldbURI   CONTENTS_URI            = XmldbURI.createInternal( "__contents__.xml" );
     private static final XmldbURI   LOST_URI                = XmldbURI.createInternal( "__lost_and_found__" );
 
@@ -197,7 +197,7 @@ public class SystemExport
             BackupWriter output;
 
             if( zip ) {
-                output = new ZipWriter( backupFile, DBBroker.ROOT_COLLECTION );
+                output = new ZipWriter( backupFile, XmldbURI.ROOT_COLLECTION );
             } else {
                 output = new FileSystemWriter( backupFile );
             }

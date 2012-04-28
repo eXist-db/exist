@@ -231,7 +231,7 @@ public void testReadAborted() {
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
 
-	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
+	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	    CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl)
 	    	root.getService("CollectionManagementService", "1.0");
 	    org.xmldb.api.base.Collection test = root.getChildCollection("test");

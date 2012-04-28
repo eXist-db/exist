@@ -50,8 +50,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.exist.collections.CollectionConfigurationManager;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -105,7 +103,7 @@ class TriggersDialog extends JFrame {
 		setupComponents();
 		
 		//Get the indexes for the root collection
-		actionGetTriggers(DBBroker.ROOT_COLLECTION);
+		actionGetTriggers(XmldbURI.ROOT_COLLECTION);
 	}
 
 	private void setupComponents()
@@ -132,12 +130,12 @@ class TriggersDialog extends JFrame {
 		ArrayList<PrettyXmldbURI> alCollections = new ArrayList<PrettyXmldbURI>();
         try
         {
-            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+            Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             ArrayList<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             for(int i = 0; i < alAllCollections.size(); i++)
             {
             	//TODO : use XmldbURIs !
-            	if(alAllCollections.get(i).toString().indexOf(CollectionConfigurationManager.CONFIG_COLLECTION)  == -1)
+            	if(alAllCollections.get(i).toString().indexOf(XmldbURI.CONFIG_COLLECTION)  == -1)
             	{
             		alCollections.add(alAllCollections.get(i));
             	}
