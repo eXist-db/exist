@@ -21,7 +21,7 @@
  */
 package org.exist.validation;
 
-//import org.junit.*;
+import org.junit.*;
 //import static org.junit.Assert.*;
 //
 //import org.apache.log4j.Appender;
@@ -64,10 +64,10 @@ public class ValidationFunctions_XSD_Test {
 //    private static Collection root = null;
 //    private static Database database = null;
 //
-//    @Test
-//    public void noTest() {
-//        
-//    }
+    @Test
+    public void noTest() {
+        
+    }
 
 //    public static void initLog4J(){
 //        Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
