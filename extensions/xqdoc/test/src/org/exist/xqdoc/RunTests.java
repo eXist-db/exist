@@ -7,7 +7,6 @@ import java.io.File;
 
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
@@ -65,13 +64,13 @@ public class RunTests {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// initialize driver
-		Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+		Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 		Database database = (Database) cl.newInstance();
 		database.setProperty("create-database", "true");
 		DatabaseManager.registerDatabase(database);
 
 		Collection root =
-			DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin",	null);
+			DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 		CollectionManagementService service =
 			(CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 		testCollection = service.createCollection("test");
