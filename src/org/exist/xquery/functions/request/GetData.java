@@ -114,31 +114,14 @@ public class GetData extends BasicFunction {
         if(request.getContentLength() == -1 || request.getContentLength() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
-
-        //first, get the content of the request
-        InputStream is = null;
-        FilterInputStreamCache cache = null;
-        try {
-            //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-            cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration(){
-
-                @Override
-                public String getCacheClass() {
-                    return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                }
-            });
-            is = new CachingFilterInputStream(cache, request.getInputStream());
-            is.mark(Integer.MAX_VALUE);
-        } catch(IOException ioe) {
-            throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
-        }
-
+        
+        InputStream isRequest = null;
         Sequence result = Sequence.EMPTY_SEQUENCE;
         try {
+            
+            isRequest = request.getInputStream();
 
             //was there any POST content?
-
-
             /**
              * There is a bug in HttpInput.available() in Jetty 7.2.2.v20101205
              * This has been filed as Bug 333415 - https://bugs.eclipse.org/bugs/show_bug.cgi?id=333415
@@ -147,7 +130,7 @@ public class GetData extends BasicFunction {
 
             //TODO reinstate call to .available() when Jetty 7.3.0 is released, use of .getContentLength() is not reliable because of http mechanics
             //if(is != null && is.available() > 0) {
-            if(is != null && request.getContentLength() > 0) {
+            if(isRequest != null && request.getContentLength() > 0) {
 
                 // 1) determine if exists mime database considers this binary data
                 String contentType = request.getContentType();
@@ -161,54 +144,74 @@ public class GetData extends BasicFunction {
                     if(mimeType != null && !mimeType.isXMLType()) {
 
                         //binary data
-
-                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is);
+                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), isRequest);
                     }
                 }
 
                 if(result == Sequence.EMPTY_SEQUENCE) {
-                    //2) not binary, try and parse as an XML documemnt
-                    result = parseAsXml(is);
-                }
-
-                if(result == Sequence.EMPTY_SEQUENCE) {
-
-                    // 3) not a valid XML document, return a string representation of the document
-                    String encoding = request.getCharacterEncoding();
-                    if(encoding == null) {
-                        encoding = "UTF-8";
-                    }
-
+                    //2) not binary, try and parse as an XML documemnt, otherwise 3) return a string representation
+                    
+                    //parsing will consume the stream so we must cache!
+                    InputStream is = null;
+                    FilterInputStreamCache cache = null;
                     try {
-                        //reset the stream, as we need to reuse for string parsing
-                        is.reset();
+                        //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
+                        cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration(){
 
-                        result = parseAsString(is, encoding);
-                    } catch(IOException ioe) {
-                        throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
+                            @Override
+                            public String getCacheClass() {
+                                return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
+                            }
+                        });
+                        is = new CachingFilterInputStream(cache, isRequest);
+                        
+                        //mark the start of the stream
+                        is.mark(Integer.MAX_VALUE);
+                        
+                        //2) try and  parse as XML
+                        result = parseAsXml(is);
+                        
+                        
+                        if(result == Sequence.EMPTY_SEQUENCE) {
+                            // 3) not a valid XML document, return a string representation of the document
+                            String encoding = request.getCharacterEncoding();
+                            if(encoding == null) {
+                                encoding = "UTF-8";
+                            }
+
+                            try {
+                                //reset the stream, as we need to reuse for string parsing after the XML parsing happened
+                                is.reset();
+
+                                result = parseAsString(is, encoding);
+                            } catch(IOException ioe) {
+                                throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
+                            }
+                        }
+                        
+                    } finally {
+                        if(cache != null) {
+                            try {
+                                cache.invalidate();
+                            } catch(IOException ioe) {
+                                LOG.error(ioe.getMessage(), ioe);
+                            }
+                        }
+                        
+                        if(is != null) {
+                            try {
+                                is.close();
+                            } catch(IOException ioe) {
+                                LOG.error(ioe.getMessage(), ioe);
+                            }
+                        }
                     }
                 }
+                
+                //NOTE we do not close isRequest, because it may be needed further by the caching input stream wrapper
             }
-        /* } catch(IOException ioe) {
-            LOG.error(ioe.getMessage(), ioe); */
-        } finally {
-
-            if(cache != null) {
-                try {
-                    cache.invalidate();
-                } catch(IOException ioe) {
-                    LOG.error(ioe.getMessage(), ioe);
-                }
-            }
-
-            //dont close the stream if its a binary value, because we will need it later for serialization
-            if(is != null && !(result instanceof BinaryValue)) {
-                try {
-                    is.close();
-                } catch(IOException ioe) {
-                    LOG.error(ioe.getMessage(), ioe);
-                }
-            }
+        } catch(IOException ioe) {
+            throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
         }
 
         return result;
