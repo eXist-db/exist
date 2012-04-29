@@ -10,6 +10,6 @@
     <repo:target>/db/eXide</repo:target>
     <repo:prepare>pre-install.xql</repo:prepare>
     <repo:finish/>
-    <repo:permissions user="eXide" password="eXide" group="dba" mode="0775"/>
-    <deployed>2012-03-09T17:42:22.97+01:00</deployed>
+    <repo:permissions user="eXide" password="eXide" group="dba" mode="rw-rw-r--"/>
+    <deployed>2012-04-28T10:21:20.084+02:00</deployed>
 </repo:meta>

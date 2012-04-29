@@ -428,7 +428,10 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                                 <label for="owner">Group:</label>
                             </li>
                             <li>
-                                <input type="text" name="mode" value="{if ($mode) then $mode else '0744'}" size="4"/>
+                                <div class="hint">The default permissions to be applied to resources. For collections
+                                    and XQuery scripts, the execute flag ("x") will be set by the installer.
+                                </div>
+                                <input type="text" name="mode" value="{if ($mode) then $mode else 'rw-rw-r--'}" size="9"/>
                                 <label for="mode">Mode:</label>
                             </li>
                         </ol>
