@@ -26,13 +26,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.util.io;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * Cache implementation for CachingFilterInputStream
  * Backed by a Random Access File
  * 
- * Probably slowed than MemoryMappedFileFilterInputStreamCache
+ * Probably slower than MemoryMappedFileFilterInputStreamCache
  * for multiple reads, but uses a fixed small amount of memory.
  *
  * @version 1.0
