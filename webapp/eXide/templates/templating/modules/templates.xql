@@ -7,28 +7,26 @@ module namespace templates="http://exist-db.org/xquery/templates";
 :)
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
+declare variable $templates:NOT_FOUND := QName("http://exist-db.org/xquery/templates", "NotFound");
+
 (:~
- : Start processing the provided content using the modules defined by $modules. $modules should
- : be an XML fragment following the scheme:
- :
- : <modules>
- :       <module prefix="module-prefix" uri="module-uri" at="module location relative to apps module collection"/>
- : </modules>
+ : Start processing the provided content. Template functions are looked up by calling the
+ : provided function $resolver. The function should take a name as a string
+ : and return the corresponding function item. The simplest implementation of this function could
+ : look like this:
+ : 
+ : <pre>function($functionName as xs:string) { function-lookup(xs:QName($functionName), 3) }</pre>
  :
  : @param $content the sequence of nodes which will be processed
- : @param $modules modules to import
+ : @param $resolver a function which takes a name and returns a function with that name
  : @param $model a sequence of items which will be passed to all called template functions. Use this to pass
  : information between templating instructions.
 :)
-declare function templates:apply($content as node()+, $modules as element(modules), $model as item()*) {
-    let $prefixes := (templates:extract-prefixes($modules), "templates:")
-    let $null := (
-        request:set-attribute("$templates:prefixes", $prefixes),
-        request:set-attribute("$templates:modules", $modules)
-    )
+declare function templates:apply($content as node()+, $resolver as function(xs:string) as item()?, $model as item()*) {
+    request:set-attribute("$templates:resolver", $resolver),
     for $root in $content
     return
-        templates:process($root, $prefixes, $model)
+        templates:process($root, $resolver, $model)
 };
 
 (:~
@@ -40,50 +38,54 @@ declare function templates:apply($content as node()+, $modules as element(module
  : information between templating instructions.
 :)
 declare function templates:process($nodes as node()*, $model as item()*) {
-    let $prefixes := request:get-attribute("$templates:prefixes")
+    let $resolver := request:get-attribute("$templates:resolver")
     for $node in $nodes
     return
-        templates:process($node, $prefixes, $model)
+        templates:process($node, $resolver, $model)
 };
 
-declare function templates:process($node as node(), $prefixes as xs:string*, $model as item()*) {
+declare function templates:process($node as node(), $resolver as function(xs:string) as item()?, $model as item()*) {
     typeswitch ($node)
         case document-node() return
-            for $child in $node/node() return templates:process($child, $prefixes, $model)
+            for $child in $node/node() return templates:process($child, $resolver, $model)
         case element() return
-            let $instructions := templates:get-instructions($node/@class, $prefixes)
+            let $instructions := templates:get-instructions($node/@class)
             return
                 if ($instructions) then
                     for $instruction in $instructions
                     return
-                        templates:call($instruction, $node, $model, substring-before($instruction, ":"))
+                        templates:call($instruction, $node, $model, $resolver)
                 else
                     element { node-name($node) } {
-                        $node/@*, for $child in $node/node() return templates:process($child, $prefixes, $model)
+                        $node/@*, for $child in $node/node() return templates:process($child, $resolver, $model)
                     }
         default return
             $node
 };
 
-declare function templates:get-instructions($class as xs:string?, $prefixes as xs:string*) {
+declare function templates:get-instructions($class as xs:string?) as xs:string* {
     for $name in tokenize($class, "\s+")
-    where templates:matches-prefix($name, $prefixes)
+    where templates:is-qname($name)
     return
         $name
 };
 
-declare function templates:call($class as xs:string, $node as node(), $model as item()*, $prefix as xs:string) {
+declare function templates:call($class as xs:string, $node as element(), $model as item()*, $resolver as function(xs:string) as item()?) {
     let $paramStr := substring-after($class, "?")
     let $parameters := templates:parse-parameters($paramStr)
     let $func := if ($paramStr) then substring-before($class, "?") else $class
-    let $modules := request:get-attribute("$templates:modules")
-    let $imports := templates:import-module($modules, $prefix)
-    let $call := concat($imports, $func, "($node, $parameters, $model)")
+    let $call := $resolver($func)
     return
-        util:eval($call)
+        if (exists($call)) then
+            $call($node, $parameters, $model)
+        else
+            (: Templating function not found: just copy the element :)
+            element { node-name($node) } {
+                $node/@*, for $child in $node/node() return templates:process($child, $resolver, $model)
+            }
 };
 
-declare function templates:parse-parameters($paramStr as xs:string?) {
+declare function templates:parse-parameters($paramStr as xs:string?) as element(parameters) {
     <parameters>
     {
         for $param in tokenize($paramStr, "&amp;")
@@ -96,26 +98,8 @@ declare function templates:parse-parameters($paramStr as xs:string?) {
     </parameters>
 };
 
-declare function templates:import-module($modules as element(modules)?, $prefix as xs:string) as xs:string? {
-    if ($prefix ne "templates") then
-        let $module := ($modules/module[@prefix = $prefix])[1]
-        return
-            concat("import module namespace ", $module/@prefix, "='", $module/@uri, "' at '", $module/@at, "';&#10;")
-    else
-        ()
-};
-
-declare function templates:matches-prefix($class as xs:string, $prefixes as xs:string*) as xs:string? {
-    for $prefix in $prefixes
-    return
-        if (starts-with($class, $prefix)) then substring($prefix, 1, string-length($prefix) - 1)
-        else ()
-};
-
-declare function templates:extract-prefixes($modules as element(modules)) as xs:string* {
-    for $module in $modules/module
-    return
-        concat($module/@prefix/string(), ":")
+declare function templates:is-qname($class as xs:string) as xs:boolean {
+    matches($class, "^[^:]+:[^:]+")
 };
 
 declare function templates:include($node as node(), $params as element(parameters)?, $model as item()*) {
@@ -189,11 +173,27 @@ declare function templates:if-module-missing($node as node(), $params as element
         }
 };
 
+declare function templates:display-source($node as node(), $params as element(parameters)?, $model as item()*) {
+    let $syntax := $params/param[@name = "lang"]/@value/string()
+    let $source := replace($node/string(), "^\s*(.*)\s*$", "$1")
+    let $context := request:get-context-path()
+    let $eXidePath := if (doc-available("/db/eXide/index.html")) then "apps/eXide" else "eXide"
+    return
+        <div class="code">
+            <pre class="brush: {if ($syntax) then $syntax else 'xquery'}">
+            { $source }
+            </pre>
+            <a href="{$context}/{$eXidePath}/index.html?snip={encode-for-uri($source)}" target="eXide"
+                title="Opens the code in eXide in new tab or existing tab if it is already open.">Edit</a>
+        </div>
+};
+
 declare function templates:load-source($node as node(), $params as element(parameters), $model as item()*) as node()* {
     let $href := $node/@href/string()
     let $context := request:get-context-path()
+    let $eXidePath := if (doc-available("/db/eXide/index.html")) then "apps/eXide" else "eXide"
     return
-        <a href="{$context}/eXide/index.html?open={$config:app-root}/{$href}" target="eXide">{$node/node()}</a>
+        <a href="{$context}/{$eXidePath}/index.html?open={$config:app-root}/{$href}" target="eXide">{$node/node()}</a>
 };
 
 (:~
@@ -246,10 +246,12 @@ declare function templates:error-description($node as node(), $params as element
 };
 
 declare function templates:fix-links($node as node(), $params as element(parameters)?, $model as item()*) {
-    let $root := substring-after(util:collection-name($node), $config:app-root)
-    let $steps := tokenize($root, "/")
-    let $prefix := 
-        concat(request:get-context-path(), request:get-attribute("$exist:prefix"), request:get-attribute("$exist:controller"))
+    let $root := $params/param[@name = "root"]/@value/string()
+    let $prefix :=
+        if ($root eq "context") then
+            request:get-context-path()
+        else
+            concat(request:get-context-path(), request:get-attribute("$exist:prefix"), request:get-attribute("$exist:controller"))
     let $temp := 
         element { node-name($node) } {
             $node/@* except $node/@class,
@@ -276,15 +278,4 @@ declare function templates:fix-links($node as node(), $prefix as xs:string) {
             }
         default return
             $node
-};
-
-(:~
- : Determine the absolute path to the application root and output it as an 
- : HTML <base> tag.
- :)
-declare function templates:base($node as node(), $params as element(parameters)?, $model as item()*) {
-	    let $context := request:get-context-path()
-		    let $app-root := substring-after($config:app-root, "/db/")
-			    return
-				        <base href="{$context}/apps/{$app-root}/"/>
 };

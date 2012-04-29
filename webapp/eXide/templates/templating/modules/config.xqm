@@ -43,7 +43,7 @@ declare function config:expath-descriptor() as element(expath:package) {
  : For debugging: generates a table showing all properties defined
  : in the application descriptors.
  :)
-declare function config:app-info($node as node(), $params as element(parameters)?, $modes as item()*) {
+declare function config:app-info($node as node(), $params as element(parameters)?, $model as item()*) {
     let $expath := config:expath-descriptor()
     let $repo := config:repo-descriptor()
     return
@@ -60,5 +60,9 @@ declare function config:app-info($node as node(), $params as element(parameters)
                         <td>{$attr/string()}</td>
                     </tr>
             }
+            <tr>
+                <td>Controller:</td>
+                <td>{ request:get-attribute("$exist:controller") }</td>
+            </tr>
         </table>
 };

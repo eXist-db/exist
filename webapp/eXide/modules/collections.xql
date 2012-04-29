@@ -208,45 +208,45 @@ declare function local:delete-collection($collName as xs:string, $user as xs:str
         return
             <response status="ok"/>
     else
-        <response status="fail">
+        <response status="fail" item="{$collName}">
             <message>You are not allowed to write to collection {xmldb:decode-uri(xs:anyURI($collName))}</message>
         </response>
 };
 
-declare function local:delete-resource($collection as xs:string, $resources as xs:string+, $user as xs:string) {
-    let $canWrite :=
-        every $resource in $resources
-        satisfies
-            local:canWriteResource($collection, $resource, $user)
+declare function local:delete-resource($collection as xs:string, $resource as xs:string+, $user as xs:string) {
+    let $canWrite := local:canWriteResource($collection, $resource, $user)
     return
     if ($canWrite) then
-        let $null :=
-            for $resource in $resources
-            return xmldb:remove($collection, $resource)
+        let $removed := xmldb:remove($collection, $resource)
         return
             <response status="ok"/>
     else
-        <response status="fail">
-            <message>You are not allowed to delete the resources {string-join($resources, ", ")} in collection {xmldb:decode-uri(xs:anyURI($collection))}</message>
-        </response>
+        <response status="fail" item="{$resource}"/>
 };
 
 declare function local:delete($collection as xs:string, $selection as xs:string+, $user as xs:string) {
-    for $docOrColl in $selection
-    let $path :=
-        if (starts-with($docOrColl, "/")) then
-            $docOrColl
-        else
-            $collection || "/" || xmldb:encode($docOrColl)
-    let $isCollection := xmldb:collection-available($path)
-    let $response :=
-        if ($isCollection) then
-            local:delete-collection($path, $user)
-        else
-            local:delete-resource($collection, $docOrColl, $user)
-    where $response/@status = "ok"
+    let $result :=
+        for $docOrColl in $selection
+        let $path :=
+            if (starts-with($docOrColl, "/")) then
+                $docOrColl
+            else
+                $collection || "/" || xmldb:encode($docOrColl)
+        let $isCollection := xmldb:collection-available($path)
+        let $response :=
+            if ($isCollection) then
+                local:delete-collection($path, $user)
+            else
+                local:delete-resource($collection, $docOrColl, $user)
+        return
+            $response
     return
-        $response
+        if ($result/@status = "fail") then
+            <response status="fail">
+                <message>Deletion of the following items failed: {string-join($result/@item, ", ")}.</message>
+            </response>
+        else
+            <response status="ok"/>
 };
 
 declare function local:copyOrMove($operation as xs:string, $target as xs:string, $sources as xs:string+, 
@@ -286,10 +286,32 @@ declare function local:copyOrMove($operation as xs:string, $target as xs:string,
         </response>
 };
 
+declare function local:rename($collection as xs:string, $source as xs:string) {
+    let $target := request:get-parameter("target", ())
+    let $isCollection := xmldb:collection-available($source)
+    return
+        try {
+            if ($isCollection) then
+                let $null := 
+                    xmldb:rename($source, $target)
+                return
+                    <response status="ok"/>
+            else
+                let $null := xmldb:rename($collection, $source, $target)
+                return
+                    <response status="ok"/>
+        } catch * {
+            <response status="fail">
+                <message>{ $err:description }</message>
+            </response>
+        }
+};
+
 let $deleteCollection := request:get-parameter("remove", ())
 let $deleteResource := request:get-parameter("remove[]", ())
 let $copy := request:get-parameter("copy[]", ())
 let $move := request:get-parameter("move[]", ())
+let $rename := request:get-parameter("rename", ())
 let $createCollection := request:get-parameter("create", ())
 let $view := request:get-parameter("view", "c")
 let $collection := request:get-parameter("root", "/db")
@@ -304,6 +326,8 @@ return
         let $result := local:copyOrMove("move", xmldb:encode-uri($collection), $move, $user)
         return
             ($result[@status = "fail"], $result[1])[1]
+    else if (exists($rename)) then
+        local:rename($collection, $rename)
     else if (exists($deleteResource)) then
         local:delete(xmldb:encode-uri($collection), $deleteResource, $user)
     else if ($createCollection) then
