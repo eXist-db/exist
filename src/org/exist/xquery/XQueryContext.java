@@ -3286,19 +3286,16 @@ public class XQueryContext implements BinaryValueManager, Context
 
         loadDefaultNS();
         
-        //XXX: is it different from config at method parameter?
-        Configuration conf = getBroker().getConfiguration();
-
         // Switch: enable optimizer
-        Object param = conf.getProperty( PROPERTY_ENABLE_QUERY_REWRITING );
+        Object param = config.getProperty( PROPERTY_ENABLE_QUERY_REWRITING );
         enableOptimizer     = ( param != null ) && param.toString().equals( "yes" );
 
         // Switch: Backward compatibility
-        param = conf.getProperty( PROPERTY_XQUERY_BACKWARD_COMPATIBLE );
+        param = config.getProperty( PROPERTY_XQUERY_BACKWARD_COMPATIBLE );
         backwardsCompatible = ( param == null ) || param.toString().equals( "yes" );
 
         // Switch: raiseErrorOnFailedRetrieval
-        Boolean option = ( (Boolean)conf.getProperty( PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
+        Boolean option = ( (Boolean)config.getProperty( PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
         raiseErrorOnFailedRetrieval = ( option != null ) && option.booleanValue();
 
         // Get map of built-in modules
