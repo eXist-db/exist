@@ -102,9 +102,10 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     @Override
-    public void close() throws DBException {
+    public synchronized void close() throws DBException {
         try {
             if (cachedWriter != null) {
+            	commit();
                 cachedWriter.close();
                 cachedWriter = null;
             }
@@ -115,17 +116,9 @@ public class LuceneIndex extends AbstractIndex {
     }
 
     @Override
-    public void sync() throws DBException {
+    public synchronized void sync() throws DBException {
         //Nothing special to do
-    	//TODO consider if this is the correct place to commit index changes?
-        try {
-        	if (cachedWriter != null)
-        		cachedWriter.commit();
-        } catch(CorruptIndexException cie) {
-            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
-        } catch(IOException ioe) {
-            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
-        }
+        commit();
     }
 
     @Override
@@ -155,6 +148,8 @@ public class LuceneIndex extends AbstractIndex {
     protected Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
     }
+    
+    protected boolean needsCommit = false;
     
     protected synchronized IndexWriter getWriter() throws IOException {
         while (writingReaderUseCount > 0) {
@@ -186,32 +181,31 @@ public class LuceneIndex extends AbstractIndex {
             return;
         if (writer != cachedWriter)
             throw new IllegalStateException("IndexWriter was not obtained from getWriter().");
-        
-        //TODO consider if this is the correct place to commit index changes?
-        try {
-            writer.commit();
-        } catch(CorruptIndexException cie) {
-            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
-        } catch(IOException ioe) {
-            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
-        }
-        
+
+        needsCommit = true;
         writerUseCount--;
-//        if (writerUseCount == 0) {
-//            try {
-//                cachedWriter.close();
-//            } catch (IOException e) {
-//                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-//            } finally {
-//                cachedWriter = null;
-//            }
-//        }
         notifyAll();
 
         waitForReadersAndReopen();
     }
 
+    protected void commit() {
+    	if (!needsCommit)
+    		return;
+        try {
+        	LOG.warn("Committing lucene index");
+        	if (cachedWriter != null)
+        		cachedWriter.commit();
+            needsCommit = false;
+        } catch(CorruptIndexException cie) {
+            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
+        } catch(IOException ioe) {
+            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
+        }
+    }
+    
     protected synchronized IndexReader getReader() throws IOException {
+    	commit();
         if (cachedReader != null) {
             readerUseCount++;
         } else {
@@ -228,13 +222,6 @@ public class LuceneIndex extends AbstractIndex {
             throw new IllegalStateException("IndexReader was not obtained from getReader().");
         readerUseCount--;
         notifyAll();
-//        try {
-//            cachedReader.close();
-//        } catch (IOException e) {
-//            LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-//        } finally {
-//            cachedReader = null;
-//        }
     }
 
     protected synchronized IndexReader getWritingReader() throws IOException {
@@ -298,20 +285,19 @@ public class LuceneIndex extends AbstractIndex {
     private void reopenReaders() {
         if (cachedReader == null)
             return;
-        IndexReader oldReader = cachedReader;
         try {
-            cachedReader = cachedReader.reopen();
-            if (oldReader != cachedReader) {
-                oldReader.close();
-            }
+        	cachedReader.close();
+        	cachedReader = null;
+        	if (cachedSearcher != null)
+        		cachedSearcher.close();
+        	cachedSearcher = null;
         } catch (IOException e) {
             LOG.warn("Exception while refreshing lucene index: " + e.getMessage(), e);
         }
-        if (cachedSearcher != null)
-            cachedSearcher = new IndexSearcher(cachedReader);
     }
 
     protected synchronized IndexSearcher getSearcher() throws IOException {
+    	commit();
         if (cachedSearcher != null) {
             searcherUseCount++;
         } else {
@@ -329,12 +315,5 @@ public class LuceneIndex extends AbstractIndex {
             throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
         searcherUseCount--;
         notifyAll();
-        //try {
-            //cachedSearcher.close();
-        //} catch (IOException e) {
-            //LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-        //} finally {
-            //cachedSearcher = null;
-        //}
     }
 }
