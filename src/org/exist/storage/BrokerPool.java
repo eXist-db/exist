@@ -26,18 +26,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.NumberFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.Vector;
-
+import java.util.*;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -77,11 +66,7 @@ import org.exist.storage.sync.SyncTask;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.XMLReaderObjectFactory;
-import org.exist.util.XMLReaderPool;
+import org.exist.util.*;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
@@ -118,6 +103,7 @@ public class BrokerPool extends Observable implements Database {
      */	
     public final static String DEFAULT_INSTANCE_NAME = "exist";		
     public static final String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
+    public static final String CONFIGURATION_STARTUP_ELEMENT_NAME = "startup";
     public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
     public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
     public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
@@ -134,7 +120,8 @@ public class BrokerPool extends Observable implements Database {
     public final static String NODES_BUFFER_ATTRIBUTE = "nodesBuffer";
 
     //Various configuration property keys (set by the configuration manager)
-    public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
+    public final static String PROPERTY_STARTUP_TRIGGERS = "startup.triggers";
+    public final static String PROPERTY_DATA_DIR = "db-connection.data-dir";
     public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
     public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
     public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
@@ -988,6 +975,8 @@ public class BrokerPool extends Observable implements Database {
         //scheduler.executeStartupJobs();
 
         scheduler.run();
+        
+        callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
 	}
 	    
 	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
@@ -1009,6 +998,25 @@ public class BrokerPool extends Observable implements Database {
         }
     }*/
 
+    private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker broker) {
+        for(String startupTriggerClass : startupTriggerClasses) {
+            
+            try {
+                final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerClass);
+                final StartupTrigger startupTrigger = clazz.newInstance();
+                startupTrigger.execute(broker);
+            } catch(ClassNotFoundException cnfe) {
+                LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + cnfe.getMessage(), cnfe);
+            } catch(InstantiationException ie) {
+                LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + ie.getMessage(), ie);
+            } catch(IllegalAccessException iae) {
+                LOG.error("Could not access StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + iae.getMessage(), iae);
+            } catch(RuntimeException re) {
+                LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
+            }
+        }
+    }    
+        
      /**
      * Initialise system collections, if it doesn't exist yet
      *
