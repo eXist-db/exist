@@ -750,12 +750,15 @@ public class Configuration implements ErrorHandler
      */
     private void configureBackend( String dbHome, Element con ) throws DatabaseConfigurationException
     {
+        /*
         String mysql = getConfigAttributeValue( con, BrokerFactory.PROPERTY_DATABASE );
 
         if( mysql != null ) {
             config.put( BrokerFactory.PROPERTY_DATABASE, mysql );
             LOG.debug( BrokerFactory.PROPERTY_DATABASE + ": " + config.get( BrokerFactory.PROPERTY_DATABASE ) );
-        }
+        }*/
+        
+        
 
         // directory for database files
         String dataFiles = getConfigAttributeValue( con, BrokerPool.DATA_DIR_ATTRIBUTE );
@@ -976,6 +979,11 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
+        if(startupConf.getLength() > 0) {
+            configureStartup((Element)startupConf.item(0));
+        }
+        
         NodeList poolConf = con.getElementsByTagName( BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME );
 
         if( poolConf.getLength() > 0 ) {
@@ -1162,6 +1170,45 @@ public class Configuration implements ErrorHandler
         }
     }
 
+    private void configureStartup(final Element startup) {
+        final NodeList nlTriggers = startup.getElementsByTagName("triggers");
+        if(nlTriggers != null && nlTriggers.getLength() > 0) {
+            final Element triggers = (Element)nlTriggers.item(0);
+            final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
+            if(nlTrigger != null && nlTrigger.getLength() > 0) {
+                for(int i = 0; i < nlTrigger.getLength(); i++) {
+                    final Element trigger = (Element)nlTrigger.item(i);
+                    List<String> startupTriggers = (List<String>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
+                    if(startupTriggers == null) {
+                        startupTriggers = new ArrayList<String>();
+                        config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+                    }
+                    
+                    final String startupTriggerClass = trigger.getAttribute("class");
+                    
+                    boolean isStartupTrigger = false;
+                    try {
+                        for(Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                            if(iface.getName().equals("org.exist.storage.StartupTrigger")) {
+                                isStartupTrigger = true;
+                                break;
+                            }
+                        }
+
+                        if(isStartupTrigger) {
+                            startupTriggers.add(startupTriggerClass);
+                            LOG.debug("Registered StartupTrigger: " + startupTriggerClass);
+                        } else {
+                            LOG.warn("StartupTrigger: " + startupTriggerClass + " does not implement org.exist.storage.StartupTrigger. IGNORING!");
+                        }
+                    } catch(ClassNotFoundException cnfe) {
+                        LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". " + cnfe.getMessage(), cnfe);
+                    }
+                }
+            }
+        }
+    }
+    
 
     /**
      * DOCUMENT ME!

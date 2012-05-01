@@ -25,6 +25,24 @@
                                     <xs:attribute name="resource" type="xs:string" default="0775"/>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="startup" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <!-- TODO commonise with collection.xconf.xsd -->
+                                        <xs:element name="triggers" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="trigger" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="class" type="xs:string"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                             <xs:element name="pool">
                                 <xs:complexType>
                                     <xs:attribute name="max" type="xs:integer" default="20"/>
