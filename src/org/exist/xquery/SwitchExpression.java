@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
-import org.exist.xquery.ErrorCodes.EXistErrorCode;
-import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
