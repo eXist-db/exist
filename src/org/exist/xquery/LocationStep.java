@@ -509,9 +509,22 @@ public class LocationStep extends Step {
 			return nodes.getSelf(test);
 		}
 		if (hasPreloadedData()) {
+			NodeSet ns = null;
+			if (contextSequence instanceof NodeSet) {
+				ns = (NodeSet)contextSequence;
+			}
+			NodeProxy np = null;
+
 			for (Iterator<NodeProxy> i = currentSet.iterator(); i.hasNext(); ) {
 				NodeProxy p = i.next();
 				p.addContextNode(contextId, p);
+				
+				if (ns != null) {
+					np = ns.get(p);
+					
+					if (np != null)
+						p.addMatch( np.getMatches() );
+				}
 			}
 			return currentSet;
 		}
