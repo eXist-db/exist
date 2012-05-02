@@ -522,7 +522,7 @@ public class LocationStep extends Step {
 				if (ns != null) {
 					np = ns.get(p);
 					
-					if (np != null)
+					if (np != null && np.getMatches() != null)
 						p.addMatch( np.getMatches() );
 				}
 			}
