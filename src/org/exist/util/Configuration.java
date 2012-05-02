@@ -750,15 +750,12 @@ public class Configuration implements ErrorHandler
      */
     private void configureBackend( String dbHome, Element con ) throws DatabaseConfigurationException
     {
-        /*
         String mysql = getConfigAttributeValue( con, BrokerFactory.PROPERTY_DATABASE );
 
         if( mysql != null ) {
             config.put( BrokerFactory.PROPERTY_DATABASE, mysql );
             LOG.debug( BrokerFactory.PROPERTY_DATABASE + ": " + config.get( BrokerFactory.PROPERTY_DATABASE ) );
-        }*/
-        
-        
+        }
 
         // directory for database files
         String dataFiles = getConfigAttributeValue( con, BrokerPool.DATA_DIR_ATTRIBUTE );
