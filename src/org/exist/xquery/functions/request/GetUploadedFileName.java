@@ -22,6 +22,8 @@
  */
 package org.exist.xquery.functions.request;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
@@ -38,6 +40,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author wolf
@@ -56,7 +59,7 @@ public class GetUploadedFileName extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
 			},
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the file name of the uploaded file"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the file name of the uploaded files"));
 	
 	public GetUploadedFileName(XQueryContext context) {
 		super(context, signature);
@@ -84,11 +87,15 @@ public class GetUploadedFileName extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
-			String fname = request.getUploadedFileName(uploadParamName);
-			if(fname == null) {
+			List<String> fnames = request.getUploadedFileName(uploadParamName);
+			if(fnames == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}
-			return new StringValue(fname);
+			ValueSequence result = new ValueSequence();
+			for (String name: fnames) {
+				result.add(new StringValue(name));
+			}
+			return result;
 		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 	}
