@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.http.Cookie;
 
@@ -66,9 +67,9 @@ public interface RequestWrapper {
 	
 	public String[] getParameterValues(String arg0);
 	
-	public File getFileUploadParam(String parameter);
+	public List<File> getFileUploadParam(String parameter);
 	
-	public String getUploadedFileName(String parameter);
+	public List<String> getUploadedFileName(String parameter);
 	
 	public String getPathInfo();
 	

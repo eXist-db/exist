@@ -23,6 +23,7 @@
 package org.exist.xquery.functions.request;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
@@ -40,6 +41,7 @@ import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author Adam Retter <adam.retter@exist-db.org>
@@ -58,7 +60,7 @@ public class GetUploadedFileSize extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
 			},
-			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the size of the uploaded file"));
+			new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_MORE, "the size of the uploaded files"));
 	
 	public GetUploadedFileSize(XQueryContext context) {
 		super(context, signature);
@@ -86,12 +88,15 @@ public class GetUploadedFileSize extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			RequestWrapper request = (RequestWrapper)value.getObject();
-			File file = request.getFileUploadParam(uploadParamName);
-			if(file == null) {
+			List<File> files = request.getFileUploadParam(uploadParamName);
+			if(files == null) {
 				return Sequence.EMPTY_SEQUENCE;
 			}
-			
-			return new DoubleValue(file.length());
+			ValueSequence result = new ValueSequence();
+			for (File file : files) {
+				result.add(new DoubleValue(file.length()));
+			}
+			return result;
 		} else
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 	}

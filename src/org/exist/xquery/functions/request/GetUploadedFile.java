@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
@@ -48,6 +49,7 @@ import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author wolf
@@ -64,7 +66,7 @@ public class GetUploadedFile extends BasicFunction {
         new SequenceType[]{
             new FunctionParameterSequenceType("upload-param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The parameter name")
         },
-        new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the base64 encoded data from the uploaded file"))
+        new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE, "the base64 encoded data from the uploaded file"))
     };
 
     public GetUploadedFile(XQueryContext context, FunctionSignature signature) {
@@ -100,12 +102,10 @@ public class GetUploadedFile extends BasicFunction {
 
             RequestWrapper request = (RequestWrapper) value.getObject();
 
-            File file = request.getFileUploadParam(uploadParamName);
-            if (file == null) {
+            List<File> files = request.getFileUploadParam(uploadParamName);
+            if (files == null) {
                 logger.debug("File param not found: " + uploadParamName);
                 return Sequence.EMPTY_SEQUENCE;
-            } else {
-                logger.debug("Uploaded file: " + file.getAbsolutePath());
             }
 
 
@@ -137,10 +137,12 @@ public class GetUploadedFile extends BasicFunction {
                 }
             } */
 
-            return BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file);
+            ValueSequence result = new ValueSequence();
+            for (File file : files) {
+            	result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
+            }
 
-
-
+            return result;
         } else {
             throw new XPathException(this, "Variable $request is not bound to a Request object.");
         }

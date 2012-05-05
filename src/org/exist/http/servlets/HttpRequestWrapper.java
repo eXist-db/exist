@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -230,27 +231,26 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param obj List or Fileitem
      * @return First Fileitem in list or Fileitem.
      */
-    private FileItem getFileItem(Object obj) {
+    private List<FileItem> getFileItem(Object obj) {
 
+    	List<FileItem> fileList = new LinkedList<FileItem>();
         if (obj instanceof List) {
-
             // Cast
             List list = (List) obj;
-
             // Return first FileItem object if present
             for(Object listObject : list) {
-                if(listObject instanceof FileItem){
-                    return (FileItem) listObject;
+                if(listObject instanceof FileItem && !((FileItem) listObject).isFormField()){
+                    fileList.add((FileItem) listObject);
                 }
             }           
 
-        } else if(obj instanceof FileItem){
+        } else if(obj instanceof FileItem && !((FileItem) obj).isFormField()) {
             // Cast and return
-             return (FileItem) obj;         
+             fileList.add((FileItem) obj);
         }
 
         // object did not represent a List of FileItem's or FileItem.
-        return null;
+        return fileList;
 
     }
 
@@ -410,7 +410,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public File getFileUploadParam(String name) {
+    public List<File> getFileUploadParam(String name) {
         if (!isFormDataParsed) {
             return null;
         }
@@ -420,19 +420,19 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        FileItem item = getFileItem(o);
-        if (item==null || item.isFormField()) {
-            return null;
+        List<FileItem> items = getFileItem(o);
+        List<File> files = new ArrayList<File>(items.size());
+        for (FileItem item : items) {
+        	files.add(((DiskFileItem) item).getStoreLocation());
         }
-
-        return ((DiskFileItem) item).getStoreLocation();
+        return files;
     }
 
     /**
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public String getUploadedFileName(String name) {
+    public List<String> getUploadedFileName(String name) {
         if (!isFormDataParsed) {
             return null;
         }
@@ -442,19 +442,12 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        FileItem item = getFileItem(o);
-        if (item==null || item.isFormField()) {
-            return null;
+        List<FileItem> items = getFileItem(o);
+        List<String> files = new ArrayList<String>(items.size());
+        for (FileItem item : items) {
+        	files.add(FilenameUtils.normalize(item.getName()));
         }
-
-        // Get filename from FileItem
-        String itemName = item.getName();
-        if (itemName == null) {
-            return null;
-        }
-
-        // return Filename only
-        return FilenameUtils.getName(itemName);
+        return files;
     }
 
     /**
