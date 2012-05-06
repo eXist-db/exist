@@ -979,6 +979,10 @@ public class Configuration implements ErrorHandler
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
         if(startupConf.getLength() > 0) {
             configureStartup((Element)startupConf.item(0));
+        } else {
+            // Prevent NPE
+            List<String> startupTriggers = new ArrayList<String>();
+            config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
         
         NodeList poolConf = con.getElementsByTagName( BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME );

@@ -509,9 +509,11 @@ public class Scheduler {
     public void setupConfiguredJobs() {
         Configuration.JobConfig[] jobList = (Configuration.JobConfig[])config
                 .getProperty(Scheduler.PROPERTY_SCHEDULER_JOBS);
+        
         if (jobList == null) {
             return;
         }
+        
         for(Configuration.JobConfig jobConfig : jobList) {
             JobDescription job = null;
             if (jobConfig.getResourceName().startsWith("/db/") ||
@@ -528,10 +530,12 @@ public class Scheduler {
                             // yes, try to make the job's name unique
                             ((UserXQueryJob)job).setName(job.getName() + job.hashCode());
                         }
+                        
                     } catch(SchedulerException e) {
                         LOG.error("Unable to set job name: " + e.getMessage(), e);
                     }
                 }
+                
             } else {
                 //create a Java job
                 try {
@@ -544,29 +548,40 @@ public class Scheduler {
                             job = new SystemTaskJob(jobConfig.getJobName(), task);
                         } else {
                             LOG.error("System jobs must extend SystemTask");
+                            // throw exception? will be handled nicely
                         }
+                        
                     } else {
-                        job = (JobDescription)jobObject;
-                        if (jobConfig.getJobName() != null) {
-                            job.setName(jobConfig.getJobName());
+                        if(jobObject instanceof JobDescription) {
+                            job = (JobDescription)jobObject;
+                            if (jobConfig.getJobName() != null) {
+                                job.setName(jobConfig.getJobName());
+                            }
+                        } else {
+                            LOG.error("Startup job " + jobConfig.getJobName() +"  must extend org.exist.scheduler.StartupJob");
+                            // throw exception? will be handled nicely
                         }
                     }
-                } catch(Exception e) {
+                    
+                } catch(Exception e) { // Throwable?
                     LOG.error("Unable to schedule '" + jobConfig.getType() +
                         "' job " + jobConfig.getResourceName() + ": " + e.getMessage(), e);
                 }
             }
+            
             //if there is a job, schedule it
             if(job != null) {
                 if(jobConfig.getType().equals(JOB_TYPE_STARTUP)) {
                     //startup job - one off execution - no period, delay or repeat
                     createStartupJob((UserJob)job, jobConfig.getParameters());
+                    
                 } else {
                     //timed job
                     //trigger is Cron or period?
                     if(jobConfig.getSchedule().indexOf(' ') > -1) {
                         //schedule job with Cron trigger
                         createCronJob(jobConfig.getSchedule(), job, jobConfig.getParameters());
+                        
                     } else {
                         //schedule job with periodic trigger
                         createPeriodicJob(Long.parseLong(jobConfig.getSchedule()),
