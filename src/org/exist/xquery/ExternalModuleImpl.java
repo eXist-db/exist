@@ -24,8 +24,10 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
@@ -83,9 +85,16 @@ public class ExternalModuleImpl implements ExternalModule {
         return "user-defined";
     }
 
-    public UserDefinedFunction getFunction(QName qname, int arity) {
+    public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) 
+    throws XPathException {
         FunctionId id = new FunctionId(qname, arity);
-        return mFunctionMap.get(id);
+        UserDefinedFunction fn = mFunctionMap.get(id);
+        if (fn == null)
+        	return null;
+        if (callerContext != getContext() && isPrivate(fn.getSignature())) {
+        	throw new XPathException(ErrorCodes.XPST0017, "Calling a private function from outside its module");
+        }
+        return fn;
     }
 
     /* (non-Javadoc)
@@ -120,12 +129,14 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#listFunctions()
      */
     public FunctionSignature[] listFunctions() {
-        FunctionSignature signatures[] = new FunctionSignature[mFunctionMap.size()];
-        int j = 0;
-        for (Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); j++) {
-            signatures[j] = i.next().getSignature();
+        List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(mFunctionMap.size());
+        for (Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); ) {
+        	FunctionSignature signature = i.next().getSignature();
+        	if (!isPrivate(signature))
+        		signatures.add(signature);
         }
-        return signatures;
+        FunctionSignature[] result = new FunctionSignature[signatures.size()];
+        return signatures.toArray(result);
     }
 
     /* (non-Javadoc)
@@ -245,4 +256,17 @@ public class ExternalModuleImpl implements ExternalModule {
         return  rootExpression;
     }
 
+    private boolean isPrivate(FunctionSignature signature) {
+    	Annotation[] annots = signature.getAnnotations();
+    	if (annots != null) {
+	        for (Annotation annot : annots) {
+	        	QName qn = annot.getName();
+	        	if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && 
+	        		qn.getLocalName().equals("private")) {
+	        		return true;
+	        	}
+	        }
+    	}
+        return false;
+    }
 }

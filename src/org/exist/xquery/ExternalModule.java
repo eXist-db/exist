@@ -50,7 +50,7 @@ public interface ExternalModule extends Module {
      * 
      * @param qname
      */
-    public UserDefinedFunction getFunction(QName qname, int arity);
+    public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) throws XPathException;
 
     public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException;
 

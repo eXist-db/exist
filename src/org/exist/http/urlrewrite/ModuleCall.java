@@ -67,7 +67,7 @@ public class ModuleCall extends URLRewrite {
             Module module = context.getModule(fqn.getNamespaceURI());
             UserDefinedFunction func = null;
             if (module != null)
-                func = ((ExternalModule)module).getFunction(fqn, arity);
+                func = ((ExternalModule)module).getFunction(fqn, arity, context);
             else
                 func = context.resolveFunction(fqn, arity);
             call = new FunctionCall(context, func);

@@ -124,6 +124,23 @@ options {
 		Expression action;
 		boolean isForClause= true;
 	}
+
+	/**
+	 * Check QName of an annotation to see if it is in a reserved namespace.
+	 */
+	private boolean annotationValid(QName qname) {
+		String ns = qname.getNamespaceURI();
+        if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
+			String ln = qname.getLocalName();
+			return ("private".equals(ln) || "public".equals(ln));
+		} else {
+			return !(ns.equals(Namespaces.XML_NS)
+                     || ns.equals(Namespaces.SCHEMA_NS)
+                     || ns.equals(Namespaces.SCHEMA_INSTANCE_NS)
+                     || ns.equals(Namespaces.XPATH_FUNCTIONS_MATH_NS)
+                     || ns.equals(Namespaces.XQUERY_OPTIONS_NS));
+		}
+	}
 }
 
 xpointer [PathExpr path]
@@ -579,16 +596,11 @@ throws XPathException
                     
                     String ns = qn.getNamespaceURI();
 
-                    //TODO add in handling for %private and %public in the fn namespace
-                    if(
-                        ns.equals(Namespaces.XML_NS)
-                        || ns.equals(Namespaces.SCHEMA_NS)
-                        || ns.equals(Namespaces.SCHEMA_INSTANCE_NS)
-                        || ns.equals(Namespaces.XPATH_FUNCTIONS_NS)
-                        || ns.equals(Namespaces.XPATH_FUNCTIONS_MATH_NS)
-                        || ns.equals(Namespaces.XQUERY_OPTIONS_NS)
-                    ) {
-                        throw new XPathException(ErrorCodes.XQST0045, name.getLine(), name.getColumn());
+                    if(!annotationValid(qn)) {
+                        XPathException e = new XPathException(ErrorCodes.XQST0045, 
+							"Annotation in a reserved namespace: " + qn.getNamespaceURI());
+						e.setLocation(name.getLine(), name.getColumn());
+						throw e;
                     }
 
                     annotList.add(qn);

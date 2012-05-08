@@ -508,9 +508,16 @@ itemType throws XPathException
 	|
 	( "function" LPAREN ) => functionTest
 	| 
+	( LPAREN ) => parenthesizedItemType
+	|
 	( . LPAREN ) => kindTest 
 	|
 	atomicType
+	;
+
+parenthesizedItemType throws XPathException
+:
+	LPAREN! itemType RPAREN!
 	;
 
 singleType throws XPathException
