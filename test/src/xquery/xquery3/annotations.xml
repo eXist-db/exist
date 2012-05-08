@@ -71,7 +71,7 @@ return
 import module namespace ex2="http://exist-db.org/xquery/ex2"
 at "xmldb:exist:///db/xq3-test/test1.xql";
 
-util:registered-functions("http://exist-db.org/xquery/ex2")]]></code>
-        <expected>ex2:public-function</expected>
+util:describe-function(xs:QName("ex2:private-function"))]]></code>
+        <xpath>$output//annotation[@name="private"]</xpath>
     </test>
 </TestSet>

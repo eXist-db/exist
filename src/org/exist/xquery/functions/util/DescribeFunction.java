@@ -28,9 +28,11 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.xquery.Annotation;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LiteralValue;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -60,7 +62,10 @@ public class DescribeFunction extends Function {
 				new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "The name of the function to get the signature of"),
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
-			
+	
+	private final static QName ANNOTATION_QNAME = new QName("annotation");
+	private final static QName ANNOTATION_VALUE_QNAME = new QName("value");
+	
 	public DescribeFunction(XQueryContext context) {
 		super(context, signature);
 	}
@@ -106,8 +111,9 @@ public class DescribeFunction extends Function {
 	 * @param signature
 	 * @param builder
 	 * @param attribs
+	 * @throws XPathException if an internal error occurs
 	 */
-	private void writeSignature(FunctionSignature signature, MemTreeBuilder builder) {
+	private void writeSignature(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {
 		AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "arguments", "arguments", "CDATA", Integer.toString(signature.getArgumentCount()));
 		builder.startElement("", "prototype", "prototype", attribs);
@@ -115,7 +121,9 @@ public class DescribeFunction extends Function {
 		builder.startElement("", "signature", "signature", attribs);
 		builder.characters(signature.toString());
 		builder.endElement();
-
+		
+		writeAnnotations(signature, builder);
+		
 		if(signature.getDescription() != null) {
 			builder.startElement("", "description", "description", attribs);
 
@@ -177,4 +185,25 @@ public class DescribeFunction extends Function {
 		builder.endElement();
 	}
 
+	private void writeAnnotations(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {
+		AttributesImpl attribs = new AttributesImpl();
+		Annotation[] annots = signature.getAnnotations();
+		if (annots != null) {
+			for (Annotation annot : annots) {
+				attribs.clear();
+				attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
+				attribs.addAttribute(null, "namespace", "namespace", "CDATA", annot.getName().getNamespaceURI());
+				builder.startElement(ANNOTATION_QNAME, attribs);
+				LiteralValue[] value = annot.getValue();
+				if (value != null) {
+					for (LiteralValue literal : value) {
+						builder.startElement(ANNOTATION_VALUE_QNAME, null);
+						builder.characters(literal.getValue().getStringValue());
+						builder.endElement();
+					}
+				}
+				builder.endElement();
+			}
+		}
+	}
 }
