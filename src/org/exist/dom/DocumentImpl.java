@@ -1242,8 +1242,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /** ? @see org.w3c.dom.Document#getDocumentURI()
      */
     public String getDocumentURI() {
-        //TODO : easy to implement once we have stabule base-URIs -pb
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDocumentURI not implemented on class " + getClass().getName());
+        return getBaseURI();
     }
 
     /** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
