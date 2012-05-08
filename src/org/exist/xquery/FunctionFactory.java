@@ -407,7 +407,7 @@ public class FunctionFactory {
     private static FunctionCall getXQueryModuleFunction(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
         final FunctionCall fc;
-        UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size());
+        UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size(), context);
         if (func == null) {
             // check if the module has been compiled already
             if (module.isReady()) {

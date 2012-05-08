@@ -80,7 +80,7 @@ public class FunctionAvailable extends BasicFunction {
             if(module instanceof InternalModule) {
                  found = ((InternalModule)module).getFunctionDef(functionName, arity) != null;
             } else if(module instanceof ExternalModule) {
-                found = ((ExternalModule)module).getFunction(functionName, arity) != null;
+                found = ((ExternalModule)module).getFunction(functionName, arity, context) != null;
             } 
         }
         

@@ -69,43 +69,57 @@ public class FunOnFunctions extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		if (isCalledAs("function-lookup")) {
-			QName fname = ((QNameValue) args[0].itemAt(0)).getQName();
-			int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
-			
-	        FunctionCall call = lookupFunction(fname, arity);
-	        
-	        return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
-		} else if (isCalledAs("function-name")) {
-			FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-			QName qname = ref.getSignature().getName();
-			if (qname == null || qname == InlineFunction.INLINE_FUNCTION_QNAME)
-				return Sequence.EMPTY_SEQUENCE;
+		try {
+			if (isCalledAs("function-lookup")) {
+				QName fname = ((QNameValue) args[0].itemAt(0)).getQName();
+				int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
+				
+			    FunctionCall call = lookupFunction(fname, arity);
+			    
+			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
+			} else if (isCalledAs("function-name")) {
+				FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+				QName qname = ref.getSignature().getName();
+				if (qname == null || qname == InlineFunction.INLINE_FUNCTION_QNAME)
+					return Sequence.EMPTY_SEQUENCE;
+				else
+					return new QNameValue(context, qname);
+			} else {
+				// isCalledAs("function-arity")
+				FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+				return new IntegerValue(ref.getSignature().getArgumentCount());
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			if (e instanceof XPathException)
+				throw (XPathException)e;
 			else
-				return new QNameValue(context, qname);
-		} else {
-			// isCalledAs("function-arity")
-			FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-			return new IntegerValue(ref.getSignature().getArgumentCount());
+				throw new XPathException(this, ErrorCodes.XPST0017, e.getMessage());
 		}
 	}
 
 	private FunctionCall lookupFunction(QName qname, int arity) throws XPathException {
 	    // check if the function is from a module 
 	    Module module = context.getModule(qname.getNamespaceURI());
-	    UserDefinedFunction func;
-	    if(module == null) {
-	        func = context.resolveFunction(qname, arity);
-	    } else {
-	        if(module.isInternalModule()) {
-                throw new XPathException(this, ErrorCodes.XPST0017, "Cannot create a reference to an internal Java function");
-            }
-	        func = ((ExternalModule)module).getFunction(qname, arity);
-	    }
-        if (func == null)
-            return null;
-	    FunctionCall funcCall = new FunctionCall(context, func);
-        funcCall.setLocation(line, column);
-	    return funcCall;
+	    try {
+			UserDefinedFunction func;
+			if(module == null) {
+			    func = context.resolveFunction(qname, arity);
+			} else {
+			    if(module.isInternalModule()) {
+			        throw new XPathException(this, ErrorCodes.XPST0017, "Cannot create a reference to an internal Java function");
+			    }
+			    func = ((ExternalModule)module).getFunction(qname, arity, context);
+			}
+			if (func == null)
+			    return null;
+			FunctionCall funcCall = new FunctionCall(context, func);
+			funcCall.setLocation(line, column);
+			return funcCall;
+		} catch (XPathException e) {
+			// function not found: return empty sequence
+			return null;
+		}
 	}
 }

@@ -104,7 +104,7 @@ public class FunctionFunction extends BasicFunction {
                 logger.error("Cannot create a reference to an internal Java function");
                 throw new XPathException(this, "Cannot create a reference to an internal Java function");
             }
-	        func = ((ExternalModule)module).getFunction(qname, arity);
+	        func = ((ExternalModule)module).getFunction(qname, arity, context);
 	    }
         if (func == null)
             throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
