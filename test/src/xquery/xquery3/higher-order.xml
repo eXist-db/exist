@@ -254,6 +254,19 @@ local:map(function($a) { $a * $a }, 1 to 5)
         <expected>1 4 9 16 25</expected>
     </test>
     <test output="text">
+        <task>Function sequence type: parenthesized type</task>
+        <code><![CDATA[
+declare function local:test(
+    $f as (function(item()*) as item()*)?) {
+  "OK"
+};
+
+local:test(())
+]]>
+        </code>
+        <expected>OK</expected>
+    </test>
+    <test output="text">
         <task>Calling function in imported module</task>
         <code><![CDATA[
 import module namespace ex2="http://exist-db.org/xquery/ex2"

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 function annotations</testName>
+    <description>
+        <p>Function annotations in XQuery 3</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xq3-test"/>
+        <store collection="/db/xq3-test" type="application/xquery" name="test1.xql"><![CDATA[
+module namespace ex2="http://exist-db.org/xquery/ex2";
+
+declare %private function ex2:private-function() {
+	"This function is private"
+};
+
+declare %public function ex2:public-function() {
+    ex2:private-function()
+};
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xq3-test"/>
+    </tearDown>
+    <test output="text" id="annot-private">
+        <task>Try to call a %private function</task>
+        <code><![CDATA[xquery version "3.0";
+
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+ex2:private-function()]]></code>
+        <error>XPST0017</error>
+    </test>
+    <test output="text" id="annot-public">
+        <task>Try to call a %public function</task>
+        <code><![CDATA[xquery version "3.0";
+
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+ex2:public-function()]]></code>
+        <expected>This function is private</expected>
+    </test>
+    <test output="text" id="annot-private-dyn">
+        <task>Try to call a %private function dynamically</task>
+        <code><![CDATA[xquery version "3.0";
+
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+count(function-lookup(xs:QName("ex2:private-function"), 0))]]></code>
+        <expected>0</expected>
+    </test>
+    <test output="text" id="annot-private-lit">
+        <task>Try to reference a %private function</task>
+        <code><![CDATA[xquery version "3.0";
+
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+let $f := ex2:private-function#0
+return
+    count($f)]]></code>
+        <error>XPST0017</error>
+    </test>
+    <test output="text" id="annot-private-list">
+        <task>Try to list %private function</task>
+        <code><![CDATA[xquery version "3.0";
+
+import module namespace ex2="http://exist-db.org/xquery/ex2"
+at "xmldb:exist:///db/xq3-test/test1.xql";
+
+util:registered-functions("http://exist-db.org/xquery/ex2")]]></code>
+        <expected>ex2:public-function</expected>
+    </test>
+</TestSet>
