@@ -36,13 +36,21 @@ declare function local:builtin-modules($xqdocs as element()*) {
         let $help := $proto/description/string()
         let $xqdoc := $xqdocs/json:value[signature = $signature]
         return
-            if ($xqdoc) then
+            if (exists($xqdoc)) then
                 $xqdoc
             else
                 <json:value json:array="true">
                     <signature>{$signature}</signature>
                     <help>{$help}</help>
                     <type>function</type>
+                    <visibility>
+                    {
+                        if ($proto/annotation[@name="private"]) then
+                            "private"
+                        else
+                            "public"
+                    }
+                    </visibility>
                 </json:value>
 };
 

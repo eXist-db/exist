@@ -2,33 +2,42 @@
 <html>
     <head>
         <title>Demo App</title>
-        <base class="templates:base"/>
         <link rel="shortcut icon" href="resources/images/favicon.ico"/>
         <link rel="stylesheet" type="text/css" href="resources/css/exist.css"/>
     </head>
-    <body>
+    <body id="body">
         <div id="grey-top">
             <div id="grey-bot">
                 <div id="container">
                     <div id="header">
-                        <a href="index.html" id="logo">eXistDB</a>
+                        <a class="demo:link-to-home" href="/" id="logo">eXistDB</a>
                     </div><!--/header-->
                     <div id="navigation">
-                        <ul id="nav" class="dropdown dropdown-horizontal"/>
+                        <ul id="nav" class="dropdown dropdown-horizontal">
+                            <li class="dir" id="about">
+                                <span>Home</span>
+                                <ul>
+                                    <li>
+                                        <a href="" class="templates:fix-links?root=context">Home</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
-                    <div id="main">
-                        <!-- Page content will be injected into the div below -->
-                        <div id="content"/>
-                        <div id="right">
-                            <div id="r-top">
-                                <div id="r-bot">
-                                    <h2>Links</h2>
+                    <div class="container" id="main">
+                        <div class="row" id="container-body">
+                            <!-- Page content will be injected into the div below -->
+                            <div class="span9" id="content"/>
+							<!-- Right hand column: 3 wide -->
+                            <div class="span3">
+                                <!--div class="box templates:fix-links">
+                                    <h2>Demo Pages</h2>
                                     <ol>
                                         <li>
-                                            <a href="index.html">Entry page</a>
+                                            <a href="/examples/basic/basics.html">Basic XQuery Examples</a>
                                         </li>
                                     </ol>
-                                </div>
+                                </div-->
                             </div>
                         </div>
                     </div>
@@ -38,14 +47,11 @@
         <div id="footer">
             <ul>
                 <li>
-                    <a href="#">Documentation</a>
+                    <a class="demo:link-to-home" href="/">Homepage</a>
                 </li>
             </ul>
             <div id="copyright">
-                <p> Copyright eXist 2011</p>
-                <p>
-                    <a href="http://www.jameshambly.com"> Designed by JamesHambly.com</a>
-                </p>
+                <p>Copyright eXist-db Project 2012</p>
             </div><!--/copyright-->
         </div><!--/footer-->
     </body>

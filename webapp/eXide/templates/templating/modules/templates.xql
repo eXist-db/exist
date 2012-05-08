@@ -44,7 +44,7 @@ declare function templates:process($nodes as node()*, $model as item()*) {
         templates:process($node, $resolver, $model)
 };
 
-declare function templates:process($node as node(), $resolver as function(xs:string) as item()?, $model as item()*) {
+declare %private function templates:process($node as node(), $resolver as function(xs:string) as item()?, $model as item()*) {
     typeswitch ($node)
         case document-node() return
             for $child in $node/node() return templates:process($child, $resolver, $model)
@@ -63,14 +63,14 @@ declare function templates:process($node as node(), $resolver as function(xs:str
             $node
 };
 
-declare function templates:get-instructions($class as xs:string?) as xs:string* {
+declare %private function templates:get-instructions($class as xs:string?) as xs:string* {
     for $name in tokenize($class, "\s+")
     where templates:is-qname($name)
     return
         $name
 };
 
-declare function templates:call($class as xs:string, $node as element(), $model as item()*, $resolver as function(xs:string) as item()?) {
+declare %private function templates:call($class as xs:string, $node as element(), $model as item()*, $resolver as function(xs:string) as item()?) {
     let $paramStr := substring-after($class, "?")
     let $parameters := templates:parse-parameters($paramStr)
     let $func := if ($paramStr) then substring-before($class, "?") else $class
@@ -85,7 +85,7 @@ declare function templates:call($class as xs:string, $node as element(), $model 
             }
 };
 
-declare function templates:parse-parameters($paramStr as xs:string?) as element(parameters) {
+declare %private function templates:parse-parameters($paramStr as xs:string?) as element(parameters) {
     <parameters>
     {
         for $param in tokenize($paramStr, "&amp;")
@@ -98,7 +98,7 @@ declare function templates:parse-parameters($paramStr as xs:string?) as element(
     </parameters>
 };
 
-declare function templates:is-qname($class as xs:string) as xs:boolean {
+declare %private function templates:is-qname($class as xs:string) as xs:boolean {
     matches($class, "^[^:]+:[^:]+")
 };
 
@@ -183,8 +183,8 @@ declare function templates:display-source($node as node(), $params as element(pa
             <pre class="brush: {if ($syntax) then $syntax else 'xquery'}">
             { $source }
             </pre>
-            <a href="{$context}/{$eXidePath}/index.html?snip={encode-for-uri($source)}" target="eXide"
-                title="Opens the code in eXide in new tab or existing tab if it is already open.">Edit</a>
+            <a class="btn" href="{$context}/{$eXidePath}/index.html?snip={encode-for-uri($source)}" target="eXide"
+                title="Opens the code in eXide in new tab or existing tab if it is already open.">Try it</a>
         </div>
 };
 
@@ -255,13 +255,14 @@ declare function templates:fix-links($node as node(), $params as element(paramet
     let $temp := 
         element { node-name($node) } {
             $node/@* except $node/@class,
+            attribute class { replace($node/@class, "\s*templates:fix-links[^\s]*", "")},
             for $child in $node/node() return templates:fix-links($child, $prefix)
         }
     return
         templates:process($temp, $model)
 };
 
-declare function templates:fix-links($node as node(), $prefix as xs:string) {
+declare %private function templates:fix-links($node as node(), $prefix as xs:string) {
     typeswitch ($node)
         case element(a) return
             let $href := $node/@href

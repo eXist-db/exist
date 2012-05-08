@@ -227,11 +227,12 @@ declare function local:delete-resource($collection as xs:string, $resource as xs
 declare function local:delete($collection as xs:string, $selection as xs:string+, $user as xs:string) {
     let $result :=
         for $docOrColl in $selection
+        let $docOrColl := xmldb:encode($docOrColl)
         let $path :=
             if (starts-with($docOrColl, "/")) then
                 $docOrColl
             else
-                $collection || "/" || xmldb:encode($docOrColl)
+                $collection || "/" || $docOrColl
         let $isCollection := xmldb:collection-available($path)
         let $response :=
             if ($isCollection) then

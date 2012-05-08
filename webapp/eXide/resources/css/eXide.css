@@ -468,6 +468,20 @@ ul.dynatree-container {
 	margin: 0px 0px 8px 0px;
 }
 
+#outline .private, #outline .public {
+    background-repeat: no-repeat;
+    background-position: left;
+    padding-left: 15px;
+}
+
+#outline .private {
+    background-image: url(../images/private.png);
+}
+
+#outline .public {
+    background-image: url(../images/public.png);
+}
+
 .help img {
     float: right;
     width: 260px;
