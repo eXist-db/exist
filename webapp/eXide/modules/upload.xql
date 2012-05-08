@@ -16,25 +16,15 @@
  :  You should have received a copy of the GNU General Public License
  :  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  :)
-xquery version "1.0";
+xquery version "3.0";
 
 declare namespace expath="http://expath.org/ns/pkg";
 
 declare option exist:serialize "method=json media-type=application/json";
 
-declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
-{
- $data
-};
-
-declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
-{
-	$path = ("expath-pkg.xml")
-};
-
 declare function local:get-descriptors($collection, $name) {
-    let $dataCb := util:function(xs:QName("local:entry-data"), 4)
-    let $entryCb := util:function(xs:QName("local:entry-filter"), 3)
+    let $dataCb := function($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) { $data }
+    let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { $path = "expath-pkg.xml" }
     return
         compression:unzip(util:binary-doc(concat($collection, "/", $name)), $entryCb, (), $dataCb, ())
 };
@@ -56,15 +46,41 @@ return
         ()
 };
 
-declare function local:upload($collection, $name, $data) {
-    let $path := xmldb:store($collection, $name, $data)
+declare function local:mkcol-recursive($collection, $components) {
+    if (exists($components)) then
+        let $newColl := concat($collection, "/", $components[1])
+        return (
+            xmldb:create-collection($collection, $components[1]),
+            local:mkcol-recursive($newColl, subsequence($components, 2))
+        )
+    else
+        ()
+};
+
+(: Helper function to recursively create a collection hierarchy. :)
+declare function local:mkcol($collection, $path) {
+    local:mkcol-recursive($collection, tokenize($path, "/"))[last()]
+};
+
+declare function local:store($root as xs:string, $path as xs:string, $data) {
+    if (matches($path, "/[^/]+$")) then
+        let $split := text:groups($path, "^(.*)/([^/]+)$")
+        let $newCol := local:mkcol($root, $split[2])
+        return
+            xmldb:store($newCol, $split[3], $data)
+    else
+        xmldb:store($root, $path, $data)
+};
+
+declare function local:upload($collection, $path, $data) {
+    let $path := local:store($collection, $path, $data)
     let $upload :=
         <result>
-           <name>{$name}</name>
+           <name>{$path}</name>
            <type>{xmldb:get-mime-type($path)}</type>
            <size>93928</size>
        </result>
-    let $deploy := local:deploy($collection, $name)
+    let $deploy := local:deploy($collection, $path)
     return
         $upload
 };
@@ -74,7 +90,7 @@ let $name := request:get-uploaded-file-name("file[]")
 let $data := request:get-uploaded-file-data("file[]")
 return
     util:catch("*",
-        local:upload(xmldb:encode-uri($collection), xmldb:encode-uri($name), $data),
+        local:upload(xmldb:encode-uri($collection), $name, $data),
         <result>
            <name>{$name}</name>
            <error>{$util:exception-message}</error>

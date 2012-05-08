@@ -54,32 +54,47 @@ ul.dropdown ul {
 }
 
 ul.dropdown {
- position: relative;
- z-index: 597;
- float: left; width: 960px;
+    position: relative;
+    z-index: 597;
+    float: left; 
+    width: 940px;
 }
 
 ul.dropdown li {
- float: left; width: 160px; height: 60px; 
+ float: left; 
+ width: 160px; 
+ height: 60px; 
  line-height: 1.3em;
- vertical-align: middle; text-indent: -999em;
- zoom: 1; background: url(../images/nav.gif) no-repeat;
+ vertical-align: middle; 
+ zoom: 1;
+ background: url(../images/bgmenu.gif) no-repeat;
 }
 
-ul.dropdown li.hover,
+ul.dropdown li span {
+    padding: 18px 0;
+    width: 100%;
+    display: block;
+    text-align: center;
+    font: 1.2em/1em "QuicksandBook", "Arial", Helvetica, sans-serif;
+    font-weight: bold;
+}
+
 ul.dropdown li:hover {
- position: relative;
- z-index: 599;
- cursor: pointer
+    color: #ffcb05;
+    position: relative;
+    z-index: 599;
+    cursor: pointer;
+    background: url(../images/bgmenuhi.gif) no-repeat;
 }
 
 ul.dropdown ul {
- visibility: hidden; 
- position: absolute; padding: 0 0 10px;
- top: 100%; background: url(../images/nav-dropdown.png) no-repeat 50% 100%;
- left: 0;
- z-index: 598;
- width: 100%; width: 160px;
+    visibility: hidden; 
+    position: absolute; padding: 0 0 10px;
+    top: 100%; 
+    background: url(../images/nav-dropdown.png) no-repeat 50% 100%;
+    left: 0;
+    z-index: 598;
+    width: 100%; width: 160px;
 }
 
 ul.dropdown ul li {
@@ -92,23 +107,8 @@ ul.dropdown ul ul {
 }
 
 ul.dropdown li:hover > ul {
- visibility: visible;
+    visibility: visible;
 }
-
-ul.dropdown li#about { }
-ul.dropdown li#documentation { background-position: -160px 0 }
-ul.dropdown li#examples { background-position: -320px 0 }
-ul.dropdown li#community { background-position: -480px 0}
-ul.dropdown li#development { background-position: -640px 0}
-ul.dropdown li#administration { background-position: -800px 0 }
-
-
-ul.dropdown li:hover#about { background-position: 0 -60px}
-ul.dropdown li:hover#documentation { background-position: -160px -60px }
-ul.dropdown li:hover#examples { background-position: -320px -60px }
-ul.dropdown li:hover#community { background-position: -480px -60px }
-ul.dropdown li:hover#development { background-position: -640px -60px }
-ul.dropdown li:hover#administration { background-position: -800px -60px }
 
 
 	ul.dropdown a:link,

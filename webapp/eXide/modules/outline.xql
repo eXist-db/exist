@@ -16,7 +16,7 @@
  :  You should have received a copy of the GNU General Public License
  :  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  :)
-xquery version "1.0";
+xquery version "3.0";
 
 declare option exist:serialize "method=json indent=yes";
 
@@ -33,7 +33,7 @@ declare option exist:serialize "method=json indent=yes";
     for $uri at $i in $uris
     let $source := if (matches($sources[$i], "^(/|\w+:)")) then $sources[$i] else concat($base, "/", $sources[$i])
     return
-            util:catch("*",
+            try {
 				let $log := util:log("DEBUG", ("Importing module ", $source))
 				let $tempPrefix := concat("temp", $i)
                 let $import := util:import-module($uri, $tempPrefix, $source)
@@ -53,6 +53,14 @@ declare option exist:serialize "method=json indent=yes";
                             <functions json:array="true">
 								<name>{$name}</name>
 								<signature>{$prototype/signature/text()}</signature>
+                                <visibility>
+                                {
+                                    if ($prototype/annotation[@name="private"]) then
+                                        "private"
+                                    else
+                                        "public"
+                                }
+                                </visibility>
 							</functions>
                     }
                     {
@@ -62,8 +70,9 @@ declare option exist:serialize "method=json indent=yes";
                         return
                             <variables json:array="true">{$name}</variables>
                     }
-                    </modules>,
+                    </modules>
+            } catch * {
                 ()
-            )
+            }
 }
 </functions>
