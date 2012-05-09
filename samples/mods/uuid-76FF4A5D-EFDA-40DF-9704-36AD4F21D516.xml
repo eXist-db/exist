@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-76FF4A5D-EFDA-40DF-9704-36AD4F21D516">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-76FF4A5D-EFDA-40DF-9704-36AD4F21D516">
     <titleInfo>
         <title>Household and Family Trends in Europe: from Convergence to Divergence</title>
     </titleInfo>
@@ -13,8 +12,8 @@
         <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no1/househol.html</url>
     </location>
     <originInfo>
-        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
-        <dateCreated encoding="w3cdtf">1995</dateCreated>
+        <publisher>EURODATA Research Archive, Mannheim Centre for European Social Research (MZES)</publisher>
+        <dateIssued encoding="w3cdtf">1995</dateIssued>
     </originInfo>
     <physicalDescription>
         <internetMediaType>text/html</internetMediaType>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:e="http://www.asia-europe.uni-heidelberg.de/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://cluster-schemas.uni-hd.de/modsCluster.xsd" ID="uuid-F46C093F-2C01-46BB-83EB-642013EFECDF">
+    <titleInfo>
+        <title>Diskussionspapiere aus der Fakultät für Sozialwissenschaft</title>
+    </titleInfo>
+    <name type="personal">
+        <namePart type="family">Roskam</namePart>
+        <namePart type="given">Gerlinde</namePart>
+        <role>
+            <roleTerm type="code" authority="marcrelator">edt</roleTerm>
+        </role>
+    </name>
+    <originInfo script="latn">
+        <place>
+            <placeTerm type="text">Bochum</placeTerm>
+        </place>
+        <publisher>Fakultät für Sozialwissenschaft, Ruhr-Universität Bochum</publisher>
+        <dateIssued encoding="w3cdtf" point="start">1993</dateIssued>
+        <dateIssued encoding="w3cdtf" point="end"/>
+        <issuance>continuing</issuance>
+        <frequency/>
+    </originInfo>
+    <physicalDescription>
+        <form authority="marcform">print</form>
+    </physicalDescription>
+    <targetAudience authority="marctarget">adult</targetAudience>
+    <typeOfResource>text</typeOfResource>
+    <genre type="code" authority="marcgt">series</genre>
+    <tableOfContents xlink:href="http://www.sowi.rub.de/forschung/profil/diskuss.html.de"/>
+    <identifier type="issn">0943-6790</identifier>
+    <location>
+        <url dateLastAccessed="2012-06-08">http://www.sowi.rub.de/forschung/profil/diskuss.html.de</url>
+    </location>
+    <language>
+        <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+        <scriptTerm authority="iso15924" type="code">latn</scriptTerm>
+    </language>
+    <recordInfo xmlns:mods="http://www.loc.gov/mods/v3" lang="eng" script="latn">
+        <recordCreationDate encoding="w3cdtf">2012-05-08+02:00</recordCreationDate>
+        <recordChangeDate encoding="w3cdtf"/>
+        <languageOfCataloging>
+            <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+            <scriptTerm authority="iso15924" type="code">latn</scriptTerm>
+        </languageOfCataloging>
+    </recordInfo>
+</mods>

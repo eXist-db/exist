@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-01BEA1CE-822D-4D71-8ED3-EBF239B8D65D">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-01BEA1CE-822D-4D71-8ED3-EBF239B8D65D">
     <titleInfo>
         <title>The Project on Comparative European Electoral History: 1830-1995</title>
         <subTitle>A computerised data handbook</subTitle>
@@ -8,22 +7,25 @@
     <typeOfResource>text</typeOfResource>
     <abstract>This project is aimed at collecting electoral data for all European countries both in a historical and a regional perspective. Data were made machine readable from the beginning of national elections in the 19th century until the present in a disaggregated form down to the level of electoral districts. The data will we published as an electronic data handbook, comprising full documentation and introductory chapters.</abstract>
     <name type="personal">
-        <namePart>Caramani, Daniele</namePart>
+        <namePart type="family">Caramani</namePart>
+        <namePart type="given">Daniele</namePart>
+        <role>
+            <roleTerm type="code" authority="marcrelator">edt</roleTerm>
+        </role>
     </name>
     <location>
-        <url>http://www.mzes.uni-mannheim.de/eurodata/newsletter/no4/feature.html</url>
+        <url dateLastAccessed="2012-06-08">http://www.mzes.uni-mannheim.de/eurodata/newsletter/no4/feature.html</url>
     </location>
-    <originInfo>
-        <publisher>EURODATA Research Archive. Mannheim Centre for European Social Research (MZES)</publisher>
-        <dateCreated encoding="w3cdtf">1996</dateCreated>
-    </originInfo>
     <physicalDescription>
         <internetMediaType>text/html</internetMediaType>
     </physicalDescription>
-    <relatedItem type="otherFormat">
-        <titleInfo>
-            <title>EURODATA Newsletter No.4</title>
-        </titleInfo>
+    <relatedItem type="host" xlink:href="#uuid-dc3a0f49-8ad2-4bef-a069-112e9fc3f250">
+        <part>
+            <detail type="number">
+                <number>4</number>
+            </detail>
+            <date encoding="w3cdtf">1996</date>
+        </part>
     </relatedItem>
     <classification authority="IZSOZ">10504</classification>
     <subject authority="IZSOZ">

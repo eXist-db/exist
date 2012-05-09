@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mods xmlns="http://www.loc.gov/mods/v3"
-    version="3.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" xmlns:xlink="http://www.w3.org/1999/xlink" ID="uuid-C6B2EF36-AAA5-4F5C-86CF-95DE01EE1BD0">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.4" xsi:schemaLocation="http://www.loc.gov/standards/mods/mods.xsd" ID="uuid-C6B2EF36-AAA5-4F5C-86CF-95DE01EE1BD0">
     <titleInfo>
         <title>U.S. Perspectives on the position and role of Germany and Japan in international and regional structures</title>
         <subTitle>The 1950s and the Present</subTitle>
@@ -10,12 +9,15 @@
     <name type="personal">
         <namePart type="family">Schmidt</namePart>
         <namePart type="given">Gustav</namePart>
+        <role>
+            <roleTerm type="code" authority="marcrelator">edt</roleTerm>
+        </role>
     </name>
     <location>
         <url>http://www.ruhr-uni-bochum.de/lehrstuhl-ip/Ostasien.pdf</url>
     </location>
     <originInfo>
-        <dateCreated encoding="w3cdtf">1999</dateCreated>
+        <dateIssued encoding="w3cdtf">1999</dateIssued>
     </originInfo>
     <physicalDescription>
         <internetMediaType>application/pdf</internetMediaType>
