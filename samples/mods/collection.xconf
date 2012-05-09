@@ -23,7 +23,7 @@
             <!--<text qname="mods:extension"/>-->
             <!--<text qname="mods:originInfo"/>-->
             <!--<text qname="mods:targetAudience"/>-->
-            <!--<text qname="mods:identifier"/>-->
+            <text qname="mods:identifier"/>
             <!--<text qname="mods:recordInfo"/>-->
             
             <!--deeper elements accessed by search module-->
