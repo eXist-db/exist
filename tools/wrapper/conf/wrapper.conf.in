@@ -113,8 +113,12 @@ wrapper.filter.trigger.1000=java.lang.OutOfMemoryError
 # (Only match text in stack traces if -XX:+PrintClassHistogram is being used.)
 #wrapper.filter.trigger.1000=Exception in thread "*" java.lang.OutOfMemoryError
 #wrapper.filter.allow_wildcards.1000=TRUE
-wrapper.filter.action.1000=RESTART
+wrapper.filter.action.1000=SHUTDOWN
 wrapper.filter.message.1000=The JVM has run out of memory.
+
+# Do not allow the wrapper to restart the JVM.
+# A restart could cause issues if eXist-db wasn't shut down completely.
+wrapper.disable_restarts.automatic=TRUE
 
 #********************************************************************
 # Wrapper Windows Properties
