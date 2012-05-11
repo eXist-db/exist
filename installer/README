@@ -1,0 +1,15 @@
+This directory contains configuration and setup files for the IzPack installer. 
+
+Adding Applications to the Distribution
+=======================================
+
+Beginning with eXist-2.0, the documentation and all examples are distributed as separate 
+app packages. To change the list of apps available to the user, you have to do the following:
+
+* Edit the second panel in userInput.xml and add a field with type "check" for each app
+you want to present to the user. Specify a unique variable.
+
+* Edit jobs.xml: in executefile, add an <arg> for every variable.
+
+* Create a directory in $EXIST_HOME and copy the .xar files of all application
+packages you want to have installed there.
