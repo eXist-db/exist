@@ -16,4 +16,20 @@
             </spec>
         </field>
     </panel>
+    <panel order="1">
+        <field type="title" align="left" txt="Select Application Packages" bold="false" size="1.33"/>
+        <field type="staticText" align="left" txt="Please select the applications which should be installed. You can install more applications any time later."/>
+        <field type="check" variable="apps.fundocs">
+            <spec txt="eXist-db XQuery Modules Documentation" true="on" false="off"
+                  set="true"/>
+        </field>
+        <field type="check" variable="apps.doc">
+            <spec txt="eXist-db Documentation" true="on" false="off"
+                  set="true"/>
+        </field>
+        <field type="check" variable="apps.demo">
+            <spec txt="Demo Application" true="on" false="off"
+                  set="true"/>
+        </field>
+    </panel>
 </userInput>
