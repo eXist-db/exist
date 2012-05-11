@@ -40,7 +40,9 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Initial database setup: called from the installer to set the admin password.
@@ -76,6 +78,7 @@ public class Setup {
         File home = getExistHome();
         ExistRepository repository = getRepository(home);
 
+        List<String> uris = new ArrayList<String>();
         for (int i = offset; i < args.length; i++) {
             String[] appParams = args[i].split("=");
             String name = appParams[0];
@@ -88,21 +91,35 @@ public class Setup {
                         UserInteractionStrategy interact = new BatchUserInteraction();
                         Package pkg = repository.getParentRepo().installPackage(xar, true, interact);
                         String pkgName = pkg.getName();
-                        String xquery =
-                                "import module namespace repo=\"http://exist-db.org/xquery/repo\" " +
-                                "at \"java:org.exist.xquery.modules.expathrepo.ExpathPackageModule\"; " +
-                                "repo:deploy(\"" + pkgName + "\")";
-                        query.query(xquery);
+                        uris.add(pkgName);
                     } else {
                         System.err.println("App package not found: " + name + ". Skipping it.");
                     }
                 } catch (PackageException e) {
                     System.err.println("Failed to install application package " + name + ": " + e.getMessage());
-                } catch (XMLDBException e) {
-                    System.err.println("Failed to deploy application package " + name + ": " + e.getMessage());
                 }
             }
         }
+        String xquery =
+            "import module namespace repo=\"http://exist-db.org/xquery/repo\" " +
+            "at \"java:org.exist.xquery.modules.expathrepo.ExpathPackageModule\"; (";
+        StringBuilder prolog = new StringBuilder();
+        for (String uri : uris) {
+            if (prolog.length() > 0)
+                prolog.append(", ");
+            prolog.append(" repo:deploy(\"" + uri + "\")");
+        }
+        prolog.append(')');
+        xquery = xquery + prolog;
+        System.out.println("Starting the installation process for each application...");
+        try {
+            query.query(xquery);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            System.err.println("An error occurred while deploying applications. Some applications may " +
+                    "not have been installed correctly. You can install them later using the package repository.");
+        }
+        System.out.println("App installation completed.");
     }
 
     private static File getExistHome() throws EXistException {
@@ -151,7 +168,7 @@ public class Setup {
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            Collection root = DatabaseManager.getCollection(URI, "admin", "");
+            Collection root = DatabaseManager.getCollection(URI, "admin", null);
             if (adminPass != null) {
                 UserManagementService service =
                         (UserManagementService) root.getService("UserManagementService", "1.0");
