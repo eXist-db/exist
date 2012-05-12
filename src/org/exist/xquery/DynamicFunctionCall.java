@@ -44,9 +44,9 @@ public class DynamicFunctionCall extends AbstractExpression {
         Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
         if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
             throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Expected exactly one item for the function to be called");
+                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount());
         Item item0 = funcSeq.itemAt(0);
-        if(item0.getType() != Type.FUNCTION_REFERENCE)
+        if (!Type.subTypeOf(item0.getType(), Type.FUNCTION_REFERENCE))
             throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Type error: expected function, got " + Type.getTypeName(item0.getType()));
         FunctionReference ref = (FunctionReference)item0;
@@ -63,7 +63,9 @@ public class DynamicFunctionCall extends AbstractExpression {
         	}
         } else {
 	        ref.setArguments(arguments);
-	        ref.analyze(cachedContextInfo);
+            // need to create a new AnalyzeContextInfo to avoid memory leak
+            // cachedContextInfo will stay in memory
+	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
 	        return ref.eval(contextSequence);
         }
