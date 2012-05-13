@@ -113,7 +113,19 @@ declare %private function test:test($func as function(*), $meta as element(funct
                 return
                     test:print-result($meta, $result, $assertResult)
             } catch * {
-                <error>{$err:description}</error>
+                let $assertError := $meta/annotation[contains(@name, ":assertError")]
+                return
+                    if ($assertError) then
+                        if ($assertError/value and not(contains($err:code, $assertError/value/string())
+                            or contains($err:description, $assertError/value/string())))then
+                            <report>
+                                <failure message="Expected error {$assertError/value/string()}, got: {$err:code}"
+                                    type="failure-error-code-1"/>
+                            </report>
+                        else
+                            test:print-result($meta, (), ())
+                    else
+                        <error>{$err:code}: {$err:description}</error>
             }
         else
             ()
@@ -124,14 +136,17 @@ declare %private function test:test($func as function(*), $meta as element(funct
  :)
 declare %private function test:print-result($meta as element(function), $result as item()*, 
     $assertResult as element(report)?) {
-    <testcase name="{$meta/@name}">
-    {
-        if (exists($assertResult)) then
-            $assertResult/*
-        else
-            ()
-    }
-    </testcase>
+    let $nameAnnot := $meta/annotation[matches(@name, ":name")]
+    let $name := if ($nameAnnot) then $nameAnnot/value else replace($meta/@name, "^\w+:([^:]+)$", "$1")
+    return
+        <testcase name="{$name}" class="{$meta/@name}">
+        {
+            if (exists($assertResult)) then
+                $assertResult/*
+            else
+                ()
+        }
+        </testcase>
 };
 
 (:~
@@ -154,6 +169,8 @@ declare %private function test:check-assertions($assertions as element(annotatio
                 test:assertFalse($result)
             case "assertXPath" return
                 test:assertXPath($annotation/value/string(), $result)
+            case "assertError" return
+                test:assertError($annotation/value/string(), $result)
             default return
                 error($test:UNKNOWN_ASSERTION, $annotation/@name)
 };
@@ -251,6 +268,20 @@ declare %private function test:assertTrue($result as item()*) as element(report)
     else
         <report>
             <failure message="assertExists failed."
+                type="failure-error-code-1"/>,
+            <output>{ $result }</output>
+        </report>
+};
+
+(:~
+ : Check if the function caused an error.
+ :)
+declare %private function test:assertError($value as xs:string, $result as item()*) as element(report)? {
+    if ($result) then
+        ()
+    else
+        <report>
+            <failure message="assertError failed. Expected error {$value}"
                 type="failure-error-code-1"/>,
             <output>{ $result }</output>
         </report>
