@@ -28,20 +28,9 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Module;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.fn.FunOnFunctions;
+import org.exist.xquery.value.*;
 
 /**
  * Returns a sequence containing the QNames of all built-in functions
@@ -74,6 +63,11 @@ public class BuiltinFunctions extends BasicFunction {
 				"An error is raised if no module is found for the specified URI.",
 				new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
+        new FunctionSignature(
+            new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns a sequence of function items for each function in the specified module.",
+            new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
+            new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"))
 	};
 
 	public BuiltinFunctions(XQueryContext context, FunctionSignature signature) {
@@ -87,13 +81,15 @@ public class BuiltinFunctions extends BasicFunction {
 		throws XPathException {
 		
 		ValueSequence resultSeq = new ValueSequence();
-		if(getSignature().getArgumentCount() == 1) {
+		if(getArgumentCount() == 1) {
 			String uri = args[0].getStringValue();
 			Module module = context.getModule(uri);
 			if(module == null)
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
 			if (isCalledAs("declared-variables")) {
 				addVariablesFromModule(resultSeq, module);
+            } else if (isCalledAs("list-functions")) {
+                addFunctionRefsFromModule(resultSeq, module);
 			} else {
 				addFunctionsFromModule(resultSeq, module);
 			}
@@ -124,6 +120,16 @@ public class BuiltinFunctions extends BasicFunction {
 			resultSeq.add(new QNameValue(context, qname));
 		}
 	}
+
+    private void addFunctionRefsFromModule(ValueSequence resultSeq, Module module) throws XPathException {
+        FunctionSignature signatures[] = module.listFunctions();
+        for (FunctionSignature signature : signatures) {
+            FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
+            if (call != null) {
+                resultSeq.add(new FunctionReference(call));
+            }
+        }
+    }
 
 	private void addVariablesFromModule(ValueSequence resultSeq, Module module) {
 		for (Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {

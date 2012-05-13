@@ -1,19 +1,7 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.ExternalModule;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.InlineFunction;
-import org.exist.xquery.Module;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -74,7 +62,7 @@ public class FunOnFunctions extends BasicFunction {
 				QName fname = ((QNameValue) args[0].itemAt(0)).getQName();
 				int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
 				
-			    FunctionCall call = lookupFunction(fname, arity);
+			    FunctionCall call = FunOnFunctions.lookupFunction(this, fname, arity);
 			    
 			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
 			} else if (isCalledAs("function-name")) {
@@ -90,8 +78,6 @@ public class FunOnFunctions extends BasicFunction {
 				return new IntegerValue(ref.getSignature().getArgumentCount());
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			if (e instanceof XPathException)
 				throw (XPathException)e;
 			else
@@ -99,23 +85,23 @@ public class FunOnFunctions extends BasicFunction {
 		}
 	}
 
-	private FunctionCall lookupFunction(QName qname, int arity) throws XPathException {
+	public static FunctionCall lookupFunction(Expression parent, QName qname, int arity) throws XPathException {
 	    // check if the function is from a module 
-	    Module module = context.getModule(qname.getNamespaceURI());
+	    Module module = parent.getContext().getModule(qname.getNamespaceURI());
 	    try {
 			UserDefinedFunction func;
 			if(module == null) {
-			    func = context.resolveFunction(qname, arity);
+			    func = parent.getContext().resolveFunction(qname, arity);
 			} else {
 			    if(module.isInternalModule()) {
-			        throw new XPathException(this, ErrorCodes.XPST0017, "Cannot create a reference to an internal Java function");
+			        throw new XPathException(parent, ErrorCodes.XPST0017, "Cannot create a reference to an internal Java function");
 			    }
-			    func = ((ExternalModule)module).getFunction(qname, arity, context);
+			    func = ((ExternalModule)module).getFunction(qname, arity, parent.getContext());
 			}
 			if (func == null)
 			    return null;
-			FunctionCall funcCall = new FunctionCall(context, func);
-			funcCall.setLocation(line, column);
+			FunctionCall funcCall = new FunctionCall(parent.getContext(), func);
+			funcCall.setLocation(parent.getLine(), parent.getColumn());
 			return funcCall;
 		} catch (XPathException e) {
 			// function not found: return empty sequence
