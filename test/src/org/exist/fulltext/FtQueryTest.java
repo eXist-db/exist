@@ -117,16 +117,6 @@ public class FtQueryTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
 	        assertEquals(90, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self*']");
-	        assertEquals(2, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[mods:title &= 'self employed']");
-	        assertEquals(1, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
-	        assertEquals(2, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[. &= 'alternative']");
-            assertEquals(0, result.getSize());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -161,16 +151,6 @@ public class FtQueryTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
 	        assertEquals(90, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, 'self.*')]");
-	        assertEquals(2, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, ('self', 'employed'))]");
-	        assertEquals(1, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
-	        assertEquals(2, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[. &= 'alternative']");
-            assertEquals(0, result.getSize());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -182,7 +162,6 @@ public class FtQueryTest extends XMLTestCase {
 	    	System.out.println("----- testFtScan -----");
 	        String queryBody =
 	            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" +
-	            "declare namespace mods='http://www.loc.gov/mods/v3';\n" +
 	            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" +
 	            "\n" +
 	            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" +
@@ -198,15 +177,11 @@ public class FtQueryTest extends XMLTestCase {
 	            testCollection.getService("XQueryService", "1.0");
 	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "'), \'is\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        ResourceSet result = service.query(query);
-	        assertEquals(7, result.getSize());
+	        assertEquals(6, result.getSize());
 
 	        query = queryBody + "t:index-terms(collection('"  + TEST_COLLECTION_PATH + "')//LINE, \'is\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(6, result.getSize());
-
-	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
-	        result = service.query(query);
-	        assertEquals(14, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -635,28 +610,6 @@ public class FtQueryTest extends XMLTestCase {
                 testCollection.storeResource(doc);                
                 assertNotNull(testCollection.getResource(FILES[i]));
             }
-            
-            File modsFiles[] = MODS_DIR.listFiles();
-            for (int i = 0; i < modsFiles.length; i++) {
-                if (modsFiles[i].isFile()) {
-                    XMLResource doc =
-                        (XMLResource) testCollection.createResource(
-                        		modsFiles[i].getName(), "XMLResource" );
-                    doc.setContent(modsFiles[i]);
-                    testCollection.storeResource(doc);
-                    assertNotNull(testCollection.getResource(modsFiles[i].getName()));
-                }
-            }
-
-				
-			// File has been removed
-            // File modsFile = new File(MODS_DIR, "eXist/exist-articles.xml");
-            //       XMLResource doc =
-            //           (XMLResource) testCollection.createResource(
-            //                   modsFile.getName(), "XMLResource" );
-            //       doc.setContent(modsFile);
-            //       testCollection.storeResource(doc);
-            //       assertNotNull(testCollection.getResource(modsFile.getName()));
 
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
