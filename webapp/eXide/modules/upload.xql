@@ -19,23 +19,29 @@
 xquery version "3.0";
 
 declare namespace expath="http://expath.org/ns/pkg";
+declare namespace upload="http://exist-db.org/eXide/upload";
 
 declare option exist:serialize "method=json media-type=application/json";
 
-declare function local:get-descriptors($collection, $name) {
-    let $dataCb := function($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) { $data }
-    let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { $path = "expath-pkg.xml" }
+declare function upload:get-descriptors($zipPath) {
+    let $binary := util:binary-doc($zipPath)
     return
-        compression:unzip(util:binary-doc(concat($collection, "/", $name)), $entryCb, (), $dataCb, ())
+        if (exists($binary)) then
+            let $dataCb := function($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) { $data }
+            let $entryCb := function($path as xs:anyURI, $type as xs:string, $param as item()*) { $path = "expath-pkg.xml" }
+            return
+                compression:unzip($binary, $entryCb, (), $dataCb, ())
+        else
+            error(xs:QName("upload:not-found"), "Could not deploy uploaded xar package: " || $zipPath || " not found.")
 };
 
-declare function local:deploy($collection, $name) {
+declare function upload:deploy($name) {
 let $deploy := request:get-parameter("deploy", ())
 return
     if ($deploy and ends-with($name, ".xar")) then 
-        let $descriptors := local:get-descriptors($collection, $name)
+        let $descriptors := upload:get-descriptors($name)
         let $port := request:get-server-port()
-        let $url := concat('http://localhost:',$port,'/exist/rest',$collection, "/", $name)
+        let $url := concat('http://localhost:',$port,"/exist/rest/", $name)
         let $appName := $descriptors/expath:package/@name
         return (
             repo:remove($appName),
@@ -46,41 +52,41 @@ return
         ()
 };
 
-declare function local:mkcol-recursive($collection, $components) {
+declare function upload:mkcol-recursive($collection, $components) {
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
         return (
             xmldb:create-collection($collection, $components[1]),
-            local:mkcol-recursive($newColl, subsequence($components, 2))
+            upload:mkcol-recursive($newColl, subsequence($components, 2))
         )
     else
         ()
 };
 
 (: Helper function to recursively create a collection hierarchy. :)
-declare function local:mkcol($collection, $path) {
-    local:mkcol-recursive($collection, tokenize($path, "/"))[last()]
+declare function upload:mkcol($collection, $path) {
+    upload:mkcol-recursive($collection, tokenize($path, "/"))[last()]
 };
 
-declare function local:store($root as xs:string, $path as xs:string, $data) {
+declare function upload:store($root as xs:string, $path as xs:string, $data) {
     if (matches($path, "/[^/]+$")) then
         let $split := text:groups($path, "^(.*)/([^/]+)$")
-        let $newCol := local:mkcol($root, $split[2])
+        let $newCol := upload:mkcol($root, $split[2])
         return
             xmldb:store($newCol, $split[3], $data)
     else
         xmldb:store($root, $path, $data)
 };
 
-declare function local:upload($collection, $path, $data) {
-    let $path := local:store($collection, $path, $data)
+declare function upload:upload($collection, $path, $data) {
+    let $path := upload:store($collection, $path, $data)
     let $upload :=
         <result>
            <name>{$path}</name>
            <type>{xmldb:get-mime-type($path)}</type>
            <size>93928</size>
        </result>
-    let $deploy := local:deploy($collection, $path)
+    let $deploy := upload:deploy($path)
     return
         $upload
 };
@@ -90,7 +96,7 @@ let $name := request:get-uploaded-file-name("file[]")
 let $data := request:get-uploaded-file-data("file[]")
 return
     util:catch("*",
-        local:upload(xmldb:encode-uri($collection), $name, $data),
+        upload:upload(xmldb:encode-uri($collection), $name, $data),
         <result>
            <name>{$name}</name>
            <error>{$util:exception-message}</error>
