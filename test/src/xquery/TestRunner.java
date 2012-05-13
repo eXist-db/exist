@@ -45,6 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,7 +61,7 @@ public abstract class TestRunner {
     protected abstract String getDirectory();
 
     @Test
-    public void run() {
+    public void runXMLBasedTests() {
         File dir = new File(getDirectory());
         File[] files = dir.listFiles(new XMLFilenameFilter());
 
@@ -102,6 +103,48 @@ public abstract class TestRunner {
             e.printStackTrace();
             fail(e.getMessage());
         } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void runXQueryBasedTests() {
+        File dir = new File(getDirectory());
+        File xquery = new File(dir, "suite.xql");
+        if (!(xquery.exists() && xquery.canRead()))
+            return;
+        try {
+            StringBuilder fails = new StringBuilder();
+            StringBuilder results = new StringBuilder();
+            XQueryService xqs = (XQueryService) rootCollection.getService("XQueryService", "1.0");
+            xqs.setModuleLoadPath(getDirectory());
+            Source query = new FileSource(xquery, "UTF-8", false);
+
+            ResourceSet result = xqs.execute(query);
+            XMLResource resource = (XMLResource) result.getResource(0);
+            results.append(resource.getContent()).append('\n');
+
+            Element root = (Element) resource.getContentAsDOM();
+            NodeList testsuites = root.getElementsByTagName("testsuite");
+            for (int i = 0; i < testsuites.getLength(); i++) {
+                Element testsuite = (Element) testsuites.item(i);
+                NodeList tests = testsuite.getElementsByTagName("testcase");
+                for (int j = 0; j < tests.getLength(); j++) {
+                    Element test = (Element) tests.item(j);
+                    NodeList failures = test.getElementsByTagName("failure");
+                    if (failures.getLength() > 0) {
+                        fails.append("Test '" + test.getAttribute("name") + "' in module '" +
+                                testsuite.getAttribute("package") + "' failed.\n");
+                    }
+                }
+            }
+            if (fails.length() > 0) {
+                System.err.print(results);
+                fail(fails.toString());
+            }
+            System.out.println(results);
+        } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
