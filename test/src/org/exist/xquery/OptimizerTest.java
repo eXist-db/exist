@@ -69,8 +69,6 @@ public class OptimizerTest {
     	"		<fulltext default=\"none\">" +
         "           <create qname=\"LINE\"/>" +
         "           <create qname=\"SPEAKER\"/>" +
-        "           <create qname=\"mods:title\"/>" +
-        "           <create qname=\"mods:topic\"/>" +
         "		</fulltext>" +
     	"		<create qname=\"b\" type=\"xs:string\"/>" +
         "        <create qname=\"SPEAKER\" type=\"xs:string\"/>" +
@@ -123,16 +121,6 @@ public class OptimizerTest {
     }
 
     @Test
-    public void namespaces() {
-        int r = execute("//mods:mods/mods:titleInfo[mods:title &= 'ethnic']", false);
-        execute("//mods:mods/mods:titleInfo[mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-        r = execute("//mods:mods/mods:physicalDescription[mods:internetMediaType &= 'application/pdf']", false);
-        execute("//mods:mods/mods:physicalDescription[mods:internetMediaType &= 'application/pdf']", true, MSG_OPT_ERROR, r);
-        r = execute("//mods:mods/mods:*[mods:title &= 'ethnic']", false);
-        execute("//mods:mods/mods:*[mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
     public void simplePredicatesRegex() {
         int r = execute("//SPEECH[LINE &= 'nor*']", false);
         execute("//SPEECH[LINE &= 'nor*']", true, MSG_OPT_ERROR, r);
@@ -174,12 +162,7 @@ public class OptimizerTest {
 
     @Test
     public void noOptimization() {
-        int r = execute("//mods:title[ancestor-or-self::mods:title &= 'ethnic']", false);
-        execute("//mods:title[ancestor-or-self::mods:title &= 'ethnic']", true, "Ancestor axis should not be optimized.", r);
-        r = execute("//node()[parent::mods:title &= 'ethnic']", false);
-        execute("//node()[parent::mods:title &= 'ethnic']", true, "Parent axis should not be optimized.", r);
-
-        r = execute("/root//b[parent::c/b = 'two']", false);
+        int r = execute("/root//b[parent::c/b = 'two']", false);
         Assert.assertEquals(1, r);
         execute("/root//b[parent::c/b = 'two']", true, "Parent axis should not be optimized.", r);
         
@@ -201,48 +184,11 @@ public class OptimizerTest {
     }
 
     @Test
-    public void complexPaths() {
-        int r = execute("//mods:mods[mods:titleInfo/mods:title &= 'ethnic']", false);
-        execute("//mods:mods[mods:titleInfo/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[text:match-all(mods:titleInfo/mods:title, 'and')]", false);
-        execute("//mods:mods[text:match-all(mods:titleInfo/mods:title, 'and')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[./mods:titleInfo/mods:title &= 'ethnic']", false);
-        execute("//mods:mods[./mods:titleInfo/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[*/mods:title &= 'ethnic']", false);
-        execute("//mods:mods[*/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[.//mods:title &= 'ethnic']", false);
-        execute("//mods:mods[.//mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", false);
-        execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[./mods:physicalDescription/mods:internetMediaType = 'text/html']", false);
-        execute("//mods:mods[./mods:physicalDescription/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[*/mods:internetMediaType = 'text/html']", false);
-        execute("//mods:mods[*/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[matches(mods:physicalDescription/mods:internetMediaType, 'text/html')]", false);
-        execute("//mods:mods[matches(mods:physicalDescription/mods:internetMediaType, 'text/html')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:mods[matches(*/mods:internetMediaType, 'text/html')]", false);
-        execute("//mods:mods[matches(*/mods:internetMediaType, 'text/html')]", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
     public void reversePaths() {
 
         int r = execute("/root//b/parent::c[b = 'two']", false);
         Assert.assertEquals(1, r);
         execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", false);
-        Assert.assertEquals(13, r);
-        execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
     @Test @Ignore
@@ -251,11 +197,6 @@ public class OptimizerTest {
         int r = execute("/root//b/parent::*[b = 'two']", false);
         Assert.assertEquals(1, r);
         execute("/root//b/parent::*[b = 'two']", true, MSG_OPT_ERROR, r);
-
-        //ancestor with wildcard
-        r = execute("//mods:url/ancestor::*[mods:titleInfo/mods:title &= 'and']", false);
-        Assert.assertEquals(13, r);
-        execute("//mods:url/ancestor::*[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
     @Test
@@ -362,29 +303,6 @@ public class OptimizerTest {
                 resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
                 resource.setContent(file);
                 testCollection.storeResource(resource);
-            }
-
-            dir = new File(existDir, "samples/mods");
-            if (!dir.canRead())
-                throw new IOException("Unable to read samples directory");
-            files = dir.listFiles(new XMLFilenameFilter());
-            for (File file : files) {
-                System.out.println("Create resource from "+file.getAbsolutePath());
-                resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
-                resource.setContent(file);
-                testCollection.storeResource(resource);
-            }
-
-            File eXistModsFilesDir = new File(dir, "eXist");
-            File eXistModsFiles[] = eXistModsFilesDir.listFiles(new XMLFilenameFilter());
-
-            for(File eXistModsFile : eXistModsFiles) {
-                System.out.println("Create resource from "+eXistModsFile.getAbsolutePath());
-                XMLResource doc =
-            	(XMLResource) testCollection.createResource(
-            			eXistModsFile.getName(), "XMLResource" );
-                doc.setContent(eXistModsFile);
-                testCollection.storeResource(doc);
             }
         } catch (Exception e) {
 			e.printStackTrace();
