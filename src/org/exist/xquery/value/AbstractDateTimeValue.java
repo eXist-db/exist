@@ -35,6 +35,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -98,7 +99,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		try {
 			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
+			throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
 		}
 	}
 	
@@ -235,7 +236,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		try {
 			xgc.setTimezone((int) (offset.getValue()/60));
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("illegal timezone offset " + offset, e);
+			throw new XPathException(ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
 		}
 		return createSameKind(xgc);
 	}
