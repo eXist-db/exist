@@ -314,7 +314,7 @@
         </copy>
         <copy todir="${build.classes}/org/exist/xquery/lib">
             <fileset dir="${src}/org/exist/xquery/lib">
-                <include name="**.xq*"/>
+                <include name="**/*.xq*"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/atom/modules">
