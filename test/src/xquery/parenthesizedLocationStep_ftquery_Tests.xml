@@ -1,0 +1,180 @@
+<TestSet>
+    <testName>tests for queries on context nodes in a parenthesized location step</testName>
+    <description>
+        <p>Tests for behaviour of ft:query() function on context nodes in a parenthesized location step. 
+            Two major sections:
+            <ul>
+                <li>[element]: ft:query() on parenthesized context node selecting an element (tests #1-#4)</li>
+                <li>[attribute]: ft:query() on parenthesized context node selecting an attribute (tests #5-#8)</li>
+                <li>[attribute retrieval]: retrieval of parenthesized context node selecting an attribute (tests #9-#12)</li>
+            </ul></p>
+        <p>The degree of the problems depends on the context node type:
+            <ul>
+            <li>elements: queries fail when parenthesized context node is not immediately preceded by a non-parenthesized location step (unless immediately preceding location step selects self::* axis)</li>
+            <li>attributes: queries always fail with parenthesized context nodes, though the problem seems to lie at retrieval level (see tests #9-#12)</li>
+            </ul>
+        </p>
+        <p>Note: additional tests #-11-#12 illustrate some kind of erroneous 'bleed-through' behaviour: when a parenthesized context node selects a non-existent attribute whose name corresponds to an element name, ft:query will produce (incorrect) results (failing test #9). This behaviour does not occur when context node is not parenthesized (succeeding test #10).</p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="test"/>
+        <store collection="/db/system/config/db/test" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <fulltext default="none" attributes="no"/>
+                    <lucene>
+                        <text qname="@att1"/>
+                        <text qname="@att2"/>
+                        <text qname="el1"/>
+                        <text qname="el2"/>
+                    </lucene>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="test.xml">
+            <test>
+                <level1>
+                    <level2>
+                        <p>this is text with <el1 att1="test">test</el1> strings in <el2 att2="test">test</el2> elements</p>
+                    </level2>
+                </level1>
+                <level1>
+                    <level2>
+                        <p>this is text with <el1 att1="test">test</el1> strings in <el2 att="test">test</el2> elements</p>
+                    </level2>
+                </level1>
+            </test>
+        </store>
+    </setup>
+    <functions/>    
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+        <remove-collection collection="/db/system/config/db/test"/>
+    </tearDown>
+    <test output="xml" ignore="yes">
+        <task>[element] parenthesized final location step, non-parenthesized preceding step</task>
+        <code><![CDATA[
+            collection('/db/test')//level1//(el1)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <el1 att1="test">test</el1>
+            <el1 att1="test">test</el1>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[element] parenthesized final location step, no preceding step</task>
+        <code><![CDATA[
+            collection('/db/test')//(el1)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <el1 att1="test">test</el1>
+            <el1 att1="test">test</el1>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[element] parenthesized final location step, parenthesized preceding step</task>
+        <code><![CDATA[
+            collection('/db/test')//(level1)//(el1)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <el1 att1="test">test</el1>
+            <el1 att1="test">test</el1>
+        </expected>
+    </test>    
+    <test output="xml">
+        <task>[element] parenthesized final location step, non-parenthesized preceding step with self selector</task>
+        <code><![CDATA[
+            collection('/db/test')//level1//.//(el1)[ft:query(., 'test')]
+            ]]></code>
+        <expected>
+            <el1 att1="test">test</el1>
+            <el1 att1="test">test</el1>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[attribute] parenthesized final location step, non-parenthesized preceding step</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//(@att1)[ft:query(., 'test')]
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[attribute] parenthesized final location step, no preceding step</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//(@att1)[ft:query(., 'test')]
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>[attribute] parenthesized final location step, parenthesized preceding step</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//(level1)//(@att1)[ft:query(., 'test')]
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>    
+    <test output="xml" ignore="yes">
+        <task>[attribute] parenthesized final location step, non-parenthesized preceding step with self selector</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//.//(@att1)[ft:query(., 'test')] 
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[attribute retrieval] parenthesized final location step</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//(@att1)
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[attribute retrieval] non-parenthesized final location step</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//@att1
+            return <result>{$a}</result>
+            ]]></code>
+        <expected>
+            <result att1="test"/>
+            <result att1="test"/>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[attribute retrieval] parenthesized attribute context node causes 'bleed-through' when name equals element name</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//(@el1)
+            return <result>{$a}</result>
+            ]]></code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>[attribute retrieval] non-parenthesized attribute context behaves correctly</task>
+        <code><![CDATA[
+            for $a in collection('/db/test')//level1//@el1
+            return <result>{$a}</result>
+            ]]></code>
+        <expected/>
+    </test>
+</TestSet>
