@@ -84,7 +84,7 @@ public class XQuery {
     		return compile(context, source);
 		} catch(IOException ioe) {
 			//should not happen because expression is a String
-			throw new XPathException(ioe.getMessage(), ioe);
+			throw new XPathException(ioe.getMessage());
 		}
     }
     
@@ -106,7 +106,7 @@ public class XQuery {
         try {
         	reader = source.getReader();
         } catch (UnsupportedEncodingException e) {
-        	throw new XPathException("err:XQST0087: unsupported encoding " + e.getMessage());
+        	throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
 		}
         
         try {
