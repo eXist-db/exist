@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="extensions/fluent/src"/>
+	<classpathentry kind="src" path="extensions/expath/src"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/src"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/test/src"/>
 	<classpathentry kind="src" path="extensions/fluent/test/src"/>
@@ -64,6 +65,7 @@
 	<classpathentry kind="lib" path="lib/core/xmlrpc-server-3.1.3.jar"/>
 	<classpathentry kind="lib" path="extensions/modules/lib/cssparser-0.9.5.jar"/>
 	<classpathentry kind="lib" path="extensions/modules/lib/sac-1.3.jar"/>
+	<classpathentry kind="lib" path="extensions/expath/lib/http-client-java-0.3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
