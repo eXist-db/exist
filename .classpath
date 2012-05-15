@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="extensions/fluent/src"/>
+	<classpathentry kind="src" path="extensions/fluent/test/src"/>
 	<classpathentry kind="src" path="extensions/expath/src"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/src"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/test/src"/>
-	<classpathentry kind="src" path="extensions/fluent/test/src"/>
-	<classpathentry kind="src" path="extensions/versioning/src"/>
-	<classpathentry kind="src" path="extensions/versioning/test"/>
 	<classpathentry kind="src" path="extensions/indexes/lucene/src"/>
 	<classpathentry kind="src" path="extensions/indexes/lucene/test/src"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
 	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
 	<classpathentry kind="src" path="extensions/indexes/spatial/src"/>
 	<classpathentry kind="src" path="extensions/indexes/spatial/test/src"/>
+	<classpathentry kind="src" path="extensions/versioning/src"/>
+	<classpathentry kind="src" path="extensions/versioning/test"/>
 	<classpathentry kind="src" path="extensions/modules/src"/>
 	<classpathentry kind="src" path="extensions/xslt/src"/>
 	<classpathentry kind="src" path="extensions/xslt/test/src"/>
@@ -21,19 +21,19 @@
 	<classpathentry kind="src" path="tools/wrapper/src"/>
 	<classpathentry kind="src" path="samples/src"/>
 	<classpathentry kind="src" path="extensions/xqdoc/src"/>
+	<classpathentry kind="src" path="extensions/xqdoc/test/src"/>
 	<classpathentry kind="src" path="extensions/svn/src"/>
 	<classpathentry kind="src" path="extensions/svn/test/src"/>
 	<classpathentry kind="src" path="extensions/security/openid/src"/>
 	<classpathentry kind="src" path="extensions/security/ldap/src"/>
 	<classpathentry kind="src" path="extensions/security/activedirectory/src"/>
+	<classpathentry kind="src" path="extensions/security/oauth/src"/>
 	<classpathentry kind="src" path="extensions/debuggee/src"/>
 	<classpathentry kind="src" path="extensions/debuggee/test"/>
 	<classpathentry kind="src" path="extensions/webdav/src"/>
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
-	<classpathentry kind="src" path="extensions/security/oauth/src"/>
-	<classpathentry kind="src" path="extensions/xqdoc/test/src"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
