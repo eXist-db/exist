@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -121,11 +122,11 @@ public class FunLang extends Function {
             contextSequence = getArgument(1).eval(contextSequence);
 		
 		if (contextSequence == null)
-			throw new XPathException(this, "XPTY0002: Undefined context item");
+			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
 		
         Sequence result; 
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
-			throw new XPathException(this, "XPTY0004: Context item is not a node");
+			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
         else {
 			String lang = getArgument(0).eval(contextSequence).getStringValue();
 			Sequence seq = query.eval(contextSequence);
@@ -144,7 +145,7 @@ public class FunLang extends Function {
 				result = new BooleanValue(include);
 			}
             else 
-            	throw new XPathException(this, "XPDY0004: Sequence returned more than one item !");
+            	throw new XPathException(this, ErrorCodes.XPTY0004, "Sequence returned more than one item !");
         }
         
         if (context.getProfiler().isEnabled()) 

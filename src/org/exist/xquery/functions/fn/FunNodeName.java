@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -82,7 +83,7 @@ public class FunNodeName extends Function {
         else {
             Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(this, "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            	throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode(); 
             //Returns an expanded-QName for node kinds that can have names.

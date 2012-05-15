@@ -25,7 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -52,8 +51,6 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier <wolfgang@exist-db.org> (July 31, 2002)
  */
 public class ExtNear extends ExtFulltext {
-
-    private static final Logger logger = Logger.getLogger(ExtNear.class);
 
     private int min_distance = 1;
     private int max_distance = 1;

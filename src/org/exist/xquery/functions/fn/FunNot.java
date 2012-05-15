@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;

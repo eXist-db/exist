@@ -23,8 +23,6 @@ package org.exist.xquery.functions.fn;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.BasicFunction;
@@ -128,8 +126,7 @@ public class FunTrace extends BasicFunction {
                     }
                     
                     // Write to log
-                    LOG.debug(label + " [" + position + "]: "
-                            + Type.getTypeName(type) + ": " + value);
+                    LOG.debug(label + " [" + position + "]: " + Type.getTypeName(type) + ": " + value);
                 }
 
                 // Add to result

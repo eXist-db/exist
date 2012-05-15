@@ -117,8 +117,8 @@ public class FunRoot extends Function {
             result = new ExtArrayNodeSet(seq.getItemCount());
         else
             result = new ValueSequence(seq.getItemCount());
-        int j = 0;
-		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
+
+		for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a node; got '" + item + "'", seq);

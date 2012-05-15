@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.fulltext.FTIndex;
 import org.exist.collections.Collection;
@@ -56,8 +54,6 @@ import java.util.List;
  * @author wolf
  */
 public class ExtFulltext extends Function implements Optimizable {
-
-    private static final Logger logger = Logger.getLogger(ExtFulltext.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(
