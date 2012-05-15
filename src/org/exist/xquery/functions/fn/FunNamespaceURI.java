@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -103,7 +104,7 @@ public class FunNamespaceURI extends Function {
                 item = seq.itemAt(0);
         } else { 
         	if (contextItem == null)
-            	throw new XPathException(this, "XPDY0002: Undefined context item");
+            	throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
         	item = contextItem;
         }
         
@@ -112,7 +113,7 @@ public class FunNamespaceURI extends Function {
             result = AnyURIValue.EMPTY_URI;
         else {        	
             if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(this, "XPTY0004: Context item is not a node; got: " +
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
                         Type.getTypeName(item.getType()));
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();

@@ -42,6 +42,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.functions.text.TextModule;
 
@@ -517,7 +518,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 			return matcher.find();
 			
 		} catch (PatternSyntaxException e) {
-			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
+			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
 		}
     }
 

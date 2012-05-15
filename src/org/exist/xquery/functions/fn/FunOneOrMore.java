@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -75,7 +76,7 @@ public class FunOneOrMore extends Function {
 
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if(result.isEmpty())
-			throw new XPathException(this, "err:FORG0004: fn:one-or-more called with a sequence containing zero items");
+			throw new XPathException(this, ErrorCodes.FORG0004, "fn:one-or-more called with a sequence containing zero items");
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

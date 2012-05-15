@@ -34,6 +34,7 @@ import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -107,7 +108,7 @@ public class FunIdRef extends Function {
         }
         
         if (getArgumentCount() < 1)
-			throw new XPathException(this, "function id requires one argument");
+			throw new XPathException(this, ErrorCodes.XPST0017, "function id requires one argument");
 		
         if(contextItem != null)
 			contextSequence = contextItem.toSequence();
@@ -126,11 +127,13 @@ public class FunIdRef extends Function {
                 // searched for the id
                 Sequence nodes = getArgument(1).eval(contextSequence);
                 if (nodes.isEmpty())
-                    throw new XPathException(this,
-                            "XPDY0002: no node or context item for fn:idref");
+                    throw new XPathException(this, ErrorCodes.XPDY0002, 
+                    		"no node or context item for fn:idref");
+                
                 if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) 
-                	throw new XPathException(this,
-                    "XPTY0004: fn:idref() argument is not a node");               	
+                	throw new XPathException(this, ErrorCodes.XPTY0004, 
+                			"fn:idref() argument is not a node");
+                
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 	//TODO : how to enforce this ?
@@ -144,9 +147,9 @@ public class FunIdRef extends Function {
                 }
                 contextSequence = node;
             } else if (contextSequence == null)
-                throw new XPathException(this, "XPDY0002: no context item specified");
+                throw new XPathException(this, ErrorCodes.XPDY0002, "no context item specified");
             else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
-    			throw new XPathException(this, "XPTY0004: context item is not a node");
+    			throw new XPathException(this, ErrorCodes.XPTY0004, "context item is not a node");
     		else {
     			if (contextSequence.isPersistentSet())
                     docs = contextSequence.toNodeSet().getDocumentSet();

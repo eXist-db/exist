@@ -111,7 +111,7 @@ public class FunId extends Function {
 
         if (getArgumentCount() < 1) {
             logger.error("function id requires one argument");
-			throw new XPathException(this, "function id requires one argument");
+			throw new XPathException(this, ErrorCodes.XPST0017, "function id requires one argument");
         }
         if(contextItem != null)
 			contextSequence = contextItem.toSequence();

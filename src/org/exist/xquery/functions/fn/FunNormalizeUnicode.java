@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -150,7 +151,7 @@ public class FunNormalizeUnicode extends Function {
 	        				modeField = clazz.getField(newNormalizationForm);
 	        			} catch (NoSuchFieldException e) {
                             logger.error("err:FOCH0003: unknown normalization form");
-	        				throw new XPathException(this, "err:FOCH0003: unknown normalization form");
+	        				throw new XPathException(this, ErrorCodes.FOCH0003, "unknown normalization form");
 	        			}
 	    	        	//com.ibm.icu.text.Normalizer.Mode
 	            		modeObject = modeField.get(null);

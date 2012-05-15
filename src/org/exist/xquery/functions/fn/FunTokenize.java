@@ -27,6 +27,7 @@ import java.util.regex.PatternSyntaxException;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -103,7 +104,7 @@ public class FunTokenize extends FunMatches {
             else {
                 String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
                 if (Pattern.matches(pattern, "")) {
-                	throw new XPathException(this, "FORX0003: regular expression could match empty string");
+                	throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
                 }
 		
         		int flags = 0;
@@ -119,7 +120,7 @@ public class FunTokenize extends FunMatches {
         			for (int i = 0; i < tokens.length; i++)
                         result.add(new StringValue(tokens[i]));        			
         		} catch (PatternSyntaxException e) {
-        			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
+        			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
         		}
             }
         }
