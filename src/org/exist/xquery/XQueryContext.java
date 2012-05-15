@@ -52,9 +52,6 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.BinaryDocument;
@@ -82,7 +79,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
-import org.exist.storage.txn.*;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -96,12 +92,12 @@ import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.FileSystemStorage;
 
-
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
  * XQuery context components.
