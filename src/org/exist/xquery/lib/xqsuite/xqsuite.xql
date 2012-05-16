@@ -21,6 +21,7 @@ module namespace test="http://exist-db.org/xquery/xqsuite";
 declare variable $test:TEST_NAMESPACE := "http://exist-db.org/xquery/xqsuite";
 
 declare variable $test:UNKNOWN_ASSERTION := QName($test:TEST_NAMESPACE, "no-such-assertion");
+declare variable $test:WRONG_ARG_COUNT := QName($test:TEST_NAMESPACE, "wrong-number-of-arguments");
 
 (:~
  : Main entry point into the module. Takes a sequence of function items.
@@ -44,7 +45,7 @@ declare function test:suite($functions as function(*)+) {
             let $result :=
                 if (empty($setup) or $setup/self::ok) then
                     let $results :=
-                        test:function-by-annotation($modFunctions, "assert", test:test#2)
+                        test:function-by-annotation($modFunctions, "assert", test:run-tests#2)
                     return
                         <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
                             failures="{count($results/failure)}">
@@ -100,15 +101,31 @@ declare %private function test:call-func-with-annotation($functions as function(
 };
 
 (:~
+ : Calls the test function one or more times, depending on the number of
+ : %args() annotations found. Each %arg annotation triggers one test run
+ : using the supplied parameters.
+ :)
+declare %private function test:run-tests($func as function(*), $meta as element(function)) {
+    let $argsAnnot := $meta/annotation[matches(@name, ":args")]
+    return
+        if ($argsAnnot) then
+            for $args in $argsAnnot
+            return
+                test:test($func, $meta, $args)
+        else
+            test:test($func, $meta, ())
+};
+
+(:~
  : The main function for running a single test. Executes the test function
  : and compares the result against each assertXXX annotation.
  :)
-declare %private function test:test($func as function(*), $meta as element(function)) {
-    let $assertions := $meta/annotation[matches(@name, ":assert")]
+declare %private function test:test($func as function(*), $meta as element(function), $args as element(annotation)?) {
+    let $assertions := test:get-assertions($meta, $args)
     return
         if (exists($assertions)) then
             try {
-                let $result := $func()
+                let $result := test:call-test($func, $meta, $args)
                 let $assertResult := test:check-assertions($assertions, $result)
                 return
                     test:print-result($meta, $result, $assertResult)
@@ -125,24 +142,110 @@ declare %private function test:test($func as function(*), $meta as element(funct
                         else
                             test:print-result($meta, (), ())
                     else
-                        <error>{$err:code}: {$err:description}</error>
+                        <error>{$err:code}: {$err:description} {$exerr:xquery-stack-trace}</error>
             }
         else
             ()
 };
 
 (:~
+ : Get all %assertXXX annotations of the function. If %args is used multiple times,
+ : assertions apply to the result of running the function with the parameters given
+ : in the preceding %args.
+ :)
+declare %private function test:get-assertions($meta as element(function), $args as element(annotation)?) {
+    if ($args) then
+        let $nextArgs := $args/following-sibling::annotation[contains(@name, ":args")]
+        return
+            $args/following-sibling::annotation[contains(@name, ":assert")]
+            except
+            $nextArgs/following-sibling::annotation[contains(@name, ":assert")]
+    else
+        $meta/annotation[contains(@name, ":assert")]
+};
+
+(:~
+ : Map any arguments from the %args annotation into function parameters and evaluate
+ : the resulting function. 
+ :)
+declare %private function test:call-test($func as function(*), $meta as element(function), $args as element(annotation)*) {
+    let $argCount := count($meta/argument)
+    let $testArgs := $args/value/string()
+    return
+        if (count($testArgs) != $argCount) then
+            error(
+                $test:WRONG_ARG_COUNT, 
+                "The number of arguments specified in test:args must match the arguments of the function to test"
+            )
+        else
+            let $args := test:map-arguments($testArgs, $meta/argument)
+            return
+                test:apply($func, $args)
+};
+(:~
+ : Transform the annotation to the type required by the function parameter.
+ :)
+declare function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
+    map-pairs(function($targ, $farg) {
+        switch ($farg/@type/string())
+            case "xs:string" return
+                string($targ)
+            case "xs:integer" case "xs:int" return
+                xs:integer($targ)
+            case "xs:decimal" return
+                xs:decimal($targ)
+            case "xs:float" case "xs:double" return
+                xs:double($targ)
+            case "xs:date" return
+                xs:date($targ)
+            case "xs:dateTime" return
+                xs:dateTime($targ)
+            case "xs:time" return
+                xs:time($targ)
+            case element() return
+                util:parse($targ)/*
+            case text() return
+                text { string($targ) }
+            default return
+                $targ
+    }, $testArgs, $funcArgs)
+};
+
+(:~
+ : Call the given function with parameters taken from $args.
+ :)
+declare %private function test:apply($func as function(*), $args as item()*) {
+    switch (count($args))
+        case 1 return
+            $func($args[1])
+        case 2 return
+            $func($args[1], $args[2])
+        case 3 return
+            $func($args[1], $args[2], $args[3])
+        case 4 return
+            $func($args[1], $args[2], $args[3], $args[4])
+        case 5 return
+            $func($args[1], $args[2], $args[3], $args[4], $args[5])
+        case 6 return
+            $func($args[1], $args[2], $args[3], $args[4], $args[5], $args[6])
+        case 7 return
+            $func($args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7])
+        default return
+            error($test:WRONG_ARG_COUNT, "Function takes too many arguments")
+};
+
+(:~
  : Print out evaluation results for a given test.
  :)
 declare %private function test:print-result($meta as element(function), $result as item()*, 
-    $assertResult as element(report)?) {
+    $assertResult as element(report)*) {
     let $nameAnnot := $meta/annotation[matches(@name, ":name")]
     let $name := if ($nameAnnot) then $nameAnnot/value else replace($meta/@name, "^\w+:([^:]+)$", "$1")
     return
         <testcase name="{$name}" class="{$meta/@name}">
         {
             if (exists($assertResult)) then
-                $assertResult/*
+                ($assertResult[failure] | $assertResult)[1]/*
             else
                 ()
         }
@@ -168,7 +271,7 @@ declare %private function test:check-assertions($assertions as element(annotatio
             case "assertFalse" return
                 test:assertFalse($result)
             case "assertXPath" return
-                test:assertXPath($annotation/value/string(), $result)
+                test:assertXPath($annotation, $result)
             case "assertError" return
                 test:assertError($annotation/value/string(), $result)
             default return
@@ -305,7 +408,13 @@ declare %private function test:assertFalse($result as item()*) as element(report
  : Evaluate an arbitrary XPath expression against result. The test passes if
  : the XPath returns either true or a non-empty sequence.
  :)
-declare %private function test:assertXPath($expr as xs:string?, $result as item()*) as element(report)? {
+declare %private function test:assertXPath($annotation as element(annotation), $output as item()*) as element(report)? {
+    let $expr := $annotation/value[1]/string()
+    let $result :=
+        if (count($annotation/value) = 2 and boolean($annotation/value[2])) then
+            util:expand($output)
+        else
+            $output
     let $xr :=
         test:checkXPathResult(
             if (matches($expr, "^\s*/")) then
@@ -346,4 +455,37 @@ declare %private function test:mkcol-recursive($collection, $components) as empt
         )
     else
         ()
+};
+
+declare function test:to-html($output as element(testsuites)) {
+    <div class="testresult">
+    {
+        for $suite in $output/testsuite
+        return
+            <section>
+                <h2>{$suite/@package/string()}</h2>
+                <table>
+                {
+                    for $case in $suite/testcase
+                    return
+                        test:print-testcase($case)
+                }
+                </table>
+            </section>
+    }
+    </div>
+};
+
+declare %private function test:print-testcase($case as element(testcase)) {
+    <tr class="{if ($case/failure) then 'fail' else 'pass'}">
+        <td>{$case/@name/string()}</td>
+        <td>
+        {
+            if ($case/failure) then
+                ($case/failure/@message/string(), " Expected: ", $case/failure/text())
+            else
+                "OK"
+        }
+        </td>
+    </tr>
 };
