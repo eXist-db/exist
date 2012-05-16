@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;
 
@@ -66,7 +67,8 @@ public class XQueryWatchDog {
     }
     
     private void configureDefaults() {
-        Configuration conf = context.getBroker().getBrokerPool().getConfiguration();
+    	DBBroker broker = context.getBroker();
+        Configuration conf = broker.getBrokerPool().getConfiguration();
         Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
         if(option != null)
             timeout = ((Long)option).longValue();
