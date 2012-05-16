@@ -704,7 +704,7 @@ include.index.spatial = false
 util:index-keys(//name, "A", util:function(xs:QName("local:term-callback"), 2), 1000)]]></programlisting>
             </example>
             <para>This query will show you the first 1000 keys (starting with the letter 'A')
-                indexed for the element selected by the path expression <option>//city/name</option>
+                indexed for the element selected by the range index on <option>name</option>
                 together with some information about this key. The first argument to index-keys
                 specifies the node set for which index entries should be listed. The second argument
                 contains a start value which also determines the index type. For example, if the
@@ -712,8 +712,9 @@ util:index-keys(//name, "A", util:function(xs:QName("local:term-callback"), 2), 
                     <option>xs:string</option>, if it is an integer number, only indexes with type
                     <option>xs:integer</option> will be considered. For a string index, you may also
                 pass the empty string to retrieve all keys in the index.</para>
-            <para>Finally, to view the contents of the full text index instead of the range index, a
-                different function needs to be used, <function>text:index-terms</function> :</para>
+            
+            <para>To view the contents of the full text index instead of the range index, you need to specify 
+                the index type as well:</para>
             <example>
                 <title>Query to List Full Test Index Contents</title>
                 <programlisting language="xquery">
@@ -726,7 +727,8 @@ util:index-keys(//name, "A", util:function(xs:QName("local:term-callback"), 2), 
    </entry>
 };
 
-text:index-terms(//name, "A", util:function(xs:QName("local:term-callback"), 2), 1000)]]>
+util:index-keys(//PLAY[PLAYSUBT eq 'HAMLET']//SCENE, "a", util:function(xs:QName("local:term-callback"), 2), 1000, 'lucene-index')
+]]>
                 </programlisting>
             </example>
         </section>
