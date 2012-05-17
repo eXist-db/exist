@@ -1416,4 +1416,9 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         // TODO Auto-generated method stub
         return false;
     }
+
+	public Object getUUID() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -41,7 +41,6 @@ import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
-import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.*;
 import org.exist.storage.cache.Cacheable;
@@ -1336,14 +1335,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             broker.closeDocument();
             //broker.checkTree(document);
             LOG.debug("document stored.");
-            // if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
-            if (getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI) 
-                && document.getFileURI().equals(SecurityManager.ACL_FILE_URI)
-                && privileged == false) {
-                // inform the security manager that system data has changed
-                LOG.debug("users.xml changed");
-                broker.getBrokerPool().reloadSecurityManager(broker);
-            }
         } finally {
             //This lock has been acquired in validateXMLResourceInternal()
     		document.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -1584,8 +1575,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 triggersVisitor = getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
                 
                 triggersVisitor.setOutputHandler(indexer);
-		triggersVisitor.setLexicalOutputHandler(indexer);
-		triggersVisitor.setValidating(true);
+                triggersVisitor.setLexicalOutputHandler(indexer);
+                triggersVisitor.setValidating(true);
                 
                 if(oldDoc == null) {
                     triggersVisitor.beforeCreateDocument(broker, transaction, getURI().append(docUri));
@@ -1811,7 +1802,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 metadata.setCreated(created.getTime());
 
             if(modified != null)
-                    metadata.setLastModified(modified.getTime());
+                metadata.setLastModified(modified.getTime());
 
             blob.setContentLength(size);
 
@@ -1870,6 +1861,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
+    @Deprecated
     public void setPermissions(String mode) throws SyntaxException, LockException, PermissionDeniedException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
