@@ -41,9 +41,6 @@ import org.exist.xmldb.XmldbURI;
  */
 public interface SecurityManager extends Configurable {
 
-   public final static String ACL_FILE = "users.xml";
-   public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
-   
    public final static XmldbURI SECURITY_COLLECTION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("security");
    public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
    
