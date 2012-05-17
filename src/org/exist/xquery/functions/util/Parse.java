@@ -30,8 +30,6 @@ import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
-import org.exist.xquery.ErrorCodes.EXistErrorCode;
-import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.functions.validation.Shared;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;

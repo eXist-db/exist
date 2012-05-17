@@ -45,6 +45,14 @@ public class XPathException extends Exception {
         this.column = column;
     }
 
+    public XPathException(int line, int column, ErrorCode errorCode, String message) {
+        super();
+        this.errorCode = errorCode;
+        this.message = message;
+        this.line = line;
+        this.column = column;
+    }
+
     /**
      * Use constructor with errorCode and errorVal
      */
