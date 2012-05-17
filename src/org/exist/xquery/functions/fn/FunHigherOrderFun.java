@@ -84,6 +84,7 @@ public class FunHigherOrderFun extends BasicFunction {
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        super.analyze(cachedContextInfo);
 	}
 	
 	@Override
