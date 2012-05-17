@@ -44,11 +44,15 @@ declare function test:suite($functions as function(*)+) {
             let $setup := test:call-func-with-annotation($modFunctions, "setUp")
             let $result :=
                 if (empty($setup) or $setup/self::ok) then
+                    let $startTime := util:system-time()
                     let $results :=
                         test:function-by-annotation($modFunctions, "assert", test:run-tests#2)
+                    let $elapsed :=
+                        util:system-time() - $startTime
                     return
                         <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
-                            failures="{count($results/failure)}">
+                            failures="{count($results/failure)}" tests="{count($results)}"
+                            time="{$elapsed}">
                             { $results }
                         </testsuite>
                 else
@@ -142,7 +146,10 @@ declare %private function test:test($func as function(*), $meta as element(funct
                         else
                             test:print-result($meta, (), ())
                     else
-                        <error>{$err:code}: {$err:description} {$exerr:xquery-stack-trace}</error>
+                        <error code="{$err:code}" message="{$err:description}">
+                            <xquery-trace>{$exerr:xquery-stack-trace}</xquery-trace>
+                            <java-trace>{$exerr:java-stack-trace}</java-trace>
+                        </error>
             }
         else
             ()
@@ -186,29 +193,32 @@ declare %private function test:call-test($func as function(*), $meta as element(
  : Transform the annotation to the type required by the function parameter.
  :)
 declare function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
-    map-pairs(function($targ, $farg) {
-        switch ($farg/@type/string())
-            case "xs:string" return
-                string($targ)
-            case "xs:integer" case "xs:int" return
-                xs:integer($targ)
-            case "xs:decimal" return
-                xs:decimal($targ)
-            case "xs:float" case "xs:double" return
-                xs:double($targ)
-            case "xs:date" return
-                xs:date($targ)
-            case "xs:dateTime" return
-                xs:dateTime($targ)
-            case "xs:time" return
-                xs:time($targ)
-            case element() return
-                util:parse($targ)/*
-            case text() return
-                text { string($targ) }
-            default return
-                $targ
-    }, $testArgs, $funcArgs)
+    if (exists($testArgs)) then
+        map-pairs(function($targ, $farg) {
+            switch (string($farg/@type))
+                case "xs:string" return
+                    string($targ)
+                case "xs:integer" case "xs:int" return
+                    xs:integer($targ)
+                case "xs:decimal" return
+                    xs:decimal($targ)
+                case "xs:float" case "xs:double" return
+                    xs:double($targ)
+                case "xs:date" return
+                    xs:date($targ)
+                case "xs:dateTime" return
+                    xs:dateTime($targ)
+                case "xs:time" return
+                    xs:time($targ)
+                case "element()" return
+                    util:parse($targ)/*
+                case "text()" return
+                    text { string($targ) }
+                default return
+                    $targ
+        }, $testArgs, $funcArgs)
+    else
+        ()
 };
 
 (:~
