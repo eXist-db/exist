@@ -1050,7 +1050,7 @@ public class BrokerPool extends Observable implements Database {
     /**
      * Initialize required system collections, if they don't exist yet
      *
-     * @param sysBroker - The system broker from before the brokerpool is populated
+     * @param broker - The system broker from before the brokerpool is populated
      *
      * @throws EXistException If a system collection cannot be created
      */
@@ -1656,7 +1656,7 @@ public class BrokerPool extends Observable implements Database {
 				DBBroker broker = inactiveBrokers.pop();
 				//Do the synchonization job
 				sync(broker, syncEvent);
-            inactiveBrokers.push(broker);
+                inactiveBrokers.push(broker);
 				syncRequired = false;
 			} else {
 				//Put the synchonization job into the queue
@@ -1744,7 +1744,6 @@ public class BrokerPool extends Observable implements Database {
                 if (isTransactional())
                     transactionManager.getJournal().flushToLog(true, true);
 
-                boolean hangingThreads = false;
                 long waitStart = System.currentTimeMillis();
                 //Are there active brokers ?
                 if (activeBrokers.size() > 0) {
@@ -1761,7 +1760,6 @@ public class BrokerPool extends Observable implements Database {
                         //...or force the shutdown
                         if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
                             LOG.warn("Not all threads returned. Forcing shutdown ...");
-                            hangingThreads = true;
                             break;
                         }
                     }
@@ -1800,12 +1798,9 @@ public class BrokerPool extends Observable implements Database {
 
                 signalSystemStatus(SIGNAL_SHUTDOWN);
 
-                if (hangingThreads)
-                    // do not write a checkpoint if some threads did not return before shutdown
-                    // there might be dirty transactions
-                    transactionManager.shutdown(false);
-                else
-                    transactionManager.shutdown(true);
+                // do not write a checkpoint if some threads did not return before shutdown
+                // there might be dirty transactions
+                transactionManager.shutdown();
 
                 // deregister JMX MBeans
                 AgentFactory.getInstance().closeDBInstance(this);
