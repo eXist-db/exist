@@ -258,11 +258,10 @@ public class TransactionManager {
         }
     }
     
-    public void shutdown(boolean checkpoint) {
-        if (enabled) {
+    public void shutdown() {
+        if (activeTransactions == 0) {
         	long txnId = nextTxnId++;
-            journal.shutdown(txnId, checkpoint);
-            activeTransactions = 0;
+            journal.shutdown(txnId, true);
         }
     }
 
