@@ -1338,8 +1338,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void optimize() {
         IndexWriter writer = null;
         try {
-            writer = index.getWriter();
-            writer.optimize(true);
+            writer = index.getWriter(true);
+            writer.forceMerge(1, true);
+            writer.commit();
         } catch (IOException e) {
             LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
         } finally {

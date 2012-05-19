@@ -34,8 +34,8 @@ public class Optimize extends BasicFunction {
         new FunctionSignature(
             new QName("optimize", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Calls Lucene's optimize method to merge all index segments " +
-            "into a single one. This function should be called after adding a larger " +
-            "bunch of documents or if no further changes are expected for a while. " +
+            "into a single one. This is a costly operation and should not be used " +
+            "except for data sets which can be expected to remain unchanged for a while. " +
             "The optimize will block the index for other write operations and may take " +
             "some time. You need to be a user in group dba to call this function.",
             new SequenceType[0],

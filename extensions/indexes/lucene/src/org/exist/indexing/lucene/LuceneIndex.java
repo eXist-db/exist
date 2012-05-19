@@ -44,7 +44,9 @@ public class LuceneIndex extends AbstractIndex {
     protected int writingReaderUseCount = 0;
     protected IndexSearcher cachedSearcher = null;
     protected int searcherUseCount = 0;
-    
+
+    protected boolean singleWriter = false;
+
     public LuceneIndex() {
         //Nothing special to do
     }
@@ -150,8 +152,12 @@ public class LuceneIndex extends AbstractIndex {
     }
     
     protected boolean needsCommit = false;
-    
-    protected synchronized IndexWriter getWriter() throws IOException {
+
+    protected IndexWriter getWriter() throws IOException {
+        return getWriter(false);
+    }
+
+    protected synchronized IndexWriter getWriter(boolean exclusive) throws IOException {
         while (writingReaderUseCount > 0) {
             try {
                 wait();
@@ -159,6 +165,16 @@ public class LuceneIndex extends AbstractIndex {
                 //Nothing special to do
             }
         }
+        if (singleWriter) {
+            while (writerUseCount > 0) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    //Nothing special to do
+                }
+            }
+        }
+        singleWriter = exclusive;
         if (cachedWriter != null) {
             writerUseCount++;
         } else {
