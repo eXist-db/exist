@@ -28,12 +28,7 @@ import java.util.List;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * FilteredExpression represents a primary expression with a predicate. Examples:
@@ -78,8 +73,13 @@ public class FilteredExpression extends AbstractExpression {
         parent = contextInfo.getParent();
         contextInfo.setParent(this);
         expression.analyze(contextInfo);
-        for (Predicate pred : predicates) {
-            pred.analyze(contextInfo);
+        if (predicates.size() > 0) {
+            AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+            newContext.setParent(this);
+            newContext.setContextStep(this);
+            for (Predicate pred : predicates) {
+                pred.analyze(newContext);
+            }
         }
     }
 
