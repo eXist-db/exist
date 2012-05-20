@@ -19,6 +19,7 @@
  */
 package org.exist.util.serializer;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -158,6 +159,8 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
      */
     public void startPrefixMapping(String prefix, String namespaceURI)
             throws SAXException {
+        if (namespaceURI.equals(Namespaces.XML_NS))
+            return;
         if(prefix == null)
             prefix = "";
         String ns = nsSupport.getURI(prefix);
