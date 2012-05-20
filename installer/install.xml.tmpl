@@ -41,6 +41,13 @@
         <variable name="JDKPathPanel.minVersion" value="1.6"/>
         <variable name="dataDir" value="webapp/WEB-INF/data"/>
     </variables>
+    
+    <conditions>
+        <!-- not until IzPack 5.0 -->
+        <!-- condition type="exists" id="apps.exist">
+            <file>apps</file>
+        </condition -->
+    </conditions>
 
     <panels>
         <panel classname="HTMLInfoPanel" id="start"/>
@@ -231,17 +238,18 @@
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never" os="unix"/>
         </pack>
-
-        <condition type="exists" id="appsExist">
-            <file>apps</file>
-        </condition>
         
-        <pack name="apps" required="no" condition="appsExist">
+        <!-- TODO disable for the moment as it breaks the installer build,
+            tried to define a condition at the top of this script
+            but it doesnt seem to work until IzPack 5.0 -->
+        <!--
+        <pack name="apps" required="no" preselected="yes" condition="apps.exist">
             <description>EXPath packages applications for eXist-db</description>
-            <fileset targetdir="$INSTALL_PATH/apps" dir="apps" condition="appsExist">
+            <fileset targetdir="$INSTALL_PATH/apps" dir="apps" condition="apps.exist">
                 <include name="*.xar"/>
             </fileset>
         </pack>
+        -->
 
         <pack name="sources" required="no">
             <description>Java source files</description>
