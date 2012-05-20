@@ -27,4 +27,4 @@ let $test := <TestSet>
 
  </TestSet>
 return
-    t:run-testSet($test)
+    t:run-testSet($test, ())
