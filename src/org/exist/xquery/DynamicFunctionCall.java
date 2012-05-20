@@ -18,6 +18,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 
     public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args, boolean partial) {
         super(context);
+
         this.functionExpr = fun;
         this.arguments = args;
         this.isPartial = partial;
@@ -26,6 +27,7 @@ public class DynamicFunctionCall extends AbstractExpression {
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        functionExpr.analyze(contextInfo);
     }
 
     @Override
