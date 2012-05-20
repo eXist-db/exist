@@ -978,7 +978,7 @@ public class BrokerPool extends Observable implements Database {
 
         scheduler.run();
 
-        statusReporter.terminate = true;
+        statusReporter.terminate();
         statusReporter = null;
 
         callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
@@ -1822,7 +1822,7 @@ public class BrokerPool extends Observable implements Database {
                 if (shutdownListener != null)
                     shutdownListener.shutdown(instanceName, instances.size());
 
-                statusReporter.terminate = true;
+                statusReporter.terminate();
             }
         } finally {
             // clear instance variables, just to be sure they will be garbage collected
@@ -1842,7 +1842,6 @@ public class BrokerPool extends Observable implements Database {
             securityManager = null;
             notificationService = null;
             statusReporter = null;
-    		
         }
 	}
 
@@ -1905,6 +1904,11 @@ public class BrokerPool extends Observable implements Database {
             this.status = status;
         }
 
+        public synchronized void terminate() {
+            this.terminate = true;
+            notify();
+        }
+
         public void run() {
             while (!terminate) {
                 BrokerPool.this.setChanged();
@@ -1912,7 +1916,7 @@ public class BrokerPool extends Observable implements Database {
 
                 synchronized (this) {
                     try {
-                        wait(400);
+                        wait(300);
                     } catch (InterruptedException e) {
                         // nothing to do
                     }
