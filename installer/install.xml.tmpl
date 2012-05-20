@@ -59,9 +59,6 @@
     <packs>
         <pack name="core" required="yes">
             <description>Everything needed for the database core, including Jetty</description>
-            <fileset targetdir="$INSTALL_PATH/apps" dir="apps">
-                <include name="*.xar"/>
-            </fileset>
             <fileset targetdir="$INSTALL_PATH" dir=".">
                 <include name="client.properties.tmpl"/>
                 <include name="client.properties"/>
@@ -233,6 +230,17 @@
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never" os="unix"/>
+        </pack>
+
+        <condition type="exists" id="appsExist">
+            <file>apps</file>
+        </condition>
+        
+        <pack name="apps" required="no" condition="appsExist">
+            <description>EXPath packages applications for eXist-db</description>
+            <fileset targetdir="$INSTALL_PATH/apps" dir="apps" condition="appsExist">
+                <include name="*.xar"/>
+            </fileset>
         </pack>
 
         <pack name="sources" required="no">
