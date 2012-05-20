@@ -92,9 +92,9 @@ public class BrokerPool extends Observable implements Database {
     /*** initializing subcomponents */
     public final static String SIGNAL_STARTUP = "startup";
     /*** ready for recovery & read-only operations */
-    public final static String SIGNAL_READINESS = "readiness";
+    public final static String SIGNAL_READINESS = "ready";
     /*** ready for writable operations */
-    public final static String SIGNAL_RIDEABLE = "rideable";
+    public final static String SIGNAL_WRITABLE = "writable";
     /*** running shutdown sequence */
     public final static String SIGNAL_SHUTDOWN = "shutdown";
 
@@ -159,6 +159,7 @@ public class BrokerPool extends Observable implements Database {
     private static boolean registerShutdownHook = true;
 
     private static Observer statusObserver = null;
+    private StatusReporter statusReporter = null;
 
     /**
      * Whether of not the JVM should run the shutdown thread.
@@ -754,8 +755,9 @@ public class BrokerPool extends Observable implements Database {
         //Flag to indicate that we are initializing
         status = INITIALIZING;
 
-        signalSystemStatus(SIGNAL_STARTUP);
-        
+        statusReporter = new StatusReporter(SIGNAL_STARTUP);
+        statusReporter.start();
+
         boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
         //create the security manager
@@ -862,7 +864,7 @@ public class BrokerPool extends Observable implements Database {
         
 		status = OPERATING;
 
-        signalSystemStatus(SIGNAL_READINESS);
+        statusReporter.setStatus(SIGNAL_READINESS);
 
 		//Get a manager to handle further collections configuration
         try {
@@ -905,7 +907,7 @@ public class BrokerPool extends Observable implements Database {
         }
 
         //OK : the DB is repaired; let's make a few RW operations
-        signalSystemStatus(SIGNAL_RIDEABLE);
+        statusReporter.setStatus(SIGNAL_WRITABLE);
 
         //initialize configurations watcher trigger
         try {
@@ -975,7 +977,10 @@ public class BrokerPool extends Observable implements Database {
         //scheduler.executeStartupJobs();
 
         scheduler.run();
-        
+
+        statusReporter.terminate = true;
+        statusReporter = null;
+
         callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
 	}
 	    
@@ -1082,19 +1087,6 @@ public class BrokerPool extends Observable implements Database {
 
     public int getPageSize() {
         return pageSize;
-    }
-
-    private String lastSignal = "";
-    public void signalSystemStatus(String signal) {
-        if (!lastSignal.equals(signal) || System.currentTimeMillis() > nextSystemStatus) {
-            
-        	lastSignal = signal;
-        	
-        	setChanged();
-            notifyObservers(signal);
-
-            nextSystemStatus = System.currentTimeMillis() + 10000;
-        }
     }
 
     /**
@@ -1702,6 +1694,9 @@ public class BrokerPool extends Observable implements Database {
         LOG.info("Database is shutting down ...");
 
         status = SHUTDOWN;
+        statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
+        statusReporter.start();
+
         processMonitor.stopRunningJobs();
         java.util.concurrent.locks.Lock lock = transactionManager.getLock();
         try {
@@ -1729,7 +1724,6 @@ public class BrokerPool extends Observable implements Database {
                         wait(250);
                     }
                     catch(InterruptedException e) {}
-                    signalSystemStatus(SIGNAL_SHUTDOWN);
                 }
 
                 //Notify all running XQueries that we are shutting down
@@ -1756,7 +1750,7 @@ public class BrokerPool extends Observable implements Database {
                         } catch (InterruptedException e) {
                             //Nothing to do
                         }
-                        signalSystemStatus(SIGNAL_SHUTDOWN);
+
                         //...or force the shutdown
                         if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
                             LOG.warn("Not all threads returned. Forcing shutdown ...");
@@ -1796,8 +1790,6 @@ public class BrokerPool extends Observable implements Database {
                 }
                 collectionCacheMgr.deregisterCache(collectionCache);
 
-                signalSystemStatus(SIGNAL_SHUTDOWN);
-
                 // do not write a checkpoint if some threads did not return before shutdown
                 // there might be dirty transactions
                 transactionManager.shutdown();
@@ -1829,6 +1821,8 @@ public class BrokerPool extends Observable implements Database {
                 }
                 if (shutdownListener != null)
                     shutdownListener.shutdown(instanceName, instances.size());
+
+                statusReporter.terminate = true;
             }
         } finally {
             // clear instance variables, just to be sure they will be garbage collected
@@ -1847,6 +1841,7 @@ public class BrokerPool extends Observable implements Database {
             shutdownListener = null;
             securityManager = null;
             notificationService = null;
+            statusReporter = null;
     		
         }
 	}
@@ -1895,5 +1890,34 @@ public class BrokerPool extends Observable implements Database {
     	String s = sout.toString();
     	LOG.info(s);
     	System.err.println(s);
+    }
+
+    private class StatusReporter extends Thread {
+
+        private String status;
+        private boolean terminate = false;
+
+        public StatusReporter(String status) {
+            this.status = status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public void run() {
+            while (!terminate) {
+                BrokerPool.this.setChanged();
+                BrokerPool.this.notifyObservers(status);
+
+                synchronized (this) {
+                    try {
+                        wait(400);
+                    } catch (InterruptedException e) {
+                        // nothing to do
+                    }
+                }
+            }
+        }
     }
 }
