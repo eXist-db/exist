@@ -218,14 +218,7 @@ public class ElementConstructor extends NodeConstructor {
                     if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
                         throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");
                     
-                    v = attrValues.getStringValue();
-                    
-                    //normalize xml:id
-                	if (attrQName.equalsSimple(Namespaces.XML_ID_QNAME)) {
-	                    v = StringValue.trimWhitespace(StringValue.collapseWhitespace(v));
-	                    if (!XMLChar.isValidNCName(v))
-	                        throw new XPathException(this, ErrorCodes.XQDY0091, "Value of xml:id attribute is not a valid NCName: " + v);
-                	}
+                    v = DynamicAttributeConstructor.normalize(this, attrQName, attrValues.getStringValue());
                     
                     attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
                             attrQName.getStringValue(), "CDATA", v);
@@ -265,7 +258,7 @@ public class ElementConstructor extends NodeConstructor {
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
-			throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
 
             // add namespace declaration nodes
             int nodeNr = builder.startElement(qn, attrs);
