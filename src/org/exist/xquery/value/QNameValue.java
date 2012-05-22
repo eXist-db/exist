@@ -25,6 +25,7 @@ import java.text.Collator;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -36,7 +37,6 @@ import org.exist.xquery.XQueryContext;
  */
 public class QNameValue extends AtomicValue {
 
-	private XQueryContext context;
 	private QName qname;
 	private String stringValue;
 
@@ -50,18 +50,13 @@ public class QNameValue extends AtomicValue {
      */
 	public QNameValue(XQueryContext context, String name) throws XPathException {
         if (name.length() == 0)
-            throw new XPathException("err:FORG0001: An empty string is not a valid lexical representation of xs:QName.");
-	    this.context = context; //UNDERSTAND: do we need context here??? -shabanovd
-	    try {
-	    	this.qname = QName.parse(context, name, context.getURIForPrefix(""));
-	    } catch (Exception e) {
-	    	throw new XPathException(e);
-	    }
+            throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");
+
+    	qname = QName.parse(context, name, context.getURIForPrefix(""));
 	    stringValue = computeStringValue();
     }
     
 	public QNameValue(XQueryContext context, QName name) {
-		this.context = context;
 		this.qname = name;
 		stringValue = computeStringValue();
 	}
@@ -152,7 +147,7 @@ public class QNameValue extends AtomicValue {
 					return cmp >= 0;
 				*/
 				default :
-					throw new XPathException("XPTY0004 : cannot apply operator to QName");
+					throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator to QName");
 			}
 		} else
 			throw new XPathException(
@@ -224,7 +219,8 @@ public class QNameValue extends AtomicValue {
 	}
     
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("err:FORG0006: value of type " + Type.getTypeName(getType()) +
-            " has no boolean value.");
+        throw new XPathException(ErrorCodes.FORG0006, 
+        		"value of type " + Type.getTypeName(getType()) +
+        		" has no boolean value.");
     }
 }
