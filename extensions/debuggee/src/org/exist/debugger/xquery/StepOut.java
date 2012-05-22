@@ -86,7 +86,7 @@ public class StepOut extends BasicFunction {
 			return BooleanValue.TRUE;
 			
 		} catch (EXistException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		}
 	}
 }

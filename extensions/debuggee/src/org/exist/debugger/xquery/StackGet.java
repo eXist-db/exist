@@ -39,7 +39,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -87,9 +86,9 @@ public class StackGet extends BasicFunction {
 			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 			
 		} catch (EXistException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		} catch (IOException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		}
 	}
 }

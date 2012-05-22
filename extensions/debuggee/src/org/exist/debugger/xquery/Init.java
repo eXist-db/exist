@@ -76,7 +76,7 @@ public class Init extends BasicFunction {
 			return new StringValue( dbgr.start(args[0].getStringValue()) );
 			
 		} catch (EXistException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		}
 	}
 }
