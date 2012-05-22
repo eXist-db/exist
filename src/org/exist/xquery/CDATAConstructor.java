@@ -66,6 +66,10 @@ public class CDATAConstructor extends NodeConstructor {
             
             int nodeNr;
             if (literalCharacters) {
+            	//Empty CDATA sections generate no text nodes
+                if (cdata.isEmpty())
+                    return Sequence.EMPTY_SEQUENCE;
+                
             	nodeNr = builder.characters(cdata);
             } else {
             	nodeNr = builder.cdataSection(cdata);
