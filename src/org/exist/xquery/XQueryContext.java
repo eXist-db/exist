@@ -679,11 +679,11 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
         if( prefix.equals( "xml" ) || prefix.equals( "xmlns" ) ) {
-            throw( new XPathException( "err:XQST0070: Namespace predefined prefix '" + prefix + "' can not be bound" ) );
+            throw( new XPathException( ErrorCodes.XQST0070, "Namespace predefined prefix '" + prefix + "' can not be bound" ) );
         }
 
         if( uri.equals( Namespaces.XML_NS ) ) {
-            throw( new XPathException( "err:XQST0070: Namespace URI '" + uri + "' must be bound to the 'xml' prefix" ) );
+            throw( new XPathException( ErrorCodes.XQST0070, "Namespace URI '" + uri + "' must be bound to the 'xml' prefix" ) );
         }
         
         final String prevURI = staticNamespaces.get( prefix );

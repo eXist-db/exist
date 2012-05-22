@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -104,10 +105,47 @@ public class FunQName extends BasicFunction {
         }
 
 		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0)){
-                    ValueSequence argsSeq = new ValueSequence(args[0]);
-                    argsSeq.addAll(args[1]);
-                    throw new XPathException(this, ErrorCodes.FOCA0002, "Non-empty namespace prefix with empty namespace URI", argsSeq);
-                }
+                ValueSequence argsSeq = new ValueSequence(args[0]);
+                argsSeq.addAll(args[1]);
+                throw new XPathException(this, ErrorCodes.FOCA0002, "Non-empty namespace prefix with empty namespace URI", argsSeq);
+        }
+		
+		if (namespace != null) {
+			if (namespace.equalsIgnoreCase(Namespaces.XMLNS_NS))
+				if (prefix == null)
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with no prefix");
+				else if (!prefix.equalsIgnoreCase("xmlns"))
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with prefix '"+prefix+"'");
+			
+			if (namespace.equalsIgnoreCase(Namespaces.XML_NS))
+				if (prefix == null)
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with no prefix");
+				else if (!prefix.equalsIgnoreCase("xml"))
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with prefix '"+prefix+"'");
+		}
+		
+		if (prefix != null) {
+			if (prefix.equalsIgnoreCase("xml") && !namespace.equalsIgnoreCase(Namespaces.XML_NS))
+				throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");
+			
+		}
+
+		if (namespace != null && prefix == null) {
+			prefix = context.getPrefixForURI(namespace);
+			
+			if (prefix == null) {
+				//generate prefix
+				for (int i = 1; i < 100; i++) {
+					prefix = "eXnsp"+i;
+		            if (context.getURIForPrefix(prefix) == null)
+		            	break;
+		            
+		            prefix = null;
+				}
+				if (prefix == null)
+                    throw new XPathException(this, "Prefix can't be generate.");
+			}
+		}
 		
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {
