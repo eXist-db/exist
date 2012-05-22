@@ -36,11 +36,10 @@ public class LocationImpl implements Location {
 	private int beginLine;
 //	private int endColumn;
 //	private int endLine;
+	private int level;
 
 	public LocationImpl(Node node) {
 		NamedNodeMap attrs = node.getAttributes();
-		
-		Integer level = null; //UNDERSTAND: is level required???
 		
 		for (int i = 0; i < attrs.getLength(); i++) {
 			Node attr = attrs.item(i);
@@ -82,6 +81,10 @@ public class LocationImpl implements Location {
 	 */
 	public int getLineBegin() {
 		return beginLine;
+	}
+
+	public int getLevel() {
+		return level;
 	}
 
 	public String toString() {

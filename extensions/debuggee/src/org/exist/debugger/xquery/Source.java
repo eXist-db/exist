@@ -95,9 +95,9 @@ public class Source extends BasicFunction {
 			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 			
 		} catch (EXistException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		} catch (IOException e) {
-			throw new XPathException(this, "", e);
+			throw new XPathException(this, e);
 		}
 	}
 }
