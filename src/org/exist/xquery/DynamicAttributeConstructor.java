@@ -124,6 +124,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
             	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalName() + "' is not a valid attribute name");
+            
+            if (qn.getLocalName().equals("xmlns") && qn.getNamespaceURI().isEmpty())
+            	throw new XPathException(this, ErrorCodes.XQDY0044, "'" + qn.getLocalName() + "' is not a valid attribute name");
 
             String value;
             Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
