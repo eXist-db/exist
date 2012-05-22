@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -100,12 +101,12 @@ public class ElementConstructor extends NodeConstructor {
 	public void addNamespaceDecl(String name, String uri) throws XPathException {
         QName qn = new QName(name, uri, "xmlns");
 
-        if (name.equalsIgnoreCase("xml")) {
+        if (name.equalsIgnoreCase("xml") || name.equalsIgnoreCase("xmlns"))
             throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");
-        }
-        if (name.equalsIgnoreCase("xmlns")) {
-            throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");
-        }
+        
+        if (uri.equalsIgnoreCase(Namespaces.XML_NS))
+            throw new XPathException(this, ErrorCodes.XQST0070, "'"+Namespaces.XML_NS+"' can bind only to 'xml' prefix");
+        	
         if (name.length()!=0 && uri.trim().length()==0) {
            throw new XPathException(this, ErrorCodes.XQST0085, "cannot undeclare a prefix "+name+".");
         }
