@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.TextImpl;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -104,6 +105,14 @@ public class EnclosedExpr extends PathExpr {
                 //If the item is a node, flush any collected character data and
                 //copy the node to the target doc. 
                 } else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                	
+                    //It is possible for a text node constructor to construct a text node containing a zero-length string.
+                    //However, if used in the content of a constructed element or document node,
+                    //such a text node will be deleted or merged with another text node.
+                	if (next instanceof TextImpl && ((TextImpl)next).getStringValue().isEmpty()) {
+                        next = i.nextItem();
+						continue;
+					}
                     if (buf != null && buf.length() > 0) {
                         receiver.characters(buf);
                         buf.setLength(0);
