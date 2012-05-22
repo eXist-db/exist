@@ -206,6 +206,7 @@ public class ElementConstructor extends NodeConstructor {
                         }
                     }
                 }
+                String v = null;
                 // process the remaining attributes
                 for (int i = 0; i < attributes.length; i++) {
                     context.proceed(this, builder);
@@ -214,8 +215,15 @@ public class ElementConstructor extends NodeConstructor {
                     attrQName = QName.parse(context, constructor.getQName(), "");
                     if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
                         throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");
+                    
+                    v = attrValues.getStringValue();
+                    
+                    //normalize xml:id
+                    if (attrQName.getStringValue().equals("xml:id"))
+                    	v = v.trim();
+                    
                     attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
-                            attrQName.getStringValue(), "CDATA", attrValues.getStringValue());
+                            attrQName.getStringValue(), "CDATA", v);
                 }
             }
             context.proceed(this, builder);
