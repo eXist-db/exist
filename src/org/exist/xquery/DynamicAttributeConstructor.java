@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -30,6 +31,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.QNameValue;
 import org.w3c.dom.DOMException;
@@ -106,7 +108,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
 
             Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!nameSeq.hasOne())
-            throw new XPathException(this, "The name expression should evaluate to a single value");
+            	throw new XPathException(this, "The name expression should evaluate to a single value");
 
             Item qnItem = nameSeq.itemAt(0);
             QName qn;
@@ -126,7 +128,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             String value;
             Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
             if(valueSeq.isEmpty())
-            value = "";
+            	value = "";
             else {
                 StringBuilder buf = new StringBuilder();
                 for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
@@ -137,6 +139,9 @@ public class DynamicAttributeConstructor extends NodeConstructor {
                 }
                 value = buf.toString();
             }
+            
+            value = DynamicAttributeConstructor.normalize(this, qn, value);
+            
             node = null;
             try {
                 int nodeNr = builder.addAttribute(qn, value);
@@ -153,6 +158,16 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             context.getProfiler().end(this, "", node);          
         
         return node;
+    }
+    
+    public static String normalize(Expression expr, QName qn, String value) throws XPathException {
+        //normalize xml:id
+    	if (qn.equalsSimple(Namespaces.XML_ID_QNAME)) {
+    		value = StringValue.trimWhitespace(StringValue.collapseWhitespace(value));
+            if (!XMLChar.isValidNCName(value))
+                throw new XPathException(expr, ErrorCodes.XQDY0091, "Value of xml:id attribute is not a valid NCName: " + value);
+    	}
+    	return value;
     }
 
     /* (non-Javadoc)
