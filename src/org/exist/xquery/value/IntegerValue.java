@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /** [Definition:]   integer is <i>derived</i> from decimal by fixing the value of <i>fractionDigits<i> to be 0. 
@@ -86,7 +87,7 @@ public class IntegerValue extends NumericValue {
 		try {
 			value = new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
-				throw new XPathException(
+				throw new XPathException(ErrorCodes.FORG0001,
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
 //			}
 		}
@@ -97,10 +98,10 @@ public class IntegerValue extends NumericValue {
 		try {
 			value =  new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 			if (!(checkType(value, type)))
-				throw new XPathException("FORG0001: can not convert '" + 
+				throw new XPathException(ErrorCodes.FORG0001, "can not convert '" + 
 						stringValue + "' to " + Type.getTypeName(type));
 		} catch (NumberFormatException e) {
-			throw new XPathException("FORG0001: can not convert '" + 
+			throw new XPathException(ErrorCodes.FORG0001, "can not convert '" + 
 					stringValue + "' to " + Type.getTypeName(type));
 		}
 	}
@@ -303,8 +304,8 @@ public class IntegerValue extends NumericValue {
 			case Type.BOOLEAN :
 				return (value.compareTo(ZERO_BIGINTEGER) == 0 ) ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
-				throw new XPathException(
-					"err:FORG0001: cannot convert '" 
+				throw new XPathException(ErrorCodes.FORG0001,
+					"cannot convert '" 
                     +  Type.getTypeName(this.getType()) 
                     + " (" 
                     + value 
@@ -405,7 +406,7 @@ public class IntegerValue extends NumericValue {
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
 			if (((IntegerValue) other).isZero())
-				throw new XPathException("FOAR0001 : division by zero");
+				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
 			//http://www.w3.org/TR/xpath20/#mapping : numeric; but xs:decimal if both operands are xs:integer
 			BigDecimal d = new BigDecimal(value);			 
 			BigDecimal od = new BigDecimal(((IntegerValue) other).value);
@@ -419,7 +420,7 @@ public class IntegerValue extends NumericValue {
 	public IntegerValue idiv(NumericValue other) throws XPathException {
 		if (other.isZero())
 			//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
-		    throw new XPathException("FOAR0001: division by zero");		
+		    throw new XPathException(ErrorCodes.FOAR0001, "division by zero");		
 		ComputableValue result = div(other);
 		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
 	}

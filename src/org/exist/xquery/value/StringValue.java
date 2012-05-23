@@ -30,6 +30,7 @@ import org.exist.util.Collations;
 import org.exist.util.UTF8;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 public class StringValue extends AtomicValue {
@@ -239,7 +240,7 @@ public class StringValue extends AtomicValue {
 			case Type.QNAME :
 				return new QNameValue(null, new QName(value));
 			default :
-				throw new XPathException("FORG0001: cannot cast '" + 
+				throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
 						Type.getTypeName(requiredType));
 		}
@@ -326,8 +327,8 @@ public class StringValue extends AtomicValue {
 					throw new XPathException("Type error: cannot apply operand to string value");
 			}
 		}
-		throw new XPathException(
-			"XPTY0004: can not compare xs:string('" + value + "') with " + 
+		throw new XPathException(ErrorCodes.XPTY0004, 
+			"can not compare xs:string('" + value + "') with " + 
 			Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "')");
 	}
 
@@ -489,15 +490,15 @@ public class StringValue extends AtomicValue {
 	                else
 	                    entityRef.setLength(0);
 	                if ((i+1)==seq.length()) {
-	                    throw new XPathException("XPST0003 : Ampersands (&) must be escaped.");
+	                    throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped.");
 	                }
 	                if ((i+2)==seq.length()) {
-	                    throw new XPathException("XPST0003 : Ampersands (&) must be escaped (missing ;).");
+	                    throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped (missing ;).");
 	                }
 	                ch = seq.charAt(i+1);
 	                if (ch!='#') {
 	                    if (!Character.isLetter(ch)) {
-	                        throw new XPathException("XPST0003 : Ampersands (&) must be escaped (following character was not a name start character).");
+	                        throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped (following character was not a name start character).");
 	                    }
 	                    entityRef.append(ch);
 	                    boolean found = false;
@@ -516,7 +517,7 @@ public class StringValue extends AtomicValue {
 	                    if (found) {
 	                        buf.append((char) expandEntity(entityRef.toString()));
 	                    } else {
-	                        throw new XPathException("XPST0003 : Invalid character ("+ch+") in entity name ("+entityRef+") or missing ;");
+	                        throw new XPathException(ErrorCodes.XPST0003, "Invalid character ("+ch+") in entity name ("+entityRef+") or missing ;");
 	                    }
                         
 	                } else {
@@ -564,7 +565,7 @@ public class StringValue extends AtomicValue {
                                 buf.append((char) charref);
                             }
 	                    } else {
-	                        throw new XPathException("XPST0003 : Invalid character in character reference ("+ch+") or missing ;");
+	                        throw new XPathException(ErrorCodes.XPST0003, "Invalid character in character reference ("+ch+") or missing ;");
 	                    }
 
 	                }
@@ -626,7 +627,7 @@ public class StringValue extends AtomicValue {
 				charNumber = Integer.parseInt(buf);
                         }
                    if (charNumber==0) {
-                      throw new XPathException("XQST0090 : Character number zero (0) is not allowed.");
+                      throw new XPathException(ErrorCodes.XQST0090, "Character number zero (0) is not allowed.");
                    }
                    return charNumber;
 		} catch (NumberFormatException e) {

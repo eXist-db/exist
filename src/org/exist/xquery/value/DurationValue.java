@@ -31,6 +31,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -85,7 +86,7 @@ public class DurationValue extends ComputableValue {
 		try {
 			this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("err:FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + str + "\"");            
 		}
 	}
@@ -272,7 +273,7 @@ public class DurationValue extends ComputableValue {
 			case Constants.EQ :
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-					throw new XPathException("err:XPTY0004: invalid operand type: " + Type.getTypeName(other.getType()));
+					throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
 				//confirm strict equality to work around the JDK standard behaviour
@@ -283,7 +284,7 @@ public class DurationValue extends ComputableValue {
 			case Constants.NEQ :
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-					throw new XPathException("err:XPTY0004: invalid operand type: " + Type.getTypeName(other.getType()));
+					throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
 				//confirm strict equality to work around the JDK standard behaviour
@@ -295,7 +296,7 @@ public class DurationValue extends ComputableValue {
 			case Constants.LTEQ :			
 			case Constants.GT :
 			case Constants.GTEQ :
-				throw new XPathException("err:XPTY0004: " + Type.getTypeName(other.getType()) + " type can not be ordered");
+				throw new XPathException(ErrorCodes.XPTY0004, "" + Type.getTypeName(other.getType()) + " type can not be ordered");
 			default :
 				throw new IllegalArgumentException("Unknown comparison operator");
 		}	
@@ -303,33 +304,33 @@ public class DurationValue extends ComputableValue {
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-			throw new XPathException("err:XPTY0004: invalid operand type: " + Type.getTypeName(other.getType()));
+			throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
 		//TODO : what to do with the collator ?
 		return duration.compare(((DurationValue)other).duration);
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
 	}
 
 	public ComputableValue plus(ComputableValue other) throws XPathException {
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));	
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));	
 	}
 	
 	public ComputableValue minus(ComputableValue other) throws XPathException {
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
 	}
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {	
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));			
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));			
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {	
-		throw new XPathException("err:XPTY0004: invalid operation on " + Type.getTypeName(this.getType()));				
+		throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));				
 	}
 
 	public int conversionPreference(Class<?> target) {
@@ -341,11 +342,11 @@ public class DurationValue extends ComputableValue {
 	public Object toJavaObject(Class<?> target) throws XPathException {
 		if (target.isAssignableFrom(getClass())) return this;
 		if (target.isAssignableFrom(Duration.class)) return duration;
-		throw new XPathException("err:XPTY0004: cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+		throw new XPathException(ErrorCodes.XPTY0004, "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
     
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("err:FORG0006: value of type " + Type.getTypeName(getType()) +
+        throw new XPathException(ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
             " has no boolean value.");
     }
     
@@ -359,5 +360,4 @@ public class DurationValue extends ComputableValue {
     	duration1.getMonths() == duration2.getMonths() &&
     	duration1.getYears() == duration2.getYears();
 	}
-
 }

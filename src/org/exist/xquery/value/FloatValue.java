@@ -27,6 +27,7 @@ import java.text.Collator;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -58,7 +59,7 @@ public class FloatValue extends NumericValue {
 			else
 				value = Float.parseFloat(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException("FORG0001: cannot construct " 
+			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " 
                                      + Type.getTypeName(this.getItemType())
                                      + " from \""
                                      + getStringValue()
@@ -166,7 +167,7 @@ public class FloatValue extends NumericValue {
 				if (!(Float.isInfinite(value) || Float.isNaN(value)))
 					return new IntegerValue((long) value, requiredType);
 				else
-					throw new XPathException("FOCA0002: cannot convert ' xs:float(\""
+					throw new XPathException(ErrorCodes.FOCA0002, "cannot convert ' xs:float(\""
                                              + getStringValue()
                                              + "\")' to "
                                              + Type.getTypeName(requiredType));
@@ -177,7 +178,7 @@ public class FloatValue extends NumericValue {
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
 			default :
-				throw new XPathException("FORG0001: cannot cast '"
+				throw new XPathException(ErrorCodes.FORG0001, "cannot cast '"
                                          + Type.getTypeName(this.getItemType())
                                          + "(\""
                                          + getStringValue()

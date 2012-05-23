@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.util.io.HexOutputStream;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -51,11 +52,11 @@ public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
     protected void verifyString(String str) throws XPathException {
 
         if((str.length() & 1) != 0) {
-            throw new XPathException("FORG0001: A hexBinary value must contain an even number of characters");
+            throw new XPathException(ErrorCodes.FORG0001, "A hexBinary value must contain an even number of characters");
         }
 
         if(!getMatcher(str).matches()) {
-            throw new XPathException("FORG0001: Invalid hexadecimal digit");
+            throw new XPathException(ErrorCodes.FORG0001, "Invalid hexadecimal digit");
         }
     }
 

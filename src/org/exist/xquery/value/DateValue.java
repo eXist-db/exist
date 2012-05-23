@@ -28,6 +28,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -100,7 +101,7 @@ public class DateValue extends AbstractDateTimeValue {
 				return new StringValue(dv.getStringValue());
 			}
 			default :
-				throw new XPathException("err:FORG0001: can not convert " + 
+				throw new XPathException(ErrorCodes.FORG0001, "can not convert " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
 						Type.getTypeName(requiredType));
 		}
@@ -120,5 +121,4 @@ public class DateValue extends AbstractDateTimeValue {
 						+ Type.getTypeName(other.getType()));
 		}
 	}
-
 }
