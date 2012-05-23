@@ -31,6 +31,7 @@ import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -44,7 +45,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	DayTimeDurationValue(Duration duration) throws XPathException {
 		super(duration);
 		if (duration.isSet(DatatypeConstants.YEARS) || duration.isSet(DatatypeConstants.MONTHS))
-			throw new XPathException("err:XPTY0004: the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
+			throw new XPathException(ErrorCodes.XPTY0004, "the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
 	}
 
 	public DayTimeDurationValue(long millis) throws XPathException {
@@ -59,7 +60,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		try {
 			return TimeUtils.getInstance().newDurationDayTime(str);
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
+			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
 					" from \"" + str + "\"");            
 		}
 	}
@@ -179,7 +180,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 				return new UntypedAtomicValue(dtdv.getStringValue());
 			}
 			default:
-				throw new XPathException("XPTY0004: cannot cast '" + 
+				throw new XPathException(ErrorCodes.XPTY0004, "cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
 						Type.getTypeName(requiredType));
 		}
@@ -205,11 +206,11 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		if (other instanceof NumericValue) {
 			//If $arg2 is NaN an error is raised [err:FOCA0005]
 			if (((NumericValue)other).isNaN()) {
-				throw new XPathException("FOCA0005: Operand is not a number");				
+				throw new XPathException(ErrorCodes.FOCA0005, "Operand is not a number");				
 			}		
 			//If $arg2 is positive or negative infinity, the result overflows
 			if (((NumericValue)other).isInfinite()) {
-				throw new XPathException("FODT0002: Multiplication by infinity overflow");		
+				throw new XPathException(ErrorCodes.FODT0002, "Multiplication by infinity overflow");		
 			}		
 		}		
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
@@ -229,7 +230,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		}		
 		if (other instanceof NumericValue) {
 			if (((NumericValue)other).isNaN()) {
-				throw new XPathException("FOCA0005: Operand is not a number");				
+				throw new XPathException(ErrorCodes.FOCA0005, "Operand is not a number");				
 			}
 			//If $arg2 is positive or negative infinity, the result is a zero-length duration
 			if (((NumericValue)other).isInfinite()) {
@@ -237,7 +238,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			}
 			//If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
 			if (((NumericValue)other).isZero()) { 
-				throw new XPathException("FODT0002: Division by zero");
+				throw new XPathException(ErrorCodes.FODT0002, "Division by zero");
 			}
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
@@ -256,7 +257,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+        throw new XPathException(ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
             " has no boolean value.");
     }
 }
