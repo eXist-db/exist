@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -61,12 +62,12 @@ public class DecimalValue extends NumericValue {
         str = StringValue.trimWhitespace(str);
 		try {
 			if (!decimalPattern.matcher(str).matches()) {
-				throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+				throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 						" from \"" + str + "\"");            
 			}
 			value = stripTrailingZeros(new BigDecimal(str));
 		} catch (NumberFormatException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + getStringValue() + "\"");					
 		}
 	}
@@ -187,8 +188,8 @@ public class DecimalValue extends NumericValue {
 			case Type.BOOLEAN :
 				return value.signum() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
-				throw new XPathException(
-					"err:FORG0001: cannot convert  '" 
+				throw new XPathException(ErrorCodes.FORG0001,
+					"cannot convert  '" 
                     +  Type.getTypeName(this.getType()) 
                     + " ("
                     + value
@@ -340,7 +341,7 @@ public class DecimalValue extends NumericValue {
 	public IntegerValue idiv(NumericValue other) throws XPathException {
 		DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
 		if (dv.value.signum() == 0)
-			throw new XPathException("FOAR0001: division by zero");
+			throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
         BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
         return new IntegerValue(quot);
 	}

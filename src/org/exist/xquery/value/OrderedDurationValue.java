@@ -8,6 +8,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -25,16 +26,16 @@ abstract class OrderedDurationValue extends DurationValue {
 		int r = compareTo(collator, other);	
 		if (operator != Constants.EQ && operator != Constants.NEQ){
 			if (getType() == Type.DURATION)
-				throw new XPathException(
-						"err:XPTY0004: cannot compare unordered " + Type.getTypeName(getType()) + " to "
+				throw new XPathException(ErrorCodes.XPTY0004, 
+						"cannot compare unordered " + Type.getTypeName(getType()) + " to "
 						+ Type.getTypeName(other.getType()));
 			if (other.getType()== Type.DURATION) 
-				throw new XPathException(
-					"err:XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to unordered "
+				throw new XPathException(ErrorCodes.XPTY0004, 
+					"cannot compare " + Type.getTypeName(getType()) + " to unordered "
 					+ Type.getTypeName(other.getType()));
 			if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) 
-				throw new XPathException(
-					"err:XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to "
+				throw new XPathException(ErrorCodes.XPTY0004, 
+					"cannot compare " + Type.getTypeName(getType()) + " to "
 					+ Type.getTypeName(other.getType()));
 		}
 		switch (operator) {
@@ -124,7 +125,7 @@ abstract class OrderedDurationValue extends DurationValue {
 					gc.setYear(gc.getYear() - 1);
 				return date.createSameKind(gc); 
 			default:
-				throw new XPathException("err:XPTY0004: cannot add " + 
+				throw new XPathException(ErrorCodes.XPTY0004, "cannot add " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");		}
 	}
@@ -133,7 +134,7 @@ abstract class OrderedDurationValue extends DurationValue {
 		switch(other.getType()) {
 		case Type.DAY_TIME_DURATION: {
 			if (getType() != other.getType()) 
-				throw new XPathException("err:XPTY0004: Tried to substract " + 
+				throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
@@ -142,7 +143,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return new DayTimeDurationValue(result); }				
 		case Type.YEAR_MONTH_DURATION: {
 			if (getType() != other.getType()) 
-				throw new XPathException("err:XPTY0004: Tried to substract " + 
+				throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
@@ -186,11 +187,10 @@ abstract class OrderedDurationValue extends DurationValue {
 			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
 		}	
 		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN())
-			throw new XPathException("err:XPTY0004: Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
+			throw new XPathException(ErrorCodes.XPTY0004, "Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
 		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE)
 			return (BigDecimal) x.toJavaObject(BigDecimal.class);
 		else 
 			return new BigDecimal(((NumericValue) x).getDouble());		
 	}
-
 }

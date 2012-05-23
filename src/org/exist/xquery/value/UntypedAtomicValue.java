@@ -26,6 +26,7 @@ import java.text.Collator;
 
 import org.exist.util.Collations;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -84,7 +85,7 @@ public class UntypedAtomicValue extends AtomicValue {
             else if (trimmed.equals("1") || trimmed.equals("true"))
                 return BooleanValue.TRUE;
             else
-                throw new XPathException("FORG0001: cannot cast '" + 
+                throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
                         Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
                         Type.getTypeName(requiredType));
         case Type.FLOAT :
@@ -150,7 +151,7 @@ public class UntypedAtomicValue extends AtomicValue {
             DayTimeDurationValue dtdv = new DayTimeDurationValue(value);
             return new DayTimeDurationValue(dtdv.getCanonicalDuration());
         default :
-            throw new XPathException("FORG0001: cannot cast '" + 
+            throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
                 Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
                 Type.getTypeName(requiredType));
         }

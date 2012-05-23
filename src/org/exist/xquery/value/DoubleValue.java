@@ -27,6 +27,7 @@ import java.text.Collator;
 import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 public class DoubleValue extends NumericValue {
@@ -59,7 +60,7 @@ public class DoubleValue extends NumericValue {
 			else
 				value = Double.parseDouble(stringValue);
 		} catch (NumberFormatException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from '" + stringValue + "'");
 		}
     }
@@ -138,14 +139,14 @@ public class DoubleValue extends NumericValue {
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert "
+					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('"
                                              + getStringValue()
                                              + "') to "
                                              + Type.getTypeName(requiredType));
 				if (isInfinite())
-					throw new XPathException("FORG0001: can not convert "
+					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType()) 
                                              + "('" + getStringValue() 
                                              + "') to " 
@@ -165,25 +166,25 @@ public class DoubleValue extends NumericValue {
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert "
+					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('" + getStringValue()
                                              + "') to "
                                              + Type.getTypeName(requiredType));
 				if (Double.isInfinite(value))
-					throw new XPathException("FORG0001: can not convert "
+					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('"
                                              + getStringValue()
                                              + "') to "
                                              + Type.getTypeName(requiredType));
 				if (value > Integer.MAX_VALUE)
-					throw new XPathException("err:FOCA0003: Value is out of range for type xs:integer");
+					throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
 				return new BooleanValue(this.effectiveBooleanValue());				
 			default :
-				throw new XPathException("FORG0001: cannot cast '"
+				throw new XPathException(ErrorCodes.FORG0001, "cannot cast '"
                                          + Type.getTypeName(this.getItemType())
                                          + "(\""
                                          + getStringValue()

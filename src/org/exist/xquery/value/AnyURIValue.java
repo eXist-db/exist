@@ -30,6 +30,7 @@ import java.util.BitSet;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.fn.FunEscapeURI;
 
@@ -353,7 +354,7 @@ public class AnyURIValue extends AtomicValue {
 			try {
 				return new URL(uri);
 			} catch (MalformedURLException e) {
-				throw new XPathException(
+				throw new XPathException(ErrorCodes.FORG0001,
 					"failed to convert " + uri + " into a Java URL: " + e.getMessage(),
 					e);
 			}
@@ -373,7 +374,7 @@ public class AnyURIValue extends AtomicValue {
 		try {
 			return XmldbURI.xmldbUriFor(uri, false);
 		} catch (URISyntaxException e) {
-			throw new XPathException(
+			throw new XPathException(ErrorCodes.FORG0001,
 				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
 				e);
 		}
@@ -383,7 +384,7 @@ public class AnyURIValue extends AtomicValue {
 		try {
 			return new URI(escape(uri));
 		} catch (URISyntaxException e) {
-			throw new XPathException(
+			throw new XPathException(ErrorCodes.FORG0001,
 				"failed to convert " + uri + " into an URI: " + e.getMessage(),
 				e);
 		}

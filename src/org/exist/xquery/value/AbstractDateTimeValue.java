@@ -187,7 +187,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	}
 
 	public boolean effectiveBooleanValue() throws XPathException {
-		throw new XPathException("FORG0006: effective boolean value invalid operand type: " + Type.getTypeName(getType()));
+		throw new XPathException(ErrorCodes.FORG0006, "effective boolean value invalid operand type: " + Type.getTypeName(getType()));
 	}
 	
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
@@ -215,13 +215,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		Duration tz = offset.duration;
 		Number secs = tz.getField(DatatypeConstants.SECONDS);
 		if (secs != null && ((BigDecimal) secs).compareTo(BigDecimal.valueOf(0)) != 0)
-			throw new XPathException("err:FODT0003: duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
+			throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
 		if (! (
 				tz.equals(tzLowerBound) ||
 				tz.equals(tzUpperBound) ||
 				(tz.isLongerThan(tzLowerBound) && tz.isShorterThan(tzUpperBound))
 			))
-			throw new XPathException("err:FODT0003: duration " + offset + " outside valid timezone offset range");
+			throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " outside valid timezone offset range");
 	}
 
 	public AbstractDateTimeValue adjustedToTimezone(DayTimeDurationValue offset) throws XPathException {
@@ -368,7 +368,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         Matcher m = dateInvalidMonth.matcher(dateValue);
         Matcher y = dateInvalidYear.matcher(dateValue);
         if (d.matches() ||  m.matches() || y.matches()) {
-            throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + dateValue + "'");
+            throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + dateValue + "'");
         }
         return dateValue;
     }
@@ -397,14 +397,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 mins = Integer.valueOf(m.group(2)).intValue();
                 secs = Integer.valueOf(m.group(3)).intValue();
                 if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (hours == 24) {
                     if (mins == 0) {
                         hours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -420,14 +420,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(7)).intValue();
                 tzMins = Integer.valueOf(m.group(8)).intValue();
                 if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (hours == 24) {
                     if (mins == 0) {
                         hours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 timeValue = df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(4) + msf.format(mSecs) + m.group(6) + df.format(tzHours) + ":" + df.format(tzMins);
@@ -442,7 +442,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 mins = Integer.valueOf(m.group(4)).intValue();
                 secs = Integer.valueOf(m.group(5)).intValue();
                 if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (hours == 24) {
@@ -450,7 +450,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         hours = 0;
                         dateValue = (DateValue) new DateValue(date).plus(new DayTimeDurationValue("P1D"));
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -466,14 +466,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(8)).intValue();
                 tzMins = Integer.valueOf(m.group(9)).intValue();
                 if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (hours == 24) {
                     if (mins == 0) {
                         hours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -486,14 +486,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
                 if (tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
                         tzHours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -505,14 +505,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
                 if (tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
                         tzHours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -524,14 +524,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
                 if (tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
                         tzHours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -543,14 +543,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
                 if (tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
                         tzHours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -562,14 +562,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
                 if (tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
                         tzHours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!
@@ -581,14 +581,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 hours = Integer.valueOf(m.group(3)).intValue();
                 mins = Integer.valueOf(m.group(4)).intValue();
                 if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
-                    throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'");
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
                 }
 
                 if (hours == 24) {
                     if (mins == 0) {
                         hours = 0;
                     } else {
-                        throw new XPathException("err:FORG0001: illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
                 // fixme!

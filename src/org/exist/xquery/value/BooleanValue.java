@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 public class BooleanValue extends AtomicValue {
@@ -83,8 +84,8 @@ public class BooleanValue extends AtomicValue {
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());				
 			default :
-				throw new XPathException(
-					"XPTY0004: cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
+				throw new XPathException(ErrorCodes.XPTY0004, 
+					"cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
 		}
 	}
 
@@ -111,7 +112,8 @@ public class BooleanValue extends AtomicValue {
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");
 			}
 		}
-		throw new XPathException("XPTY0004: cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(other.getType()));
+		throw new XPathException(ErrorCodes.XPTY0004, 
+			"cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(other.getType()));
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
