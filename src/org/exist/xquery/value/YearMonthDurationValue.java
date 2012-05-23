@@ -195,7 +195,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	}
 	
 	private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {
-		x = x.setScale(0, BigDecimal.ROUND_UP);
+		x = x.setScale(0, BigDecimal.ROUND_HALF_UP);
 		return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 				x.signum() >= 0, null, x.toBigInteger()));
 	}
