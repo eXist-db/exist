@@ -130,23 +130,6 @@ public class FunQName extends BasicFunction {
 			
 		}
 
-		if (namespace != null && prefix == null) {
-			prefix = context.getPrefixForURI(namespace);
-			
-			if (prefix == null) {
-				//generate prefix
-				for (int i = 1; i < 100; i++) {
-					prefix = "eXnsp"+i;
-		            if (context.getURIForPrefix(prefix) == null)
-		            	break;
-		            
-		            prefix = null;
-				}
-				if (prefix == null)
-                    throw new XPathException(this, "Prefix can't be generate.");
-			}
-		}
-		
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {
             if (context.getURIForPrefix(prefix) == null) {

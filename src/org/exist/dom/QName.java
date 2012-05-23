@@ -25,6 +25,7 @@ import org.exist.interpreter.Context;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -273,7 +274,7 @@ public class QName implements Comparable<QName> {
         if (prefix != null) {
             namespaceURI = context.getURIForPrefix(prefix);
             if (namespaceURI == null)
-                throw new XPathException("XPST0081: No namespace defined for prefix " + prefix);
+                throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
         } else {
             namespaceURI = defaultNS;
         }
