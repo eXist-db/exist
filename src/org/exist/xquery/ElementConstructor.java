@@ -215,6 +215,28 @@ public class ElementConstructor extends NodeConstructor {
                     constructor = attributes[i];
                     attrValues = constructor.eval(contextSequence, contextItem);
                     attrQName = QName.parse(context, constructor.getQName(), "");
+                    
+            		if (attrQName.getNamespaceURI() != null && attrQName.getPrefix() == null) {
+            			String prefix = context.getPrefixForURI(attrQName.getNamespaceURI());
+            			
+            			if (prefix != null) {
+            				attrQName.setPrefix(prefix);
+            			} else {
+            				//generate prefix
+            				for (int n = 1; i < 100; i++) {
+            					prefix = "eXnsp"+n;
+            		            if (context.getURIForPrefix(prefix) == null) {
+            		            	attrQName.setPrefix(prefix);
+            		            	break;
+            		            }
+            		            
+            		            prefix = null;
+            				}
+            				if (prefix == null)
+                                throw new XPathException(this, "Prefix can't be generate.");
+            			}
+            		}
+                    
                     if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
                         throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");
                     
