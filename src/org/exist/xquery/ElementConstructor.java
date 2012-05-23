@@ -216,8 +216,9 @@ public class ElementConstructor extends NodeConstructor {
                     attrValues = constructor.eval(contextSequence, contextItem);
                     attrQName = QName.parse(context, constructor.getQName(), "");
                     
-            		if (attrQName.getNamespaceURI() != null && attrQName.getPrefix() == null) {
-            			String prefix = context.getPrefixForURI(attrQName.getNamespaceURI());
+                    String namespaceURI = attrQName.getNamespaceURI();
+            		if (namespaceURI != null && !namespaceURI.isEmpty() && attrQName.getPrefix() == null) {
+            			String prefix = context.getPrefixForURI(namespaceURI);
             			
             			if (prefix != null) {
             				attrQName.setPrefix(prefix);
