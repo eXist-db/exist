@@ -37,8 +37,10 @@
   <forward pattern="/services" servlet="AxisServlet"/>
   <forward pattern="/axis-servlet/AdminServlet" servlet="AdminServlet"/>
   
-  <!-- TODO: what is the purpose here?  -->
+  <!-- scale images on the fly and cache the output. -->
+  <!-- 
   <forward pattern="/images" servlet="ScaleImageJAI"/>
+  -->
   
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
