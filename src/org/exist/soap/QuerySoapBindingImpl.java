@@ -21,6 +21,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
+import org.exist.security.xacml.XACMLSource;
 import org.exist.soap.Session.QueryResult;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -44,7 +45,6 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import antlr.collections.AST;
-import org.exist.util.LockException;
 
 /**
  *  Provides the actual implementations for the methods defined in
@@ -277,6 +277,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             LOG.debug("query: " + xpath);
             broker = pool.get(session.getUser());
             XQueryContext context = new XQueryContext(pool, AccessContext.SOAP);
+            context.setSource(XACMLSource.getInstance(xpath));
             
             session.registerContext(context);
             
