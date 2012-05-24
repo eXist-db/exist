@@ -582,6 +582,9 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
+        if (registeredRealm.hasGroup(group.getName()))
+            throw new ConfigurationException("The group '"+group.getName()+"' at realm '" + group.getRealmId() + "' already exist.");
+        
         final GroupImpl newGroup = new GroupImpl(registeredRealm, id, group.getName(), group.getManagers());
         
         groupLocks.getWriteLock(newGroup).lock();
