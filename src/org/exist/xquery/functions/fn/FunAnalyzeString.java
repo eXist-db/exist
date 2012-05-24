@@ -109,6 +109,7 @@ public class FunAnalyzeString extends BasicFunction {
             }
             builder.startElement(new QName("match", Function.BUILTIN_FUNCTION_NS), null);
             for (int i = 1; i <= matchResult.groupCount(); i++) {
+            	if (matchResult.start(i) < 0) continue;
                 if (matchResult.start(i) != offset) {
                     String chars = input.substring(offset, matchResult.start(i));
                     if (matchResult.start(i) >= matchResult.start() &&
