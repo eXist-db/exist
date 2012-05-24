@@ -54,7 +54,23 @@ public class ConfigurableTest {
 			"<spice name='berbere'/>" +
 			
 			"</instance>";
+
 	String config2 = "<config xmlns='http://exist-db.org/Configuration' valueString=\"b\"><instance valueString=\"a\" valueInteger=\"5\"></instance></config>";
+
+	String config3 = "<instance xmlns='http://exist-db.org/Configuration' " +
+			"valueString=\"a\" " +
+			"valueInt=\"5\" " +
+			"valueboolean=\"true\" " +
+			"valueBoolean=\"false\" " +
+			">" +
+			"<valueInteger>5</valueInteger> " +
+			
+			"<sp name='cool'/>" +
+
+			"<spice name='black pepper'/>" +
+			"<spice name='berbere'/>" +
+			
+			"</instance>";
 	
 	@Test
 	public void simple() throws Exception {
@@ -104,4 +120,26 @@ public class ConfigurableTest {
         
         assertEquals(Integer.valueOf(5), object.someInteger);
 	}
+	
+	@Test
+	public void notSimple() throws Exception {
+		InputStream is = new ByteArrayInputStream(config3.getBytes("UTF-8"));
+        
+        Configuration config = Configurator.parse(is);
+        
+        ConfigurableObject2 object = new ConfigurableObject2(config);
+        
+        assertEquals("a", object.some);
+        
+        assertEquals(Integer.valueOf(5), object.someInteger);
+        assertTrue(object.simpleInteger == 5);
+        assertTrue(object.defaultInteger == 3);
+
+        assertTrue(object.someboolean);
+
+        assertFalse(object.someBoolean);
+        
+        assertEquals("cool", object.sp.name);
+	}
+
 }
