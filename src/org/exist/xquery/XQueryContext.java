@@ -3354,7 +3354,7 @@ public class XQueryContext implements BinaryValueManager, Context
             declareNamespace( "dbgp", Debuggee.NAMESPACE_URI );
 
         } catch( XPathException e ) {
-            //TODO : ignored because it should never happen
+            //ignored because it should never happen
             LOG.debug(e);
         }
     }
@@ -3364,7 +3364,8 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         if( updateListener == null ) {
             updateListener = new ContextUpdateListener();
-            getBroker().getBrokerPool().getNotificationService().subscribe( updateListener );
+            DBBroker broker = getBroker();
+            broker.getBrokerPool().getNotificationService().subscribe( updateListener );
         }
         updateListener.addListener( listener );
     }
@@ -3373,7 +3374,8 @@ public class XQueryContext implements BinaryValueManager, Context
     protected void clearUpdateListeners()
     {
         if( updateListener != null ) {
-        	getBroker().getBrokerPool().getNotificationService().unsubscribe( updateListener );
+            DBBroker broker = getBroker();
+            broker.getBrokerPool().getNotificationService().unsubscribe( updateListener );
         }
         updateListener = null;
     }
