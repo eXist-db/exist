@@ -250,26 +250,10 @@ public class Configurator {
                 } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
                     //use annotation ConfigurationFieldClassMask
                     value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
-                //TODO: remove, use methods instead
-                //use annotation ConfigurationFieldClassMask
-                } else if(typeName.equals("org.exist.security.realm.ldap.LdapContextFactory")){
-                    value = instantiateObject("org.exist.security.realm.ldap.LdapContextFactory", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchContext")){
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchContext", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchAccount")){
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchAccount", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchGroup")){
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchGroup", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPSearchPrincipalMetadata")){
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPSearchPrincipalMetadata", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPTransformationContext")) {
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPTransformationContext", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPPrincipalBlackList")) {
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPPrincipalBlackList", configuration);
-                } else if(typeName.equals("org.exist.security.realm.ldap.LDAPPrincipalWhiteList")) {
-                    value = instantiateObject("org.exist.security.realm.ldap.LDAPPrincipalWhiteList", configuration);
                 } else {
-                    value = configuration.getProperty(property);
+                	value = create(configuration, instance, typeName);
+                	if (value == null)
+                		value = configuration.getProperty(property);
                 }
                 if (value != null && !value.equals(field.get(instance))) {
                     Method method = searchForSetMethod(instance.getClass(), field);
@@ -292,15 +276,11 @@ public class Configurator {
             } catch (IllegalAccessException e) {
                 LOG.error("Security error: " + e.getMessage());
                 return null; //XXX: throw configuration error
-            } catch (ConfigurationException ce) {
-                LOG.error(ce.getMessage(), ce);
-                return null;
             }
         }
         //process simple structures: List
         try {
-            for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element :
-                    annotatedFields.getElements()) {
+            for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                 final Field field = element.getField();
                 String typeName = field.getType().getName();
                 if (typeName.equals("java.util.List")) {
@@ -418,56 +398,9 @@ public class Configurator {
                                 objs = new Object[] {id.toLowerCase(), id};
                             }
                             String clazzName = String.format(annotation.value(), objs);
-                            Class<?> clazz;
-                            try {
-                                clazz = Class.forName(clazzName);
-                                Constructor<Configurable> constructor = 
-                                    (Constructor<Configurable>) clazz.getConstructor(
-                                        instance.getClass(), Configuration.class);
-                                Configurable obj = constructor.newInstance(instance, conf);
-                                if (obj instanceof Startable) {
-                                    BrokerPool db = null;
-                                    try {
-                                        db = BrokerPool.getInstance();
-                                    } catch (EXistException e) {
-                                        //ignore if database is starting-up
-                                    }
-                                    if (db != null) {
-                                        DBBroker broker = null;
-                                        try {
-                                            broker = db.get(null);
-                                            ((Startable) obj).startUp(broker);
-                                        } finally {
-                                            db.release(broker);
-                                        }
-                                    }
-                                }
+                            Configurable obj = create(conf, instance, clazzName);
+                            if (obj != null)
                                 list.add(obj);
-                            } catch (ClassNotFoundException e) {
-                                LOG.error("Class [" + clazzName + "] not found, " +
-                                    "skip instance creation.");
-                                continue;
-                            } catch (SecurityException e) {
-                                LOG.error("Security exception on class [" + clazzName +
-                                    "] creation, skip instance creation.");
-                                continue;
-                            } catch (NoSuchMethodException e) {
-                                LOG.error("Class [" + clazzName + "] constructor " +
-                                    "(with Configuration) not found, skip instance creation.");
-                                continue;
-                            } catch (InstantiationException e) {
-                                LOG.error("Instantiation exception on class [" + clazzName +
-                                    "] creation, skip instance creation.");
-                                continue;
-                            } catch (InvocationTargetException e) {
-                                LOG.error("Invocation target exception on class [" +
-                                    clazzName + "] creation, skip instance creation.");
-                                continue;
-                            } catch (EXistException e) {
-                                LOG.error("Databasse exception on class [" + clazzName +
-                                    "] startup, skip instance creation.");
-                                continue;
-                            }
                         }
                     }
                 }
@@ -482,6 +415,67 @@ public class Configurator {
             return null;
         }
         return configuration;
+    }
+    
+    private static Configurable create(Configuration conf, Configurable instance, String clazzName) {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(clazzName);
+            
+            Configurable obj = null;
+            try {
+	            Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
+	            obj = constructor.newInstance(instance, conf);
+            } catch (NoSuchMethodException e) {
+	            Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(Configuration.class);
+	            obj = constructor.newInstance(conf);
+            }
+            if (obj == null)
+            	return null;
+            
+            if (obj instanceof Startable) {
+                BrokerPool db = null;
+                try {
+                    db = BrokerPool.getInstance();
+                } catch (EXistException e) {
+                    //ignore if database is starting-up
+                }
+                if (db != null) {
+                    DBBroker broker = null;
+                    try {
+                        broker = db.get(null);
+                        ((Startable) obj).startUp(broker);
+                    } finally {
+                        db.release(broker);
+                    }
+                }
+            }
+            return obj;
+        } catch (ClassNotFoundException e) {
+            LOG.error("Class [" + clazzName + "] not found, " +
+                "skip instance creation.");
+        } catch (SecurityException e) {
+            LOG.error("Security exception on class [" + clazzName +
+                "] creation, skip instance creation.");
+        } catch (NoSuchMethodException e) {
+            LOG.error("Class [" + clazzName + "] constructor " +
+                "("+instance.getClass().getName()+", "+Configuration.class.getName()+")" +
+        		" or " +
+                "("+Configuration.class.getName()+")" +
+        		"not found, skip instance creation.");
+        } catch (InstantiationException e) {
+            LOG.error("Instantiation exception on class [" + clazzName +
+                "] creation, skip instance creation.");
+        } catch (InvocationTargetException e) {
+            LOG.error("Invocation target exception on class [" +
+                clazzName + "] creation, skip instance creation.");
+        } catch (EXistException e) {
+            LOG.error("Databasse exception on class [" + clazzName +
+                "] startup, skip instance creation.");
+    	} catch (IllegalAccessException e) {
+    		LOG.error(e);
+    	}
+        return null;
     }
 
     public static Configuration parse(File file) throws ConfigurationException {
