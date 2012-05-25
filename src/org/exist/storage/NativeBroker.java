@@ -1407,28 +1407,31 @@ public class NativeBroker extends DBBroker {
     }
     
     public void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
-        if (!collection.getPermissions().validate(getUser(), Permission.WRITE))
-            throw new PermissionDeniedException("insufficient privileges on collection " + collection.getURI());
-        LOG.debug("Reindexing collection " + collection.getURI());
-        
-        if (mode == NodeProcessor.MODE_STORE)
-            dropCollectionIndex(transaction, collection);
-        for(Iterator i = collection.iterator(this); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl)i.next();
-            reindexXMLResource(transaction, next, mode);
-            if (mode == NodeProcessor.MODE_REPAIR)
-                pool.signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
-        }
-        for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-	    XmldbURI next = (XmldbURI)i.next();
-	    //TODO : resolve URIs !!! (collection.getURI().resolve(next))
-            Collection child = getCollection(collection.getURI().append(next));
-            if(child == null)
-                LOG.warn("Collection '" + next + "' not found");
-            else {
-                reindexCollection(transaction, child, mode);
-            }
-        }
+		final CollectionCache collectionsCache = pool.getCollectionsCache();
+		synchronized (collectionsCache) {
+			if (!collection.getPermissions().validate(getUser(), Permission.WRITE))
+				throw new PermissionDeniedException("insufficient privileges on collection " + collection.getURI());
+			LOG.debug("Reindexing collection " + collection.getURI());
+			
+			if (mode == NodeProcessor.MODE_STORE)
+				dropCollectionIndex(transaction, collection);
+			for(Iterator i = collection.iterator(this); i.hasNext(); ) {
+				DocumentImpl next = (DocumentImpl)i.next();
+				reindexXMLResource(transaction, next, mode);
+				if (mode == NodeProcessor.MODE_REPAIR)
+					pool.signalSystemStatus(BrokerPool.SIGNAL_STARTUP);
+			}
+			for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
+			XmldbURI next = (XmldbURI)i.next();
+			//TODO : resolve URIs !!! (collection.getURI().resolve(next))
+				Collection child = getCollection(collection.getURI().append(next));
+				if(child == null)
+					LOG.warn("Collection '" + next + "' not found");
+				else {
+					reindexCollection(transaction, child, mode);
+				}
+			}
+		}
     }
     
     public void dropCollectionIndex(final Txn transaction, Collection collection) throws PermissionDeniedException {
