@@ -3,7 +3,10 @@
     <job name="Set password for admin user ...">
         <os family="windows"/>
         <executefile name="$INSTALL_PATH/bin/setup.bat">
-            <arg>$adminPasswd</arg>
+            <arg>pass=$adminPasswd</arg>
+            <arg>doc=$apps.doc</arg>
+            <arg>demo=$apps.demo</arg>
+            <arg>fundocs=$apps.fundocs</arg>
         </executefile>
     </job>
     <job name="Set password for admin user ...">
