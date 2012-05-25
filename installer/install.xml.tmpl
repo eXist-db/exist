@@ -4,7 +4,9 @@
         <appversion>@version@</appversion>
         <url>http://exist-db.org</url>
         <javaversion>1.6</javaversion>
+		<requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista"/>
+		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
     </info>
 
     <guiprefs height="450" resizable="yes" width="680">
@@ -128,6 +130,8 @@
                 <exclude name="ant/lib/javasvn*.jar"/>
                 <include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
+                <exclude name="jetty/tmp/*"/>
+                <exclude name="jetty/work/*"/>
                 <exclude name="ircbot/**"/>
                 <exclude name="ant/lib/svnkit*.jar"/>
                 <include name="jmx/**"/>
@@ -138,15 +142,14 @@
                 <exclude name="**/*.log*"/>
                 <exclude name="api/**"/>
                 <!--exclude name="xqts/**"/-->
-                <exclude name="**/CVS/"/>
+                <exclude name="**/.svn/"/>
                 <exclude name="**/*~"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF" dir="webapp/WEB-INF">
-                <include name="data/"/>
-                <include name="logs/"/>
-                <exclude name="**/*.dbx"/>
-                <exclude name="**/CVS/"/>
-                <exclude name="**/*.log"/>
+                <exclude name="WEB-INF/logs/**"/>
+                <exclude name="WEB-INF/data/export/**"/>
+                <exclude name="WEB-INF/data/fs/**"/>
+                <exclude name="WEB-INF/data/fs.journal/**"/>
+                <exclude name="WEB-INF/data/lucene/**"/>
+                <exclude name="WEB-INF/expathrepo/**"/>
             </fileset>
             <file src="installer/conf.xml" targetdir="$INSTALL_PATH"/>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>

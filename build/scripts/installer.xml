@@ -56,7 +56,7 @@
         <jar destfile="${inst-jar}"
             basedir="installer/temp" compress="yes" update="yes">
             <manifest>
-                <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
+                <attribute name="Main-Class" value="com.izforge.izpack.installer.Installer"/>
             </manifest>
         </jar>
         <delete dir="installer/temp"/>
