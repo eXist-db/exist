@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  * @author Dannes Wessels (dizzzz_at_exist-db.org)
  */
 public class ExistCollection extends ExistResource {
-
+	
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
 
         if(LOG.isTraceEnabled())
@@ -157,10 +157,12 @@ public class ExistCollection extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            collectionURIs = null;
+            //return empty list
+            return new ArrayList<XmldbURI>();
         } catch (PermissionDeniedException pde) {
             LOG.error(pde);
-            collectionURIs = null;            
+            //return empty list
+            return new ArrayList<XmldbURI>();            
         } finally {
 
             if (collection != null) {
@@ -195,11 +197,12 @@ public class ExistCollection extends ExistResource {
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            documentURIs = null;
+            //return empty list
+            return new ArrayList<XmldbURI>();
         } catch (EXistException e) {
             LOG.error(e);
-            documentURIs = null;
-
+            //return empty list
+            return new ArrayList<XmldbURI>();
         } finally {
             // Clean up resources
             if (collection != null) {
@@ -301,6 +304,7 @@ public class ExistCollection extends ExistResource {
 
                 LOG.debug("Collection already exists");
                 
+                //XXX: double "abort" is bad thing!!!
                 transact.abort(txn);
                 throw new CollectionExistsException("Collection already exists");
             }
@@ -432,8 +436,7 @@ public class ExistCollection extends ExistResource {
                 // Stream into database
                 InputStream fis = vtf.getByteStream();
                 bis = new BufferedInputStream(fis);
-                DocumentImpl doc = collection.addBinaryResource(txn, broker, newNameUri, bis,
-                        mime.getName(), length.longValue());
+                collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length.longValue());
                 bis.close();
             }
 
