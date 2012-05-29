@@ -1329,7 +1329,7 @@ public class ClientFrame extends JFrame
         JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setSelectedFile(new File(desc.getName().toString()));
+        chooser.setSelectedFile(new File(desc.getName().getCollectionPath()));
         if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
             preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
             File file = chooser.getSelectedFile();
