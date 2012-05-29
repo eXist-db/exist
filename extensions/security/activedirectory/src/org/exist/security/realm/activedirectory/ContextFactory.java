@@ -21,8 +21,6 @@
  */
 package org.exist.security.realm.activedirectory;
 
-import java.text.MessageFormat;
-
 import org.exist.config.Configuration;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
@@ -41,7 +39,6 @@ public class ContextFactory extends LdapContextFactory {
 	@ConfigurationFieldAsElement("searchBase")
 	private String searchBase = null;
 
-	
 	protected ContextFactory(Configuration config) {
 		super(config);
 
