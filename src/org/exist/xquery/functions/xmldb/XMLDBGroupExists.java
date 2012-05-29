@@ -82,7 +82,7 @@ public class XMLDBGroupExists extends BasicFunction {
             return BooleanValue.TRUE;
         } else if(currentUser.hasDbaRole()) {
             SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-            Group group = sm.getGroup(currentUser, groupName);
+            Group group = sm.getGroup(groupName);
             return BooleanValue.valueOf(group != null);
         } else {
             throw new XPathException("You do not have permission to determine if the group exists");

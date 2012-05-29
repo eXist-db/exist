@@ -78,7 +78,7 @@ public class UserAttributeModule extends AttributeFinderModule
 			return errorResult("Error finding attribute: Subject-id attribute must be a string.");
 		
 		String uid = ((StringAttribute)value).getValue();
-		Account user = pdp.getBrokerPool().getSecurityManager().getAccount(null, uid);
+		Account user = pdp.getBrokerPool().getSecurityManager().getAccount(uid);
 		if(user == null)
 			return errorResult("No user exists for UID '" + uid + "'");
 		
