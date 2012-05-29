@@ -140,6 +140,11 @@ public class XMLDBAuthenticate extends BasicFunction {
         
         String uri = args[0].getStringValue();
         String userName = args[1].getStringValue();
+        if (userName == null) {
+            logger.error("Unable to authenticate username == NULL");
+            return BooleanValue.FALSE;
+        }
+        
         String password = args[2].getStringValue();
 		
         boolean createSession = false;
@@ -177,7 +182,7 @@ public class XMLDBAuthenticate extends BasicFunction {
             }
 			
             if( isCalledAs( "login" ) ) {
-                context.getBroker().setUser( user );
+                context.getBroker().setSubject( user );
                 
                 /** if there is a http session cache the user in the http session */
                 cacheUserInHttpSession( user, createSession );
@@ -210,7 +215,6 @@ public class XMLDBAuthenticate extends BasicFunction {
     		}
     	}
 	}
-					
 					
 	/**
 	 * Get the HTTP Session variable. Create it if requested and it doesn't exist.
@@ -246,8 +250,6 @@ public class XMLDBAuthenticate extends BasicFunction {
 				var = sessionModule.declareVariable( SessionModule.SESSION_VAR, session );
 			}
 		}
-		
 		return( var );
 	}
-
 }
