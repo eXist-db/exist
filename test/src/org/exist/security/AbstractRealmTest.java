@@ -91,7 +91,7 @@ public class AbstractRealmTest {
         expect(mockBroker.getSubject()).andReturn(mockSubject);
         mockGroup.assertCanModifyGroup(mockSubject);
         expect(mockGroup.getName()).andReturn(groupName);
-        expect(mockRealm.getGroup(null, groupName)).andReturn(mockUpdatingGroup);
+        expect(mockRealm.getGroup(groupName)).andReturn(mockUpdatingGroup);
         expect(mockRealm.getDatabase()).andReturn(mockDatabase);
         expect(mockGroup.getManagers()).andReturn(new ArrayList<Account>());
         mockGroup.save();
@@ -100,7 +100,7 @@ public class AbstractRealmTest {
 
         replay(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
 
-        mockRealm.updateGroup(null, mockGroup);
+        mockRealm.updateGroup(mockGroup);
 
         verify(mockRealm, mockDatabase, mockBroker, mockGroup, mockSubject, mockUpdatingGroup);
     }

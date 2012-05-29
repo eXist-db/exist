@@ -66,7 +66,7 @@ public class AccountTest {
 
         
         expect(mockAccountImpl.getRealm()).andReturn(mockRealm);
-        expect(mockRealm.getGroup(null, testGroupName)).andReturn(null);
+        expect(mockRealm.getGroup(testGroupName)).andReturn(null);
         //expect(mockAccountImpl.getRealm()).andReturn(mockRealm);
         //expect(mockRealm.getSecurityManager()).andReturn(mockSecurityManager);
 
