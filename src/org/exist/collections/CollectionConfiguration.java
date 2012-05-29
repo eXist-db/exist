@@ -219,7 +219,7 @@ public class CollectionConfiguration {
                     String groupOpt = elem.getAttribute(RESOURCE_ATTR);
                     if (groupOpt != null && groupOpt.length() > 0) {
                         LOG.debug("RESOURCE: " + groupOpt);
-                        if (pool.getSecurityManager().getGroup(broker.getSubject(), groupOpt)!=null) {
+                        if (pool.getSecurityManager().getGroup(groupOpt)!=null) {
                             defResGroup = groupOpt;	
                         } else {
                             //? Seems inconsistent : what does "checkOnly" means then ?
@@ -233,7 +233,7 @@ public class CollectionConfiguration {
                     groupOpt = elem.getAttribute(COLLECTION_ATTR);
                     if (groupOpt != null && groupOpt.length() > 0) {
                         LOG.debug("COLLECTION: " + groupOpt);
-                        if (pool.getSecurityManager().getGroup(broker.getSubject(), groupOpt)!=null) {
+                        if (pool.getSecurityManager().getGroup(groupOpt)!=null) {
                             defCollGroup = groupOpt;	
                         } else {
                             //? Seems inconsistent : what does "checkOnly" means then ?

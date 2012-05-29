@@ -89,7 +89,7 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Account account = sm.getAccount(null, userName);
+            Account account = sm.getAccount(userName);
 
             account.remGroup(groupName);
 
@@ -105,7 +105,7 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
                 context.getBroker().setSubject(sm.getSystemSubject());
 
                 //perform action
-                sm.updateAccount(null, account);
+                sm.updateAccount(account);
             } finally {
                 context.getBroker().setSubject(currentSubject);
             }
