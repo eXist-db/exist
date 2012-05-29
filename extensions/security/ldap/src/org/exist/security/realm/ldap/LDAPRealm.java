@@ -194,11 +194,13 @@ public class LDAPRealm extends AbstractRealm {
         return metadata;
     }
     
-    public Account refreshAccountFromLdap(Subject invokingUser, final Account account) throws PermissionDeniedException, AuthenticationException{
+    public Account refreshAccountFromLdap(final Account account) throws PermissionDeniedException, AuthenticationException{
         
         final int UPDATE_NONE = 0;
         final int UPDATE_GROUP = 1;
         final int UPDATE_METADATA = 2;
+        
+        Subject invokingUser = getSecurityManager().getCurrentSubject();
         
         if(!invokingUser.hasDbaRole() && invokingUser.getId() != account.getId()) {
             throw new PermissionDeniedException("You do not have permission to modify the account");
@@ -810,8 +812,8 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
-        return super.updateGroup(invokingUser, group);
+    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
+        return super.updateGroup(group);
     }
 
     @Override
@@ -884,7 +886,7 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNameStarts(String startsWith) {
         
         startsWith = ensureCase(startsWith);
         
@@ -892,7 +894,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FULLNAME), startsWith + "*");
@@ -924,7 +926,7 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
         
         startsWith = ensureCase(startsWith);
         
@@ -932,7 +934,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             
@@ -970,7 +972,7 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
         
         startsWith = ensureCase(startsWith);
         
@@ -978,7 +980,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
@@ -1048,7 +1050,7 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findGroupnamesWhereGroupnameStarts(String startsWith) {
 
         startsWith = ensureCase(startsWith);
         
@@ -1056,7 +1058,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
@@ -1089,7 +1091,7 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+    public List<String> findGroupnamesWhereGroupnameContains(String fragment) {
 
         fragment = ensureCase(fragment);
         
@@ -1097,7 +1099,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), "*" + fragment + "*");
@@ -1130,12 +1132,12 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findAllGroupNames(Subject invokingUser) {
+    public List<String> findAllGroupNames() {
         List<String> groupnames = new ArrayList<String>();
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             SearchAttribute sa = new SearchAttribute(null, null);
@@ -1167,7 +1169,7 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+    public List<String> findAllGroupMembers(String groupName) {
 
         groupName = ensureCase(groupName);
         
@@ -1179,7 +1181,7 @@ public class LDAPRealm extends AbstractRealm {
 
         LdapContext ctx = null;
         try {
-            ctx = getContext(invokingUser);
+            ctx = getContext(getSecurityManager().getCurrentSubject());
 
             //find the dn of the group
             SearchResult searchResult = findGroupByGroupName(ctx, removeDomainPostfix(groupName));
@@ -1213,46 +1215,6 @@ public class LDAPRealm extends AbstractRealm {
 
         return groupMembers;
     }
-
-//    @Override
-//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config) throws ConfigurationException {
-//        return new LDAPGroupImpl(realm, config);
-//    }
-//
-//    @Override
-//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-//        return new LDAPGroupImpl(realm, config, removed);
-//    }
-//
-//    @Override
-//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, int id, String name) throws ConfigurationException {
-//        return new LDAPGroupImpl(realm, id, name);
-//    }
-//
-//    @Override
-//    public LDAPGroupImpl instantiateGroup(AbstractRealm realm, String name) throws ConfigurationException {
-//        return new LDAPGroupImpl(realm, name);
-//    }
-//
-//    @Override
-//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, String username) throws ConfigurationException {
-//        return new LDAPAccountImpl(realm, username);
-//    }
-//
-//    @Override
-//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config) throws ConfigurationException {
-//        return new LDAPAccountImpl(realm, config);
-//    }
-//
-//    @Override
-//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, Configuration config, boolean removed) throws ConfigurationException {
-//        return new LDAPAccountImpl(realm, config, removed);
-//    }
-//
-//    @Override
-//    public LDAPAccountImpl instantiateAccount(AbstractRealm realm, int id, Account from_account) throws ConfigurationException, PermissionDeniedException {
-//        return new LDAPAccountImpl(realm, id, from_account);
-//    }
 
     private final class AuthenticatedLdapSubjectAccreditedImpl extends SubjectAccreditedImpl {
 

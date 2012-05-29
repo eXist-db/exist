@@ -229,17 +229,11 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 	
     @Override
-    public <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException {
-    	return updateAccount(account);
-    }
-
-    @Override
-    public <A extends Account> boolean updateAccount(A account) throws PermissionDeniedException, EXistException {
-        if(account == null){
+    public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+        if (account == null)
             return false;
-        }
 
-        if(account.getRealmId() == null) {
+        if (account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
         }
         
@@ -252,18 +246,17 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException {
-        if(group == null){
+    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
+        if (group == null)
             return false;
-        }
 
-        if(group.getRealmId() == null) {
+        if (group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
         }
 
         groupLocks.getWriteLock(group).lock();
         try {
-            return findRealmForRealmId(group.getRealmId()).updateGroup(invokingUser, group);
+            return findRealmForRealmId(group.getRealmId()).updateGroup(group);
         } finally {
             groupLocks.getWriteLock(group).unlock();
         }
@@ -272,52 +265,44 @@ public class SecurityManagerImpl implements SecurityManager {
 
 
     @Override
-    public void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
+    public boolean deleteGroup(String name) throws PermissionDeniedException, EXistException {
 
-        Group group = getGroup(invokingUser, name);
-        if(group == null){
-            return;
-        }
+        Group group = getGroup(name);
+        if (group == null)
+            return false;
 
-        if(group.getRealmId() == null) {
+        if (group.getRealmId() == null)
             throw new ConfigurationException("Group must have realm id.");
-        }
         
         groupLocks.getWriteLock(group).lock();
         try {
-            findRealmForRealmId(group.getRealmId()).deleteGroup(group);
+            return findRealmForRealmId(group.getRealmId()).deleteGroup(group);
         } finally {
             groupLocks.getWriteLock(group).unlock();
         }
     }
 
     @Override
-    public void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException {
-        deleteAccount(getAccount(invokingUser, name));
+    public boolean deleteAccount(String name) throws PermissionDeniedException, EXistException {
+        return deleteAccount(getAccount(name));
     }
 	
     @Override
-    public <A extends Account> void deleteAccount(A account) throws PermissionDeniedException, EXistException {
+    public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 
-        if(account == null){
-            return;
-        }
+        if (account == null)
+            return false;
 
-        if(account.getRealmId() == null) {
+        if (account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
         }
         
         accountLocks.getWriteLock(account).lock();
         try {
-            findRealmForRealmId(account.getRealmId()).deleteAccount(account);
+            return findRealmForRealmId(account.getRealmId()).deleteAccount(account);
         } finally {
             accountLocks.getWriteLock(account).unlock();
         }
-    }
-
-    @Override
-    public Account getAccount(Subject invokingUser, String name) {
-    	return getAccount(name);
     }
 
     @Override
@@ -360,18 +345,6 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public boolean hasGroup(Group group) {
     	return hasGroup(group.getName());
-    }
-
-    @Override
-    @Deprecated
-    public Group getGroup(Subject invokingUser, String name) {
-    	for(Realm realm : realms) {
-            Group group = realm.getGroup(invokingUser, name);
-            if(group != null){
-                return group;
-            }
-    	}
-        return null;
     }
 
     @Override
@@ -537,26 +510,24 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
+    public List<String> findAllGroupMembers(String groupName) {
         final List<String> userNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            userNames.addAll(realm.findAllGroupMembers(invokingUser, groupName));
+            userNames.addAll(realm.findAllGroupMembers(groupName));
         }
         return userNames;
     }
 
-    @Deprecated
+    @Deprecated //use realm's getAccounts
     @Override
-    public <A extends Account> java.util.Collection<A> getUsers() {
-        return (java.util.Collection<A>)defaultRealm.getAccounts();
-        //TODO should be refactored to get users from all realms
+    public java.util.Collection<Account> getUsers() {
+        return defaultRealm.getAccounts();
     }
 
-    @Deprecated
+    @Deprecated //use realm's getGroups 
     @Override
-    public <G extends Group> java.util.Collection<G> getGroups() {
-        return (java.util.Collection<G>)defaultRealm.getRoles();
-        //TODO should be refactored to get groups from all realms
+    public java.util.Collection<Group> getGroups() {
+        return defaultRealm.getGroups();
     }
     
     @Override
@@ -721,7 +692,10 @@ public class SecurityManagerImpl implements SecurityManager {
         DBBroker broker = null;
         try {
             broker = getDatabase().get(null);
-            createUserHome(broker, account);	
+            createUserHome(broker, account);
+        } catch (Exception e) {
+        	//ignore error on home collection creation 
+        	LOG.error(e);
         } finally {
             getDatabase().release(broker);
         }
@@ -761,9 +735,7 @@ public class SecurityManagerImpl implements SecurityManager {
         } catch (IOException e) {
             transact.abort(txn);
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug(e.getMessage());
-            }
+           	LOG.error(e);
             //e.printStackTrace();
 
             throw new EXistException(e);
@@ -771,9 +743,7 @@ public class SecurityManagerImpl implements SecurityManager {
         } catch (TriggerException e) {
             transact.abort(txn);
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug(e.getMessage());
-            }
+           	LOG.debug(e);
             //e.printStackTrace();
 
             throw new EXistException(e);
@@ -781,9 +751,7 @@ public class SecurityManagerImpl implements SecurityManager {
         } catch (PermissionDeniedException e) {
             transact.abort(txn);
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug(e.getMessage());
-            }
+           	LOG.debug(e);
             //e.printStackTrace();
 
             throw e;
@@ -791,9 +759,7 @@ public class SecurityManagerImpl implements SecurityManager {
         } catch (EXistException e) {
             transact.abort(txn);
 
-            if (LOG.isDebugEnabled()) {
-            	LOG.debug(e.getMessage());
-            }
+           	LOG.debug(e);
             //e.printStackTrace();
 
             throw e;
@@ -918,55 +884,55 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNameStarts(String startsWith) {
         List<String> userNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            userNames.addAll(realm.findUsernamesWhereNameStarts(invokingUser, startsWith));
+            userNames.addAll(realm.findUsernamesWhereNameStarts(startsWith));
         }
         return userNames;
     }
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
         List<String> userNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            userNames.addAll(realm.findUsernamesWhereUsernameStarts(invokingUser, startsWith));
+            userNames.addAll(realm.findUsernamesWhereUsernameStarts(startsWith));
         }
         return userNames;
     }
     
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
         List<String> userNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            userNames.addAll(realm.findUsernamesWhereNamePartStarts(invokingUser, startsWith));
+            userNames.addAll(realm.findUsernamesWhereNamePartStarts(startsWith));
         }
         return userNames;
     }
 
     @Override
-    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
+    public List<String> findGroupnamesWhereGroupnameContains(String fragment) {
         List<String> groupNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            groupNames.addAll(realm.findGroupnamesWhereGroupnameContains(invokingUser, fragment));
+            groupNames.addAll(realm.findGroupnamesWhereGroupnameContains(fragment));
         }
         return groupNames;
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findGroupnamesWhereGroupnameStarts(String startsWith) {
         List<String> groupNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            groupNames.addAll(realm.findGroupnamesWhereGroupnameStarts(invokingUser, startsWith));
+            groupNames.addAll(realm.findGroupnamesWhereGroupnameStarts(startsWith));
         }
         return groupNames;
     }
 
     @Override
-    public List<String> findAllGroupNames(Subject invokingUser) {
+    public List<String> findAllGroupNames() {
         List<String> groupNames = new ArrayList<String>();
         for(Realm realm : realms) {
-            groupNames.addAll(realm.findAllGroupNames(invokingUser));
+            groupNames.addAll(realm.findAllGroupNames());
         }
         return groupNames;
     }
@@ -1199,4 +1165,9 @@ public class SecurityManagerImpl implements SecurityManager {
     protected interface PrincipalDbModify2E<V extends Principal, E extends Exception, E2 extends Exception> {
         public void execute(final Int2ObjectHashMap<V> principalDb) throws E, E2;
     }
+
+	@Override
+	public Subject getCurrentSubject() {
+		return pool.getSubject();
+	}
 }

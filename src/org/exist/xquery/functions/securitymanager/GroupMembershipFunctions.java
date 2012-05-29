@@ -65,7 +65,7 @@ public class GroupMembershipFunctions extends BasicFunction {
         try {
 
             if(isCalledAs(qnGetGroupManagers.getLocalName())) {
-                Group group = manager.getGroup(context.getSubject(), groupName);
+                Group group = manager.getGroup(groupName);
                 ValueSequence seq = new ValueSequence();
                 for(Account groupManager : group.getManagers()) {
                     seq.add(new StringValue(groupManager.getName()));
@@ -73,7 +73,7 @@ public class GroupMembershipFunctions extends BasicFunction {
                 result = seq;
             } else if(isCalledAs(qnGetGroupMembers.getLocalName())) {
 
-                List<String> groupMembers = manager.findAllGroupMembers(context.getSubject(), groupName);
+                List<String> groupMembers = manager.findAllGroupMembers(groupName);
 
                 ValueSequence seq = new ValueSequence();
                 for(String groupMember : groupMembers) {
@@ -82,7 +82,7 @@ public class GroupMembershipFunctions extends BasicFunction {
                 result = seq;
             }
         } catch(PermissionDeniedException pde) {
-            throw new XPathException(pde.getMessage(), pde);
+            throw new XPathException(this, pde);
         }
 
         return result;

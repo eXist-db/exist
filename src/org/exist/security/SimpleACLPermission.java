@@ -144,13 +144,13 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     private int lookupTargetId(ACE_TARGET target, String targetName) throws PermissionDeniedException {
         final int id;
         if(target == ACE_TARGET.USER) {
-            Account account = sm.getAccount(null, targetName);
+            Account account = sm.getAccount(targetName);
             if(account == null) {
                 throw new PermissionDeniedException("User Account for username '" + targetName + "' is unknown.");
             }
             id = account.getId();
         } else if(target == ACE_TARGET.GROUP) {
-            Group group = sm.getGroup(null, targetName);
+            Group group = sm.getGroup(targetName);
             if(group == null) {
                 throw new PermissionDeniedException("User Group for groupname '" + targetName + "' is unknown.");
             }

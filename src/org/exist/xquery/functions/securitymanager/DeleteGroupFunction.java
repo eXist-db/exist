@@ -55,7 +55,7 @@ public class DeleteGroupFunction extends BasicFunction {
         Subject currentSubject = context.getBroker().getSubject();
 
         try {
-            final Group group = sm.getGroup(currentSubject, args[0].itemAt(0).getStringValue());
+            final Group group = sm.getGroup(args[0].itemAt(0).getStringValue());
             if(group.isManager(currentSubject)) {
                 throw new PermissionDeniedException("Only a group manager may delete a group");
             }
@@ -66,24 +66,24 @@ public class DeleteGroupFunction extends BasicFunction {
                 if(!currentSubject.hasGroup(successorGroupName)) {
                     throw new PermissionDeniedException("You must be a member of the group for which permissions should be inherited by");
                 }
-                successorGroup = sm.getGroup(currentSubject, successorGroupName);
+                successorGroup = sm.getGroup(successorGroupName);
 
             } else {
-                 successorGroup = sm.getGroup(currentSubject, "guest");
+                 successorGroup = sm.getGroup("guest");
             }
 
             //TODO how to handle user which are members of this group
             //also how to reassign resources that are allocated to this group to another group
 
             try {
-                sm.deleteGroup(currentSubject, group.getName());
+                sm.deleteGroup(group.getName());
             } catch(EXistException ee) {
-                throw new XPathException(ee.getMessage(), ee);
+                throw new XPathException(this, ee);
             }
 
             return Sequence.EMPTY_SEQUENCE;
         } catch(PermissionDeniedException pde) {
-            throw new XPathException(pde.getMessage(), pde);
+            throw new XPathException(this, pde);
         }
     }
 

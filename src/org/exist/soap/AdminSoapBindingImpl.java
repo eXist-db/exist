@@ -805,33 +805,34 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException("guest user cannot be modified");
         }
         
-        Account u;
-        if(!manager.hasAccount(name)) {
-            if(!manager.hasAdminPrivileges(user)) {
-                throw new RemoteException("not allowed to create user");
-            }
-          
-            u = new UserAider(name);
-            ((UserAider)u).setPasswordDigest(password);
-        } else {
-            u = manager.getAccount(session.getUser(), name);
-            if(!(u.getName().equals(user.getName()) || manager.hasAdminPrivileges(user))) {
-                throw new RemoteException("you are not allowed to change this user");
-            }
-            ((AccountImpl)u).setPassword(password);
-        }
-        
-        if(home != null) {
-            try {
-                u.setHome(XmldbURI.xmldbUriFor(home));
-            } catch(URISyntaxException e) {
-                throw new RemoteException("Invalid collection URI",e);
-            }
-        }
-        
         DBBroker broker = null;
         try {
             broker = pool.get(user);
+
+		    Account u;
+		    if(!manager.hasAccount(name)) {
+		        if(!manager.hasAdminPrivileges(user)) {
+		            throw new RemoteException("not allowed to create user");
+		        }
+		      
+		        u = new UserAider(name);
+		        ((UserAider)u).setPasswordDigest(password);
+		    } else {
+		        u = manager.getAccount(name);
+		        if(!(u.getName().equals(user.getName()) || manager.hasAdminPrivileges(user))) {
+		            throw new RemoteException("you are not allowed to change this user");
+		        }
+		        ((AccountImpl)u).setPassword(password);
+		    }
+		    
+		    if(home != null) {
+		        try {
+		            u.setHome(XmldbURI.xmldbUriFor(home));
+		        } catch(URISyntaxException e) {
+		            throw new RemoteException("Invalid collection URI",e);
+		        }
+		    }
+        
             for(String groupName : groups.getElements()) {
                 if (!u.hasGroup(groupName)) {
 
@@ -853,31 +854,39 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
-            if(broker != null) {
-                pool.release(broker);
-            }
+            pool.release(broker);
         }
     }
     
     @Override
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
         Session session = getSession(sessionId);
-        Account u = pool.getSecurityManager().getAccount(session.getUser(), user);
-        if (u == null)
-            throw new RemoteException("user " + user + " does not exist");
-        UserDesc desc = new UserDesc();
-        desc.setName(u.getName());
-/*
-        Vector groups = new Vector();
-        for (Iterator i = u.getGroups(); i.hasNext(); )
-            groups.addElement(i.next());
-        desc.setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
- */
-        desc.setGroups(new Strings(u.getGroups()));
-        if (u.getHome() != null) {
-            desc.setHome(u.getHome().toString());
+        
+        DBBroker broker = null;
+        try {
+            broker = pool.get(session.getUser());
+
+	        Account u = pool.getSecurityManager().getAccount(user);
+	        if (u == null)
+	            throw new RemoteException("user " + user + " does not exist");
+	        UserDesc desc = new UserDesc();
+	        desc.setName(u.getName());
+	/*
+	        Vector groups = new Vector();
+	        for (Iterator i = u.getGroups(); i.hasNext(); )
+	            groups.addElement(i.next());
+	        desc.setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
+	 */
+	        desc.setGroups(new Strings(u.getGroups()));
+	        if (u.getHome() != null) {
+	            desc.setHome(u.getHome().toString());
+	        }
+	        return desc;
+        } catch (EXistException e) {
+            throw new RemoteException(e.getMessage());
+        } finally {
+            pool.release(broker);
         }
-        return desc;
     }
     
     @Override
@@ -893,7 +902,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         try {
         	broker = pool.get(user);
         	
-            manager.deleteAccount(user, name);
+            manager.deleteAccount(name);
         } catch (Exception e) {
             throw new RemoteException(e.getMessage());
 		} finally {
@@ -987,7 +996,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
-            Account lo = manager.getAccount(session.getUser(), userName);
+            Account lo = manager.getAccount(userName);
             doc.setUserLock(lo);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);

@@ -41,8 +41,7 @@ import org.exist.storage.DBBroker;
  */
 public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement, Startable {
     
-        public final static int DEFAULT_REALM_STORE_MODE = 0770;
-    
+    public final static int DEFAULT_REALM_STORE_MODE = 0770;
 	
 	public String getId();
 	
@@ -56,18 +55,18 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 
 	public Database getDatabase();
 
-    public Group getExternalGroup(Subject invokingUser, String name);
+    public Group getExternalGroup(String name);
 
-    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith);
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
-    public List<String> findAllGroupNames(Subject invokingUser);
-    public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
+    public List<String> findUsernamesWhereNameStarts(String startsWith);
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith);
+    public List<String> findUsernamesWhereUsernameStarts(String startsWith);
+    public List<String> findAllGroupNames();
+    public List<String> findAllGroupMembers(String groupName);
 
     public SecurityManager getSecurityManager();
 
-    public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith);
-    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment);
+    public Collection<? extends String> findGroupnamesWhereGroupnameStarts(String startsWith);
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(String fragment);
 
 
 }

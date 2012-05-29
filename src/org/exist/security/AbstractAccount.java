@@ -88,11 +88,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
         @Override
 	public Group addGroup(String name) throws PermissionDeniedException {
-        Group group = getRealm().getGroup(null, name);
+        Group group = getRealm().getGroup(name);
 
         //if we cant find the group in our own realm, try other realms
         if(group == null) {
-            group = getRealm().getSecurityManager().getGroup(null, name);
+            group = getRealm().getSecurityManager().getGroup(name);
         }
         
         return addGroup(group);

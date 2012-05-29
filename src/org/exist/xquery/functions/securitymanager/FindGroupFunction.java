@@ -95,13 +95,13 @@ public class FindGroupFunction extends BasicFunction {
 
         List<String> groupNames;
         if(isCalledAs(qnGetGroups.getLocalName())) {
-            groupNames = securityManager.findAllGroupNames(currentUser);
+            groupNames = securityManager.findAllGroupNames();
         } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
             final String startsWith = args[0].getStringValue();
-            groupNames = securityManager.findGroupnamesWhereGroupnameStarts(currentUser, startsWith);
+            groupNames = securityManager.findGroupnamesWhereGroupnameStarts(startsWith);
         } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
             final String fragment = args[0].getStringValue();
-            groupNames = securityManager.findGroupnamesWhereGroupnameContains(currentUser, fragment);
+            groupNames = securityManager.findGroupnamesWhereGroupnameContains(fragment);
         } else {
             throw new XPathException("Unknown function");
         }

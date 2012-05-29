@@ -22,8 +22,10 @@
 package org.exist.security;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -337,12 +339,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    @Deprecated
-    public Group getGroup(Subject invokingUser, String name) {
-        return getGroup(name);
-    }
-
-    @Override
     public final java.util.Collection<Group> getRoles() {
         return getGroups();
     }
@@ -414,7 +410,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         for (int i = 0; i < groups.length; i++) {
 
             if(!(account.hasGroup(groups[i]))) {
-                    updatingAccount.remGroup(groups[i]);
+                updatingAccount.remGroup(groups[i]);
             }
         }
 
@@ -460,13 +456,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException {
-    	return updateGroup(group);
-    }
-    
-    @Override
-    public Group getExternalGroup(Subject invokingUser, String name) {
-        return getSecurityManager().getGroup(invokingUser, name);
+    public Group getExternalGroup(String name) {
+        return getSecurityManager().getGroup(name);
     }
 
     protected interface Unit<R> {
@@ -559,5 +550,40 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     protected interface PrincipalDbModify2E<V extends Principal, E extends Exception, E2 extends Exception> {
         public void execute(final Map<String, V> principalDb) throws E, E2;
+    }
+
+	@Override
+	public List<String> findUsernamesWhereNameStarts(String startsWith) {
+        return new ArrayList<String>();
+	}
+
+	@Override
+	public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
+        return new ArrayList<String>();
+	}
+
+	@Override
+	public List<String> findAllGroupNames() {
+        return new ArrayList<String>();
+	}
+
+	@Override
+	public List<String> findAllGroupMembers(String groupName) {
+        return new ArrayList<String>();
+	}
+
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
+        return new ArrayList<String>();
+    }
+        
+	@Override
+	public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(String startsWith) {
+        return new ArrayList<String>();
+	}
+
+    @Override
+    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(String fragment) {
+        return new ArrayList<String>();
     }
 }

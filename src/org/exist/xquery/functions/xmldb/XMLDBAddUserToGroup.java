@@ -90,9 +90,9 @@ public class XMLDBAddUserToGroup extends BasicFunction {
 
             SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Group group = sm.getGroup(context.getBroker().getSubject(), groupName);
+            Group group = sm.getGroup(groupName);
 
-            Account account = sm.getAccount(context.getBroker().getSubject(), userName);
+            Account account = sm.getAccount(userName);
             if(account != null) {
                 account.addGroup(group);
                 
@@ -112,7 +112,7 @@ public class XMLDBAddUserToGroup extends BasicFunction {
                     context.getBroker().setSubject(sm.getSystemSubject());
 
                     //perform action
-                    sm.updateAccount(context.getBroker().getSubject(), account);
+                    sm.updateAccount(account);
                 } finally {
                     context.getBroker().setSubject(currentSubject);
                 }

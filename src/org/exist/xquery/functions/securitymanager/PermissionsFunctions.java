@@ -46,7 +46,6 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  *
@@ -244,7 +243,7 @@ public class PermissionsFunctions extends BasicFunction {
                 result = functionHasAccess(pathUri, mode);
             }
         } catch(PermissionDeniedException pde) {
-          throw new XPathException(pde.getMessage(), pde);
+          throw new XPathException(this, pde);
         }
 
         return result;
@@ -254,7 +253,7 @@ public class PermissionsFunctions extends BasicFunction {
         try {
             return permissionsToXml(getPermissions(pathUri));
         } catch(PermissionDeniedException pde) {
-            throw new XPathException("Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
+            throw new XPathException(this, "Permission to retrieve permissions is denied for user '" + context.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
         }
     }
 

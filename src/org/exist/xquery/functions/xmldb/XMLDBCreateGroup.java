@@ -114,7 +114,7 @@ public class XMLDBCreateGroup extends BasicFunction {
 				for (SequenceIterator i = args[1].iterate(); i.hasNext();) {
 					String groupManager = i.nextItem().getStringValue();
 
-					Account groupManagerAccount = sm.getAccount(null, groupManager);
+					Account groupManagerAccount = sm.getAccount(groupManager);
 					if (groupManagerAccount == null) {
 						logger.error("Could not find the user: " + groupManager);
 						// throw exception is better -shabanovd
@@ -127,25 +127,25 @@ public class XMLDBCreateGroup extends BasicFunction {
 			// create the group
 			group = sm.addGroup(group);
 
-                        //TEMP - ESCALATE TO DBA :-(
-                        //START TEMP - we also need to make every manager a member of the group otherwise
-                        //they do not show up as group memebers automatically - this is a design problem because group
-                        //membership is managed on the user and not the group, this needs to be fixed!
-                        //see XMLDBAddUserToGroup and XMLDBRemoveUserFromGroup also
-                        Subject currentSubject = context.getBroker().getSubject();
-                        try {
-                            //escalate
-                            context.getBroker().setSubject(sm.getSystemSubject());
+            //TEMP - ESCALATE TO DBA :-(
+            //START TEMP - we also need to make every manager a member of the group otherwise
+            //they do not show up as group members automatically - this is a design problem because group
+            //membership is managed on the user and not the group, this needs to be fixed!
+            //see XMLDBAddUserToGroup and XMLDBRemoveUserFromGroup also
+            Subject currentSubject = context.getBroker().getSubject();
+            try {
+                //escalate
+                context.getBroker().setSubject(sm.getSystemSubject());
 
-                            //perform action
-                            for(Account manager : group.getManagers()) {
-                                manager.addGroup(group);
-                                sm.updateAccount(sm.getSystemSubject(), manager);
-                            }
-                        } finally {
-                            context.getBroker().setSubject(currentSubject);
-                        }
-                        //END TEMP
+                //perform action
+                for(Account manager : group.getManagers()) {
+                    manager.addGroup(group);
+                    sm.updateAccount(manager);
+                }
+            } finally {
+                context.getBroker().setSubject(currentSubject);
+            }
+            //END TEMP
 
 			return BooleanValue.TRUE;
 
