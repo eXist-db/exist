@@ -25,6 +25,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.Database;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -138,7 +139,8 @@ public class Profiler {
     }
 
     public final boolean isLogEnabled() {
-        Boolean globalProp = (Boolean) db.getActiveBroker().getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
+    	DBBroker broker = db.getActiveBroker();
+        Boolean globalProp = (Boolean) broker.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
         return logEnabled || (globalProp != null && globalProp.booleanValue());
     }
 
