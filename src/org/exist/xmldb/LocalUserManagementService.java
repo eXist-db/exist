@@ -618,7 +618,7 @@ public class LocalUserManagementService implements UserManagementService {
                 @Override
                 public Account withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    return sm.getAccount(user, name);
+                    return sm.getAccount(name);
                 }
             });
         } catch(Exception e) {
@@ -651,7 +651,7 @@ public class LocalUserManagementService implements UserManagementService {
                 @Override
                 public Group withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    return sm.getGroup(user, name);
+                    return sm.getGroup(name);
                 }
             });
         } catch(Exception e) {
@@ -711,10 +711,10 @@ public class LocalUserManagementService implements UserManagementService {
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                     if(!sm.hasAdminPrivileges(user)) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove groups");
+                    	throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove groups");
                     }
 	        
-                    sm.deleteGroup(user, group.getName());
+                    sm.deleteGroup(group.getName());
                     
                     return null;
                 }
@@ -740,7 +740,7 @@ public class LocalUserManagementService implements UserManagementService {
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
                     SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 	        
-                    sm.updateAccount(user, u);
+                    sm.updateAccount(u);
                     
                     return null;
                 }
