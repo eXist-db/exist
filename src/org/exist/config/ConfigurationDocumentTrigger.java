@@ -74,15 +74,21 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
                 conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
             }
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+//            	Subject currectSubject = broker.getSubject();
                 try {
-                    ConverterFrom1_0.convert(broker.getSubject(),
-                        broker.getBrokerPool().getSecurityManager(), document);
+                	SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+//                	broker.setSubject(sm.getSystemSubject());
+
+                    ConverterFrom1_0.convert(sm, document);
+                    
                 } catch (PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
                     //TODO : raise exception ? -pb
                 } catch (EXistException ee) {
                     LOG.error(ee.getMessage(), ee);
                     //TODO : raise exception ? -pb
+//                } finally {
+//                	broker.setSubject(currectSubject);
                 }
             }
             break;
@@ -96,16 +102,22 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         }
         //TODO : use XmldbURI methos ! not String.equals()
         if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
+//        	Subject currectSubject = broker.getSubject();
             try {
-                ConverterFrom1_0.convert(broker.getSubject(),
-                    broker.getBrokerPool().getSecurityManager(), document);
+            	SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+//            	broker.setSubject(sm.getSystemSubject());
+            	
+                ConverterFrom1_0.convert(sm, document);
             } catch (PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
                 //TODO : raise exception ? -pb
             } catch (EXistException ee) {
                 LOG.error(ee.getMessage(), ee);
                 //TODO : raise exception ? -pb
+//            } finally {
+//            	broker.setSubject(currectSubject);
             }
+            
         }
     }
 

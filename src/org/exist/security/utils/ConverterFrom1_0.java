@@ -46,7 +46,7 @@ import org.w3c.dom.NodeList;
  */
 public class ConverterFrom1_0 {
     
-        public final static String LEGACY_USERS_DOCUMENT_PATH = "/db/system/users.xml";
+    public final static String LEGACY_USERS_DOCUMENT_PATH = "/db/system/users.xml";
 
 	private final static String GROUP = "group";
 	private final static String NAME = "name";
@@ -58,7 +58,7 @@ public class ConverterFrom1_0 {
 	public static void convert(EXistInputSource is) {
 	}
 	
-	public static void convert(Subject invokingUser, SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
+	public static void convert(SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
 		Element docElement = null;
 		if (acl != null)
 			docElement = acl.getDocumentElement();
@@ -102,9 +102,9 @@ public class ConverterFrom1_0 {
 							account = createAccount(major, minor, (Element) node);
 							
 							if (sm.hasAccount(account.getName())) {
-                                                            sm.updateAccount(invokingUser, account);
+                                sm.updateAccount(account);
 							} else {
-                                                            sm.addAccount(account);
+								sm.addAccount(account);
 							}
 						}
 					}
@@ -121,7 +121,7 @@ public class ConverterFrom1_0 {
 							group = createGroup((Element) node);
 
 							if (sm.hasGroup(group.getName())) {
-								sm.updateGroup(invokingUser, group);
+								sm.updateGroup(group);
 							} else {
 								sm.addGroup(group);
 							}
