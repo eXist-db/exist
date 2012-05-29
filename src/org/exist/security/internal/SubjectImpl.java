@@ -31,9 +31,9 @@ import org.exist.security.AbstractSubject;
 public final class SubjectImpl extends AbstractSubject {
 
 	public SubjectImpl(AbstractAccount account, Object credentials) {
-            super(account);
+        super(account);
 		
-            authenticate(credentials);
+        authenticate(credentials);
 	}
 	
 	private boolean authenticated = false;
@@ -43,8 +43,8 @@ public final class SubjectImpl extends AbstractSubject {
 	 */
 	@Override
 	public boolean authenticate(Object credentials) {
-            authenticated = account.checkCredentials(credentials);
-            return authenticated;
+        authenticated = account.checkCredentials(credentials);
+        return authenticated;
 	}
 
 	/* (non-Javadoc)
@@ -58,5 +58,17 @@ public final class SubjectImpl extends AbstractSubject {
 	@Override
 	public boolean isExternallyAuthenticated() {
 		return isAuthenticated();
+	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if (isAuthenticated())
+			sb.append("[auth] ");
+		else
+			sb.append("[NOT auth] ");
+		
+		sb.append(account.toString());
+		
+		return sb.toString();
 	}
 }
