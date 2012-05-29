@@ -413,7 +413,8 @@ public class ExistDocument extends ExistResource {
                 
                 if(LOG.isDebugEnabled())
                     LOG.debug("No resource found for path: " + xmldbUri);
-                return null; // throw exception?
+                //return null; // throw exception?
+                throw new EXistException("No resource found.");
             }
 
             // Get current userlock
@@ -461,12 +462,16 @@ public class ExistDocument extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            txnManager.abort(txn);
+            if (txnManager != null)
+            	txnManager.abort(txn);
             throw e;
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            txnManager.abort(txn);
+            //dead code, remove?
+            if (txnManager != null)
+            	txnManager.abort(txn);
+            //-----------------------
             throw e;
 
         } finally {
@@ -700,7 +705,8 @@ public class ExistDocument extends ExistResource {
             if (document == null) {
                 if(LOG.isDebugEnabled())
                     LOG.debug("No resource found for path: " + xmldbUri);
-                return null; // throw exception?
+                //return null; // throw exception?
+                throw new EXistException("No resource found.");
             }
 
             // Get current userlock
@@ -742,12 +748,16 @@ public class ExistDocument extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            txnManager.abort(txn);
+            if (txnManager != null)
+            	txnManager.abort(txn);
             throw e;
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            txnManager.abort(txn);
+            //dead code, remove?
+            if (txnManager != null)
+            	txnManager.abort(txn);
+            //------------------------
             throw e;
 
         } finally {
