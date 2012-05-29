@@ -58,7 +58,7 @@ public class LdapContextFactory implements Configurable {
 	@ConfigurationFieldAsElement("url")
 	protected String url = null;
 
-        @ConfigurationFieldAsElement("domain")
+    @ConfigurationFieldAsElement("domain")
 	protected String domain = null;
 
 	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
@@ -71,11 +71,11 @@ public class LdapContextFactory implements Configurable {
 
 	private Configuration configuration = null;
         
-        @ConfigurationFieldAsElement("search")
-        private LDAPSearchContext search;
+    @ConfigurationFieldAsElement("search")
+    private LDAPSearchContext search;
 
-        @ConfigurationFieldAsElement("transformation")
-        private LDAPTransformationContext realmTransformation;
+    @ConfigurationFieldAsElement("transformation")
+    private LDAPTransformationContext realmTransformation;
 
 	public LdapContextFactory(Configuration config) {
             configuration = Configurator.configure(this, config);

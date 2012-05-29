@@ -54,7 +54,7 @@ public class LDAPAccountImpl extends AccountImpl {
 
     @Override
     public Group addGroup(String name) throws PermissionDeniedException {
-        Group group = getRealm().getGroup(null, name);
+        Group group = getRealm().getGroup(name);
 
         //allow LDAP users to have groups from other realms
         if(group == null) {

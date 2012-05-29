@@ -148,7 +148,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
                     broker = getDatabase().get(null);
 
                     //elevate to system privs
-					broker.setUser(getSecurityManager().getSystemSubject());
+					broker.setSubject(getSecurityManager().getSystemSubject());
 
 //                    account = getSecurityManager().addAccount(instantiateAccount(this, username));
 					account = (AbstractAccount) getSecurityManager().addAccount(new UserAider(ID, username));
@@ -158,7 +158,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 							e.getMessage(), e);
 				} finally {
 					if(broker != null) {
-						broker.setUser(currentSubject);
+						broker.setSubject(currentSubject);
 						getDatabase().release(broker);
 					}
 				}
