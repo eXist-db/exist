@@ -14,7 +14,7 @@ public class XPathException extends Exception {
     private static final long serialVersionUID = 212844692232650666L;
     private int line = 0;
     private int column = 0;
-    private ErrorCode errorCode;
+    private ErrorCode errorCode = ErrorCodes.ERROR;
     private String message = null;
     private Sequence errorVal;
     private List<FunctionStackElement> callStack = null;
@@ -56,7 +56,6 @@ public class XPathException extends Exception {
     /**
      * Use constructor with errorCode and errorVal
      */
-    @Deprecated
     public XPathException(Expression expr, String message) {
         super();
         this.message = message;
@@ -65,14 +64,6 @@ public class XPathException extends Exception {
         this.source = expr.getSource();
     }
     
-    
-    public XPathException(ErrorCode errorCode) {
-        super();
-        this.errorCode = errorCode;
-        this.message = errorCode.getDescription();
-    }
-    
-
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
         super();
         this.errorCode = errorCode;
@@ -126,17 +117,15 @@ public class XPathException extends Exception {
     }
 
 
-    @Deprecated
     public XPathException(Expression expr, Throwable cause) {
-        this(expr.getLine(), expr.getColumn(), cause.getMessage(), cause);
+        this(expr, ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
     /**
      * Use constructor with errorCode and errorVal
      */
-    @Deprecated
     public XPathException(Expression expr, String message, Throwable cause) {
-        this(expr.getLine(), expr.getColumn(), message, cause);
+        this(expr, ErrorCodes.ERROR, message, null, cause);
     }
 
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
@@ -145,18 +134,6 @@ public class XPathException extends Exception {
         this.errorVal = errorVal;
     }
 
-    // DWES : not sure?
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
-        this.errorCode = errorCode;
-
-        if(errorDesc == null){
-            this.message = errorCode.toString();
-        } else {
-            this.message = errorDesc;
-        }
-        this.errorVal = errorVal;
-    }
-    
     //useful at static analysis time
     public XPathException(ErrorCode errorCode, String errorDesc) {
         this.errorCode = errorCode;
@@ -179,8 +156,7 @@ public class XPathException extends Exception {
         }
     }
 
-    @Deprecated
-    public XPathException(int line, int column, String message, Throwable cause) {
+    protected XPathException(int line, int column, String message, Throwable cause) {
         super(cause);
         this.message = message;
         this.line = line;

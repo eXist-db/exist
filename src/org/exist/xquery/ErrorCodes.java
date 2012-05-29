@@ -196,6 +196,7 @@ public class ErrorCodes {
     public static ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
     public static ErrorCode EXXQDY0003 = new EXistErrorCode("EXXQDY0003", "Only Supported for xquery version \"3.0\" and later.");
     
+    public static ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
     
     public static class ErrorCode {
 
