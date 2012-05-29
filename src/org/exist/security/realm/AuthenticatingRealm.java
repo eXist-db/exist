@@ -30,6 +30,6 @@ import org.exist.security.Subject;
  */
 public interface AuthenticatingRealm {
 
-	Subject authenticate(String accountName, Object credentials) throws AuthenticationException;
+	Subject authenticate(final String accountName, Object credentials) throws AuthenticationException;
 
 }
