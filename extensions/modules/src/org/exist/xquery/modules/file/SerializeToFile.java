@@ -113,7 +113,7 @@ public class SerializeToFile extends BasicFunction
 			new SequenceType[]{
 				new FunctionParameterSequenceType("binarydata", Type.BASE64_BINARY, 
                         Cardinality.EXACTLY_ONE, "The contents to write to the file system."),
-				new FunctionParameterSequenceType("path", Type.NODE, 
+				new FunctionParameterSequenceType("path", Type.ITEM, 
                         Cardinality.EXACTLY_ONE, "The full path or URI to the file")
                         },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true on success - false if the specified file can not be created or is not writable")
