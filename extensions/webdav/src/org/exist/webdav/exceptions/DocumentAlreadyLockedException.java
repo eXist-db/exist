@@ -29,7 +29,9 @@ package org.exist.webdav.exceptions;
  */
 public class DocumentAlreadyLockedException extends Exception {
 
-    public DocumentAlreadyLockedException() {
+	private static final long serialVersionUID = 7229034225491130620L;
+
+	public DocumentAlreadyLockedException() {
         super();
     }
 

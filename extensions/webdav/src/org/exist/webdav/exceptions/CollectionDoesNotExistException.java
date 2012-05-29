@@ -29,7 +29,9 @@ package org.exist.webdav.exceptions;
  */
 public class CollectionDoesNotExistException extends EXistWebdavException {
 
-    public CollectionDoesNotExistException() {
+	private static final long serialVersionUID = 5754679193191561751L;
+
+	public CollectionDoesNotExistException() {
         super();
     }
 
