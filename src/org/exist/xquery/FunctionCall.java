@@ -129,7 +129,7 @@ public class FunctionCall extends Function {
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		updateFunction();
+		//updateFunction();
 		contextInfo.setParent(this);
          AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
          newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
