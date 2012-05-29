@@ -7,13 +7,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
-/**
- * Created with IntelliJ IDEA.
- * User: wolf
- * Date: 5/12/12
- * Time: 9:48 PM
- * To change this template use File | Settings | File Templates.
- */
 public class InspectFunction extends BasicFunction {
 
     public final static FunctionSignature signature =
@@ -79,10 +72,11 @@ public class InspectFunction extends BasicFunction {
                 attribs.clear();
                 attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
                 attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+                if (type instanceof FunctionParameterSequenceType)
+                    attribs.addAttribute("", "var", "var", "CDATA", ((FunctionParameterSequenceType)type).getAttributeName());
                 builder.startElement(ARGUMENT_QNAME, attribs);
                 if (type instanceof FunctionParameterSequenceType) {
-                    FunctionParameterSequenceType ftype = (FunctionParameterSequenceType) type;
-                    builder.characters(ftype.getAttributeName() + " " + ftype.getDescription());
+                    builder.characters(((FunctionParameterSequenceType)type).getDescription());
                 }
                 builder.endElement();
             }
