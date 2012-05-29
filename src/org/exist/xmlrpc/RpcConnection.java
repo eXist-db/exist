@@ -1838,27 +1838,37 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public HashMap<String, Object> getAccount(String name) throws EXistException,
-            PermissionDeniedException {
-        Account u = factory.getBrokerPool().getSecurityManager().getAccount(user, name);
-        if (u == null)
-            throw new EXistException("account '" + name + "' does not exist");
-        HashMap<String, Object> tab = new HashMap<String, Object>();
-        tab.put("name", u.getName());
-        Vector<String> groups = new Vector<String>();
-        String[] gl = u.getGroups();
-		for (int i = 0; i < gl.length; i++)
-			groups.addElement(gl[i]);
-        tab.put("groups", groups);
-        
-        Group dg = u.getDefaultGroup();
-        tab.put("default-group-id", dg.getId());
-        tab.put("default-group-realmId", dg.getRealmId());
-        tab.put("default-group-name", dg.getName());
+    public HashMap<String, Object> getAccount(String name) throws EXistException, PermissionDeniedException {
 
-        if (u.getHome() != null)
-            tab.put("home", u.getHome().toString());
-        return tab;
+        DBBroker broker = null;
+        try {
+            broker = factory.getBrokerPool().get(user);
+
+            Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
+	        if (u == null)
+	            throw new EXistException("account '" + name + "' does not exist");
+	        
+	        HashMap<String, Object> tab = new HashMap<String, Object>();
+	        tab.put("name", u.getName());
+	        
+	        Vector<String> groups = new Vector<String>();
+	        String[] gl = u.getGroups();
+			for (int i = 0; i < gl.length; i++)
+				groups.addElement(gl[i]);
+	        tab.put("groups", groups);
+	        
+	        Group dg = u.getDefaultGroup();
+	        tab.put("default-group-id", dg.getId());
+	        tab.put("default-group-realmId", dg.getRealmId());
+	        tab.put("default-group-name", dg.getName());
+	
+	        if (u.getHome() != null)
+	            tab.put("home", u.getHome().toString());
+	        return tab;
+        
+        } finally {
+            factory.getBrokerPool().release(broker);
+        }
     }
     
     /**
@@ -1897,8 +1907,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public Vector<String> getGroups() throws EXistException,
-            PermissionDeniedException {
+    public Vector<String> getGroups() throws EXistException, PermissionDeniedException {
     	java.util.Collection<Group> roles = factory.getBrokerPool().getSecurityManager().getGroups();
         Vector<String> v = new Vector<String>(roles.size());
         for (Group role : roles) {
@@ -1908,16 +1917,25 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public HashMap<String, Object> getGroup(String name) throws EXistException, PermissionDeniedException {
-        Group group = factory.getBrokerPool().getSecurityManager().getGroup(user, name);
-        if(group != null){
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("id", group.getId());
-            map.put("realmId", group.getRealmId());
-            map.put("name", name);
-            return map;
+    public HashMap<String, Object> getGroup(final String name) throws EXistException, PermissionDeniedException {
+        try {
+            return executeWithBroker(new BrokerOperation<HashMap<String, Object>>() {
+                @Override
+                public HashMap<String, Object> withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+			        Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
+			        if(group != null){
+			            HashMap<String, Object> map = new HashMap<String, Object>();
+			            map.put("id", group.getId());
+			            map.put("realmId", group.getRealmId());
+			            map.put("name", name);
+			            return map;
+			        }
+			        return null;
+                }
+            });
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
         }
-        return null;
     }
 
     @Override
@@ -1926,7 +1944,7 @@ public class RpcConnection implements RpcAPI {
             executeWithBroker(new BrokerOperation<Void>() {
                 @Override
                 public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
-                    broker.getBrokerPool().getSecurityManager().deleteGroup(user, name);
+                    broker.getBrokerPool().getSecurityManager().deleteGroup(name);
                     return null;
                 }
             });
@@ -2983,7 +3001,7 @@ public class RpcConnection implements RpcAPI {
             executeWithBroker(new BrokerOperation<Void>() {
                 @Override
                 public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
-                    manager.deleteAccount(user, name);
+                    manager.deleteAccount(name);
                     return null;
                 }
             });
@@ -3809,7 +3827,7 @@ public class RpcConnection implements RpcAPI {
             return executeWithBroker(new BrokerOperation<Boolean>() {
                 @Override
                 public Boolean withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
-                    return manager.updateAccount(user, account);
+                    return manager.updateAccount(account);
                 }
             });
         } catch (URISyntaxException use) {
@@ -3869,7 +3887,7 @@ public class RpcConnection implements RpcAPI {
         	if (!manager.hasAccount(name)) {
         		u = new UserAider(name);
         	} else {
-        		u = manager.getAccount(user, name);
+        		u = manager.getAccount(name);
         	}
 
         	for (String g : groups) {
@@ -3878,7 +3896,7 @@ public class RpcConnection implements RpcAPI {
         		}
         	}
 
-        	return manager.updateAccount(user, u);
+        	return manager.updateAccount(u);
         	
         } catch (Exception ex) {
         	LOG.debug("addUserGroup encountered error", ex);
@@ -3907,7 +3925,7 @@ public class RpcConnection implements RpcAPI {
     	try {
     		broker = factory.getBrokerPool().get(user);
 
-    		Account u = manager.getAccount(user, name);
+    		Account u = manager.getAccount(name);
     		
     		for (String g : groups) {
     			if (g.equals(rgroup)) {
@@ -3915,7 +3933,7 @@ public class RpcConnection implements RpcAPI {
     			}
     		}
     		
-    		return manager.updateAccount(user, u);
+    		return manager.updateAccount(u);
 
     	} catch (Exception ex) {
     		LOG.debug("removeGroup encountered error", ex);
