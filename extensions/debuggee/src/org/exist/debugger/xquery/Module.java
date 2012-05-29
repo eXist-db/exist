@@ -42,8 +42,8 @@ public class Module extends AbstractInternalModule {
 	private final static FunctionDef[] functions = {
 		new FunctionDef(Init.signatures[0], Init.class),
 
-		new FunctionDef(BreakpointList.signatures[0], Run.class),
-		new FunctionDef(BreakpointSet.signatures[0], Run.class),
+		new FunctionDef(BreakpointList.signatures[0], BreakpointList.class),
+		new FunctionDef(BreakpointSet.signatures[0], BreakpointSet.class),
 
 		new FunctionDef(Run.signatures[0], Run.class),
 		new FunctionDef(StepInto.signatures[0], StepInto.class),
