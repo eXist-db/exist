@@ -182,7 +182,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      * @param  group  The group value
      */
     @Override
-    public void setGroup(Subject invokingUser, Group group) {
+    public void setGroup(Group group) {
         this.ownerGroup = group;
     }
 
@@ -192,7 +192,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      * @param  group  The group name
      */
     @Override
-    public void setGroup(Subject invokingUser, String group) {
+    public void setGroup(String group) {
         this.ownerGroup = new GroupAider(group);
     }
 
@@ -212,7 +212,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  user  The new owner value
      */
     @Override
-    public void setOwner(Subject invokingUser, Account user) {
+    public void setOwner(Account user) {
         this.owner = user;
     }
 
@@ -222,7 +222,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  user  The new owner value
      */
     @Override
-    public void setOwner(Subject invokingUser, String user) {
+    public void setOwner(String user) {
         this.owner = new UserAider(user);
     }
 
@@ -325,43 +325,13 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
 
     @Override
-    public void setGroup(Subject invokingUser, int id) {
+    public void setGroup(int id) {
         ownerGroup = new GroupAider(id);
     }
 
     @Override
-    public void setOwner(Subject invokingUser, int id) {
-        owner = new UserAider(id);
-    }
-
-   @Override
-    public void setGroup(int id) {
-        setGroup(null, id);
-    }
-
-    @Override
-    public void setGroup(Group group) {
-        setGroup(null, group);
-    }
-
-    @Override
-    public void setGroup(String name) {
-        setGroup(null, name);
-    }
-
-    @Override
     public void setOwner(int id) {
-        setOwner(null, id);
-    }
-
-    @Override
-    public void setOwner(Account user) {
-        setOwner(null, user);
-    }
-
-    @Override
-    public void setOwner(String user) {
-        setOwner(null, user);
+        owner = new UserAider(id);
     }
 
     @Override

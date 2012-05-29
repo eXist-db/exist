@@ -89,7 +89,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      *@param  account  The new owner value
      */
     @Override
-    public void setOwner(Subject invokingUser, Account account) {
+    public void setOwner(Account account) {
     	
         //assume SYSTEM identity if user gets lost due to a database corruption - WTF???
         //TODO this should eventually be replaced with a PermissionDeniedException
@@ -104,7 +104,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     @Override
-    public void setOwner(Subject invokingUser, int id) {
+    public void setOwner(int id) {
         Account account = sm.getAccount(id);
         
         //assume SYSTEM identity if user gets lost due to a database corruption - WTF???
@@ -125,29 +125,14 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      *@param  name  The new owner value
      */
     @Override
-    public void setOwner(Subject invokingUser, String name) {
-    	Account account = sm.getAccount(invokingUser, name);
+    public void setOwner(String name) {
+    	Account account = sm.getAccount(name);
     	if (account != null){
             int accountId = account.getId();
             if(accountId != getOwnerId()) {
                 setOwnerId(accountId);
             }
         }
-    }
-
-    @Override
-    public void setOwner(int id) {
-        setOwner(null, id);
-    }
-
-    @Override
-    public void setOwner(Account user) {
-        setOwner(null, user);
-    }
-
-    @Override
-    public void setOwner(String user) {
-        setOwner(null, user);
     }
 
     @PermissionRequired(user = IS_DBA)
@@ -177,22 +162,22 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      *@param  groupName  The new group value
      */
     @Override
-    public void setGroup(Subject invokingUser, String groupName) {
-        Group group = sm.getGroup(invokingUser, groupName);
+    public void setGroup(String groupName) {
+        Group group = sm.getGroup(groupName);
         if(group != null) {
             setGroupId(group.getId());
         }
     }
 
     @Override
-    public void setGroup(Subject invokingUser, Group group) {
+    public void setGroup(Group group) {
     	if(group != null){
             setGroupId(group.getId());
         }
     }
     
     @Override
-    public void setGroup(Subject invokingUser, int id) {
+    public void setGroup(int id) {
         Group group = sm.getGroup(id);
         if(group == null){
             group = sm.getDBAGroup(); //TODO is this needed?
@@ -200,21 +185,6 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         setGroupId(group.getId());
     }
         
-    @Override
-    public void setGroup(int id) {
-        setGroup(null, id);
-    }
-
-    @Override
-    public void setGroup(Group group) {
-        setGroup(null, group);
-    }
-
-    @Override
-    public void setGroup(String name) {
-        setGroup(null, name);
-    }
-
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER)int groupId) {
         this.vector =

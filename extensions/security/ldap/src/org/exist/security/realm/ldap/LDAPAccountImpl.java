@@ -59,7 +59,7 @@ public class LDAPAccountImpl extends AccountImpl {
         //allow LDAP users to have groups from other realms
         if(group == null) {
            //if the group is not present in this realm, look externally
-           group = getRealm().getExternalGroup(null, name);
+           group = getRealm().getExternalGroup(name);
         }
         return addGroup(group);
     }

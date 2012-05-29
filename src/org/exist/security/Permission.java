@@ -111,9 +111,6 @@ public interface Permission {
      */
     public void setGroup(int id) throws PermissionDeniedException;
 
-    @Deprecated
-    public void setGroup(Subject invokingUser, int id) throws PermissionDeniedException;
-
     /**
      * Set the owner group
      *
@@ -121,18 +118,12 @@ public interface Permission {
      */
     public void setGroup(Group group) throws PermissionDeniedException;
 
-    @Deprecated
-    public void setGroup(Subject invokingUser, Group group) throws PermissionDeniedException;
-
     /**
      * Set the owner group
      *
      * @param  name The group's name
      */
     public void setGroup(String name) throws PermissionDeniedException;
-
-    @Deprecated
-    public void setGroup(Subject invokingUser, String name) throws PermissionDeniedException;
 
     /**
      * Sets mode for group
@@ -148,9 +139,6 @@ public interface Permission {
      */
     public void setOwner(int id) throws PermissionDeniedException;
 
-    @Deprecated
-    public void setOwner(Subject invokingUser, int id) throws PermissionDeniedException;
-
     /**
      * Set the owner passed as User object
      *
@@ -158,18 +146,12 @@ public interface Permission {
      */
     public void setOwner(Account user) throws PermissionDeniedException;
 
-    @Deprecated
-    public void setOwner(Subject invokingUser, Account user) throws PermissionDeniedException;
-
     /**
      * Set the owner
      *
      * @param  user  The new owner value
      */
     public void setOwner(String user) throws PermissionDeniedException;
-
-    @Deprecated
-    public void setOwner(Subject invokingUser, String user) throws PermissionDeniedException;
 
     /**
      *  Set mode using a string. The string has the

@@ -66,24 +66,20 @@ public interface SecurityManager extends Configurable {
 
    boolean hasAccount(String name);
 
-   <A extends Account> A addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   Account addAccount(Account user) throws PermissionDeniedException, EXistException, ConfigurationException;
    
-   <A extends Account> A addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException, ConfigurationException;
+   Account addAccount(DBBroker broker, Account account) throws  PermissionDeniedException, EXistException, ConfigurationException;
 
-   void deleteAccount(Subject invokingUser, String name) throws PermissionDeniedException, EXistException, ConfigurationException;
-   <A extends Account> void deleteAccount(A user) throws PermissionDeniedException, EXistException, ConfigurationException;
+   boolean deleteAccount(String name) throws PermissionDeniedException, EXistException, ConfigurationException;
+   boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   @Deprecated
-   <A extends Account> boolean updateAccount(Subject invokingUser, A account) throws PermissionDeniedException, EXistException, ConfigurationException;
-   <A extends Account> boolean updateAccount(A account) throws PermissionDeniedException, EXistException, ConfigurationException;
+   boolean updateAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   <G extends Group> boolean updateGroup(Subject invokingUser, G group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
 
-   @Deprecated
-   Account getAccount(Subject invokingUser, String name);
    Account getAccount(String name);
 
-   <G extends Group> G addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
+   Group addGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException;
    
    @Deprecated
    void addGroup(String group) throws PermissionDeniedException, EXistException, ConfigurationException;
@@ -91,12 +87,10 @@ public interface SecurityManager extends Configurable {
    boolean hasGroup(String name);
    boolean hasGroup(Group group);
 
-   @Deprecated
-   Group getGroup(Subject invokingUser, String name);
    Group getGroup(String name);
    Group getGroup(int gid);
 
-   void deleteGroup(Subject invokingUser, String name) throws PermissionDeniedException, EXistException;
+   boolean deleteGroup(String name) throws PermissionDeniedException, EXistException;
 
    boolean hasAdminPrivileges(Account user);
 
@@ -109,12 +103,10 @@ public interface SecurityManager extends Configurable {
    public List<Account> getGroupMembers(String groupName);
 
    @Deprecated //use realm's method
-   <A extends Account> java.util.Collection<A> getUsers();
+   java.util.Collection<Account> getUsers();
 
    @Deprecated //use realm's method
-   <G extends Group> java.util.Collection<G> getGroups();
-
-   //Realm getRealm(String iD);
+   java.util.Collection<Group> getGroups();
 
    //session manager part
    void registerSession(Session session);
@@ -132,27 +124,27 @@ public interface SecurityManager extends Configurable {
    /**
     * Find users by their personal name
     */
-   public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith);
+   public List<String> findUsernamesWhereNameStarts(String startsWith);
 
    /**
     * Find users by their username
     */
-   public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith);
+   public List<String> findUsernamesWhereUsernameStarts(String startsWith);
 
    /**
     * Find all groups visible to the invokingUser
     */
-   public List<String> findAllGroupNames(Subject invokingUser);
+   public List<String> findAllGroupNames();
 
    /**
     * Find groups by their group name
     */
-   public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith);
+   public List<String> findGroupnamesWhereGroupnameStarts(String startsWith);
    
    /**
     * Find all members of a group
     */
-   public List<String> findAllGroupMembers(Subject invokingUser, String groupName);
+   public List<String> findAllGroupMembers(String groupName);
 
    /**
     * Process document, possible new sub-instance.
@@ -170,7 +162,9 @@ public interface SecurityManager extends Configurable {
     */
    public String getAuthenticationEntryPoint();
 
-    public List<String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment);
+   public List<String> findGroupnamesWhereGroupnameContains(String fragment);
 
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith);
+   public List<String> findUsernamesWhereNamePartStarts(String startsWith);
+
+   Subject getCurrentSubject();
 }

@@ -101,7 +101,7 @@ public class GetAccountMetadataFunction extends BasicFunction {
 
     private Sequence getAccountMetadata(DBBroker broker, Subject currentUser, String username, String metadataAttributeNamespace) {
         SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        Account account = securityManager.getAccount(currentUser, username);
+        Account account = securityManager.getAccount(username);
         AXSchemaType axSchemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
         String metadataValue = null;
         if(axSchemaType != null) {
@@ -117,7 +117,7 @@ public class GetAccountMetadataFunction extends BasicFunction {
 
     private Sequence getAccountMetadataKeys(DBBroker broker, Subject currentUser, String username) throws XPathException {
         SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        Account account = securityManager.getAccount(currentUser, username);
+        Account account = securityManager.getAccount(username);
         Set<SchemaType> metadataKeys = account.getMetadataKeys();
         Sequence seq = new ValueSequence(metadataKeys.size());
         for(SchemaType schemaType : metadataKeys) {

@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.Set;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.*;
@@ -77,39 +76,38 @@ public class SetAccountMetadataFunction extends BasicFunction {
         final String username = args[0].getStringValue();
 
         if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(username)) {
-            throw new XPathException(new PermissionDeniedException("You must have suitable access rights to modify the users metadata."));
+            throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to modify the users metadata."));
         }
         
         if(isCalledAs(qnSetAccountMetadata.getLocalName())) {
             final String metadataAttributeNamespace = args[1].getStringValue();
             final String value = args[2].getStringValue();
             
-            setAccountMetadata(broker, currentUser, username, metadataAttributeNamespace, value);
+            setAccountMetadata(broker, username, metadataAttributeNamespace, value);
         } else {
-            throw new XPathException("Unknown function");
+            throw new XPathException(this, "Unknown function");
         }
         
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private void setAccountMetadata(DBBroker broker, Subject currentUser, String username, String metadataAttributeNamespace, String value) throws XPathException {
+    private void setAccountMetadata(DBBroker broker, String username, String metadataAttributeNamespace, String value) throws XPathException {
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        final Account account = securityManager.getAccount(currentUser, username);
+        final Account account = securityManager.getAccount(username);
         
         final AXSchemaType axSchemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
         if(axSchemaType == null) {
             throw new XPathException("Unknown axschema.org attribute: " + metadataAttributeNamespace);
         }
         
-        
         account.setMetadataValue(axSchemaType, value);
         
         try {
             securityManager.updateAccount(account);
         } catch(PermissionDeniedException pde) {
-            throw new XPathException(pde.getMessage(), pde);
+            throw new XPathException(this, pde);
         } catch(EXistException ee) {
-            throw new XPathException(ee.getMessage(), ee);
+            throw new XPathException(this, ee);
         }
     }
 }

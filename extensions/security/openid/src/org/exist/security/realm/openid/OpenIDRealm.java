@@ -66,49 +66,6 @@ public class OpenIDRealm extends AbstractRealm {
 	}
 
 	@Override
-	public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-        
-        @Override
-	public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-        @Override
-        public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public List<String> findAllGroupNames(Subject invokingUser) {
-            return null;
-        }
-
-        @Override
-        public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
-            return null;
-        }
-
-
-
-
-	@Override
 	public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
 		// TODO Auto-generated method stub
 		return null;
@@ -120,7 +77,7 @@ public class OpenIDRealm extends AbstractRealm {
 	}
 
 	@Override
-	public boolean updateGroup(Subject invokingUser, Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
+	public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
 		return false;
 	}
 

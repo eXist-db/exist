@@ -97,11 +97,11 @@ public class FindUserFunction extends BasicFunction {
 
         List<String> usernames;
         if(isCalledAs(qnFindUsersByUsername.getLocalName())) {
-            usernames = securityManager.findUsernamesWhereUsernameStarts(currentUser, startsWith);
+            usernames = securityManager.findUsernamesWhereUsernameStarts(startsWith);
         } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
-            usernames = securityManager.findUsernamesWhereNameStarts(currentUser, startsWith);
+            usernames = securityManager.findUsernamesWhereNameStarts(startsWith);
         } else if(isCalledAs(qnFindUsersByNamePart.getLocalName())) {
-            usernames = securityManager.findUsernamesWhereNamePartStarts(currentUser, startsWith);
+            usernames = securityManager.findUsernamesWhereNamePartStarts(startsWith);
         } else {
             throw new XPathException("Unknown function");
         }

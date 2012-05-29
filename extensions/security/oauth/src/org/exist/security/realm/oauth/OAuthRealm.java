@@ -109,48 +109,6 @@ public class OAuthRealm extends AbstractRealm {
 	}
 
 	@Override
-	public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
-		// Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, String startsWith) {
-		// Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> findAllGroupNames(Subject invokingUser) {
-		// Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> findAllGroupMembers(Subject invokingUser, String groupName) {
-		// Auto-generated method stub
-		return null;
-	}
-
-    @Override
-    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, String fragment) {
-        // Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
-        // Auto-generated method stub
-        return null;
-    }
-        
-	@Override
-	public Collection<? extends String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, String startsWith) {
-		// Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
 		// Auto-generated method stub
 		return null;

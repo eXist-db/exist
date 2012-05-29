@@ -91,19 +91,19 @@ public class PermissionFactory {
     public static Permission getPermission(String userName, String groupName, int mode) {
         Permission permission = null;
         try {
-            final Account owner = sm.getAccount(sm.getDatabase().getSubject(), userName);
+            final Account owner = sm.getAccount(userName);
             if(owner == null) {
                 throw new IllegalArgumentException("User was not found '" + (userName == null ? "" : userName) + "'");
             }
 
-            final Group group = sm.getGroup(sm.getDatabase().getSubject(), groupName);
+            final Group group = sm.getGroup(groupName);
             if(group == null) {
         	throw new IllegalArgumentException("Group was not found '" + (userName == null ? "" : groupName) + "'");
             }
 
             permission = new SimpleACLPermission(sm, owner.getId(), group.getId(), mode);
-	} catch(Throwable ex) {
-          LOG.error("Exception while instantiating security permission class.", ex);
+        } catch(Throwable ex) {
+        	LOG.error("Exception while instantiating security permission class.", ex);
         }
         return permission;
     }

@@ -285,18 +285,18 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public List<String> findUsernamesWhereNameStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNameStarts(String startsWith) {
         return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
     }
 
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(Subject invokingUser, String startsWith) {
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
         return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
     }
     
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(Subject invokingUser, final String startsWith) {
+    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
 
         return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
             @Override
@@ -313,7 +313,7 @@ public class RealmImpl extends AbstractRealm {
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(Subject invokingUser, final String startsWith) {
+    public List<String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
 
         return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
             @Override
@@ -330,7 +330,7 @@ public class RealmImpl extends AbstractRealm {
     }
     
     @Override
-    public Collection<? extends String> findGroupnamesWhereGroupnameContains(Subject invokingUser, final String fragment) {
+    public Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
         return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
             @Override
             public List<String> execute(Map<String, Group> principalDb) {
@@ -346,7 +346,7 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public List<String> findAllGroupNames(Subject invokingUser) {
+    public List<String> findAllGroupNames() {
         return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
             @Override
             public List<String> execute(Map<String, Group> principalDb) {
@@ -356,7 +356,7 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public List<String> findAllGroupMembers(Subject invokingUser, final String groupName) {
+    public List<String> findAllGroupMembers(final String groupName) {
         return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
             @Override
             public List<String> execute(Map<String, Account> principalDb) {

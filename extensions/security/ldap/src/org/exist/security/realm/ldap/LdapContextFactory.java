@@ -78,10 +78,10 @@ public class LdapContextFactory implements Configurable {
     private LDAPTransformationContext realmTransformation;
 
 	public LdapContextFactory(Configuration config) {
-            configuration = Configurator.configure(this, config);
-            if (principalPattern != null) {
-                    principalPatternFormat = new MessageFormat(principalPattern);
-            }
+        configuration = Configurator.configure(this, config);
+        if (principalPattern != null) {
+            principalPatternFormat = new MessageFormat(principalPattern);
+        }
 	}
 
 	public LdapContext getSystemLdapContext() throws NamingException {
@@ -133,17 +133,17 @@ public class LdapContextFactory implements Configurable {
 		return new InitialLdapContext(env, null);
 	}
 
-        public LDAPSearchContext getSearch() {
-            return search;
-        }
+    public LDAPSearchContext getSearch() {
+        return search;
+    }
 
-        public LDAPTransformationContext getTransformationContext() {
-            return realmTransformation;
-        }
+    public LDAPTransformationContext getTransformationContext() {
+        return realmTransformation;
+    }
 
-        public String getDomain() {
-            return domain;
-        }
+    public String getDomain() {
+        return domain;
+    }
 
 	// configurable methods
 	@Override
