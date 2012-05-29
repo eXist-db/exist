@@ -744,7 +744,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
                 //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
                 if( !uri.equals( prevURI ) ) {
-                    throw( new XPathException( ErrorCodes.XQST0033 ) );
+                    throw( new XPathException( ErrorCodes.XQST0033, "prefix '"+prefix+"' bind to '"+prevURI+"'" ) );
                 }
             }
         }
