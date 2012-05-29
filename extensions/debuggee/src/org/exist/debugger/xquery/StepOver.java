@@ -22,7 +22,6 @@
 package org.exist.debugger.xquery;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.dom.QName;
@@ -85,8 +84,8 @@ public class StepOver extends BasicFunction {
 			
 			return BooleanValue.TRUE;
 			
-		} catch (EXistException e) {
-			throw new XPathException(this, e);
+		} catch (Throwable e) {
+			throw new XPathException(this, Module.DEBUG001, e);
 		}
 	}
 }

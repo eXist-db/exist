@@ -21,7 +21,6 @@
  */
 package org.exist.debugger.xquery;
 
-import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
@@ -75,8 +74,8 @@ public class Init extends BasicFunction {
 			
 			return new StringValue( dbgr.start(args[0].getStringValue()) );
 			
-		} catch (EXistException e) {
-			throw new XPathException(this, e);
+		} catch (Throwable e) {
+			throw new XPathException(this, Module.DEBUG001, e);
 		}
 	}
 }
