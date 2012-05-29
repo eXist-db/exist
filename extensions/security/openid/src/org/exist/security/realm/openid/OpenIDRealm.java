@@ -66,8 +66,7 @@ public class OpenIDRealm extends AbstractRealm {
 	}
 
 	@Override
-	public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
-		// TODO Auto-generated method stub
+	public Subject authenticate(final String accountName, Object credentials) throws AuthenticationException {
 		return null;
 	}
 

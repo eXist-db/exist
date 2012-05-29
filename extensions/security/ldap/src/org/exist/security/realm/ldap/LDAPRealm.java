@@ -108,26 +108,26 @@ public class LDAPRealm extends AbstractRealm {
 
     private String ensureCase(String username) {
         if(principalsAreCaseInsensitive) {
-            username = username.toLowerCase();
+            return username.toLowerCase();
         }
         return username;
     }
     
     @Override
-    public Subject authenticate(String username, Object credentials) throws AuthenticationException {
+    public Subject authenticate(final String username, Object credentials) throws AuthenticationException {
         
-        username = ensureCase(username);
+        String name = ensureCase(username);
         
         // Binds using the username and password provided by the user.
         LdapContext ctx = null;
         try {
-            ctx = ensureContextFactory().getLdapContext(username, String.valueOf(credentials));
+            ctx = ensureContextFactory().getLdapContext(name, String.valueOf(credentials));
 
-            AbstractAccount account = (AbstractAccount) getAccount(ctx, username);
+            AbstractAccount account = (AbstractAccount) getAccount(ctx, name);
             if (account == null)
     			throw new AuthenticationException(
     					AuthenticationException.ACCOUNT_NOT_FOUND,
-    					"Account '"+username+"' can not be found.");
+    					"Account '"+name+"' can not be found.");
 
             return new AuthenticatedLdapSubjectAccreditedImpl(account, ctx, String.valueOf(credentials));
 

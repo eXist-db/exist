@@ -261,7 +261,7 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
+    public Subject authenticate(final String accountName, Object credentials) throws AuthenticationException {
         final Account account = getAccount(accountName);
         
         if(account == null) {

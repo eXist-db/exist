@@ -96,7 +96,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 	 * java.lang.Object)
 	 */
     @Override
-	public Subject authenticate(String username, Object credentials) throws AuthenticationException {
+	public Subject authenticate(final String username, Object credentials) throws AuthenticationException {
 
 		String returnedAtts[] = { "sn", "givenName", "mail" };
 		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
