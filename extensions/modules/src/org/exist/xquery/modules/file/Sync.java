@@ -103,8 +103,8 @@ public class Sync extends BasicFunction {
 			
 			output.endElement();
 			output.endDocument();
-                } catch(PermissionDeniedException pde) {
-                    throw new XPathException(pde.getMessage(), pde);
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException(this, pde);
 		} finally {
 			context.popDocumentContext();
 		}
