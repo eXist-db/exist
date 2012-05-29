@@ -138,6 +138,8 @@ public class TryCatchExpression extends AbstractExpression {
                 // if no errorcode is found, reconstruct by parsing the error text.
                 if (errorCode == null) {
                     errorCode = extractErrorCode(xpe);
+                } else if (errorCode == ErrorCodes.ERROR) {
+                    errorCode = extractErrorCode(xpe);
                 }
 
             } else {
