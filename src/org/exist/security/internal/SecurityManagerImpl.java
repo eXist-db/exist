@@ -390,7 +390,7 @@ public class SecurityManagerImpl implements SecurityManager {
     }
 
     @Override
-    public Subject authenticate(String username, final Object credentials) throws AuthenticationException {
+    public Subject authenticate(final String username, final Object credentials) throws AuthenticationException {
         if (LOG.isDebugEnabled())
             LOG.debug("Authentication try for '"+username+"'.");
 
