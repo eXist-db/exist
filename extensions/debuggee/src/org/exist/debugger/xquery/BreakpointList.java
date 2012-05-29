@@ -30,6 +30,7 @@ import org.apache.mina.core.session.IoSession;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
+import org.exist.debugger.Utils;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
@@ -91,21 +92,8 @@ public class BreakpointList extends BasicFunction {
 			Command command = new org.exist.debuggee.dbgp.packets.BreakpointList(session, "");
 			command.exec();
 			
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setNamespaceAware(true);	
-			//TODO we should be able to cope with context.getBaseURI()				
-			InputSource src = new InputSource(new ByteArrayInputStream(command.responseBytes()));
-			SAXParser parser = factory.newSAXParser();
-			XMLReader reader = parser.getXMLReader();
-			SAXAdapter adapter = new SAXAdapter();
-	        reader.setContentHandler(adapter);
-			reader.setContentHandler(adapter);
-			reader.parse(src);
-			
-			DocumentImpl doc = (DocumentImpl) adapter.getDocument();
-	        return (NodeImpl) doc.getFirstChild();
+			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 
-			
 		} catch (Exception e) {
 			throw new XPathException(this, e);
 		}
