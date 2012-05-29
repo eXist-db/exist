@@ -23,8 +23,11 @@ package org.exist.debugger.xquery;
 
 import java.util.List;
 import java.util.Map;
+
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 
 /**
  * eXist debugger xquery module
@@ -39,7 +42,15 @@ public class Module extends AbstractInternalModule {
 	private final static String RELEASED_IN_VERSION = "eXist-1.5";
 	private final static String DESCRIPTION = "Module for interacting with the debuggee";
 
-	private final static FunctionDef[] functions = {
+    public static ErrorCode DEBUG001 = new DebugErrorCode("DEBUG001", "Debugger command error.");
+
+    public static class DebugErrorCode extends ErrorCode {
+        private DebugErrorCode(String code, String description) {
+            super(new QName(code, NAMESPACE_URI, PREFIX), description);
+        }
+    }
+
+    private final static FunctionDef[] functions = {
 		new FunctionDef(Init.signatures[0], Init.class),
 
 		new FunctionDef(BreakpointList.signatures[0], BreakpointList.class),

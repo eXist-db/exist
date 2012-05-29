@@ -21,10 +21,7 @@
  */
 package org.exist.debugger.xquery;
 
-import java.io.IOException;
-
 import org.apache.mina.core.session.IoSession;
-import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debugger.Utils;
@@ -85,10 +82,8 @@ public class StackGet extends BasicFunction {
 			
 			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 			
-		} catch (EXistException e) {
-			throw new XPathException(this, e);
-		} catch (IOException e) {
-			throw new XPathException(this, e);
+		} catch (Throwable e) {
+			throw new XPathException(this, Module.DEBUG001, e);
 		}
 	}
 }

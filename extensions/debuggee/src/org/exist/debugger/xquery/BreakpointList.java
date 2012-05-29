@@ -21,20 +21,11 @@
  */
 package org.exist.debugger.xquery;
 
-import java.io.ByteArrayInputStream;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.mina.core.session.IoSession;
-import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
 import org.exist.debugger.Utils;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -47,8 +38,6 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 /**
  * 
@@ -94,8 +83,8 @@ public class BreakpointList extends BasicFunction {
 			
 			return Utils.nodeFromString( getContext(), new String( command.responseBytes() ) );
 
-		} catch (Exception e) {
-			throw new XPathException(this, e);
+		} catch (Throwable e) {
+			throw new XPathException(this, Module.DEBUG001, e);
 		}
 	}
 }
