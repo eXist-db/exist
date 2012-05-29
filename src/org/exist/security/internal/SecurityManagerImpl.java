@@ -394,7 +394,11 @@ public class SecurityManagerImpl implements SecurityManager {
         if (LOG.isDebugEnabled())
             LOG.debug("Authentication try for '"+username+"'.");
 
-    	if("jsessionid".equals(username)) {
+        if (username == null)
+        	throw new AuthenticationException(
+        			AuthenticationException.ACCOUNT_NOT_FOUND, "Account NULL not found");
+
+        if("jsessionid".equals(username)) {
     		
     		if (getSystemSubject().getSessionId().equals(credentials))
     			return getSystemSubject();
@@ -447,7 +451,9 @@ public class SecurityManagerImpl implements SecurityManager {
             LOG.debug("Account '"+username+"' not found, throw error");
         }
 
-        throw new AuthenticationException(AuthenticationException.ACCOUNT_NOT_FOUND, "User [" + username + "] not found");
+        throw new AuthenticationException(
+    		AuthenticationException.ACCOUNT_NOT_FOUND, 
+    		"Account [" + username + "] not found");
     }
     
     protected Subject systemSubject = null;
