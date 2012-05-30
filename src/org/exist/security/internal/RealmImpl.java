@@ -227,7 +227,15 @@ public class RealmImpl extends AbstractRealm {
                     broker = getDatabase().get(null);
                     Subject subject = broker.getSubject();
 			
-                    if (!(((Group)remove_group).isManager(subject) || subject.hasDbaRole())) {
+                    Group g = (Group)remove_group;
+                    if (
+                		!(
+                			( 
+                				(g.isManager(subject) && g.getManagers().size() == 1) 
+                			|| subject.hasDbaRole()
+                			)
+                		)
+            		) {
                         throw new PermissionDeniedException(
                     		"Account '"+subject.getName()+"' can not delete a group '"+remove_group.getName()+"'.");
                     }
