@@ -217,18 +217,19 @@ public class RealmImpl extends AbstractRealm {
             @Override
             public void execute(Map<String, Group> principalDb) throws PermissionDeniedException, EXistException {
         
-		AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
-		if(remove_group == null) {
+            	AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
+            	if(remove_group == null) {
                     throw new IllegalArgumentException("Group does not exist!");
                 }
 		
-		DBBroker broker = null;
-		try {
+            	DBBroker broker = null;
+            	try {
                     broker = getDatabase().get(null);
                     Subject subject = broker.getSubject();
 			
-                    if(!( subject.hasDbaRole())) {
-                        throw new PermissionDeniedException("You are not allowed to delete '" + remove_group.getName() + "' group");
+                    if (!(((Group)remove_group).isManager(subject) || subject.hasDbaRole())) {
+                        throw new PermissionDeniedException(
+                    		"Account '"+subject.getName()+"' can not delete a group '"+remove_group.getName()+"'.");
                     }
 
                     remove_group.setRemoved(true);
@@ -251,9 +252,9 @@ public class RealmImpl extends AbstractRealm {
                     getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
                     principalDb.remove(remove_group.getName());
 
-		} finally {
+            	} finally {
                     getDatabase().release(broker);
-		}
+            	}
             }
         });
         
