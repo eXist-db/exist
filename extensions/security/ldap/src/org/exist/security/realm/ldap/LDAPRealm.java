@@ -107,9 +107,11 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     private String ensureCase(String username) {
-        if(principalsAreCaseInsensitive) {
+    	if (username == null) return null;
+        
+    	if (principalsAreCaseInsensitive)
             return username.toLowerCase();
-        }
+
         return username;
     }
     
@@ -605,6 +607,8 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     public final synchronized Group getGroup(LdapContext ctx, String name) {
+    	
+    	if (name == null) return null;
         
         name = ensureCase(name);
         
@@ -756,6 +760,7 @@ public class LDAPRealm extends AbstractRealm {
                 return addDomainPostfix((String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
             }
         }
+        LOG.error("Matched no group with SID: " + sid);
         return null;
     }
     

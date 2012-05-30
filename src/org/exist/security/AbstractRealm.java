@@ -56,9 +56,6 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractRealm implements Realm, Configurable {
 
-    //XXX: this class must be under org.exist.security.internal to be protected
-    //public final Map<String, Account> usersByName = new HashMap<String, Account>(65);
-    //public final Map<String, Group> groupsByName = new HashMap<String, Group>(65);
     protected final PrincipalDbByName<Account> usersByName = new PrincipalDbByName<Account>();
     protected final PrincipalDbByName<Group> groupsByName = new PrincipalDbByName<Group>();
     
