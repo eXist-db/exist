@@ -100,7 +100,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public boolean isManager(Account account) {
     	for (Reference<SecurityManager, Account> manager : managers) {
-    		if (manager.resolve().equals(account))
+    		Account acc = manager.resolve();
+    		if (acc != null && acc.equals(account))
     			return true;
     	}
     	return false;
@@ -160,7 +161,9 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     	List<Account> list = new ArrayList<Account>(managers.size());
     	
     	for (Reference<SecurityManager, Account> ref : managers) {
-    		list.add(ref.resolve());
+    		Account acc = ref.resolve();
+    		if (acc != null)
+    			list.add(acc);
     	}
         
     	return list;
@@ -174,7 +177,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         assertCanModifyGroup(subject);
 
         for(Reference<SecurityManager, Account> ref : managers) {
-            if(ref.resolve().getName().equals(account.getName())) {
+        	Account acc = ref.resolve();
+            if(acc.getName().equals(account.getName())) {
                 managers.remove(ref);
                 break;
             }
