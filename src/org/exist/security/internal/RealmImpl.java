@@ -209,60 +209,40 @@ public class RealmImpl extends AbstractRealm {
 
     @Override
     public boolean deleteGroup(final Group group) throws PermissionDeniedException, EXistException {
-        if(group == null) {
+        if(group == null)
             return false;
-        }
         
         groupsByName.modify2E(new PrincipalDbModify2E<Group, PermissionDeniedException, EXistException>(){
             @Override
             public void execute(Map<String, Group> principalDb) throws PermissionDeniedException, EXistException {
         
             	AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
-            	if(remove_group == null) {
-                    throw new IllegalArgumentException("Group does not exist!");
+            	if(remove_group == null)
+                    throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");
+		
+            	DBBroker broker = getDatabase().getActiveBroker();
+                Subject subject = broker.getSubject();
+                
+                ((Group)remove_group).assertCanModifyGroup(subject);
+		
+                remove_group.setRemoved(true);
+                remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
+		
+                TransactionManager transaction = getDatabase().getTransactionManager();
+                Txn txn = null;
+                try {
+                    txn = transaction.beginTransaction();
+
+                    collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
+
+                    transaction.commit(txn);
+                } catch (Exception e) {
+                    transaction.abort(txn);
+                    LOG.debug(e);
                 }
 		
-            	DBBroker broker = null;
-            	try {
-                    broker = getDatabase().get(null);
-                    Subject subject = broker.getSubject();
-			
-                    Group g = (Group)remove_group;
-                    if (
-                		!(
-                			( 
-                				(g.isManager(subject) && g.getManagers().size() == 1) 
-                			|| subject.hasDbaRole()
-                			)
-                		)
-            		) {
-                        throw new PermissionDeniedException(
-                    		"Account '"+subject.getName()+"' can not delete a group '"+remove_group.getName()+"'.");
-                    }
-
-                    remove_group.setRemoved(true);
-                    remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
-			
-                    TransactionManager transaction = getDatabase().getTransactionManager();
-                    Txn txn = null;
-                    try {
-                        txn = transaction.beginTransaction();
-	
-                        collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
-
-                        transaction.commit(txn);
-                    } catch (Exception e) {
-                        transaction.abort(txn);
-                        e.printStackTrace();
-                        LOG.debug("loading configuration failed: " + e.getMessage());
-                    }
-			
-                    getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
-                    principalDb.remove(remove_group.getName());
-
-            	} finally {
-                    getDatabase().release(broker);
-            	}
+                getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
+                principalDb.remove(remove_group.getName());
             }
         });
         
@@ -292,17 +272,6 @@ public class RealmImpl extends AbstractRealm {
             
         return subject;
     }
-
-    @Override
-    public List<String> findUsernamesWhereNameStarts(String startsWith) {
-        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
-    }
-
-    @Override
-    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
-        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
-    }
-    
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
@@ -378,5 +347,15 @@ public class RealmImpl extends AbstractRealm {
                 return groupMembers;
             }
         });
+    }
+
+    @Override
+    public List<String> findUsernamesWhereNameStarts(String startsWith) {
+        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
+    }
+
+    @Override
+    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
+        return new ArrayList<String>();    //TODO at present exist users cannot have personal name details
     }
 }
