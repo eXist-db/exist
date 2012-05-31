@@ -76,45 +76,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     }
 
     @Override
-    protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
-                /*1*/ "DOCUMENT_URI, " +
-                /*2*/ "NODE_ID_UNITS, " +
-                /*3*/ "NODE_ID, " +
-                /*4*/ "GEOMETRY_TYPE, " +
-                /*5*/ "SRS_NAME, " +
-                /*6*/ "WKT, " +
-                /*7*/ "WKB, " +
-                /*8*/ "MINX, " +
-                /*9*/ "MAXX, " +
-                /*10*/ "MINY, " +
-                /*11*/ "MAXY, " +
-                /*12*/ "CENTROID_X, " +
-                /*13*/ "CENTROID_Y, " +
-                /*14*/ "AREA, " +
-                //Boundary ?
-                /*15*/ "EPSG4326_WKT, " +
-                /*16*/ "EPSG4326_WKB, " +
-                /*17*/ "EPSG4326_MINX, " +
-                /*18*/ "EPSG4326_MAXX, " +
-                /*19*/ "EPSG4326_MINY, " +
-                /*20*/ "EPSG4326_MAXY, " +
-                /*21*/ "EPSG4326_CENTROID_X, " +
-                /*22*/ "EPSG4326_CENTROID_Y, " +
-                /*23*/ "EPSG4326_AREA," +
-                //Boundary ?
-                /*24*/ "IS_CLOSED, " +
-                /*25*/ "IS_SIMPLE, " +
-                /*26*/ "IS_VALID" +
-                ") VALUES (" +
-                    "?, ?, ?, ?, ?, " +
-                    "?, ?, ?, ?, ?, " +
-                    "?, ?, ?, ?, ?, " +
-                    "?, ?, ?, ?, ?, " +
-                    "?, ?, ?, ?, ?, " +
-                    "?"
-                + ")"
-            );
+    protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, PreparedStatement ps) throws SQLException {
         try {
             Geometry EPSG4326_geometry = null;
             try {
@@ -125,6 +87,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 ee.initCause(e);
                 throw ee;
             }
+            ps.clearParameters();
+            
             /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
             /*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
             byte[] bytes = new byte[nodeId.size()];
@@ -163,10 +127,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             /*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
             return (ps.executeUpdate() == 1);
         } finally {
-            if (ps != null)
-                ps.close();
             //Let's help the garbage collector...
             geometry = null;
+            ps.clearParameters();
         }
     }
 
