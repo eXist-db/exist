@@ -85,7 +85,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         return sm;
     }
     
-    protected void initialiseRealmStorage(DBBroker broker) throws EXistException {
+    protected void initialiseRealmStorage(final DBBroker broker) throws EXistException {
         
         final XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
         
@@ -105,16 +105,16 @@ public abstract class AbstractRealm implements Realm, Configurable {
             
         } catch(PermissionDeniedException pde) {
             transact.abort(txn);
-            throw new EXistException(pde.getMessage(), pde);
+            throw new EXistException(pde);
         } catch(IOException ioe) {
             transact.abort(txn);
-            throw new EXistException(ioe.getMessage(), ioe);
+            throw new EXistException(ioe);
         } catch(LockException le) {
             transact.abort(txn);
-            throw new EXistException(le.getMessage(), le);
+            throw new EXistException(le);
         } catch(TriggerException te) {
             transact.abort(txn);
-            throw new EXistException(te.getMessage(), te);
+            throw new EXistException(te);
         }
     }
     
@@ -151,7 +151,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadRemovedGroupsFromRealmStorage(DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
+    private void loadRemovedGroupsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove groups information
         if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount(broker) > 0) {
             for(Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
@@ -201,7 +201,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
     }
     
-    private void loadRemovedAccountsFromRealmStorage(DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
+    private void loadRemovedAccountsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove accounts information
         if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount(broker) > 0) {
             for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
@@ -222,7 +222,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     
     
     @Override
-    public void startUp(DBBroker broker) throws EXistException {
+    public void startUp(final DBBroker broker) throws EXistException {
 
         initialiseRealmStorage(broker);
         
@@ -233,9 +233,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
             loadAccountsFromRealmStorage(broker);
             loadRemovedAccountsFromRealmStorage(broker);
         } catch(PermissionDeniedException pde) {
-            throw new EXistException(pde.getMessage(), pde);
+            throw new EXistException(pde);
         } catch(LockException le) {
-            throw new EXistException(le.getMessage(), le);
+            throw new EXistException(le);
         }
     }
 
@@ -453,7 +453,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public Group getExternalGroup(String name) {
+    public Group getExternalGroup(final String name) {
         return getSecurityManager().getGroup(name);
     }
 
@@ -550,12 +550,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
 	@Override
-	public List<String> findUsernamesWhereNameStarts(String startsWith) {
+	public List<String> findUsernamesWhereNameStarts(final String startsWith) {
         return new ArrayList<String>();
 	}
 
 	@Override
-	public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
+	public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
         return new ArrayList<String>();
 	}
 
@@ -565,22 +565,22 @@ public abstract class AbstractRealm implements Realm, Configurable {
 	}
 
 	@Override
-	public List<String> findAllGroupMembers(String groupName) {
+	public List<String> findAllGroupMembers(final String groupName) {
         return new ArrayList<String>();
 	}
 
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
+    public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
         return new ArrayList<String>();
     }
         
 	@Override
-	public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(String startsWith) {
+	public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
         return new ArrayList<String>();
 	}
 
     @Override
-    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(String fragment) {
+    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {
         return new ArrayList<String>();
     }
 }

@@ -606,26 +606,26 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
-    public final synchronized Group getGroup(LdapContext ctx, String name) {
+    public final synchronized Group getGroup(LdapContext ctx, final String name) {
     	
     	if (name == null) return null;
         
-        name = ensureCase(name);
+        String gName = ensureCase(name);
         
-        Group grp = getGroup(name);
+        Group grp = getGroup(gName);
         if(grp != null) {
             return grp;
         } else {
             //if the group is not cached, we should try and find it in LDAP and cache it if it exists
             try {
                 //do the lookup
-                SearchResult ldapGroup = findGroupByGroupName(ctx, removeDomainPostfix(name));
+                SearchResult ldapGroup = findGroupByGroupName(ctx, removeDomainPostfix(gName));
                 if(ldapGroup == null) {
                     return null;
                 } else {
                     //found a group from ldap so cache them and return
                     try {
-                        return createGroupInDatabase(name);
+                        return createGroupInDatabase(gName);
                         //registerGroup(grp); //TODO do we need to do this?
                     } catch(AuthenticationException ae) {
                         LOG.error(ae.getMessage(), ae);
@@ -642,7 +642,6 @@ public class LDAPRealm extends AbstractRealm {
             }
         }
     }
-
     
     private String addDomainPostfix(String principalName) {
         String name = principalName;
@@ -672,10 +671,10 @@ public class LDAPRealm extends AbstractRealm {
     
     private boolean checkPrincipalRestrictionList(String principalName, AbstractLDAPSearchPrincipal searchPrinciple) {
         
-        principalName = ensureCase(principalName);
+        String name = ensureCase(principalName);
         
-        if(principalName.indexOf('@') > -1) {
-            principalName = principalName.substring(0, principalName.indexOf('@'));
+        if(name.indexOf('@') > -1) {
+        	name = name.substring(0, name.indexOf('@'));
         }
         
         List<String> blackList = null;
@@ -690,7 +689,7 @@ public class LDAPRealm extends AbstractRealm {
         
         if(blackList != null) {
             for(String blackEntry : blackList) {
-                if(ensureCase(blackEntry).equals(principalName)) {
+                if(ensureCase(blackEntry).equals(name)) {
                     return false;
                 }
             }
@@ -698,7 +697,7 @@ public class LDAPRealm extends AbstractRealm {
         
         if(whiteList != null && whiteList.size() > 0) {
             for(String whiteEntry : whiteList) {
-                if(ensureCase(whiteEntry).equals(principalName)) {
+                if(ensureCase(whiteEntry).equals(name)) {
                     return true;
                 }
             }
@@ -790,6 +789,7 @@ public class LDAPRealm extends AbstractRealm {
                 return searchResult;
             }
         }
+        LOG.error("Matched no groups for the groupName: " + groupName);
         return null;
     }
 
@@ -823,7 +823,7 @@ public class LDAPRealm extends AbstractRealm {
 
     @Override
     public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException {
-        // TODO Auto-generated method stub
+    	//XXX: delete local cache?
         return false;
     }
 
@@ -931,9 +931,9 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
+    public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
         
-        startsWith = ensureCase(startsWith);
+        String sWith = ensureCase(startsWith);
         
         List<String> usernames = new ArrayList<String>();
 
@@ -943,8 +943,8 @@ public class LDAPRealm extends AbstractRealm {
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
             
-            SearchAttribute firstNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FIRSTNAME), startsWith + "*");
-            SearchAttribute lastNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.LASTNAME), startsWith + "*");
+            SearchAttribute firstNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.FIRSTNAME), sWith + "*");
+            SearchAttribute lastNameSa = new SearchAttribute(search.getSearchAccount().getMetadataSearchAttribute(AXSchemaType.LASTNAME), sWith + "*");
             List<SearchAttribute> sas = new ArrayList<SearchAttribute>();
             sas.add(firstNameSa);
             sas.add(lastNameSa);
@@ -977,9 +977,9 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
+    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
         
-        startsWith = ensureCase(startsWith);
+        String sWith = ensureCase(startsWith);
         
         List<String> usernames = new ArrayList<String>();
 
@@ -988,7 +988,7 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.NAME), sWith + "*");
             String searchFilter = buildSearchFilter(search.getSearchAccount().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
@@ -1055,9 +1055,9 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameStarts(String startsWith) {
+    public List<String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
 
-        startsWith = ensureCase(startsWith);
+        String sWith = ensureCase(startsWith);
         
         List<String> groupnames = new ArrayList<String>();
 
@@ -1066,7 +1066,7 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), startsWith + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), sWith + "*");
             String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
@@ -1096,9 +1096,9 @@ public class LDAPRealm extends AbstractRealm {
     }
     
     @Override
-    public List<String> findGroupnamesWhereGroupnameContains(String fragment) {
+    public List<String> findGroupnamesWhereGroupnameContains(final String fragment) {
 
-        fragment = ensureCase(fragment);
+        String part = ensureCase(fragment);
         
         List<String> groupnames = new ArrayList<String>();
 
@@ -1107,7 +1107,7 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(getSecurityManager().getCurrentSubject());
 
             LDAPSearchContext search = ensureContextFactory().getSearch();
-            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), "*" + fragment + "*");
+            SearchAttribute sa = new SearchAttribute(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME), "*" + part + "*");
             String searchFilter = buildSearchFilter(search.getSearchGroup().getSearchFilterPrefix(), sa);
 
             SearchControls searchControls = new SearchControls();
@@ -1126,7 +1126,7 @@ public class LDAPRealm extends AbstractRealm {
                 }
             }
         } catch(NamingException ne) {
-            LOG.error(new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, ne.getMessage()));
+            LOG.error(ne);
         } finally {
             if(ctx != null) {
                 LdapUtils.closeContext(ctx);
@@ -1174,13 +1174,13 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public List<String> findAllGroupMembers(String groupName) {
+    public List<String> findAllGroupMembers(final String groupName) {
 
-        groupName = ensureCase(groupName);
+        String name = ensureCase(groupName);
         
         List<String> groupMembers = new ArrayList<String>();
         
-        if(!checkGroupRestrictionList(groupName)) {
+        if(!checkGroupRestrictionList(name)) {
             return groupMembers;
         }
 
@@ -1189,7 +1189,7 @@ public class LDAPRealm extends AbstractRealm {
             ctx = getContext(getSecurityManager().getCurrentSubject());
 
             //find the dn of the group
-            SearchResult searchResult = findGroupByGroupName(ctx, removeDomainPostfix(groupName));
+            SearchResult searchResult = findGroupByGroupName(ctx, removeDomainPostfix(name));
             LDAPSearchContext search = ensureContextFactory().getSearch();
             String dnGroup = (String)searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.DN)).get();
 
