@@ -29,7 +29,6 @@ import org.exist.EXistException;
 import org.exist.config.Startable;
 import org.exist.security.Group;
 import org.exist.security.Account;
-import org.exist.security.Subject;
 import org.exist.security.SecurityManager;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
@@ -55,13 +54,13 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
 
 	public Database getDatabase();
 
-    public Group getExternalGroup(String name);
+    public Group getExternalGroup(final String name);
 
     public List<String> findUsernamesWhereNameStarts(String startsWith);
     public List<String> findUsernamesWhereNamePartStarts(String startsWith);
     public List<String> findUsernamesWhereUsernameStarts(String startsWith);
     public List<String> findAllGroupNames();
-    public List<String> findAllGroupMembers(String groupName);
+    public List<String> findAllGroupMembers(final String groupName);
 
     public SecurityManager getSecurityManager();
 
