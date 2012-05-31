@@ -82,6 +82,7 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
@@ -275,6 +276,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 if (conn != null) {
                     conn.setAutoCommit(true);
                     releaseConnection(conn);
+                    //geometries.clear();
                 }
             } catch (SQLException e) {
                 LOG.error(e);
@@ -285,13 +287,56 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     private void saveDocumentNodes(Connection conn) throws SQLException {
         if (geometries.size() == 0)
             return;
+
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
+                /*1*/ "DOCUMENT_URI, " +
+                /*2*/ "NODE_ID_UNITS, " +
+                /*3*/ "NODE_ID, " +
+                /*4*/ "GEOMETRY_TYPE, " +
+                /*5*/ "SRS_NAME, " +
+                /*6*/ "WKT, " +
+                /*7*/ "WKB, " +
+                /*8*/ "MINX, " +
+                /*9*/ "MAXX, " +
+                /*10*/ "MINY, " +
+                /*11*/ "MAXY, " +
+                /*12*/ "CENTROID_X, " +
+                /*13*/ "CENTROID_Y, " +
+                /*14*/ "AREA, " +
+                //Boundary ?
+                /*15*/ "EPSG4326_WKT, " +
+                /*16*/ "EPSG4326_WKB, " +
+                /*17*/ "EPSG4326_MINX, " +
+                /*18*/ "EPSG4326_MAXX, " +
+                /*19*/ "EPSG4326_MINY, " +
+                /*20*/ "EPSG4326_MAXY, " +
+                /*21*/ "EPSG4326_CENTROID_X, " +
+                /*22*/ "EPSG4326_CENTROID_Y, " +
+                /*23*/ "EPSG4326_AREA," +
+                //Boundary ?
+                /*24*/ "IS_CLOSED, " +
+                /*25*/ "IS_SIMPLE, " +
+                /*26*/ "IS_VALID" +
+                ") VALUES (" +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?, ?, ?, ?, ?, " +
+                    "?"
+                + ")"
+            );
+
         try {
-            for (Map.Entry<NodeId, SRSGeometry> entry : geometries.entrySet()) {
-                NodeId nodeId = entry.getKey();
-                SRSGeometry srsGeometry = entry.getValue();
+            NodeId nodeId = null;
+            SRSGeometry srsGeometry = null;
+        	for (Map.Entry<NodeId, SRSGeometry> entry : geometries.entrySet()) {
+                nodeId = entry.getKey();
+                srsGeometry = entry.getValue();
+                
                 try {
                     saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
-                            currentDoc, nodeId, conn);
+                            currentDoc, nodeId, ps);
                 } finally {
                     //Help the garbage collector
                     srsGeometry = null;
@@ -299,6 +344,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             }
         } finally {
             geometries.clear();
+            if (ps != null) {
+            	ps.close();
+            	ps = null;
+            }
         }
     }
 
@@ -477,7 +526,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException;
+    protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, PreparedStatement ps) throws SQLException;
 
     protected abstract boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn) throws SQLException;
 
