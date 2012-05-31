@@ -55,10 +55,7 @@ public class DeleteGroupFunction extends BasicFunction {
         Subject currentSubject = context.getBroker().getSubject();
 
         try {
-            final Group group = sm.getGroup(args[0].itemAt(0).getStringValue());
-            if(group.isManager(currentSubject)) {
-                throw new PermissionDeniedException("Only a group manager may delete a group");
-            }
+            final String name = args[0].itemAt(0).getStringValue();
 
             final Group successorGroup;
             if(getArgumentCount() == 2) {
@@ -69,14 +66,14 @@ public class DeleteGroupFunction extends BasicFunction {
                 successorGroup = sm.getGroup(successorGroupName);
 
             } else {
-                 successorGroup = sm.getGroup("guest");
+            	successorGroup = sm.getGroup("guest");
             }
 
             //TODO how to handle user which are members of this group
             //also how to reassign resources that are allocated to this group to another group
 
             try {
-                sm.deleteGroup(group.getName());
+                sm.deleteGroup(name);
             } catch(EXistException ee) {
                 throw new XPathException(this, ee);
             }
