@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.Collator;
 import java.text.DecimalFormat;
 import java.util.Date;
@@ -34,6 +35,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import org.apache.xerces.util.DatatypeMessageFormatter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -50,33 +52,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 	
 	protected static Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)"); 
-    protected static Pattern gYearWUTCTZ = Pattern.compile("^(\\d\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)$");
-    protected static Pattern gYearNoTZ = Pattern.compile("^(\\d\\d\\d\\d)$");
-    protected static Pattern gDayWTZ = Pattern.compile("^(---\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern gMonthWTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    //protected static Pattern gMonthWUTCTZ = Pattern.compile("^(--\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern gYearMonthWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern gMonthDayWTZ = Pattern.compile("^(--\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    
-    protected static Pattern dateWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern dateNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)");
-
-    protected static Pattern timeNoTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)");
-    protected static Pattern timeWUTCTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    protected static Pattern timeMsWTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    
-    protected static Pattern dateTimeMsNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)((\\d\\d\\d)|(\\d\\d)|(\\d))");
-    protected static Pattern dateTimeMsWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-    
-    protected static Pattern dateTimeNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)");
-    protected static Pattern dateTimeWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)");
-
-
-    protected static Pattern dateInvalidDay = Pattern.compile("^(---)\\d(\\d\\d)");
-    protected static Pattern dateInvalidMonth = Pattern.compile("(^\\d\\d\\d\\d-\\d\\d\\d-\\d\\d$|^\\d\\d\\d\\d-\\d\\d\\d.*|^\\d\\d\\d\\d-\\d\\d\\d-\\d\\dT.*)");
-    protected static Pattern dateInvalidYear = Pattern.compile("(^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d\\d)|^0(\\d\\d\\d\\d)-(\\d\\d)|^0(\\d\\d\\d\\d)|^0(\\d\\d\\d\\d\\d*)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d))");
-
-
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -97,14 +72,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		this.calendar = calendar;
 	}
 	
-	protected AbstractDateTimeValue(String lexicalValue)
-        throws XPathException {
+	protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
         lexicalValue = StringValue.trimWhitespace(lexicalValue);
 
         //lexicalValue = normalizeDate(lexicalValue);
         //lexicalValue = normalizeTime(getType(), lexicalValue);
 		try {
-			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
+			calendar = parse(lexicalValue);
 		} catch (IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
 		}
@@ -363,491 +337,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }	
 
     /**
-     * The method <code>normalizeDate</code>
-     *
-     * @param dateValue a <code>String</code> value
-     * @return a <code>String</code> value
-     * @exception XPathException if an error occurs
-     */
-    public static String normalizeDate(String dateValue)
-    throws XPathException {
-        Matcher d = dateInvalidDay.matcher(dateValue);
-        Matcher m = dateInvalidMonth.matcher(dateValue);
-        Matcher y = dateInvalidYear.matcher(dateValue);
-        if (d.matches() ||  m.matches() || y.matches()) {
-            throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + dateValue + "'");
-        }
-        return dateValue;
-    }
-
-    /**
-     * The method <code>normalizeTime</code>
-     *
-     * @param timeValue a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    public static String normalizeTime(int type, String timeValue) throws XPathException {
-        int hours = 0;
-        int mins = 0;
-        int secs = 0;
-        int mSecs = 0;
-        int tzHours = 0;
-        int tzMins = 0;
-        
-        DecimalFormat df = new DecimalFormat("00");
-        DecimalFormat msf = new DecimalFormat("000");
-
-        Matcher m = null;
-        if (type == Type.TIME) {
-        	
-        	//^(\\d\\d):(\\d\\d):(\\d\\d)
-            m = timeNoTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(1)).intValue();
-                mins = Integer.valueOf(m.group(2)).intValue();
-                secs = Integer.valueOf(m.group(3)).intValue();
-                
-                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                return sb.toString();
-            }
-
-        	//^(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)
-            m = timeWUTCTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(1)).intValue();
-                mins = Integer.valueOf(m.group(2)).intValue();
-                secs = Integer.valueOf(m.group(3)).intValue();
-                tzHours = Integer.valueOf(m.group(5)).intValue();
-                tzMins = Integer.valueOf(m.group(6)).intValue();
-                
-                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                sb.append(m.group(4));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-                sb.append(df.format(tzMins));
-
-                return sb.toString();
-            }
-
-            //(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)
-            m = timeMsWTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(1)).intValue();
-                mins = Integer.valueOf(m.group(2)).intValue();
-                secs = Integer.valueOf(m.group(3)).intValue();
-                mSecs = Integer.valueOf(m.group(5)).intValue();
-                tzHours = Integer.valueOf(m.group(7)).intValue();
-                tzMins = Integer.valueOf(m.group(8)).intValue();
-                
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-                
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                sb.append(m.group(4));
-                sb.append(msf.format(mSecs));
-                sb.append(m.group(6));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-                sb.append(df.format(tzMins));
-                return sb.toString();
-            }
-        } else if (type == Type.DATE_TIME) {
-
-            String value = timeValue; 
-            if (timeValue.endsWith("Z"))
-            	value = timeValue.substring(0, timeValue.length() - 1); 
-        	
-        	//^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)
-            m = dateTimeNoTZ.matcher(value);
-            if (m.matches()) {
-                String date =  m.group(1);
-                DateValue dateValue = null;
-
-                hours = Integer.valueOf(m.group(3)).intValue();
-                mins = Integer.valueOf(m.group(4)).intValue();
-                secs = Integer.valueOf(m.group(5)).intValue();
-                
-                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                        dateValue = (DateValue) new DateValue(date).plus(new DayTimeDurationValue("P1D"));
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                if (dateValue == null)
-                	sb.append(date);
-                else
-                	sb.append(dateValue.getStringValue());
-                sb.append(m.group(2));
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                if (timeValue.endsWith("Z"))
-                    sb.append("Z");
-
-                return sb.toString(); 
-            }
-
-            //(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)
-            m = dateTimeWTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(3)).intValue();
-                mins = Integer.valueOf(m.group(4)).intValue();
-                secs = Integer.valueOf(m.group(5)).intValue();
-                tzHours = Integer.valueOf(m.group(7)).intValue();
-                tzMins = Integer.valueOf(m.group(8)).intValue();
-
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-                
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-        		sb.append(m.group(6));
-        		sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-
-            //^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)((\\d\\d\\d)|(\\d\\d)|(\\d))
-            m = dateTimeMsNoTZ.matcher(value);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(2)).intValue();
-                mins = Integer.valueOf(m.group(3)).intValue();
-                secs = Integer.valueOf(m.group(4)).intValue();
-
-                if (mins >= 60 || mins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-                
-                //TODO: add time zone?
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                sb.append(m.group(5));
-        		sb.append(m.group(6));
-                if (timeValue.endsWith("Z"))
-                	sb.append("Z");
-				return sb.toString();
-            }
-
-            //^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)
-            m = dateTimeMsWTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(2)).intValue();
-                mins = Integer.valueOf(m.group(3)).intValue();
-                secs = Integer.valueOf(m.group(4)).intValue();
-                mSecs = Integer.valueOf(m.group(6)).intValue();
-                tzHours = Integer.valueOf(m.group(8)).intValue();
-                tzMins = Integer.valueOf(m.group(9)).intValue();
-
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-                
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(df.format(hours));
-                sb.append(":");
-                sb.append(df.format(mins));
-                sb.append(":");
-                sb.append(df.format(secs));
-                sb.append(m.group(5));
-        		sb.append(msf.format(mSecs));
-        		sb.append(m.group(7));
-        		sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-        } else if (type == Type.GYEAR || type == Type.GDAY || type == Type.GMONTH || type == Type.GMONTHDAY ||
-            type == Type.GYEARMONTH) {
-            m = gYearWUTCTZ.matcher(timeValue);
-            if (m.matches()) {
-                tzHours = Integer.valueOf(m.group(3)).intValue();
-                tzMins = Integer.valueOf(m.group(4)).intValue();
-                
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(tzHours));
-        		sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-
-            m = gDayWTZ.matcher(timeValue);
-            if (m.matches()) {
-                tzHours = Integer.valueOf(m.group(3)).intValue();
-                tzMins = Integer.valueOf(m.group(4)).intValue();
-
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-                
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-
-            m = gMonthWTZ.matcher(timeValue);
-            if (m.matches()) {
-                tzHours = Integer.valueOf(m.group(3)).intValue();
-                tzMins = Integer.valueOf(m.group(4)).intValue();
-                
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-
-            m = gYearMonthWTZ.matcher(timeValue);
-            if (m.matches()) {
-                tzHours = Integer.valueOf(m.group(3)).intValue();
-                tzMins = Integer.valueOf(m.group(4)).intValue();
-                
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-
-            m = gMonthDayWTZ.matcher(timeValue);
-            if (m.matches()) {
-                tzHours = Integer.valueOf(m.group(3)).intValue();
-                tzMins = Integer.valueOf(m.group(4)).intValue();
-
-                if (tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (tzHours == 24) {
-                    if (tzMins == 0) {
-                        tzHours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                //TODO: add time zone?
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(tzHours));
-                sb.append(":");
-				sb.append(df.format(tzMins));
-				return sb.toString();
-            }
-        } else if (type == Type.DATE) {
-            m = dateWTZ.matcher(timeValue);
-            if (m.matches()) {
-                hours = Integer.valueOf(m.group(3)).intValue();
-                mins = Integer.valueOf(m.group(4)).intValue();
-
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
-                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-
-                if (hours == 24) {
-                    if (mins == 0) {
-                        hours = 0;
-                    } else {
-                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
-                    }
-                }
-
-                //TODO: add time zone?
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.group(1));
-                sb.append(m.group(2));
-                sb.append(df.format(hours));
-                sb.append(":");
-				sb.append(df.format(mins));
-				return sb.toString();
-            }
-
-            String value = timeValue; 
-            if (timeValue.endsWith("Z"))
-            	value = timeValue.substring(0, timeValue.length() - 1); 
-            	
-            m = dateNoTZ.matcher(value);
-            if (m.matches()) {
-				return timeValue;
-            }
-        }
-        
-        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'.");
-    }
-    
-    /**
      * Utility method that is able to clone a calendar whose year is 0
      * (whatever a year 0 means). 
      * It looks like the JDK is unable to do that.
@@ -881,5 +370,304 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     
     public int hashCode() {
     	return calendar.hashCode();
+    }
+    
+    //copy from org.apache.xerces.jaxp.datatype.XMLGregorianCalendarImpl
+    private XMLGregorianCalendar parse(String lexicalRepresentation) {
+        // compute format string for this lexical representation.
+        String format = null;
+        String lexRep = lexicalRepresentation;
+        final int NOT_FOUND = -1;
+        int lexRepLength = lexRep.length();
+
+        // current parser needs a format string,
+        // use following heuristics to figure out what xml schema date/time
+        // datatype this lexical string could represent.
+        if (lexRep.indexOf('T') != NOT_FOUND) {
+            // found Date Time separater, must be xsd:DateTime
+            format = "%Y-%M-%DT%h:%m:%s" + "%z";
+        } 
+        else if (lexRepLength >= 3 && lexRep.charAt(2) == ':') {
+            // found ":", must be xsd:Time
+            format = "%h:%m:%s" +"%z";
+        } 
+        else if (lexRep.startsWith("--")) {
+            // check for GDay || GMonth || GMonthDay
+            if (lexRepLength >= 3 && lexRep.charAt(2) == '-') {
+                // GDAY
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "---%D" + "%z";
+            } 
+            else if (lexRepLength == 4 || (lexRepLength >= 6 && (lexRep.charAt(4) == '+' || (lexRep.charAt(4) == '-' && (lexRep.charAt(5) == '-' || lexRepLength == 10))))) {
+                // GMonth
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "--%M--%z";
+                Parser p = new Parser(format, lexRep);
+                try {
+                	XMLGregorianCalendar c = p.parse();
+                    // check for validity
+                    if (!c.isValid()) {
+                        throw new IllegalArgumentException(
+                                DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
+                                //"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
+                        );
+                    }
+                    return c;
+                }
+                catch(IllegalArgumentException e) {
+                    format = "--%M%z";
+                }
+            } 
+            else {
+                // GMonthDay or invalid lexicalRepresentation
+                format = "--%M-%D" + "%z";
+            }
+        } 
+        else {
+            // check for Date || GYear | GYearMonth
+            int countSeparator = 0;
+
+            // start at index 1 to skip potential negative sign for year.
+
+
+            int timezoneOffset = lexRep.indexOf(':');
+            if (timezoneOffset != NOT_FOUND) {
+
+                // found timezone, strip it off for distinguishing
+                // between Date, GYear and GYearMonth so possible
+                // negative sign in timezone is not mistaken as
+                // a separator.
+                lexRepLength -= 6;
+            }
+
+            for (int i=1; i < lexRepLength; i++) {
+                if (lexRep.charAt(i) == '-') {
+                    countSeparator++;
+                }
+            }
+            if (countSeparator == 0) {
+                // GYear
+                format = "%Y" + "%z";
+            } 
+            else if (countSeparator == 1) {
+                // GYearMonth
+                format = "%Y-%M" + "%z";
+            } 
+            else {
+                // Date or invalid lexicalRepresentation
+                // Fix 4971612: invalid SCCS macro substitution in data string
+                format = "%Y-%M-%D" + "%z";
+            }
+        }
+        Parser p = new Parser(format, lexRep);
+        XMLGregorianCalendar c = p.parse();
+
+        // check for validity
+        if (!c.isValid()) {
+            throw new IllegalArgumentException(
+                    DatatypeMessageFormatter.formatMessage(null,"InvalidXGCRepresentation", new Object[]{lexicalRepresentation})
+                    //"\"" + lexicalRepresentation + "\" is not a valid representation of an XML Gregorian Calendar value."
+            );
+        }
+        return c;
+    }
+    
+    private final class Parser {
+        private final String format;
+        private final String value;
+
+        private final int flen;
+        private final int vlen;
+
+        private int fidx;
+        private int vidx;
+        
+        private BigInteger year = null;
+        private int month = DatatypeConstants.FIELD_UNDEFINED;
+        private int day = DatatypeConstants.FIELD_UNDEFINED;
+
+        private int timezone = DatatypeConstants.FIELD_UNDEFINED;
+
+        private int hour = DatatypeConstants.FIELD_UNDEFINED;
+        private int minute = DatatypeConstants.FIELD_UNDEFINED;
+        private int second = DatatypeConstants.FIELD_UNDEFINED ;
+        
+        private BigDecimal fractionalSecond = null;
+
+        private Parser(String format, String value) {
+            this.format = format;
+            this.value = value;
+            this.flen = format.length();
+            this.vlen = value.length();
+        }
+        
+        /**
+         * <p>Parse a formated <code>String</code> into an <code>XMLGregorianCalendar</code>.</p>
+         * 
+         * <p>If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value,
+         * an <code>IllegalArgumentException</code> is thrown.</p>
+         * 
+         * @throws IllegalArgumentException If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value.
+         */
+        public XMLGregorianCalendar parse() throws IllegalArgumentException {
+        	while (fidx < flen) {
+                char fch = format.charAt(fidx++);
+
+                if (fch != '%') { // not a meta character
+                    skip(fch);
+                    continue;
+                }
+
+                // seen meta character. we don't do error check against the format
+                switch (format.charAt(fidx++)) {
+                    case 'Y' : // year
+                        parseYear();
+                        break;
+
+                    case 'M' : // month
+                    	month = parseInt(2, 2);
+                        break;
+
+                    case 'D' : // days
+                    	day = parseInt(2, 2);
+                        break;
+
+                    case 'h' : // hours
+                    	hour = parseInt(2, 2);
+                        break;
+
+                    case 'm' : // minutes
+                    	minute = parseInt(2, 2);
+                        break;
+
+                    case 's' : // parse seconds.
+                    	second = parseInt(2, 2);
+
+                        if (peek() == '.') {
+                        	fractionalSecond = parseBigDecimal();
+                        }
+                        break;
+
+                    case 'z' : // time zone. missing, 'Z', or [+-]nn:nn
+                        char vch = peek();
+                        if (vch == 'Z') {
+                            vidx++;
+                            timezone = 0;
+                        } 
+                        else if (vch == '+' || vch == '-') {
+                            vidx++;
+                            int h = parseInt(2, 2);
+                            skip(':');
+                            int m = parseInt(2, 2);
+
+                            if (m >= 60 || m < 0)
+                                throw new IllegalArgumentException(
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(m), "Timezone minutes"})
+                                );
+                            
+                            timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
+                        }
+                        break;
+
+                    default :
+                        // illegal meta character. impossible.
+                        throw new InternalError();
+                }
+            }
+
+            if (vidx != vlen) {
+                // some tokens are left in the input
+                throw new IllegalArgumentException(value); //,vidx);
+            }
+            
+            return TimeUtils.getInstance().getFactory()
+        		.newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
+        }
+        
+        private char peek() throws IllegalArgumentException {
+            if (vidx == vlen) {
+                return (char) -1;
+            }
+            return value.charAt(vidx);
+        }
+        
+        private char read() throws IllegalArgumentException {
+            if (vidx == vlen) {
+                throw new IllegalArgumentException(value); //,vidx);
+            }
+            return value.charAt(vidx++);
+        }
+        
+        private void skip(char ch) throws IllegalArgumentException {
+            if (read() != ch) {
+                throw new IllegalArgumentException(value); //,vidx-1);
+            }
+        }
+        
+        private void parseYear()
+            throws IllegalArgumentException {
+            int vstart = vidx;
+            int sign = 0;
+            
+            // skip leading negative, if it exists
+            if (peek() == '-') {
+                vidx++;
+                sign = 1;
+            }
+            while (isDigit(peek())) {
+                vidx++;
+            }
+            final int digits = vidx - vstart - sign;
+            if (digits < 4) {
+                // we are expecting more digits
+                throw new IllegalArgumentException(value); //,vidx);
+            }
+            final String yearString = value.substring(vstart, vidx);
+//            if (digits < 10) {
+//            	year = Integer.parseInt(yearString);
+//            }
+//            else {
+            	year = new BigInteger(yearString);
+//            }
+        }
+        
+        private int parseInt(int minDigits, int maxDigits)
+            throws IllegalArgumentException {
+            int vstart = vidx;
+            while (isDigit(peek()) && (vidx - vstart) < maxDigits) {
+                vidx++;
+            }
+            if ((vidx - vstart) < minDigits) {
+                // we are expecting more digits
+                throw new IllegalArgumentException(value); //,vidx);
+            }
+
+            // NumberFormatException is IllegalArgumentException            
+            //           try {
+            return Integer.parseInt(value.substring(vstart, vidx));
+            //            } catch( NumberFormatException e ) {
+            //                // if the value is too long for int, NumberFormatException is thrown
+            //                throw new IllegalArgumentException(value,vstart);
+            //            }
+        }
+
+        private BigDecimal parseBigDecimal()
+            throws IllegalArgumentException {
+            int vstart = vidx;
+
+            if (peek() == '.') {
+                vidx++;
+            } else {
+                throw new IllegalArgumentException(value);
+            }
+            while (isDigit(peek())) {
+                vidx++;
+            }
+            return new BigDecimal(value.substring(vstart, vidx));
+        }
+    }
+
+    private static boolean isDigit(char ch) {
+        return '0' <= ch && ch <= '9';
     }
 }

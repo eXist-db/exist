@@ -113,7 +113,6 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		assertDateEquals(new TimeValue("10:05:02"), v2);
 		assertEquals(Sequence.EMPTY_SEQUENCE, ((AbstractDateTimeValue) v2).getTimezone());
 	}
-	@Ignore
 	public void testConvert7() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2005-10-11T10:05:02.123456");
 		AtomicValue v2 = v1.convertTo(Type.TIME);
