@@ -39,6 +39,10 @@ public class TimeUtils {
 		}
 	}
 	
+	public DatatypeFactory getFactory() {
+		return factory;
+	}
+	
 	/**
 	 * Set the offset of the local timezone, ignoring the default provided by the OS.
 	 * Mainly useful for testing.
@@ -74,8 +78,16 @@ public class TimeUtils {
 		return factory.newDuration(arg0);
 	}
 
-	public Duration newDuration(boolean arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6) {
-		return factory.newDuration(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+	public Duration newDuration(
+            final boolean isPositive,
+            final int years,
+            final int months,
+            final int days,
+            final int hours,
+            final int minutes,
+            final int seconds) {
+
+		return factory.newDuration(isPositive, years, months, days, hours, minutes, seconds);
 	}
 
 	public Duration newDuration(boolean arg0, BigInteger arg1, BigInteger arg2, BigInteger arg3, BigInteger arg4, BigInteger arg5, BigDecimal arg6) {
@@ -123,8 +135,8 @@ public class TimeUtils {
 				arg6, arg7);
 	}
 
-	public XMLGregorianCalendar newXMLGregorianCalendar(String arg0) {
-		return factory.newXMLGregorianCalendar(arg0);
+	public XMLGregorianCalendar newXMLGregorianCalendar(String lexicalRepresentation) {
+		return factory.newXMLGregorianCalendar(lexicalRepresentation);
 	}
 
 	public XMLGregorianCalendar newXMLGregorianCalendar(BigInteger arg0, int arg1, int arg2, int arg3, int arg4, int arg5, BigDecimal arg6, int arg7) {
