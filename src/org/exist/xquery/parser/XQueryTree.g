@@ -50,6 +50,7 @@ header {
 	import org.exist.xquery.functions.fn.*;
 	import org.exist.xquery.update.*;
 	import org.exist.storage.ElementValue;
+	import org.exist.xquery.functions.map.MapExpr;
 }
 
 /**
@@ -872,6 +873,24 @@ throws XPathException
 					)*
 					{ SequenceType returnType = new SequenceType(); }
 					"as" sequenceType [returnType]
+				)
+			)
+		)
+		|
+		#(
+			MAP_TEST { type.setPrimaryType(Type.MAP); }
+			(
+				STAR
+				|
+				(
+					// TODO: parameter types are collected, but not used!
+					// Change SequenceType accordingly.
+					{ List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
+					(
+						{ SequenceType paramType = new SequenceType(); }
+						sequenceType [paramType]
+						{ paramTypes.add(paramType); }
+					)*
 				)
 			)
 		)
@@ -1767,6 +1786,8 @@ throws PermissionDeniedException, EXistException, XPathException
 		path.add(step);
 	}
 	|
+	step=mapExpr [path]
+	|
 	#(
 		PARENTHESIZED
 		{ PathExpr pathExpr= new PathExpr(context); }
@@ -1808,7 +1829,10 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
 	( axis=forwardAxis )?
-	{ NodeTest test; }
+	{ 
+		NodeTest test; 
+		XQueryAST ast = null;
+	}
 	(
 		qn:QNAME
 		{
@@ -1820,6 +1844,7 @@ throws PermissionDeniedException, EXistException, XPathException
             } else {
                 test= new NameTest(Type.ELEMENT, qname);
             }
+			ast = qn;
 		}
 		|
 		#( PREFIX_WILDCARD nc1:NCNAME )
@@ -1829,6 +1854,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			test= new NameTest(Type.ELEMENT, qname);
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test.setType(Type.ATTRIBUTE);
+			ast = nc1;
 		}
 		|
 		#( nc:NCNAME WILDCARD )
@@ -1838,14 +1864,16 @@ throws PermissionDeniedException, EXistException, XPathException
 			test= new NameTest(Type.ELEMENT, qname);
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test.setType(Type.ATTRIBUTE);
+			ast = nc;
 		}
 		|
-		WILDCARD
+		w:WILDCARD
 		{ 
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test= new TypeTest(Type.ATTRIBUTE);
 			else
 				test= new TypeTest(Type.ELEMENT);
+			ast = w;
 		}
 		|
 		n:"node"
@@ -1853,23 +1881,26 @@ throws PermissionDeniedException, EXistException, XPathException
 			if (axis == Constants.ATTRIBUTE_AXIS) {
 			//	throw new XPathException(n, "Cannot test for node() on the attribute axis");
 			   test= new TypeTest(Type.ATTRIBUTE);
-                        } else {
+            } else {
 			   test= new AnyNodeTest(); 
-                        }
+            }
+			ast = n;
 		}
 		|
-		"text"
+		t:"text"
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
-				throw new XPathException(n, "Cannot test for text() on the attribute axis"); 
+				throw new XPathException(t, "Cannot test for text() on the attribute axis"); 
 			test= new TypeTest(Type.TEXT); 
+			ast = t;
 		}
 		|
-		#( "element"
+		#( e:"element"
 			{
 				if (axis == Constants.ATTRIBUTE_AXIS)
-					throw new XPathException(n, "Cannot test for element() on the attribute axis"); 
+					throw new XPathException(e, "Cannot test for element() on the attribute axis"); 
 				test= new TypeTest(Type.ELEMENT); 
+				ast = e;
 			}
 			(
 				qn2:QNAME 
@@ -1888,8 +1919,11 @@ throws PermissionDeniedException, EXistException, XPathException
 			)?
 		)
 		|
-		#( ATTRIBUTE_TEST
-			{ test= new TypeTest(Type.ATTRIBUTE); }
+		#( att:ATTRIBUTE_TEST
+			{ 
+				test= new TypeTest(Type.ATTRIBUTE);
+				ast = att;
+			}
 			(
 				qn3:QNAME 
 				{ 
@@ -1909,18 +1943,20 @@ throws PermissionDeniedException, EXistException, XPathException
 			)?
 		)
 		|
-		"comment"
+		com:"comment"
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				throw new XPathException(n, "Cannot test for comment() on the attribute axis");
 			test= new TypeTest(Type.COMMENT); 
+			ast = com;
 		}
 		|
-		#( "processing-instruction"
+		#( pi:"processing-instruction"
 		{
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				throw new XPathException(n, "Cannot test for processing-instruction() on the attribute axis");
 			test= new TypeTest(Type.PROCESSING_INSTRUCTION); 
+			ast = pi;
 		}
             (
                 ncpi:NCNAME
@@ -1939,8 +1975,11 @@ throws PermissionDeniedException, EXistException, XPathException
             )?
         )
 		|
-		"document-node"
-		{ test= new TypeTest(Type.DOCUMENT); }
+		dn:"document-node"
+		{ 
+			test= new TypeTest(Type.DOCUMENT);
+			ast = dn;
+		}
             (
                 #( "element"
                     (
@@ -1966,10 +2005,12 @@ throws PermissionDeniedException, EXistException, XPathException
 	{
 		step= new LocationStep(context, axis, test);
 		path.add(step);
+		if (ast != null)
+			step.setASTNode(ast);
 	}
 	( predicate [(LocationStep) step] )*
 	|
-	AT
+	at:AT
 	{ QName qname= null; }
 	(
 		attr:QNAME
@@ -1999,6 +2040,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	{
 		NodeTest test= qname == null ? new TypeTest(Type.ATTRIBUTE) : new NameTest(Type.ATTRIBUTE, qname);
 		step= new LocationStep(context, Constants.ATTRIBUTE_AXIS, test);
+		step.setASTNode(at);
 		path.add(step);
 	}
 	( predicate [(LocationStep) step] )*
@@ -2897,5 +2939,29 @@ throws XPathException, PermissionDeniedException, EXistException
 			path.add(mod);
 			step = mod;
 		}
+	)
+	;
+
+mapExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+		"map"
+		{
+			MapExpr expr = new MapExpr(context);
+			path.add(expr);
+			step = expr;
+		}
+		(
+			#(
+				COLON
+				{ PathExpr kv = new PathExpr(context); }
+				step=expr[kv]
+				step=expr[kv]
+				{ expr.map(kv); }
+			)
+		)*
 	)
 	;
