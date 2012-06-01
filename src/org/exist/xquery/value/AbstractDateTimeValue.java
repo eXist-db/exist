@@ -379,16 +379,17 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      * @param timeValue a <code>String</code> value
      * @return a <code>String</code> value
      */
-    public static String normalizeTime(int type, String timeValue)
-    throws XPathException {
+    public static String normalizeTime(int type, String timeValue) throws XPathException {
         int hours = 0;
         int mins = 0;
         int secs = 0;
         int mSecs = 0;
         int tzHours = 0;
         int tzMins = 0;
+        
         DecimalFormat df = new DecimalFormat("00");
         DecimalFormat msf = new DecimalFormat("000");
+
         Matcher m = null;
         if (type == Type.TIME) {
             m = timeNoTZ.matcher(timeValue);
@@ -396,9 +397,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 hours = Integer.valueOf(m.group(1)).intValue();
                 mins = Integer.valueOf(m.group(2)).intValue();
                 secs = Integer.valueOf(m.group(3)).intValue();
-                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
+                
+                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (hours == 24) {
                     if (mins == 0) {
@@ -407,8 +408,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                return sb.toString();
             }
 
             m = timeMsWTZ.matcher(timeValue);
@@ -419,9 +426,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 mSecs = Integer.valueOf(m.group(5)).intValue();
                 tzHours = Integer.valueOf(m.group(7)).intValue();
                 tzMins = Integer.valueOf(m.group(8)).intValue();
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+                
+                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (hours == 24) {
                     if (mins == 0) {
@@ -430,7 +437,20 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                timeValue = df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(4) + msf.format(mSecs) + m.group(6) + df.format(tzHours) + ":" + df.format(tzMins);
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                sb.append(m.group(4));
+                sb.append(msf.format(mSecs));
+                sb.append(m.group(6));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+                sb.append(df.format(tzMins));
+                return sb.toString();
             }
         } else if (type == Type.DATE_TIME) {
             m = dateTimeNoTZ.matcher(timeValue);
@@ -441,9 +461,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 hours = Integer.valueOf(m.group(3)).intValue();
                 mins = Integer.valueOf(m.group(4)).intValue();
                 secs = Integer.valueOf(m.group(5)).intValue();
-                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0) {
+                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (hours == 24) {
                     if (mins == 0) {
@@ -453,8 +472,19 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = (dateValue == null ? date : dateValue.getStringValue()) + m.group(2) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs);
+
+                StringBuilder sb = new StringBuilder();
+                if (dateValue == null)
+                	sb.append(date);
+                else
+                	sb.append(dateValue.getStringValue());
+                sb.append(m.group(2));
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                return sb.toString(); 
             }
 
             m = dateTimeMsWTZ.matcher(timeValue);
@@ -465,9 +495,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 mSecs = Integer.valueOf(m.group(6)).intValue();
                 tzHours = Integer.valueOf(m.group(8)).intValue();
                 tzMins = Integer.valueOf(m.group(9)).intValue();
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+
+                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (hours == 24) {
                     if (mins == 0) {
@@ -476,8 +506,21 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + df.format(hours) + ":" + df.format(mins) + ":" + df.format(secs) + m.group(5) + msf.format(mSecs) + m.group(7) + df.format(tzHours) + ":" + df.format(tzMins);
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                sb.append(m.group(5));
+        		sb.append(msf.format(mSecs));
+        		sb.append(m.group(7));
+        		sb.append(df.format(tzHours));
+                sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
         } else if (type == Type.GYEAR || type == Type.GDAY || type == Type.GMONTH || type == Type.GMONTHDAY ||
             type == Type.GYEARMONTH) {
@@ -485,9 +528,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             if (m.matches()) {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
-                if (tzMins >= 60 || tzMins < 0) {
+                
+                if (tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
@@ -496,17 +539,23 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(tzHours));
+        		sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
 
             m = gDayWTZ.matcher(timeValue);
             if (m.matches()) {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
-                if (tzMins >= 60 || tzMins < 0) {
+
+                if (tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
@@ -515,17 +564,23 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
 
             m = gMonthWTZ.matcher(timeValue);
             if (m.matches()) {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
-                if (tzMins >= 60 || tzMins < 0) {
+                
+                if (tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
@@ -534,17 +589,22 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
 
             m = gYearMonthWTZ.matcher(timeValue);
             if (m.matches()) {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
-                if (tzMins >= 60 || tzMins < 0) {
+                
+                if (tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
@@ -553,17 +613,23 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
 
             m = gMonthDayWTZ.matcher(timeValue);
             if (m.matches()) {
                 tzHours = Integer.valueOf(m.group(3)).intValue();
                 tzMins = Integer.valueOf(m.group(4)).intValue();
-                if (tzMins >= 60 || tzMins < 0) {
+
+                if (tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (tzHours == 24) {
                     if (tzMins == 0) {
@@ -572,17 +638,23 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(tzHours) + ":" + df.format(tzMins);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+				sb.append(df.format(tzMins));
+				return sb.toString();
             }
         } else if (type == Type.DATE) {
             m = dateWTZ.matcher(timeValue);
             if (m.matches()) {
                 hours = Integer.valueOf(m.group(3)).intValue();
                 mins = Integer.valueOf(m.group(4)).intValue();
-                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0) {
+
+                if (mins >= 60 || mins < 0 || tzMins >= 60 || tzMins < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
-                }
 
                 if (hours == 24) {
                     if (mins == 0) {
@@ -591,11 +663,18 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
                     }
                 }
-                // fixme!
-                timeValue = m.group(1) + m.group(2) + df.format(hours) + ":" + df.format(mins);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(m.group(2));
+                sb.append(df.format(hours));
+                sb.append(":");
+				sb.append(df.format(mins));
+				return sb.toString();
             }
         }
-        return timeValue;
+        
+        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'.");
     }
     
     /**
