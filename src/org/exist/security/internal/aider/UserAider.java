@@ -116,8 +116,10 @@ public class UserAider implements Account {
 	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
 	 */
 	@Override
-	public Group addGroup(Group role) {
-		return addGroup(role.getName());
+	public Group addGroup(Group group) {
+		if (group == null) return null;
+		
+		return addGroup(group.getName());
 	}
 
 	/* (non-Javadoc)
