@@ -62,9 +62,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     protected static Pattern dateNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)");
 
     protected static Pattern timeNoTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)");
-    protected static Pattern timeWUTCTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)([+-]\\d\\d:\\d\\d)");
+    protected static Pattern timeWUTCTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)");
     protected static Pattern timeMsWTZ = Pattern.compile("^(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    
+    protected static Pattern dateTimeMsNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)((\\d\\d\\d)|(\\d\\d)|(\\d))");
     protected static Pattern dateTimeMsWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)");
+    
     protected static Pattern dateTimeNoTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)");
     protected static Pattern dateTimeWTZ = Pattern.compile("^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)");
 
@@ -396,6 +399,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
         Matcher m = null;
         if (type == Type.TIME) {
+        	
+        	//^(\\d\\d):(\\d\\d):(\\d\\d)
             m = timeNoTZ.matcher(timeValue);
             if (m.matches()) {
                 hours = Integer.valueOf(m.group(1)).intValue();
@@ -422,6 +427,52 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 return sb.toString();
             }
 
+        	//^(\\d\\d):(\\d\\d):(\\d\\d)([+-])(\\d\\d):(\\d\\d)
+            m = timeWUTCTZ.matcher(timeValue);
+            if (m.matches()) {
+                hours = Integer.valueOf(m.group(1)).intValue();
+                mins = Integer.valueOf(m.group(2)).intValue();
+                secs = Integer.valueOf(m.group(3)).intValue();
+                tzHours = Integer.valueOf(m.group(5)).intValue();
+                tzMins = Integer.valueOf(m.group(6)).intValue();
+                
+                if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
+
+                if (hours == 24) {
+                    if (mins == 0) {
+                        hours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+
+                if (tzMins >= 60 || tzMins < 0)
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
+
+                if (tzHours == 24) {
+                    if (tzMins == 0) {
+                        tzHours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                sb.append(m.group(4));
+                sb.append(df.format(tzHours));
+                sb.append(":");
+                sb.append(df.format(tzMins));
+
+                return sb.toString();
+            }
+
+            //(\\d\\d):(\\d\\d):(\\d\\d)(\\.)(\\d\\d\\d)([+-])(\\d\\d):(\\d\\d)
             m = timeMsWTZ.matcher(timeValue);
             if (m.matches()) {
                 hours = Integer.valueOf(m.group(1)).intValue();
@@ -442,7 +493,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
                 
-                //TODO: add time zone?
+                if (tzHours == 24) {
+                    if (tzMins == 0) {
+                        tzHours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+
                 StringBuilder sb = new StringBuilder();
                 sb.append(df.format(hours));
                 sb.append(":");
@@ -458,7 +516,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 return sb.toString();
             }
         } else if (type == Type.DATE_TIME) {
-            m = dateTimeNoTZ.matcher(timeValue);
+
+            String value = timeValue; 
+            if (timeValue.endsWith("Z"))
+            	value = timeValue.substring(0, timeValue.length() - 1); 
+        	
+        	//^(\\d\\d\\d\\d-\\d\\d-\\d\\d)(T)(\\d\\d):(\\d\\d):(\\d\\d)
+            m = dateTimeNoTZ.matcher(value);
             if (m.matches()) {
                 String date =  m.group(1);
                 DateValue dateValue = null;
@@ -466,6 +530,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 hours = Integer.valueOf(m.group(3)).intValue();
                 mins = Integer.valueOf(m.group(4)).intValue();
                 secs = Integer.valueOf(m.group(5)).intValue();
+                
                 if (mins >= 60 || mins < 0 || secs >= 60 || secs < 0)
                     throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
 
@@ -489,6 +554,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 sb.append(df.format(mins));
                 sb.append(":");
                 sb.append(df.format(secs));
+                if (timeValue.endsWith("Z"))
+                    sb.append("Z");
+
                 return sb.toString(); 
             }
 
@@ -512,7 +580,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
                 
-                //TODO: add time zone?
+                if (tzHours == 24) {
+                    if (tzMins == 0) {
+                        tzHours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(m.group(2));
@@ -525,6 +600,39 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         		sb.append(df.format(tzHours));
                 sb.append(":");
 				sb.append(df.format(tzMins));
+				return sb.toString();
+            }
+
+            //^(\\d\\d\\d\\d-\\d\\d-\\d\\dT)(\\d\\d):(\\d\\d):(\\d\\d)(\\.)((\\d\\d\\d)|(\\d\\d)|(\\d))
+            m = dateTimeMsNoTZ.matcher(value);
+            if (m.matches()) {
+                hours = Integer.valueOf(m.group(2)).intValue();
+                mins = Integer.valueOf(m.group(3)).intValue();
+                secs = Integer.valueOf(m.group(4)).intValue();
+
+                if (mins >= 60 || mins < 0)
+                    throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'");
+
+                if (hours == 24) {
+                    if (mins == 0) {
+                        hours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+                
+                //TODO: add time zone?
+                StringBuilder sb = new StringBuilder();
+                sb.append(m.group(1));
+                sb.append(df.format(hours));
+                sb.append(":");
+                sb.append(df.format(mins));
+                sb.append(":");
+                sb.append(df.format(secs));
+                sb.append(m.group(5));
+        		sb.append(m.group(6));
+                if (timeValue.endsWith("Z"))
+                	sb.append("Z");
 				return sb.toString();
             }
 
@@ -549,7 +657,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
                 
-                //TODO: add time zone?
+                if (tzHours == 24) {
+                    if (tzMins == 0) {
+                        tzHours = 0;
+                    } else {
+                        throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + timeValue + "'. If hours is 24, minutes must be 00.");
+                    }
+                }
+
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(df.format(hours));
@@ -583,7 +698,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
 
-                //TODO: add time zone?
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(m.group(2));
@@ -609,7 +723,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
                 
-                //TODO: add time zone?
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(m.group(2));
@@ -635,7 +748,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
 
-                //TODO: add time zone?
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(m.group(2));
@@ -661,7 +773,6 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                 }
 
-                //TODO: add time zone
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.group(1));
                 sb.append(m.group(2));
