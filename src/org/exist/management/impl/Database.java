@@ -63,7 +63,7 @@ public class Database implements DatabaseMBean {
 
     @Override
     public int getActiveBrokers() {
-        return pool.active();
+        return pool.countActiveBrokers();
     }
 
     @Override

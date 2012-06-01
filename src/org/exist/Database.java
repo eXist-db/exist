@@ -118,6 +118,13 @@ public interface Database {
 	public void release(DBBroker broker);
 	
 	/**
+	 *  Returns the number of brokers currently serving requests for the database instance. 
+	 *
+	 *	@return The brokers count
+	 */
+	public int countActiveBrokers();
+	
+	/**
 	 * 
 	 * @return Debuggee
 	 */

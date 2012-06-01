@@ -74,7 +74,7 @@ public class XMLStatistics {
             addValue("collection-cache-mem", String.valueOf(instance.getConfiguration().getInteger("db-connection.collection-cache-mem")));
             this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
             addValue("max", String.valueOf(instance.getMax()));
-            addValue("active", String.valueOf(instance.active()));
+            addValue("active", String.valueOf(instance.countActiveBrokers()));
             addValue("available", String.valueOf(instance.available()));
             this.contentHandler.endElement(NAMESPACE, "pool", PREFIX + ":pool");
             genBufferStatus(instance);
