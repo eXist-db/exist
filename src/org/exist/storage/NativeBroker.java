@@ -1142,7 +1142,7 @@ public class NativeBroker extends DBBroker {
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
             
-            triggersVisitor.afterMoveCollection(this, transaction, destination, srcURI);
+            triggersVisitor.afterMoveCollection(this, transaction, collection, srcURI);
 	        
         } finally {
             pool.getProcessMonitor().endJob();
