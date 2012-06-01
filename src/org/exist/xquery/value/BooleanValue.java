@@ -204,4 +204,11 @@ public class BooleanValue extends AtomicValue {
         } else
             return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BooleanValue)
+            return value == ((BooleanValue)obj).value;
+        return false;
+    }
 }

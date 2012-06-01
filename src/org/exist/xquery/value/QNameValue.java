@@ -223,4 +223,18 @@ public class QNameValue extends AtomicValue {
         		"value of type " + Type.getTypeName(getType()) +
         		" has no boolean value.");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj instanceof QNameValue)
+            return ((QNameValue)obj).qname.equals(qname);
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return qname.hashCode();
+    }
 }

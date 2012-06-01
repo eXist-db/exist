@@ -324,4 +324,16 @@ public class UntypedAtomicValue extends AtomicValue {
             + " to Java object of type "
             + target.getName());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof UntypedAtomicValue)
+            return value.equals(((UntypedAtomicValue)obj).value);
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
 }

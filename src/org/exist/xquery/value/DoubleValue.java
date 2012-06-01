@@ -477,4 +477,9 @@ public class DoubleValue extends NumericValue {
         else
             return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
+
+    @Override
+    public int hashCode() {
+        return Double.valueOf(value).hashCode();
+    }
 }
