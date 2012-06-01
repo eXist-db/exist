@@ -43,9 +43,6 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	
 	YearMonthDurationValue(Duration duration) throws XPathException {	
 		super(duration);
-		//Take care : not the same one than above !
-		//TODO : sort this out ! test case :
-		//xs:yearMonthDuration("P1000Y6M") + xs:yearMonthDuration("P0Y0M")  
 		if (!duration.equals(DurationValue.CANONICAL_ZERO_DURATION)) {
 			if (duration.isSet(DatatypeConstants.DAYS) ||		
 				duration.isSet(DatatypeConstants.HOURS) ||
@@ -157,14 +154,18 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 			}		
 		}
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		
 		boolean isFactorNegative = factor.signum() < 0;		
-		YearMonthDurationValue product = fromDecimalMonths(isFactorNegative,
+		
+		YearMonthDurationValue product = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
 			.multiply(factor.abs())
-			.setScale(0, BigDecimal.ROUND_HALF_UP)
+			.setScale(0, (isFactorNegative)? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP)
 		);
+		
 		if (isFactorNegative)
 			return product.negate();
+		
 		return product;
 	}
 
@@ -185,18 +186,20 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 			}			
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
+		
 		boolean isDivisorNegative = divisor.signum() < 0;
-		YearMonthDurationValue quotient = fromDecimalMonths(isDivisorNegative,
+		
+		YearMonthDurationValue quotient = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
-			.divide(divisor.abs(), 20, BigDecimal.ROUND_HALF_EVEN));		
+			.divide(divisor.abs(), 20, (isDivisorNegative)? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));		
+		
 		if (isDivisorNegative)
 			return quotient.negate();
+		
 		return new YearMonthDurationValue(quotient.getCanonicalDuration());	
 	}
 	
-	private YearMonthDurationValue fromDecimalMonths(boolean isFactorNegative, BigDecimal x) throws XPathException {
-		if (!isFactorNegative)
-			x = x.setScale(0, BigDecimal.ROUND_HALF_UP);
+	private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {
 		return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 				x.signum() >= 0, null, x.toBigInteger()));
 	}
