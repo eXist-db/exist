@@ -3,7 +3,9 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.xquery.Constants;
+import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
+import sun.util.LocaleServiceProviderPool;
 
 public abstract class NumericValue extends ComputableValue {
 
@@ -104,8 +106,19 @@ public abstract class NumericValue extends ComputableValue {
 			throw new XPathException("cannot compare numeric value to non-numeric value");
 		}
 	}
-	
-	public abstract NumericValue negate() throws XPathException;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (NumericValue.class.isAssignableFrom(obj.getClass()))
+            try {
+                return compareTo(null, Constants.EQ, (NumericValue)obj);
+            } catch (XPathException e) {
+                // should not be possible due to type check
+            }
+        return false;
+    }
+
+    public abstract NumericValue negate() throws XPathException;
 	public abstract NumericValue ceiling() throws XPathException;
 	public abstract NumericValue floor() throws XPathException;
 	public abstract NumericValue round() throws XPathException;

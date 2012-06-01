@@ -360,4 +360,13 @@ public class DurationValue extends ComputableValue {
     	duration1.getMonths() == duration2.getMonths() &&
     	duration1.getYears() == duration2.getYears();
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (DurationValue.class.isAssignableFrom(obj.getClass()))
+            return duration.equals(((DurationValue)obj).duration);
+        return false;
+    }
 }

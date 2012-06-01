@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
+import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -538,5 +539,9 @@ public class IntegerValue extends NumericValue {
         else
             return getType() > other.getType() ? 1 : -1;
     }
-	
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
 }

@@ -436,11 +436,16 @@ public class DecimalValue extends NumericValue {
         	return value.compareTo(otherAsDecimal.value);
         } else
             return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
-    }	
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-	 */
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    /* (non-Javadoc)
+    * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
+    */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(DecimalValue.class))
 			return 0;

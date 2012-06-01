@@ -428,5 +428,9 @@ public class FloatValue extends NumericValue {
         else
             return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
-	
+
+    @Override
+    public int hashCode() {
+        return Float.valueOf(value).hashCode();
+    }
 }

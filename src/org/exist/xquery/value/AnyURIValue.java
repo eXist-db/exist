@@ -390,4 +390,17 @@ public class AnyURIValue extends AtomicValue {
 		}
 	}
 
+    @Override
+    public int hashCode() {
+        return uri.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj instanceof AnyURIValue)
+            return ((AnyURIValue)obj).uri.equals(uri);
+        return false;
+    }
 }
