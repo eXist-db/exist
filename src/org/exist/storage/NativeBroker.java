@@ -979,17 +979,20 @@ public class NativeBroker extends DBBroker {
      * @see org.exist.storage.DBBroker#copyCollection(org.exist.storage.txn.Txn, org.exist.collections.Collection, org.exist.collections.Collection, org.exist.xmldb.XmldbURI)
      */
     @Override
-    public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newUri) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
+    public void copyCollection(final Txn transaction, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException {
         if(pool.isReadOnly()) {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         }
         
         //TODO : resolve URIs !!!
-        if(newUri != null && newUri.numSegments() != 1) {
+        if(newName != null && newName.numSegments() != 1) {
             throw new PermissionDeniedException("New collection name must have one segment!");
         }
         
-        if(collection.getURI().equals(destination.getURI().append(newUri))) {
+        final XmldbURI srcURI = collection.getURI();
+        final XmldbURI dstURI = destination.getURI().append(newName);
+
+        if(collection.getURI().equals(dstURI)) {
             throw new PermissionDeniedException("Cannot move collection to itself '"+collection.getURI()+"'.");
         }
         if(collection.getId() == destination.getId()) {
@@ -1004,10 +1007,18 @@ public class NativeBroker extends DBBroker {
                 pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_COPY_COLLECTION, collection.getURI());
                 lock.acquire(Lock.WRITE_LOCK);
                 
+                final XmldbURI parentName = collection.getParentURI();
+                final Collection parent = parentName == null ? collection : getCollection(parentName);
+
+                final CollectionTriggersVisitor triggersVisitor = parent.getConfiguration(this).getCollectionTriggerProxies().instantiateVisitor(this);
+                triggersVisitor.beforeCopyCollection(this, transaction, collection, dstURI);
+
                 //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
                 checkPermissionsForCopy(collection, destination.getURI());
                 
-                doCopyCollection(transaction, collection, destination, newUri);
+                Collection newCollection = doCopyCollection(transaction, collection, destination, newName);
+
+                triggersVisitor.afterCopyCollection(this, transaction, newCollection, srcURI);
             } finally {
                 lock.release(Lock.WRITE_LOCK);
                 pool.getProcessMonitor().endJob();
@@ -1015,20 +1026,23 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void doCopyCollection(final Txn transaction, final Collection collection, final Collection destination, XmldbURI newUri) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
+    private Collection doCopyCollection(final Txn transaction, final Collection collection, final Collection destination, XmldbURI newName) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
         
-        //TODO : relativize URI !!!
-        if(newUri == null) {
-            newUri = collection.getURI().lastSegment();
-        }
+        if(newName == null)
+            newName = collection.getURI().lastSegment();
 
-        //TODO : resolve URIs !!!
-        newUri = destination.getURI().append(newUri);
-        LOG.debug("Copying collection to '" + newUri + "'");
-        final Collection destCollection = getOrCreateCollection(transaction, newUri);
+        newName = destination.getURI().append(newName);
+        
+        if (LOG.isDebugEnabled())
+        	LOG.debug("Copying collection to '" + newName + "'");
+        
+        final Collection destCollection = getOrCreateCollection(transaction, newName);
         for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
             final DocumentImpl child = i.next();
-            LOG.debug("Copying resource: '" + child.getURI() + "'");
+
+            if (LOG.isDebugEnabled())
+            	LOG.debug("Copying resource: '" + child.getURI() + "'");
+            
             if (child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
@@ -1072,6 +1086,8 @@ public class NativeBroker extends DBBroker {
         }
         saveCollection(transaction, destCollection);
         saveCollection(transaction, destination);
+        
+        return destCollection;
     }
     
     @Override
