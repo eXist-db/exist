@@ -191,8 +191,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		
 		YearMonthDurationValue quotient = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
-			.divide(divisor.abs())
-			.setScale(2, (isDivisorNegative)? BigDecimal.ROUND_DOWN : BigDecimal.ROUND_UP));		
+			.divide(divisor.abs(), 0, (isDivisorNegative)? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));		
 		
 		if (isDivisorNegative)
 			return quotient.negate();
