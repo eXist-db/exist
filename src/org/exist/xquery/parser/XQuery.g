@@ -144,6 +144,7 @@ imaginaryTokenDefinitions
 	FUNCTION_DECL
 	FUNCTION_INLINE 
 	FUNCTION_TEST
+	MAP_TEST
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -507,6 +508,8 @@ itemType throws XPathException
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN! 
 	|
 	( "function" LPAREN ) => functionTest
+	|
+	( "map" LPAREN ) => mapType
 	| 
 	( LPAREN ) => parenthesizedItemType
 	|
@@ -549,6 +552,30 @@ typedFunctionTest throws XPathException
 :
 	"function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
 	{ #typedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #typedFunctionTest); }
+	;
+
+mapType throws XPathException
+:
+	( "map" LPAREN STAR ) => anyMapTypeTest
+	|
+	mapTypeTest
+	;
+
+anyMapTypeTest throws XPathException
+:
+	m:"map"! LPAREN! s:STAR RPAREN!
+	{ 
+		#anyMapTypeTest = #(#[MAP_TEST, "map"], #s);
+		#anyMapTypeTest.copyLexInfo(#m);
+	}
+	;
+
+mapTypeTest throws XPathException
+:
+	m:"map"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN!
+	{ 
+		#mapTypeTest = #(#[MAP_TEST, "map"], #mapTypeTest);
+	}
 	;
 
 // === Expressions ===
@@ -991,7 +1018,7 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | 
-	"comment" | "ordered" | "unordered" ) LCURLY ) => 
+	"comment" | "ordered" | "unordered" | "map" ) LCURLY ) => 
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
@@ -1114,6 +1141,8 @@ primaryExpr throws XPathException
 	|
 	( "unordered" LCURLY ) => unorderedExpr
 	|
+	( "map" LCURLY ) => mapExpr
+	|
 	directConstructor
 	|
 	( MOD | "function" LPAREN | eqName HASH ) => functionItemExpr
@@ -1127,6 +1156,16 @@ primaryExpr throws XPathException
 	varRef
 	|
 	literal
+	;
+
+mapExpr throws XPathException
+	:
+	"map"^ LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+	;
+
+mapAssignment throws XPathException
+	:
+	exprSingle COLON^ EQ! exprSingle
 	;
 
 orderedExpr throws XPathException
@@ -1853,6 +1892,8 @@ reservedKeywords returns [String name]
 	"ge" { name = "ge"; }
 	|
 	"xpointer" { name = "xpointer"; }
+	|
+	"map" { name = "map"; }
 	;
 
 /**
