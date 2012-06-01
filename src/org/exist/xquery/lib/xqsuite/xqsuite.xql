@@ -189,10 +189,11 @@ declare %private function test:call-test($func as function(*), $meta as element(
             return
                 test:apply($func, $args)
 };
+
 (:~
  : Transform the annotation to the type required by the function parameter.
  :)
-declare function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
+declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
     if (exists($testArgs)) then
         map-pairs(function($targ, $farg) {
             switch (string($farg/@type))
@@ -226,6 +227,8 @@ declare function test:map-arguments($testArgs as xs:string*, $funcArgs as elemen
  :)
 declare %private function test:apply($func as function(*), $args as item()*) {
     switch (count($args))
+        case 0 return
+            $func()
         case 1 return
             $func($args[1])
         case 2 return
@@ -292,36 +295,48 @@ declare %private function test:check-assertions($assertions as element(annotatio
  : Check for equality of the function's result with the value in the annotation.
  : This function transforms the result to a string before checking for equality.
  :)
-declare %private function test:assertEquals($value as xs:string, $result as item()*) as element(report)? {
-    let $normResult :=
-        typeswitch ($result)
-            case node()* return
-                test:normalize($result)
-            default return
-                string-join($result, " ")
-    let $normValue :=
-        typeswitch ($result)
-            case node()* return
-                util:parse("<r>" || $value || "</r>")/r/node()
-            default return
-                $value
-    let $equal :=
-        typeswitch ($normResult)
-            case node()* return
-                deep-equal($normValue, $normResult)
-            default return
-                $normResult = $normValue
-    return
-        if ($equal) then
-            ()
+declare %private function test:assertEquals($values as item()*, $result as item()*) as element(report)? {
+    if (exists($values)) then
+        if (count($values) eq count($result)) then
+            let $tests := map-pairs(test:equals#2, $values, $result)
+            let $equal := every $test in $tests satisfies $test
+            return
+                if ($equal) then
+                    ()
+                else
+                   <report>
+                        <failure message="assertEquals failed."
+                            type="failure-error-code-1">
+                        { $values }
+                        </failure>
+                        <output>{ $result }</output>
+                    </report>
         else
-           <report>
-                <failure message="assertEquals failed."
+            <report>
+                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
                     type="failure-error-code-1">
-                { $normValue }
+                { $values }
                 </failure>
                 <output>{ $result }</output>
             </report>
+    else
+        ()
+};
+
+declare %private function test:equals($value as item(), $result as item()) as xs:boolean {
+    let $normResult :=
+        typeswitch ($result)
+            case node() return
+                test:normalize($result)
+            default return
+                $result
+    let $normValue := test:cast-to-type($value, $result)
+    return
+        typeswitch ($normResult)
+            case node() return
+                deep-equal($normValue, $normResult)
+            default return
+                $normResult eq $normValue
 };
 
 declare %private function test:normalize($nodes as node()*) {
@@ -448,6 +463,36 @@ declare %private function test:checkXPathResult($result as item()*) {
         $result
     else
         exists($result)
+};
+
+declare %private function test:cast-to-type($value as item(), $result as item()) {
+    typeswitch ($result)
+        case node() return
+            util:parse("<r>" || $value || "</r>")/r/node()
+        case xs:integer return
+            xs:integer($value)
+        case xs:int return
+            xs:int($value)
+        case xs:long return
+            xs:long($value)
+        case xs:decimal return
+            xs:decimal($value)
+        case xs:double return
+            xs:double($value)
+        case xs:float return
+            xs:float($value)
+        case xs:date return
+            xs:date($value)
+        case xs:dateTime return
+            xs:dateTime($value)
+        case xs:time return
+            xs:time($value)
+        case xs:boolean return
+            xs:boolean($value)
+        case xs:anyURI return
+            xs:anyURI($value)
+        default return
+            string($value)
 };
 
 (: Helper functions to be used by test modules :)
