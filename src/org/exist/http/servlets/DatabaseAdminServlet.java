@@ -80,7 +80,7 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
                     (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
                     "</td></tr>" );
                 output.println( "<tr><td>Active instances:</td><td>" +
-                    pool.active() + "</td></tr>" );
+                    pool.countActiveBrokers() + "</td></tr>" );
                 output.println( "<tr><td>Available instances:</td><td>" +
                     pool.available() + "</td></tr>" );
                 output.println( "</table>" );

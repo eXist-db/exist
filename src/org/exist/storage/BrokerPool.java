@@ -1110,14 +1110,25 @@ public class BrokerPool extends Observable implements Database {
 	/**
 	 *  Returns the number of brokers currently serving requests for the database instance. 
 	 *
-	 *@return The brokers count
+	 *	@return The brokers count
+	 *	@deprecated use countActiveBrokers
 	 */
     //TODO : rename as getActiveBrokers ?
 	public int active() {
 		return activeBrokers.size();
 	}
 
-    public Map<Thread, DBBroker> getActiveBrokers() {
+	/**
+	 * Returns the number of brokers currently serving requests for the database instance.
+	 * 
+	 * @return The active brokers count.
+	 */
+	@Override
+	public int countActiveBrokers() {
+		return activeBrokers.size();
+	}
+
+	public Map<Thread, DBBroker> getActiveBrokers() {
         return new HashMap<Thread, DBBroker>(activeBrokers);
     }
 
@@ -1475,13 +1486,12 @@ public class BrokerPool extends Observable implements Database {
 	 */
 	//TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
 	public void release(DBBroker broker) {
-		//TODO : Is this test accurate ?
+
         // might be null as release() is often called within a finally block
 		if (broker == null)
 			return;
 		
-		//TOUNDERSTAND (pb) : why maintain reference counters rather than pushing the brokers to the stack ?
-		//TODO : first check that the broker is active ! If not, return immediately.
+		//first check that the broker is active ! If not, return immediately.
 		broker.decReferenceCount();
 		if(broker.getReferenceCount() > 0) {
 			//it is still in use and thus can't be marked as inactive
@@ -1537,6 +1547,7 @@ public class BrokerPool extends Observable implements Database {
     public DBBroker enterServiceMode(Subject user) throws PermissionDeniedException {
         if (!user.hasDbaRole())
             throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
+        
         serviceModeUser = user;
         synchronized (this) {
             if (activeBrokers.size() != 0) {
@@ -1548,6 +1559,7 @@ public class BrokerPool extends Observable implements Database {
                 }
             }
         }
+        
         inServiceMode = true;
         DBBroker broker = inactiveBrokers.peek();
         checkpoint = true;

@@ -29,7 +29,7 @@ public class DatabaseStatus {
 		dataDir = (String)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
 		// broker statistics
-		runningBrokers = pool.active();
+		runningBrokers = pool.countActiveBrokers();
 		availableBrokers = pool.available();
 		maxBrokers = pool.getMax();
 		

@@ -91,7 +91,7 @@ public class CountInstances extends BasicFunction
 		}
 		else if(isCalledAs("count-instances-active"))
 		{
-			count = bp.active();
+			count = bp.countActiveBrokers();
 		}
 		else if(isCalledAs("count-instances-available"))
 		{
