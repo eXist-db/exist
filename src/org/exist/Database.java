@@ -114,7 +114,7 @@ public interface Database {
 	 * }
 	 */
 	public DBBroker get(Subject subject) throws EXistException;   
-	public DBBroker getActiveBroker();
+	public DBBroker getActiveBroker(); //throws EXistException;
 	public void release(DBBroker broker);
 	
 	/**

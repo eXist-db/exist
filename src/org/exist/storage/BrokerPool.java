@@ -1382,6 +1382,8 @@ public class BrokerPool extends Observable implements Database {
 		//synchronized(this) {
 			//Try to get an active broker
 			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			if (broker == null)
+				throw new RuntimeException("Broker was not obtained for thread '"+Thread.currentThread()+"'.");
 			return broker;
 		//}
 	}
@@ -1500,8 +1502,11 @@ public class BrokerPool extends Observable implements Database {
 	             // Cleanup the state of activeBrokers
 	             for (Object t : activeBrokers.keySet()) {
 	                if (activeBrokers.get(t)==broker) {
-	                     activeBrokers.remove(t);
-	                     break;
+	                	EXistException ex = new EXistException();
+	                	LOG.error("release() has been called from '"+Thread.currentThread()+"', but occupied at '"+t+"'.", ex);
+	                	
+	                	activeBrokers.remove(t);
+	                	break;
 	                }
 	             }
 	         }
