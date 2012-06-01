@@ -45,7 +45,6 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -62,8 +61,16 @@ public abstract class TestRunner {
 
     @Test
     public void runXMLBasedTests() {
+    	XMLFilenameFilter filter = new XMLFilenameFilter();
+    	
         File dir = new File(getDirectory());
-        File[] files = dir.listFiles(new XMLFilenameFilter());
+        File[] files;
+        if (dir.isDirectory())
+        	files = dir.listFiles(filter);
+        else if (filter.accept(dir.getParentFile(), dir.getName()))
+        	files = new File[] {dir};
+        else
+        	return;
 
         try {
             StringBuilder fails = new StringBuilder();
