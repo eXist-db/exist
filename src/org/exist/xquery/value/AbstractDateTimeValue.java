@@ -101,8 +101,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         throws XPathException {
         lexicalValue = StringValue.trimWhitespace(lexicalValue);
 
-        lexicalValue = normalizeDate(lexicalValue);
-        lexicalValue = normalizeTime(getType(), lexicalValue);
+        //lexicalValue = normalizeDate(lexicalValue);
+        //lexicalValue = normalizeTime(getType(), lexicalValue);
 		try {
 			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
 		} catch (IllegalArgumentException e) {
