@@ -120,7 +120,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return canonicalCalendar;
 	}
 	
-	protected XMLGregorianCalendar getTrimmedCalendar() {
+	public XMLGregorianCalendar getTrimmedCalendar() {
 		if (trimmedCalendar == null) {
 			trimmedCalendar = cloneXMLGregorianCalendar(calendar);
 			BigDecimal fract = trimmedCalendar.getFractionalSecond();
