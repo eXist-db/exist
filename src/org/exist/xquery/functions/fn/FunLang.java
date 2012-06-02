@@ -129,12 +129,25 @@ public class FunLang extends Function {
 			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
         else {
 			String lang = getArgument(0).eval(contextSequence).getStringValue();
-			Sequence seq = query.eval(contextSequence);
-			if (seq.isEmpty()) {
+			
+			String langValue = null;
+			Sequence seq = null;
+			if (contextSequence.hasOne()) {
+				Item item = contextSequence.itemAt(0);
+				if (item.getType() == Type.ATTRIBUTE) {
+					langValue = item.getStringValue(); 
+				}
+			} else {
+				seq = query.eval(contextSequence);
+			}
+			
+			if (seq != null && seq.isEmpty()) {
 				result = BooleanValue.FALSE ;   
-			} else if (seq.hasOne()) {
-				String langValue = seq.getStringValue();
-	            boolean include = lang.equalsIgnoreCase(langValue);
+			} else if (langValue != null || (seq != null && seq.hasOne())) {
+				if (seq != null)
+					langValue = seq.getStringValue();
+	            
+				boolean include = lang.equalsIgnoreCase(langValue);
 				if (!include) {
 	                int hyphen = langValue.indexOf('-');
 					if (hyphen != Constants.STRING_NOT_FOUND) {
