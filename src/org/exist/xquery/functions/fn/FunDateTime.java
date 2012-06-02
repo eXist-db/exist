@@ -101,7 +101,7 @@ public class FunDateTime extends BasicFunction {
                     }
                 }
             }
-            String dtv = dv.convertTo(Type.DATE_TIME).getStringValue();
+            String dtv = ((DateTimeValue)dv.convertTo(Type.DATE_TIME)).getTrimmedCalendar().toXMLFormat();
             if (dv.getTimezone().isEmpty()) {
                 dtv = dtv.substring(0, dtv.length() - 8);
                 result = new DateTimeValue(dtv + tv.getStringValue());
