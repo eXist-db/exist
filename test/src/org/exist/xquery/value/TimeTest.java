@@ -32,7 +32,7 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
 	}
 	public void testStringFormat2() throws XPathException {
 		AbstractDateTimeValue v = new TimeValue("10:00:00-01:00");
-		assertEquals("11:00:00Z", v.getStringValue());
+		assertEquals("10:00:00-01:00", v.getStringValue());
 		assertEquals("10:00:00-01:00", v.getTrimmedCalendar().toXMLFormat());
 	}
 	// TODO: reinstate when Java's parsing is fixed to handle 24:00:00
@@ -116,31 +116,31 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
 	public void testAdjustedToTimezone1() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("10:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(null);
-		assertEquals("15:00:00Z", v2.getStringValue());
+		assertEquals("10:00:00-05:00", v2.getStringValue());
 		assertEquals("10:00:00-05:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone2() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(null);
-		assertEquals("17:00:00Z", v2.getStringValue());
+		assertEquals("12:00:00-05:00", v2.getStringValue());
 		assertEquals("12:00:00-05:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone3() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("10:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("-PT10H"));
-		assertEquals("20:00:00Z", v2.getStringValue());
+		assertEquals("10:00:00-10:00", v2.getStringValue());
 		assertEquals("10:00:00-10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone4() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("-PT10H"));
-		assertEquals("17:00:00Z", v2.getStringValue());
+		assertEquals("07:00:00-10:00", v2.getStringValue());
 		assertEquals("07:00:00-10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone5() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("PT10H"));
-		assertEquals("17:00:00Z", v2.getStringValue());
+		assertEquals("03:00:00+10:00", v2.getStringValue());
 		assertEquals("03:00:00+10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone6() throws XPathException {
@@ -173,7 +173,7 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
 	public void testAdjustedToTimezone9() throws XPathException {
 		AbstractDateTimeValue v1 = new TimeValue("00:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("PT14H"));
-		assertEquals("10:00:00Z", v2.getStringValue());
+		assertEquals("00:00:00+14:00", v2.getStringValue());
 		assertEquals("00:00:00+14:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testCompare1() throws XPathException {

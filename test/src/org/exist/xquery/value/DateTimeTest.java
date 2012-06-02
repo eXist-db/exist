@@ -33,7 +33,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	}
 	public void testStringFormat2() throws XPathException {
 		AbstractDateTimeValue v = new DateTimeValue("2005-10-11T10:00:00-01:00");
-		assertEquals("2005-10-11T11:00:00Z", v.getStringValue());
+		assertEquals("2005-10-11T10:00:00-01:00", v.getStringValue());
 		assertEquals("2005-10-11T10:00:00-01:00", v.getTrimmedCalendar().toXMLFormat());
 	}
 	// TODO: reinstate when Java's parsing is fixed to handle 24:00:00
@@ -150,37 +150,37 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	public void testAdjustedToTimezone1() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T10:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(null);
-		assertEquals("2002-03-07T15:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-07T10:00:00-05:00", v2.getStringValue());
 		assertEquals("2002-03-07T10:00:00-05:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone2() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(null);
-		assertEquals("2002-03-07T17:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-07T12:00:00-05:00", v2.getStringValue());
 		assertEquals("2002-03-07T12:00:00-05:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone3() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T10:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("-PT10H"));
-		assertEquals("2002-03-07T20:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-07T10:00:00-10:00", v2.getStringValue());
 		assertEquals("2002-03-07T10:00:00-10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone4() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("-PT10H"));
-		assertEquals("2002-03-07T17:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-07T07:00:00-10:00", v2.getStringValue());
 		assertEquals("2002-03-07T07:00:00-10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone5() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T10:00:00-07:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("PT10H"));
-		assertEquals("2002-03-07T17:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-08T03:00:00+10:00", v2.getStringValue());
 		assertEquals("2002-03-08T03:00:00+10:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone6() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00+01:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("-PT8H"));
-		assertEquals("2002-03-06T23:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-06T15:00:00-08:00", v2.getStringValue());
 		assertEquals("2002-03-06T15:00:00-08:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testAdjustedToTimezone7() throws XPathException {
@@ -213,7 +213,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	public void testAdjustedToTimezone10() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-03-07T00:00:00");
 		AbstractDateTimeValue v2 = v1.adjustedToTimezone(new DayTimeDurationValue("PT14H"));
-		assertEquals("2002-03-06T10:00:00Z", v2.getStringValue());
+		assertEquals("2002-03-07T00:00:00+14:00", v2.getStringValue());
 		assertEquals("2002-03-07T00:00:00+14:00", v2.getTrimmedCalendar().toXMLFormat());
 	}
 	public void testCompare1() throws XPathException {
