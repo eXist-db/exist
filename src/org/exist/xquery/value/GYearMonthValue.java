@@ -98,7 +98,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 						return DatatypeConstants.LESSER;
 	    			} else {
                         // equal? Is this sufficient? /ljo
-                        if (this.getTrimmedCalendar().compare(((AbstractDateTimeValue) other).getTrimmedCalendar()) == 0)
+                        if (this.getCanonicalOrTrimmedCalendar().compare(((AbstractDateTimeValue) other).getCanonicalOrTrimmedCalendar()) == 0)
                             return DatatypeConstants.EQUAL;
 	    				if (!((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
 	    					return DatatypeConstants.LESSER;
@@ -111,7 +111,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 				}
 			}
 			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-			int r =	this.getTrimmedCalendar().compare(((AbstractDateTimeValue) other).getTrimmedCalendar());
+			int r =	this.getCanonicalOrTrimmedCalendar().compare(((AbstractDateTimeValue) other).getCanonicalOrTrimmedCalendar());
             //getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
 			return r;

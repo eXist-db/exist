@@ -136,6 +136,15 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return trimmedCalendar;
 	}
 	
+	protected XMLGregorianCalendar getCanonicalOrTrimmedCalendar() {
+		try {
+			return getCanonicalCalendar();
+		} catch (Exception e) {
+			return getTrimmedCalendar();
+		}
+		
+	}
+
 	protected abstract AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException;
 	
 	protected long getTimeInMillis() {
@@ -147,7 +156,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	protected abstract QName getXMLSchemaType();
 	
 	public String getStringValue() throws XPathException {
-		String r = getCanonicalCalendar().toXMLFormat();
+		String r = getCanonicalOrTrimmedCalendar().toXMLFormat();
 		// hacked to match the format mandated in XPath 2 17.1.2, which is different from the XML Schema canonical format
 		//if (r.charAt(r.length()-1) == 'Z') r = r.substring(0, r.length()-1) + "+00:00";
 		
