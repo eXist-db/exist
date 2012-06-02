@@ -24,6 +24,7 @@ package org.exist.xquery.xqts;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
@@ -339,6 +340,8 @@ public class XQTS_case extends TestCase {
                     ;
                 else if (expectedError.equals("*"))
                     ;
+                
+                //TODO:check e.getCode()
 //                else if (error.indexOf(expectedError) != -1)
 //                    ;
 //                else {
@@ -349,7 +352,17 @@ public class XQTS_case extends TestCase {
 //                }
             } catch (Exception e) {
                 e.printStackTrace();
-                Assert.fail(e.toString());
+
+                StringBuilder message = new StringBuilder();
+                message.append(e.toString());
+                message.append("\n during script evaluation:\n");
+                try {
+					message.append(readFileAsString(caseScript));
+				} catch (IOException e1) {
+					message.append("ERROR - "+e1.getMessage());
+				}
+
+                Assert.fail(message.toString());
             } finally {
             	pool.release(broker);
             }
