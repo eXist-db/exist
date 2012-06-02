@@ -156,7 +156,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	protected abstract QName getXMLSchemaType();
 	
 	public String getStringValue() throws XPathException {
-		String r = getCanonicalOrTrimmedCalendar().toXMLFormat();
+		String r = getTrimmedCalendar().toXMLFormat();
 		// hacked to match the format mandated in XPath 2 17.1.2, which is different from the XML Schema canonical format
 		//if (r.charAt(r.length()-1) == 'Z') r = r.substring(0, r.length()-1) + "+00:00";
 		
