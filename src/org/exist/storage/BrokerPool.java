@@ -27,6 +27,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.Map.Entry;
+
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -1393,8 +1395,19 @@ public class BrokerPool extends Observable implements Database {
 		//synchronized(this) {
 			//Try to get an active broker
 			DBBroker broker = activeBrokers.get(Thread.currentThread());
-			if (broker == null)
-				throw new RuntimeException("Broker was not obtained for thread '"+Thread.currentThread()+"'.");
+			if (broker == null) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("Broker was not obtained for thread '");
+				sb.append(Thread.currentThread());
+				sb.append("'.\n");
+				for (Entry<Thread, DBBroker> entry : activeBrokers.entrySet()) {
+					sb.append(entry.getKey());
+					sb.append(" = ");
+					sb.append(entry.getValue());
+					sb.append("\n");
+				}
+				throw new RuntimeException(sb.toString());
+			}
 			return broker;
 		//}
 	}
