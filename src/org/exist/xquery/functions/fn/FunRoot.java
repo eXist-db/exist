@@ -123,11 +123,16 @@ public class FunRoot extends Function {
             if (!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a node; got '" + item + "'", seq);
             Sequence s = item.toSequence();
+
             if (s.isPersistentSet()) {
                 NodeProxy p = s.toNodeSet().get(0);
                 result.add(new NodeProxy(p.getDocument()));
             } else {
-                result.add(((NodeImpl)item).getDocument());
+                if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
+                	result.add(item);
+                } else {
+                	result.add(((NodeImpl)item).getDocument());
+                }
             }
 		}
     
