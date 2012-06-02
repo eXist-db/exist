@@ -91,7 +91,13 @@ public class FunRound extends Function {
 		if (seq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-    		NumericValue value = (NumericValue) seq.itemAt(0).convertTo(Type.NUMBER);
+        	Item item = seq.itemAt(0);
+        	NumericValue value;
+        	if (item instanceof NumericValue) {
+				value = (NumericValue) item;
+			} else {
+				value = (NumericValue) item.convertTo(Type.NUMBER);
+			}
             result = value.round();
         }
 
