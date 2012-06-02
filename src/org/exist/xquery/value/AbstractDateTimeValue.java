@@ -401,7 +401,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             else if (lexRepLength == 4 || (lexRepLength >= 6 && (lexRep.charAt(4) == '+' || (lexRep.charAt(4) == '-' && (lexRep.charAt(5) == '-' || lexRepLength == 10))))) {
                 // GMonth
                 // Fix 4971612: invalid SCCS macro substitution in data string
-                format = "--%M--%z";
+                format = "--%M--%Z";
                 Parser p = new Parser(format, lexRep);
                 try {
                 	XMLGregorianCalendar c = p.parse();
@@ -510,6 +510,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
          * @throws IllegalArgumentException If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value.
          */
         public XMLGregorianCalendar parse() throws IllegalArgumentException {
+        	char vch;
         	while (fidx < flen) {
                 char fch = format.charAt(fidx++);
 
@@ -549,7 +550,28 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         break;
 
                     case 'z' : // time zone. missing, 'Z', or [+-]nn:nn
-                        char vch = peek();
+                        vch = peek();
+                        if (vch == 'Z') {
+                            vidx++;
+                            timezone = 0;
+                        } 
+                        else if (vch == '+' || vch == '-') {
+                            vidx++;
+                            int h = parseInt(2, 2);
+                            skip(':');
+                            int m = parseInt(2, 2);
+
+                            if (m >= 60 || m < 0)
+                                throw new IllegalArgumentException(
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(m), "timezone minutes"})
+                                );
+                            
+                            timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
+                        }
+                        break;
+
+                    case 'Z' : // time zone. 'Z', or [+-]nn:nn
+                        vch = peek();
                         if (vch == 'Z') {
                             vidx++;
                             timezone = 0;
@@ -583,6 +605,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 // some tokens are left in the input
                 throw new IllegalArgumentException(value); //,vidx);
             }
+            
+            if (hour == 24 && minute == 0 && second == 0) hour = 0;
             
             return TimeUtils.getInstance().getFactory()
         		.newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
