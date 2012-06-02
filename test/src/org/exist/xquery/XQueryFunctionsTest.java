@@ -352,8 +352,7 @@ public class XQueryFunctionsTest extends TestCase {
 			
 			result 	= service.query("min((xs:dateTime('2005-12-19T16:22:40.006+01:00'), xs:dateTime('2005-12-19T16:29:40.321+01:00')))");		
 			r 		= (String) result.getResource(0).getContent();
-			//assertEquals( "2005-12-19T16:22:40.006+01:00", r );	
-			assertEquals( "2005-12-19T15:22:40.006Z", r );	
+			assertEquals( "2005-12-19T16:22:40.006+01:00", r );	
 			
 			result 	= service.query("min(('a', 'b'))");		
 			r 		= (String) result.getResource(0).getContent();
@@ -400,8 +399,7 @@ public class XQueryFunctionsTest extends TestCase {
 			
 			result 	= service.query("max((xs:dateTime('2005-12-19T16:22:40.006+01:00'), xs:dateTime('2005-12-19T16:29:40.321+01:00')))");		
 			r 		= (String) result.getResource(0).getContent();
-			//assertEquals( "2005-12-19T16:29:40.321+01:00", r );	
-			assertEquals( "2005-12-19T15:29:40.321Z", r );	
+			assertEquals( "2005-12-19T16:29:40.321+01:00", r );	
 			
 			result 	= service.query("max(('a', 'b'))");		
 			r 		= (String) result.getResource(0).getContent();
@@ -733,8 +731,7 @@ public class XQueryFunctionsTest extends TestCase {
 			"return dateTime($date, xs:time('15:12:52.421+02:00'))"
 			);
 			r 		= (String) result.getResource(0).getContent();
-			//assertEquals( "2007-05-02T15:12:52.421+02:00", r );
-			assertEquals( "2007-05-02T13:12:52.421Z", r );
+			assertEquals( "2007-05-02T15:12:52.421+02:00", r );
 		} catch (XMLDBException e) {
 			System.out.println("local-name(): " + e);
 			fail(e.getMessage());
@@ -760,8 +757,7 @@ public class XQueryFunctionsTest extends TestCase {
 		    result = service.query(query);          
 		    assertEquals(1, result.getSize());
 		    r = (String) result.getResource(0).getContent();
-		    //assertEquals("2007-08-23T00:01:02.062+02:00", r);          
-		    assertEquals("2007-08-22T22:01:02.062Z", r);          
+		    assertEquals("2007-08-23T00:01:02.062+02:00", r);          
         
         } catch (XMLDBException e) {
             System.out.println("current-dateTime(): " + e);
