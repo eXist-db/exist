@@ -606,7 +606,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 throw new IllegalArgumentException(value); //,vidx);
             }
             
-            if (hour == 24 && minute == 0 && second == 0) hour = 0;
+           	if (hour == 24 && minute == 0 && second == 0) {
+                if (getType() == Type.TIME)
+                	hour = 0;
+           	}
             
             return TimeUtils.getInstance().getFactory()
         		.newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
