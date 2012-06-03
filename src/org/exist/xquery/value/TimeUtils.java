@@ -24,6 +24,8 @@ public class TimeUtils {
 	
 	private static final TimeUtils INSTANCE = new TimeUtils();
 	public static TimeUtils getInstance() {return INSTANCE;}
+	
+	public static Duration ONE_DAY = INSTANCE.factory.newDuration(true, 0, 0, 1, 0, 0, 0); 
 
 	// assume it's thread-safe, if not synchronize all access
 	private final DatatypeFactory factory;
