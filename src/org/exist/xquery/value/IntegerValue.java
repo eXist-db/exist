@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
-import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -37,8 +36,8 @@ import org.exist.xquery.XPathException;
  */
 public class IntegerValue extends NumericValue {
 
-        //TODO this class should be split into numerous sub classes for each xs: type with proper
-        //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
+    //TODO this class should be split into numerous sub classes for each xs: type with proper
+    //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
     
 	public final static IntegerValue ZERO = new IntegerValue(0);
         
@@ -46,25 +45,25 @@ public class IntegerValue extends NumericValue {
 	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
 	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("-1");
 	
-        private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775807");
+    private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775807");
 	private static final BigInteger SMALLEST_LONG  = new BigInteger("-9223372036854775808");
 	
-        private static final BigInteger LARGEST_UNSIGNED_LONG = new BigInteger("18446744073709551615");
+    private static final BigInteger LARGEST_UNSIGNED_LONG = new BigInteger("18446744073709551615");
         
-        private static final BigInteger LARGEST_INT  = new BigInteger("2147483647");
+    private static final BigInteger LARGEST_INT  = new BigInteger("2147483647");
 	private static final BigInteger SMALLEST_INT  = new BigInteger("-2147483648");
         
-        private static final BigInteger LARGEST_UNSIGNED_INT = new BigInteger("4294967295");
+    private static final BigInteger LARGEST_UNSIGNED_INT = new BigInteger("4294967295");
 	
-        private static final BigInteger LARGEST_SHORT = new BigInteger("32767");
+    private static final BigInteger LARGEST_SHORT = new BigInteger("32767");
 	private static final BigInteger SMALLEST_SHORT = new BigInteger("-32768");
 	
-        private static final BigInteger LARGEST_UNSIGNED_SHORT = new BigInteger("65535");
+    private static final BigInteger LARGEST_UNSIGNED_SHORT = new BigInteger("65535");
         
-        private static final BigInteger LARGEST_BYTE = new BigInteger("127");
+    private static final BigInteger LARGEST_BYTE = new BigInteger("127");
 	private static final BigInteger SMALLEST_BYTE = new BigInteger("-128");
         
-        private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
+    private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
 	
 	private BigInteger value;
 	// 	private long value;
