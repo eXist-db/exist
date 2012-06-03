@@ -41,14 +41,17 @@ public class DateTimeValue extends AbstractDateTimeValue {
 
 	public DateTimeValue() throws XPathException {
 		super(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+		normalize();
 	}
 	
 	public DateTimeValue(XMLGregorianCalendar calendar) {
 		super(fillCalendar(cloneXMLGregorianCalendar(calendar)));
+		normalize();
 	}
 	
 	public DateTimeValue(Date date) {
 		super(dateToXMLGregorianCalendar(date));
+		normalize();
 	}
 	
 	public DateTimeValue(String dateTime) throws XPathException {
@@ -58,6 +61,15 @@ public class DateTimeValue extends AbstractDateTimeValue {
 		} catch (IllegalStateException e) {
 			throw new XPathException("xs:dateTime instance must have all fields set");
 		}
+		normalize();
+	}
+	
+	protected void normalize() {
+		if (calendar.getHour() == 24 && calendar.getMinute() == 0 && calendar.getSecond() == 00) {
+			calendar.add(TimeUtils.ONE_DAY);
+			calendar.setHour(0);
+		}
+			
 	}
 
 	private static XMLGregorianCalendar dateToXMLGregorianCalendar(Date date) {
