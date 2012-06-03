@@ -115,7 +115,7 @@ public class FunRoundHalfToEven extends Function {
         }               
         
         Sequence result;
-		IntegerValue precision = new IntegerValue(0);
+		IntegerValue precision = null;
 		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if (seq.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
@@ -127,8 +127,18 @@ public class FunRoundHalfToEven extends Function {
     			precision = (IntegerValue) getArgument(1).eval(contextSequence, contextItem).itemAt(0).convertTo(Type.INTEGER);
     		}
             
-    		NumericValue value = (NumericValue) seq.itemAt(0).convertTo(Type.NUMBER);
-    		return value.round(precision);
+        	Item item = seq.itemAt(0);
+        	NumericValue value;
+        	if (item instanceof NumericValue) {
+				value = (NumericValue) item;
+			} else {
+				value = (NumericValue) item.convertTo(Type.NUMBER);
+			}
+        	
+    		if (precision == null)
+    			result = value.round();
+    		else
+    			result = value.round(precision);
         }
         
         if (context.getProfiler().isEnabled()) 
