@@ -335,7 +335,7 @@ public class XQTS_case extends TestCase {
                     Assert.fail(message.toString());
                 }
             } catch (XPathException e) {
-                String error = e.getMessage();
+//                String error = e.getMessage();
                 if (!expectedError.isEmpty())
                     ;
                 else if (expectedError.equals("*"))
@@ -351,6 +351,13 @@ public class XQTS_case extends TestCase {
 //                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 //                }
             } catch (Exception e) {
+            	if (e instanceof XMLDBException) {
+					if (e.getMessage().contains("SENR0001")) {
+						if (!expectedError.isEmpty())
+							return;
+					}
+					
+				}
                 e.printStackTrace();
 
                 StringBuilder message = new StringBuilder();
