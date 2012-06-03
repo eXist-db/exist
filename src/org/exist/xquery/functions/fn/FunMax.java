@@ -37,6 +37,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -145,14 +146,35 @@ public class FunMax extends CollatingFunction {
     		AtomicValue max = null;
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
+
                 if (item instanceof QNameValue)
             		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(item.getType()), arg);
+                
                 AtomicValue value = item.atomize();                 
-                //Any value of type xdt:untypedAtomic is cast to xs:double
-                if (value.getType() == Type.UNTYPED_ATOMIC) 
+
+                //Duration values must either all be xs:yearMonthDuration values or must all be xs:dayTimeDuration values.
+        		if (Type.subTypeOf(value.getType(), Type.DURATION)) {
+        			value = ((DurationValue)value).wrap();
+        			if (value.getType() == Type.YEAR_MONTH_DURATION) {
+	                	if (max != null && max.getType() != Type.YEAR_MONTH_DURATION)
+	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), value);
+            		
+        			} else if (value.getType() == Type.DAY_TIME_DURATION) {
+	                	if (max != null && max.getType() != Type.DAY_TIME_DURATION)
+	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), value);
+        				
+        			} else
+        				throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);
+
+        		//Any value of type xdt:untypedAtomic is cast to xs:double
+        		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
                 	value = value.convertTo(Type.DOUBLE);
+                
                 if (max == null)
                     max = value;
+                
                 else {
                 	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ATOMIC) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
@@ -161,7 +183,8 @@ public class FunMax extends CollatingFunction {
                     //Any value of type xdt:untypedAtomic is cast to xs:double
                     if (value.getType() == Type.UNTYPED_ATOMIC) 
                     	value = value.convertTo(Type.DOUBLE);                	
-                	//Numeric tests
+
+                    //Numeric tests
 	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(max.getType(), Type.NUMBER))

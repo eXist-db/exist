@@ -68,6 +68,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		}
 	}
 	
+	public DurationValue wrap() {
+		return this;
+	}
+	
 	protected Duration canonicalZeroDuration() {
 		return CANONICAL_ZERO_DURATION;
 	}
