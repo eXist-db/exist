@@ -8,7 +8,7 @@
         </fulltext>
     </index>
     <triggers>
-        <trigger event="store,remove,update"
+        <trigger event="create,update,delete"
             class="org.exist.versioning.VersioningTrigger">
             <parameter name="overwrite" value="no"/>
         </trigger>
