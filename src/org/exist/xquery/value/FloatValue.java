@@ -232,6 +232,9 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
+		if (value == 0)
+			return this;
+		
 		/* use the decimal rounding method */
 		return (FloatValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.FLOAT);
 	}

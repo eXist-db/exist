@@ -76,9 +76,9 @@ public class DecimalValue extends NumericValue {
 		value = stripTrailingZeros(new BigDecimal(doubleValue));
 	}
 
-        public BigDecimal getValue() {
-            return value;
-        }
+    public BigDecimal getValue() {
+        return value;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#getType()
