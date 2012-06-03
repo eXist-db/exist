@@ -33,6 +33,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -100,22 +101,18 @@ public class FunSum extends Function {
     		SequenceIterator iter = inner.iterate();
     		Item item = iter.nextItem();
     		AtomicValue value = item.atomize();
-            //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-            if (value.getType() == Type.UNTYPED_ATOMIC) 
-            	value = value.convertTo(Type.DOUBLE);
-    		if (!(value instanceof ComputableValue))
-				throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+
+        	value = check(value, null);
+    		
     		//Set the first value
     		ComputableValue sum = (ComputableValue) value;
     		while (iter.hasNext()) {
     			item = iter.nextItem();
     			value = item.atomize();
-                //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (value.getType() == Type.UNTYPED_ATOMIC) 
-                	value = value.convertTo(Type.DOUBLE);
-        		if (!(value instanceof ComputableValue))
-    				throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-    			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+
+            	value = check(value, sum);
+    			
+        		if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
     					gotInfinity = true;    					
     				if (((NumericValue)value).isNaN()) {
@@ -141,5 +138,32 @@ public class FunSum extends Function {
             context.getProfiler().end(this, "", result);
 
         return result;        
+	}
+	
+	private AtomicValue check(AtomicValue value, ComputableValue sum) throws XPathException {
+		//Duration values must either all be xs:yearMonthDuration values or must all be xs:dayTimeDuration values.
+		if (Type.subTypeOf(value.getType(), Type.DURATION)) {
+			value = ((DurationValue)value).wrap();
+			if (value.getType() == Type.YEAR_MONTH_DURATION) {
+            	if (sum != null && sum.getType() != Type.YEAR_MONTH_DURATION)
+            		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
+            				" and " + Type.getTypeName(value.getType()), value);
+    		
+			} else if (value.getType() == Type.DAY_TIME_DURATION) {
+            	if (sum != null && sum.getType() != Type.DAY_TIME_DURATION)
+            		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
+            				" and " + Type.getTypeName(value.getType()), value);
+				
+			} else
+				throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);
+
+		//Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
+        	value = value.convertTo(Type.DOUBLE);
+		
+		if (!(value instanceof ComputableValue))
+			throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+
+		return value;
 	}
 }

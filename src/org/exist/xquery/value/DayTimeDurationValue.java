@@ -65,6 +65,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		}
 	}
 	
+	public DurationValue wrap() {
+		return this;
+	}
+
 	public int getType() {
 		return Type.DAY_TIME_DURATION;
 	}

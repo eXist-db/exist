@@ -91,6 +91,10 @@ public class DurationValue extends ComputableValue {
 		}
 	}
 	
+	public DurationValue wrap() {
+		return wrap(duration);
+	}
+
 	public Duration getCanonicalDuration() {
 		canonicalize();
 		return canonicalDuration;
