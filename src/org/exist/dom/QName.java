@@ -299,7 +299,7 @@ public class QName implements Comparable<QName> {
     }
 
     public final void isValid() throws XPathException {
-    	if (!XMLChar.isValidNCName(localName_))
+    	if (localName_ != null && !XMLChar.isValidNCName(localName_))
     		throw new XPathException(ErrorCodes.XPTY0004, "Not valid localname '"+localName_+"' for qname '"+this+"'.");
         
         if (prefix_ != null && !XMLChar.isValidNCName(prefix_))
