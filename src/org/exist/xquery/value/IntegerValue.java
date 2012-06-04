@@ -360,6 +360,8 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
+		if (precision == null) return round();
+		
 		if ( precision.getInt()<=0 )
 			return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.INTEGER);
 		else

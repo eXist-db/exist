@@ -260,7 +260,15 @@ public class DecimalValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
-		int pre = precision.getInt();
+		if (value.signum() == 0)
+			return this;
+		
+		int pre;
+		if (precision == null)
+			pre = 0;
+		else 
+			pre = precision.getInt();
+		
 		if ( pre >= 0 ) 
 			return new DecimalValue(value.setScale(pre, BigDecimal.ROUND_HALF_EVEN));
 		else 
