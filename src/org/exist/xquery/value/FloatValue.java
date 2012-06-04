@@ -215,7 +215,7 @@ public class FloatValue extends NumericValue {
 
 		if (Float.isNaN(value) || Float.isInfinite(value) || value==0.0) return this;
 
-        if (value > -0.5 && value < 0.0) return new DoubleValue(-0.0);
+        if (value >= -0.5 && value < 0.0) return new DoubleValue(-0.0);
         
         if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE)
             return new FloatValue((float)Math.round(value));
