@@ -294,9 +294,16 @@ public class QName implements Comparable<QName> {
      * @param qname
      * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
      */
-    public static QName parse(Context context, String qname)
-            throws XPathException {
+    public static QName parse(Context context, String qname) throws XPathException {
         return parse(context, qname, context.getURIForPrefix(""));
+    }
+
+    public final void isValid() throws XPathException {
+    	if (!XMLChar.isValidNCName(localName_))
+    		throw new XPathException(ErrorCodes.XPTY0004, "Not valid localname '"+localName_+"' for qname '"+this+"'.");
+        
+        if (prefix_ != null && !XMLChar.isValidNCName(prefix_))
+    		throw new XPathException(ErrorCodes.XPTY0004, "Not valid prefix '"+prefix_+"' for qname '"+this+"'.");
     }
 
     public final static boolean isQName(String name) {

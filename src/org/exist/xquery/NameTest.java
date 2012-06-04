@@ -14,8 +14,9 @@ public class NameTest extends TypeTest {
 
 	protected final QName nodeName;
 
-	public NameTest(int type, QName name) {
+	public NameTest(int type, QName name) throws XPathException {
 		super(type);
+		name.isValid();
 		nodeName = name;
 	}
 
