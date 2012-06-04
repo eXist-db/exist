@@ -308,7 +308,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         if(checkNS) {
             XQueryContext context = builder.getContext();
             if(qname.getPrefix() == null) {
-            	if (qname.getNamespaceURI() != null && qname.getNamespaceURI().isEmpty()) {
+            	if (qname.getNamespaceURI() == null || qname.getNamespaceURI().isEmpty()) {
+            		return qname;
+            	} else {
 	                String prefix = context.getInScopePrefix(qname.getNamespaceURI());
 	                int i = 0;
 	                while (prefix == null) {
@@ -326,9 +328,9 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	                return qname; 
 	            }
             }
-        	if(qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null) {
+        	if(qname.getPrefix().equals("") || qname.getNamespaceURI() == null)
                 return qname;
-            }
+
             String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
             if(inScopeNamespace == null) {
                 context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
