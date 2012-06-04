@@ -432,11 +432,11 @@ public class IntegerValue extends NumericValue {
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
+			if( other.isZero() )
+				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+
 			// long ov = ((IntegerValue) other).value.longValue();
 			BigInteger ov =  ((IntegerValue) other).value;
-			if( ! ((IntegerValue) other).effectiveBooleanValue() )
-				// if (ov == 0)
-				throw new XPathException("division by zero");
 			return new IntegerValue(value.remainder(ov), type);
 		} else
 			return ((NumericValue) convertTo(other.getType())).mod(other);

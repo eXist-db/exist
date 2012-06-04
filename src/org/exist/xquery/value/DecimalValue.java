@@ -350,9 +350,10 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
-		DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
-		if (dv.value.signum() == 0)
+		if (other.isZero())
 			throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+
+		DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
         BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
         return new IntegerValue(quot);
 	}
@@ -362,7 +363,10 @@ public class DecimalValue extends NumericValue {
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (other.getType() == Type.DECIMAL) {
-            BigDecimal quotient = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN);
+			if (other.isZero())
+				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+
+			BigDecimal quotient = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN);
             BigDecimal remainder = value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
             return new DecimalValue(remainder);
 		} else
