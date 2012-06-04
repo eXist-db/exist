@@ -25,6 +25,7 @@ package org.exist.xquery.functions.fn;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import org.exist.Namespaces;
 import org.exist.dom.DocumentImpl;
@@ -74,6 +75,8 @@ public class FunInScopePrefixes extends BasicFunction {
         }
         
 		Map<String, String> prefixes = new LinkedHashMap<String, String>();
+        prefixes.put("xml", Namespaces.XML_NS);				
+
 		NodeValue nodeValue = (NodeValue) args[0].itemAt(0);		
 		if (nodeValue.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			//NodeProxy proxy = (NodeProxy) node;
@@ -82,10 +85,15 @@ public class FunInScopePrefixes extends BasicFunction {
 				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
 				if (context.inheritNamespaces()) {
 					//Grab ancestors' NS
+					Stack<Element> stack = new Stack<Element>(); 
 					do {
-						collectNamespacePrefixes((ElementImpl)node, prefixes);
+						stack.add((Element)node);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);				
+
+					while (!stack.isEmpty()) {
+						collectNamespacePrefixes(stack.pop(), prefixes);
+					}
 					/*
 					NodeSet ancestors = nodeValue.getAncestors(contextId, true);
 					for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
@@ -96,22 +104,24 @@ public class FunInScopePrefixes extends BasicFunction {
 				} else {
 					//Grab self's NS
 					if (node.getNodeType() == Node.ELEMENT_NODE)
-						collectNamespacePrefixes((ElementImpl)node, prefixes);
+						collectNamespacePrefixes((Element)node, prefixes);
 				}
 			} else {
 				//untested : copied from below
 				if (context.inheritNamespaces()) {
 					//get the top-most ancestor
+					Stack<Element> stack = new Stack<Element>(); 
 					do {
  						if (node.getParentNode() == null || node.getParentNode() instanceof DocumentImpl)
-							collectNamespacePrefixes((ElementImpl)node, prefixes);
+ 							stack.add((Element)node);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
+
+					while (!stack.isEmpty()) {
+						collectNamespacePrefixes(stack.pop(), prefixes);
+					}
 				}
 			}			
-			//TODO : should we get the static NS there ? The automatic XML binding normally only stands for constructed nodes
-			// Add xmlNS to all in-memory constructs. /ljo
-	        prefixes.put("xml", Namespaces.XML_NS);				
 		} else { // In-memory node
 			//NodeImpl nodeImpl = (NodeImpl) node;
 			Node node = nodeValue.getNode();			
@@ -119,29 +129,37 @@ public class FunInScopePrefixes extends BasicFunction {
 				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
 				if (context.inheritNamespaces()) {
 					//Grab ancestors' NS
+					Stack<Element> stack = new Stack<Element>(); 
 					do {
 						if (node.getNodeType() == Node.ELEMENT_NODE)
-							collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+							stack.add((Element)node);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
+
+					while (!stack.isEmpty()) {
+						collectNamespacePrefixes(stack.pop(), prefixes);
+					}
+					
 				} else {
 					//Grab self's NS
 					if (node.getNodeType() == Node.ELEMENT_NODE)
-						collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+						collectNamespacePrefixes((Element)node, prefixes);
 				}
 			} else {
 				if (context.inheritNamespaces()) {
 					//get the top-most ancestor
+					Stack<Element> stack = new Stack<Element>(); 
 					do {
  						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.memtree.DocumentImpl)
-							collectNamespacePrefixes((org.exist.memtree.ElementImpl)node, prefixes);
+ 							stack.add((Element)node);
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
+
+					while (!stack.isEmpty()) {
+						collectNamespacePrefixes(stack.pop(), prefixes);
+					}
 				}
 			}
-	        // Add xmlNS to all in-memory constructs. /ljo
-	        prefixes.put("xml", Namespaces.XML_NS);	
-	
 		}
 
 		ValueSequence result = new ValueSequence();
@@ -177,6 +195,10 @@ public class FunInScopePrefixes extends BasicFunction {
 				}
 			}
 		}
+		if (namespaceURI != null && namespaceURI.isEmpty()) {
+			String prefix = element.getPrefix();
+			prefixes.remove(prefix == null ? "" : prefix);
+		}		
     }
 
 }
