@@ -821,7 +821,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public void selectAncestors( boolean includeSelf, NodeTest test, Sequence result ) 
             throws XPathException {
-        if( nodeNumber < 2 ) {
+        if( nodeNumber < 1 ) {
             return;
         }
         if( includeSelf ) {
