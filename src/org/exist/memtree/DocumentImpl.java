@@ -394,6 +394,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return nodeKind[nodeNum];
     }
 
+    public String getStringValue() {
+		NodeImpl root;
+    	try {
+    		root = getNode(1);
+    	} catch (Exception e) {
+			return "";
+		}
+    	
+    	if (root == null) 
+    		return "";
+    	
+   		return root.getStringValue();
+    }
+    
     private void grow() {
         int newSize = (size * 3) / 2;
         short[] newNodeKind = new short[newSize];

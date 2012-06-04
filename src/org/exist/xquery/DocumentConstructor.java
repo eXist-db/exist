@@ -87,11 +87,7 @@ public class DocumentConstructor extends NodeConstructor {
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 
         try {
-            if(contentSeq.isEmpty()) {
-            	receiver.startDocument();
-            	receiver.endDocument();
-            	
-            } else if(!contentSeq.isEmpty()) {
+            if(!contentSeq.isEmpty()) {
                 StringBuilder buf = null;
                 SequenceIterator i = contentSeq.iterate();
                 Item next = i.nextItem();
