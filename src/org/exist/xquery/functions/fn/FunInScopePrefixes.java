@@ -25,6 +25,7 @@ package org.exist.xquery.functions.fn;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.exist.Namespaces;
@@ -182,6 +183,18 @@ public class FunInScopePrefixes extends BasicFunction {
 					}
 				}
 			}
+		}
+		
+		//clean up
+		String key = null;
+		String value = null;
+		for (Entry<String, String> entry : prefixes.entrySet()) {
+			key = entry.getKey();
+			value = entry.getValue();
+			
+			if ((key == null || key.isEmpty()) && (value == null || value.isEmpty()))
+				prefixes.remove(key);
+				
 		}
 		
 		return prefixes;
