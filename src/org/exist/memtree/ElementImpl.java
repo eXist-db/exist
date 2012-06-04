@@ -520,10 +520,12 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @return  a <code>Map</code> value
      */
-    public Map<String, String> getNamespaceMap()
-    {
-        Map<String, String> map = new HashMap<String, String>();
-        int                 ns  = document.alphaLen[nodeNumber];
+    public Map<String, String> getNamespaceMap() {
+    	return getNamespaceMap(new HashMap<String, String>());
+    }
+    
+    public Map<String, String> getNamespaceMap(Map<String, String> map) {
+        int ns  = document.alphaLen[nodeNumber];
         if( -1 < ns ) {
             while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
                 QName nsQName = document.namespaceCode[ns];
@@ -531,7 +533,18 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
                 ++ns;
             }
         }
-        return( map );
+        
+        int attr = document.alpha[nodeNumber];
+        if( -1 < attr ) {
+            while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
+            	QName qname = document.attrName[attr];
+            	if (qname.getPrefix() != null && !qname.getPrefix().isEmpty())
+            		map.put( qname.getPrefix(), qname.getNamespaceURI() );
+                ++attr;
+            }
+        }
+        
+        return map;
     }
 
     @Override

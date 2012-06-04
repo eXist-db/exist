@@ -193,8 +193,10 @@ public class FunInScopePrefixes extends BasicFunction {
 			String prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
+		
 		if (element instanceof org.exist.memtree.ElementImpl) {
-			prefixes.putAll(((org.exist.memtree.ElementImpl)element).getNamespaceMap());
+			((org.exist.memtree.ElementImpl)element).getNamespaceMap(prefixes);
+		
 		} else {
 			ElementImpl elementImpl = (org.exist.dom.ElementImpl) element;
 			if (elementImpl.declaresNamespacePrefixes()) {
@@ -204,7 +206,8 @@ public class FunInScopePrefixes extends BasicFunction {
 				}
 			}
 		}
-		if (namespaceURI != null && namespaceURI.isEmpty()) {
+		
+		if (namespaceURI == null && namespaceURI.isEmpty()) {
 			String prefix = element.getPrefix();
 			prefixes.remove(prefix == null ? "" : prefix);
 		}		
