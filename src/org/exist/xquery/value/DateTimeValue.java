@@ -66,8 +66,8 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	
 	protected void normalize() {
 		if (calendar.getHour() == 24 && calendar.getMinute() == 0 && calendar.getSecond() == 00) {
-			calendar.add(TimeUtils.ONE_DAY);
 			calendar.setHour(0);
+			calendar.add(TimeUtils.ONE_DAY);
 		}
 			
 	}
