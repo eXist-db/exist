@@ -75,7 +75,11 @@ public class FunInScopePrefixes extends BasicFunction {
         }
         
 		Map<String, String> prefixes = new LinkedHashMap<String, String>();
-        prefixes.put("xml", Namespaces.XML_NS);				
+        prefixes.put("xml", Namespaces.XML_NS);
+        
+        Map<String, String> inScopePrefixes = context.getInScopePrefixes();
+        if (inScopePrefixes != null)
+        	prefixes.putAll(inScopePrefixes);
 
 		NodeValue nodeValue = (NodeValue) args[0].itemAt(0);		
 		if (nodeValue.getImplementationType() == NodeValue.PERSISTENT_NODE) {

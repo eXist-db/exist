@@ -854,6 +854,10 @@ public class XQueryContext implements BinaryValueManager, Context
         return( ( inScopePrefixes == null ) ? null : inScopePrefixes.get( uri ) );
     }
 
+    public Map<String, String> getInScopePrefixes( )
+    {
+        return( ( inScopePrefixes == null ) ? null : inScopePrefixes );
+    }
 
     public String getInheritedNamespace( String prefix )
     {
