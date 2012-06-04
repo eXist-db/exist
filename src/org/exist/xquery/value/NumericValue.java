@@ -5,7 +5,6 @@ import java.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
-import sun.util.LocaleServiceProviderPool;
 
 public abstract class NumericValue extends ComputableValue {
 
@@ -109,6 +108,8 @@ public abstract class NumericValue extends ComputableValue {
 
     @Override
     public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
         if (NumericValue.class.isAssignableFrom(obj.getClass()))
             try {
                 return compareTo(null, Constants.EQ, (NumericValue)obj);
