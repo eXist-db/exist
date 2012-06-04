@@ -306,14 +306,31 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     
     public QName checkNS(QName qname) {
         if(checkNS) {
-            if(qname.getPrefix() == null || qname.getPrefix().equals("") ||
-                    qname.getNamespaceURI() == null) {
+            XQueryContext context = builder.getContext();
+            if(qname.getPrefix() == null && qname.getNamespaceURI() != null) {
+                String prefix = context.getInScopePrefix(qname.getNamespaceURI());
+                int i = 0;
+                while (prefix == null) {
+                    prefix = "XXX";
+                    if(i > 0) {
+                        prefix += String.valueOf(i);
+                    }
+                    if(context.getInScopeNamespace(prefix) != null) {
+                        prefix = null;
+                        i++;
+                    }
+                }
+                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
+                qname.setPrefix(prefix);
+                return qname; 
+            }
+        	if(qname.getPrefix() == null || qname.getPrefix().equals("") || qname.getNamespaceURI() == null) {
                 return qname;
             }
-            XQueryContext context = builder.getContext();
             String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
             if(inScopeNamespace == null) {
-                    context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
+                context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
+                
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
                 String prefix = context.getInScopePrefix(qname.getNamespaceURI());
                 int i = 0;
