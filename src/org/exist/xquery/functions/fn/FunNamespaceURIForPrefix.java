@@ -21,16 +21,10 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.exist.Namespaces;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -46,7 +40,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 public class FunNamespaceURIForPrefix extends BasicFunction {
 	
@@ -95,24 +88,11 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 		if (prefix.equals("xml")) {
 			namespace = Namespaces.XML_NS;
 		} else {
-			NodeValue node = (NodeValue) args[1].itemAt(0);		
-			Map<String, String> prefixes = new HashMap<String, String>();
-			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-				NodeProxy proxy = (NodeProxy) node;
-				NodeSet ancestors = proxy.getAncestors(contextId, true);
-				for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext(); ) {
-					proxy = i.next();
-					FunInScopePrefixes.collectNamespacePrefixes((ElementImpl) proxy.getNode(), prefixes);
-				}
-			} else { // In-memory node
-				NodeImpl next = (NodeImpl) node;
-				do {
-					FunInScopePrefixes.collectNamespacePrefixes((org.exist.memtree.ElementImpl) next, prefixes);
-					next = (NodeImpl) next.getParentNode();
-				} while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
-			}  
+			Map<String, String> prefixes = FunInScopePrefixes.collectPrefixes(context, (NodeValue) args[1].itemAt(0));
+			
 			namespace = prefixes.get(prefix);
 		}
+
 		Sequence result;
 		if (namespace == null)
             result = Sequence.EMPTY_SEQUENCE;            
