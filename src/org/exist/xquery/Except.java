@@ -100,7 +100,12 @@ public class Except extends CombiningExpression {
         dumper.display(" except ");
         right.dump(dumper);
     }
-   
+
+    public void accept(ExpressionVisitor visitor) {
+        left.accept(visitor);
+        right.accept(visitor);
+    }
+	   
     public String toString() {
     	StringBuilder result = new StringBuilder();
     	result.append(left.toString());

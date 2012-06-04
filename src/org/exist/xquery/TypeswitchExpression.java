@@ -31,7 +31,7 @@ import org.exist.xquery.value.SequenceType;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Iterator;
 /**
  * Implements the XQuery typeswitch construct.
  * 
@@ -150,7 +150,15 @@ public class TypeswitchExpression extends AbstractExpression {
     public int getCardinality() {
         return Cardinality.ZERO_OR_MORE;
     }
-    
+   
+    public void accept(ExpressionVisitor visitor) {
+        operand.accept(visitor);
+        for (Iterator i = cases.iterator(); i.hasNext(); ) {
+			Case next = (Case)i.next();
+            next.returnClause.accept(visitor);
+        }
+    }
+	 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         operand.analyze(contextInfo);
