@@ -285,6 +285,9 @@ public class XQTS_case extends TestCase {
                     try {
                         for (int i = 0; i < outputFiles.getLength(); i++) {
                             ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
+                            if (outputFile.getAttribute("compare").equalsIgnoreCase("IGNORE"))
+                            	continue;
+                            
                             File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
                             if (!expectedResult.canRead())
                                 Assert.fail("can't read expected result");
