@@ -153,7 +153,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startElement(QName qname, AttrList attribs) {
-        qname = checkNS(qname);
+        qname = checkNS(true, qname);
         builder.startElement(qname, null);
         declareNamespaces();
         if (attribs != null) {
@@ -200,7 +200,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     @Override
     public void attribute(QName qname, String value) throws SAXException {
         try {
-            qname = checkNS(qname);
+            qname = checkNS(false, qname);
             builder.addAttribute(qname, value);
         } catch(DOMException e) {
             throw new SAXException(e.getMessage());
@@ -304,31 +304,25 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         // ignored
     }
     
-    public QName checkNS(QName qname) {
+    public QName checkNS(boolean isElement, QName qname) {
         if(checkNS) {
             XQueryContext context = builder.getContext();
             if(qname.getPrefix() == null) {
             	if (qname.getNamespaceURI() == null || qname.getNamespaceURI().isEmpty()) {
             		return qname;
+            	
+            	} else if (isElement) {
+	                return qname; 
+
             	} else {
-	                String prefix = context.getInScopePrefix(qname.getNamespaceURI());
-	                int i = 0;
-	                while (prefix == null) {
-	                    prefix = "XXX";
-	                    if(i > 0) {
-	                        prefix += String.valueOf(i);
-	                    }
-	                    if(context.getInScopeNamespace(prefix) != null) {
-	                        prefix = null;
-	                        i++;
-	                    }
-	                }
+	                String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+
 	                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
 	                qname.setPrefix(prefix);
 	                return qname; 
 	            }
             }
-        	if(qname.getPrefix().equals("") || qname.getNamespaceURI() == null)
+        	if(qname.getPrefix().isEmpty() && qname.getNamespaceURI() == null)
                 return qname;
 
             String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
@@ -336,22 +330,28 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
                 context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
                 
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
-                String prefix = context.getInScopePrefix(qname.getNamespaceURI());
-                int i = 0;
-                while (prefix == null) {
-                    prefix = "XXX";
-                    if(i > 0) {
-                        prefix += String.valueOf(i);
-                    }
-                    if(context.getInScopeNamespace(prefix) != null) {
-                        prefix = null;
-                        i++;
-                    }
-                }
+                
+                String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+
                 context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
                 qname.setPrefix(prefix);
             }
         }
         return qname;
+    }
+    
+    private String generatePrfix(XQueryContext context, String prefix) {
+        int i = 0;
+        while (prefix == null) {
+            prefix = "XXX";
+            if(i > 0) {
+                prefix += String.valueOf(i);
+            }
+            if(context.getInScopeNamespace(prefix) != null) {
+                prefix = null;
+                i++;
+            }
+        }
+        return prefix;
     }
 }
