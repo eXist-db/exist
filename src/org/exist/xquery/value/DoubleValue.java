@@ -237,11 +237,9 @@ public class DoubleValue extends NumericValue {
 	 */
 	public NumericValue round() throws XPathException {
 
-        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0)
-            return this;
+        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) return this;
 
-        if (value > -0.5 && value < 0.0)
-            return new DoubleValue(-0.0);
+        if (value >= -0.5 && value < 0.0) return new DoubleValue(-0.0);
 
         if (value > Long.MIN_VALUE && value < Long.MAX_VALUE)
             return new DoubleValue(Math.round(value));
