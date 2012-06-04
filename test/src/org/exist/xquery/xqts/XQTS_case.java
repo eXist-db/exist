@@ -272,6 +272,10 @@ public class XQTS_case extends TestCase {
                 for (int i = 0; i < outputFiles.getLength(); i++) {
                     ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
 
+                    String compare = outputFile.getAttribute("compare");
+                    if (compare != null && compare.equalsIgnoreCase("IGNORE"))
+                    	continue;
+
                     if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
                         ok = true;
                         break;
@@ -285,7 +289,8 @@ public class XQTS_case extends TestCase {
                     try {
                         for (int i = 0; i < outputFiles.getLength(); i++) {
                             ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
-                            if (outputFile.getAttribute("compare").equalsIgnoreCase("IGNORE"))
+                            String compare = outputFile.getAttribute("compare");
+                            if (compare != null && compare.equalsIgnoreCase("IGNORE"))
                             	continue;
                             
                             File expectedResult = new File(XQTS_folder+"ExpectedTestResults/"+folder, outputFile.getNodeValue());
