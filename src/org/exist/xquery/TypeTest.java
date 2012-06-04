@@ -89,7 +89,7 @@ public class TypeTest implements NodeTest {
     }
 
     public String toString() {
-        return nodeType == Type.NODE ? "node()" : Type.NODETYPES[nodeType] + "()";
+        return Type.getTypeName(nodeType);
     }
 	
     /* (non-Javadoc)

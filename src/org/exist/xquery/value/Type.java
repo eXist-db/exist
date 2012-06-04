@@ -39,18 +39,6 @@ public class Type {
 
     private final static Logger LOG = Logger.getLogger(Type.class);
 
-    public final static String[] NODETYPES = {
-        "node",
-        "element",
-        "attribute",
-        "text",
-        "processing-instruction",
-        "comment",
-        "document",
-        "namespace",
-        "cdata-section" 
-    };
-
     public static final int NODE = -1;
 
     public final static int ELEMENT = 1;
