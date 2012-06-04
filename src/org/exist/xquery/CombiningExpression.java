@@ -96,6 +96,10 @@ public abstract class CombiningExpression extends AbstractExpression {
 		// just return left axis to indicate that we know the axis
 		return left.getPrimaryAxis();
 	}
-	
-	
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        left.accept(visitor);
+        right.accept(visitor);
+    }
 }

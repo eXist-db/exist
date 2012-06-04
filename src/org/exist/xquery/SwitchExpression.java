@@ -159,6 +159,14 @@ public class SwitchExpression extends AbstractExpression {
         dumper.endIndent();
     }
 
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        operand.accept(visitor);
+        for (Case next : cases) {
+            next.returnClause.accept(visitor);
+        }
+    }
+
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         
