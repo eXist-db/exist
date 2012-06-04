@@ -91,33 +91,39 @@ public class FunDateTime extends BasicFunction {
             TimeValue tv = (TimeValue)args[1].itemAt(0);
             if (!dv.getTimezone().isEmpty()) {
                 if (!tv.getTimezone().isEmpty()) {
-                    if (!((DayTimeDurationValue)dv.getTimezone()
-                        .itemAt(0)).compareTo(null, Constants.EQ,
-                        ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
-                        ValueSequence argsSeq = new ValueSequence(args[0]);
-                        argsSeq.addAll(args[1]);
+                    if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0))
+                    		.compareTo(null, Constants.EQ, 
+                    				((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
+                        
+                    	ValueSequence argsSeq = new ValueSequence();
+                        argsSeq.add(dv);
+                        argsSeq.add(tv);
+                        
                         throw new XPathException(this, ErrorCodes.FORG0008,
                             "Operands have different timezones", argsSeq);
                     }
                 }
             }
             String dtv = ((DateTimeValue)dv.convertTo(Type.DATE_TIME)).getTrimmedCalendar().toXMLFormat();
+            
             if (dv.getTimezone().isEmpty()) {
                 dtv = dtv.substring(0, dtv.length() - 8);
                 result = new DateTimeValue(dtv + tv.getStringValue());
-            } else if (((DayTimeDurationValue)dv.getTimezone()
-                    .itemAt(0)).getStringValue().equals("PT0S")) {
+            
+            } else if (((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S")) {
                 dtv = dtv.substring(0, dtv.length() - 9);
                 if (tv.getTimezone().isEmpty()) {
                     result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
                 } else {
                     result = new DateTimeValue(dtv + tv.getStringValue());
                 }
+            
             } else {
                 if (tv.getTimezone().isEmpty()) {
                     String tz = dtv.substring(19);
                     dtv = dtv.substring(0, dtv.length() - 14);
                     result = new DateTimeValue(dtv + tv.getStringValue() + tz);
+
                 } else {
                     dtv = dtv.substring(0, dtv.length() - 14);
                     result = new DateTimeValue(dtv + tv.getStringValue());
