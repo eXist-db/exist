@@ -135,10 +135,7 @@ public class FunRoundHalfToEven extends Function {
 				value = (NumericValue) item.convertTo(Type.NUMBER);
 			}
         	
-    		if (precision == null)
-    			result = value.round();
-    		else
-    			result = value.round(precision);
+			result = value.round(precision);
         }
         
         if (context.getProfiler().isEnabled()) 

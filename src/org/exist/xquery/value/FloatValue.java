@@ -212,19 +212,15 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
-		//Copied from Saxon
-		if (Float.isNaN(value)) return this;
-        if (Float.isInfinite(value)) return this;
-        if (value==0.0) return this;    // handles the negative zero case
+
+		if (Float.isNaN(value) || Float.isInfinite(value) || value==0.0) return this;
+
         if (value > -0.5 && value < 0.0) return new DoubleValue(-0.0);
-        if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE) {
+        
+        if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE)
             return new FloatValue((float)Math.round(value));
-        }
 
-        // if the float is larger than the maximum int, then
-        // it can't have any significant digits after the decimal
-        // point, so return it unchanged
-
+        //too big return original value unchanged
         return this;
 	}
 	
@@ -232,8 +228,9 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
-		if (value == 0)
-			return this;
+		if (precision == null) return round();
+
+		if (Float.isNaN(value) || Float.isInfinite(value) || value==0.0) return this;
 		
 		/* use the decimal rounding method */
 		return (FloatValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.FLOAT);

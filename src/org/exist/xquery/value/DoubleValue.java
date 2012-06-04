@@ -236,28 +236,17 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
-		//Copied from Saxon
-        if (Double.isNaN(value)) {
+
+        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0)
             return this;
-        }
-        if (Double.isInfinite(value)) {
-            return this;
-        }
-        if (value == 0.0) {
-            return this;    // handles the negative zero case
-        }
-        if (value > -0.5 && value < 0.0) {
+
+        if (value > -0.5 && value < 0.0)
             return new DoubleValue(-0.0);
-        }
-        if (value > Long.MIN_VALUE && value < Long.MAX_VALUE) {
+
+        if (value > Long.MIN_VALUE && value < Long.MAX_VALUE)
             return new DoubleValue(Math.round(value));
-        }
 
-        // A double holds fewer significant digits than a long. Therefore,
-        // if the double is outside the range of a long, it cannot have
-        // any signficant digits after the decimal point. So in this
-        // case, we return the original value unchanged
-
+        //too big return original value unchanged
         return this;
 	}
 	
@@ -265,8 +254,9 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
-		if (value == 0)
-			return this;
+		if (precision == null) return round();
+		
+        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) return this;
 		
 		/* use the decimal rounding method */
 		return (DoubleValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.DOUBLE);
