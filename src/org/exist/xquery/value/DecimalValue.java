@@ -337,7 +337,10 @@ public class DecimalValue extends NumericValue {
 				if (!(other instanceof DecimalValue)) {
 	            	final ComputableValue n = (ComputableValue)this.convertTo(other.getType());
 	            	return ((ComputableValue)n).div(other);
-				}				
+				}
+				if (((DecimalValue)other).isZero())
+					throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+
 				//Copied from Saxon 8.6.1	
 		        int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
 				BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
