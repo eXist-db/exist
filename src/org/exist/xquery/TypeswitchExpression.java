@@ -181,6 +181,14 @@ public class TypeswitchExpression extends AbstractExpression {
         }
     }
 
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        operand.accept(visitor);
+        for (Case next : cases) {
+            next.returnClause.accept(visitor);
+        }
+    }
+
     public void setContextDocSet(DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
         operand.setContextDocSet(contextSet);
