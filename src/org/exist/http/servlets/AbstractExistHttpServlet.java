@@ -50,7 +50,9 @@ import org.exist.security.internal.AccountImpl;
  */
 public abstract class AbstractExistHttpServlet extends HttpServlet {
 
-    public final static String DEFAULT_ENCODING = "UTF-8";
+	private static final long serialVersionUID = 804071766041263220L;
+
+	public final static String DEFAULT_ENCODING = "UTF-8";
     
     private BrokerPool pool;
     private String formEncoding = DEFAULT_ENCODING;
