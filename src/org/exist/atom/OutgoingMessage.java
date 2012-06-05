@@ -1,11 +1,24 @@
 /*
- * OutgoingMIMEMessage.java
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2006-2012 The eXist Project
+ *  http://exist-db.org
  *
- * Created on June 14, 2006, 11:55 PM
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * (C) R. Alexander Milowski alex@milowski.com
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
  */
-
 package org.exist.atom;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,17 +27,20 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 /**
- *
+ * 
  * @author R. Alexander Milowski
  */
 public interface OutgoingMessage {
-   void setStatusCode(int code);
-   void setContentType(String mimeType);
-   void setHeader(String key, String value);
-   OutputStream getOutputStream()
-      throws IOException;
-   Writer getWriter()
-      throws IOException;
-   
-   HttpServletResponse getResponse();
+
+	void setStatusCode(int code);
+
+	void setContentType(String mimeType);
+
+	void setHeader(String key, String value);
+
+	OutputStream getOutputStream() throws IOException;
+
+	Writer getWriter() throws IOException;
+
+	HttpServletResponse getResponse();
 }
