@@ -43,7 +43,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             streamBinaryTo(fos);
 
         } catch(IOException ioe) {
-            throw new XPathException(ioe.getMessage(), ioe);
+            throw new XPathException(ioe);
         } finally {
             if(fos != null) {
                 try {
