@@ -105,6 +105,15 @@ public class XPathException extends Exception {
         }
     }
 
+    public XPathException(XQueryAST ast, ErrorCode errorCode, String message) {
+        super();
+        this.message = message;
+        if(ast != null) {
+            this.line = ast.getLine();
+            this.column = ast.getColumn();
+        }
+    }
+
     @Deprecated
     public XPathException(Throwable cause) {
         super(cause);
