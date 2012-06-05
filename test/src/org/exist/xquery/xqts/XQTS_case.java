@@ -269,17 +269,25 @@ public class XQTS_case extends TestCase {
 
                 //compare result with one provided by test case
                 boolean ok = false;
-                for (int i = 0; i < outputFiles.getLength(); i++) {
-                    ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
-
-                    String compare = outputFile.getAttribute("compare");
-                    if (compare != null && compare.equalsIgnoreCase("IGNORE"))
-                    	continue;
-
-                    if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
-                        ok = true;
-                        break;
+                
+                if ("runtime-error".equals(scenario)) {
+                	Exception e = catchError(result);
+                    if (e != null && e.getMessage().contains(expectedError)) {
+                    	ok = true;
                     }
+                } else {
+	                for (int i = 0; i < outputFiles.getLength(); i++) {
+	                    ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
+	
+	                    String compare = outputFile.getAttribute("compare");
+	                    if (compare != null && compare.equalsIgnoreCase("IGNORE"))
+	                    	continue;
+	
+	                    if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
+	                        ok = true;
+	                        break;
+	                    }
+	                }
                 }
 
                 //collect information if result is wrong

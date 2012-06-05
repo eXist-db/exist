@@ -49,6 +49,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
@@ -155,6 +156,20 @@ public abstract class TestCase {
 	@After
 	public void tearDown() throws Exception {
 		// System.out.println("tearDown PASSED");
+	}
+
+	public Exception catchError(Sequence result) {
+		
+		try {
+			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
+				Resource xmldbResource = getResource(i.nextItem());
+				
+				xmldbResource.getContent().toString();
+			}
+		} catch (Exception e) {
+			return e;
+		}
+		return null;
 	}
 
 	public boolean compareResult(String testCase, String folder, Element outputFile, Sequence result) {
