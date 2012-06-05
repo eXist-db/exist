@@ -395,17 +395,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     public String getStringValue() {
-		NodeImpl root;
-    	try {
-    		root = getNode(1);
-    	} catch (Exception e) {
-			return "";
-		}
-    	
-    	if (root == null) 
+    	if (document == null)
     		return "";
     	
-   		return root.getStringValue();
+    	return super.getStringValue();
     }
     
     private void grow() {
