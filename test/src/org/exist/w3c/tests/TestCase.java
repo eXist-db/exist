@@ -64,6 +64,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
@@ -177,6 +178,13 @@ public abstract class TestCase {
 			int pos = 0;
 			for(SequenceIterator i = result.iterate(); i.hasNext(); ) {
 				Resource xmldbResource = getResource(i.nextItem());
+				
+//		        StringWriter writer = new StringWriter();
+//		        Properties outputProperties = new Properties();
+//		        outputProperties.setProperty("indent", "yes");
+//		        SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
+//		        xmldbResource.getContentAsSAX(serializer);
+
 				String res = xmldbResource.getContent().toString();
 				
 				int l;
@@ -332,8 +340,10 @@ public abstract class TestCase {
 		} else if (r instanceof AtomicValue) {
 			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
-		} else if (r instanceof Resource)
-			return (Resource) r;
+		} else if (r instanceof LocalXMLResource)
+			res = (LocalXMLResource) r;
+		else
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "unknown object "+r.getClass());
 		
 		try {
 			Field field = res.getClass().getDeclaredField("outputProperties");
