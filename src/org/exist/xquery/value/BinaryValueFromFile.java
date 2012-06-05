@@ -32,7 +32,7 @@ public class BinaryValueFromFile extends BinaryValue {
             this.channel = new RandomAccessFile(file, "r").getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
         } catch(IOException ioe) {
-            throw new XPathException(ioe.getMessage(), ioe);
+            throw new XPathException(ioe);
         }
     }
 

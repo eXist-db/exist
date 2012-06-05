@@ -39,7 +39,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             this.is = new CachingFilterInputStream(cache, is);
 
         } catch(IOException ioe) {
-            throw new XPathException(ioe.getMessage(), ioe);
+            throw new XPathException(ioe);
         }
 
         //mark the start of the stream so that we can re-read again as required
