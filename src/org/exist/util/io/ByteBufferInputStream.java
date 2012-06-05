@@ -88,6 +88,9 @@ public class ByteBufferInputStream extends InputStream {
 
         if(available() == 0)
             return END_OF_STREAM;
+        
+        if (len > available())
+        	len = available();
 
         int currentPosition = bufAccessor.getBuffer().position();
         return bufAccessor.getBuffer().get(b, off, len).position() - currentPosition;
