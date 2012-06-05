@@ -1,11 +1,24 @@
 /*
- * AtomProtocol.java
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2006-2012 The eXist Project
+ *  http://exist-db.org
  *
- * Created on June 16, 2006, 11:39 AM
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * (C) R. Alexander Milowski alex@milowski.com
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
  */
-
 package org.exist.atom.modules;
 
 import java.io.IOException;
@@ -43,263 +56,303 @@ import org.exist.xquery.value.Sequence;
 
 import org.xml.sax.SAXException;
 
-
 /**
- *
+ * 
  * @author R. Alexander Milowski
  */
 public class AtomFeeds extends AtomModuleBase implements Atom {
-   
-   protected final static Logger LOG = Logger.getLogger(AtomProtocol.class);
-   static final String FEED_DOCUMENT_NAME = ".feed.atom";
-   static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);
-   URLSource entryByIdSource;
-   URLSource getFeedSource;
-   
-   /** Creates a new instance of AtomProtocol */
-   public AtomFeeds() {
-	      entryByIdSource = new URLSource(this.getClass().getResource("entry-by-id.xq"));
-	      getFeedSource = new URLSource(this.getClass().getResource("get-feed.xq"));
-   }
-   
-   public void doGet(DBBroker broker,IncomingMessage request,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
-   {
-       handleGet(true,broker,request,response);
-   }
-      
-   public void doHead(DBBroker broker,IncomingMessage request,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
-   {
-       handleGet(false,broker,request,response);
-   }
-   
-   protected void handleGet(boolean returnContent, DBBroker broker,IncomingMessage request,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
-   {
-      DocumentImpl resource = null;
-      XmldbURI pathUri = XmldbURI.create(request.getPath());
-      try {
-         
-         resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-         
-         if (resource == null) {
-            
-            String id = request.getParameter("id");
-            if (id!=null) {
-               id = id.trim();
-               if (id.length()==0) {
-                  id = null;
-               }
-            }
-            
-            // Must be a collection
-            Collection collection = broker.getCollection(pathUri);
-            if (collection != null) {
-               if (!collection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
-                  throw new PermissionDeniedException("Not allowed to read collection");
-               }
-               
-               DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-               if (feedDoc==null) {
-                  throw new BadRequestException("Collection "+request.getPath()+" is not an Atom feed.");
-               }
-               
-               // Return the collection feed
-               //String charset = getContext().getDefaultCharset();
-               if (returnContent) {
-                  if (id==null) {
-                     response.setStatusCode(200);
-                     getFeed(broker,request.getPath(),response);
-                  } else {
-                     response.setStatusCode(200);
-                     getEntryById(broker,request.getPath(),id,response);
-                  }
-               } else {
-                  response.setStatusCode(204);
-               }
-               
-            } else {
-               throw new NotFoundException("Resource " + request.getPath() + " not found");
-            }
-            
-         } else {
-            //Do we have permission to read the resource
-            if (!resource.getPermissions().validate(broker.getSubject(), Permission.READ)) {
-               throw new PermissionDeniedException("Not allowed to read resource");
-            }
-            
-            if (returnContent) {
-               response.setStatusCode(200);
-               if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-                  response.setContentType(resource.getMetadata().getMimeType());
-                  try {
-                     OutputStream os = response.getOutputStream();
-                     broker.readBinaryResource((BinaryDocument) resource, os);
-                     os.flush();
-                  } catch (IOException ex) {
-                     LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                     throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
-                  }
-               } else {
-                  // xml resource
-                  Serializer serializer = broker.getSerializer();
-                  serializer.reset();
 
-                  String charset = getContext().getDefaultCharset();
-                  //Serialize the document
-                  try {
-                     response.setContentType(resource.getMetadata().getMimeType()+"; charset="+charset);
-                     Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-                     serializer.serialize(resource,w);
-                     w.flush();
-                     w.close();
-                  } catch (IOException ex) {
-                     LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                     throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
-                  } catch (SAXException saxe) {
-                     LOG.warn(saxe);
-                     throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-                  }
-               }
-               
-            } else {
-               response.setStatusCode(204);
-            }
-         }
-         
-      } finally {
-         if (resource != null) {
-            resource.getUpdateLock().release(Lock.READ_LOCK);
-         }
-      }
-   }
-   
-   public void getEntryById(DBBroker broker,String path,String id,OutgoingMessage response)
-   throws EXistException,BadRequestException, PermissionDeniedException
-{
-   XQuery xquery = broker.getXQueryService();
-   CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,entryByIdSource);
+	protected final static Logger LOG = Logger.getLogger(AtomProtocol.class);
+	static final String FEED_DOCUMENT_NAME = ".feed.atom";
+	static final XmldbURI FEED_DOCUMENT_URI = XmldbURI
+			.create(FEED_DOCUMENT_NAME);
+	URLSource entryByIdSource;
+	URLSource getFeedSource;
 
-   XQueryContext context;
-   if (feedQuery==null) {
-      context = xquery.newContext(AccessContext.REST);
-      try {
-         feedQuery = xquery.compile(context, entryByIdSource);
-      } catch (XPathException ex) {
-         throw new EXistException("Cannot compile xquery "+entryByIdSource.getURL(),ex);
-      } catch (IOException ex) {
-         throw new EXistException("I/O exception while compiling xquery "+entryByIdSource.getURL(),ex);
-      }
-   } else {
-      context = feedQuery.getContext();
-   }
-   context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
+	/** Creates a new instance of AtomProtocol */
+	public AtomFeeds() {
+		entryByIdSource = new URLSource(this.getClass().getResource(
+				"entry-by-id.xq"));
+		getFeedSource = new URLSource(this.getClass()
+				.getResource("get-feed.xq"));
+	}
 
-   try {
-      context.declareVariable("id",id);
-      Sequence resultSequence = xquery.execute(feedQuery, null);
-      if (resultSequence.isEmpty()) {
-         throw new BadRequestException("No topic was found.");
-      }
-      
-      String charset = getContext().getDefaultCharset();
-      response.setContentType("application/atom+xml; charset="+charset);
-      Serializer serializer = broker.getSerializer();
-      serializer.reset();
-      try {
-         Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-         Properties outputProperties = new Properties();
-         sax.setOutput(w, outputProperties);
-         serializer.setProperties(outputProperties);
-         serializer.setSAXHandlers(sax, sax);
+	public void doGet(DBBroker broker, IncomingMessage request,
+			OutgoingMessage response) throws BadRequestException,
+			PermissionDeniedException, NotFoundException, EXistException {
+		handleGet(true, broker, request, response);
+	}
 
-         serializer.toSAX(resultSequence, 1, 1, false, false);
+	public void doHead(DBBroker broker, IncomingMessage request,
+			OutgoingMessage response) throws BadRequestException,
+			PermissionDeniedException, NotFoundException, EXistException {
+		handleGet(false, broker, request, response);
+	}
 
-         SerializerPool.getInstance().returnObject(sax);
-         w.flush();
-         w.close();
-      } catch (IOException ex) {
-         LOG.fatal("Cannot read resource "+path,ex);
-         throw new EXistException("I/O error on read of resource "+path,ex);
-      } catch (SAXException saxe) {
-         LOG.warn(saxe);
-         throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-      }
-      resultSequence.itemAt(0);
-      
-   } catch (XPathException ex) {
-      throw new EXistException("Cannot execute xquery "+entryByIdSource.getURL(),ex);
-      
-   } finally {
-      xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
-   }
-   
-}
+	protected void handleGet(boolean returnContent, DBBroker broker,
+			IncomingMessage request, OutgoingMessage response)
+			throws BadRequestException, PermissionDeniedException,
+			NotFoundException, EXistException {
+		DocumentImpl resource = null;
+		XmldbURI pathUri = XmldbURI.create(request.getPath());
+		try {
 
-   public void getFeed(DBBroker broker,String path,OutgoingMessage response)
-   throws EXistException,BadRequestException, PermissionDeniedException
-{
-   XQuery xquery = broker.getXQueryService();
-   CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,getFeedSource);
+			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
-   XQueryContext context;
-   if (feedQuery==null) {
-      context = xquery.newContext(AccessContext.REST);
-      try {
-         feedQuery = xquery.compile(context, getFeedSource);
-      } catch (XPathException ex) {
-         throw new EXistException("Cannot compile xquery "+getFeedSource.getURL(),ex);
-      } catch (IOException ex) {
-         throw new EXistException("I/O exception while compiling xquery "+getFeedSource.getURL(),ex);
-      }
-   } else {
-      context = feedQuery.getContext();
-   }
-   context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
+			if (resource == null) {
 
-   try {
-      Sequence resultSequence = xquery.execute(feedQuery, null);
-      if (resultSequence.isEmpty()) {
-         throw new BadRequestException("No feed was found.");
-      }
-      
-      String charset = getContext().getDefaultCharset();
-      response.setContentType("application/atom+xml; charset="+charset);
-      Serializer serializer = broker.getSerializer();
-      serializer.reset();
-      
-      try {
-         Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-         Properties outputProperties = new Properties();
-         sax.setOutput(w, outputProperties);
-         serializer.setProperties(outputProperties);
-         serializer.setSAXHandlers(sax, sax);
+				String id = request.getParameter("id");
+				if (id != null) {
+					id = id.trim();
+					if (id.length() == 0) {
+						id = null;
+					}
+				}
 
-         serializer.toSAX(resultSequence, 1, 1, false, false);
+				// Must be a collection
+				Collection collection = broker.getCollection(pathUri);
+				if (collection != null) {
+					if (!collection.getPermissions().validate(
+							broker.getSubject(), Permission.READ)) {
+						throw new PermissionDeniedException(
+								"Not allowed to read collection");
+					}
 
-         SerializerPool.getInstance().returnObject(sax);
-         w.flush();
-         w.close();
-         
-      } catch (IOException ex) {
-         LOG.fatal("Cannot read resource "+path,ex);
-         throw new EXistException("I/O error on read of resource "+path,ex);
-      } catch (SAXException saxe) {
-         LOG.warn(saxe);
-         throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-      }
-      resultSequence.itemAt(0);
-      
-   } catch (XPathException ex) {
-      throw new EXistException("Cannot execute xquery "+getFeedSource.getURL(),ex);
-      
-   } finally {
-      xquery.getXQueryPool().returnCompiledXQuery(getFeedSource, feedQuery);
-   }
-   
-}
+					DocumentImpl feedDoc = collection.getDocument(broker,
+							FEED_DOCUMENT_URI);
+					if (feedDoc == null) {
+						throw new BadRequestException("Collection "
+								+ request.getPath() + " is not an Atom feed.");
+					}
 
+					// Return the collection feed
+					// String charset = getContext().getDefaultCharset();
+					if (returnContent) {
+						if (id == null) {
+							response.setStatusCode(200);
+							getFeed(broker, request.getPath(), response);
+						} else {
+							response.setStatusCode(200);
+							getEntryById(broker, request.getPath(), id,
+									response);
+						}
+					} else {
+						response.setStatusCode(204);
+					}
+
+				} else {
+					throw new NotFoundException("Resource " + request.getPath()
+							+ " not found");
+				}
+
+			} else {
+				// Do we have permission to read the resource
+				if (!resource.getPermissions().validate(broker.getSubject(),
+						Permission.READ)) {
+					throw new PermissionDeniedException(
+							"Not allowed to read resource");
+				}
+
+				if (returnContent) {
+					response.setStatusCode(200);
+					if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+						response.setContentType(resource.getMetadata()
+								.getMimeType());
+						try {
+							OutputStream os = response.getOutputStream();
+							broker.readBinaryResource(
+									(BinaryDocument) resource, os);
+							os.flush();
+						} catch (IOException ex) {
+							LOG.fatal(
+									"Cannot read resource " + request.getPath(),
+									ex);
+							throw new EXistException(
+									"I/O error on read of resource "
+											+ request.getPath(), ex);
+						}
+					} else {
+						// xml resource
+						Serializer serializer = broker.getSerializer();
+						serializer.reset();
+
+						String charset = getContext().getDefaultCharset();
+						// Serialize the document
+						try {
+							response.setContentType(resource.getMetadata()
+									.getMimeType() + "; charset=" + charset);
+							Writer w = new OutputStreamWriter(
+									response.getOutputStream(), charset);
+							serializer.serialize(resource, w);
+							w.flush();
+							w.close();
+						} catch (IOException ex) {
+							LOG.fatal(
+									"Cannot read resource " + request.getPath(),
+									ex);
+							throw new EXistException(
+									"I/O error on read of resource "
+											+ request.getPath(), ex);
+						} catch (SAXException saxe) {
+							LOG.warn(saxe);
+							throw new BadRequestException(
+									"Error while serializing XML: "
+											+ saxe.getMessage());
+						}
+					}
+
+				} else {
+					response.setStatusCode(204);
+				}
+			}
+
+		} finally {
+			if (resource != null) {
+				resource.getUpdateLock().release(Lock.READ_LOCK);
+			}
+		}
+	}
+
+	public void getEntryById(DBBroker broker, String path, String id,
+			OutgoingMessage response) throws EXistException,
+			BadRequestException, PermissionDeniedException {
+		XQuery xquery = broker.getXQueryService();
+		CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(
+				broker, entryByIdSource);
+
+		XQueryContext context;
+		if (feedQuery == null) {
+			context = xquery.newContext(AccessContext.REST);
+			try {
+				feedQuery = xquery.compile(context, entryByIdSource);
+			} catch (XPathException ex) {
+				throw new EXistException("Cannot compile xquery "
+						+ entryByIdSource.getURL(), ex);
+			} catch (IOException ex) {
+				throw new EXistException(
+						"I/O exception while compiling xquery "
+								+ entryByIdSource.getURL(), ex);
+			}
+		} else {
+			context = feedQuery.getContext();
+		}
+		context.setStaticallyKnownDocuments(new XmldbURI[] { XmldbURI.create(
+				path).append(AtomProtocol.FEED_DOCUMENT_NAME) });
+
+		try {
+			context.declareVariable("id", id);
+			Sequence resultSequence = xquery.execute(feedQuery, null);
+			if (resultSequence.isEmpty()) {
+				throw new BadRequestException("No topic was found.");
+			}
+
+			String charset = getContext().getDefaultCharset();
+			response.setContentType("application/atom+xml; charset=" + charset);
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+			try {
+				Writer w = new OutputStreamWriter(response.getOutputStream(), charset);
+				SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+				Properties outputProperties = new Properties();
+				sax.setOutput(w, outputProperties);
+				serializer.setProperties(outputProperties);
+				serializer.setSAXHandlers(sax, sax);
+
+				serializer.toSAX(resultSequence, 1, 1, false, false);
+
+				SerializerPool.getInstance().returnObject(sax);
+				w.flush();
+				w.close();
+			} catch (IOException ex) {
+				LOG.fatal("Cannot read resource " + path, ex);
+				throw new EXistException("I/O error on read of resource "
+						+ path, ex);
+			} catch (SAXException saxe) {
+				LOG.warn(saxe);
+				throw new BadRequestException("Error while serializing XML: "
+						+ saxe.getMessage());
+			}
+			resultSequence.itemAt(0);
+
+		} catch (XPathException ex) {
+			throw new EXistException("Cannot execute xquery "
+					+ entryByIdSource.getURL(), ex);
+
+		} finally {
+			xquery.getXQueryPool().returnCompiledXQuery(entryByIdSource, feedQuery);
+		}
+
+	}
+
+	public void getFeed(DBBroker broker, String path, OutgoingMessage response)
+			throws EXistException, BadRequestException,
+			PermissionDeniedException {
+		
+		XQuery xquery = broker.getXQueryService();
+		CompiledXQuery feedQuery = xquery.getXQueryPool().borrowCompiledXQuery(
+				broker, getFeedSource);
+
+		XQueryContext context;
+		if (feedQuery == null) {
+			context = xquery.newContext(AccessContext.REST);
+			try {
+				feedQuery = xquery.compile(context, getFeedSource);
+			} catch (XPathException ex) {
+				throw new EXistException("Cannot compile xquery "
+						+ getFeedSource.getURL(), ex);
+			} catch (IOException ex) {
+				throw new EXistException(
+						"I/O exception while compiling xquery "
+								+ getFeedSource.getURL(), ex);
+			}
+		} else {
+			context = feedQuery.getContext();
+		}
+		context.setStaticallyKnownDocuments(
+			new XmldbURI[] { 
+					XmldbURI.create(path).append(AtomProtocol.FEED_DOCUMENT_NAME) 
+			}
+		);
+
+		try {
+			Sequence resultSequence = xquery.execute(feedQuery, null);
+			if (resultSequence.isEmpty()) {
+				throw new BadRequestException("No feed was found.");
+			}
+
+			String charset = getContext().getDefaultCharset();
+			response.setContentType("application/atom+xml; charset=" + charset);
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+
+			try {
+				Writer w = new OutputStreamWriter(response.getOutputStream(), charset);
+				SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+				Properties outputProperties = new Properties();
+				sax.setOutput(w, outputProperties);
+				serializer.setProperties(outputProperties);
+				serializer.setSAXHandlers(sax, sax);
+
+				serializer.toSAX(resultSequence, 1, 1, false, false);
+
+				SerializerPool.getInstance().returnObject(sax);
+				w.flush();
+				w.close();
+
+			} catch (IOException ex) {
+				LOG.fatal("Cannot read resource " + path, ex);
+				throw new EXistException("I/O error on read of resource " + path, ex);
+			} catch (SAXException saxe) {
+				LOG.warn(saxe);
+				throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+			}
+			resultSequence.itemAt(0);
+
+		} catch (XPathException ex) {
+			throw new EXistException("Cannot execute xquery " + getFeedSource.getURL(), ex);
+
+		} finally {
+			xquery.getXQueryPool().returnCompiledXQuery(getFeedSource, feedQuery);
+		}
+	}
 }

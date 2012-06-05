@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2006-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -14,10 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *  $Id$
  */
 package org.exist.atom.http;
 
@@ -28,14 +28,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -53,12 +51,8 @@ import org.exist.atom.modules.Query;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.servlets.AbstractExistHttpServlet;
-import org.exist.http.servlets.Authenticator;
-import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.security.XmldbPrincipal;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.validation.XmlLibraryChecker;
@@ -82,44 +76,11 @@ public class AtomServlet extends AbstractExistHttpServlet {
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	public final static String CONF_NS = "http://www.exist-db.org/Vocabulary/AtomConfiguration/2006/1/0";
 
-	// authentication methods ; copied from original webdav classes
-	public final static int WEBDAV_BASIC_AUTH = 0;
-	public final static int WEBDAV_DIGEST_AUTH = 1;
-
 	protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
 
 	@Override
 	public Logger getLog() {
 		return LOG;
-	}
-
-	/**
-	 * A user principal object that implements XmldbPrincipal
-	 */
-	static class UserXmldbPrincipal implements XmldbPrincipal {
-		int authMethod;
-		Account user;
-
-		UserXmldbPrincipal(int authMethod, Account user) {
-			this.authMethod = authMethod;
-			this.user = user;
-		}
-
-		@Override
-		public String getName() {
-			return user.getName();
-		}
-
-		@Deprecated
-		@Override
-		public String getPassword() {
-			return authMethod == WEBDAV_BASIC_AUTH ? user.getPassword() : user.getDigestPassword();
-		}
-
-		@Override
-		public boolean hasRole(String role) {
-			return user.hasGroup(role);
-		}
 	}
 
 	/**
@@ -162,19 +123,11 @@ public class AtomServlet extends AbstractExistHttpServlet {
 		}
 	}
 
-	// What I want...
-	// private Map<String,AtomModule> modules;
 	private Map<String, AtomModule> modules;
 	private Map<String, Boolean> noAuth;
 
 	private String formEncoding = null;
 	private BrokerPool pool = null;
-	private String defaultUsername = SecurityManager.GUEST_USER;
-	private String defaultPassword = SecurityManager.GUEST_USER;
-
-	private Authenticator authenticator;
-
-	private Subject defaultUser;
 
 	/*
 	 * (non-Javadoc)
@@ -197,7 +150,8 @@ public class AtomServlet extends AbstractExistHttpServlet {
 		if (configFileOpt == null)
 			atomConf = new File(dbHome, "atom-services.xml");
 		else
-			atomConf = new File(config.getServletContext().getRealPath(configFileOpt));
+			atomConf = new File(config.getServletContext().getRealPath(
+					configFileOpt));
 
 		config.getServletContext().log(
 				"Checking for atom configuration in "
@@ -212,8 +166,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 			InputStream is = null;
 			try {
 				is = new FileInputStream(atomConf);
-				InputSource src = new InputSource(new InputStreamReader(is,
-						formEncoding));
+				InputSource src = new InputSource(new InputStreamReader(is, formEncoding));
 				URI docBaseURI = atomConf.toURI();
 				src.setSystemId(docBaseURI.toString());
 				docBuilder = docFactory.newDocumentBuilder();
@@ -227,7 +180,9 @@ public class AtomServlet extends AbstractExistHttpServlet {
 					Element moduleConf = (Element) moduleConfList.item(i);
 					String name = moduleConf.getAttribute("name");
 					if (modules.get(name) != null) {
-						throw new ServletException("Module '" + name + "' is configured more than once ( child # " + (i + 1));
+						throw new ServletException("Module '" + name
+								+ "' is configured more than once ( child # "
+								+ (i + 1));
 					}
 
 					if ("false".equals(moduleConf.getAttribute("authenticate"))) {
@@ -238,14 +193,16 @@ public class AtomServlet extends AbstractExistHttpServlet {
 					if (className != null && className.length() > 0) {
 						try {
 							Class<?> moduleClass = Class.forName(className);
-							AtomModule amodule = (AtomModule) moduleClass
-									.newInstance();
+							AtomModule amodule = (AtomModule) moduleClass.newInstance();
 							modules.put(name, amodule);
-							amodule.init(new ModuleContext(config, name,
-									atomConf.getParent()));
+							amodule.init(new ModuleContext(config, name, atomConf.getParent()));
 
 						} catch (Exception ex) {
-							throw new ServletException("Cannot instantiate class " + className + " for module '" + name + "' due to exception: " + ex.getMessage(), ex);
+							throw new ServletException(
+									"Cannot instantiate class " + className
+											+ " for module '" + name
+											+ "' due to exception: "
+											+ ex.getMessage(), ex);
 						}
 
 					} else {
@@ -264,23 +221,31 @@ public class AtomServlet extends AbstractExistHttpServlet {
 							Element methodConf = (Element) methodList.item(m);
 							String type = methodConf.getAttribute("type");
 							if (type == null) {
-								getLog().warn("No type specified for method in module " + name);
+								getLog().warn(
+										"No type specified for method in module "
+												+ name);
 								continue;
 							}
 
 							// What I want but can't have because of JDK 1.4
-							// URI baseURI = URI.create(methodConf.getBaseURI());
+							// URI baseURI =
+							// URI.create(methodConf.getBaseURI());
 							URI baseURI = docBaseURI;
 							String queryRef = methodConf.getAttribute("query");
 							if (queryRef == null) {
-								getLog().warn("No query specified for method " + type + " in module " + name);
+								getLog().warn(
+										"No query specified for method " + type
+												+ " in module " + name);
 								continue;
 							}
 
 							boolean fromClasspath = "true".equals(methodConf.getAttribute("from-classpath"));
-							Query.MethodConfiguration mconf = query.getMethodConfiguration(type);
+							Query.MethodConfiguration mconf = query
+									.getMethodConfiguration(type);
 							if (mconf == null) {
-								getLog().warn("Unknown method " + type + " in module " + name);
+								getLog().warn(
+										"Unknown method " + type
+												+ " in module " + name);
 								continue;
 							}
 
@@ -292,7 +257,10 @@ public class AtomServlet extends AbstractExistHttpServlet {
 
 							URL queryURI = null;
 							if (fromClasspath) {
-								getLog().debug("Nope. Attempting to get resource " + queryRef + " from " + Atom.class.getName());
+								getLog().debug(
+										"Nope. Attempting to get resource "
+												+ queryRef + " from "
+												+ Atom.class.getName());
 								queryURI = Atom.class.getResource(queryRef);
 
 							} else {
@@ -357,12 +325,14 @@ public class AtomServlet extends AbstractExistHttpServlet {
 
 				Query topics = new Query();
 				modules.put("topic", topics);
-				topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
+				topics.getMethodConfiguration("GET").setQuerySource(
+						topics.getClass().getResource("topic.xq"));
 				topics.init(new ModuleContext(config, "topic", dbHome.getAbsolutePath()));
 
 				Query introspect = new Query();
 				modules.put("introspect", introspect);
-				introspect.getMethodConfiguration("GET").setQuerySource(introspect.getClass().getResource("introspect.xq"));
+				introspect.getMethodConfiguration("GET").setQuerySource(
+						introspect.getClass().getResource("introspect.xq"));
 				introspect.init(new ModuleContext(config, "introspect", dbHome.getAbsolutePath()));
 
 			} catch (EXistException ex) {
@@ -376,8 +346,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 	}
 
 	@Override
-	protected void service(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException {
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
 		try {
 			// Get the path
@@ -415,38 +384,43 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				}
 			}
 
-			final Principal principal = new UserXmldbPrincipal(WEBDAV_BASIC_AUTH, user);
-			HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
-				public Principal getUserPrincipal() {
-					return principal;
-				}
-			};
-
 			// Handle the resource
 			DBBroker broker = null;
 			try {
 				broker = pool.get(user);
-				module.process(broker, new HttpRequestMessage(request, path, '/' + moduleName), new HttpResponseMessage(response));
+				module.process(broker, new HttpRequestMessage(request, path,
+						'/' + moduleName), new HttpResponseMessage(response));
 
 			} catch (NotFoundException ex) {
-				getLog().info("Resource " + path + " not found by " + moduleName, ex);
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, ex.getMessage());
+				getLog().info(
+						"Resource " + path + " not found by " + moduleName, ex);
+				response.sendError(HttpServletResponse.SC_NOT_FOUND,
+						ex.getMessage());
 
 			} catch (PermissionDeniedException ex) {
-				getLog().info("Permission denied to " + path + " by " + moduleName + " for " + user.getName(), ex);
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+				getLog().info(
+						"Permission denied to " + path + " by " + moduleName
+								+ " for " + user.getName(), ex);
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+						ex.getMessage());
 
 			} catch (BadRequestException ex) {
 				getLog().info("Bad request throw from module " + moduleName, ex);
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+						ex.getMessage());
 
 			} catch (EXistException ex) {
-				getLog().fatal("Exception getting broker from pool for user " + user.getName(), ex);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Service is not available.");
+				getLog().fatal(
+						"Exception getting broker from pool for user "
+								+ user.getName(), ex);
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Service is not available.");
 
 			} catch (Throwable e) {
 				getLog().error(e.getMessage(), e);
-				throw new ServletException("An error occurred: " + e.getMessage(), e);
+				throw new ServletException("An error occurred: "
+						+ e.getMessage(), e);
 
 			} finally {
 				pool.release(broker);
@@ -455,11 +429,12 @@ public class AtomServlet extends AbstractExistHttpServlet {
 		} catch (IOException ex) {
 			getLog().fatal("I/O exception on request.", ex);
 			try {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Service is not available.");
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Service is not available.");
 			} catch (IOException finalEx) {
 				getLog().fatal("Cannot return 500 on exception.", ex);
 			}
 		}
-
 	}
 }
