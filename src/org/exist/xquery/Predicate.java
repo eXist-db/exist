@@ -377,11 +377,13 @@ public class Predicate extends PathExpr {
                     context.setContextSequencePosition(p, contextSequence);
                     Item item = i.nextItem();
                     Sequence innerSeq = inner.eval(contextSequence, item);
-                    // TODO : introduce a check in innerSeq.hasOne() ?
-                    NumericValue nv = (NumericValue) innerSeq.itemAt(0);
-                    // Non integers return... nothing, not even an error !
-                    if (!nv.hasFractionalPart() && !nv.isZero())
-                        positions.add(nv);
+                    if (innerSeq.hasOne()) {
+	                    NumericValue nv = (NumericValue) innerSeq.itemAt(0);
+	                    // Non integers return... nothing, not even an error !
+	                    if (!nv.hasFractionalPart() && !nv.isZero())
+	                        positions.add(nv);
+                    } 
+                    //XXX: else error or nothing?
                 }
                 for (NumericValue pos : positions) {
                     int position = pos.getInt();
