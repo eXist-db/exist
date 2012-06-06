@@ -214,6 +214,7 @@ public class XQTS_case extends TestCase {
             }
 
             DBBroker broker = null;
+            Sequence result = null;
 
             //compile & evaluate
             File caseScript = new File(XQTS_folder+"Queries/XQuery/"+folder, script+".xq");
@@ -261,27 +262,61 @@ public class XQTS_case extends TestCase {
 
                 fixBrokenTests(context, testGroup, testCase);
 
-                //compile
-                CompiledXQuery compiled = xquery.compile(context, new FileSource(caseScript, "UTF8", true));
-
-                //execute
-                Sequence result = xquery.execute(compiled, contextSequence);
-
                 //compare result with one provided by test case
                 boolean ok = false;
                 
                 if ("runtime-error".equals(scenario)) {
-                	Exception e = catchError(result);
-                    if (e != null && e.getMessage().contains(expectedError)) {
+                	Exception error = null;
+                	try {
+                        //compile
+                        CompiledXQuery compiled = xquery.compile(context, new FileSource(caseScript, "UTF8", true));
+
+                        //execute
+                        result = xquery.execute(compiled, contextSequence);
+                        
+                        if (outputFiles.getLength() != 0) {
+                            //can be answered
+        	                for (int i = 0; i < outputFiles.getLength(); i++) {
+        	                    ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
+        	
+        	                    String compare = outputFile.getAttribute("compare");
+        	                    if (compare != null && compare.equalsIgnoreCase("IGNORE")) {
+        	                    	ok = true;
+        	                    	break;
+        	                    }
+        	
+        	                    if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
+        	                        ok = true;
+        	                        break;
+        	                    }
+        	                }
+                        } else {
+                        	error = catchError(result);
+                        }
+
+                	} catch (Exception e) {
+                		error = e;
+					}
+                	
+                    if (!ok && error != null && error.getMessage().contains(expectedError)) {
                     	ok = true;
                     }
                 } else {
+                    //compile
+                    CompiledXQuery compiled = xquery.compile(context, new FileSource(caseScript, "UTF8", true));
+
+                    //execute
+                    result = xquery.execute(compiled, contextSequence);
+
+                    //check answer
 	                for (int i = 0; i < outputFiles.getLength(); i++) {
 	                    ElementImpl outputFile = (ElementImpl)outputFiles.item(i);
 	
 	                    String compare = outputFile.getAttribute("compare");
-	                    if (compare != null && compare.equalsIgnoreCase("IGNORE"))
-	                    	continue;
+	                    if (compare != null && compare.equalsIgnoreCase("IGNORE")) {
+	                    	ok = true;
+	                    	break;
+	                    }
 	
 	                    if (compareResult(script, "XQTS_1_0_3/ExpectedTestResults/"+folder, outputFile, result)) {
 	                        ok = true;
@@ -326,7 +361,11 @@ public class XQTS_case extends TestCase {
                     } catch (Exception e) {
                         exp.append(e.getMessage());
                     }
-                    String res = sequenceToString(result);
+                    
+                    String res = "{NOTHING}";
+                    if (result != null)
+                    	res = sequenceToString(result);
+                    
                     if (exp.length() == 0)
                         exp.append("error "+ expectedError);
                     StringBuilder data = new StringBuilder();
