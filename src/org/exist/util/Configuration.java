@@ -1577,6 +1577,9 @@ public class Configuration implements ErrorHandler
         config.put( name, obj );
     }
 
+    public void removeProperty(String name) {
+        config.remove(name);
+    }
 
     /**
      * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
