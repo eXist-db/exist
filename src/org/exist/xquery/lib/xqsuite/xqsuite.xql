@@ -145,19 +145,21 @@ declare %private function test:test($func as function(*), $meta as element(funct
             } catch * {
                 if ($assertError) then
                     if ($assertError/value and not(contains($err:code, $assertError/value/string())
-                        or contains($err:description, $assertError/value/string())))then
-                        test:print-result($meta, $result,
+                        or matches($err:description, $assertError/value/string())))then
+                        test:print-result($meta, (),
                             <report>
-                                <failure message="Expected error {$assertError/value/string()}, got: {$err:code}"
+                                <failure message="Expected error {$assertError/value/string()}, got: {$err:code} {$err:description}"
                                     type="failure-error-code-1"/>
                             </report>
                         )
                     else
                         test:print-result($meta, (), ())
                 else
-                    <error code="{$err:code}" message="{$err:description}">
-                        <xquery-trace>{$exerr:xquery-stack-trace}</xquery-trace>
-                    </error>
+                    test:print-result($meta, (),
+                        <report>
+                            <error type="{$err:code}" message="{$err:description}"/>
+                        </report>
+                    )
             }
         else
             ()

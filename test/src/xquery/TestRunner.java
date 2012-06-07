@@ -144,6 +144,12 @@ public abstract class TestRunner {
                         fails.append("Test '" + test.getAttribute("name") + "' in module '" +
                                 testsuite.getAttribute("package") + "' failed.\n");
                     }
+
+                    NodeList errors = test.getElementsByTagName("error");
+                    if (errors.getLength() > 0) {
+                        fails.append("Test '" + test.getAttribute("name") + "' in module '" +
+                                testsuite.getAttribute("package") + "' failed with an error.\n");
+                    }
                 }
             }
             if (fails.length() > 0) {

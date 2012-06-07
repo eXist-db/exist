@@ -7,7 +7,7 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 declare variable $t:collection-name := "permission-test";
 declare variable $t:collection := "/db/" || $t:collection-name;
 
-declare 
+declare
     %test:setUp
 function t:setup() {
     xmldb:create-collection("/db", "permission-test"),
@@ -83,28 +83,28 @@ function t:listCollection() {
 
 declare 
     %test:user("guest", "guest")
-    %test:assertError("Permission denied")
+    %test:assertError("Permission denied|not found")
 function t:copyCollection() {
     xmldb:copy($t:collection || "/inaccessible", $t:collection || "/copy")
 };
 
 declare 
     %test:user("guest", "guest")
-    %test:assertError("Permission denied")
+    %test:assertError("Permission denied|not found")
 function t:moveCollection() {
     xmldb:move($t:collection || "/inaccessible", $t:collection || "/moved")
 };
 
 declare 
     %test:user("guest", "guest")
-    %test:assertError("Permission denied")
+    %test:assertError("Permission denied|insufficient privileges")
 function t:renameCollection() {
     xmldb:rename($t:collection || "/inaccessible", "renamed")
 };
 
 declare 
     %test:user("guest", "guest")
-    %test:assertError("Permission denied")
+    %test:assertError("Permission denied|not allowed")
 function t:removeCollection() {
     xmldb:remove($t:collection || "/inaccessible")
 };
