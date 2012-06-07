@@ -21,6 +21,12 @@ function t:setup() {
 };
 
 declare
+    %test:tearDown
+function t:cleanup() {
+    xmldb:remove($t:collection)
+};
+
+declare
     %test:user("guest", "guest")
     %test:assertFalse
 function t:readHiddenResource() {
@@ -55,7 +61,7 @@ declare
     %test:assertXPath("count($output) = 1")
     %test:args("inaccessible")
     %test:assertError("Permission denied")
-function t:testListResources($collection as xs:string) {
+function t:listResources($collection as xs:string) {
     let $target := $t:collection || "/" || $collection || "/"
     for $child in xmldb:get-child-resources($target)
     return
@@ -69,8 +75,36 @@ function t:testListResources($collection as xs:string) {
 declare
     %test:user("guest", "guest")
     %test:assertXPath("count($output) = 2")
-function t:testListCollection() {
+function t:listCollection() {
     for $child in xmldb:get-child-collections($t:collection)
     return
         sm:get-permissions(xs:anyURI($t:collection || "/" || $child))
+};
+
+declare 
+    %test:user("guest", "guest")
+    %test:assertError("Permission denied")
+function t:copyCollection() {
+    xmldb:copy($t:collection || "/inaccessible", $t:collection || "/copy")
+};
+
+declare 
+    %test:user("guest", "guest")
+    %test:assertError("Permission denied")
+function t:moveCollection() {
+    xmldb:move($t:collection || "/inaccessible", $t:collection || "/moved")
+};
+
+declare 
+    %test:user("guest", "guest")
+    %test:assertError("Permission denied")
+function t:renameCollection() {
+    xmldb:rename($t:collection || "/inaccessible", "renamed")
+};
+
+declare 
+    %test:user("guest", "guest")
+    %test:assertError("Permission denied")
+function t:removeCollection() {
+    xmldb:remove($t:collection || "/inaccessible")
 };
