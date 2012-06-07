@@ -126,30 +126,38 @@ declare %private function test:run-tests($func as function(*), $meta as element(
  :)
 declare %private function test:test($func as function(*), $meta as element(function), $args as element(annotation)?) {
     let $assertions := test:get-assertions($meta, $args)
+    let $assertError := $assertions[contains(@name, ":assertError")]
     return
         if (exists($assertions)) then
             try {
                 let $result := test:call-test($func, $meta, $args)
                 let $assertResult := test:check-assertions($assertions, $result)
                 return
-                    test:print-result($meta, $result, $assertResult)
-            } catch * {
-                let $assertError := $meta/annotation[contains(@name, ":assertError")]
-                return
                     if ($assertError) then
-                        if ($assertError/value and not(contains($err:code, $assertError/value/string())
-                            or contains($err:description, $assertError/value/string())))then
+                        test:print-result($meta, $result,
+                            <report>
+                                <failure message="Expected error {$assertError/value/string()}."
+                                    type="failure-error-code-1"/>
+                            </report>
+                        )
+                    else
+                        test:print-result($meta, $result, $assertResult)
+            } catch * {
+                if ($assertError) then
+                    if ($assertError/value and not(contains($err:code, $assertError/value/string())
+                        or contains($err:description, $assertError/value/string())))then
+                        test:print-result($meta, $result,
                             <report>
                                 <failure message="Expected error {$assertError/value/string()}, got: {$err:code}"
                                     type="failure-error-code-1"/>
                             </report>
-                        else
-                            test:print-result($meta, (), ())
+                        )
                     else
-                        <error code="{$err:code}" message="{$err:description}">
-                            <xquery-trace>{$exerr:xquery-stack-trace}</xquery-trace>
-                            <java-trace>{$exerr:java-stack-trace}</java-trace>
-                        </error>
+                        test:print-result($meta, (), ())
+                else
+                    <error code="{$err:code}" message="{$err:description}">
+                        <xquery-trace>{$exerr:xquery-stack-trace}</xquery-trace>
+                    </error>
             }
         else
             ()
@@ -187,7 +195,7 @@ declare %private function test:call-test($func as function(*), $meta as element(
         else
             let $args := test:map-arguments($testArgs, $meta/argument)
             return
-                test:apply($func, $args)
+                test:apply($func, $meta, $args)
 };
 
 (:~
@@ -220,6 +228,18 @@ declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs 
         }, $testArgs, $funcArgs)
     else
         ()
+};
+
+declare function test:apply($func as function(*), $meta as element(function), $args as item()*) {
+    let $userAnno := $meta/annotation[contains(@name, ":user")]
+    return
+        if ($userAnno) then
+            let $user := $userAnno/value[1]/string()
+            let $pass := $userAnno/value[2]/string()
+            return
+                system:as-user($user, $pass, test:apply($func, $args))
+        else
+            test:apply($func, $args)
 };
 
 (:~
