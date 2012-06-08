@@ -109,6 +109,7 @@
               <Set name="contextPath">/exist</Set>
               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+			  <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
             </New>
           </Item>
           <Item>
