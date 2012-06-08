@@ -267,7 +267,7 @@ public class RedirectorServlet extends HttpServlet {
 
     private class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
-        Map<String, Object> addedParams = new HashMap<String, Object>();
+        Map<String, String[]> addedParams = new HashMap<String, String[]>();
 
         private RequestWrapper(HttpServletRequest request) {
             super(request);
@@ -275,23 +275,24 @@ public class RedirectorServlet extends HttpServlet {
             for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
                 String key = (String) e.nextElement();
                 String[] value = request.getParameterValues(key);
-                if (value.length == 1)
-                    addedParams.put(key, value[0]);
-                else
-                    addedParams.put(key, value);
+                addedParams.put(key, value);
             }
         }
 
         public void addParameter(String name, String value) {
-            addedParams.put(name, value);
+            addedParams.put(name, new String[] { value });
         }
 
         //XXX: something wrong here, the value can be String[], see line 278
         public String getParameter(String name) {
-            return (String) addedParams.get(name);
+            String[] value = addedParams.get(name);
+            if (value != null && value.length > 0)
+                return value[0];
+            return null;
         }
 
-        public Map<String, Object> getParameterMap() {
+        @Override
+        public Map<String, String[]> getParameterMap() {
             return addedParams;
         }
 

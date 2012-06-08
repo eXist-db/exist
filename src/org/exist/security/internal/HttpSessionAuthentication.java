@@ -25,9 +25,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import org.eclipse.jetty.http.security.Constraint;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.eclipse.jetty.util.security.Constraint;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

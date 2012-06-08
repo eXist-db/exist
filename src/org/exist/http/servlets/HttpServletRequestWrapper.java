@@ -21,11 +21,8 @@
 
 package org.exist.http.servlets;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,14 +31,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import org.exist.util.MimeType;
 import org.exist.util.VirtualTempFile;
@@ -544,7 +534,32 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		return request.isRequestedSessionIdFromUrl();
 	}
 
-	/**
+    @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
+        return request.authenticate(httpServletResponse);
+    }
+
+    @Override
+    public void login(String s, String s1) throws ServletException {
+        request.login(s, s1);
+    }
+
+    @Override
+    public void logout() throws ServletException {
+        request.logout();
+    }
+
+    @Override
+    public Collection<Part> getParts() throws IOException, ServletException {
+        return request.getParts();
+    }
+
+    @Override
+    public Part getPart(String s) throws IOException, ServletException {
+        return request.getPart(s);
+    }
+
+    /**
 	 * @see javax.servlet.http.HttpServletRequest#getAttribute
 	 */
 	public Object getAttribute(String name)
@@ -894,8 +909,43 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	{	
 		return request.getLocalPort();
 	}
-	
-	/**
+
+    @Override
+    public ServletContext getServletContext() {
+        return request.getServletContext();
+    }
+
+    @Override
+    public AsyncContext startAsync() throws IllegalStateException {
+        return request.startAsync();
+    }
+
+    @Override
+    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+        return request.startAsync(servletRequest, servletResponse);
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        return request.isAsyncStarted();
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return request.isAsyncSupported();
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return request.getAsyncContext();
+    }
+
+    @Override
+    public DispatcherType getDispatcherType() {
+        return request.getDispatcherType();
+    }
+
+    /**
 	 * Similar to javax.servlet.http.HttpServletRequest.toString() ,
 	 * except it includes output of the Request parameters from the Request's Content Body
 	 * @return		String representation of HttpServletRequestWrapper
