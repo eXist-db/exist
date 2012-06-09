@@ -38,6 +38,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.storage.ElementValue;
+import org.exist.util.XMLChar;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.BasicExpressionVisitor;
@@ -53,6 +54,7 @@ import org.exist.xquery.NodeTest;
 import org.exist.xquery.Optimizable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.fn.FunStringToCodepoints;
 import org.exist.xquery.modules.ngram.query.AlternativeStrings;
 import org.exist.xquery.modules.ngram.query.EmptyExpression;
 import org.exist.xquery.modules.ngram.query.EndAnchor;
@@ -66,12 +68,7 @@ import org.exist.xquery.modules.ngram.utils.F;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class NGramSearch extends Function implements Optimizable {
 
@@ -489,12 +486,13 @@ public class NGramSearch extends Function implements Optimizable {
             return new EmptyNodeSet();
 
         String firstNgramm = ngrams[0];
-        NodeSet result = index
-            .search(getExpressionId(), docs, qnames, firstNgramm, firstNgramm, context, nodeSet, axis);
+        LOG.trace("First NGRAM: " + firstNgramm);
+        NodeSet result = index.search(getExpressionId(), docs, qnames, firstNgramm, firstNgramm, context, nodeSet, axis);
 
         for (int i = 1; i < ngrams.length; i++) {
             String ngram = ngrams[i];
-            int fillSize = index.getN() - ngram.length();
+            int len = ngram.codePointCount(0, ngram.length());
+            int fillSize = index.getN() - len;
             String filledNgram = ngram;
 
             // if this ngram is shorter than n,
@@ -502,8 +500,17 @@ public class NGramSearch extends Function implements Optimizable {
             // ngrams lead to a considerable performance loss.
             if (fillSize > 0) {
                 String filler = ngrams[i - 1];
-                filledNgram = filler.substring(ngram.length()) + ngram;
-            	}
+                StringBuilder buf = new StringBuilder();
+                int pos = filler.offsetByCodePoints(0, len);
+                for (int j = 0; j < fillSize; j++) {
+                    int codepoint = filler.codePointAt(pos);
+                    pos += Character.charCount(codepoint);
+                    buf.appendCodePoint(codepoint);
+                }
+                buf.append(ngram);
+                filledNgram = buf.toString();
+                LOG.debug("Filled: " + filledNgram);
+            }
 
             NodeSet nodes = index.search(getExpressionId(), docs, qnames, filledNgram, ngram, context, nodeSet, axis);
 
@@ -518,8 +525,8 @@ public class NGramSearch extends Function implements Optimizable {
                         return getContinuousMatches(before, a);
                     } else {
                         return null;
-            }
-        }
+                    }
+                }
             });
         }
         return result;
@@ -586,23 +593,30 @@ public class NGramSearch extends Function implements Optimizable {
      *            the character sequence to split
      * @return a sequence of ngrams. the last item might be shorter than n.
      */
-    private static String[] getDistinctNGrams(final CharSequence text, final int ngramSize) {
-        int count = text.length() / ngramSize;
-        int remainder = text.length() % ngramSize;
+    private static String[] getDistinctNGrams(final String text, final int ngramSize) {
+        int len = text.codePointCount(0, text.length());
+        int count = len / ngramSize;
+        int remainder = len % ngramSize;
+
         String[] n = new String[(remainder > 0 ? count + 1 : count)];
         int pos = 0;
         for (int i = 0; i < count; i++) {
-            char[] ch = new char[ngramSize];
+            StringBuilder bld = new StringBuilder(ngramSize);
             for (int j = 0; j < ngramSize; j++) {
-                ch[j] = Character.toLowerCase(text.charAt(pos++));
+                int next = text.codePointAt(pos);
+                pos += Character.charCount(next);
+                bld.appendCodePoint(next);
             }
-            n[i] = new String(ch);
+            n[i] = bld.toString();
         }
         if (remainder > 0) {
-            char[] ch = new char[remainder];
-            for (int i = 0; i < remainder; i++)
-                ch[i] = Character.toLowerCase(text.charAt(pos++));
-            n[count] = new String(ch);
+            StringBuilder bld = new StringBuilder(remainder);
+            for (int j = 0; j < remainder; j++) {
+                int next = text.codePointAt(pos);
+                pos += Character.charCount(next);
+                bld.appendCodePoint(next);
+            }
+            n[count] = bld.toString();
         }
         return n;
     }
