@@ -74,15 +74,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArray;
-import org.exist.util.ByteConversion;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FastQSort;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
+import org.exist.util.*;
 import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -388,7 +380,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 try {
                     lock.acquire(Lock.READ_LOCK);
                     SearchCallback cb = new SearchCallback(contextId, query, ngram, docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
-                    int op = query.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
+                    int op = query.codePointCount(0, query.length()) < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
                     index.db.query(new IndexQuery(op, key), cb);
                 } catch (LockException e) {
                     LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
@@ -557,35 +549,50 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return null;
     }
 
-    public String[] tokenize(CharSequence text) {
-        int len = text.length();
+    /**
+     * Split the given text string into ngrams. The size of an ngram is determined
+     * by counting the codepoints, not the characters. The resulting strings may
+     * thus be longer than the ngram size.
+     *
+     * @param text
+     * @return
+     */
+    public String[] tokenize(String text) {
+        int len = text.codePointCount(0, text.length());
         int gramSize = index.getN();
         String[] ngrams = new String[len];
         int next = 0;
+        int pos = 0;
+        StringBuilder bld = new StringBuilder(gramSize);
         for (int i = 0; i < len; i++) {
-            checkBuffer();
-            for (int j = 0; j < gramSize && i + j < len; j++) {
-                // TODO: case sensitivity should be configurable
-                buf[currentChar + j] = Character.toLowerCase(text.charAt(i + j));
+            bld.setLength(0);
+            int offset = pos;
+            for (int count = 0; count < gramSize && offset < text.length(); count++) {
+                int codepoint = text.codePointAt(offset);
+                offset += Character.charCount(codepoint);
+                if (count == 0)
+                    pos = offset;   // advance pos to next character
+                bld.appendCodePoint(codepoint);
             }
-            ngrams[next++] = new String(buf, currentChar, gramSize);
-            currentChar += gramSize;
+            LOG.debug("NGRAM: " + bld.toString());
+            ngrams[next++] = bld.toString();
         }
         return ngrams;
     }
 
-    private void indexText(NodeId nodeId, QName qname, CharSequence text) {
+    private void indexText(NodeId nodeId, QName qname, String text) {
         String[] ngram = tokenize(text);
         int len = ngram.length;
         for (int i = 0; i < len; i++) {
+            int offset = text.offsetByCodePoints(0, i);
             QNameTerm key = new QNameTerm(qname, ngram[i]);
             OccurrenceList list = ngrams.get(key);
             if (list == null) {
                 list = new OccurrenceList();
-                list.add(nodeId, i);
+                list.add(nodeId, offset);
                 ngrams.put(key, list);
             } else {
-                list.add(nodeId, i);
+                list.add(nodeId, offset);
             }
         }
     }
@@ -662,7 +669,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
                 XMLString content = contentStack.pop();
-                indexText(element.getNodeId(), element.getQName(), content);
+                indexText(element.getNodeId(), element.getQName(), content.toString());
             }
             super.endElement(transaction, element, path);
         }
@@ -952,6 +959,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             String ngram;
             try {
                 ngram = new String(key.getData(), NGramQNameKey.NGRAM_OFFSET, key.getLength() - NGramQNameKey.NGRAM_OFFSET, "UTF-8");
+                LOG.debug("Found ngram: " + ngram);
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
