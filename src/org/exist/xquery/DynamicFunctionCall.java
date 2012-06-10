@@ -46,7 +46,8 @@ public class DynamicFunctionCall extends AbstractExpression {
         Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
         if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
             throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount());
+                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
+                ". Expression: " + ExpressionDumper.dump(functionExpr));
         Item item0 = funcSeq.itemAt(0);
         if (!Type.subTypeOf(item0.getType(), Type.FUNCTION_REFERENCE))
             throw new XPathException(this, ErrorCodes.XPTY0004,
