@@ -574,7 +574,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     pos = offset;   // advance pos to next character
                 bld.appendCodePoint(codepoint);
             }
-            LOG.debug("NGRAM: " + bld.toString());
             ngrams[next++] = bld.toString();
         }
         return ngrams;
