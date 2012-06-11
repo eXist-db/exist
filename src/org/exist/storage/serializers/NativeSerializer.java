@@ -81,19 +81,21 @@ public class NativeSerializer extends Serializer {
         if (generateDocEvent) receiver.endDocument();
     }
     
-    protected void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)
-    throws SAXException {
+    protected void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent) throws SAXException {
     	long start = System.currentTimeMillis();
+    	
     	setDocument(doc);
     	NodeList children = doc.getChildNodes();
     	if (generateDocEvent) 
     		receiver.startDocument();
-		if (doc.getDoctype() != null){
+		
+    	if (doc.getDoctype() != null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
 				final StoredNode n = (StoredNode) doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet<String>());
 			}
 		}
+    	
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		StoredNode node = (StoredNode) children.item(i);
@@ -103,11 +105,13 @@ public class NativeSerializer extends Serializer {
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
     				true, p.getMatches(), new TreeSet<String>());
     	}
-    	DocumentImpl documentImpl = doc;
-		LOG.debug("serializing document " + documentImpl.getDocId()
-				+ " (" + documentImpl.getURI() + ")"
-    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");
+
     	if (generateDocEvent) receiver.endDocument();
+
+    	if (LOG.isDebugEnabled())
+			LOG.debug("serializing document " + doc.getDocId() + " (" + doc.getURI() + ")"
+	    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");
+
     }
     
     
