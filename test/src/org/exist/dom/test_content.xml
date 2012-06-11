@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/reference.dtd">
+<reference xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/"
+	domains="(topic reference) (topic hi-d) (topic ut-d) (topic indexing-d) (topic hazard-d) (topic abbrev-d) (topic pr-d) (topic sw-d) (topic ui-d)"
+	class="- topic/topic reference/reference " ditaarch:DITAArchVersion="1.2" id="reference-6996">
+	<title class="- topic/title ">All the ways a document can leave or enter JorsekCM</title>
+	<shortdesc class="- topic/shortdesc "/>
+	<prolog class="- topic/prolog ">
+		<author class="- topic/author " type="creator">Patrick Bosek
+			&lt;patrick.bosek@jorsek.com&gt;</author>
+		<metadata class="- topic/metadata ">
+			<keywords class="- topic/keywords "/>
+		</metadata>
+	</prolog>
+	<refbody class="- topic/body reference/refbody ">
+		<refsyn class="- topic/section reference/refsyn "/>
+		
+	</refbody>
+</reference>
