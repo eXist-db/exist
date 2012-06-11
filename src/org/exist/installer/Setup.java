@@ -28,11 +28,11 @@ import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
-import org.exist.xquery.XPathException;
-import org.expath.pkg.repo.*;
+import org.expath.pkg.repo.FileSystemStorage;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.UserInteractionStrategy;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
-import org.jedit.syntax.InputHandler;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -41,7 +41,6 @@ import org.xmldb.api.modules.XQueryService;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,13 +52,14 @@ public class Setup {
     private final static String URI = "xmldb:exist:///db";
 
     public static void main(String[] args) {
+        //TODO: I think this will never happen with the current setup. Class needs a little more cleanup.
         if (args.length < 1) {
             System.err.println("No password specified. Admin password will be empty.");
             return;
         }
         int offset = 0;
         String passwd = null;
-        if (args[0].startsWith("pass=")) {
+        if (args[0].startsWith("pass:")) {
             passwd = args[0].substring(5);
             offset = 1;
         }
@@ -80,7 +80,7 @@ public class Setup {
 
         List<String> uris = new ArrayList<String>();
         for (int i = offset; i < args.length; i++) {
-            String[] appParams = args[i].split("=");
+            String[] appParams = args[i].split(":");
             String name = appParams[0];
             String onOff = appParams[1];
             if ("on".equals(onOff)) {
