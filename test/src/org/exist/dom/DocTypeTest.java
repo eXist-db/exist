@@ -48,6 +48,7 @@ public class DocTypeTest extends XMLTestCase {
     	OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
     	OUTPUT_PROPERTIES.setProperty(OutputKeys.ENCODING, "UTF-8");
     	OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+    	OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
     	OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
     	OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
     }
