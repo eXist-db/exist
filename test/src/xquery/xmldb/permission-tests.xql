@@ -16,7 +16,9 @@ function t:setup() {
     return (
         map(xmldb:store(?, "test.xml", <test/>), ($collAccess, $collForbidden)),
         sm:chmod(xs:anyURI($collAccess), "rwxrwxrwx"),
-        sm:chmod(xs:anyURI($collForbidden), "rwxrwxr--")
+        sm:chmod(xs:anyURI($collForbidden), "rwxrwxr--"),
+        xmldb:store($t:collection, "hidden.xml", <hidden/>),
+        sm:chmod(xs:anyURI($t:collection || "/hidden.xml"), "rw-------")
     )
 };
 
@@ -29,14 +31,35 @@ function t:cleanup() {
 declare
     %test:user("guest", "guest")
     %test:assertFalse
-function t:readHiddenResource() {
+function t:fnDocAvailableOnHiddenResource() {
+    doc-available("/db/permission-test/hidden.xml")
+};
+
+declare
+    %test:user("guest", "guest")
+    %test:assertError
+function t:fnDocOnHiddenResource() {
+    doc("/db/permission-test/hidden.xml")//hidden
+};
+
+declare
+    %test:user("guest", "guest")
+    %test:assertEquals(0)
+function t:fnCollectionOnHiddenResource() {
+    count(collection("/db/permission-test")//hidden)
+};
+
+declare
+    %test:user("guest", "guest")
+    %test:assertFalse
+function t:fnDocOnHiddenCollection() {
     doc-available("/db/permission-test/inaccessible/test.xml")
 };
 
 declare
     %test:user("guest", "guest")
     %test:assertError("Permission denied")
-function t:readHiddenCollection() {
+function t:fnCollectionOnHiddenCollection() {
     collection("/db/permission-test/inaccessible")/*
 };
 
