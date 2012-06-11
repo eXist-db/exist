@@ -69,6 +69,8 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.hashtable.MapRWLock;
+import org.exist.util.hashtable.MapRWLock.LongOperation;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
@@ -424,7 +426,7 @@ public class BrokerPool extends Observable implements Database {
 	/**
 	 * The number of active brokers for the database instance 
 	 */	
-	private Map<Thread, DBBroker> activeBrokers = new IdentityHashMap<Thread, DBBroker>();
+	private MapRWLock<Thread, DBBroker> activeBrokers = new MapRWLock<Thread, DBBroker>( new IdentityHashMap<Thread, DBBroker>() );
 		
 	/**
      * The configuration object for the database instance
@@ -1396,16 +1398,21 @@ public class BrokerPool extends Observable implements Database {
 			//Try to get an active broker
 			DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if (broker == null) {
-				StringBuilder sb = new StringBuilder();
+				final StringBuilder sb = new StringBuilder();
 				sb.append("Broker was not obtained for thread '");
 				sb.append(Thread.currentThread());
 				sb.append("'.\n");
-				for (Entry<Thread, DBBroker> entry : activeBrokers.entrySet()) {
-					sb.append(entry.getKey());
-					sb.append(" = ");
-					sb.append(entry.getValue());
-					sb.append("\n");
-				}
+				activeBrokers.readOperation(new LongOperation<Thread, DBBroker>() {
+					@Override
+					public void execute(Map<Thread, DBBroker> map) {
+						for (Entry<Thread, DBBroker> entry : map.entrySet()) {
+							sb.append(entry.getKey());
+							sb.append(" = ");
+							sb.append(entry.getValue());
+							sb.append("\n");
+						}
+					}
+				});
 				throw new RuntimeException(sb.toString());
 			}
 			return broker;
@@ -1498,7 +1505,7 @@ public class BrokerPool extends Observable implements Database {
 	 *@param  broker  The broker to be released
 	 */
 	//TODO : rename as releaseBroker ? releaseInstance (when refactored) ?
-	public void release(DBBroker broker) {
+	public void release(final DBBroker broker) {
 
         // might be null as release() is often called within a finally block
 		if (broker == null)
@@ -1512,28 +1519,34 @@ public class BrokerPool extends Observable implements Database {
 		}
 		
 		synchronized (this) {
-	        //Broker is no more used : inactivate it
-            for (int i = 0; i < inactiveBrokers.size(); i++) {
-                if (broker == inactiveBrokers.get(i)) {
-                    LOG.error("Broker is already in the inactive list!!!");
-                    return;
-                }
-            }
+			//Broker is no more used : inactivate it
+			for (int i = 0; i < inactiveBrokers.size(); i++) {
+				if (broker == inactiveBrokers.get(i)) {
+					LOG.error("Broker is already in the inactive list!!!");
+					return;
+				}
+			}
 			
-	        if (activeBrokers.remove(Thread.currentThread())==null) {
-	             LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
-	             // Cleanup the state of activeBrokers
-	             for (Object t : activeBrokers.keySet()) {
-	                if (activeBrokers.get(t)==broker) {
-	                	EXistException ex = new EXistException();
-	                	LOG.error("release() has been called from '"+Thread.currentThread()+"', but occupied at '"+t+"'.", ex);
-	                	
-	                	activeBrokers.remove(t);
-	                	break;
-	                }
-	             }
-	         }
-	        Subject lastUser = broker.getSubject();
+			if (activeBrokers.remove(Thread.currentThread())==null) {
+				LOG.error("release() has been called from the wrong thread for broker "+broker.getId());
+				// Cleanup the state of activeBrokers
+				
+				activeBrokers.writeOperation(new LongOperation<Thread, DBBroker>() {
+					@Override
+					public void execute(Map<Thread, DBBroker> map) {
+						for (Object t : map.keySet()) {
+							if (map.get(t)==broker) {
+								EXistException ex = new EXistException();
+								LOG.error("release() has been called from '"+Thread.currentThread()+"', but occupied at '"+t+"'.", ex);
+								
+								map.remove(t);
+								break;
+							}
+						}
+					}
+				});
+			}
+			Subject lastUser = broker.getSubject();
 			broker.setSubject(securityManager.getGuestSubject());
 			inactiveBrokers.push(broker);
 			if (watchdog != null)
