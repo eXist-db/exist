@@ -548,7 +548,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             getLock().acquire(Lock.READ_LOCK);
             docs.addCollection(this);
-            addDocumentsToSet(docs);
+            addDocumentsToSet(broker, docs);
         } catch (LockException le) {
             //TODO this should not be caught - it should be thrown - lock errors are bad!!!
             LOG.error(le.getMessage(), le);
@@ -560,7 +560,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     public DocumentSet getDocumentsNoLock(DBBroker broker, MutableDocumentSet docs) {
         docs.addCollection(this);
-        addDocumentsToSet(docs);
+        addDocumentsToSet(broker, docs);
         return docs;
     }
 
@@ -590,9 +590,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     	}
     }
     
-    private void addDocumentsToSet(MutableDocumentSet docs) {
+    private void addDocumentsToSet(DBBroker broker, MutableDocumentSet docs) {
     	for (DocumentImpl doc : documents.values()) {
-    		docs.add(doc);
+            if (doc.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+    		    docs.add(doc);
+            }
     	}
     }
     
