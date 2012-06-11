@@ -158,10 +158,10 @@ public class MapRWLock<K, V> implements Map<K, V> {
         }
     }
     
-    public void writeOperation(final LongOperation<K, V> readOp) {
+    public void writeOperation(final LongOperation<K, V> writeOp) {
         writeLock.lock();
         try {
-            readOp.execute(map);
+        	writeOp.execute(map);
         } finally {
         	writeLock.unlock();
         }
