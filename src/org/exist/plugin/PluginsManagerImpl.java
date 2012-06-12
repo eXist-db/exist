@@ -25,7 +25,6 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.*;
-import java.util.jar.*;
 
 import org.apache.log4j.Logger;
 import org.exist.Database;
@@ -52,18 +51,18 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 	public final static XmldbURI PLUGINS_COLLETION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("plugins");
 	public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
 
-	private final static String MAIN_CLASS = "Main-Class";
-	private final static String CLASS_PATH = "Class-Path";
-
 	@ConfigurationFieldAsAttribute("version")
 	private String version = "1.0";
+
+	@ConfigurationFieldAsElement("plugin")
+	private List<String> runPlugins = new ArrayList<String>();
 
 //	@ConfigurationFieldAsElement("search-path")
 //	private Map<String, File> placesToSearch = new LinkedHashMap<String, File>();
 
 //	private Map<String, PluginInfo> foundClasses = new LinkedHashMap<String, PluginInfo>();
 	
-	private List<Jack> jacks = new ArrayList<Jack>();
+	private Map<String, Jack> jacks = new HashMap<String, Jack>();
 	
 	private Configuration configuration = null;
 	
@@ -100,6 +99,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
         Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
 		configuration = Configurator.configure(this, _config_);
 		
+		//load plugins by META-INF/services/
 		try {
 //			File libFolder = new File(((BrokerPool)db).getConfiguration().getExistHome(), "lib");
 //			File pluginsFolder = new File(libFolder, "plugins");
@@ -112,7 +112,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 					Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
 					Jack plgn = ctor.newInstance(this);
 					
-					jacks.add(plgn);
+					jacks.put(plugin.getName(), plgn);
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
@@ -120,91 +120,42 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+		
+		//load defined at configuration
+		for (String className : runPlugins) {
+			//check if already run
+			if (jacks.containsKey(className))
+				continue;
+			
+			try {
+				Class<? extends Jack> plugin = (Class<? extends Jack>) Class.forName(className);
+				
+				Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
+				Jack plgn = ctor.newInstance(this);
+				
+				jacks.put(plugin.getName(), plgn);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public String version() {
+		return version;
+	}
+	
+	public void shutdown() {
+		for (Jack plugin : jacks.values()) {
+			try {
+				plugin.stop();
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
 	}
 	
 	public Database getDatabase() {
 		return db;
-	}
-	
-	public void addSearchPath(String path) {
-		System.out.println("addSearchPath = "+path);
-	}
-
-	private void addJavaClassPath() {
-		String path = null;
-
-		try {
-			path = System.getProperty("java.class.path");
-		} catch (Exception ex) {
-			path = "";
-			LOG.error("Unable to get class path", ex);
-		}
-
-		StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
-		while (tok.hasMoreTokens())
-			add(new File(tok.nextToken()));
-	}
-
-	public boolean add(File file) {
-		boolean added = false;
-
-		if (Utils.fileCanContainClasses(file)) {
-			String absPath = file.getAbsolutePath();
-
-//			if (placesToSearch.get(absPath) == null) {
-//				placesToSearch.put(absPath, file);
-//
-//				if (Utils.isJar(absPath))
-//					loadJarClass(file);
-//			}
-
-			added = true;
-		}
-
-		return added;
-	}
-
-	private void loadJarClass(File jarFile) {
-		try {
-			JarFile jar = new JarFile(jarFile);
-			Manifest manifest = jar.getManifest();
-			if (manifest == null)
-				return;
-			
-			Attributes attrs = manifest.getMainAttributes();
-
-			String value = (String) attrs.get(CLASS_PATH);
-			if (value != null) {
-				if (LOG.isDebugEnabled())
-					LOG.debug("Adding Class-Path from jar " + jar.getName());
-
-				StringBuilder buf = new StringBuilder();
-				StringTokenizer tok = new StringTokenizer(value);
-				while (tok.hasMoreTokens()) {
-					buf.setLength(0);
-					String element = tok.nextToken();
-					String parent = jarFile.getParent();
-					if (parent != null) {
-						buf.append(parent);
-						buf.append(File.separator);
-					}
-					buf.append(element);
-				}
-
-				String element = buf.toString();
-				if (LOG.isDebugEnabled())
-					LOG.debug("From " + jar.getName() + ": " + element);
-
-				add(new File(element));
-			}
-
-			value = (String) attrs.get(MAIN_CLASS);
-			if (value != null) {
-				// TODO: main class, aka activator
-			}
-		} catch (IOException ex) {
-			LOG.error("I/O error processing jar file '" + jarFile.getPath() + "'", ex);
-		}
 	}
 	
 	/*

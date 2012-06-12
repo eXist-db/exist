@@ -29,4 +29,6 @@ package org.exist.plugin;
  */
 public interface Jack {
 
+
+	public void stop();
 }
