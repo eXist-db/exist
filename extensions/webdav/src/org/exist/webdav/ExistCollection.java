@@ -226,8 +226,8 @@ public class ExistCollection extends ExistResource {
         DBBroker broker = null;
         Collection collection = null;
 
-        TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
 
         try {
             broker = brokerPool.get(subject);
@@ -236,7 +236,7 @@ public class ExistCollection extends ExistResource {
             // Open collection if possible, else abort
             collection = broker.openCollection(xmldbUri, Lock.WRITE_LOCK);
             if (collection == null) {
-                transact.abort(txn);
+                txnManager.abort(txn);
                 return;
             }
 
@@ -244,7 +244,7 @@ public class ExistCollection extends ExistResource {
             broker.removeCollection(txn, collection);
 
             // Commit change
-            transact.commit(txn);
+            txnManager.commit(txn);
 
             if(LOG.isDebugEnabled())
                 LOG.debug("Document deleted sucessfully");
@@ -252,19 +252,19 @@ public class ExistCollection extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (IOException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (TriggerException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
 		} finally {
 
@@ -291,8 +291,8 @@ public class ExistCollection extends ExistResource {
         DBBroker broker = null;
         Collection collection = null;
 
-        TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
 
         try {
             broker = brokerPool.get(subject);
@@ -305,7 +305,7 @@ public class ExistCollection extends ExistResource {
                 LOG.debug("Collection already exists");
                 
                 //XXX: double "abort" is bad thing!!!
-                transact.abort(txn);
+                txnManager.abort(txn);
                 throw new CollectionExistsException("Collection already exists");
             }
 
@@ -315,7 +315,7 @@ public class ExistCollection extends ExistResource {
             broker.flush();
 
             // Commit change
-            transact.commit(txn);
+            txnManager.commit(txn);
 
             if(LOG.isDebugEnabled())
                 LOG.debug("Collection created sucessfully");
@@ -323,21 +323,21 @@ public class ExistCollection extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw e;
 
         } catch (IOException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw e;
 
         } catch (Throwable e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw new EXistException(e);
 
         } finally {
@@ -400,8 +400,8 @@ public class ExistCollection extends ExistResource {
         }
 
         // Start transaction
-        TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
 
         try {
             broker = brokerPool.get(subject);
@@ -411,7 +411,7 @@ public class ExistCollection extends ExistResource {
             collection = broker.openCollection(xmldbUri, Lock.WRITE_LOCK);
             if (collection == null) {
                 LOG.debug("Collection " + xmldbUri + " does not exist");
-                transact.abort(txn);
+                txnManager.abort(txn);
                 throw new CollectionDoesNotExistException(xmldbUri + "");
             }
 
@@ -441,7 +441,7 @@ public class ExistCollection extends ExistResource {
             }
 
             // Commit change
-            transact.commit(txn);
+            txnManager.commit(txn);
 
             if(LOG.isDebugEnabled())
                 LOG.debug("Document created sucessfully");
@@ -449,32 +449,32 @@ public class ExistCollection extends ExistResource {
 
         } catch (EXistException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw new IOException(e);
 
         } catch (TriggerException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw new IOException(e);
 
         } catch (SAXException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw new IOException(e);
 
         } catch (LockException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw new PermissionDeniedException(xmldbUri + "");
 
         } catch (IOException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw e;
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
             throw e;
 
         } finally {
