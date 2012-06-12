@@ -248,8 +248,8 @@ public class ExistDocument extends ExistResource {
         Collection collection = null;
         DocumentImpl resource = null;
 
-        TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
 
         try {
             broker = brokerPool.get(subject);
@@ -262,7 +262,7 @@ public class ExistDocument extends ExistResource {
             collection = broker.openCollection(collName, Lock.WRITE_LOCK);
             if (collection == null) {
                 LOG.debug("Collection does not exist");
-                transact.abort(txn);
+                txnManager.abort(txn);
                 return;
             }
 
@@ -270,7 +270,7 @@ public class ExistDocument extends ExistResource {
             resource = collection.getDocument(broker, docName);
             if (resource == null) {
                 LOG.debug("No resource found for path: " + xmldbUri);
-                transact.abort(txn);
+                txnManager.abort(txn);
                 return;
             }
 
@@ -282,26 +282,26 @@ public class ExistDocument extends ExistResource {
             }
 
             // Commit change
-            transact.commit(txn);
+            txnManager.commit(txn);
 
            if(LOG.isDebugEnabled())
                LOG.debug("Document deleted sucessfully");
 
         } catch (LockException e) {
             LOG.error("Resource is locked.", e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (EXistException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (TriggerException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            transact.abort(txn);
+            txnManager.abort(txn);
 
         } finally {
 
@@ -499,8 +499,8 @@ public class ExistDocument extends ExistResource {
         DBBroker broker = null;
         DocumentImpl document = null;
 
-        TransactionManager transact = brokerPool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
 
         try {
             broker = brokerPool.get(subject);
@@ -534,16 +534,16 @@ public class ExistDocument extends ExistResource {
             document.getMetadata().setLockToken(null);
 
             // Make it persistant
-            broker.storeXMLResource(transaction, document);
-            transact.commit(transaction);
+            broker.storeXMLResource(txn, document);
+            txnManager.commit(txn);
 
         } catch (EXistException e) {
-            transact.abort(transaction);
+            txnManager.abort(txn);
             LOG.error(e);
             throw e;
 
         } catch (PermissionDeniedException e) {
-            transact.abort(transaction);
+            txnManager.abort(txn);
             LOG.error(e);
             throw e;
 
