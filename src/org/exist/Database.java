@@ -21,6 +21,7 @@
  */
 package org.exist;
 
+import java.io.File;
 import java.util.Observer;
 
 import org.exist.debuggee.Debuggee;
@@ -46,7 +47,7 @@ public interface Database {
 	//TODO: javadocs
 	
 	public String getId(); 
-	
+
 	public void addObserver(Observer o);
 	
 	/**
@@ -136,4 +137,7 @@ public interface Database {
 	public Configuration getConfiguration();
 
 	public NodeIdFactory getNodeFactory();
+
+	public File getStoragePlace();
+
 }
