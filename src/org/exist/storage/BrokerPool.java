@@ -1803,6 +1803,12 @@ public class BrokerPool extends Observable implements Database {
                 }
                 LOG.debug("Calling shutdown ...");
                 
+                try {
+                	pluginManager.shutdown();
+                } catch (Throwable e) {
+                    LOG.warn("Error during plugins shutdown: " + e.getMessage(), e);
+                }
+                
                 // closing down external indexes
                 try {
                     indexManager.shutdown();
@@ -1967,4 +1973,9 @@ public class BrokerPool extends Observable implements Database {
             }
         }
     }
+
+	@Override
+	public File getStoragePlace() {
+		return new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+	}
 }
