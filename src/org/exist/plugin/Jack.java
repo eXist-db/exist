@@ -34,7 +34,13 @@ public interface Jack {
 
 
 	/**
+	 * This method called during synchronization.
+	 */
+	public void sync();
+
+	/**
 	 * This method called during shutdown.
 	 */
 	public void stop();
+
 }
