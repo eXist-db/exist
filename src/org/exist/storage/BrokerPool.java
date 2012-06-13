@@ -1648,6 +1648,10 @@ public class BrokerPool extends Observable implements Database {
                 LOG.warn(e.getMessage(), e);
             }
             cacheManager.checkCaches();
+            
+            if (pluginManager != null)
+            	pluginManager.sync();
+            
             lastMajorSync = System.currentTimeMillis();
             if (LOG.isDebugEnabled())
             	notificationService.debug();
@@ -1803,11 +1807,8 @@ public class BrokerPool extends Observable implements Database {
                 }
                 LOG.debug("Calling shutdown ...");
                 
-                try {
+            	if (pluginManager != null)
                 	pluginManager.shutdown();
-                } catch (Throwable e) {
-                    LOG.warn("Error during plugins shutdown: " + e.getMessage(), e);
-                }
                 
                 // closing down external indexes
                 try {

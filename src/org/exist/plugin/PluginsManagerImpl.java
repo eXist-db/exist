@@ -146,6 +146,16 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		}
 	}
 	
+	public void sync() {
+		for (Jack plugin : jacks.values()) {
+			try {
+				plugin.sync();
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
+	}
+
 	public void shutdown() {
 		for (Jack plugin : jacks.values()) {
 			try {
