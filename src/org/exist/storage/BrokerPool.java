@@ -898,13 +898,6 @@ public class BrokerPool extends Observable implements Database {
             LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
         
-        try {
-            initialiseTriggersForSystemCollections(broker);
-        } catch(PermissionDeniedException pde) {
-            LOG.error(pde.getMessage(), pde);
-            throw new EXistException(pde.getMessage(), pde);
-        }
-        
         //wake-up the security manager
         securityManager.attach(this, broker);
 
@@ -936,16 +929,10 @@ public class BrokerPool extends Observable implements Database {
 
         //initialize configurations watcher trigger
         try {
-            Collection systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-            if (systemCollection != null) {
-                CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-                CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, systemCollection);
-
-                Class c = ConfigurationDocumentTrigger.class;
-                DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, systemCollection.getURI());
-                collConf.getDocumentTriggerProxies().add(triggerProxy);  
-            }
+        	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
+            
         } catch(PermissionDeniedException pde) {
+        	//XXX: do not catch exception!
             LOG.error(pde.getMessage(), pde);
         }
 
@@ -1088,12 +1075,10 @@ public class BrokerPool extends Observable implements Database {
     {
         //create /db/system
         initialiseSystemCollection(broker, XmldbURI.SYSTEM_COLLECTION_URI, Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
-        //create /db/etc
-        initialiseSystemCollection(broker, XmldbURI.ETC_COLLECTION_URI, Permission.DEFAULT_SYSTEM_ETC_COLLECTION_PERM);
     }
 
-    private void initialiseTriggersForSystemCollections(DBBroker broker) throws EXistException, PermissionDeniedException {
-        Collection collection = broker.getCollection(XmldbURI.ETC_COLLECTION_URI);
+    private void initialiseTriggersForCollections(DBBroker broker, XmldbURI uri) throws EXistException, PermissionDeniedException {
+    	Collection collection = broker.getCollection(uri);
 
         //initialize configurations watcher trigger
         if(collection != null) {
