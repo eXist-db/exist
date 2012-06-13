@@ -30,6 +30,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 
 /**
+ * Configuration interface provide methods to read settings.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
@@ -39,39 +41,137 @@ public interface Configuration {
 
     public String ID = "id";
 
+    /**
+     * Return sub configuration by name.
+     *  
+     * @param name
+     * @return
+     */
     public Configuration getConfiguration(String name);
 
+    /**
+     * Return list of sub configurations by name.
+     * 
+     * @param name
+     * @return
+     */
     public List<Configuration> getConfigurations(String name);
 
+    /**
+     * Return set of properties configuration have.
+     * 
+     * @return
+     */
     public Set<String> getProperties();
 
+    /**
+     * Check presents of setting by name.
+     * 
+     * @param name
+     * @return
+     */
     public boolean hasProperty(String name);
 
+    /**
+     * Return property string value.
+     * 
+     * @param property
+     * @return
+     */
     public String getProperty(String property);
 
+    /**
+     * Return property map value.
+     * 
+     * @param property
+     * @return
+     */
     public Map<String, String> getPropertyMap(String property);
 
+    /**
+     * Return property integer value.
+     * 
+     * @param property
+     * @return
+     */
     public Integer getPropertyInteger(String property);
+    
+    /**
+     * Return property long value.
+     * 
+     * @param property
+     * @return
+     */
     public Long getPropertyLong(String property);
+    
+    /**
+     * Return property boolean value.
+     * 
+     * @param property
+     * @return
+     */
     public Boolean getPropertyBoolean(String property);
-    public Class<?> getPropertyClass(String propertySecurityClass);
-
-    public void setProperty(String property, String value);
-    public void setProperty(String property, Integer value);
-
+    
+    /**
+     * Keep at internal map object associated with key.
+     * 
+     * @param name
+     * @param object
+     * @return
+     */
     public Object putObject(String name, Object object);
+    
+    /**
+     * Get object associated by key from internal map.
+     * 
+     * @param name
+     * @return
+     */
     public Object getObject(String name);
 
+    /**
+     * Configuration name.
+     * 
+     * @return
+     */
     public String getName();
 
+    /**
+     * Return configuration's String value.
+     *  
+     * @return
+     */
     public String getValue();
 
+    /**
+     * Return element associated with configuration.
+     *  
+     * @return
+     */
     public ElementAtExist getElement();
 
+    /**
+     * Perform check for changers.
+     * 
+     * @param document
+     */
     public void checkForUpdates(ElementAtExist document);
 
+    /**
+     * Save configuration.
+     * 
+     * @throws PermissionDeniedException
+     * @throws ConfigurationException
+     */
     public void save() throws PermissionDeniedException, ConfigurationException;
 
+    /**
+     * Save configuration.
+     * 
+     * @param broker
+     * @throws PermissionDeniedException
+     * @throws ConfigurationException
+     */
     public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
 
     public boolean equals(Object obj, String uniqField);

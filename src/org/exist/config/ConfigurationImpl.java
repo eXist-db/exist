@@ -150,17 +150,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         return (getElementsByTagName(name).getLength() == 1);
     }
 
-    @Override
-    public void setProperty(String name, String value) {
-        //detect save place: attribute or element's text
-        setAttribute(name, value);
-    }
-
-    @Override
-    public void setProperty(String property, Integer value) {
-        setProperty(property, String.valueOf(value));
-    }
-
     public Object getRuntimeProperty(String name) {
         return runtimeProperties.get(name);
     }
@@ -267,12 +256,6 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             }
         }
         return properties;
-    }
-
-    @Override
-    public Class<?> getPropertyClass(String propertySecurityClass) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     //related objects
