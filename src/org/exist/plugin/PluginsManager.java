@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2011 The eXist Project
+ *  Copyright (C) 2011-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,6 +23,12 @@ package org.exist.plugin;
 
 import org.exist.Database;
 
+/**
+ * Plugins manager interface provide way to access database environment.
+ * 
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
+ */
 public interface PluginsManager {
 
 	Database getDatabase();
