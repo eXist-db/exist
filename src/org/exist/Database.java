@@ -24,6 +24,7 @@ package org.exist;
 import java.io.File;
 import java.util.Observer;
 
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
@@ -139,5 +140,7 @@ public interface Database {
 	public NodeIdFactory getNodeFactory();
 
 	public File getStoragePlace();
+
+	public CollectionConfigurationManager getConfigurationManager();
 
 }
