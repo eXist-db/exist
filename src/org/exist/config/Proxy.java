@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2008-2011 The eXist Project
+ * Copyright (C) 2008-2012 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -22,6 +22,8 @@
 package org.exist.config;
 
 /**
+ * Proxy object interface.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */

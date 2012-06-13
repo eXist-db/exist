@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2011 The eXist Project
+ *  Copyright (C) 2008-2012 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -317,6 +317,7 @@ public class Configurator {
                                     continue;
                                 }
                                 LOG.warn("Unconfigured instance ["+obj+"], remove the object.");
+                                //XXX: remove by method call
                                 iterator.remove();
                                 continue;
                             }
@@ -337,6 +338,7 @@ public class Configurator {
                             }
                             if (!found) {
                                 LOG.info("Configuration was removed, remove the object [" + obj + "].");
+                                //XXX: remove by method call
 	                            iterator.remove();
                             }
                         }
@@ -910,21 +912,17 @@ public class Configurator {
         DBBroker broker = null;
         try {
             broker = database.get(null);
-            Collection collection = broker.getCollection(uri.removeLastSegment());
-            if (collection == null)
-                throw new IOException("Collection URI = "+uri.removeLastSegment()+" not found.");
-            return save(instance, broker, collection, uri.lastSegment());
+            
+            return save(broker, instance, uri);
+
         } catch (EXistException e) {
             throw new IOException(e);
-        } catch (PermissionDeniedException pde) {
-            throw new IOException(pde);
         } finally {
             database.release(broker);
         }
     }
     
-    public static DocumentAtExist save(DBBroker broker, Configurable instance,
-            XmldbURI uri) throws IOException {
+    public static DocumentAtExist save(DBBroker broker, Configurable instance, XmldbURI uri) throws IOException {
         try {
             Collection collection = broker.getCollection(uri.removeLastSegment());
             if (collection == null)

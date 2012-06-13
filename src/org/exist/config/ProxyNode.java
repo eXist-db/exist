@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2008-2011 The eXist Project
+ * Copyright (C) 2008-2012 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -26,6 +26,8 @@ import org.exist.numbering.NodeId;
 import org.w3c.dom.*;
 
 /**
+ * Node proxy object. Help to provide single interface for in-memory & store nodes.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
