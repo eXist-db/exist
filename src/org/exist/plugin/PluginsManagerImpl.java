@@ -120,28 +120,30 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-		
-		//load defined at configuration
-		for (String className : runPlugins) {
-			//check if already run
-			if (jacks.containsKey(className))
-				continue;
-			
-			try {
-				Class<? extends Jack> plugin = (Class<? extends Jack>) Class.forName(className);
-				
-				Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
-				Jack plgn = ctor.newInstance(this);
-				
-				jacks.put(plugin.getName(), plgn);
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
+		//UNDERSTAND: call save?
 	}
 	
 	public String version() {
 		return version;
+	}
+	
+	public void addPlugin(String className) {
+		//check if already run
+		if (jacks.containsKey(className))
+			return;
+		
+		try {
+			Class<? extends Jack> plugin = (Class<? extends Jack>) Class.forName(className);
+			
+			Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
+			Jack plgn = ctor.newInstance(this);
+			
+			jacks.put(plugin.getName(), plgn);
+
+			runPlugins.add(className);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void shutdown() {

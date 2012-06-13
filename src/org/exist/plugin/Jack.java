@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2011 The eXist Project
+ *  Copyright (C) 2011-2012 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,11 +24,17 @@ package org.exist.plugin;
 /**
  * 'Plug to' interface.
  * 
+ * Plugin manager must implement this interface 
+ * and must have constructor with PluginsManager parameter.
+ * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface Jack {
 
 
+	/**
+	 * This method called during shutdown.
+	 */
 	public void stop();
 }
