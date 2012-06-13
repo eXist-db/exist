@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -48,7 +48,7 @@ public interface CollectionTrigger extends Trigger {
     public void prepare(
         int event,
         DBBroker broker,
-        Txn transaction,
+        Txn txn,
         Collection collection,
         Collection newCollection)
         throws TriggerException;
@@ -61,19 +61,19 @@ public interface CollectionTrigger extends Trigger {
     public void finish(
         int event,
         DBBroker broker,
-        Txn transaction,
+        Txn txn,
         Collection collection,
         Collection newCollection);
     
-    public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
-    public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException;
+    public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+    public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
 
-    public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException;
+    public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
+    public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException;
+    public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
+    public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException;
-    public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
+    public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
+    public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
 }

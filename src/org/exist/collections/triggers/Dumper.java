@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.LockException;
 
 /**
  * @author wolf
@@ -57,7 +56,7 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
      * @see org.exist.collections.Trigger#prepare(org.exist.storage.DBBroker, org.exist.collections.Collection, java.lang.String, org.w3c.dom.Document)
      */
     @Override
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
+    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
 
         System.out.println("\nstoring document " + documentName + " into collection " + getCollection().getURI());
         if(existingDocument != null) {
@@ -78,51 +77,51 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
     }
 
     @Override
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
     }
 
     @Override
-    public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
-        prepare(-1, broker, transaction, uri, null);
+    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+        prepare(-1, broker, txn, uri, null);
     }
 
     @Override
-    public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
     }
 
     @Override
-    public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-        prepare(-1, broker, transaction, document.getURI(), document);
+    public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        prepare(-1, broker, txn, document.getURI(), document);
     }
 
     @Override
-    public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
     }
 
     @Override
-    public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-        prepare(-1, broker, transaction, newUri, document);
+    public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        prepare(-1, broker, txn, newUri, document);
     }
 
     @Override
-    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
     }
 
     @Override
-    public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-        prepare(-1, broker, transaction, newUri, document);
+    public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        prepare(-1, broker, txn, newUri, document);
     }
 
     @Override
-    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
     }
 
     @Override
-    public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-        prepare(-1, broker, transaction, document.getURI(), document);
+    public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        prepare(-1, broker, txn, document.getURI(), document);
     }
 
     @Override
-    public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+    public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
     }
 }

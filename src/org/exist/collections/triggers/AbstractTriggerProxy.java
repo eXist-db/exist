@@ -1,4 +1,25 @@
- package org.exist.collections.triggers;
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2011-2012 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
+package org.exist.collections.triggers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +33,6 @@ import org.exist.xmldb.XmldbURI;
  *
  * @author aretter
  */
-
-
 public abstract class AbstractTriggerProxy<T extends Trigger> implements TriggerProxy<T> {
 
     private final Class<T> clazz;
@@ -25,13 +44,13 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
      */
     private final XmldbURI collectionConfigurationURI;
 
-    public AbstractTriggerProxy(Class<T> clazz, XmldbURI collectionConfigurationURI) {
-        this.clazz = clazz;
+    public AbstractTriggerProxy(Class<? extends T> clazz, XmldbURI collectionConfigurationURI) {
+        this.clazz = (Class<T>)clazz;
         this.collectionConfigurationURI = collectionConfigurationURI;
     }
     
-    public AbstractTriggerProxy(Class<T> clazz, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) {
-        this.clazz = clazz;
+    public AbstractTriggerProxy(Class<? extends T> clazz, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) {
+        this.clazz = (Class<T>)clazz;
         this.collectionConfigurationURI = collectionConfigurationURI;
         this.parameters = parameters;
     }

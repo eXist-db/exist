@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -94,7 +94,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void prepare(
         int event,
         DBBroker broker,
-        Txn transaction,
+        Txn txn,
         XmldbURI documentPath,
         DocumentImpl existingDocument)
         throws TriggerException;
@@ -113,24 +113,24 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     public void finish(
         int event,
         DBBroker broker,
-        Txn transaction,
+        Txn txn,
         XmldbURI documentPath,
         DocumentImpl document);
     
-    public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
-    public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+    public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
 
-    public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
-    public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
+    public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
+    public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
 
-    public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
-    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
+    public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException;
-    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
+    public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException;
+    public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException;
-    public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException;
+    public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
+    public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
 
     /**
      * Returns true if the SAX parser is currently in validation phase. During validation phase, the trigger

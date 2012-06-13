@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2006-2010 The eXist Project
+ *  Copyright (C) 2006-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -89,7 +89,7 @@ public class TriggerStatePerThread {
 	public static class TriggerState {
 		private int state;
 		private DocumentTrigger currentTrigger;
-		private Txn transaction;
+		private Txn txn;
 		private XmldbURI modifiedDocument;
 		public TriggerState(int state) {
 			super();
@@ -111,11 +111,11 @@ public class TriggerStatePerThread {
 			return state;
 		}
 
-		void setTransaction(Txn transaction) {
-			this.transaction = transaction;
+		void setTransaction(Txn txn) {
+			this.txn = txn;
 		}
 		Txn getTransaction() {
-			return transaction;
+			return txn;
 		}
 
 		public DocumentTrigger getTrigger() {
