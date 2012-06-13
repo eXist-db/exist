@@ -91,6 +91,7 @@ public class BrokerPool extends Observable implements Database {
     private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 
     private final static TreeMap<String, BrokerPool> instances = new TreeMap<String, BrokerPool>();
+    private final static Map<String, Throwable> instancesInitializtionException = new TreeMap<String, Throwable>();
 
     //on-start, ready, go
     /*** initializing subcomponents */
@@ -251,6 +252,7 @@ public class BrokerPool extends Observable implements Database {
                 // Catch all possible issues and report.
                 LOG.error("Unable to initialize database instance '" + instanceName
                         + "': "+ex.getMessage(), ex);
+                instancesInitializtionException.put(instanceName, ex);
                 // TODO: Add throw of exception? DW
             }
         //TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
@@ -301,6 +303,14 @@ public class BrokerPool extends Observable implements Database {
         if (instance != null)
             //TODO : call isConfigured(id) and throw an EXistException if relevant ?
             return instance;
+        
+        Throwable exception = instancesInitializtionException.get(instanceName);
+        if (exception != null) {
+        	if (exception instanceof EXistException)
+        		throw (EXistException)exception;
+        	throw new EXistException(exception);
+        }
+        	
         throw new EXistException("database instance '" + instanceName + "' is not available");
     }
 
@@ -329,9 +339,7 @@ public class BrokerPool extends Observable implements Database {
      * @throws EXistException If the database instance is not available (not created, stopped or not configured)
      */
     public final static void stop(String id) throws EXistException {		
-        BrokerPool instance = instances.get(id);
-        if (instance == null)
-            throw new EXistException("database instance '" + id + "' is not available");
+        BrokerPool instance = getInstance(id);
         instance.shutdown();
     }
 
@@ -692,7 +700,20 @@ public class BrokerPool extends Observable implements Database {
 		this.conf = conf;
 		
 		//TODO : in the future, we should implement an Initializable interface
-		initialize();
+		try {
+			initialize();
+		} catch (Throwable e) {
+			if (!instances.containsKey(instanceName))
+				instancesInitializtionException.put(instanceName, e);
+			
+			if (e instanceof EXistException)
+				throw (EXistException) e;
+
+			if (e instanceof DatabaseConfigurationException)
+				throw (DatabaseConfigurationException) e;
+			
+			throw new EXistException(e);
+		}
 		
 		//TODO : move this to initialize ?
 		//setup database synchronization job
