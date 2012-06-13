@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2003-2010 The eXist Project
+ *  Copyright (C) 2003-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -24,9 +24,7 @@ package org.exist.collections.triggers;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;

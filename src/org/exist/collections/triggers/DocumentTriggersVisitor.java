@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2011-2012 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.collections.triggers;
 
 import java.util.List;
@@ -18,8 +39,6 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author aretter
  */
-
-
 public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTrigger, DocumentTriggerProxies> implements DocumentTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
@@ -35,17 +54,17 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     }
 
     @Override
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
+    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.prepare(event, broker, transaction, documentPath, existingDocument);
+            trigger.prepare(event, broker, txn, documentPath, existingDocument);
         }
     }
 
     @Override
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
         try {
             for(DocumentTrigger trigger : getTriggers()) {
-                trigger.finish(event, broker, transaction, documentPath, document);
+                trigger.finish(event, broker, txn, documentPath, document);
             }
         } catch (TriggerException te) {
             LOG.error(te.getMessage(), te);
@@ -53,72 +72,72 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     }
 
     @Override
-    public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.beforeCreateDocument(broker, transaction, uri);
+            trigger.beforeCreateDocument(broker, txn, uri);
         }
     }
 
     @Override
-    public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.afterCreateDocument(broker, transaction, document);
+            trigger.afterCreateDocument(broker, txn, document);
         }
     }
 
     @Override
-    public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
        for(DocumentTrigger trigger : getTriggers()) {
-           trigger.beforeUpdateDocument(broker, transaction, document);
+           trigger.beforeUpdateDocument(broker, txn, document);
        }
     }
 
     @Override
-    public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.afterUpdateDocument(broker, transaction, document);
+            trigger.afterUpdateDocument(broker, txn, document);
         }
     }
 
     @Override
-    public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.beforeCopyDocument(broker, transaction, document, newUri);
+            trigger.beforeCopyDocument(broker, txn, document, newUri);
         }
     }
 
     @Override
-    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.afterCopyDocument(broker, transaction, document, oldUri);
+            trigger.afterCopyDocument(broker, txn, document, oldUri);
         }
     }
 
     @Override
-    public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.beforeMoveDocument(broker, transaction, document, newUri);
+            trigger.beforeMoveDocument(broker, txn, document, newUri);
         }
     }
 
     @Override
-    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.afterMoveDocument(broker, transaction, document, oldUri);
+            trigger.afterMoveDocument(broker, txn, document, oldUri);
         }
     }
 
     @Override
-    public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+    public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.beforeDeleteDocument(broker, transaction, document);
+            trigger.beforeDeleteDocument(broker, txn, document);
         }
     }
 
     @Override
-    public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+    public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         for(DocumentTrigger trigger : getTriggers()) {
-            trigger.afterDeleteDocument(broker, transaction, uri);
+            trigger.afterDeleteDocument(broker, txn, uri);
         }
     }
     

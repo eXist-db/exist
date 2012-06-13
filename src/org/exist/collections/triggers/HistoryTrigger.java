@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2004-2010 The eXist Project
+ *  Copyright (C) 2004-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -89,11 +88,11 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
         }
     }
     
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException {
-    	makeCopy(broker, transaction, doc);
+    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentName, DocumentImpl doc) throws TriggerException {
+    	makeCopy(broker, txn, doc);
     }
 
-    public void makeCopy(DBBroker broker, Txn transaction, DocumentImpl doc) throws TriggerException
+    public void makeCopy(DBBroker broker, Txn txn, DocumentImpl doc) throws TriggerException
     {
     	if(doc == null)
     		return;
@@ -112,9 +111,9 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
    	  		// create the destination document
         
    	  		//TODO : how is the transaction handled ? It holds the locks ! 
-   	  		Collection destination = broker.getOrCreateCollection(transaction, path);
-   	  		broker.saveCollection(transaction, destination);
-   	  		broker.copyResource(transaction, doc, destination, name);
+   	  		Collection destination = broker.getOrCreateCollection(txn, path);
+   	  		broker.saveCollection(txn, destination);
+   	  		broker.copyResource(txn, doc, destination, name);
    	  	}
    	  	catch(XPathException xpe)
    	  	{
@@ -136,51 +135,51 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
 		}
     }
     
-	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document)
+	public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document)
     {
     }
 
 	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 	}
 
 	@Override
-	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 	}
 
 	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-    	makeCopy(broker, transaction, document);
+	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    	makeCopy(broker, txn, document);
 	}
 
 	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 	}
 
 	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-    	makeCopy(broker, transaction, document);
+	public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	makeCopy(broker, txn, document);
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
 	}
 
 	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
-    	makeCopy(broker, transaction, document);
+	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    	makeCopy(broker, txn, document);
 	}
 
 	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-    	makeCopy(broker, transaction, document);
+	public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	makeCopy(broker, txn, document);
 	}
 
 	@Override
-	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
 	}
 
 	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 	}
 }
