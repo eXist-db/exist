@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -34,7 +34,6 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.collections.triggers.TriggerProxy;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.storage.BrokerPool;
@@ -101,17 +100,6 @@ public class CollectionConfiguration {
     
     public CollectionConfiguration(BrokerPool pool) {
         this.pool = pool;
-    }
-
-    @Deprecated //use DocumentImpl.isCollectionConfig() 
-    public static boolean isCollectionConfigDocument(XmldbURI docName) {
-        return docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
-    }
-	
-    @Deprecated //use DocumentImpl.isCollectionConfig() 
-    public static boolean isCollectionConfigDocument(DocumentImpl doc ) {
-        XmldbURI docName = doc.getURI();
-        return isCollectionConfigDocument( docName );
     }
 
     /**
