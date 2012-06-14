@@ -24,6 +24,7 @@ package org.exist.collections.triggers;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -37,8 +38,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     protected Logger LOG = Logger.getLogger(getClass());
     
+    private Database db;
+    
     public CollectionTriggersVisitor(DBBroker broker, CollectionTriggerProxies proxies) {
         super(broker, proxies);
+        
+        db = broker.getDatabase();
     }
 
     @Override
@@ -66,6 +71,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.beforeCreateCollection(broker, txn, uri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.beforeCreateCollection(broker, txn, uri);
         }
@@ -73,6 +84,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.afterCreateCollection(broker, txn, collection);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.afterCreateCollection(broker, txn, collection);
         }
@@ -80,6 +97,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.beforeCopyCollection(broker, txn, collection, newUri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.beforeCopyCollection(broker, txn, collection, newUri);
         }
@@ -87,6 +110,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.afterCopyCollection(broker, txn, collection, oldUri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.afterCopyCollection(broker, txn, collection, oldUri);
         }
@@ -94,6 +123,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.beforeMoveCollection(broker, txn, collection, newUri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.beforeMoveCollection(broker, txn, collection, newUri);
         }
@@ -101,6 +136,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.afterMoveCollection(broker, txn, collection, oldUri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.afterMoveCollection(broker, txn, collection, oldUri);
         }
@@ -108,6 +149,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.beforeDeleteCollection(broker, txn, collection);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.beforeDeleteCollection(broker, txn, collection);
         }
@@ -115,6 +162,12 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+    	//masters triggers (low level)
+        for(CollectionTrigger trigger : db.getCollectionTriggers()) {
+            trigger.afterDeleteCollection(broker, txn, uri);
+        }
+
+    	//user's triggers
         for(CollectionTrigger trigger : getTriggers()) {
             trigger.afterDeleteCollection(broker, txn, uri);
         }

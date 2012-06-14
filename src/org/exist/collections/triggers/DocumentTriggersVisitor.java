@@ -24,6 +24,7 @@ package org.exist.collections.triggers;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
@@ -43,8 +44,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     protected Logger LOG = Logger.getLogger(getClass());
     
+    private Database db;
+    
     public DocumentTriggersVisitor(DBBroker broker, DocumentTriggerProxies proxies) {
         super(broker, proxies);
+        
+        db = broker.getDatabase();
     }
     
     
@@ -73,6 +78,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.beforeCreateDocument(broker, txn, uri);
+        }
+    	
+    	//user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.beforeCreateDocument(broker, txn, uri);
         }
@@ -80,20 +91,38 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        for(DocumentTrigger trigger : getTriggers()) {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.afterCreateDocument(broker, txn, document);
+        }
+
+    	//user's triggers
+    	for(DocumentTrigger trigger : getTriggers()) {
             trigger.afterCreateDocument(broker, txn, document);
         }
     }
 
     @Override
     public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-       for(DocumentTrigger trigger : getTriggers()) {
-           trigger.beforeUpdateDocument(broker, txn, document);
-       }
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+        	trigger.beforeUpdateDocument(broker, txn, document);
+        }
+
+    	//user's triggers
+        for(DocumentTrigger trigger : getTriggers()) {
+        	trigger.beforeUpdateDocument(broker, txn, document);
+        }
     }
 
     @Override
     public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.afterUpdateDocument(broker, txn, document);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.afterUpdateDocument(broker, txn, document);
         }
@@ -101,6 +130,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.beforeCopyDocument(broker, txn, document, newUri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.beforeCopyDocument(broker, txn, document, newUri);
         }
@@ -108,6 +143,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.afterCopyDocument(broker, txn, document, oldUri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.afterCopyDocument(broker, txn, document, oldUri);
         }
@@ -115,6 +156,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.beforeMoveDocument(broker, txn, document, newUri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.beforeMoveDocument(broker, txn, document, newUri);
         }
@@ -122,6 +169,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.afterMoveDocument(broker, txn, document, oldUri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.afterMoveDocument(broker, txn, document, oldUri);
         }
@@ -129,6 +182,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.beforeDeleteDocument(broker, txn, document);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.beforeDeleteDocument(broker, txn, document);
         }
@@ -136,6 +195,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.afterDeleteDocument(broker, txn, uri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.afterDeleteDocument(broker, txn, uri);
         }
@@ -143,6 +208,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     
     @Override
     public void startDocument() throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startDocument();
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startDocument();
         }
@@ -150,6 +221,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endDocument() throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endDocument();
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endDocument();
         }
@@ -157,6 +234,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startPrefixMapping(prefix, uri);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startPrefixMapping(prefix, uri);
         }
@@ -164,6 +247,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endPrefixMapping(String prefix) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endPrefixMapping(prefix);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endPrefixMapping(prefix);
         }
@@ -171,6 +260,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startElement(uri, localName, qName, atts);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startElement(uri, localName, qName, atts);
         }
@@ -178,6 +273,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endElement(uri, localName, qName);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endElement(uri, localName, qName);
         }
@@ -185,6 +286,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.characters(ch, start, length);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.characters(ch, start, length);
         }
@@ -192,6 +299,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.ignorableWhitespace(ch, start, length);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.ignorableWhitespace(ch, start, length);
         }
@@ -199,6 +312,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void processingInstruction(String target, String data) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.processingInstruction(target, data);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.processingInstruction(target, data);
         }
@@ -206,6 +325,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void skippedEntity(String name) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.skippedEntity(name);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.skippedEntity(name);
         }
@@ -213,6 +338,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void startDTD(String name, String publicId, String systemId) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startDTD(name, publicId, systemId);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startDTD(name, publicId, systemId);
         }
@@ -220,6 +351,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endDTD() throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endDTD();
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endDTD();
         }
@@ -227,6 +364,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void startEntity(String name) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startEntity(name);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startEntity(name);
         }
@@ -234,6 +377,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endEntity(String name) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endEntity(name);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endEntity(name);
         }
@@ -241,6 +390,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void startCDATA() throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.startCDATA();
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.startCDATA();
         }
@@ -248,6 +403,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void endCDATA() throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.endCDATA();
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.endCDATA();
         }
@@ -255,6 +416,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
 
     @Override
     public void comment(char[] ch, int start, int length) throws SAXException {
+    	//masters triggers (low level)
+        for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+            trigger.comment(ch, start, length);
+        }
+
+        //user's triggers
         for(DocumentTrigger trigger : getTriggers()) {
             trigger.comment(ch, start, length);
         }
@@ -263,6 +430,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     @Override
     public void setDocumentLocator(Locator locator) {
         try {
+        	//masters triggers (low level)
+            for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+                trigger.setDocumentLocator(locator);
+            }
+
+            //user's triggers
             for(DocumentTrigger trigger : getTriggers()) {
                 trigger.setDocumentLocator(locator);
             }
@@ -283,6 +456,12 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     public void setValidating(boolean validating) {
         this.validating = validating;
         try {
+        	//masters triggers (low level)
+            for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+                trigger.setValidating(validating);
+            }
+
+            //user's triggers
             for(DocumentTrigger trigger : getTriggers()) {
                 trigger.setValidating(validating);
             }
@@ -304,8 +483,13 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
         ContentHandler prevOutputHandler = outputHandler;
         
         try {
-            for(DocumentTrigger trigger : getTriggers()) {
+        	//masters triggers (low level)
+            for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+                prevOutputHandler = new ContentHandlerWrapper(prevOutputHandler, trigger);
+            }
 
+            //user's triggers
+            for(DocumentTrigger trigger : getTriggers()) {
                 prevOutputHandler = new ContentHandlerWrapper(prevOutputHandler, trigger);
             }
         } catch(TriggerException te) {
@@ -327,8 +511,13 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
         LexicalHandler prevLexicalHandler = lexicalHandler;
         
         try {
-            for(DocumentTrigger trigger : getTriggers()) {
+        	//masters triggers (low level)
+            for(DocumentTrigger trigger : db.getDocumentTriggers()) {
+                prevLexicalHandler = new LexicalHandlerWrapper(prevLexicalHandler, trigger);
+            }
 
+            //user's triggers
+            for(DocumentTrigger trigger : getTriggers()) {
                 prevLexicalHandler = new LexicalHandlerWrapper(prevLexicalHandler, trigger);
             }
         } catch(TriggerException te) {

@@ -23,6 +23,7 @@
 package org.exist.storage;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
@@ -729,6 +730,10 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public BrokerPool getBrokerPool() {
+		return pool;
+	}
+
+	public Database getDatabase() {
 		return pool;
 	}
 
