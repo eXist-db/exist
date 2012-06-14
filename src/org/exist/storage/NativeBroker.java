@@ -1145,6 +1145,8 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
 
+            pool.getCollectionTrigger().beforeMoveCollection(this, transaction, collection, dstURI);
+            
             final CollectionTriggersVisitor triggersVisitor = parent.getConfiguration(this).getCollectionTriggerProxies().instantiateVisitor(this);
             triggersVisitor.beforeMoveCollection(this, transaction, collection, dstURI);
             
@@ -1157,6 +1159,8 @@ public class NativeBroker extends DBBroker {
             
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
+            
+            pool.getCollectionTrigger().afterMoveCollection(this, transaction, collection, srcURI);
             
             triggersVisitor.afterMoveCollection(this, transaction, collection, srcURI);
 	        
@@ -1419,6 +1423,9 @@ public class NativeBroker extends DBBroker {
                 
                 for(Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
                     final DocumentImpl doc = i.next();
+
+                    pool.getDocumentTrigger().beforeDeleteDocument(this, transaction, doc);
+
                     //Remove doc's metadata
                     // WM: now removed in one step. see above.
                     //removeResourceMetadata(transaction, doc);
@@ -1456,6 +1463,9 @@ public class NativeBroker extends DBBroker {
                             return null;
                         }
                     }.run();
+                    
+                    pool.getDocumentTrigger().afterDeleteDocument(this, transaction, doc.getURI());
+                    
                     //Make doc's id available again
                     freeResourceId(transaction, doc.getDocId());
                 }
@@ -2477,6 +2487,9 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Resource with same name exists in target collection and write is denied");
                 }
                 */
+
+                pool.getDocumentTrigger().beforeDeleteDocument(this, transaction, oldDoc);
+                pool.getDocumentTrigger().afterDeleteDocument(this, transaction, oldDoc.getURI());
             }
 
             boolean renameOnly = collection.getId() == destination.getId();
@@ -2484,6 +2497,8 @@ public class NativeBroker extends DBBroker {
             final XmldbURI oldURI = doc.getURI();
             final XmldbURI newURI = destination.getURI().append(newName);
 
+            pool.getDocumentTrigger().beforeMoveDocument(this, transaction, doc, newURI);
+            
             final DocumentTriggersVisitor triggersVisitor = collection.getConfiguration(this).getDocumentTriggerProxies().instantiateVisitor(this);
             triggersVisitor.beforeMoveDocument(this, transaction, doc, newURI);
             
@@ -2492,7 +2507,8 @@ public class NativeBroker extends DBBroker {
             doc.setFileURI(newName);
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {
                 if(!renameOnly) {
-                    dropIndex(transaction, doc);
+                    //XXX: BUG: doc have new uri here!
+                	dropIndex(transaction, doc);
                     saveCollection(transaction, collection);
                 }
                 doc.setCollection(destination);
@@ -2524,6 +2540,8 @@ public class NativeBroker extends DBBroker {
             }
             storeXMLResource(transaction, doc);
             saveCollection(transaction, destination);
+            
+            pool.getDocumentTrigger().afterMoveDocument(this, transaction, doc, oldURI);
             
             triggersVisitor.afterMoveDocument(this, transaction, doc, oldURI);
             

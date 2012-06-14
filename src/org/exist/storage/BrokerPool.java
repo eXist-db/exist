@@ -36,10 +36,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.triggers.CollectionTrigger;
-import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.DocumentTriggerProxy;
-import org.exist.collections.triggers.TriggerException;
+import org.exist.collections.triggers.*;
 import org.exist.config.ConfigurationDocumentTrigger;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
@@ -51,6 +48,7 @@ import org.exist.indexing.IndexManager;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
+import org.exist.plugin.PluginsManager;
 import org.exist.plugin.PluginsManagerImpl;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.SystemTaskJob;
@@ -1991,8 +1989,8 @@ public class BrokerPool extends Observable implements Database {
 		return new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR));
 	}
 
-	private List<DocumentTrigger> documentTriggers = new ArrayList<DocumentTrigger>(); 
-	private List<CollectionTrigger> collectionTriggers = new ArrayList<CollectionTrigger>(); 
+	private final List<DocumentTrigger> documentTriggers = new ArrayList<DocumentTrigger>(); 
+	private final List<CollectionTrigger> collectionTriggers = new ArrayList<CollectionTrigger>(); 
 
 	@Override
 	public List<DocumentTrigger> getDocumentTriggers() {
@@ -2002,5 +2000,46 @@ public class BrokerPool extends Observable implements Database {
 	@Override
 	public List<CollectionTrigger> getCollectionTriggers() {
 		return collectionTriggers;
+	}
+	
+	private DocumentTriggersVisitor docsTriggersVisitor = new DocumentTriggersVisitor(null, new DocumentTriggers());
+	private CollectionTriggersVisitor colsTriggersVisitor = new CollectionTriggersVisitor(null, new CollectionTriggers());
+
+	@Override
+	public DocumentTrigger getDocumentTrigger() {
+		return docsTriggersVisitor;
+	}
+
+	@Override
+	public CollectionTrigger getCollectionTrigger() {
+		return colsTriggersVisitor;
+	}
+	
+	class DocumentTriggers extends DocumentTriggerProxies {
+
+		@Override
+	    public DocumentTriggersVisitor instantiateVisitor(DBBroker broker) {
+	        return new DocumentTriggersVisitor(broker, this);
+	    }
+
+		protected List<DocumentTrigger> instantiateTriggers(DBBroker broker) throws TriggerException {
+	        return getDocumentTriggers();
+	    }
+	}
+
+	class CollectionTriggers extends CollectionTriggerProxies {
+
+		@Override
+	    public CollectionTriggersVisitor instantiateVisitor(DBBroker broker) {
+	        return new CollectionTriggersVisitor(broker, this);
+	    }
+
+		protected List<CollectionTrigger> instantiateTriggers(DBBroker broker) throws TriggerException {
+	        return getCollectionTriggers();
+	    }
+	}
+
+	public PluginsManager getPluginManager() {
+		return pluginManager;
 	}
 }
