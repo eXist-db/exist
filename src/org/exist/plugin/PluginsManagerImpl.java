@@ -121,6 +121,9 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 			e.printStackTrace();
 		}
 		//UNDERSTAND: call save?
+		
+		//Temporary for testing
+		addPlugin("org.exist.storage.md.Plugin");
 	}
 	
 	public String version() {
@@ -142,7 +145,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 
 			runPlugins.add(className);
 		} catch (Throwable e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 	

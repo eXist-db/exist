@@ -33,4 +33,5 @@ public interface PluginsManager {
 
 	Database getDatabase();
 
+	public void addPlugin(String className);
 }
