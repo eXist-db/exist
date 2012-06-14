@@ -36,6 +36,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NotificationService;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
@@ -154,6 +155,8 @@ public interface Database {
 	 */
 	public Collection<DocumentTrigger> getDocumentTriggers();
 
+	public DocumentTrigger getDocumentTrigger();
+
 	/**
 	 * Master Collection triggers.
 	 *  
@@ -161,8 +164,11 @@ public interface Database {
 	 */
 	public Collection<CollectionTrigger> getCollectionTriggers();
 
+	public CollectionTrigger getCollectionTrigger();
+
 	public ProcessMonitor getProcessMonitor();
 
 	public boolean isReadOnly();
 
+	public NotificationService getNotificationService();
 }

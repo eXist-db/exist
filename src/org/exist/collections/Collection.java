@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import org.apache.commons.io.input.CloseShieldInputStream;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
@@ -1329,8 +1330,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (!document.getUpdateLock().isLockedForWrite()) {
             LOG.warn("document is not locked for write !");
         }
+        
+        Database db = broker.getBrokerPool();
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
             doParse.run();
             broker.storeXMLResource(transaction, document);
             broker.flush();
@@ -1345,6 +1348,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         setCollectionConfigEnabled(true);
         broker.deleteObservers();
         
+        if(info.isCreating()) {
+        	db.getDocumentTrigger().afterCreateDocument(broker, transaction, document);
+        } else {
+        	db.getDocumentTrigger().afterUpdateDocument(broker, transaction, document);
+        }
+        
         if(isTriggersEnabled() && isCollectionConfigEnabled() && info.getTriggersVisitor() != null) {
             if(info.isCreating()) {
                 info.getTriggersVisitor().afterCreateDocument(broker, transaction, document);
@@ -1354,8 +1363,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
         
         
-        broker.getBrokerPool().getNotificationService().notifyUpdate(document,
-                (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
+        db.getNotificationService().notifyUpdate(document, (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
@@ -1547,13 +1555,18 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, CollectionConfiguration config, ValidateBlock doValidate) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         //Make the necessary operations if we process a collection configuration document
         checkConfigurationDocument(transaction, broker, docUri);
-        if (broker.getBrokerPool().isReadOnly()) throw new PermissionDeniedException("Database is read-only");
+        
+        Database db = broker.getBrokerPool();
+        
+        if (db.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
+        
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
+        	db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
             getLock().acquire(Lock.WRITE_LOCK);   
-            DocumentImpl document = new DocumentImpl(broker.getBrokerPool(), this, docUri);
+            
+            DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
             oldDoc = documents.get(docUri.getRawCollectionPath());
             checkPermissionsForAddDocument(transaction, broker, oldDoc);
             manageDocumentInformation(broker, oldDoc, document );
@@ -1570,6 +1583,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 //CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
                 //confMgr.invalidateAll(getURI());
                 setCollectionConfigEnabled(false);
+            }
+
+            if(oldDoc == null) {
+                db.getDocumentTrigger().beforeCreateDocument(broker, transaction, getURI().append(docUri));
+            } else {
+            	db.getDocumentTrigger().beforeUpdateDocument(broker, transaction, oldDoc);
             }
 
             DocumentTriggersVisitor triggersVisitor = null;
@@ -1642,7 +1661,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if (oldDoc != null && oldDocLocked) 
                 oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
             getLock().release(Lock.WRITE_LOCK);
-            broker.getBrokerPool().getProcessMonitor().endJob();
+            
+            db.getProcessMonitor().endJob();
         }
     }
 
@@ -1781,17 +1801,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
-        if(broker.getBrokerPool().isReadOnly()) {
+    	
+    	Database db = broker.getBrokerPool();
+    	
+        if(db.isReadOnly()) {
             throw new PermissionDeniedException("Database is read-only");
         }
         
-        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
+        final BinaryDocument blob = new BinaryDocument((BrokerPool) db, this, docUri);
         
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
         
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
 
             checkPermissionsForAddDocument(transaction, broker, oldDoc);
@@ -1807,6 +1830,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 metadata.setLastModified(modified.getTime());
 
             blob.setContentLength(size);
+
+            if(oldDoc == null) {
+                db.getDocumentTrigger().beforeCreateDocument(broker, transaction, blob.getURI());
+            } else {
+            	db.getDocumentTrigger().beforeUpdateDocument(broker, transaction, oldDoc);
+            }
 
             DocumentTriggersVisitor triggersVisitor = null;
             if(isTriggersEnabled()) {
@@ -1833,6 +1862,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
         // This is no longer needed as the dom.dbx isn't used
             //broker.closeDocument();
+
+            if(oldDoc == null) {
+                db.getDocumentTrigger().afterCreateDocument(broker, transaction, blob);
+            } else {
+            	db.getDocumentTrigger().afterUpdateDocument(broker, transaction, blob);
+            }
 
             if(isTriggersEnabled()) {
                 if(oldDoc == null) {
