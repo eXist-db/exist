@@ -22,9 +22,12 @@
 package org.exist;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Observer;
 
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.triggers.CollectionTrigger;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
@@ -33,6 +36,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
 import org.exist.xquery.PerformanceStats;
@@ -142,5 +146,23 @@ public interface Database {
 	public File getStoragePlace();
 
 	public CollectionConfigurationManager getConfigurationManager();
+
+	/**
+	 * Master document triggers.
+	 *  
+	 * @return
+	 */
+	public Collection<DocumentTrigger> getDocumentTriggers();
+
+	/**
+	 * Master Collection triggers.
+	 *  
+	 * @return
+	 */
+	public Collection<CollectionTrigger> getCollectionTriggers();
+
+	public ProcessMonitor getProcessMonitor();
+
+	public boolean isReadOnly();
 
 }

@@ -36,6 +36,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggerProxy;
 import org.exist.collections.triggers.TriggerException;
@@ -1412,6 +1413,10 @@ public class BrokerPool extends Observable implements Database {
 					@Override
 					public void execute(Map<Thread, DBBroker> map) {
 						for (Entry<Thread, DBBroker> entry : map.entrySet()) {
+							
+//							if (entry.getKey().equals(Thread.currentThread()))
+//								return entry.getValue();
+							
 							sb.append(entry.getKey());
 							sb.append(" = ");
 							sb.append(entry.getValue());
@@ -1984,5 +1989,18 @@ public class BrokerPool extends Observable implements Database {
 	@Override
 	public File getStoragePlace() {
 		return new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+	}
+
+	private List<DocumentTrigger> documentTriggers = new ArrayList<DocumentTrigger>(); 
+	private List<CollectionTrigger> collectionTriggers = new ArrayList<CollectionTrigger>(); 
+
+	@Override
+	public List<DocumentTrigger> getDocumentTriggers() {
+		return documentTriggers;
+	}
+
+	@Override
+	public List<CollectionTrigger> getCollectionTriggers() {
+		return collectionTriggers;
 	}
 }
