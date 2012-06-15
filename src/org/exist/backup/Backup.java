@@ -375,7 +375,7 @@ public class Backup
                     }
                 }
                 serializer.startElement( Namespaces.EXIST_NS, "resource", "resource", attr );
-                if(currentPerms instanceof ACLPermission) {
+                if(perms[i] instanceof ACLPermission) {
                     writeACLPermission(serializer, (ACLPermission)perms[i]);
                 }
                 serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
@@ -441,13 +441,13 @@ public class Backup
         }
     }
 
-    private void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
+    public static void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
         attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
         attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
         attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode())); 
     }
 
-    private void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
+    public static void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
         AttributesImpl attr = new AttributesImpl();
         attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
         attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));
