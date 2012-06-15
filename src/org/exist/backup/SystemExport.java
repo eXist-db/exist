@@ -25,6 +25,8 @@ import java.io.*;
 import java.util.*;
 import org.apache.log4j.Logger;
 
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -367,16 +369,15 @@ public class SystemExport
             SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
             serializer.setOutput( contents, contentsOutputProps );
 
+            final Permission perm = current.getPermissions();
+            
             serializer.startDocument();
             serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
             XmldbURI       uri  = current.getURI();
             AttributesImpl attr = new AttributesImpl();
             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", uri.toString() );
             attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
-            attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", current.getPermissions().getOwner().getName() );
-            attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", current.getPermissions().getGroup().getName() );
-            attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( current.getPermissions().getMode() ) );
-
+            Backup.writeUnixStylePermissionAttributes(attr, perm);
             try {
                 attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue( new Date( current.getCreationTime() ) ).getStringValue() );
             }
@@ -384,6 +385,10 @@ public class SystemExport
                 e.printStackTrace();
             }
             serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
+
+            if(perm instanceof ACLPermission) {
+            	Backup.writeACLPermission(serializer, (ACLPermission)perm);
+            }
 
             int docsCount = current.getDocumentCountNoLock(broker);
             int count     = 0;
@@ -488,15 +493,15 @@ public class SystemExport
                 output.closeEntry();
             }
         }
+        
+        Permission perms = doc.getPermissions();
 
         // store permissions
         AttributesImpl attr = new AttributesImpl();
         attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", ( doc.getResourceType() == DocumentImpl.BINARY_FILE ) ? "BinaryResource" : "XMLResource" );
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString() );
         attr.addAttribute( Namespaces.EXIST_NS, "skip", "skip", "CDATA", ( needsBackup ? "no" : "yes" ) );
-        attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", doc.getPermissions().getOwner().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "group", "group", "CDATA", doc.getPermissions().getGroup().getName() );
-        attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString( doc.getPermissions().getMode() ) );
+        Backup.writeUnixStylePermissionAttributes(attr, perms);
 
         // be careful when accessing document metadata: it is stored in a
         // different place than the
@@ -552,6 +557,9 @@ public class SystemExport
             }
         }
         serializer.startElement( Namespaces.EXIST_NS, "resource", "resource", attr );
+        if(perms instanceof ACLPermission) {
+            Backup.writeACLPermission(serializer, (ACLPermission)perms);
+        }
         serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
     }
 
