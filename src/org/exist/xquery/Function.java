@@ -225,7 +225,9 @@ public abstract class Function extends PathExpr {
         if (type == null || expr instanceof Placeholder)
             return expr;
         // check cardinality if expected cardinality is not zero or more
-        boolean cardinalityMatches = type.getCardinality() == Cardinality.ZERO_OR_MORE;
+        boolean cardinalityMatches =
+                expr instanceof VariableReference ||
+                type.getCardinality() == Cardinality.ZERO_OR_MORE;
         if (!cardinalityMatches) {
             cardinalityMatches =
                 (expr.getCardinality() | type.getCardinality()) == type.getCardinality();
