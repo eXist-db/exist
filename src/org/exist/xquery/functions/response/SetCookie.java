@@ -61,9 +61,9 @@ public class SetCookie extends Function
 	protected static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie name");
 	protected static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The cookie value");
 	protected static final FunctionParameterSequenceType MAX_AGE_PARAM = new FunctionParameterSequenceType("max-age", Type.DURATION, Cardinality.EXACTLY_ONE, "The xs:duration of the cookie");
-	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("secure-flag", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag on whether the cookie is to be secure (eg. only transferred using HTTPS)");
-	protected static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The flag on whether the cookie is to be secure (eg. only transferred using HTTPS)");
-	protected static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The flag on whether the cookie is to be secure (eg. only transferred using HTTPS)");
+	protected static final FunctionParameterSequenceType SECURE_PARAM = new FunctionParameterSequenceType("secure-flag", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag for whether the cookie is to be secure (i.e., only transferred using HTTPS)");
+	protected static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie domain");
+	protected static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie path");
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
