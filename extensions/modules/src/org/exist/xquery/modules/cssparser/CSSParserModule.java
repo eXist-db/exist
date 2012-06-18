@@ -39,7 +39,7 @@ public class CSSParserModule extends AbstractInternalModule {
 
     public final static String PREFIX = "cssparser";
     public final static String INCLUSION_DATE = "2011-10-20";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
     public final static FunctionDef[] functions = {
         new FunctionDef(CSSParserFunctions.signatures[0], CSSParserFunctions.class)

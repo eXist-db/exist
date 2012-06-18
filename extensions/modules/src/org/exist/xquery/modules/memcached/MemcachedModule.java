@@ -46,7 +46,7 @@ public class MemcachedModule extends AbstractInternalModule
 	
 	public final static String PREFIX = "mcache";
     public final static String INCLUSION_DATE = "2010-08-01";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5 (spymemcached in trunk)";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0 (spymemcached-based)";
     
     private static HashMap<Long, MemcachedClient> clients = new HashMap<Long, MemcachedClient>();
 	

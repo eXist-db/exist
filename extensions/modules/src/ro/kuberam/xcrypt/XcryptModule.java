@@ -4,6 +4,8 @@
  *  
  *  Released under LGPL License - http://gnu.org/licenses/lgpl.html.
  *  
+ *
+ * $Id$
  */
 package ro.kuberam.xcrypt;
 
@@ -23,8 +25,8 @@ public class XcryptModule extends AbstractInternalModule {
 
 	public final static String NAMESPACE_URI = "http://kuberam.ro/ns/x-crypt";
 	public final static String PREFIX = "x-crypt";
-    	public final static String INCLUSION_DATE = "2010-12-17";
-    	public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public final static String INCLUSION_DATE = "2010-12-17";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
 	public final static FunctionDef[] functions = {
 		new FunctionDef(GenerateXMLSignatureFunction.signatures[0], GenerateXMLSignatureFunction.class),

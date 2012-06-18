@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: CacheModule.java 10788 2009-12-17 19:24:31Z chaeron $
+ * $Id$
  */
 package org.exist.xquery.modules.context;
 
@@ -41,7 +41,7 @@ public class ContextModule extends AbstractInternalModule {
 
 	public final static String PREFIX 				= "context";
     public final static String INCLUSION_DATE 		= "2010-02-01";
-    public final static String RELEASED_IN_VERSION 	= "eXist-1.5";
+    public final static String RELEASED_IN_VERSION 	= "eXist-2.0";
         
 	private final static FunctionDef[] signatures = {
 		new FunctionDef( ContextAttributes.signatures[0], ContextAttributes.class ),

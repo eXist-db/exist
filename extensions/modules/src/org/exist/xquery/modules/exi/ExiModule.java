@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * $Id$
  */
 package org.exist.xquery.modules.exi;
 
@@ -37,7 +39,7 @@ public class ExiModule extends AbstractInternalModule {
 	
 	public final static String PREFIX = "exi";
     public final static String INCLUSION_DATE = "2011-06-09";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0";
     
     private final static FunctionDef[] functions = {
 		new FunctionDef(EncodeExiFunction.signatures[0], EncodeExiFunction.class),
