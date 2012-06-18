@@ -45,7 +45,7 @@ public class ExpathPackageModule extends AbstractInternalModule {
 
     public final static String PREFIX = "repo";
     public final static String INCLUSION_DATE = "2010-07-27";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0";
     
     private final static FunctionDef[] functions = {
     	new FunctionDef(Deploy.signatures[0], Deploy.class),

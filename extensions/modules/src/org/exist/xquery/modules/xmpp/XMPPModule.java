@@ -12,8 +12,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ * $Id$
  */
-
 package org.exist.xquery.modules.xmpp;
 
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class XMPPModule extends AbstractInternalModule
 	
 	public final static String PREFIX = "xmpp";
     public final static String INCLUSION_DATE = "2010-02-14";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5 (Smack-based in trunk)";
+    public final static String RELEASED_IN_VERSION = "eXist-2.0 (Smack-based)";
     
     private static HashMap<Long, XMPPConnection> connections = new HashMap<Long, XMPPConnection>();
     private static HashMap<Long, Chat> chats = new HashMap<Long, Chat>();
