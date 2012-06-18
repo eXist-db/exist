@@ -38,6 +38,9 @@
     <condition property="include.module.counter.config">
         <istrue value="${include.module.counter}"/>
     </condition>
+    <condition property="include.module.cqlparser.config">
+        <istrue value="${include.module.cqlparser}"/>
+    </condition>
     <condition property="include.module.datetime.config">
         <istrue value="${include.module.datetime}"/>
     </condition>
@@ -271,6 +274,19 @@
     </target>
 
     <!-- 
+        Special targets for cqlparser module 
+    -->
+    <target name="prepare-cqlparser" if="include.module.cqlparser.config">
+        <echo message="------------------------------------------------------"/>
+        <echo message="Downloading libraries required by the cqlparser module"/>
+        <echo message="------------------------------------------------------"/>
+
+        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+               url="${include.module.cqlparser.url}" classname="org.z3950.zing.cql.CQLParser" />
+
+    </target>
+
+    <!-- 
         ========================================
         Below this line only generic build items
         ========================================
@@ -285,7 +301,7 @@
         <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant"/>
     </target>
 
-    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo">
+    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
@@ -308,6 +324,7 @@
             <exclude name="org/exist/xquery/modules/compression/**" unless="include.module.compression.config"/>
             <exclude name="org/exist/xquery/modules/context/**" unless="include.module.context.config"/>
             <exclude name="org/exist/xquery/modules/counter/**" unless="include.module.counter.config"/>
+            <exclude name="org/exist/xquery/modules/cqlparser/**" unless="include.module.cqlparser.config"/>
             <exclude name="org/exist/xquery/modules/datetime/**" unless="include.module.datetime.config"/>
             <exclude name="org/exist/xquery/modules/example/**" unless="include.module.example.config"/>
             <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
