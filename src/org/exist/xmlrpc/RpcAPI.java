@@ -877,5 +877,7 @@ public interface RpcAPI {
     public long getSubCollectionCreationTime(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
     public HashMap<String, Object> getSubCollectionPermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
     public HashMap<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    public boolean setTriggersEnabled(String path, String value) throws PermissionDeniedException;
 }
 
