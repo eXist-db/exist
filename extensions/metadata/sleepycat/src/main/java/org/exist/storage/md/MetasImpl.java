@@ -46,8 +46,6 @@ public class MetasImpl implements Metas {
 				  onRelatedEntityDelete=DeleteAction.CASCADE) 
 	protected String uri;
 
-//	protected byte rType = 0;
-	
 	@SuppressWarnings("unused")
 	private MetasImpl() {}
 
@@ -88,7 +86,6 @@ public class MetasImpl implements Metas {
 
 	protected void update(DocumentImpl doc) {
 		uri = doc.getURI().toString();
-//		rType = doc.getResourceType();
 	}
 	
 	public EntityCursor<MetaImpl> keys() {
