@@ -86,6 +86,8 @@
                source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
+                <!-- because of junit's asserts -->
+                <path refid="classpath.test-libs"/>
             </classpath>
         </javac>
 
