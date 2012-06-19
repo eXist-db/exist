@@ -170,40 +170,40 @@ public class MetaDataImpl extends MetaData {
 					LOG.error("ERROR "+n.getUUID()+" "+uri);
 				}
 			}
-			System.out.println(v);
-			
-			
-			//this possible a bug, but NPE should be avoided (TODO: write lock required) 
-			if (addIfmissing && v == null) {
-				
-				//check that document exist
-				BrokerPool pool = null;
-				DBBroker broker = null;
-				try {
-					pool = BrokerPool.getInstance();
-					broker = pool.get(null);
-					
-					Collection col = broker.getCollection(uri.removeLastSegment());
-					if (col != null) {
-						DocumentImpl _doc = col.getDocument(broker, uri.lastSegment());
-						
-						if (_doc != null) {
-							LOG.error("metas for document "+uri+" get lost!");
-							return _addMetas(_doc);
-						}
-
-					}
-				} catch (Exception e) {
-					LOG.error(e);
-					return null;
-					
-				} finally {
-					if (pool != null)
-						pool.release(broker);
-				}
-				
-				return null;
-			}
+//			System.out.println(v);
+//			
+//			
+//			//this possible a bug, but NPE should be avoided (TODO: write lock required) 
+//			if (addIfmissing && v == null) {
+//				
+//				//check that document exist
+//				BrokerPool pool = null;
+//				DBBroker broker = null;
+//				try {
+//					pool = BrokerPool.getInstance();
+//					broker = pool.get(null);
+//					
+//					Collection col = broker.getCollection(uri.removeLastSegment());
+//					if (col != null) {
+//						DocumentImpl _doc = col.getDocument(broker, uri.lastSegment());
+//						
+//						if (_doc != null) {
+//							LOG.error("metas for document "+uri+" get lost!");
+//							return _addMetas(_doc);
+//						}
+//
+//					}
+//				} catch (Exception e) {
+//					LOG.error(e);
+//					return null;
+//					
+//				} finally {
+//					if (pool != null)
+//						pool.release(broker);
+//				}
+//				
+//				return null;
+//			}
 			return v;
 		} finally {
 			entities.close();
