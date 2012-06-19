@@ -32,6 +32,7 @@ import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
@@ -105,6 +106,8 @@ public interface Database {
 	public boolean setSubject(Subject subject);
 
 	public DBBroker getBroker() throws EXistException; //TODO: remove 'throws EXistException'?
+	
+	public DBBroker authenticate(String username, Object credentials) throws AuthenticationException;
 	
 	/*
 	 * @Deprecated ?

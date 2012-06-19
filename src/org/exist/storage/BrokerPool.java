@@ -52,6 +52,7 @@ import org.exist.plugin.PluginsManager;
 import org.exist.plugin.PluginsManagerImpl;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.SystemTaskJob;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -1428,7 +1429,17 @@ public class BrokerPool extends Observable implements Database {
 		//}
 	}
 
-    public DBBroker getBroker() throws EXistException {
+    public DBBroker authenticate(String username, Object credentials) throws AuthenticationException {
+    	Subject subject = getSecurityManager().authenticate(username, credentials);
+    	
+    	try {
+			return get(subject);
+		} catch (Exception e) {
+			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e);
+		}
+    }
+    
+	public DBBroker getBroker() throws EXistException {
 		return get(null);
 	}
 

@@ -53,6 +53,12 @@ public class AuthenticationException extends Exception {
 		this.type = type;
 	}
 	
+	public AuthenticationException(int type, Throwable cause) {
+		super(cause);
+
+		this.type = type;
+	}
+
 	public int getType() {
 		return type;
 	}
