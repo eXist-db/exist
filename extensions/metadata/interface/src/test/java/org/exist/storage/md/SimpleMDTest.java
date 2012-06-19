@@ -22,6 +22,7 @@
 package org.exist.storage.md;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -208,6 +209,8 @@ public class SimpleMDTest extends TestCase {
     	docMD.put(KEY2, VALUE2);
 
     	List<DocumentImpl> ds = md.matchDocuments(KEY1, VALUE1);
+    	
+    	System.out.println(" * "+Arrays.toString(ds.toArray()));
     	
     	assertEquals(1, ds.size());
     	assertEquals(doc1, ds.get(0));
@@ -451,10 +454,10 @@ public class SimpleMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            Collection root = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
-        	assertNotNull(root);
+            Collection parent = broker.getCollection(col3uri.removeLastSegment());
+        	assertNotNull(parent);
 
-            Collection col = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
         	System.out.println("MOVING...");
@@ -466,7 +469,7 @@ public class SimpleMDTest extends TestCase {
 	            txn = txnManager.beginTransaction();
 	            assertNotNull(txn);
 	            
-	            broker.moveCollection(txn, col, root, col3uri.lastSegment());
+	            broker.moveCollection(txn, col, parent, col3uri.lastSegment());
             
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
@@ -494,7 +497,7 @@ public class SimpleMDTest extends TestCase {
 	            txn = txnManager.beginTransaction();
 	            assertNotNull(txn);
 	            
-	            nCol = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+	            nCol = broker.getOrCreateCollection(txn, col1uri);
 	            assertNotNull(nCol);
 	            broker.saveCollection(txn, nCol);
             
@@ -636,6 +639,8 @@ public class SimpleMDTest extends TestCase {
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
+            clean();
+            
             txnManager = pool.getTransactionManager();
             assertNotNull(txnManager);
             txn = txnManager.beginTransaction();
@@ -643,11 +648,11 @@ public class SimpleMDTest extends TestCase {
             
             System.out.println("Transaction started ...");
 
-            Collection root = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+            Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
             broker.saveCollection(txn, root);
 
-            Collection test2 = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI2);
+            Collection test2 = broker.getOrCreateCollection(txn, col2uri);
             assertNotNull(test2);
             broker.saveCollection(txn, test2);
 
@@ -711,11 +716,15 @@ public class SimpleMDTest extends TestCase {
             assertNotNull(txn);
             System.out.println("Transaction started ...");
 
-            Collection col = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+            Collection col = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(col);
         	broker.removeCollection(txn, col);
 
-            col = broker.getOrCreateCollection(txn, col2uri);
+//            col = broker.getOrCreateCollection(txn, col2uri);
+//            assertNotNull(col);
+//        	broker.removeCollection(txn, col);
+
+            col = broker.getOrCreateCollection(txn, col3uri);
             assertNotNull(col);
         	broker.removeCollection(txn, col);
 
