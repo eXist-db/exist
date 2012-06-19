@@ -5240,6 +5240,8 @@ public class RpcConnection implements RpcAPI {
 		try {
 			broker = factory.getBrokerPool().get(user);
 	    	Collection collection = broker.getCollection(XmldbURI.create(path));
+	    	if (collection == null)
+	    		return false;
 	    	collection.setTriggersEnabled(triggersEnabled);
 		} catch (EXistException e) {
             LOG.warn(triggersEnabled ? "Enable" : "Disable" + " triggers failed", e);
