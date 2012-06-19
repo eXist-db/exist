@@ -69,15 +69,23 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public final static String TEMP_COLLECTION_NAME = "temp";
     /** '/db/system/temp' collection name */
     public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
+
+    @Deprecated
     /** '/db/system/config' collection name */
     public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
+    
+    /** '/db' collection **/
+    public final static XmldbURI DB = create(ROOT_COLLECTION);
     public final static XmldbURI ROOT_COLLECTION_URI = create(ROOT_COLLECTION);
     public final static XmldbURI RELATIVE_ROOT_COLLECTION_URI = create(ROOT_COLLECTION_NAME);
+
+    /** '/db/system' **/
+    public final static XmldbURI SYSTEM = create(SYSTEM_COLLECTION);
     public final static XmldbURI SYSTEM_COLLECTION_URI = create(SYSTEM_COLLECTION);
+    
     @Deprecated
     public final static XmldbURI CONFIG_COLLECTION_URI = create(CONFIG_COLLECTION);
-    //TODO : create using resolve()
-    public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = create(CONFIG_COLLECTION + "/" + ROOT_COLLECTION_NAME);
+    
     public final static XmldbURI TEMP_COLLECTION_URI = create(TEMP_COLLECTION);
     public final static XmldbURI EMPTY_URI = createInternal("");
     public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(EMBEDDED_SERVER_URI_PREFIX + EMBEDDED_SERVER_AUTHORITY);
