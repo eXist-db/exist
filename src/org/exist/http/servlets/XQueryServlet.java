@@ -111,6 +111,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     public static final String ATTR_XQUERY_URL = "xquery.url";
     public static final String ATTR_XQUERY_REPORT_ERRORS = "xquery.report-errors";
     public static final String ATTR_XQUERY_ATTRIBUTE = "xquery.attribute";
+    public static final String ATTR_TIMEOUT = "xquery.timeout";
+    public static final String ATTR_MAX_NODES = "xquery.max-nodes";
     public static final String ATTR_MODULE_LOAD_PATH = "xquery.module-load-path";
 
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
@@ -427,7 +429,6 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //        }
 
         String requestAttr = (String) request.getAttribute(ATTR_XQUERY_ATTRIBUTE);
-
         DBBroker broker = null;
         try {
         	broker = getPool().get(user);
@@ -459,6 +460,26 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             context.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, getFormEncoding(), getContainerEncoding()));
             context.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
             context.declareVariable(SessionModule.PREFIX + ":session", ( session != null ? new HttpSessionWrapper( session ) : null ) );
+
+            String timeoutOpt = (String) request.getAttribute(ATTR_TIMEOUT);
+            if (timeoutOpt != null) {
+                try {
+                    long timeout = Long.parseLong(timeoutOpt);
+                    context.getWatchDog().setTimeout(timeout);
+                } catch (NumberFormatException e) {
+                    throw new EXistException("Bad timeout option: " + timeoutOpt);
+                }
+            }
+
+            String maxNodesOpt = (String) request.getAttribute(ATTR_MAX_NODES);
+            if (maxNodesOpt != null) {
+                try{
+                    int maxNodes = Integer.parseInt(maxNodesOpt);
+                    context.getWatchDog().setMaxNodes(maxNodes);
+                } catch (NumberFormatException e) {
+                    throw new EXistException("Bad max-nodes option: " + maxNodesOpt);
+                }
+            }
 
             DebuggeeFactory.checkForDebugRequest(request, context);
 

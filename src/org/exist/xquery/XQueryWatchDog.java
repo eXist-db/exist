@@ -93,7 +93,11 @@ public class XQueryWatchDog {
 			LOG.debug("timeout set from option: " + nf.format(timeout) + " ms.");
 		}
     }
-    
+
+    public void setTimeout(long time) {
+        timeout = time;
+    }
+
     public void setMaxNodes(int maxNodes) {
     	maxNodesLimit = maxNodes;
     }
