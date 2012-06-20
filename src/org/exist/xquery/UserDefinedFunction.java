@@ -50,7 +50,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
     private FunctionCall call;
     
     private boolean reseted = false;
-    
+
+    private boolean visited = false;
+
     private List<Variable> closureVariables = null;
     
 	public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
@@ -226,6 +228,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	}
 	
     public void accept(ExpressionVisitor visitor) {
+        if (visited)
+            return;
+        visited = true;
         visitor.visitUserFunction(this);
     }
     

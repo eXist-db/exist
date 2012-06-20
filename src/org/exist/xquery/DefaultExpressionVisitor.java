@@ -39,8 +39,6 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitUserFunction(UserDefinedFunction function) {
-        if (function.getCaller().isRecursive())
-            return;
         function.getFunctionBody().accept(this);
     }
 
