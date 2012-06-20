@@ -126,6 +126,10 @@ public class SecurityManagerImpl implements SecurityManager {
     @ConfigurationFieldClassMask("org.exist.security.realm.%1$s.%2$sRealm")
     private List<Realm> realms = new ArrayList<Realm>();
     
+    @ConfigurationFieldAsElement("events")
+    //@ConfigurationFieldClassMask("org.exist.security.internal.SMEvents")
+    private SMEvents events = null;
+    
     private Collection collection = null;
     
     private Configuration configuration = null;
@@ -420,10 +424,12 @@ public class SecurityManagerImpl implements SecurityManager {
                 }
             });
 
-            if(subject == null) {
+            if(subject == null)
                 throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");
 
-            }
+            if (events != null)
+            	events.authenticated(subject);
+            
             //TODO: validate session
             return subject;
         }
@@ -435,6 +441,9 @@ public class SecurityManagerImpl implements SecurityManager {
                 if (LOG.isDebugEnabled())
                 	LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");
                 
+                if (events != null)
+                	events.authenticated(subject);
+
                 return subject;
             } catch(AuthenticationException e) {
                 if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {

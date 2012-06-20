@@ -251,7 +251,9 @@ public class Configurator {
                     //use annotation ConfigurationFieldClassMask
                     value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
                 } else {
-                	value = create(configuration, instance, typeName);
+                	Configuration conf = configuration.getConfiguration(property);
+                	if (conf == null) conf = configuration;
+                	value = create(conf, instance, typeName);
                 	if (value == null)
                 		value = configuration.getProperty(property);
                 }
@@ -420,7 +422,7 @@ public class Configurator {
     }
     
     private static Configurable create(Configuration conf, Configurable instance, String clazzName) {
-        Class<?> clazz;
+    	Class<?> clazz;
         try {
             clazz = Class.forName(clazzName);
             
