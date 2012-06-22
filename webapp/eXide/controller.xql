@@ -1,55 +1,11 @@
 xquery version "1.0";
 
-(:~
-    Retrieve current user credentials from HTTP session
-:)
-declare function local:credentials-from-session() as xs:string* {
-    (session:get-attribute("myapp.user"), session:get-attribute("myapp.password"))
-};
+import module namespace login="http://exist-db.org/xquery/app/wiki/session" at "modules/login.xql";
 
-(:~
-    Store user credentials to session for future use. Return an XML
-    fragment to pass user and password to the query.
-:)
-declare function local:set-credentials($user as xs:string, $password as xs:string?) as element()+ {
-    session:set-attribute("myapp.user", $user), 
-    session:set-attribute("myapp.password", $password),
-    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist" name="xquery.user" value="{$user}"/>,
-    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist" name="xquery.password" value="{$password}"/>
-};
-
-(:~
-    Check if login parameters were passed in the request. If yes, try to authenticate
-    the user and store credentials into the session. Clear the session if parameter
-    "logout" is set.
-    
-    The function returns an XML fragment to be included into the dispatch XML or
-    the empty set if the user could not be authenticated or the
-    session is empty.
-:)
-declare function local:set-user() as element()* {
-    session:create(),
-    let $user := request:get-parameter("user", ())
-    let $password := request:get-parameter("password", ())
-    let $sessionCredentials := local:credentials-from-session()
-    return
-        if ($user) then
-            let $loggedIn := xmldb:login("/db", $user, $password)
-            return
-                if ($loggedIn) then
-                    local:set-credentials($user, $password)
-                else
-                    ()
-        else if (exists($sessionCredentials)) then
-            local:set-credentials($sessionCredentials[1], $sessionCredentials[2])
-        else
-            ()
-};
-
-declare function local:logout() as element() {
-    session:invalidate(),
-    <ok/>
-};
+declare variable $exist:path external;
+declare variable $exist:resource external;
+declare variable $exist:prefix external;
+declare variable $exist:controller external;
 
 if ($exist:path eq '/') then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -59,25 +15,24 @@ if ($exist:path eq '/') then
 (:
  : Login a user via AJAX. Just returns a 401 if login fails.
  :)
-else if ($exist:resource eq 'login') then
-    let $loggedIn := local:set-user()
-    return
-        if ($loggedIn) then
-            <ok/>
+else if ($exist:resource = 'login') then
+    let $loggedIn := login:set-user("org.exist.login", ())
+    return (
+        util:declare-option("exist:serialize", "method=json"),
+        if (exists($loggedIn)) then
+            <status>{$loggedIn[@name="org.exist.login.user"]/@value/string()}</status>
         else (
             response:set-status-code(401),
-            <fail/>
+            <status>fail</status>
         )
-
-else if ($exist:resource eq "logout") then
-    local:logout()
+    )
 
 else if ($exist:resource eq "index.html") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <set-header name="Cache-Control" value="max-age=3600"/>
-        <view>
-            <forward url="modules/view.xql"/>
-        </view>
+		<view>
+		<forward url="modules/view.xql"/>
+		</view>
     </dispatch>
 
 else if ($exist:resource eq 'execute') then
@@ -88,7 +43,7 @@ else if ($exist:resource eq 'execute') then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 	<!-- Query is executed by XQueryServlet -->
             <forward servlet="XQueryServlet">
-                {local:set-user()}
+                {login:set-user("org.exist.login", ())}
                 <set-header name="Cache-Control" value="no-cache"/>
                 <!-- Query is passed via the attribute 'xquery.source' -->
                 <set-attribute name="xquery.source" value="{$query}"/>
@@ -118,7 +73,7 @@ else if ($exist:resource eq 'execute') then
 else if (starts-with($exist:path, '/results/')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="../modules/session.xql">
-            {local:set-user()}
+            {login:set-user("org.exist.login", ())}
             <set-header name="Cache-Control" value="no-cache"/>
             <add-parameter name="num" value="{$exist:resource}"/>
         </forward>
@@ -131,7 +86,7 @@ else if ($exist:resource eq "outline") then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 	        <!-- Query is executed by XQueryServlet -->
             <forward url="modules/outline.xql">
-                {local:set-user()}
+                {login:set-user("org.exist.login", ())}
                 <set-header name="Cache-Control" value="no-cache"/>
 	            <set-attribute name="xquery.module-load-path" value="{$base}"/>
             </forward>
@@ -139,7 +94,7 @@ else if ($exist:resource eq "outline") then
 
 else if (ends-with($exist:path, ".xql")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        { local:set-user() }
+        {login:set-user("org.exist.login", ())}
         <set-header name="Cache-Control" value="no-cache"/>
         <set-attribute name="app-root" value="{$exist:prefix}{$exist:controller}"/>
     </dispatch>

@@ -13,6 +13,7 @@ declare function find:xquery-scripts($root as xs:string) {
     
     for $child in xmldb:get-child-collections($root)
     let $path := concat($root, "/", $child)
+    where sm:has-access($path, "r-x")
     return
         find:xquery-scripts($path)
 };

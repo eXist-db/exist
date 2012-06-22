@@ -27,7 +27,6 @@ a:link,a:visited {
     margin-left: 10px;
     padding-left: 18px;
     border-left: 1px solid #bbb;
-    font-size: 75%;
 }
     
 #login-error {
@@ -136,6 +135,7 @@ Sub level menu list items (undo style from Top level List Items)
 	margin: 0 4px;
 	padding: 4px;
 	height: 20px;
+    min-height: 20px;
 	background: #E8E8E8;
 	overflow: hidden;
 	border-left: 1px solid #bbb;
@@ -146,14 +146,22 @@ Sub level menu list items (undo style from Top level List Items)
 	color: red;
 }
 
-#status-bar:hover {
+#ext-status-bar {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10000;
+    display: none;
+    left: 4px;
+    right: 4px;
+    bottom: 30px;
     height: auto;
-    overflow: visible;
+    z-index: 1000;
+    background: #E8E8E8;
+    border: 1px solid #bbb;
+    border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+	-webkit-border-radius: 10px 10px 10px 10px;
+    padding: 4px 8px;
+    font-size: 85%;
+    color: red;
 }
 
 #search-box {
@@ -176,7 +184,7 @@ Sub level menu list items (undo style from Top level List Items)
 	list-style: none;
 	margin: 4px 4px 0 4px;
 	padding: 4px 0;
-    overflow: hidden;
+    overflow: none;
 }
 
 #tabs li {

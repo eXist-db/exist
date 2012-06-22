@@ -4,6 +4,8 @@
  :)
 module namespace config="http://exist-db.org/xquery/apps/config";
 
+import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
+
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
 
@@ -25,44 +27,67 @@ declare variable $config:app-root :=
         substring-before($modulePath, "/modules")
 ;
 
+declare variable $config:repo-descriptor := doc(concat($config:app-root, "/repo.xml"))/repo:meta;
+
+declare variable $config:expath-descriptor := doc(concat($config:app-root, "/expath-pkg.xml"))/expath:package;
+
+(:~
+ : Resolve the given path using the current application context.
+ : If the app resides in the file system,
+ :)
+declare function config:resolve($relPath as xs:string) {
+    if (starts-with($config:app-root, "/db")) then
+        doc(concat($config:app-root, "/", $relPath))
+    else
+        doc(concat("file://", $config:app-root, "/", $relPath))
+};
+
 (:~
  : Returns the repo.xml descriptor for the current application.
  :)
 declare function config:repo-descriptor() as element(repo:meta) {
-    doc(concat($config:app-root, "/repo.xml"))/repo:meta
+    $config:repo-descriptor
 };
 
 (:~
  : Returns the expath-pkg.xml descriptor for the current application.
  :)
 declare function config:expath-descriptor() as element(expath:package) {
-    doc(concat($config:app-root, "/expath-pkg.xml"))/expath:package
+    $config:expath-descriptor
+};
+
+declare %templates:wrap function config:app-title($node as node(), $model as map(*)) as text() {
+    $config:expath-descriptor/expath:title/text()
+};
+
+declare function config:app-meta($node as node(), $model as map(*)) as element()* {
+    <meta name="description">{$config:repo-descriptor/repo:description/text()}</meta>,
+    for $author in $config:repo-descriptor/repo:author
+    return
+        <meta name="creator">{$author/text()}</meta>
 };
 
 (:~
  : For debugging: generates a table showing all properties defined
  : in the application descriptors.
  :)
-declare function config:app-info($node as node(), $params as element(parameters)?, $model as item()*) {
+declare function config:app-info($node as node(), $model as map(*)) {
     let $expath := config:expath-descriptor()
     let $repo := config:repo-descriptor()
     return
-        <table class="app-info">
+        <table class="table table-bordered table-striped">
             <tr>
                 <td>app collection:</td>
                 <td>{$config:app-root}</td>
             </tr>
             {
                 for $attr in ($expath/@*, $expath/*, $repo/*)
+                where $attr/string() != ""
                 return
                     <tr>
                         <td>{node-name($attr)}:</td>
                         <td>{$attr/string()}</td>
                     </tr>
             }
-            <tr>
-                <td>Controller:</td>
-                <td>{ request:get-attribute("$exist:controller") }</td>
-            </tr>
         </table>
 };
