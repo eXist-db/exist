@@ -24,12 +24,7 @@ package org.exist.xquery.value;
 import java.text.Collator;
 import java.util.List;
 
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Expression;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 
 /**
  * Represents a function item, i.e. a reference to a function that can be called dynamically.
@@ -65,6 +60,14 @@ public class FunctionReference extends AtomicValue {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	functionCall.analyze(contextInfo);
+        if (functionCall.getContext().optimizationsEnabled()) {
+            Optimizer optimizer = new Optimizer( functionCall.getContext() );
+            functionCall.accept(optimizer);
+            if (optimizer.hasOptimized()) {
+                functionCall.resetState(true);
+                functionCall.analyze(contextInfo);
+            }
+        }
     }
     
     /**
