@@ -204,6 +204,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
 
     protected Collection getCollection() throws XMLDBException {
+    	Subject subject = brokerPool.getSubject();
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
@@ -220,6 +221,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             brokerPool.release(broker);
+            brokerPool.setSubject(subject);
         }
     }
 
