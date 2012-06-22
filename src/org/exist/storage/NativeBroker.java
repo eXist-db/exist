@@ -1825,12 +1825,6 @@ public class NativeBroker extends DBBroker {
         return null;
     }
 
-    /** remove all documents from temporary collection */
-    @Override
-    public void cleanUpTempResources() throws PermissionDeniedException {
-        cleanUpTempResources(false);
-    }
-
     /** remove all documents from temporary collection
      * 
      * @param forceRemoval Should temporary resources be forcefully removed 
@@ -1840,34 +1834,15 @@ public class NativeBroker extends DBBroker {
         Collection temp = getCollection(XmldbURI.TEMP_COLLECTION_URI);
         if(temp == null)
             return;
-        /* We can remove the entire collection if all temp
-        data has timed out. It is much faster to remove a collection
-        than a number of documents from a collection
-        */
-        boolean removeCollection = true;
-        if(!forceRemoval) {
-            long now = System.currentTimeMillis();
-            for(Iterator<DocumentImpl> i = temp.iterator(this); i.hasNext();) {
-                DocumentImpl next = i.next();
-                long modified = next.getMetadata().getLastModified();
-                if(now - modified < TEMP_FRAGMENT_TIMEOUT) {
-                    removeCollection = false;
-                    break;
-                }
-            }
-        }
-        //remove the entire temp collection?
-        if(removeCollection) {
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            try {
-                removeCollection(transaction, temp);
-                transact.commit(transaction);
-            } catch(Exception e) {
-                transact.abort(transaction);
-                LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
-            }
-        }
+		TransactionManager transact = pool.getTransactionManager();
+		Txn transaction = transact.beginTransaction();
+		try {
+			removeCollection(transaction, temp);
+			transact.commit(transaction);
+		} catch(Exception e) {
+			transact.abort(transaction);
+			LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
+		}
     }
 
     @Override

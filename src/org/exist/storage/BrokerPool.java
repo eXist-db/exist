@@ -1651,14 +1651,6 @@ public class BrokerPool extends Observable implements Database {
 		Subject user = broker.getSubject();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setSubject(securityManager.getSystemSubject());
-        if(status != SHUTDOWN) {
-            
-            try {
-                broker.cleanUpTempResources();
-            } catch(PermissionDeniedException pde) {
-                LOG.warn("Unable to clean-up temp collection: " + pde.getMessage(), pde);
-            }
-        }
         if (syncEvent == Sync.MAJOR_SYNC) {
         	LOG.debug("Major sync");
             try {
