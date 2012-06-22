@@ -149,25 +149,15 @@ onmessage = function(e) {
 */
 
 define('ace/lib/fixoldbrowsers', ['require', 'exports', 'module' , 'ace/lib/regexp', 'ace/lib/es5-shim'], function(require, exports, module) {
-"use strict";
+
 
 require("./regexp");
 require("./es5-shim");
 
 });
-/*
- *  Based on code from:
- *
- * XRegExp 1.5.0
- * (c) 2007-2010 Steven Levithan
- * MIT License
- * <http://xregexp.com>
- * Provides an augmented, extensible, cross-browser implementation of regular expressions,
- * including support for additional syntax, flags, and methods
- */
  
 define('ace/lib/regexp', ['require', 'exports', 'module' ], function(require, exports, module) {
-"use strict";
+
 
     //---------------------------------
     //  Private variables
@@ -186,6 +176,9 @@ define('ace/lib/regexp', ['require', 'exports', 'module' ], function(require, ex
             real.test.call(x, "");
             return !x.lastIndex;
         }();
+
+    if (compliantLastIndexIncrement && compliantExecNpcg)
+        return;
 
     //---------------------------------
     //  Overriden native methods
@@ -1324,48 +1317,9 @@ var prepareString = "a"[0] != "a",
         return Object(o);
     };
 });
-/* vim:ts=4:sts=4:sw=4:
- * ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *      Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)
- *      Mike de Boer <mike AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/lib/event_emitter', ['require', 'exports', 'module' ], function(require, exports, module) {
-"use strict";
+
 
 var EventEmitter = {};
 
@@ -1445,45 +1399,9 @@ EventEmitter.removeAllListeners = function(eventName) {
 exports.EventEmitter = EventEmitter;
 
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/lib/oop', ['require', 'exports', 'module' ], function(require, exports, module) {
-"use strict";
+
 
 exports.inherits = (function() {
     var tempCtor = function() {};
@@ -1506,45 +1424,9 @@ exports.implement = function(proto, mixin) {
 };
 
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
  
 define('ace/mode/javascript_worker', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/worker/mirror', 'ace/worker/jshint', 'ace/narcissus/parser'], function(require, exports, module) {
-"use strict";
+
     
 var oop = require("../lib/oop");
 var Mirror = require("../worker/mirror").Mirror;
@@ -1595,7 +1477,7 @@ oop.inherits(JavaScriptWorker, Mirror);
 
 });
 define('ace/worker/mirror', ['require', 'exports', 'module' , 'ace/document', 'ace/lib/lang'], function(require, exports, module) {
-"use strict";
+
 
 var Document = require("../document").Document;
 var lang = require("../lib/lang");
@@ -1637,58 +1519,14 @@ var Mirror = exports.Mirror = function(sender) {
 }).call(Mirror.prototype);
 
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/document', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/lib/event_emitter', 'ace/range', 'ace/anchor'], function(require, exports, module) {
-"use strict";
+
 
 var oop = require("./lib/oop");
 var EventEmitter = require("./lib/event_emitter").EventEmitter;
 var Range = require("./range").Range;
 var Anchor = require("./anchor").Anchor;
-
-/**
- * class Document
- *
- * Contains the text of the document. Documents are controlled by a single [[EditSession `EditSession`]]. At its core, `Document`s are just an array of strings, with each row in the document matching up to the array index.
- *
- *
- **/
 
  /**
  * new Document([text])
@@ -1700,13 +1538,12 @@ var Anchor = require("./anchor").Anchor;
 var Document = function(text) {
     this.$lines = [];
 
-    if (Array.isArray(text)) {
-        this.insertLines(0, text);
-    }
     // There has to be one line at least in the document. If you pass an empty
     // string to the insert function, nothing will happen. Workaround.
-    else if (text.length == 0) {
+    if (text.length == 0) {
         this.$lines = [""];
+    } else if (Array.isArray(text)) {
+        this.insertLines(0, text);
     } else {
         this.insert({row: 0, column:0}, text);
     }
@@ -1715,48 +1552,17 @@ var Document = function(text) {
 (function() {
 
     oop.implement(this, EventEmitter);
-
-    /**
-    * Document.setValue(text) -> Void
-    * - text (String): The text to use
-    *
-    * Replaces all the lines in the current `Document` with the value of `text`.
-    **/
     this.setValue = function(text) {
         var len = this.getLength();
         this.remove(new Range(0, 0, len, this.getLine(len-1).length));
         this.insert({row: 0, column:0}, text);
     };
-
-    /**
-    * Document.getValue() -> String
-    * 
-    * Returns all the lines in the document as a single string, split by the new line character.
-    **/
     this.getValue = function() {
         return this.getAllLines().join(this.getNewLineCharacter());
     };
-
-    /** 
-    * Document.createAnchor(row, column) -> Anchor
-    * - row (Number): The row number to use
-    * - column (Number): The column number to use
-    *
-    * Creates a new `Anchor` to define a floating point in the document.
-    **/
     this.createAnchor = function(row, column) {
         return new Anchor(this, row, column);
     };
-
-    /** internal, hide
-    * Document.$split(text) -> [String]
-    * - text (String): The text to work with
-    * + ([String]): A String array, with each index containing a piece of the original `text` string.
-    * 
-    * Splits a string of text on any newline (`\n`) or carriage-return ('\r') characters.
-    *
-    *
-    **/
 
     // check for IE split bug
     if ("aaa".split(/a/).length == 0)
@@ -1767,13 +1573,6 @@ var Document = function(text) {
         this.$split = function(text) {
             return text.split(/\r\n|\r|\n/);
         };
-
-
-    /** internal, hide
-    * Document.$detectNewLine(text) -> Void
-    * 
-    * 
-    **/
     this.$detectNewLine = function(text) {
         var match = text.match(/^.*?(\r\n|\r|\n)/m);
         if (match) {
@@ -1782,18 +1581,6 @@ var Document = function(text) {
             this.$autoNewLine = "\n";
         }
     };
-
-    /**
-    * Document.getNewLineCharacter() -> String
-    * + (String): If `newLineMode == windows`, `\r\n` is returned.<br/>
-    *  If `newLineMode == unix`, `\n` is returned.<br/>
-    *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
-    * 
-    * Returns the newline character that's being used, depending on the value of `newLineMode`. 
-    *
-    * 
-    * 
-    **/
     this.getNewLineCharacter = function() {
       switch (this.$newLineMode) {
           case "windows":
@@ -1809,87 +1596,30 @@ var Document = function(text) {
 
     this.$autoNewLine = "\n";
     this.$newLineMode = "auto";
-    /**
-     * Document.setNewLineMode(newLineMode) -> Void
-     * - newLineMode(String): [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #Document.setNewLineMode.param}
-     * 
-     * [Sets the new line mode.]{: #Document.setNewLineMode.desc}
-     **/
     this.setNewLineMode = function(newLineMode) {
         if (this.$newLineMode === newLineMode)
             return;
 
         this.$newLineMode = newLineMode;
     };
-
-    /**
-    * Document.getNewLineMode() -> String
-    * 
-    * [Returns the type of newlines being used; either `windows`, `unix`, or `auto`]{: #Document.getNewLineMode}
-    *
-    **/
     this.getNewLineMode = function() {
         return this.$newLineMode;
     };
-
-    /**
-    * Document.isNewLine(text) -> Boolean
-    * - text (String): The text to check
-    *
-    * Returns `true` if `text` is a newline character (either `\r\n`, `\r`, or `\n`).
-    *
-    **/
     this.isNewLine = function(text) {
         return (text == "\r\n" || text == "\r" || text == "\n");
     };
-
-    /**
-    * Document.getLine(row) -> String
-    * - row (Number): The row index to retrieve
-    * 
-    * Returns a verbatim copy of the given line as it is in the document
-    *
-    **/
     this.getLine = function(row) {
         return this.$lines[row] || "";
     };
-
-    /**
-    * Document.getLines(firstRow, lastRow) -> [String]
-    * - firstRow (Number): The first row index to retrieve
-    * - lastRow (Number): The final row index to retrieve
-    * 
-    * Returns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.
-    *
-    **/
     this.getLines = function(firstRow, lastRow) {
         return this.$lines.slice(firstRow, lastRow + 1);
     };
-
-    /**
-    * Document.getAllLines() -> [String]
-    * 
-    * Returns all lines in the document as string array. Warning: The caller should not modify this array!
-    **/
     this.getAllLines = function() {
         return this.getLines(0, this.getLength());
     };
-
-    /**
-    * Document.getLength() -> Number
-    * 
-    * Returns the number of rows in the document.
-    **/
     this.getLength = function() {
         return this.$lines.length;
     };
-
-    /**
-    * Document.getTextRange(range) -> String
-    * - range (Range): The range to work with
-    * 
-    * [Given a range within the document, this function returns all the text within that range as a single string.]{: #Document.getTextRange.desc}
-    **/
     this.getTextRange = function(range) {
         if (range.start.row == range.end.row) {
             return this.$lines[range.start.row].substring(range.start.column,
@@ -1902,12 +1632,6 @@ var Document = function(text) {
             return lines.join(this.getNewLineCharacter());
         }
     };
-
-    /** internal, hide
-    * Document.$clipPosition(position) -> Number
-    * 
-    * 
-    **/
     this.$clipPosition = function(position) {
         var length = this.getLength();
         if (position.row >= length) {
@@ -1916,16 +1640,6 @@ var Document = function(text) {
         }
         return position;
     };
-
-    /**
-    * Document.insert(position, text) -> Number
-    * - position (Number): The position to start inserting at 
-    * - text (String): A chunk of text to insert
-    * + (Number): The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`. 
-    * Inserts a block of `text` and the indicated `position`.
-    *
-    * 
-    **/
     this.insert = function(position, text) {
         if (!text || text.length === 0)
             return position;
@@ -1948,23 +1662,16 @@ var Document = function(text) {
         }
         return position;
     };
-
-    /**
-    * Document.insertLines(row, lines) -> Object
-    * - row (Number): The index of the row to insert at
-    * - lines (Array): An array of strings
-    * + (Object): Returns an object containing the final row and column, like this:<br/>
-    *   ```{row: endRow, column: 0}```<br/>
-    *   If `lines` is empty, this function returns an object containing the current row, and column, like this:<br/>
-    *   ```{row: row, column: 0}```
-    *
-    * Inserts the elements in `lines` into the document, starting at the row index given by `row`. This method also triggers the `'change'` event.
-    *
-    *
-    **/
     this.insertLines = function(row, lines) {
         if (lines.length == 0)
             return {row: row, column: 0};
+
+        // apply doesn't work for big arrays (smallest threshold is on safari 0xFFFF)
+        // to circumvent that we have to break huge inserts into smaller chunks here
+        if (lines.length > 0xFFFF) {
+            var end = this.insertLines(row, lines.slice(0xFFFF));
+            lines = lines.slice(0, 0xFFFF);
+        }
 
         var args = [row, 0];
         args.push.apply(args, lines);
@@ -1977,20 +1684,8 @@ var Document = function(text) {
             lines: lines
         };
         this._emit("change", { data: delta });
-        return range.end;
+        return end || range.end;
     };
-
-    /**
-    * Document.insertNewLine(position) -> Object
-    * - position (String): The position to insert at
-    * + (Object): Returns an object containing the final row and column, like this:<br/>
-    *    ```{row: endRow, column: 0}```
-    * 
-    * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event. 
-    *
-    *   
-    *
-    **/
     this.insertNewLine = function(position) {
         position = this.$clipPosition(position);
         var line = this.$lines[position.row] || "";
@@ -2012,20 +1707,6 @@ var Document = function(text) {
 
         return end;
     };
-
-    /**
-    * Document.insertInLine(position, text) -> Object | Number
-    * - position (Number): The position to insert at
-    * - text (String): A chunk of text
-    * + (Object): Returns an object containing the final row and column, like this:<br/>
-    *     ```{row: endRow, column: 0}```
-    * + (Number): If `text` is empty, this function returns the value of `position`
-    * 
-    * Inserts `text` into the `position` at the current row. This method also triggers the `'change'` event.
-    *
-    *
-    *
-    **/
     this.insertInLine = function(position, text) {
         if (text.length == 0)
             return position;
@@ -2049,16 +1730,6 @@ var Document = function(text) {
 
         return end;
     };
-
-    /**
-    * Document.remove(range) -> Object
-    * - range (Range): A specified Range to remove
-    * + (Object): Returns the new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
-    * 
-    * Removes the `range` from the document.
-    *
-    *
-    **/
     this.remove = function(range) {
         // clip to document
         range.start = this.$clipPosition(range.start);
@@ -2090,18 +1761,6 @@ var Document = function(text) {
         }
         return range.start;
     };
-
-    /**
-    * Document.removeInLine(row, startColumn, endColumn) -> Object
-    * - row (Number): The row to remove from
-    * - startColumn (Number): The column to start removing at 
-    * - endColumn (Number): The column to stop removing at
-    * + (Object): Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
-    *
-    * Removes the specified columns from the `row`. This method also triggers the `'change'` event.
-    *
-    * 
-    **/
     this.removeInLine = function(row, startColumn, endColumn) {
         if (startColumn == endColumn)
             return;
@@ -2120,17 +1779,6 @@ var Document = function(text) {
         this._emit("change", { data: delta });
         return range.start;
     };
-
-    /**
-    * Document.removeLines(firstRow, lastRow) -> [String]
-    * - firstRow (Number): The first row to be removed
-    * - lastRow (Number): The last row to be removed
-    * + ([String]): Returns all the removed lines.
-    * 
-    * Removes a range of full lines. This method also triggers the `'change'` event.
-    * 
-    *
-    **/
     this.removeLines = function(firstRow, lastRow) {
         var range = new Range(firstRow, 0, lastRow + 1, 0);
         var removed = this.$lines.splice(firstRow, lastRow - firstRow + 1);
@@ -2144,14 +1792,6 @@ var Document = function(text) {
         this._emit("change", { data: delta });
         return removed;
     };
-
-    /**
-    * Document.removeNewLine(row) -> Void
-    * - row (Number): The row to check
-    * 
-    * Removes the new line between `row` and the row immediately following it. This method also triggers the `'change'` event.
-    *
-    **/
     this.removeNewLine = function(row) {
         var firstLine = this.getLine(row);
         var secondLine = this.getLine(row+1);
@@ -2168,19 +1808,6 @@ var Document = function(text) {
         };
         this._emit("change", { data: delta });
     };
-
-    /**
-    * Document.replace(range, text) -> Object
-    * - range (Range): A specified Range to replace
-    * - text (String): The new text to use as a replacement
-    * + (Object): Returns an object containing the final row and column, like this:
-    *     {row: endRow, column: 0}
-    * If the text and range are empty, this function returns an object containing the current `range.start` value.
-    * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-    *
-    * Replaces a range in the document with the new `text`.
-    *
-    **/
     this.replace = function(range, text) {
         if (text.length == 0 && range.isEmpty())
             return range.start;
@@ -2200,12 +1827,6 @@ var Document = function(text) {
 
         return end;
     };
-
-    /**
-    * Document.applyDeltas(deltas) -> Void
-    * 
-    * Applies all the changes previously accumulated. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-    **/
     this.applyDeltas = function(deltas) {
         for (var i=0; i<deltas.length; i++) {
             var delta = deltas[i];
@@ -2221,12 +1842,6 @@ var Document = function(text) {
                 this.remove(range);
         }
     };
-
-    /**
-    * Document.revertDeltas(deltas) -> Void
-    * 
-    * Reverts any changes previously applied. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-    **/
     this.revertDeltas = function(deltas) {
         for (var i=deltas.length-1; i>=0; i--) {
             var delta = deltas[i];
@@ -2248,45 +1863,9 @@ var Document = function(text) {
 
 exports.Document = Document;
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/range', ['require', 'exports', 'module' ], function(require, exports, module) {
-"use strict";
+
 
 /**
  * class Range
@@ -2330,53 +1909,15 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
             this.end.row == range.end.row &&
             this.start.column == range.start.column &&
             this.end.column == range.end.column
-    };
-
-    /**
-     * Range.toString() -> String
-     *
-     * Returns a string containing the range's row and column information, given like this:
-     *
-     *    [start.row/start.column] -> [end.row/end.column]
-     *
-     **/ 
-
+    }; 
     this.toString = function() {
         return ("Range: [" + this.start.row + "/" + this.start.column +
             "] -> [" + this.end.row + "/" + this.end.column + "]");
-    };
-
-    /** related to: Range.compare
-     * Range.contains(row, column) -> Boolean
-     * - row (Number): A row to check for
-     * - column (Number): A column to check for
-     *
-     * Returns `true` if the `row` and `column` provided are within the given range. This can better be expressed as returning `true` if:
-     *
-     *    this.start.row <= row <= this.end.row &&
-     *    this.start.column <= column <= this.end.column
-     *
-     **/ 
+    }; 
 
     this.contains = function(row, column) {
         return this.compare(row, column) == 0;
-    };
-
-    /** related to: Range.compare
-     * Range.compareRange(range) -> Number
-     * - range (Range): A range to compare with
-     * + (Number): This method returns one of the following numbers:<br/>
-     * <br/>
-     * * `-2`: (B) is in front of (A), and doesn't intersect with (A)<br/>
-     * * `-1`: (B) begins before (A) but ends inside of (A)<br/>
-     * * `0`: (B) is completely inside of (A) OR (A) is completely inside of (B)<br/>
-     * * `+1`: (B) begins inside of (A) but ends outside of (A)<br/>
-     * * `+2`: (B) is after (A) and doesn't intersect with (A)<br/>
-     * * `42`: FTW state: (B) ends in (A) but starts outside of (A)
-     * 
-     * Compares `this` range (A) with another range (B).
-     *
-     **/ 
+    }; 
     this.compareRange = function(range) {
         var cmp,
             end = range.end,
@@ -2613,30 +2154,6 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
 
         return 0;
     };
-
-    /**
-     * Range.compareStart(row, column) -> Number
-     * - row (Number): A row point to compare with
-     * - column (Number): A column point to compare with
-     * + (Number): This method returns one of the following numbers:<br/>
-     * <br/>
-     * * `0` if the two points are exactly equal<br/>
-     * * `-1` if `p.row` is less then the calling range<br/>
-     * * `1` if `p.row` is greater than the calling range, or if `isStart` is `true`.<br/>
-     * <br/>
-     * If the starting row of the calling range is equal to `p.row`, and:<br/>
-     * * `p.column` is greater than or equal to the calling range's starting column, this returns `0`<br/>
-     * * Otherwise, it returns -1<br/>
-     * <br/>
-     * If the ending row of the calling range is equal to `p.row`, and:<br/>
-     * * `p.column` is less than or equal to the calling range's ending column, this returns `0`<br/>
-     * * Otherwise, it returns 1
-     *
-     * Checks the row and column points with the row and column points of the calling range.
-     *
-     *
-     *
-     **/
     this.compareStart = function(row, column) {
         if (this.start.row == row && this.start.column == column) {
             return -1;
@@ -2674,7 +2191,7 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
         }
     }
 
-   /** 
+    /** 
      * Range.compareInside(row, column) -> Number
      * - row (Number): A row point to compare with
      * - column (Number): A column point to compare with
@@ -2699,7 +2216,7 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
         }
     }
 
-   /** 
+    /** 
      * Range.clipRows(firstRow, lastRow) -> Range
      * - firstRow (Number): The starting row
      * - lastRow (Number): The ending row
@@ -2737,15 +2254,6 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
         }
         return Range.fromPoints(start || this.start, end || this.end);
     };
-
-   /** 
-     * Range.extend(row, column) -> Range
-     * - row (Number): A new row to extend to
-     * - column (Number): A new column to extend to
-     *
-     *  Changes the row and column points for the calling range for both the starting and ending points. This method returns that range with a new row.
-     *
-    **/
     this.extend = function(row, column) {
         var cmp = this.compare(row, column);
 
@@ -2762,46 +2270,18 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
     this.isEmpty = function() {
         return (this.start.row == this.end.row && this.start.column == this.end.column);
     };
-
-   /** 
-     * Range.isMultiLine() -> Boolean
-     *
-     * Returns true if the range spans across multiple lines.
-     *
-    **/
     this.isMultiLine = function() {
         return (this.start.row !== this.end.row);
     };
-
-   /** 
-     * Range.clone() -> Range
-     *
-     * Returns a duplicate of the calling range.
-     *
-    **/
     this.clone = function() {
         return Range.fromPoints(this.start, this.end);
     };
-
-   /** 
-     * Range.collapseRows() -> Range
-     *
-     * Returns a range containing the starting and ending rows of the original range, but with a column value of `0`.
-     *
-    **/
     this.collapseRows = function() {
         if (this.end.column == 0)
             return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row-1), 0)
         else
             return new Range(this.start.row, 0, this.end.row, 0)
     };
-
-   /** 
-     * Range.toScreenRange(session) -> Range
-     * - session (EditSession): The `EditSession` to retrieve coordinates from
-     * 
-     * Given the current `Range`, this function converts those starting and ending points into screen positions, and then returns a new `Range` object.
-    **/
     this.toScreenRange = function(session) {
         var screenPosStart =
             session.documentToScreenPosition(this.start);
@@ -2815,70 +2295,18 @@ var Range = function(startRow, startColumn, endRow, endColumn) {
     };
 
 }).call(Range.prototype);
-
-/** 
- * Range.fromPoints(start, end) -> Range
- * - start (Range): A starting point to use
- * - end (Range): An ending point to use
- * 
- * Creates and returns a new `Range` based on the row and column of the given parameters.
- *
-**/
 Range.fromPoints = function(start, end) {
     return new Range(start.row, start.column, end.row, end.column);
 };
 
 exports.Range = Range;
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/anchor', ['require', 'exports', 'module' , 'ace/lib/oop', 'ace/lib/event_emitter'], function(require, exports, module) {
-"use strict";
+
 
 var oop = require("./lib/oop");
 var EventEmitter = require("./lib/event_emitter").EventEmitter;
-
-/**
- * class Anchor
- *
- * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated
- *
- **/
 
 /**
  * new Anchor(doc, row, column)
@@ -2905,36 +2333,14 @@ var Anchor = exports.Anchor = function(doc, row, column) {
 (function() {
 
     oop.implement(this, EventEmitter);
-    
-    /**
-     * Anchor.getPosition() -> Object
-     *
-     * Returns an object identifying the `row` and `column` position of the current anchor.
-     *
-     **/
 
     this.getPosition = function() {
         return this.$clipPositionToDocument(this.row, this.column);
     };
- 
-     /**
-     * Anchor.getDocument() -> Document
-     *
-     * Returns the current document.
-     *
-     **/
         
     this.getDocument = function() {
         return this.document;
     };
-    
-     /**
-     * Anchor@onChange(e)
-     * - e (Event): Contains data about the event
-     *
-     * Fires whenever the anchor position changes. Events that can trigger this function include `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-     *
-     **/
 
     this.onChange = function(e) {
         var delta = e.data;
@@ -3001,16 +2407,6 @@ var Anchor = exports.Anchor = function(doc, row, column) {
         this.setPosition(row, column, true);
     };
 
-     /**
-     * Anchor.setPosition(row, column, noClip)
-     * - row (Number): The row index to move the anchor to
-     * - column (Number): The column index to move the anchor to
-     * - noClip (Boolean): Identifies if you want the position to be clipped
-     *
-     * Sets the anchor position to the specified row and column. If `noClip` is `true`, the position is not clipped.
-     *
-     **/
-
     this.setPosition = function(row, column, noClip) {
         var pos;
         if (noClip) {
@@ -3038,26 +2434,10 @@ var Anchor = exports.Anchor = function(doc, row, column) {
             value: pos
         });
     };
-    
-    /**
-     * Anchor.detach()
-     *
-     * When called, the `'change'` event listener is removed.
-     *
-     **/
 
     this.detach = function() {
         this.document.removeEventListener("change", this.$onChange);
     };
-    
-    /** internal, hide
-     * Anchor.clipPositionToDocument(row, column)
-     * - row (Number): The row index to clip the anchor to
-     * - column (Number): The column index to clip the anchor to
-     *
-     * Clips the anchor position to the specified row and column.
-     *
-     **/
 
     this.$clipPositionToDocument = function(row, column) {
         var pos = {};
@@ -3084,45 +2464,9 @@ var Anchor = exports.Anchor = function(doc, row, column) {
 }).call(Anchor.prototype);
 
 });
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is Ajax.org Code Editor (ACE).
- *
- * The Initial Developer of the Original Code is
- * Ajax.org B.V.
- * Portions created by the Initial Developer are Copyright (C) 2010
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *      Fabian Jakobs <fabian AT ajax DOT org>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 define('ace/lib/lang', ['require', 'exports', 'module' ], function(require, exports, module) {
-"use strict";
+
 
 exports.stringReverse = function(string) {
     return string.split("").reverse().join("");
@@ -3186,10 +2530,6 @@ exports.arrayToMap = function(arr) {
     return map;
 
 };
-
-/*
- * splice out of 'array' anything that === 'value'
- */
 exports.arrayRemove = function(array, value) {
   for (var i = 0; i <= array.length; i++) {
     if (value === array[i]) {
@@ -3201,6 +2541,20 @@ exports.arrayRemove = function(array, value) {
 exports.escapeRegExp = function(str) {
     return str.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1');
 };
+
+exports.getMatchOffsets = function(string, regExp) {
+    var matches = [];
+
+    string.replace(regExp, function(str) {
+        matches.push({
+            offset: arguments[arguments.length-2],
+            length: str.length
+        });
+    });
+
+    return matches;
+};
+
 
 exports.deferredCall = function(fcn) {
 
@@ -3469,7 +2823,7 @@ define('ace/worker/jshint', ['require', 'exports', 'module' ], function(require,
 // value is the JSHINT function itself.
 
 var JSHINT = (function () {
-    "use strict";
+    
 
     var anonname,       // The guessed name for anonymous functions.
 
@@ -3511,7 +2865,7 @@ var JSHINT = (function () {
             expr        : true, // if ExpressionStatement should be allowed as Programs
             forin       : true, // if for in statements must filter
             funcscope   : true, // if only function scope should be used for scope tests
-            globalstrict: true, // if global "use strict"; should be allowed (also
+            globalstrict: true, // if global  should be allowed (also
                                 // enables 'strict')
             immed       : true, // if immediate invocations must be wrapped in parens
             iterator    : true, // if the `__iterator__` property should be allowed
@@ -3552,7 +2906,7 @@ var JSHINT = (function () {
             shadow      : true, // if variable shadowing should be tolerated
             smarttabs   : true, // if smarttabs should be tolerated
                                 // (http://www.emacswiki.org/emacs/SmartTabs)
-            strict      : true, // require the "use strict"; pragma
+            strict      : true, // require the  pragma
             sub         : true, // if all forms of subscript notation are tolerated
             supernew    : true, // if `new function () { ... };` and `new Object;`
                                 // should be tolerated
@@ -7703,50 +7057,6 @@ if (typeof exports === 'object' && exports)
     exports.JSHINT = JSHINT;
 
 });
-/* -*- Mode: JS; tab-width: 4; indent-tabs-mode: nil; -*-
- * vim: set sw=4 ts=4 et tw=78:
- * ***** BEGIN LICENSE BLOCK *****
- *
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is the Narcissus JavaScript engine.
- *
- * The Initial Developer of the Original Code is
- * Brendan Eich <brendan@mozilla.org>.
- * Portions created by the Initial Developer are Copyright (C) 2004
- * the Initial Developer. All Rights Reserved.
- *
- * Contributor(s):
- *   Tom Austin <taustin@ucsc.edu>
- *   Brendan Eich <brendan@mozilla.org>
- *   Shu-Yu Guo <shu@rfrn.org>
- *   Dave Herman <dherman@mozilla.com>
- *   Dimitris Vardoulakis <dimvar@ccs.neu.edu>
- *   Patrick Walton <pcwalton@mozilla.com>
- *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
- * ***** END LICENSE BLOCK ***** */
 
 /*
  * Narcissus - JS implemented in JS.
@@ -7766,12 +7076,6 @@ var Stack = definitions.Stack;
 
 // Set constants in the local scope.
 eval(definitions.consts);
-
-/*
- * pushDestructuringVarDecls :: (node, hoisting node) -> void
- *
- * Recursively add all destructured declarations to varDecls.
- */
 function pushDestructuringVarDecls(n, s) {
     for (var i in n) {
         var sub = n[i];
@@ -7907,12 +7211,6 @@ Pp.peekOnSameLine = function peekOnSameLine(scanOperand) {
 Pp.done = function done() {
     return this.t.done;
 };
-
-/*
- * Script :: (boolean, boolean, boolean) -> node
- *
- * Parses the toplevel and module/function bodies.
- */
 Pp.Script = function Script(inModule, inFunction, expectEnd) {
     var node = this.newNode(scriptInit());
     var x2 = new StaticContext(node, node, inModule, inFunction);
@@ -7923,12 +7221,6 @@ Pp.Script = function Script(inModule, inFunction, expectEnd) {
         this.fail("expected end of input");
     return node;
 };
-
-/*
- * Pragma :: (expression statement node) -> boolean
- *
- * Checks whether a node is a pragma and annotates it.
- */
 function Pragma(n) {
     if (n.type === SEMICOLON) {
         var e = n.expression;
@@ -8070,10 +7362,6 @@ Np.synth = function(init) {
     return node;
 };
 
-/*
- * Helper init objects for common nodes.
- */
-
 var LOOP_INIT = { isLoop: true };
 
 function blockInit() {
@@ -8160,12 +7448,6 @@ Pp.Block = function Block() {
 }
 
 var DECLARED_FORM = 0, EXPRESSED_FORM = 1, STATEMENT_FORM = 2;
-
-/*
- * Export :: (binding node, boolean) -> Export
- *
- * Static semantic representation of a module export.
- */
 function Export(node, isDefinition) {
     this.node = node;                 // the AST node declaring this individual export
     this.isDefinition = isDefinition; // is the node an 'export'-annotated definition?
@@ -9298,11 +8580,6 @@ Pp.ConditionalExpression = function ConditionalExpression() {
         n2 = n;
         n = this.newNode({ type: HOOK });
         n.push(n2);
-        /*
-         * Always accept the 'in' operator in the middle clause of a ternary,
-         * where it's unambiguous, even if we might be parsing the init of a
-         * for statement.
-         */
         var x2 = this.x.update({ inForLoopInit: false });
         this.withContext(x2, function() {
             n.push(this.AssignExpression());
@@ -9402,11 +8679,6 @@ Pp.EqualityExpression = function EqualityExpression() {
 
 Pp.RelationalExpression = function RelationalExpression() {
     var n, n2;
-
-    /*
-     * Uses of the in operator in shiftExprs are always unambiguous,
-     * so unset the flag that prohibits recognizing it.
-     */
     var x2 = this.x.update({ inForLoopInit: false });
     this.withContext(x2, function() {
         n = this.ShiftExpression();
@@ -9775,7 +9047,6 @@ exports.Module = Module;
 exports.Export = Export;
 
 });
-/* vim: set sw=4 ts=4 et tw=78: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -10373,7 +9644,6 @@ exports.isIdentifier = isIdentifier;
 exports.Tokenizer = Tokenizer;
 
 });
-/* vim: set sw=4 ts=4 et tw=78: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -11069,7 +10339,6 @@ exports.WeakMap = _WeakMap;
 exports.Stack = Stack;
 
 });
-/* vim: set sw=4 ts=4 et tw=78: */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *

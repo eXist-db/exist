@@ -305,8 +305,8 @@ declare function deploy:view($collection as xs:string?, $expathConf as element()
                             <li>
                                 <div class="hint">The template to use for generating the basic app structure.</div>
                                 <select name="template">
-                                    <option value="templating" selected="selected">HTML Templates</option>
-                                    <option value="basic">Basic</option>
+                                    <option value="templating" selected="selected">eXist-db Design</option>
+                                    <option value="bootstrap">Plain (using Bootstrap CSS)</option>
                                 </select>
                                 <label for="template">Template:</label>
                             </li>

@@ -71,7 +71,13 @@
                                     <a href="#" id="menu-file-new">New</a>
                                 </li>
                                 <li>
+                                    <a href="#" id="menu-file-new-xquery">New XQuery</a>
+                                </li>
+                                <li>
                                     <a href="#" id="menu-file-open">Open</a>
+                                </li>
+                                <li>
+                                    <a href="#" id="menu-file-reload">Reload</a>
                                 </li>
                                 <li>
                                     <a href="#" id="menu-file-save">Save</a>
@@ -152,15 +158,14 @@
                                 </li>
                             </ul>
                         </li>
+                        <li id="login-info">
+                            <a id="user" href="#" title="Click to login or logout">Login</a>
+                        </li>
                     </ul>
-                    <span id="login-info">
-                        <span id="user"/>
-                        <a id="login" href="#">Login</a>
-                    </span>
                 </div>
                 <span id="toolbar">
                     <span class="options">
-                        <label for="syntax">Syntax: </label>
+                        <label for="syntax">Type: </label>
                         <select id="syntax">
                             <option value="text">Text</option>
                             <option value="xml">XML</option>
@@ -191,6 +196,7 @@
                 <input id="search-box" type="text"/>
                 <a href="#" id="error-status"/>
             </div>
+            <div id="ext-status-bar"/>
         </div>
         <div id="outline-container" class="ui-layout-west">
             <h3>Outline</h3>
@@ -251,6 +257,11 @@
                         <td>Password: </td>
                         <td>
                             <input type="password" name="password" size="20"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input type="checkbox" name="duration" value="P14D"/> Remember me for 2 weeks
                         </td>
                     </tr>
                     <tr>
@@ -317,12 +328,15 @@
                     <ol>
                         <li>
                             <select id="theme" name="theme">
+                                <option value="chrome">Chrome</option>
                                 <option value="clouds">Clouds</option>
                                 <option value="clouds_midnight">Clouds Midnight</option>
                                 <option value="cobalt">Cobalt</option>
-                                <option value="crimson">Crimson Editor</option>
+                                <option value="crimson_editor">Crimson Editor</option>
                                 <option value="dawn">Dawn</option>
+                                <option value="dreamweaver">Dreamweaver</option>
                                 <option value="eclipse">Eclipse</option>
+                                <option value="github">Github</option>
                                 <option value="idle_fingers">Idle Fingers</option>
                                 <option value="kr_theme">Kr Theme</option>
                                 <option value="merbivore">Merbivore</option>
@@ -336,6 +350,7 @@
                                 <option value="tomorrow">Tomorrow</option>
                                 <option value="tomorrow_night">Tomorrow Night</option>
                                 <option value="tomorrow_night_blue">Tomorrow Night Blue</option>
+                                <option value="tomorrow_night_bright">Tomorrow Night Bright</option>
                                 <option value="tomorrow_night_eighties">Tomorrow Night Eighties</option>
                                 <option value="twilight">Twilight</option>
                                 <option value="vibrant_ink">Vibrant Ink</option>

@@ -317,7 +317,7 @@ let $createCollection := request:get-parameter("create", ())
 let $view := request:get-parameter("view", "c")
 let $collection := request:get-parameter("root", "/db")
 let $collName := replace($collection, "^.*/([^/]+$)", "$1")
-let $user := if (session:get-attribute('myapp.user')) then session:get-attribute('myapp.user') else "guest"
+let $user := if (request:get-attribute('org.exist.login.user')) then request:get-attribute('org.exist.login.user') else "guest"
 return
     if (exists($copy)) then
         let $result := local:copyOrMove("copy", xmldb:encode-uri($collection), $copy, $user)

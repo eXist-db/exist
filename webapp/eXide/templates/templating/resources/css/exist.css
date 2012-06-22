@@ -3,11 +3,13 @@
 
 @import url('bootstrap.min.css');
 @import url('dropdowns.css');
+@import url('style.css');
 
 @font-face {
     font-family: 'QuicksandBook';
     src: url('Quicksand_Book-webfont.eot');
-    src: url('Quicksand_Book-webfont.eot?#iefix') format('embedded-opentype'),
+    src: local('Quicksand'),
+         url('Quicksand_Book-webfont.eot?#iefix') format('embedded-opentype'),
          url('Quicksand_Book-webfont.woff') format('woff'),
          url('Quicksand_Book-webfont.ttf') format('truetype'),
          url('Quicksand_Book-webfont.svg#QuicksandBook') format('svg');

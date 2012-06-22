@@ -28,7 +28,7 @@
     </snippet>
     <snippet abbrev="template-fun">
         <description>HTML templating function</description>
-        <code>declare function $name($node as node(), $params as element(parameters)?, $model as item()*) {
+        <code>declare function $name($node as node(), $model as map(*)) {
     $body
 };</code>
     </snippet>
@@ -58,16 +58,20 @@ else
     <snippet abbrev="typeswitch">
         <description>Typeswitch statement</description>
         <code>typeswitch ($node)
-    case element($name) return
-        $node
-    default return
-        $node</code>
+        case element($name) return
+            $node
+        default return
+            $node</code>
     </snippet>
     <snippet abbrev="switch">
         <description>XQuery 3.0 switch statement</description>
         <code>switch ($item)
-    case $value return $block
-    default return $block</code>
+        case $value return $block
+        default return $block</code>
+    </snippet>
+    <snippet abbrev="case">
+        <description>Case clause in typeswitch or switch</description>
+        <code>case element($name) return</code>
     </snippet>
     <snippet abbrev="comment (for function)">
         <description>Insert an XQDoc comment for a function declaration</description>
