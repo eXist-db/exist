@@ -387,8 +387,15 @@ public class Transform extends BasicFunction {
 				{
 					if (stylesheetItem instanceof Document) {
 						String uri = ((Document) stylesheetItem).getDocumentURI();
-						uri = uri.substring(0, uri.lastIndexOf('/'));
-						factory.setURIResolver(new EXistURIResolver(uri));
+						
+						/*
+						 * This must be checked because in the event the stylesheet is 
+						 * an in-memory document, it will cause an NPE
+						 */
+						if(uri != null){
+							uri = uri.substring(0, uri.lastIndexOf('/'));
+							factory.setURIResolver(new EXistURIResolver(uri));
+						}
 					}
 					templates = getSource(factory, stylesheetNode);
 				}
@@ -397,8 +404,15 @@ public class Transform extends BasicFunction {
 			{
 				if (stylesheetItem instanceof Document) {
 					String uri = ((Document) stylesheetItem).getDocumentURI();
-					uri = uri.substring(0, uri.lastIndexOf('/'));
-					factory.setURIResolver(new EXistURIResolver(uri));
+
+					/*
+					 * This must be checked because in the event the stylesheet is 
+					 * an in-memory document, it will cause an NPE
+					 */
+					if(uri != null){
+						uri = uri.substring(0, uri.lastIndexOf('/'));
+						factory.setURIResolver(new EXistURIResolver(uri));
+					}
 				}
 
 				String stylesheet = stylesheetItem.getStringValue();
