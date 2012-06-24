@@ -88,22 +88,20 @@ public class SwitchExpression extends AbstractExpression {
         if (opSeq.isEmpty()) {
         	result = defaultClause.returnClause.eval(contextSequence);
         } else {
-	        Item opItem = opSeq.itemAt(0);
-	        AtomicValue opVal = opItem.atomize();
-	        if (opVal.hasMany()) {
-	            throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opVal);
-	        }
+            if (opSeq.hasMany()) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opSeq);
+            }
+	        AtomicValue opVal = opSeq.itemAt(0).atomize();
 	        Collator defaultCollator = context.getDefaultCollator();
 	        for (Case next : cases) {
 	            for (Expression caseOperand : next.operands) {
-	                Item caseItem = caseOperand.eval(contextSequence, contextItem).itemAt(0);
-	                AtomicValue caseVal = caseItem.atomize();
-	                if (caseVal.hasMany()) {
-	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseVal);
+	                Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
+	                if (caseSeq.hasMany()) {
+	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseSeq);
 	                }
-	                if (FunDeepEqual.deepEquals(caseItem, opVal, defaultCollator)) {
-	                    result = next.returnClause.eval(contextSequence);
-	                    break;
+                    AtomicValue caseVal = caseSeq.itemAt(0).atomize();
+	                if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
+	                    return next.returnClause.eval(contextSequence);
 	                }
 	            }
 	        }
