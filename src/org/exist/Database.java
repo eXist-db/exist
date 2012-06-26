@@ -31,6 +31,7 @@ import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.debuggee.Debuggee;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
+import org.exist.plugin.PluginsManager;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
@@ -174,4 +175,6 @@ public interface Database {
 	public boolean isReadOnly();
 
 	public NotificationService getNotificationService();
+	
+	public PluginsManager getPluginsManager();
 }

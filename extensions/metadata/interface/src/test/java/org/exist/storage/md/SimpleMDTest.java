@@ -536,7 +536,7 @@ public class SimpleMDTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-        	pool.getPluginManager().addPlugin("org.exist.storage.md.Plugin");
+        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
@@ -634,7 +634,7 @@ public class SimpleMDTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-        	pool.getPluginManager().addPlugin("org.exist.storage.md.Plugin");
+        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
             
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);

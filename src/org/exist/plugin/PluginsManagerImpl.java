@@ -28,13 +28,17 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.Database;
+import org.exist.backup.BackupHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
+import org.exist.dom.DocumentAtExist;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.Attributes;
 
 /**
  * Plugins manager. 
@@ -130,6 +134,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		return version;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void addPlugin(String className) {
 		//check if already run
 		if (jacks.containsKey(className))
@@ -214,5 +219,51 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+	
+	private BackupHandler bh = new BH();
+
+	@Override
+	public BackupHandler getBackupHandler() {
+		return bh;
+	}
+	
+	class BH implements BackupHandler {
+
+		@Override
+		public void backup(Collection colection, Attributes attrs) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof BackupHandler) {
+					((BackupHandler) plugin).backup(colection, attrs);
+				}
+			}
+		}
+
+		@Override
+		public void backup(Collection colection, SAXSerializer serializer) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof BackupHandler) {
+					((BackupHandler) plugin).backup(colection, serializer);
+				}
+			}
+		}
+
+		@Override
+		public void backup(DocumentAtExist document, Attributes attrs) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof BackupHandler) {
+					((BackupHandler) plugin).backup(document, attrs);
+				}
+			}
+		}
+
+		@Override
+		public void backup(DocumentAtExist document, SAXSerializer serializer) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof BackupHandler) {
+					((BackupHandler) plugin).backup(document, serializer);
+				}
+			}
+		}
 	}
 }
