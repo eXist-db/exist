@@ -279,6 +279,7 @@ public class FnFormatDates extends BasicFunction {
             sb.append(name);
             return;
         }
+
         // determine min and max width
         int min = NumberFormatter.getMinDigits(picture);
         int max = NumberFormatter.getMaxDigits(picture);
