@@ -21,16 +21,27 @@
  */
 package org.exist.storage.md;
 
+import org.exist.backup.BackupHandler;
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentAtExist;
 import org.exist.plugin.Jack;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
+import org.exist.util.serializer.SAXSerializer;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import com.sleepycat.persist.EntityCursor;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Plugin implements Jack {
+public class Plugin implements Jack, BackupHandler {
 	
+	public final static String PREFIX = "md";
+	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";
+
 	MetaDataImpl md;
 	
 	public Plugin(PluginsManager manager) throws PermissionDeniedException {
@@ -48,5 +59,42 @@ public class Plugin implements Jack {
 	@Override
 	public void stop() {
 		md.close();
+	}
+
+	@Override
+	public void backup(Collection colection, AttributesImpl attrs) {
+	}
+
+	@Override
+	public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
+	}
+
+	@Override
+	public void backup(DocumentAtExist document, AttributesImpl attrs) {
+		Metas ms = md.getMetas(document);
+		
+        attrs.addAttribute( NAMESPACE_URI, "uuid", PREFIX+":uuid", "CDATA", ms.getUUID() );
+	}
+
+	@Override
+	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
+		Metas ms = md.getMetas(document);
+		
+		EntityCursor<MetaImpl> sub = ms.keys();
+		try {
+			
+			for (MetaImpl m : sub) {
+
+				AttributesImpl attr = new AttributesImpl();
+		        attr.addAttribute(NAMESPACE_URI, "key", PREFIX+":key", "CDATA", m.getKey());
+		        attr.addAttribute(NAMESPACE_URI, "value", PREFIX+":value", "CDATA", m.getValue());
+
+		        serializer.startElement(NAMESPACE_URI, "meta", PREFIX+":meta", attr );
+		        serializer.endElement(NAMESPACE_URI, "meta", PREFIX+":meta");
+			}
+
+		} finally {
+			sub.close();
+		}
 	}
 }

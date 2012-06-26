@@ -83,7 +83,7 @@ public class DocumentEvents extends FilteringTrigger {
 
 	@Override
 	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
-		System.out.println("afterMoveDocument "+document.getURI());
+		System.out.println("afterMoveDocument "+oldUri+" to "+document.getURI());
 		MetaDataImpl._.moveMetas(oldUri, document.getURI());
 	}
 

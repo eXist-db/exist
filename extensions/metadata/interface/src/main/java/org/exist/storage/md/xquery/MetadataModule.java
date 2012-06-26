@@ -3,14 +3,13 @@ package org.exist.storage.md.xquery;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.storage.md.Plugin;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 public class MetadataModule extends AbstractInternalModule 
 {
-	public static final String NAMESPACE_URI = "http://exist-db.org/metadata";
-	public static final String PREFIX = "md";
     public final static String INCLUSION_DATE = "2012-04-01";
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
@@ -33,14 +32,14 @@ public class MetadataModule extends AbstractInternalModule
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return( NAMESPACE_URI );
+		return Plugin.NAMESPACE_URI;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
-		return( PREFIX );
+		return Plugin.PREFIX;
 	}
 
     public String getReleaseVersion() {

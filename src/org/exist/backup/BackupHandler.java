@@ -24,7 +24,8 @@ package org.exist.backup;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.util.serializer.SAXSerializer;
-import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,9 +33,9 @@ import org.xml.sax.Attributes;
  */
 public interface BackupHandler {
 
-	public void backup(Collection colection, Attributes attrs);
-	public void backup(Collection colection, SAXSerializer serializer);
+	public void backup(Collection colection, AttributesImpl attrs);
+	public void backup(Collection colection, SAXSerializer serializer) throws SAXException;
 
-	public void backup(DocumentAtExist document, Attributes attrs);
-	public void backup(DocumentAtExist document, SAXSerializer serializer);
+	public void backup(DocumentAtExist document, AttributesImpl attrs);
+	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException;
 }
