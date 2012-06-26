@@ -2042,7 +2042,7 @@ public class BrokerPool extends Observable implements Database {
 	    }
 	}
 
-	public PluginsManager getPluginManager() {
+	public PluginsManager getPluginsManager() {
 		return pluginManager;
 	}
 }

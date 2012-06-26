@@ -104,6 +104,7 @@ public class SystemExport
     private StatusCallback          callback                = null;
     private boolean                 directAccess            = false;
     private ProcessMonitor.Monitor  monitor                 = null;
+    private BackupHandler bh = null;
 
     {
         defaultOutputProperties.setProperty( OutputKeys.INDENT, "no" );
@@ -123,6 +124,8 @@ public class SystemExport
         this.callback     = callback;
         this.monitor      = monitor;
         this.directAccess = direct;
+        
+    	bh = broker.getDatabase().getPluginsManager().getBackupHandler();
     }
 
     public File export( String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList )
@@ -348,7 +351,7 @@ public class SystemExport
      * @throws  SAXException
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    private void export( Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException, PermissionDeniedException
+    private void export( BackupHandler bh, Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException, PermissionDeniedException
     {
         if( callback != null ) {
             callback.startCollection( current.getURI().toString() );
@@ -384,11 +387,16 @@ public class SystemExport
             catch( XPathException e ) {
                 e.printStackTrace();
             }
+            
+            bh.backup(current, attr);
+            
             serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
 
             if(perm instanceof ACLPermission) {
             	Backup.writeACLPermission(serializer, (ACLPermission)perm);
             }
+            
+            bh.backup(current, serializer);
 
             int docsCount = current.getDocumentCountNoLock(broker);
             int count     = 0;
@@ -404,7 +412,7 @@ public class SystemExport
                 if( doc.getFileURI().equalsInternal( CONTENTS_URI ) || doc.getFileURI().equalsInternal( LOST_URI ) ) {
                     continue; // skip __contents__.xml documents
                 }
-                exportDocument( output, date, prevBackup, serializer, docsCount, count, doc );
+                exportDocument( bh, output, date, prevBackup, serializer, docsCount, count, doc );
                 docs.add( doc, false );
             }
 
@@ -456,7 +464,7 @@ public class SystemExport
     }
 
 
-    private void exportDocument( BackupWriter output, Date date, BackupDescriptor prevBackup, SAXSerializer serializer, int docsCount, int count, DocumentImpl doc ) throws IOException, SAXException, TerminatedException
+    private void exportDocument( BackupHandler bh, BackupWriter output, Date date, BackupDescriptor prevBackup, SAXSerializer serializer, int docsCount, int count, DocumentImpl doc ) throws IOException, SAXException, TerminatedException
     {
         if( callback != null ) {
             callback.startDocument( doc.getFileURI().toString(), count, docsCount );
@@ -556,10 +564,16 @@ public class SystemExport
                 attr.addAttribute( Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", doc.getDoctype().getSystemId() );
             }
         }
+        
+    	bh.backup(doc, attr);
+        
         serializer.startElement( Namespaces.EXIST_NS, "resource", "resource", attr );
         if(perms instanceof ACLPermission) {
             Backup.writeACLPermission(serializer, (ACLPermission)perms);
         }
+
+        bh.backup(doc, serializer);
+
         serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
     }
 
@@ -753,7 +767,7 @@ public class SystemExport
                         lastPercentage = percentage;
                         jmxAgent.updateStatus( broker.getBrokerPool(), percentage );
                     }
-                    export( collection, writer, date, bd, errors, docs );
+                    export( bh, collection, writer, date, bd, errors, docs );
                 }
             }
             catch( TerminatedException e ) {
@@ -829,7 +843,7 @@ public class SystemExport
                         doc.setFileURI( XmldbURI.createInternal( fileURI ) );
                         writtenDocs.add( fileURI );
                     }
-                    exportDocument( output, date, prevBackup, serializer, 0, 0, doc );
+                    exportDocument( bh, output, date, prevBackup, serializer, 0, 0, doc );
                 }
                 catch( Exception e ) {
                     reportError( "Caught an exception while scanning documents: " + e.getMessage(), e );
