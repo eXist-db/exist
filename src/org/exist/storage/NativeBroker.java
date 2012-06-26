@@ -2331,6 +2331,9 @@ public class NativeBroker extends DBBroker {
                         throw new PermissionDeniedException("Account " + getSubject().getName() + " have no execute access on the destination collection '"+destination.getURI()+"'.");
                 }
              
+                final XmldbURI newURI = destination.getURI().append(newName);
+                final XmldbURI oldUri = doc.getURI();
+                
                 if(oldDoc == null) {
                     if(!destination.getPermissions().validate(getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("Account " + getSubject().getName() + " have no write access on the destination collection '"+destination.getURI()+"'.");
@@ -2345,14 +2348,22 @@ public class NativeBroker extends DBBroker {
                     if(!oldDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("Resource with same name exists in target collection '"+oldDoc.getURI()+"' and write is denied.");
                     }
+                    
+                    getDatabase().getDocumentTrigger().beforeDeleteDocument(this, transaction, oldDoc);
+                    getDatabase().getDocumentTrigger().afterDeleteDocument(this, transaction, newURI);
                 }
                 
+                getDatabase().getDocumentTrigger().beforeCopyDocument(this, transaction, doc, newURI);
                 
+                final DocumentTriggersVisitor triggersVisitor = collection.getConfiguration(this).getDocumentTriggerProxies().instantiateVisitor(this);
+                triggersVisitor.beforeCopyDocument(this, transaction, doc, newURI);
+                
+                DocumentImpl newDocument = null;
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     InputStream is = null;
                     try {
                         is = getBinaryResource((BinaryDocument) doc);
-                        destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
+                        newDocument = destination.addBinaryResource(transaction, this, newName, is, doc.getMetadata().getMimeType(),-1);
                     } finally {
                         if(is != null)
                             is.close();
@@ -2370,7 +2381,13 @@ public class NativeBroker extends DBBroker {
                     } finally {
                         newDoc.getUpdateLock().release(Lock.WRITE_LOCK);
                     }
+                    newDocument = newDoc;
                 }
+                
+                getDatabase().getDocumentTrigger().afterCopyDocument(this, transaction, newDocument, oldUri);
+                
+                triggersVisitor.afterCopyDocument(this, transaction, newDocument, oldUri);
+                
             } catch (IOException e) {
                 LOG.warn("An error occurred while copying resource", e);
             } catch (TriggerException e) {
