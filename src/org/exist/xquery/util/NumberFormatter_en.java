@@ -31,6 +31,8 @@ public class NumberFormatter_en extends NumberFormatter {
     }
 
     public String getOrdinalSuffix(long number) {
+        if (number > 10 && number < 20)
+            return "th";
         long mod = number % 10;
         if (mod == 1)
             return "st";
