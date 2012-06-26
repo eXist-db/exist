@@ -16,6 +16,13 @@ public abstract class NumberFormatter {
 
     private static char OPTIONAL_DIGIT_SIGN = '#';
 
+    /**
+     * Get the zero digit corresponding to the digit family of the given value.
+     * This method was taken from saxon {@link http://saxon.sourceforge.net/}.
+     *
+     * @param val
+     * @return
+     */
     public static int getZeroDigit(int val) {
         for (int z = 0; z < zeroDigits.length; z++) {
             if (val <= zeroDigits[z] + 9) {
