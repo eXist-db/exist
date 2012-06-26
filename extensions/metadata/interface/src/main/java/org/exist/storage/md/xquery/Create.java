@@ -3,7 +3,6 @@ package org.exist.storage.md.xquery;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
@@ -16,6 +15,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.md.MetaData;
+import org.exist.storage.md.Plugin;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -29,11 +29,9 @@ import org.exist.xquery.value.Type;
 
 public class Create extends BasicFunction {
 	
-	private static final Logger logger = Logger.getLogger(Create.class);
-
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("create", MetadataModule.NAMESPACE_URI, MetadataModule.PREFIX),
+			new QName("create", Plugin.NAMESPACE_URI, Plugin.PREFIX),
 			"",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EMPTY));

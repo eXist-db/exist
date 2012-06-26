@@ -28,6 +28,7 @@ import java.util.List;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -144,7 +145,7 @@ public class MetaDataImpl extends MetaData {
 		return _addMetas(doc);
 	}
 
-    public Metas getMetas(DocumentImpl doc) {
+    public Metas getMetas(DocumentAtExist doc) {
     	return getMetas(doc.getURI(), true);
     }
 
@@ -211,7 +212,7 @@ public class MetaDataImpl extends MetaData {
 	}
 
 	public void delMetas(XmldbURI uri) {
-		Metas d = getMetas(uri);
+		Metas d = getMetas(uri, false);
 		
 		if (d != null) {
 			if (LOG.isDebugEnabled())
@@ -308,6 +309,7 @@ public class MetaDataImpl extends MetaData {
 	}
 
 	public void sync() {
+		store.sync();
 		env.sync();
 	}
 

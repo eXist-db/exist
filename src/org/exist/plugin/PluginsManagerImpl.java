@@ -38,7 +38,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Plugins manager. 
@@ -231,7 +232,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 	class BH implements BackupHandler {
 
 		@Override
-		public void backup(Collection colection, Attributes attrs) {
+		public void backup(Collection colection, AttributesImpl attrs) {
 			for (Jack plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(colection, attrs);
@@ -240,7 +241,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		}
 
 		@Override
-		public void backup(Collection colection, SAXSerializer serializer) {
+		public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
 			for (Jack plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(colection, serializer);
@@ -249,7 +250,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		}
 
 		@Override
-		public void backup(DocumentAtExist document, Attributes attrs) {
+		public void backup(DocumentAtExist document, AttributesImpl attrs) {
 			for (Jack plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(document, attrs);
@@ -258,7 +259,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 		}
 
 		@Override
-		public void backup(DocumentAtExist document, SAXSerializer serializer) {
+		public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
 			for (Jack plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(document, serializer);
