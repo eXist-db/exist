@@ -25,8 +25,8 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.exist.backup.Backup;
 import org.exist.backup.Restore;
+import org.exist.backup.SystemExport;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
@@ -58,8 +58,10 @@ public class BackupRestoreMDTest extends TestCase {
             "	</index>" +
         	"</collection>";
 
-    private static XmldbURI doc1uri = XmldbURI.create("test_string.xml");
-    private static XmldbURI doc2uri = XmldbURI.create("test.binary");
+    private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
+
+    private static XmldbURI doc1uri = col1uri.append("test_string.xml");
+    private static XmldbURI doc2uri = col1uri.append("test.binary");
     
     private static String XML = "<test/>";
 
@@ -122,8 +124,8 @@ public class BackupRestoreMDTest extends TestCase {
 	    	meta = docMD.put(KEY1, VALUE2);
 	    	key3UUID = meta.getUUID();
 	
-	    	Backup backup = new Backup("admin", "", "backup");
-			backup.backup(false, null);
+            SystemExport sysexport = new SystemExport( broker, null, null, true );
+            File file = sysexport.export( "backup", false, false, null );
         } finally {
         	pool.release(broker);
         }
@@ -194,7 +196,9 @@ public class BackupRestoreMDTest extends TestCase {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -202,7 +206,7 @@ public class BackupRestoreMDTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            Collection root = broker.getOrCreateCollection(transaction, col1uri);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
@@ -210,12 +214,12 @@ public class BackupRestoreMDTest extends TestCase {
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
             System.out.println("store "+doc1uri);
-            IndexInfo info = root.validateXMLResource(transaction, broker, doc1uri, XML);
+            IndexInfo info = root.validateXMLResource(transaction, broker, doc1uri.lastSegment(), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML, false);
 
             System.out.println("store "+doc2uri);
-            BinaryDocument doc = root.addBinaryResource(transaction, broker, doc2uri, BINARY.getBytes(), null);
+            BinaryDocument doc = root.addBinaryResource(transaction, broker, doc2uri.lastSegment(), BINARY.getBytes(), null);
 
             transact.commit(transaction);
         } catch (Exception e) {
