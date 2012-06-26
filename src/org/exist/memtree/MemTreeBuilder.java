@@ -136,7 +136,7 @@ public class MemTreeBuilder
         }
 
         if( prefix == null ) {
-            prefix = ( p != Constants.STRING_NOT_FOUND ) ? qname.substring( 0, p ) : "";
+            prefix = ( p != Constants.STRING_NOT_FOUND ) ? qname.substring( 0, p ) : null;
         }
         QName qn = new QName( localName, namespaceURI, prefix );
         return( startElement( qn, attributes ) );
