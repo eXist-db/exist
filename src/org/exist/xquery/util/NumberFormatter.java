@@ -103,6 +103,8 @@ public abstract class NumberFormatter {
         int count = 0;
         for (int i = 0; i < picture.length(); i++) {
             char ch = picture.charAt(i);
+            if ((ch == 'o' || ch == 'c') && i == picture.length() - 1)
+                break;
             if (ch != OPTIONAL_DIGIT_SIGN)
                 count++;
         }
@@ -110,6 +112,13 @@ public abstract class NumberFormatter {
     }
 
     public static int getMaxDigits(String picture) {
-        return picture.length();
+        int count = 0;
+        for (int i = 0; i < picture.length(); i++) {
+            char ch = picture.charAt(i);
+            if ((ch == 'o' || ch == 'c') && i == picture.length() - 1)
+                break;
+            count++;
+        }
+        return count;
     }
 }

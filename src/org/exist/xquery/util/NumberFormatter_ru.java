@@ -15,12 +15,12 @@ public class NumberFormatter_ru extends NumberFormatter {
     
     @Override
     public String getMonth(int month) {
-        return MONTHS[month];
+        return MONTHS[month - 1];
     }
 
     @Override
     public String getDay(int day) {
-        return DAYS[day];
+        return DAYS[day - 1];
     }
 
     @Override

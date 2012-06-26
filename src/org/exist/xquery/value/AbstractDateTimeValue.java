@@ -386,7 +386,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public int getDayOfWeek() {
-        return calendar.toGregorianCalendar().get(Calendar.DAY_OF_WEEK) - 1;
+        return calendar.toGregorianCalendar().get(Calendar.DAY_OF_WEEK);
     }
 
     public int getDayWithinYear() {
