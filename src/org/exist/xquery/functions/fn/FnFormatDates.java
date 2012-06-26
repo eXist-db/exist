@@ -4,11 +4,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.util.NumberFormatter;
 import org.exist.xquery.util.NumberFormatter_en;
-import org.exist.xquery.util.NumberFormatting;
 import org.exist.xquery.value.*;
 
-import javax.transaction.xa.XAException;
-import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
