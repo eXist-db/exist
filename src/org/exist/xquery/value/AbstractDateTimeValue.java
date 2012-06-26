@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
@@ -61,7 +62,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public final static int SECOND = 5;
 	public final static int MILLISECOND = 6;
 
-	/**
+    protected static byte[] daysPerMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    protected static final short[] monthData = {306, 337, 0, 31, 61, 92, 122, 153, 184, 214, 245, 275};
+
+    /**
 	 * Create a new date time value based on the given calendar.  The calendar is
 	 * <em>not</em> cloned, so it is the subclass's responsibility to make sure there are
 	 * no external references to it that would allow for mutation.
@@ -380,7 +384,25 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public int hashCode() {
     	return calendar.hashCode();
     }
-    
+
+    public int getDayOfWeek() {
+        return calendar.toGregorianCalendar().get(Calendar.DAY_OF_WEEK) - 1;
+    }
+
+    public int getDayWithinYear() {
+        int j = getJulianDayNumber(calendar.getYear(), calendar.getMonth(), calendar.getDay());
+        int k = getJulianDayNumber(calendar.getYear(), 1, 1);
+        return j - k + 1;
+    }
+
+    public int getWeekWithinYear() {
+        return calendar.toGregorianCalendar().get(Calendar.WEEK_OF_YEAR);
+    }
+
+    public int getWeekWithinMonth() {
+        return calendar.toGregorianCalendar().get(Calendar.WEEK_OF_MONTH);
+    }
+
     //copy from org.apache.xerces.jaxp.datatype.XMLGregorianCalendarImpl
     private XMLGregorianCalendar parse(String lexicalRepresentation) {
         // compute format string for this lexical representation.
@@ -710,4 +732,31 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     private static boolean isDigit(char ch) {
         return '0' <= ch && ch <= '9';
     }
+
+    /**
+     * Calculate the Julian day number at 00:00 on a given date. This algorithm is taken from
+     * http://vsg.cape.com/~pbaum/date/jdalg.htm and
+     * http://vsg.cape.com/~pbaum/date/jdalg2.htm
+     * (adjusted to handle BC dates correctly)
+     * <p/>
+     * <p>Note that this assumes dates in the proleptic Gregorian calendar</p>
+     *
+     * @param year  the year
+     * @param month the month (1-12)
+     * @param day   the day (1-31)
+     * @return the Julian day number
+     */
+    public static int getJulianDayNumber(int year, int month, int day) {
+        int z = year - (month < 3 ? 1 : 0);
+        short f = monthData[month - 1];
+        if (z >= 0) {
+            return day + f + 365 * z + z / 4 - z / 100 + z / 400 + 1721118;
+        } else {
+            // for negative years, add 12000 years and then subtract the days!
+            z += 12000;
+            int j = day + f + 365 * z + z / 4 - z / 100 + z / 400 + 1721118;
+            return j - (365 * 12000 + 12000 / 4 - 12000 / 100 + 12000 / 400);  // number of leap years in 12000 years
+        }
+    }
+
 }

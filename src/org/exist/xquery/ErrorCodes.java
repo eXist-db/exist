@@ -180,6 +180,10 @@ public class ErrorCodes {
     public static ErrorCode SERE0015 = new W3CErrorCode("SERE0015", "It is an error to use the HTML output method when > appears within a processing instruction in the data model instance being serialized.");
     public static ErrorCode SEPM0016 = new W3CErrorCode("SEPM0016", "It is a an error if a parameter value is invalid for the defined domain.");
 
+    /* XQuery 3.0 functions and operators */
+    public static ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
+    public static ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", " Invalid date/time formatting component");
+
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]
