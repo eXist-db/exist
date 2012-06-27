@@ -32,10 +32,13 @@ public class Cardinality {
 	public final static int ZERO = 1;	
 	public final static int ONE = 2;	
 	public final static int MANY = 4;	
-	public final static int EMPTY = ZERO;	
-	public final static int EXACTLY_ONE = ONE;	
-	public final static int ONE_OR_MORE = ONE | MANY;	
-	public final static int ZERO_OR_MORE = ZERO | ONE | MANY;	
+	public final static int EMPTY = ZERO;
+	public final static int EXACTLY_ONE = ONE;
+	/** indicator '+' **/
+	public final static int ONE_OR_MORE = ONE | MANY;
+	/** indicator '*' **/
+	public final static int ZERO_OR_MORE = ZERO | ONE | MANY;
+	/** indicator '?' **/
 	public final static int ZERO_OR_ONE = ZERO | ONE;
     
     public final static String toString(int cardinality) {
