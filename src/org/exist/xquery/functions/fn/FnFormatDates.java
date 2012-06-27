@@ -122,12 +122,16 @@ public class FnFormatDates extends BasicFunction {
 
         AbstractDateTimeValue value = (AbstractDateTimeValue) args[0].itemAt(0);
         String picture = args[1].getStringValue();
+        String language = "en";
+        if (getArgumentCount() == 5) {
+            if (args[2].hasOne())
+                language = args[2].getStringValue();
+        }
 
-        String formatted = formatDate(picture, value);
-        return new StringValue(formatted);
+        return new StringValue(formatDate(picture, value, language));
     }
 
-    private String formatDate(String pic, AbstractDateTimeValue dt) throws XPathException {
+    private String formatDate(String pic, AbstractDateTimeValue dt, String language) throws XPathException {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         while (true) {
@@ -155,14 +159,14 @@ public class FnFormatDates extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FOFD1340, "Date format contains a '[' with no matching ']'");
                 }
                 String component = pic.substring(i, close);
-                formatComponent(component, dt, sb);
+                formatComponent(component, dt, language, sb);
                 i = close + 1;
             }
         }
         return sb.toString();
     }
 
-    private void formatComponent(String component, AbstractDateTimeValue dt, StringBuilder sb) throws XPathException {
+    private void formatComponent(String component, AbstractDateTimeValue dt, String language, StringBuilder sb) throws XPathException {
         Matcher matcher = componentPattern.matcher(component);
         if (!matcher.matches())
             throw new XPathException(this, ErrorCodes.FOFD1340, "Unrecognized date/time component: " + component);
@@ -186,7 +190,7 @@ public class FnFormatDates extends BasicFunction {
             case 'Y':
                 if (allowDate) {
                     int year = dt.getPart(AbstractDateTimeValue.YEAR);
-                    formatNumber(specifier, picture, width, year, sb);
+                    formatNumber(specifier, picture, width, year, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a year component");
                 }
@@ -194,7 +198,7 @@ public class FnFormatDates extends BasicFunction {
             case 'M':
                 if (allowDate) {
                     int month = dt.getPart(AbstractDateTimeValue.MONTH);
-                    formatNumber(specifier, picture, width, month, sb);
+                    formatNumber(specifier, picture, width, month, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a month component");
                 }
@@ -202,7 +206,7 @@ public class FnFormatDates extends BasicFunction {
             case 'D':
                 if (allowDate) {
                     int day = dt.getPart(AbstractDateTimeValue.DAY);
-                    formatNumber(specifier, picture, width, day, sb);
+                    formatNumber(specifier, picture, width, day, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
                 }
@@ -210,7 +214,7 @@ public class FnFormatDates extends BasicFunction {
             case 'd':
                 if (allowDate) {
                     int dayInYear = dt.getDayWithinYear();
-                    formatNumber(specifier, picture, width, dayInYear, sb);
+                    formatNumber(specifier, picture, width, dayInYear, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
                 }
@@ -218,7 +222,7 @@ public class FnFormatDates extends BasicFunction {
             case 'W':
                 if (allowDate) {
                     int week = dt.getWeekWithinYear();
-                    formatNumber(specifier, picture, width, week, sb);
+                    formatNumber(specifier, picture, width, week, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
                 }
@@ -226,7 +230,7 @@ public class FnFormatDates extends BasicFunction {
             case 'w':
                 if (allowDate) {
                     int week = dt.getWeekWithinMonth();
-                    formatNumber(specifier, picture, width, week, sb);
+                    formatNumber(specifier, picture, width, week, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
                 }
@@ -234,7 +238,7 @@ public class FnFormatDates extends BasicFunction {
             case 'F':
                 if (allowDate) {
                     int day = dt.getDayOfWeek();
-                    formatNumber(specifier, picture, width, day, sb);
+                    formatNumber(specifier, picture, width, day, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
                 }
@@ -242,7 +246,7 @@ public class FnFormatDates extends BasicFunction {
             case 'H':
                 if (allowTime) {
                     int hour = dt.getPart(AbstractDateTimeValue.HOUR);
-                    formatNumber(specifier, picture, width, hour, sb);
+                    formatNumber(specifier, picture, width, hour, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
                 }
@@ -252,7 +256,7 @@ public class FnFormatDates extends BasicFunction {
                     int hour = dt.getPart(AbstractDateTimeValue.HOUR) % 12;
                     if (hour == 0)
                         hour = 12;
-                    formatNumber(specifier, picture, width, hour, sb);
+                    formatNumber(specifier, picture, width, hour, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
                 }
@@ -260,7 +264,7 @@ public class FnFormatDates extends BasicFunction {
             case 'm':
                 if (allowTime) {
                     int minute = dt.getPart(AbstractDateTimeValue.MINUTE);
-                    formatNumber(specifier, picture, width, minute, sb);
+                    formatNumber(specifier, picture, width, minute, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a minute component");
                 }
@@ -268,7 +272,7 @@ public class FnFormatDates extends BasicFunction {
             case 's':
                 if (allowTime) {
                     int second = dt.getPart(AbstractDateTimeValue.SECOND);
-                    formatNumber(specifier, picture, width, second, sb);
+                    formatNumber(specifier, picture, width, second, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a second component");
                 }
@@ -276,7 +280,7 @@ public class FnFormatDates extends BasicFunction {
             case 'f':
                 if (allowTime) {
                     int fraction = dt.getPart(AbstractDateTimeValue.MILLISECOND);
-                    formatNumber(specifier, picture, width, fraction, sb);
+                    formatNumber(specifier, picture, width, fraction, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350,
                             "format-date does not support a fractional seconds component");
@@ -285,7 +289,7 @@ public class FnFormatDates extends BasicFunction {
             case 'P':
                 if (allowTime) {
                     int hour = dt.getPart(AbstractDateTimeValue.HOUR);
-                    formatNumber(specifier, picture, width, hour, sb);
+                    formatNumber(specifier, picture, width, hour, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350,
                             "format-date does not support an am/pm component");
@@ -313,8 +317,9 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
-    private void formatNumber(char specifier, String picture, String width, int num, StringBuilder sb) throws XPathException {
-        NumberFormatter formatter = new NumberFormatter_en();
+    private void formatNumber(char specifier, String picture, String width, int num, String language,
+                              StringBuilder sb) throws XPathException {
+        NumberFormatter formatter = NumberFormatter.getInstance(language);
         if (picture.equals("N") || picture.equals("n") || picture.equals("Nn")) {
             String name;
             switch (specifier) {
