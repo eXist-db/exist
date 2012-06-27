@@ -98,3 +98,12 @@ declare
 function fd:language($date as xs:dateTime) {
     format-date($date, "[FNn], [D1o] [MNn] [Y]", "de", (), ())
 };
+
+declare
+    %test:args("2012-06-27T10:21:55.082+02:00")
+    %test:assertEquals("Среда, 27 Июня 2012")
+    %test:args("1970-10-07T10:21:55.082+02:00")
+    %test:assertEquals("Среда, 7 Октября 1970")
+function fd:language-ru($date as xs:dateTime) {
+    format-date($date, "[FNn], [D1o] [MNn] [Y]", "ru", (), ())
+};
