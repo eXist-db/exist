@@ -55,7 +55,9 @@ public class SVNList extends AbstractSVNFunction {
 			new QName("list", SVNModule.NAMESPACE_URI, SVNModule.PREFIX),
 			"Reports the directory entry, and possibly children, for url at revision.",
 			new SequenceType[] {
-				SVN_URI
+				SVN_URI,
+                LOGIN,
+                PASSWORD
             },
 			new FunctionParameterSequenceType("list", Type.ELEMENT, Cardinality.EXACTLY_ONE, "a sequence containing the list entries"));
 
@@ -69,8 +71,12 @@ public class SVNList extends AbstractSVNFunction {
 
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		WorkingCopy wc = new WorkingCopy("", "");
         String uri = args[0].getStringValue();
+        String user = args[1].getStringValue();
+        String password = args[2].getStringValue();
+
+		WorkingCopy wc = new WorkingCopy(user, password);
+		
 		List<SVNDirEntry> entries;
 		try {
 			entries = wc.list(SVNURL.parseURIEncoded(uri), SVNRevision.HEAD, SVNRevision.HEAD, false, SVNDepth.IMMEDIATES, 1);
