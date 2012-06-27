@@ -121,4 +121,16 @@ public abstract class NumberFormatter {
         }
         return count;
     }
+
+    public static NumberFormatter DEFAULT_FORMATTER = new NumberFormatter_en();
+
+    public static NumberFormatter getInstance(String language) {
+        String className = NumberFormatter.class.getName() + "_" + language;
+        try {
+            Class langClass = Class.forName(className);
+            return (NumberFormatter) langClass.newInstance();
+        } catch (Exception e) {
+            return DEFAULT_FORMATTER;
+        }
+    }
 }

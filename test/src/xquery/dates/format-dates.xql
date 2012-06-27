@@ -86,6 +86,15 @@ function fd:date-format-in-format-time() {
 
 declare
     %test:assertError
-function fd:time-format-in-date-time() {
+function fd:time-format-in-format-date() {
     format-date(current-dateTime(), "[H]")
+};
+
+declare
+    %test:args("2012-06-27T10:21:55.082+02:00")
+    %test:assertEquals("Mittwoch, 27. Juni 2012")
+    %test:args("1970-10-07T10:21:55.082+02:00")
+    %test:assertEquals("Mittwoch, 7. Oktober 1970")
+function fd:language($date as xs:dateTime) {
+    format-date($date, "[FNn], [D1o] [MNn] [Y]", "de", (), ())
 };
