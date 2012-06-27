@@ -576,6 +576,14 @@
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
+    	<!--
+        	You may add as many custom-filters as you want, they will be executed
+        	in the order you specify them. Thus:
+        	
+        	<custom-filter class="org.exist.FirstFilter"/>
+        	<custom-filter class="org.exist.SecondFilter"/>
+        -->
+    	
         <!--
         <custom-filter class="org.exist.versioning.VersioningFilter"/>
         -->
