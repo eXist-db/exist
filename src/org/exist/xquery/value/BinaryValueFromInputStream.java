@@ -43,7 +43,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
         }
 
         //mark the start of the stream so that we can re-read again as required
-        is.mark(Integer.MAX_VALUE);
+        this.is.mark(Integer.MAX_VALUE);
     }
 
     public static BinaryValueFromInputStream getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
