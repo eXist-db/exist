@@ -1,0 +1,105 @@
+<project>
+
+    <property name="top.dir" value="../../.."/>
+	<property name="lib.extensions" value="lib/extensions"/>
+
+    <property name="src" value="src/main/java"/>
+    <property name="module.classes" value="target/classes"/>
+    
+    <property name="test.src" value="./src/test/java"/>
+    <property name="test.classes" value="./target/test-classes"/>
+	
+    <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
+    
+    <property file="${top.dir}/build.properties"/>
+    
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/optional">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/endorsed">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/user">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/extensions">
+            <include name="**/lib/*.jar"/>
+        </fileset>         
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+
+    <path id="classpath.aspectj">
+        <fileset dir="${top.dir}/tools/aspectj/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="classpath.junit">
+    	<pathelement path="${top.dir}/test/classes"/>
+    	<pathelement path="${test.classes}"/>
+        <pathelement path="${module.classes}"/>
+    </path>
+
+    <target name="prepare">
+        <echo message="Building backend: ${module}"/>
+        <echo message="Building into ${module.classes}"/>
+        <echo message="------------------------------------"/>
+        <mkdir dir="${module.classes}"/>
+        <mkdir dir="${test.classes}"/>
+    </target>
+
+    <target name="compile" depends="prepare">
+
+         <echo
+            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
+            
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
+            encoding="UTF-8"
+            srcdir="${src}" destdir="${module.classes}" 
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="compile-tests" depends="compile">
+        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+            destdir="${test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${test.src}"
+            source="${build.compiler.source}" target="${build.compiler.target}">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+    </target>
+
+    <target name="test" depends="compile-tests">
+    </target>
+
+    <target name="clean">
+        <delete dir="${module.classes}" failonerror="false"/>
+        <delete dir="${test.classes}" failonerror="false"/>
+    </target>
+    
+    <target name="all-clean" depends="clean">
+    </target>
+    
+</project>
