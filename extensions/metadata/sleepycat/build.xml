@@ -1,64 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="jar" name="metadata-sleepycat">
     
-    <property name="top.dir" value="../../.."/>
+    <import file="../common.xml"/>
     
-    <property name="src" value="./src/main/java"/>
-    <property name="classes" value="./target/classes"/>
-    
-    <property name="test.src" value="./src/test/java"/>
-    <property name="test.classes" value="./target/test-classes"/>
+	<target name="jar" depends="compile">
+        <jar destfile="${top.dir}/${lib.extensions}/exist-metadata-sleepycat.jar" basedir="${module.classes}">
+	        <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
+		</jar>
+    </target>
 
-	<property file="${top.dir}/build.properties"/>
+    <target name="clean">
+        <delete file="${top.dir}/${lib.extensions}/exist-metadata-sleepycat.jar" failonerror="false"/>
+        <delete dir="${module.classes}" failonerror="false"/>
+        <delete dir="${test.classes}" failonerror="false"/>
+    </target>
     
-    <property file="../../local.build.properties"/>
-    <property file="../../build.properties"/>
-    
-    <condition property="include.feature.metadata-sleepycat.config">
-        <istrue value="${include.feature.metadata-sleepycat}"/>
-    </condition>
-    
-    <path id="classpath.core">
-        <fileset dir="${top.dir}/tools/jetty/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.core}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.optional}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.endorsed}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.user}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/tools/ant/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/extensions">
-            <include name="**/lib/*.jar"/>
-        </fileset>
-        <pathelement path="${top.dir}/lib/extensions/exist-metadata.jar"/>
-        <pathelement path="${top.dir}/lib/extensions/exist-metadata-sleepycat.jar"/>
-        <pathelement path="${top.dir}/exist.jar"/>
-        <pathelement path="${top.dir}/exist-optional.jar"/>
-        <pathelement path="${top.dir}/start.jar"/>
-        <pathelement path="${java.class.path}"/>
-    </path>
-
-    <path id="classpath.aspectj">
-        <fileset dir="${top.dir}/tools/aspectj/lib">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
-    
-    <target name="prepare" if="include.feature.metadata-sleepycat.config">
+    <target name="download" if="include.feature.metadata-sleepycat.config">
         <mkdir dir="${classes}"/>
 
         <echo message="--------------------------------------------------"/>
-        <echo message="Downloading libraries required by the Metadata Storage on Sleepycat module"/>
+        <echo message="Downloading libraries required by the Sleepycat backend for Metadata Storage "/>
         <echo message="--------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
@@ -69,68 +35,4 @@
             </patternset>
         </fetch>
 	</target>
-    
-    <target name="compile" depends="prepare" if="include.feature.metadata-sleepycat.config">
-        <echo message="---------------------------"/>
-        <echo message="Compiling Metadata Storage on Sleepycat module"/>
-        <echo message="---------------------------"/>
-        
-        <echo
-            message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-        
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
-            destdir="${classes}" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${src}" 
-            source="${build.compiler.source}" target="${build.compiler.target}">
-            <classpath>
-                <path refid="classpath.core"/>
-            </classpath>
-        </javac>
-    </target>
-    
-    <target name="jar" depends="compile" if="include.feature.metadata.config">
-        <echo message="Creating exist-metadata-sleepycat.jar ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-metadata-sleepycat.jar">  
-            <manifest>
-                <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
-                <attribute name="Project-Build" value="${DSTAMP}"/>
-                <attribute name="SVN-Revision" value="${svn.revision}"/>
-            </manifest>
-        </jar>
-    </target>
-    
-    <target name="clean">
-        <delete dir="${classes}"/>
-        <delete dir="${test.classes}"/>
-        <delete file="${top.dir}/${lib.extensions}/exist-metadata-sleepycat.jar" failonerror="false"/>
-    </target>
-	
-    <target name="compile-tests" depends="compile">
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
-            destdir="${test.classes}" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${test.src}"
-            source="${build.compiler.source}" target="${build.compiler.target}">
-            <classpath>
-                <path refid="classpath.core"/>
-                <path refid="classpath.junit"/>
-            </classpath>
-        </javac>
-    </target>
-
-    <!-- 
-    <target name="test" depends="compile-tests">
-        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
-
-            <classpath refid="classpath.core"/>
-            <classpath refid="classpath.junit"/>
-            <classpath refid="classpath.aspectj"/>
-    
-            <formatter type="plain"/>
-            <formatter type="xml"/>
-
-            <test name="org.exist.storage.md.SimpleMDTest" todir="${junit.index.reports}"/>
-        </junit>
-    </target>
-    -->
 </project>
