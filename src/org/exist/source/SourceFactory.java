@@ -67,15 +67,22 @@ public class SourceFactory {
             File f = new File(contextPath + File.separatorChar + location);
             if(!f.canRead())
             {
+            	
+            	
                 File f2 = new File(location);
-                if(!f2.canRead()){
-                    throw new FileNotFoundException(
-                        "cannot read module source from file at " + location 
-                        + ". Tried " + f.getAbsolutePath() 
-                        + " and " + f2.getAbsolutePath() );
+                File f3 = new File(new File(contextPath).getAbsolutePath(), location);
+                
+                if(f2.canRead()){
+                	f = f2;
+                }
+                else if(f3.canRead()){
+                    f = f3;
                 }
                 else {
-                	f = f2;
+                	throw new FileNotFoundException(
+                            "cannot read module source from file at " + location 
+                            + ". Tried " + f.getAbsolutePath() 
+                            + " and " + f2.getAbsolutePath() + " and " + f3.getAbsolutePath() );
                 }
             }
             location = f.toURI().toASCIIString();
