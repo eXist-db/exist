@@ -1801,6 +1801,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
+        final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
+        
+        return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
+    }
+
+    public BinaryDocument validateBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
+        return new BinaryDocument(broker.getBrokerPool(), this, docUri);
+    }
+
+    // Streaming
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
     	
     	Database db = broker.getBrokerPool();
     	
@@ -1808,7 +1819,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             throw new PermissionDeniedException("Database is read-only");
         }
         
-        final BinaryDocument blob = new BinaryDocument((BrokerPool) db, this, docUri);
+        XmldbURI docUri = blob.getFileURI();
         
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
