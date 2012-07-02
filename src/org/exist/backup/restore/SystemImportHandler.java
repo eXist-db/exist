@@ -23,6 +23,7 @@ package org.exist.backup.restore;
 
 import java.io.IOException;
 
+import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -30,8 +31,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
@@ -53,6 +56,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.backup.BackupDescriptor;
+import org.exist.backup.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
@@ -70,9 +74,9 @@ import org.xml.sax.XMLReader;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * @author  Adam Retter <adam@exist-db.org>
  */
-public class RestorePluggableHandler extends DefaultHandler {
+public class SystemImportHandler extends DefaultHandler {
     
-    private final static Logger LOG = Logger.getLogger(RestorePluggableHandler.class);
+    private final static Logger LOG = Logger.getLogger(SystemImportHandler.class);
     private final static SAXParserFactory saxFactory = SAXParserFactory.newInstance();
     static {
         saxFactory.setNamespaceAware(true);
@@ -81,6 +85,8 @@ public class RestorePluggableHandler extends DefaultHandler {
     private static final int STRICT_URI_VERSION = 1;
     
     private DBBroker broker;
+    
+    private org.exist.backup.RestoreHandler rh;
     
     private final RestoreListener listener;
     private final String dbBaseUri;
@@ -91,17 +97,19 @@ public class RestorePluggableHandler extends DefaultHandler {
     private Collection currentCollection;
     private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
     
-    
-    public RestorePluggableHandler(DBBroker broker, RestoreListener listener, String dbBaseUri, BackupDescriptor descriptor) {
+    public SystemImportHandler(DBBroker broker, RestoreListener listener, String dbBaseUri, BackupDescriptor descriptor) {
         this.broker = broker;
         this.listener = listener;
         this.dbBaseUri = dbBaseUri;
         this.descriptor = descriptor;
+        
+        rh = broker.getDatabase().getPluginsManager().getRestoreHandler();
     }
 
     @Override
     public void startDocument() throws SAXException {
         listener.setCurrentBackup(descriptor.getSymbolicPath());
+        rh.startDocument();
     }
     
     /**
@@ -111,9 +119,9 @@ public class RestorePluggableHandler extends DefaultHandler {
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
         //only process entries in the exist namespace
-        if(namespaceURI != null && !namespaceURI.equals(Namespaces.EXIST_NS)) {
-            return;
-        }
+//        if(namespaceURI != null && !namespaceURI.equals(Namespaces.EXIST_NS)) {
+//            return;
+//        }
 
         if(localName.equals("collection") || localName.equals("resource")) {
             
@@ -134,7 +142,7 @@ public class RestorePluggableHandler extends DefaultHandler {
         } else if(localName.equals("ace")) {
             addACEToDeferredPermissions(atts);
         } else {
-            //PLUG HERE
+        	rh.startElement(namespaceURI, localName, qName, atts);
         }
     }
     
@@ -144,6 +152,8 @@ public class RestorePluggableHandler extends DefaultHandler {
         if(namespaceURI.equals(Namespaces.EXIST_NS) && (localName.equals("collection") || localName.equals("resource"))) {
             setDeferredPermissions();
         }
+        
+        rh.endElement(namespaceURI, localName, qName);
 
         super.endElement(namespaceURI, localName, qName);
     }
@@ -189,6 +199,21 @@ public class RestorePluggableHandler extends DefaultHandler {
                 }
             }
 
+        	TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+        	Txn txn = txnManager.beginTransaction();
+        	try {
+        		currentCollection = broker.getOrCreateCollection(txn, collUri);
+        		
+        		rh.startCollectionRestore(currentCollection, atts);
+        		
+                broker.saveCollection(txn, currentCollection);
+
+        		txnManager.commit(txn);
+        	} catch (Exception e) {
+        		txnManager.abort(txn);
+        		throw new SAXException(e);
+    		}
+
             currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
 
             listener.setCurrentCollection(name);
@@ -205,7 +230,7 @@ public class RestorePluggableHandler extends DefaultHandler {
                 deferredPermission = new CollectionDeferredPermission(listener, currentCollection, owner, group, Integer.parseInt(mode, 8));
             }
 
-            //PLUG HERE
+            rh.endCollectionRestore(currentCollection);
             
             return deferredPermission;
             
@@ -243,7 +268,7 @@ public class RestorePluggableHandler extends DefaultHandler {
                 final EXistInputSource is = subDescriptor.getInputSource();
                 is.setEncoding( "UTF-8" );
 
-                final RestorePluggableHandler handler = new RestorePluggableHandler(broker, listener, dbBaseUri, subDescriptor);
+                final SystemImportHandler handler = new SystemImportHandler(broker, listener, dbBaseUri, subDescriptor);
 
                 reader.setContentHandler(handler);
                 reader.parse(is);
@@ -360,36 +385,27 @@ public class RestorePluggableHandler extends DefaultHandler {
 					meta.setMimeType(mimetype);
 					meta.setCreated(date_created.getTime());
 					meta.setLastModified(date_modified.getTime());
+					
+	                if((publicid != null) || (systemid != null)) {
+	                	DocumentType docType = new DocumentTypeImpl(namedoctype, publicid, systemid);
+	                	meta.setDocType(docType);
+	                }
+
+					rh.startDocumentRestore(resource, atts);
 
 					currentCollection.store(txn, broker, info, is, false);
 	
 				} else {
 					// store as binary resource
-					resource = currentCollection.addBinaryResource(txn, broker, docUri, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
+					resource = currentCollection.validateBinaryResource(txn, broker, docUri, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
+					
+					rh.startDocumentRestore(resource, atts);
+
+					resource = currentCollection.addBinaryResource(txn, broker, (BinaryDocument)resource, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
 				}
 
 				txnManager.commit(txn);
 
-//	            if(is.getByteStreamLength() > 0) {
-//	                res.setContent(is);
-//	            } else {
-//	                if(type.equals("BinaryResource")) {
-//	                    res.setContent("");
-//	                } else {
-//	                    res = null;
-//	                }
-//	            }
-	
-//	                if((publicid != null) || (systemid != null)) {
-//	                    DocumentType doctype = new DocumentTypeImpl(namedoctype, publicid, systemid);
-//	
-//	                    try {
-//	                        ((EXistResource) res).setDocType(doctype);
-//	                    } catch (XMLDBException e1) {
-//	                        LOG.error(e1.getMessage(), e1);
-//	                    }
-//	                }
-	                
                 final DeferredPermission deferredPermission;
                 if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                     //prevents restore of a backup from changing system collection resource ownership
@@ -398,7 +414,7 @@ public class RestorePluggableHandler extends DefaultHandler {
                     deferredPermission = new ResourceDeferredPermission(listener, resource, owner, group, Integer.parseInt(perms, 8));
                 }
                 
-                //PLUG HERE
+                rh.endDocumentRestore(resource);
 
                 listener.restored(name);
                 
@@ -407,8 +423,8 @@ public class RestorePluggableHandler extends DefaultHandler {
 				txnManager.abort(txn);
 				throw new IOException(e);
 			} finally {
-				if (resource != null)
-					resource.getUpdateLock().release(Lock.READ_LOCK);
+//				if (resource != null)
+//					resource.getUpdateLock().release(Lock.READ_LOCK);
 			}
 
         } catch(Exception e) {
