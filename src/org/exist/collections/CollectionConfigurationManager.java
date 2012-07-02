@@ -58,10 +58,12 @@ public class CollectionConfigurationManager {
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 
     public final static String CONFIG_COLLECTION = XmldbURI.SYSTEM_COLLECTION + "/config";
+    /** /db/system/config **/
     public final static XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
 
     //TODO : create using resolve()
-    public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = XmldbURI.create(CONFIG_COLLECTION + "/" + XmldbURI.ROOT_COLLECTION_NAME);
+    /** /db/system/config/db **/
+    public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_NAME);
     
     public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 
