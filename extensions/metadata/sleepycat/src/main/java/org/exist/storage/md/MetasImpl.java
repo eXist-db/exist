@@ -21,7 +21,7 @@
  */
 package org.exist.storage.md;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentAtExist;
 import org.exist.xmldb.XmldbURI;
 
 import com.eaio.uuid.UUID;
@@ -49,7 +49,7 @@ public class MetasImpl implements Metas {
 	@SuppressWarnings("unused")
 	private MetasImpl() {}
 
-	protected MetasImpl(DocumentImpl doc) {
+	protected MetasImpl(DocumentAtExist doc) {
 		update(doc);
 		
 		if (doc.getUUID() == null)
@@ -60,6 +60,11 @@ public class MetasImpl implements Metas {
 	
 	protected MetasImpl(XmldbURI uri) {
 		this.uri = uri.toString();
+	}
+
+	protected MetasImpl(String uri, String uuid) {
+		this.uri = uri;
+		this.uuid = uuid;
 	}
 
 	public String getUUID() {
@@ -84,7 +89,7 @@ public class MetasImpl implements Metas {
 		return MetaDataImpl._.getMeta(this, key);
 	}
 
-	protected void update(DocumentImpl doc) {
+	protected void update(DocumentAtExist doc) {
 		uri = doc.getURI().toString();
 	}
 	
