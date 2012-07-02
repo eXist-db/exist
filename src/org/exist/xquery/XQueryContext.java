@@ -3452,8 +3452,6 @@ public class XQueryContext implements BinaryValueManager, Context
     public String getCacheClass() {
         return (String) getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
     }
-    
-    
 
     @Override
     public void cleanupBinaryValueInstances() {
