@@ -30,6 +30,7 @@ import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.BinaryValue;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -512,6 +513,11 @@ public class ModuleContext extends XQueryContext {
 
     public void stackLeave(Expression expr) {
        	parentContext.stackLeave(expr);
+    }
+
+    @Override
+    public void registerBinaryValueInstance(BinaryValue binaryValue) {
+        parentContext.registerBinaryValueInstance(binaryValue);
     }
 
     @Override
