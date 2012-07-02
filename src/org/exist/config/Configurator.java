@@ -978,11 +978,14 @@ public class Configurator {
             broker.sync(Sync.MAJOR_SYNC);
             return collection.getDocument(broker, uri.lastSegment());
         } catch (Exception e) {
+            
+        	if (fullURI != null)
+                saving.remove(fullURI);
+
             if (txn != null)
                 transact.abort(txn);
-            if (fullURI != null)
-                saving.remove(fullURI);
-        	LOG.error(e);
+        	
+            LOG.error(e);
             throw new IOException(e);
         } finally {
             broker.setSubject(currentUser);
