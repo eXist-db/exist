@@ -64,4 +64,5 @@ public interface DocumentAtExist extends NodeAtExist, Document {
     
     public Database getDatabase();
 
+	public Object getUUID();
 }

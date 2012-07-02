@@ -308,4 +308,9 @@ public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> imple
 	public int getDocId() {
 		return getProxyObject().getDocId();
 	}
+
+	@Override
+	public Object getUUID() {
+		return getProxyObject().getUUID();
+	}
 }
