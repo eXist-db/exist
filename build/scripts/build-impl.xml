@@ -839,6 +839,9 @@
         <xslt basedir="${build.extensions.indexes}" in="${build.extensions.indexes}/modules.xml"
             out="${build.extensions.indexes}/build.xml"
             style="${build.extensions.indexes}/generate.xsl" classpathref="classpath.core" processor="trax"/>
+        <xslt basedir="${build.extensions.metadata}" in="${build.extensions.metadata}/backends.xml"
+            out="${build.extensions.metadata}/build.xml"
+            style="${build.extensions.metadata}/generate.xsl" classpathref="classpath.core" processor="trax"/>
     </target>
 
     <!-- ============================================================================ -->
