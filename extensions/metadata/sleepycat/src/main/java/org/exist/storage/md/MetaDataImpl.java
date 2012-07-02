@@ -126,7 +126,7 @@ public class MetaDataImpl extends MetaData {
 		}
 	}
 
-    private Metas _addMetas(DocumentImpl doc) {
+    private Metas _addMetas(DocumentAtExist doc) {
 		MetasImpl d = new MetasImpl(doc);
 		docByUUID.put(d);
 		
@@ -136,7 +136,17 @@ public class MetaDataImpl extends MetaData {
 		return d;
 	}
 
-	public Metas addMetas(DocumentImpl doc) {
+    protected Metas _addMetas(String uri, String uuid) {
+		MetasImpl d = new MetasImpl(uri, uuid);
+		docByUUID.put(d);
+		
+		if (LOG.isDebugEnabled())
+			LOG.debug("addMetas "+uuid+" "+uri);
+
+		return d;
+	}
+
+    public Metas addMetas(DocumentAtExist doc) {
     	Metas _d = getMetas(doc.getURI(), false);
     	
     	if (_d != null)
