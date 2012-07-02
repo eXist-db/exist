@@ -883,6 +883,9 @@ public class BrokerPool extends Observable implements Database {
             }
         }
         
+    	//create the plugin manager
+    	pluginManager = new PluginsManagerImpl(this, broker);
+
         //TODO : from there, rethink the sequence of calls.
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
@@ -897,6 +900,9 @@ public class BrokerPool extends Observable implements Database {
         } catch (Exception e) {
             LOG.error("Found an error while initializing database: " + e.getMessage(), e);
         }
+        
+        //wake-up the plugins manager
+        pluginManager.startUp(broker);
         
         //wake-up the security manager
         securityManager.attach(this, broker);
@@ -947,8 +953,6 @@ public class BrokerPool extends Observable implements Database {
         
         	//require to allow access by BrokerPool.getInstance();  
         	instances.put(instanceName, this);
-        	//create the plugin manager
-        	pluginManager = new PluginsManagerImpl(this, broker);
 		} finally {
 			release(broker);
 		}
