@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 
 import org.exist.backup.Restore;
 import org.exist.backup.SystemExport;
+import org.exist.backup.SystemImport;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
@@ -91,6 +92,8 @@ public class BackupRestoreMDTest extends TestCase {
     	String key2UUID = null;
     	String key3UUID = null;
     	
+    	File file;
+    	
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -125,16 +128,16 @@ public class BackupRestoreMDTest extends TestCase {
 	    	key3UUID = meta.getUUID();
 	
             SystemExport sysexport = new SystemExport( broker, null, null, true );
-            File file = sysexport.export( "backup", false, false, null );
+            file = sysexport.export( "backup", false, false, null );
         } finally {
         	pool.release(broker);
         }
     	
     	clean();
     	
-		Restore restore = new Restore();
+    	SystemImport restore = new SystemImport(pool);
 		RestoreListener listener = new DefaultRestoreListener();
-		restore.restore(listener, "admin", "", "", new File("backup"), "xmldb:exist://");
+		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
         broker = null;
         try {

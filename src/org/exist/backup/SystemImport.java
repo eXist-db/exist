@@ -32,8 +32,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.Database;
-import org.exist.backup.SystemExport.StatusCallback;
-import org.exist.backup.restore.RestorePluggableHandler;
+import org.exist.backup.restore.SystemImportHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.config.ConfigurationException;
 import org.exist.security.AuthenticationException;
@@ -57,11 +56,9 @@ public class SystemImport {
     private final static Logger LOG = Logger.getLogger(SystemImport.class);
     
     private Database db;
-    private StatusCallback callback;
     
-    public SystemImport(Database db, StatusCallback callback) {
+    public SystemImport(Database db) {
     	this.db = db;
-    	this.callback = callback;
 	}
 
     public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
@@ -89,7 +86,7 @@ public class SystemImport {
 	                final EXistInputSource is = descriptor.getInputSource();
 	                is.setEncoding( "UTF-8" );
 	
-	                final RestorePluggableHandler handler = new RestorePluggableHandler(broker, listener, uri, descriptor);
+	                final SystemImportHandler handler = new SystemImportHandler(broker, listener, uri, descriptor);
 	                
 	                reader.setContentHandler(handler);
 	                reader.parse(is);

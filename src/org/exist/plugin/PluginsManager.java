@@ -23,6 +23,7 @@ package org.exist.plugin;
 
 import org.exist.Database;
 import org.exist.backup.BackupHandler;
+import org.exist.backup.RestoreHandler;
 
 /**
  * Plugins manager interface provide way to access database environment.
@@ -37,4 +38,6 @@ public interface PluginsManager {
 	public void addPlugin(String className);
 	
 	public BackupHandler getBackupHandler();
+
+	public RestoreHandler getRestoreHandler();
 }

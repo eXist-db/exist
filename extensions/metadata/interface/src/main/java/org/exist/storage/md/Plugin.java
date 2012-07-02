@@ -22,12 +22,15 @@
 package org.exist.storage.md;
 
 import org.exist.backup.BackupHandler;
+import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.plugin.Jack;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.serializer.SAXSerializer;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -37,10 +40,20 @@ import com.sleepycat.persist.EntityCursor;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Plugin implements Jack, BackupHandler {
+public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	
 	public final static String PREFIX = "md";
 	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";
+
+	public final static String UUID = "uuid";
+	public final static String META = "meta";
+	public final static String KEY = "key";
+	public final static String VALUE = "value";
+	
+	public final static String PREFIX_UUID = PREFIX+":"+UUID;
+	public final static String PREFIX_KEY = PREFIX+":"+KEY;
+	public final static String PREFIX_META = PREFIX+":"+META;
+	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 
 	MetaDataImpl md;
 	
@@ -61,6 +74,7 @@ public class Plugin implements Jack, BackupHandler {
 		md.close();
 	}
 
+	//backup methods
 	@Override
 	public void backup(Collection colection, AttributesImpl attrs) {
 	}
@@ -73,7 +87,7 @@ public class Plugin implements Jack, BackupHandler {
 	public void backup(DocumentAtExist document, AttributesImpl attrs) {
 		Metas ms = md.getMetas(document);
 		
-        attrs.addAttribute( NAMESPACE_URI, "uuid", PREFIX+":uuid", "CDATA", ms.getUUID() );
+        attrs.addAttribute( NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", ms.getUUID() );
 	}
 
 	@Override
@@ -86,15 +100,81 @@ public class Plugin implements Jack, BackupHandler {
 			for (MetaImpl m : sub) {
 
 				AttributesImpl attr = new AttributesImpl();
-		        attr.addAttribute(NAMESPACE_URI, "key", PREFIX+":key", "CDATA", m.getKey());
-		        attr.addAttribute(NAMESPACE_URI, "value", PREFIX+":value", "CDATA", m.getValue());
+		        attr.addAttribute(NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", m.getUUID());
+		        attr.addAttribute(NAMESPACE_URI, KEY, PREFIX_KEY, "CDATA", m.getKey());
+		        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", m.getValue());
 
-		        serializer.startElement(NAMESPACE_URI, "meta", PREFIX+":meta", attr );
-		        serializer.endElement(NAMESPACE_URI, "meta", PREFIX+":meta");
+		        serializer.startElement(NAMESPACE_URI, META, PREFIX_META, attr );
+		        serializer.endElement(NAMESPACE_URI, META, PREFIX_META);
 			}
 
 		} finally {
 			sub.close();
 		}
+	}
+
+	//restore methods
+	
+	private Metas currentMetas = null;
+
+	@Override
+	public void setDocumentLocator(Locator locator) {}
+
+	@Override
+	public void startDocument() throws SAXException {}
+
+	@Override
+	public void endDocument() throws SAXException {}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {}
+
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		if (META.equals(localName) && NAMESPACE_URI.equals(uri)) {
+			String uuid = atts.getValue(NAMESPACE_URI, UUID);
+			String key = atts.getValue(NAMESPACE_URI, KEY);
+			String value = atts.getValue(NAMESPACE_URI, VALUE);
+			
+			md.addMeta(currentMetas, uuid, key, value);
+		}
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {}
+
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {}
+
+	@Override
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {}
+
+	@Override
+	public void processingInstruction(String target, String data) throws SAXException {}
+
+	@Override
+	public void skippedEntity(String name) throws SAXException {}
+
+	@Override
+	public void startCollectionRestore(Collection colection, Attributes atts) {}
+
+	@Override
+	public void endCollectionRestore(Collection colection) {}
+
+	@Override
+	public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
+		System.out.println("startDocument "+document.getURI());
+		String uuid = atts.getValue(NAMESPACE_URI, UUID);
+		if (uuid != null)
+			currentMetas = md._addMetas(document.getURI().toString(), uuid);
+		else
+			currentMetas = md.addMetas(document); 
+	}
+
+	@Override
+	public void endDocumentRestore(DocumentAtExist document) {
 	}
 }

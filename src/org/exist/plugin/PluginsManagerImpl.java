@@ -28,7 +28,9 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
+import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
@@ -38,6 +40,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -49,7 +53,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  */
 @ConfigurationClass("plugin-manager")
-public class PluginsManagerImpl implements Configurable, PluginsManager {
+public class PluginsManagerImpl implements Configurable, PluginsManager, Startable {
 
 	private final static Logger LOG = Logger.getLogger(PluginsManagerImpl.class);
 
@@ -78,6 +82,14 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 	public PluginsManagerImpl(Database db, DBBroker broker) throws ConfigurationException {
 		this.db = db;
 		
+		
+		//Temporary for testing
+		addPlugin("org.exist.storage.md.Plugin");
+		
+	}
+
+	@Override
+	public void startUp(DBBroker broker) throws EXistException {
         TransactionManager transaction = db.getTransactionManager();
         Txn txn = null;
 
@@ -126,10 +138,14 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 			e.printStackTrace();
 		}
 		//UNDERSTAND: call save?
-		
-		//Temporary for testing
-		addPlugin("org.exist.storage.md.Plugin");
+
+//		try {
+//			configuration.save(broker);
+//		} catch (PermissionDeniedException e) {
+//			//LOG?
+//		}
 	}
+	
 	
 	public String version() {
 		return version;
@@ -263,6 +279,151 @@ public class PluginsManagerImpl implements Configurable, PluginsManager {
 			for (Jack plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(document, serializer);
+				}
+			}
+		}
+	}
+
+	private RestoreHandler rh = new RH();
+
+	@Override
+	public RestoreHandler getRestoreHandler() {
+		return rh;
+	}
+
+	class RH implements RestoreHandler {
+
+		@Override
+		public void setDocumentLocator(Locator locator) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).setDocumentLocator(locator);
+				}
+			}
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).startDocument();
+				}
+			}
+		}
+
+		@Override
+		public void endDocument() throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).endDocument();
+				}
+			}
+		}
+
+		@Override
+		public void startPrefixMapping(String prefix, String uri) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
+				}
+			}
+		}
+
+		@Override
+		public void endPrefixMapping(String prefix) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).endPrefixMapping(prefix);
+				}
+			}
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
+				}
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).endElement(uri, localName, qName);
+				}
+			}
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).characters(ch, start, length);
+				}
+			}
+		}
+
+		@Override
+		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
+				}
+			}
+		}
+
+		@Override
+		public void processingInstruction(String target, String data) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).processingInstruction(target, data);
+				}
+			}
+		}
+
+		@Override
+		public void skippedEntity(String name) throws SAXException {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).skippedEntity(name);
+				}
+			}
+		}
+
+		@Override
+		public void startCollectionRestore(Collection colection, Attributes atts) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).startCollectionRestore(colection, atts);
+				}
+			}
+		}
+
+		@Override
+		public void endCollectionRestore(Collection colection) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).endCollectionRestore(colection);
+				}
+			}
+		}
+
+		@Override
+		public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).startDocumentRestore(document, atts);
+				}
+			}
+		}
+
+		@Override
+		public void endDocumentRestore(DocumentAtExist document) {
+			for (Jack plugin : jacks.values()) {
+				if (plugin instanceof RestoreHandler) {
+					((RestoreHandler) plugin).endDocumentRestore(document);
 				}
 			}
 		}
