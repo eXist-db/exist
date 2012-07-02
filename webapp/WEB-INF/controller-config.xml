@@ -1,3 +1,4 @@
+
 <!--
   ++ Base configuration for eXist's URL rewriting. This file defines
   ++ all basic path mappings. A path can be mapped to a servlet or
@@ -30,7 +31,7 @@
   <!-- 
   <forward pattern="/oauth" servlet="OAuthServlet"/>
   -->
-
+  
   <!-- Apache SOAP interface -->
   <forward pattern="/axis-servlet/AxisServlet" servlet="AxisServlet"/>
   <forward pattern=".*\.jws" servlet="AxisServlet"/>
@@ -49,8 +50,9 @@
     ++ Default configuration: main web application is served from the
     ++ webapp directory. 
   -->
-  <root pattern="/apps/tamboti" path="xmldb:exist:///db/library"/>
-
+  <root pattern="/apps/library" path="xmldb:exist:///db/tamboti"/>
+  <root pattern="/apps/tamboti" path="xmldb:exist:///db/tamboti"/>
+  
   <root pattern="/apps" path="xmldb:exist:///db"/>
   
   <root pattern="/solutions" path="xmldb:exist:///db/solutions/"/>
@@ -62,8 +64,8 @@
   	++ attribute.
     -->
   <root pattern=".*" path="/"/>
-
-
+  
+  
   <!-- 
     <root server-name="site1.example.com" pattern="/*" path="xmldb:exist:///db/org/site1/"/>
     <root server-name="site2.example.com" pattern="/*" path="xmldb:exist:///db/org/site2/"/>
@@ -71,7 +73,7 @@
     <root server-name="localhost" pattern=".*" path="/"/>
     <root server-name="site4.example.com" pattern=".*" path="/"/>
     -->
-
+  
   <!-- 
       ++ The following configuration assumes that the main webapp
       ++ is stored in the database. However, the contents of the /webapp directory
@@ -79,7 +81,7 @@
   -->
   <!--root pattern="/fs" path="/"/>
     <root pattern=".*" path="xmldb:exist:///db/www"/-->
-
+  
   <!--
       ++ Order is important here: the forward rule for XQuery resources has 
       ++ to be last in this document, otherwise all XQuery files would be immediately 
