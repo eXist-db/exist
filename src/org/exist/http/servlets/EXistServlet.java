@@ -376,7 +376,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         DBBroker broker = null;
         try {
             broker = getPool().get(user);
-            srvREST.doDelete(broker, XmldbURI.create(path), response);
+            srvREST.doDelete(broker, path, request, response);
         } catch (PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
