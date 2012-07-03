@@ -21,18 +21,19 @@
     </target>
     
     <target name="download">
-        <mkdir dir="${classes}"/>
-
         <echo message="--------------------------------------------------"/>
         <echo message="Downloading libraries required by the Sleepycat backend for Metadata Storage "/>
         <echo message="--------------------------------------------------"/>
 
         <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
                              url="http://download.oracle.com/maven/com/sleepycat/je/5.0.55/je-5.0.55.jar" 
-                             classname="com.sleepycat.je.Database">
+                             classname="com.sleepycat.je.Database"
+                             usecache="true">
+            <!-- 
             <patternset>
                 <include name="**/je-5.0.55.jar"/>
             </patternset>
+            -->
         </fetch>
 	</target>
 </project>
