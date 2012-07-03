@@ -1143,7 +1143,16 @@ public class BrokerPool extends Observable implements Database {
 	}
 
 	public Map<Thread, DBBroker> getActiveBrokers() {
-        return new HashMap<Thread, DBBroker>(activeBrokers);
+		final Map<Thread, DBBroker> res = new HashMap<Thread, DBBroker>(activeBrokers.size());
+
+		activeBrokers.readOperation(new LongOperation<Thread, DBBroker>() {
+			@Override
+			public void execute(Map<Thread, DBBroker> map) {
+				res.putAll(map);
+			}
+		});
+
+		return res;
     }
 
     /**
