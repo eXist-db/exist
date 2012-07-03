@@ -216,7 +216,7 @@ public class ContentFunctions extends BasicFunction {
         private FunctionReference ref;
         private NodePath currentPath = new NodePath();
         private NodePath[] paths;
-        private DocumentBuilderReceiver receiver = null;
+        private DocumentBuilderReceiver docBuilderReceiver = null;
         private NodePath lastPath = null;
         private Sequence userData = null;
         private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
@@ -268,39 +268,49 @@ public class ContentFunctions extends BasicFunction {
             
             currentPath.addComponent(qname);
             
-            if (matches(currentPath) && receiver == null) {
+            // if current xpath is one of required paths
+            if (matches(currentPath) && docBuilderReceiver == null) {
                 lastPath = currentPath;
                 context.pushDocumentContext();
-                MemTreeBuilder builder = context.getDocumentBuilder();
-                receiver = new DocumentBuilderReceiver(builder);
+                MemTreeBuilder memBuilder = context.getDocumentBuilder();
+                docBuilderReceiver = new DocumentBuilderReceiver(memBuilder);
             }
 
-            if (receiver != null) {
-                receiver.startElement(qname, attribs);
+            // Create element in result
+            if (docBuilderReceiver != null) {
+                docBuilderReceiver.startElement(qname, attribs);
             }
         }
 
         @Override
         public void endElement(QName qname) throws SAXException {
             
-            if (receiver != null) {
+            if (docBuilderReceiver != null) {
 
-                receiver.endElement(qname);
+                // Add end element
+                docBuilderReceiver.endElement(qname);
 
+                // If path was to be matched path
                 if (currentPath.match(lastPath)) {
-                    Document doc = receiver.getDocument();
+                    
+                    // Retrieve result in mem document
+                    Document doc = docBuilderReceiver.getDocument();
+                    
+                    // Get the root
                     NodeImpl root = (NodeImpl) doc.getDocumentElement();
 
-                    receiver = null;
+                    docBuilderReceiver = null;
                     lastPath = null;
                     context.popDocumentContext();
 
+                    // Construct parameters
                     Sequence[] params = new Sequence[3];
                     params[0] = root;
                     params[1] = userData;
                     params[2] = prevReturnData;
 
                     try {
+                        // Send data to callback function
                         Sequence ret = ref.evalFunction(null, null, params);
                         prevReturnData = ret;
                         result.addAll(ret);
@@ -310,8 +320,10 @@ public class ContentFunctions extends BasicFunction {
                     }
                 }
             }
+            
+            // reduce xpath
             currentPath.removeLastComponent();
-            }
+        }
 
         @Override
         public void characters(CharSequence seq) throws SAXException {
@@ -319,15 +331,15 @@ public class ContentFunctions extends BasicFunction {
             // DW: receiver is null for subsequent <p> elements.
             // Need to figure out about the design of class
             
-            if (receiver != null) {
-                receiver.characters(seq);
+            if (docBuilderReceiver != null) {
+                docBuilderReceiver.characters(seq);
             }
         }
 
         @Override
         public void attribute(QName qname, String value) throws SAXException {
-            if (receiver != null) {
-                receiver.attribute(qname, value);
+            if (docBuilderReceiver != null) {
+                docBuilderReceiver.attribute(qname, value);
             }
         }
 
