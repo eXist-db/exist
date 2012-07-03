@@ -42,6 +42,9 @@ public class SystemModule extends AbstractInternalModule {
     public static final FunctionDef[] functions = {
             new FunctionDef(FtIndexLookup.signature, FtIndexLookup.class),
 
+            new FunctionDef(FnExport.signature, FnExport.class),
+            new FunctionDef(FnImport.signature, FnImport.class),
+
             new FunctionDef(CountInstances.countInstancesMax, CountInstances.class),
             new FunctionDef(CountInstances.countInstancesActive, CountInstances.class),
             new FunctionDef(CountInstances.countInstancesAvailable, CountInstances.class),
