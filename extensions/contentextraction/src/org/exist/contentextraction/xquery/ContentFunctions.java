@@ -109,13 +109,19 @@ public class ContentFunctions extends BasicFunction {
         ContentExtraction ce = new ContentExtraction();
 
         if (isCalledAs("stream-content")) {
+            
+            /* binary content */
             BinaryValue binary = (BinaryValue) args[0].itemAt(0);
+            
+            /* callback function */
             FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-            Map<String, String> mappings = new HashMap<String, String>();
+            
+            Map<String, String> mappings = new HashMap<String, String>();         
             if (args[3].hasOne()) {
                 NodeValue namespaces = (NodeValue) args[3].itemAt(0);
                 parseMappings(namespaces, mappings);
             }
+            
             return streamContent(ce, binary, args[1], ref, mappings, args[4]);
             
         } else {
@@ -123,6 +129,7 @@ public class ContentFunctions extends BasicFunction {
             try {
                 if (isCalledAs("get-metadata")) {
                     ce.extractMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
+                    
                 } else {
                     ce.extractContentAndMetadata((BinaryValue) args[0].itemAt(0), (ContentHandler) builder);
                 }
@@ -132,9 +139,11 @@ public class ContentFunctions extends BasicFunction {
             } catch (IOException ex) {
                 LOG.error(ex.getMessage(), ex);
                 throw new XPathException(ex.getMessage(), ex);
+                
             } catch (SAXException ex) {
                 LOG.error(ex.getMessage(), ex);
                 throw new XPathException(ex.getMessage(), ex);
+                
             } catch (ContentExtractionException ex) {
                 LOG.error(ex.getMessage(), ex);
                 throw new XPathException(ex.getMessage(), ex);
@@ -143,12 +152,14 @@ public class ContentFunctions extends BasicFunction {
     }
 
     
-    private void parseMappings(NodeValue namespaces,
-            Map<String, String> mappings) throws XPathException {
+    private void parseMappings(NodeValue namespaces, Map<String, String> mappings) throws XPathException {
+        
         try {
             XMLStreamReader reader = context.getXMLStreamReader(namespaces);
             reader.next();
+            
             while (reader.hasNext()) {
+                
                 int status = reader.next();
                 if (status == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("namespace")) {
                     String prefix = reader.getAttributeValue("", "prefix");
@@ -171,6 +182,7 @@ public class ContentFunctions extends BasicFunction {
         
         NodePath[] paths = new NodePath[pathSeq.getItemCount()];
         int i = 0;
+        
         for (SequenceIterator iter = pathSeq.iterate(); iter.hasNext(); i++) {
             String path = iter.nextItem().getStringValue();
             paths[i] = new NodePath(mappings, path, false);
@@ -184,9 +196,11 @@ public class ContentFunctions extends BasicFunction {
         } catch (IOException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new XPathException(ex.getMessage(), ex);
+            
         } catch (SAXException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new XPathException(ex.getMessage(), ex);
+            
         } catch (ContentExtractionException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new XPathException(ex.getMessage(), ex);
@@ -235,8 +249,7 @@ public class ContentFunctions extends BasicFunction {
         }
 
         @Override
-        public void startPrefixMapping(String prefix, String namespaceURI)
-                throws SAXException {
+        public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
         }
 
         @Override
@@ -308,23 +321,19 @@ public class ContentFunctions extends BasicFunction {
         }
 
         @Override
-        public void comment(char[] ch, int start, int length)
-                throws SAXException {
+        public void comment(char[] ch, int start, int length) throws SAXException {
         }
 
         @Override
-        public void cdataSection(char[] ch, int start, int len)
-                throws SAXException {
+        public void cdataSection(char[] ch, int start, int len) throws SAXException {
         }
 
         @Override
-        public void processingInstruction(String target, String data)
-                throws SAXException {
+        public void processingInstruction(String target, String data) throws SAXException {
         }
 
         @Override
-        public void documentType(String name, String publicId, String systemId)
-                throws SAXException {
+        public void documentType(String name, String publicId, String systemId)  throws SAXException {
         }
 
         @Override
