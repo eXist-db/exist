@@ -21,6 +21,9 @@
  */
 package org.exist.storage.md;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.exist.dom.DocumentAtExist;
 import org.exist.xmldb.XmldbURI;
 
@@ -93,9 +96,26 @@ public class MetasImpl implements Metas {
 		uri = doc.getURI().toString();
 	}
 	
-	public EntityCursor<MetaImpl> keys() {
-		return MetaDataImpl._.getMetaKeys(this);
+	public List<Meta> metas() {
+		List<Meta> metas = new ArrayList<Meta>();
+		
+		EntityCursor<MetaImpl> sub = MetaDataImpl._.getMetaKeys(this);
+		try {
+			
+			for (MetaImpl m : sub) {
+				metas.add(m);
+			}
+
+		} finally {
+			sub.close();
+		}
+		
+		return metas;
 	}
+
+//	public EntityCursor<MetaImpl> keys() {
+//		return MetaDataImpl._.getMetaKeys(this);
+//	}
 
 	public void restore(String uuid, String key, String value) {
 		MetaDataImpl._._addMeta(this, uuid, key, value);

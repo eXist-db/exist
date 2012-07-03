@@ -36,8 +36,6 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class MetaData {
 
-    public final static boolean enabled = true;
-
 	protected static MetaData _ = null;
 	
 	public static MetaData get() {
@@ -58,6 +56,9 @@ public abstract class MetaData {
 
 	public abstract Metas getMetas(DocumentAtExist doc);
 	public abstract Metas getMetas(XmldbURI uri);
+
+	public abstract void copyMetas(XmldbURI oldDoc, DocumentImpl newDoc);
+	public abstract void moveMetas(XmldbURI oldUri, XmldbURI newUri);
 
 	public abstract void delMetas(XmldbURI uri);
 
