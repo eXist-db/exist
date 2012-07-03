@@ -4,8 +4,9 @@
     <xsl:template match="build">
         <project basedir="." default="jar" name="metadata">
             
-            <xsl:comment>This is a generated build file. Do not edit. Change the stylesheet
-generate.xsl instead.</xsl:comment>
+            <xsl:comment>
+This is a generated build file. Do not edit. 
+Change the stylesheet generate.xsl instead.</xsl:comment>
             
 		    <!--
 		        Get values from properties files. Note that the values in "local.build.properties" 
@@ -17,13 +18,13 @@ generate.xsl instead.</xsl:comment>
             <property file="local.properties"/>
             <property file="build.properties"/>
             
-            <condition property="include.metadata.config">
-                <istrue value="${{include.metadata}}"/>
+            <condition property="include.feature.metadata.config">
+                <istrue value="${{include.feature.metadata}}"/>
             </condition>
 
     		<target
         		name="interface"
-        		if="include.metadata.config" >
+        		if="include.feature.metadata.config" >
 
         		<ant
             		antfile="build.xml"
@@ -93,8 +94,8 @@ generate.xsl instead.</xsl:comment>
     
     <xsl:template match="backends">
         <xsl:for-each select="backend">
-            <condition property="include.metadata.{@name}.config">
-                <istrue value="${{include.metadata.{@name}}}"/>
+            <condition property="include.feature.metadata.{@name}.config">
+                <istrue value="${{include.feature.metadata.{@name}}}"/>
             </condition>
         </xsl:for-each>
         <xsl:apply-templates select="backend"/>
@@ -114,7 +115,7 @@ generate.xsl instead.</xsl:comment>
     </xsl:template>
     
     <xsl:template match="backend">
-        <target name="{@name}" if="include.metadata.{@name}.config">
+        <target name="{@name}" if="include.feature.metadata.{@name}.config">
             <ant antfile="{@antfile}" dir="{@dir}" target="${{target}}">
                 <property name="module" value="{@name}"/>
             </ant>

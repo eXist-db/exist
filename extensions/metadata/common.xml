@@ -3,11 +3,11 @@
     <property name="top.dir" value="../../.."/>
 	<property name="lib.extensions" value="lib/extensions"/>
 
-    <property name="src" value="./src/main/java"/>
-    <property name="module.classes" value="./target/classes"/>
+    <property name="src" value="src/main/java"/>
+    <property name="module.classes" value="target/classes"/>
     
-    <property name="test.src" value="./src/test/java"/>
-    <property name="test.classes" value="./target/test-classes"/>
+    <property name="test.src" value="src/test/java"/>
+    <property name="test.classes" value="target/test-classes"/>
 	
     <property name="junit.index.reports" value="${top.dir}/test/junit/data"/>
     
@@ -54,6 +54,8 @@
         <pathelement path="${module.classes}"/>
     </path>
 
+	<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core" />
+    
     <target name="prepare">
         <echo message="Building backend: ${module}"/>
         <echo message="Building into ${module.classes}"/>
@@ -62,8 +64,6 @@
         <mkdir dir="${test.classes}"/>
     </target>
 
-    <target name="download"/>
-    
     <target name="compile" depends="prepare,download">
 
          <echo
