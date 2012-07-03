@@ -20,7 +20,7 @@
         <delete dir="${test.classes}" failonerror="false"/>
     </target>
     
-    <target name="download" if="include.feature.metadata-sleepycat.config">
+    <target name="download" if="include.feature.metadata.sleepycat.config">
         <mkdir dir="${classes}"/>
 
         <echo message="--------------------------------------------------"/>
