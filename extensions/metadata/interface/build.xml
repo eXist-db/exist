@@ -3,7 +3,7 @@
     
     <import file="../common.xml"/>
     
-	<target name="jar" depends="compile" if="include.feature.metadata.config">
+    <target name="jar" depends="compile">
         <jar destfile="${top.dir}/${lib.extensions}/exist-metadata.jar" basedir="${module.classes}">
 	        <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
@@ -14,13 +14,13 @@
 		</jar>
     </target>
 
-    <target name="clean" if="include.feature.metadata.config">
+    <target name="clean">
         <delete file="${top.dir}/${lib.extensions}/exist-metadata.jar" failonerror="false"/>
         <delete dir="${module.classes}" failonerror="false"/>
         <delete dir="${test.classes}" failonerror="false"/>
     </target>
 
-    <target name="download" if="include.feature.metadata.config">
+    <target name="download">
         <mkdir dir="${classes}"/>
 
         <echo message="--------------------------------------------------"/>

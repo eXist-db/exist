@@ -21,51 +21,50 @@ generate.xsl instead.</xsl:comment>
                 <istrue value="${{include.metadata}}"/>
             </condition>
 
+    		<target
+        		name="interface"
+        		if="include.metadata.config" >
+
+        		<ant
+            		antfile="build.xml"
+		            dir="interface"
+            		target="${{target}}" >
+
+            		<property
+                		name="module"
+                		value="interface" />
+       			</ant>
+    		</target>
+    		
             <xsl:apply-templates select="backends"/>
             
             <target name="compile">
-	            <ant antfile="build.xml" dir="interface" target="compile">
-    	            <!--  <property name="module" value="metadata"/> -->
-        	    </ant>
-
                 <echo message="---------------------------"/>
-                <echo message="Compiling backends"/>
+                <echo message="Compiling Metadata Storage"/>
                 <echo message="---------------------------"/>
 
                 <iterate target="compile"/>
             </target>
             
             <target name="compile-tests">
-	            <ant antfile="build.xml" dir="interface" target="compile-tests">
-    	            <!--  <property name="module" value="metadata"/> -->
-        	    </ant>
-
                 <echo message="---------------------------"/>
-                <echo message="Compiling backends tests"/>
+                <echo message="Compiling Metadata Storage tests"/>
                 <echo message="---------------------------"/>
 
                 <iterate target="compile-tests"/>
             </target>
             
             <target name="jar">
-	            <ant antfile="build.xml" dir="interface" target="jar">
-    	            <!--  <property name="module" value="metadata"/> -->
-        	    </ant>
-
                 <echo message="---------------------------"/>
-                <echo message="Creating jars for backend"/>
+                <echo message="Creating Metadata Storage jars"/>
                 <echo message="---------------------------"/>
 
                 <iterate target="jar"/>
             </target>
             
             <target name="clean">
-	            <ant antfile="build.xml" dir="interface" target="clean">
-    	            <!--  <property name="module" value="metadata"/> -->
-        	    </ant>
-
                 <echo message="-------------------------------------"/>
-                <echo message="Cleaning backends ..."/>
+                <echo message="Cleaning Metadata Storage ..."/>
                 <echo message="-------------------------------------"/>
 
                 <iterate target="clean"/>
@@ -75,19 +74,15 @@ generate.xsl instead.</xsl:comment>
             <target name="all-clean">
 
 	            <ant antfile="build.xml" dir="interface" target="all-clean">
-    	            <!--  <property name="module" value="metadata"/> -->
+    	            <property name="module" value="interface"/>
         	    </ant>
 
                 <iterate target="all-clean"/>
             </target>
             
             <target name="test">
-	            <ant antfile="build.xml" dir="interface" target="test">
-    	            <!--  <property name="module" value="metadata"/> -->
-        	    </ant>
-
                 <echo message="------------------------------------------"/>
-                <echo message="Running tests on backends"/>
+                <echo message="Running Metadata Storage tests"/>
                 <echo message="------------------------------------------"/>
 
                 <iterate target="test"/>
@@ -106,6 +101,9 @@ generate.xsl instead.</xsl:comment>
         <macrodef name="iterate">
             <attribute name="target"/>
             <sequential>
+				<antcall target="interface">
+					<param name="target" value="@{{target}}"/>
+				</antcall>
                 <xsl:for-each select="backend">
                     <antcall target="{@name}">
                         <param name="target" value="@{{target}}"/>
