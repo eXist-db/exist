@@ -67,6 +67,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
+import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.memtree.ElementImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
@@ -1102,13 +1103,14 @@ public class RESTServer {
 		return;
 	}
 
-	public void doDelete(DBBroker broker, XmldbURI path, HttpServletResponse response) 
-		throws PermissionDeniedException, NotFoundException, IOException {
+	public void doDelete(DBBroker broker, String path, HttpServletRequest request, HttpServletResponse response)
+            throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
 		
 		TransactionManager transact = broker.getBrokerPool().getTransactionManager();
 		Txn txn = null;
+        XmldbURI pathURI = XmldbURI.create(path);
 		try {
-			Collection collection = broker.getCollection(path);
+			Collection collection = broker.getCollection(pathURI);
 			if (collection != null) {
 				// remove the collection
 				LOG.debug("removing collection " + path);
@@ -1119,34 +1121,41 @@ public class RESTServer {
 				response.setStatus(HttpServletResponse.SC_OK);
 			
 			} else {
-				DocumentImpl doc = (DocumentImpl) broker.getResource(path, Permission.WRITE);
+				DocumentImpl doc = (DocumentImpl) broker.getResource(pathURI, Permission.WRITE);
 				if (doc == null) {
 					//transact.abort(txn);
 					throw new NotFoundException("No document or collection found for path: " + path);
 				} else {
-					// remove the document
-					LOG.debug("removing document " + path);
-					txn = transact.beginTransaction();
-					
-					if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
-						doc.getCollection().removeBinaryResource(txn, broker, path.lastSegment());
-					else
-						doc.getCollection().removeXMLResource(txn, broker, path.lastSegment());
-					
-					response.setStatus(HttpServletResponse.SC_OK);
+                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE &&
+                        MimeType.XQUERY_TYPE.getName().equals(doc.getMetadata().getMimeType()) &&
+                        request.getAttribute(XQueryURLRewrite.RQ_ATTR) != null) {
+                        // XQuery resource: handle like a POST request
+                        doPost(broker, request, response, path);
+                    } else {
+                        // remove the document
+                        LOG.debug("removing document " + path);
+                        txn = transact.beginTransaction();
+
+                        if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                            doc.getCollection().removeBinaryResource(txn, broker, pathURI.lastSegment());
+                        else
+                            doc.getCollection().removeXMLResource(txn, broker, pathURI.lastSegment());
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    }
 				}
 			}
 			if (txn != null) //should not happen, just in case ...
 				transact.commit(txn);
-			
+
 		} catch (TriggerException e) {
-			transact.abort(txn);
+            transact.abort(txn);
 			throw new PermissionDeniedException("Trigger failed: " + e.getMessage());
 		} catch (LockException e) {
-			transact.abort(txn);
+            transact.abort(txn);
 			throw new PermissionDeniedException("Could not acquire lock: " + e.getMessage());
 		} catch (TransactionException e) {
-			transact.abort(txn);
+            transact.abort(txn);
 			LOG.warn("Transaction aborted: " + e.getMessage(), e);
 		}
 	}
