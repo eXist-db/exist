@@ -3,8 +3,8 @@
     <property name="top.dir" value="../../.."/>
 	<property name="lib.extensions" value="lib/extensions"/>
 
-    <property name="src" value="src/main/java"/>
-    <property name="module.classes" value="target/classes"/>
+    <property name="src" value="./src/main/java"/>
+    <property name="module.classes" value="./target/classes"/>
     
     <property name="test.src" value="./src/test/java"/>
     <property name="test.classes" value="./target/test-classes"/>
@@ -48,8 +48,9 @@
     </path>
 
     <path id="classpath.junit">
+    	<pathelement path="../interface/${src}"/>
     	<pathelement path="${top.dir}/test/classes"/>
-    	<pathelement path="${test.classes}"/>
+    		<pathelement path="${test.classes}"/>
         <pathelement path="${module.classes}"/>
     </path>
 
@@ -61,7 +62,9 @@
         <mkdir dir="${test.classes}"/>
     </target>
 
-    <target name="compile" depends="prepare">
+    <target name="download"/>
+    
+    <target name="compile" depends="prepare,download">
 
          <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
