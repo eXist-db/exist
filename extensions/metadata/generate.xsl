@@ -7,9 +7,20 @@
             <xsl:comment>This is a generated build file. Do not edit. Change the stylesheet
 generate.xsl instead.</xsl:comment>
             
+		    <!--
+		        Get values from properties files. Note that the values in "local.build.properties" 
+		        are leading to "build.properties".
+    		-->
+    		<property file="../local.build.properties"/>
+    		<property file="../build.properties"/>
+
             <property file="local.properties"/>
             <property file="build.properties"/>
             
+            <condition property="include.metadata.config">
+                <istrue value="${{include.metadata}}"/>
+            </condition>
+
             <xsl:apply-templates select="backends"/>
             
             <target name="compile">
