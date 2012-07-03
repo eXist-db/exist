@@ -24,42 +24,72 @@ generate.xsl instead.</xsl:comment>
             <xsl:apply-templates select="backends"/>
             
             <target name="compile">
+	            <ant antfile="build.xml" dir="interface" target="compile">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <echo message="---------------------------"/>
                 <echo message="Compiling backends"/>
                 <echo message="---------------------------"/>
+
                 <iterate target="compile"/>
             </target>
             
             <target name="compile-tests">
+	            <ant antfile="build.xml" dir="interface" target="compile-tests">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <echo message="---------------------------"/>
                 <echo message="Compiling backends tests"/>
                 <echo message="---------------------------"/>
+
                 <iterate target="compile-tests"/>
             </target>
             
             <target name="jar">
+	            <ant antfile="build.xml" dir="interface" target="jar">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <echo message="---------------------------"/>
                 <echo message="Creating jars for backend"/>
                 <echo message="---------------------------"/>
+
                 <iterate target="jar"/>
             </target>
             
             <target name="clean">
+	            <ant antfile="build.xml" dir="interface" target="clean">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <echo message="-------------------------------------"/>
                 <echo message="Cleaning backends ..."/>
                 <echo message="-------------------------------------"/>
+
                 <iterate target="clean"/>
                 <delete file="build.xml" failonerror="false"/>
             </target>
             
             <target name="all-clean">
+
+	            <ant antfile="build.xml" dir="interface" target="all-clean">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <iterate target="all-clean"/>
             </target>
             
             <target name="test">
+	            <ant antfile="build.xml" dir="interface" target="test">
+    	            <!--  <property name="module" value="metadata"/> -->
+        	    </ant>
+
                 <echo message="------------------------------------------"/>
                 <echo message="Running tests on backends"/>
                 <echo message="------------------------------------------"/>
+
                 <iterate target="test"/>
             </target>
             
