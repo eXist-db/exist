@@ -52,13 +52,15 @@ public abstract class MetaData {
 
 	public abstract Metas addMetas(DocumentAtExist doc);
 
-//	public abstract Metas getMetas(DocumentImpl doc);
+	//low level
+	protected abstract Meta _addMeta(Metas metas, String uuid, String key, String value);
+	protected abstract Metas _addMetas(String uri, String uuid);
+
+	public abstract Metas getMetas(DocumentAtExist doc);
 	public abstract Metas getMetas(XmldbURI uri);
 
-//	public abstract void delMetas(DocumentImpl doc);
 	public abstract void delMetas(XmldbURI uri);
 
 	public abstract void sync();
-
 	public abstract void close();
 }

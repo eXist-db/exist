@@ -98,6 +98,6 @@ public class MetasImpl implements Metas {
 	}
 
 	public void restore(String uuid, String key, String value) {
-		MetaDataImpl._.addMeta(this, uuid, key, value);
+		MetaDataImpl._._addMeta(this, uuid, key, value);
 	}
 }

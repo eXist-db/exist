@@ -21,6 +21,9 @@
  */
 package org.exist.storage.md;
 
+import java.lang.reflect.Constructor;
+
+import org.exist.Database;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
@@ -55,11 +58,19 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	public final static String PREFIX_META = PREFIX+":"+META;
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 
-	MetaDataImpl md;
+	MetaData md;
 	
 	public Plugin(PluginsManager manager) throws PermissionDeniedException {
-		md = new MetaDataImpl(manager.getDatabase());
+		try {
+			Class<? extends MetaData> backend = 
+				(Class<? extends MetaData>) Class.forName("org.exist.storage.md.MetaDataImpl");
 		
+			Constructor<? extends MetaData> ctor = backend.getConstructor(Database.class);
+			md = ctor.newInstance(manager.getDatabase());
+		} catch (Exception e) {
+			throw new PermissionDeniedException(e);
+		}
+
 		manager.getDatabase().getDocumentTriggers().add(new DocumentEvents());
 		manager.getDatabase().getCollectionTriggers().add(new CollectionEvents());
 	}
@@ -139,7 +150,7 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 			String key = atts.getValue(NAMESPACE_URI, KEY);
 			String value = atts.getValue(NAMESPACE_URI, VALUE);
 			
-			md.addMeta(currentMetas, uuid, key, value);
+			md._addMeta(currentMetas, uuid, key, value);
 		}
 	}
 

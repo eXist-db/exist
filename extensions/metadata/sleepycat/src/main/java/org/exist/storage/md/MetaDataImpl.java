@@ -256,7 +256,7 @@ public class MetaDataImpl extends MetaData {
 		return m;
 	}
 
-	protected MetaImpl addMeta(Metas doc, String uuid, String key, String value) {
+	protected Meta _addMeta(Metas doc, String uuid, String key, String value) {
 		MetaImpl m = new MetaImpl(doc.getUUID(), uuid, key, value);
 		metadataByUUID.put(m);
 		
