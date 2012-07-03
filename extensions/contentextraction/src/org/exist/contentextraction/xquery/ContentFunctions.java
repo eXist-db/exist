@@ -231,6 +231,13 @@ public class ContentFunctions extends BasicFunction {
             return result;
         }
 
+        /**
+         *  Check if content of current (node) path should be retrieved.
+         * 
+         * @param path Xpath to current node
+         * 
+         * @return TRUE if path is in to-be-retrieved paths
+         */
         private boolean matches(NodePath path) {
             for (int i = 0; i < paths.length; i++) {
                 if (paths[i].match(path)) {
@@ -258,9 +265,9 @@ public class ContentFunctions extends BasicFunction {
 
         @Override
         public void startElement(QName qname, AttrList attribs) throws SAXException {
-
+            
             currentPath.addComponent(qname);
-
+            
             if (matches(currentPath) && receiver == null) {
                 lastPath = currentPath;
                 context.pushDocumentContext();
@@ -275,7 +282,7 @@ public class ContentFunctions extends BasicFunction {
 
         @Override
         public void endElement(QName qname) throws SAXException {
-
+            
             if (receiver != null) {
 
                 receiver.endElement(qname);
@@ -304,10 +311,14 @@ public class ContentFunctions extends BasicFunction {
                 }
             }
             currentPath.removeLastComponent();
-        }
+            }
 
         @Override
         public void characters(CharSequence seq) throws SAXException {
+            
+            // DW: receiver is null for subsequent <p> elements.
+            // Need to figure out about the design of class
+            
             if (receiver != null) {
                 receiver.characters(seq);
             }
