@@ -30,25 +30,30 @@ public class ContentExtraction {
     public void extractContentAndMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
         Metadata metadata = new Metadata();
 
-        try{
+        try {
             parser.parse(binaryValue.getInputStream(), contentHandler, metadata, context);
-        } catch(TikaException e){
+            
+        } catch (TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
         }
     }
 
-    public void extractContentAndMetadata(BinaryValue binaryValue, Receiver receiver) throws IOException, SAXException, ContentExtractionException {
+    public void extractContentAndMetadata(BinaryValue binaryValue, Receiver receiver) 
+            throws IOException, SAXException, ContentExtractionException {
         extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver));
     }
 
     public void extractMetadata(BinaryValue binaryValue, ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
         Metadata metadata = new Metadata();
 
-        try{
-            parser.parse(binaryValue.getInputStream(), new AbortAfterMetadataContentHandler(contentHandler), metadata, context);
-        } catch(TikaException e){
+        try {
+            parser.parse(binaryValue.getInputStream(), 
+                    new AbortAfterMetadataContentHandler(contentHandler), metadata, context);
+            
+        } catch (TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
-        } catch(AbortedAfterMetadataException ame) {
+            
+        } catch (AbortedAfterMetadataException ame) {
             //do nothing, we have finished with the document
         }
     }
