@@ -22,6 +22,7 @@
 package org.exist.storage.md;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 import org.exist.Database;
 import org.exist.backup.BackupHandler;
@@ -36,8 +37,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import com.sleepycat.persist.EntityCursor;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -58,10 +57,13 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	public final static String PREFIX_META = PREFIX+":"+META;
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 
+	protected static Plugin _ = null;
+	
 	MetaData md;
 	
 	public Plugin(PluginsManager manager) throws PermissionDeniedException {
 		try {
+			@SuppressWarnings("unchecked")
 			Class<? extends MetaData> backend = 
 				(Class<? extends MetaData>) Class.forName("org.exist.storage.md.MetaDataImpl");
 		
@@ -70,6 +72,8 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 		} catch (Exception e) {
 			throw new PermissionDeniedException(e);
 		}
+
+		_ = this;
 
 		manager.getDatabase().getDocumentTriggers().add(new DocumentEvents());
 		manager.getDatabase().getCollectionTriggers().add(new CollectionEvents());
@@ -105,22 +109,16 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
 		Metas ms = md.getMetas(document);
 		
-		EntityCursor<MetaImpl> sub = ms.keys();
-		try {
-			
-			for (MetaImpl m : sub) {
+		List<Meta> sub = ms.metas();
+		for (Meta m : sub) {
 
-				AttributesImpl attr = new AttributesImpl();
-		        attr.addAttribute(NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", m.getUUID());
-		        attr.addAttribute(NAMESPACE_URI, KEY, PREFIX_KEY, "CDATA", m.getKey());
-		        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", m.getValue());
+			AttributesImpl attr = new AttributesImpl();
+	        attr.addAttribute(NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", m.getUUID());
+	        attr.addAttribute(NAMESPACE_URI, KEY, PREFIX_KEY, "CDATA", m.getKey());
+	        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", m.getValue());
 
-		        serializer.startElement(NAMESPACE_URI, META, PREFIX_META, attr );
-		        serializer.endElement(NAMESPACE_URI, META, PREFIX_META);
-			}
-
-		} finally {
-			sub.close();
+	        serializer.startElement(NAMESPACE_URI, META, PREFIX_META, attr );
+	        serializer.endElement(NAMESPACE_URI, META, PREFIX_META);
 		}
 	}
 

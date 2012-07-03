@@ -75,11 +75,11 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
-		System.out.println("beforeDeleteCollection "+collection.getURI());
+		System.out.println("beforeMoveCollection "+collection.getURI());
 		try {
 	        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
 	            DocumentImpl doc = i.next();
-	            MetaDataImpl._.moveMetas(
+	            Plugin._.md.moveMetas(
             		collection.getURI().append(doc.getFileURI()), 
             		newUri.append(doc.getFileURI())
         		);
@@ -99,7 +99,7 @@ public class CollectionEvents implements CollectionTrigger {
 		try {
 	        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
 	            DocumentImpl doc = i.next();
-	            MetaDataImpl._.delMetas(doc.getURI());
+	            Plugin._.md.delMetas(doc.getURI());
 	        }
 		} catch (PermissionDeniedException e) {
 			throw new TriggerException(e);

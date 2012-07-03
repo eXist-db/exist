@@ -21,7 +21,7 @@
  */
 package org.exist.storage.md;
 
-import com.sleepycat.persist.EntityCursor;
+import java.util.List;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -35,5 +35,5 @@ public interface Metas {
 
 	public Meta put(String key, String value);
 
-	public EntityCursor<MetaImpl> keys();
+	public List<Meta> metas();
 }
