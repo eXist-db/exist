@@ -51,6 +51,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( BuiltinFunctions.signatures[1], BuiltinFunctions.class ),
         new FunctionDef( BuiltinFunctions.signatures[2], BuiltinFunctions.class ),
         new FunctionDef( BuiltinFunctions.signatures[3], BuiltinFunctions.class ),
+        new FunctionDef( BuiltinFunctions.signatures[4], BuiltinFunctions.class ),
         new FunctionDef( InspectFunction.signature, InspectFunction.class),
         new FunctionDef( ModuleInfo.moduleDescriptionSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.registeredModuleSig, ModuleInfo.class ),

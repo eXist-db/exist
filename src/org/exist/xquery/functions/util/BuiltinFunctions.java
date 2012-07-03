@@ -65,6 +65,11 @@ public class BuiltinFunctions extends BasicFunction {
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
         new FunctionSignature(
             new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Returns a sequence of function items for each function in the current module.",
+            null,
+            new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references")),
+        new FunctionSignature(
+            new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a sequence of function items for each function in the specified module.",
             new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
             new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"))
@@ -94,16 +99,20 @@ public class BuiltinFunctions extends BasicFunction {
 				addFunctionsFromModule(resultSeq, module);
 			}
 		} else {
-			for(Iterator<Module> i = context.getModules(); i.hasNext(); ) {
-				Module module = i.next();
-				addFunctionsFromModule(resultSeq, module);
-			}
-			// Add all functions declared in the local module
-			for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
-				UserDefinedFunction func = i.next();
-				FunctionSignature sig = func.getSignature();
-				resultSeq.add(new QNameValue(context, sig.getName()));
-			}
+            if (isCalledAs("list-functions")) {
+                addFunctionRefsFromContext(resultSeq);
+            } else {
+                for(Iterator<Module> i = context.getModules(); i.hasNext(); ) {
+                    Module module = i.next();
+                    addFunctionsFromModule(resultSeq, module);
+                }
+                // Add all functions declared in the local module
+                for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+                    UserDefinedFunction func = i.next();
+                    FunctionSignature sig = func.getSignature();
+                    resultSeq.add(new QNameValue(context, sig.getName()));
+                }
+            }
 		}
 		return resultSeq;
 	}
@@ -125,6 +134,17 @@ public class BuiltinFunctions extends BasicFunction {
         FunctionSignature signatures[] = module.listFunctions();
         for (FunctionSignature signature : signatures) {
             FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
+            if (call != null) {
+                resultSeq.add(new FunctionReference(call));
+            }
+        }
+    }
+
+    private void addFunctionRefsFromContext(ValueSequence resultSeq) throws XPathException {
+        for (Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+            UserDefinedFunction f = i.next();
+            FunctionCall call =
+                    FunOnFunctions.lookupFunction(this, f.getSignature().getName(), f.getSignature().getArgumentCount());
             if (call != null) {
                 resultSeq.add(new FunctionReference(call));
             }
