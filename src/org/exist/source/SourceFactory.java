@@ -71,12 +71,16 @@ public class SourceFactory {
             	
                 File f2 = new File(location);
                 File f3 = new File(new File(contextPath).getAbsolutePath(), location);
+                File f4 = new File("/" + location);
                 
                 if(f2.canRead()){
                 	f = f2;
                 }
                 else if(f3.canRead()){
                     f = f3;
+                }
+                else if(f4.canRead()){
+                    f = f4;
                 }
                 else {
                 	throw new FileNotFoundException(
