@@ -337,7 +337,6 @@ public class MetaDataImpl extends MetaData {
 	public void moveMetas(XmldbURI oldUri, XmldbURI newUri) {
 		MetasImpl ms = (MetasImpl)getMetas(oldUri);
 		
-		System.out.println("moveMetas "+oldUri+" to "+newUri);
 		if(ms != null){
 			ms.uri = newUri.toString();
 			
