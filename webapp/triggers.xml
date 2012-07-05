@@ -214,6 +214,7 @@
     <triggers>
 		<trigger class="org.exist.collections.triggers.XQueryTrigger">
 			<parameter name="url" value="xmldb:exist://localhost/db/myTrigger.xql"/>
+			<parameter name="triggersLogFile" value="/db/triggersLog.xml"/>
 		</trigger>
 		
 		<trigger event="create" class="org.exist.collections.triggers.XQueryTrigger">
@@ -268,98 +269,104 @@ module namespace trigger='http://exist-db.org/xquery/trigger';
 
 declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
 
-declare variable $local:triggersLogFile := "triggersLog.xml";
+declare variable $local:triggersLogFile external;
 
 declare function trigger:before-create-collection($uri as xs:anyURI) {
-	local:logEvent('before', 'create', 'collection', $uri)
+	local:logEvent(<log type="before" event="create" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:after-create-collection($uri as xs:anyURI) {
-	local:logEvent('after', 'create', 'collection', $uri)" +
+	local:logEvent(<log type="after" event="create" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:before-update-collection($uri as xs:anyURI) {
-	local:logEvent('before', 'update', 'collection', $uri)
+	local:logEvent(<log type="before" event="update" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:after-update-collection($uri as xs:anyURI) {
-	local:logEvent('after', 'update', 'collection', $uri)
+	local:logEvent(<log type="after" event="update" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
-	local:logEvent('before', 'copy', 'collection', $uri)
+	local:logEvent(<log type="before" event="copy" object="collection" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
-declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
-	local:logEvent('after', 'copy', 'collection', $new-uri)
+declare function trigger:after-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+	local:logEvent(<log type="after" event="copy" object="collection" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
 declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
-	local:logEvent('before', 'move', 'collection', $uri)
+	local:logEvent(<log type="before" event="move" object="collection" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
-declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
-	local:logEvent('after', 'move', 'collection', $new-uri)
+declare function trigger:after-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+	local:logEvent(<log type="after" event="move" object="collection" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
 declare function trigger:before-delete-collection($uri as xs:anyURI) {
-	local:logEvent('before', 'delete', 'collection', $uri)
+	local:logEvent(<log type="before" event="delete" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:after-delete-collection($uri as xs:anyURI) {
-	local:logEvent('after', 'delete', 'collection', $uri)
+	local:logEvent(<log type="after" event="delete" object="collection" uri="{$uri}"/>)
 };
 
 declare function trigger:before-create-document($uri as xs:anyURI) {
-	local:logEvent('before', 'create', 'document', $uri)
+	local:logEvent(<log type="before" event="create" object="document" uri="{$uri}"/>)
 };
 
 declare function trigger:after-create-document($uri as xs:anyURI) {
-	local:logCollectionEvent('after', 'create', 'document', $uri)
+	local:logEvent(<log type="after" event="create" object="document" uri="{$uri}"/>)
 };
 
 declare function trigger:before-update-document($uri as xs:anyURI) {
-	local:logEvent('before', 'update', 'document', $uri)
+	local:logEvent(<log type="before" event="update" object="document" uri="{$uri}"/>)
 };
 
 declare function trigger:after-update-document($uri as xs:anyURI) {
-	local:logEvent('after', 'update', 'document', $uri)
+	local:logEvent(<log type="after" event="update" object="document" uri="{$uri}"/>)
 };
 
 declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
-	local:logEvent('before', 'copy', 'document', $uri)
+	local:logEvent(<log type="before" event="copy" object="document" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
-declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
-	local:logEvent('after', 'copy', 'document', $new-uri)
+declare function trigger:after-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+	local:logEvent(<log type="after" event="copy" object="document" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
 declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
-	local:logEvent('before', 'move', 'document', $uri)
+	local:logEvent(<log type="before" event="move" object="document" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
-declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
-	local:logEvent('after', 'move', 'document', $new-uri)
+declare function trigger:after-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+	local:logEvent(<log type="after" event="move" object="document" uri="{$uri}" new-uri="{$new-uri}"/>)
 };
 
 declare function trigger:before-delete-document($uri as xs:anyURI) {
-	local:logEvent('before', 'delete', 'document', $uri)
+	local:logEvent(<log type="before" event="delete" object="document" uri="{$uri}"/>)
 };
 
 declare function trigger:after-delete-document($uri as xs:anyURI) {
-	local:logCollectionEvent('after', 'delete', 'document', $uri)
+	local:logEvent(<log type="after" event="delete" object="document" uri="{$uri}"/>)
 };
 
-declare function local:logEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {
-	(: create the log file if it does not exist :)
-	if(not(doc-available($local:triggersLogFile)))then
-	(
-		xmldb:store("/db", $local:triggersLogFile, <triggers/>)
-	)
-	else(),
-
-	(: log the trigger details to the log file :)
-	update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventType}" collectionName="{$local:collectionName}" documentName="{$local:documentName}" timestamp="{current-dateTime()}">{$local:document}</trigger>  into doc("/db/triggersLog.xml")/triggers
+declare function local:logEvent($entry as element(log)) {
+    let $logfile := 
+      if(not(doc-available($local:triggersLogFile))) then
+	  (
+		xmldb:store(string-join(tokenize($local:triggersLogFile, '/')[position() ne last()], '/'), tokenize($local:triggersLogFile, '/')[last()], <triggers/>)
+	  )
+	  else()
+	return
+  	  update insert 
+  	    <trigger timestamp="{current-dateTime()}">{
+	      $entry/@*,
+	      if (xmldb:get-mime-type(xs:anyURI($entry/@uri)) eq 'application/xml') then
+ 	        doc($entry/@uri)
+	      else ()
+	    }</trigger>
+	  into doc($local:triggersLogFile)/triggers
 };
 ]]>
         			</programlisting>
