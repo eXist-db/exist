@@ -167,7 +167,6 @@ public class MetaDataImpl extends MetaData {
     	
     	if (LOG.isDebugEnabled())
 			LOG.debug("getMetas "+uri+" ");
-    	System.out.println("getMetas "+uri+" ");
 		
 		EntityJoin<String, MetasImpl> join = new EntityJoin<String, MetasImpl>(docByUUID);
 		join.addCondition(uriToDoc, uri.toString());
