@@ -214,10 +214,10 @@ public class ContentFunctions extends BasicFunction {
 
         private ValueSequence result = new ValueSequence();
         private FunctionReference ref;
-        private NodePath currentPath = new NodePath();
+        private NodePath currentElementPath = new NodePath();
         private NodePath[] paths;
         private DocumentBuilderReceiver docBuilderReceiver = null;
-        private NodePath lastPath = null;
+        private NodePath startElementPath = null;
         private Sequence userData = null;
         private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
 
@@ -266,17 +266,18 @@ public class ContentFunctions extends BasicFunction {
         @Override
         public void startElement(QName qname, AttrList attribs) throws SAXException {
             
-            currentPath.addComponent(qname);
+            currentElementPath.addComponent(qname);
             
-            // if current xpath is one of required paths
-            if (matches(currentPath) && docBuilderReceiver == null) {
-                lastPath = currentPath;
+            // if current path is one of required paths
+            // and there is a docReceiver (=data must be collected)
+            if (matches(currentElementPath) && docBuilderReceiver == null) {
+                startElementPath = currentElementPath;
                 context.pushDocumentContext();
                 MemTreeBuilder memBuilder = context.getDocumentBuilder();
                 docBuilderReceiver = new DocumentBuilderReceiver(memBuilder);
             }
 
-            // Create element in result
+            // Add element to result
             if (docBuilderReceiver != null) {
                 docBuilderReceiver.startElement(qname, attribs);
             }
@@ -285,22 +286,23 @@ public class ContentFunctions extends BasicFunction {
         @Override
         public void endElement(QName qname) throws SAXException {
             
+            // not null means data must be collecterd
             if (docBuilderReceiver != null) {
 
                 // Add end element
                 docBuilderReceiver.endElement(qname);
 
                 // If path was to be matched path
-                if (currentPath.match(lastPath)) {
+                if (currentElementPath.match(startElementPath)) {
                     
-                    // Retrieve result in mem document
+                    // Retrieve result as document
                     Document doc = docBuilderReceiver.getDocument();
                     
                     // Get the root
                     NodeImpl root = (NodeImpl) doc.getDocumentElement();
 
                     docBuilderReceiver = null;
-                    lastPath = null;
+                    startElementPath = null;
                     context.popDocumentContext();
 
                     // Construct parameters
@@ -321,8 +323,9 @@ public class ContentFunctions extends BasicFunction {
                 }
             }
             
-            // reduce xpath
-            currentPath.removeLastComponent();
+            // reduce path
+            // DW: should be earlier? currentElementPath is one level wrong
+            currentElementPath.removeLastComponent();
         }
 
         @Override
