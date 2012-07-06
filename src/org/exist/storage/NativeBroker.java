@@ -1043,6 +1043,10 @@ public class NativeBroker extends DBBroker {
             if (LOG.isDebugEnabled())
             	LOG.debug("Copying resource: '" + child.getURI() + "'");
             
+            XmldbURI newUri = destCollection.getURI().append(child.getFileURI());
+            pool.getDocumentTrigger().beforeCopyDocument(this, transaction, child, newUri);
+            
+            DocumentImpl createdDoc;
             if (child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
@@ -1051,6 +1055,8 @@ public class NativeBroker extends DBBroker {
                 copyXMLResource(transaction, child, newDoc);
                 storeXMLResource(transaction, newDoc);
                 destCollection.addDocument(transaction, this, newDoc);
+                
+                createdDoc = newDoc;
             } else {
                 final BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
                 newDoc.copyOf(child);
@@ -1065,7 +1071,11 @@ public class NativeBroker extends DBBroker {
                 }
                 storeXMLResource(transaction, newDoc);
                 destCollection.addDocument(transaction, this, newDoc);
+
+                createdDoc = newDoc;
             }
+            
+            pool.getDocumentTrigger().afterCopyDocument(this, transaction, createdDoc, child.getURI());
         }
         saveCollection(transaction, destCollection);
         
