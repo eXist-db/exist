@@ -52,13 +52,20 @@ public class SimpleMDTest extends TestCase {
             "	</index>" +
         	"</collection>";
 
+    /** /db/test **/
     private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
+    /** /db/test/test2 **/
     private static XmldbURI col2uri = TestConstants.TEST_COLLECTION_URI2;
+    /** /db/moved **/
     private static XmldbURI col3uri = XmldbURI.ROOT_COLLECTION_URI.append("moved");
 
+    /** /db/test/test_string.xml **/
     private static XmldbURI doc1uri = col1uri.append("test_string.xml");
+    /** /db/test/test_string2.xml **/
     private static XmldbURI doc2uri = col1uri.append("test_string2.xml");
+    /** /db/test/test2/test_2.xml **/
     private static XmldbURI doc3uri = col2uri.append("test_2.xml");
+    /** /db/moved/test_string.xml **/
     private static XmldbURI doc4uri = col3uri.append("test_string.xml");
     
     private static String XML = "<test/>";
@@ -345,7 +352,7 @@ public class SimpleMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            Collection col = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
         	TransactionManager txnManager = null;
@@ -523,8 +530,78 @@ public class SimpleMDTest extends TestCase {
     	cleanup();
 	}
 
+    //collection copy
 	//@Test
 	public void test_07() throws Exception {
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc1uri);
+    	assertNotNull(docMD);
+    	
+    	String uuid = docMD.getUUID();
+    	
+    	//add first key-value
+    	docMD.put(KEY1, VALUE1);
+
+    	DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+
+            Collection parent = broker.getCollection(col3uri.removeLastSegment());
+        	assertNotNull(parent);
+
+            Collection col = broker.getCollection(col1uri);
+        	assertNotNull(col);
+
+        	System.out.println("COPY...");
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+	            
+	            broker.copyCollection(txn, col, parent, col3uri.lastSegment());
+            
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+            Collection moved = broker.getCollection(col3uri);
+        	assertNotNull(moved);
+
+	        docMD = md.getMetas(doc4uri);
+	    	assertNotNull(docMD);
+	    	
+	    	assertNotSame(uuid, docMD.getUUID());
+	    	assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
+	        docMD = md.getMetas(doc1uri);
+	    	assertNotNull(docMD);
+	    	
+	    	DocumentImpl doc = md.getDocument(uuid);
+	    	assertNotNull(doc);
+	    	assertEquals(doc1uri.toString(), doc.getURI().toString());
+	    	
+        } finally {
+    		pool.release(broker);
+    	}
+        
+
+    	cleanup();
+	}
+
+	//@Test
+	public void test_08() throws Exception {
     	System.out.println("test_07");
     	
         DBBroker broker = null;
