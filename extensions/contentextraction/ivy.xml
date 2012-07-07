@@ -6,7 +6,7 @@
 <ivy-module version="2.0">
     <info organisation="org.exist" module="tika"/>
     <dependencies>
-        <dependency org="org.apache.tika" name="tika-parsers" rev="0.9" conf="*->*,!sources,!javadoc">
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.1" conf="*->*,!sources,!javadoc">
             <exclude module="jdom"/>
             <exclude module="slf4j-api"/>
             <exclude module="commons-codec"/>
