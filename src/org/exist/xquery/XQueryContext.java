@@ -3384,16 +3384,41 @@ public class XQueryContext implements BinaryValueManager, Context
         updateListener = null;
     }
 
-
     /**
-     * Check if the XQuery contains pragmas that define serialization settings. If yes,
+     * Check if the XQuery contains options that define serialization settings. If yes,
      * copy the corresponding settings to the current set of output properties.
      *
      * @param   properties  the properties object to which serialization parameters will be added.
      *
      * @throws  XPathException  if an error occurs while parsing the option
      */
-    public void checkOptions( Properties properties ) throws XPathException
+    public void checkOptions(Properties properties) throws XPathException {
+        checkLegacyOptions(properties);
+        if(dynamicOptions != null) {
+            for(Option option : dynamicOptions) {
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
+                    properties.put(option.getQName().getLocalName(), option.getContents());
+                }
+            }
+        }
+
+        if( staticOptions != null ) {
+            for(Option option : staticOptions) {
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
+                    if (!properties.containsKey(option.getQName().getLocalName()))
+                        properties.put(option.getQName().getLocalName(), option.getContents());
+                }
+            }
+        }
+    }
+
+    /**
+     * Legacy method to check serialization properties set via option exist:serialize.
+     *
+     * @param properties
+     * @throws XPathException
+     */
+    private void checkLegacyOptions( Properties properties ) throws XPathException
     {
         Option pragma = getOption( Option.SERIALIZE_QNAME );
 
