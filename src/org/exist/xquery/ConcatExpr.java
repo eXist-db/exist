@@ -15,14 +15,15 @@ public class ConcatExpr extends PathExpr {
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		if(getContext().getXQueryVersion() < 30){
-            throw new XPathException(this, ErrorCodes.EXXQDY0003, "switch expression is not available before XQuery 3.0");
+            throw new XPathException(this, ErrorCodes.EXXQDY0003,
+                    "string concatenation operator is not available before XQuery 3.0");
         }
 		super.analyze(contextInfo);
 	}
 	
 	@Override
-	public void add(Expression expr) {
-		expr = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, expr,
+	public void add(PathExpr pathExpr) {
+		Expression expr = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, pathExpr,
             new Error(Error.FUNC_PARAM_CARDINALITY));
         if (!Type.subTypeOf(expr.returnsType(), Type.ATOMIC))
             expr = new Atomize(context, expr);
