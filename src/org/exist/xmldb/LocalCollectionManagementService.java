@@ -97,6 +97,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         if (parent != null)
         	collName = parent.getPathURI().resolveCollectionPath(collName);        
 
+    	Subject preserveSubject = brokerPool.getSubject();
 		TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -126,6 +127,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 "not allowed to create collection", e );
 		} finally {
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
         return new LocalCollection( user, brokerPool, parent, collName, accessCtx );
     }
@@ -172,7 +174,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void removeCollection( XmldbURI collName ) throws XMLDBException {
         if (parent != null)
         	collName = parent.getPathURI().resolveCollectionPath(collName);        
+        
 
+    	Subject preserveSubject = brokerPool.getSubject();
     	TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -209,6 +213,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	if(collection != null)
         		collection.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
     }
 
@@ -232,6 +237,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
     	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
     	
+
+    	Subject preserveSubject = brokerPool.getSubject();
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -280,6 +287,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	if(collection != null)
         		collection.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
     }
     
@@ -302,6 +310,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     	else
     		destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
 
+
+    	Subject preserveSubject = brokerPool.getSubject();
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -356,6 +366,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	if(destination != null)
         		destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
     }
     
@@ -378,6 +389,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
     	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
 
+
+    	Subject preserveSubject = brokerPool.getSubject();
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -427,6 +440,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	if(collection != null) collection.release(Lock.READ_LOCK);
         	if(destination != null) destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
     }
 
@@ -450,8 +464,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 	    destinationPath = resourcePath.removeLastSegment();
     	else
 	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);	
-    
-    TransactionManager transact = brokerPool.getTransactionManager();
+
+    	Subject preserveSubject = brokerPool.getSubject();
+    	TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         org.exist.collections.Collection destination = null;
@@ -495,6 +510,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	if(source != null) source.release(Lock.WRITE_LOCK);
         	if(destination != null) destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
+            brokerPool.setSubject(preserveSubject);
         }
     }
 	
@@ -509,6 +525,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     @Override
 	public void runCommand(String[] params) throws XMLDBException {
     	
+
+    	Subject preserveSubject = brokerPool.getSubject();
     	DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
@@ -519,6 +537,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "", e);
 		} finally {
         	brokerPool.release(broker);
+            brokerPool.setSubject(preserveSubject);
         }
 	}
 }
