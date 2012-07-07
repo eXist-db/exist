@@ -140,32 +140,13 @@ public class ContentReceiver implements Receiver {
 
             // If path was to be matched path
             if (currentElementPath.match(startElementPath)) {
-
-                // Retrieve result as document
-                Document doc = docBuilderReceiver.getDocument();
-
-                // Get the root
-                NodeImpl root = (NodeImpl) doc.getDocumentElement();
-
+                
+                sendDataToCallback();
+                
+                context.popDocumentContext();
                 docBuilderReceiver = null;
                 startElementPath = null;
-                context.popDocumentContext();
-
-                // Construct parameters
-                Sequence[] params = new Sequence[3];
-                params[0] = root;
-                params[1] = userData;
-                params[2] = prevReturnData;
-
-                try {
-                    // Send data to callback function
-                    Sequence ret = ref.evalFunction(null, null, params);
-                    prevReturnData = ret;
-                    result.addAll(ret);
-
-                } catch (XPathException e) {
-                    LOG.warn(e.getMessage(), e);
-                }
+                
             }
         }
 
@@ -224,5 +205,32 @@ public class ContentReceiver implements Receiver {
     @Override
     public Document getDocument() {
         return null;
+    }
+
+    /**
+     * Send data to callback handler
+     */
+    private void sendDataToCallback() {
+        // Retrieve result as document
+        Document doc = docBuilderReceiver.getDocument();
+
+        // Get the root
+        NodeImpl root = (NodeImpl) doc.getDocumentElement();             
+
+        // Construct parameters
+        Sequence[] params = new Sequence[3];
+        params[0] = root;
+        params[1] = userData;
+        params[2] = prevReturnData;
+
+        try {
+            // Send data to callback function
+            Sequence ret = ref.evalFunction(null, null, params);
+            prevReturnData = ret;
+            result.addAll(ret);
+
+        } catch (XPathException e) {
+            LOG.warn(e.getMessage(), e);
+        }
     }
 }
