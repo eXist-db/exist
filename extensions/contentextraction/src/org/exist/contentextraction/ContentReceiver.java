@@ -37,7 +37,9 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Dulip Withanage <dulip.withanage@gmail.com>
- * @version 1.0
+ * @author Dannes Wessels <dannes@exist-db.org>
+ * 
+ * @version 1.1
  */
 public class ContentReceiver implements Receiver {
 
@@ -52,6 +54,8 @@ public class ContentReceiver implements Receiver {
     private Sequence userData = null;
     private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
     private XQueryContext context;
+    
+    private boolean sendDataToCB = false;
 
     /**
      *  Receiver constructor
@@ -111,64 +115,78 @@ public class ContentReceiver implements Receiver {
 
     @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
-
+        
+        // Calculate path to current element
         currentElementPath.addComponent(qname);
+        
+        // Current path matches wanted path
+        if ( matches(currentElementPath) ){
+            
+            if(sendDataToCB) {
+                // Data is already sent to callback, ignore
 
-        // if current path is one of required paths
-        // and there is a docReceiver (=data must be collected)
-        if (matches(currentElementPath) && docBuilderReceiver == null) {
-            startElementPath = currentElementPath;
-            context.pushDocumentContext();
-            MemTreeBuilder memBuilder = context.getDocumentBuilder();
-            docBuilderReceiver = new DocumentBuilderReceiver(memBuilder);
+            } else {
+                // New element match, new data
+                
+                // Save reference to current path 
+                startElementPath = new NodePath(currentElementPath);
+                
+                // Store old fragment in stack
+                context.pushDocumentContext();
+                
+                // Create new receiver
+                MemTreeBuilder memBuilder = context.getDocumentBuilder();
+                docBuilderReceiver = new DocumentBuilderReceiver(memBuilder);
+                
+                // Switch on retrievel
+                sendDataToCB=true;
+            }       
         }
-
-        // Add element to result
-        if (docBuilderReceiver != null) {
+        
+        if(sendDataToCB){
             docBuilderReceiver.startElement(qname, attribs);
         }
+        
     }
 
     @Override
     public void endElement(QName qname) throws SAXException {
-
-        // not null means data must be collecterd
-        if (docBuilderReceiver != null) {
-
-            // Add end element
+        
+        // Send end element to result
+        if(sendDataToCB){
             docBuilderReceiver.endElement(qname);
-
-            // If path was to be matched path
-            if (currentElementPath.match(startElementPath)) {
-                
-                sendDataToCallback();
-                
-                context.popDocumentContext();
-                docBuilderReceiver = null;
-                startElementPath = null;
-                
-            }
+        }    
+        
+        // If path was to be matched path
+        if (sendDataToCB && currentElementPath.match(startElementPath)) {
+                        
+            // flush the collected data
+            sendDataToCallback();
+            
+            // get back from stack
+            context.popDocumentContext();
+        
+            // Switch off retrieval
+            sendDataToCB=false;
+            docBuilderReceiver = null; 
         }
-
-        // reduce path
-        // DW: should be earlier? currentElementPath is one level wrong
+        
+        // calculate new path
         currentElementPath.removeLastComponent();
+        
     }
 
     @Override
     public void characters(CharSequence seq) throws SAXException {
 
-        // DW: receiver is null for subsequent <p> elements.
-        // Need to figure out about the design of class
-
-        if (docBuilderReceiver != null) {
+        if (sendDataToCB) {
             docBuilderReceiver.characters(seq);
-        }
+        } 
     }
 
     @Override
     public void attribute(QName qname, String value) throws SAXException {
-        if (docBuilderReceiver != null) {
+        if (sendDataToCB) {
             docBuilderReceiver.attribute(qname, value);
         }
     }
