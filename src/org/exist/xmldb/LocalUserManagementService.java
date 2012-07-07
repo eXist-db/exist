@@ -804,17 +804,20 @@ public class LocalUserManagementService implements UserManagementService {
     }
 
     private <R> R executeWithBroker(BrokerOperation<R> brokerOperation) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-        DBBroker broker = null;
-        try {
-            broker = pool.get(user);
-            
-            return brokerOperation.withBroker(broker);
-            
-        } finally {
-            if(broker != null) {
-                pool.release(broker);
-            }
-        }
+    	Subject preserveSubject = pool.getSubject();
+		DBBroker broker = null;
+		try {
+		    broker = pool.get(user);
+		    
+		    return brokerOperation.withBroker(broker);
+		    
+		} finally {
+		    if(broker != null) 
+		        pool.release(broker);
+		    
+		    if(preserveSubject != null)
+		    	pool.setSubject(preserveSubject);
+		}
     }
     
     private <R> R readResource(DBBroker broker, Resource resource, DatabaseItemReader<DocumentImpl, R> reader) throws XMLDBException, PermissionDeniedException {
