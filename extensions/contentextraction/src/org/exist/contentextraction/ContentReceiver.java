@@ -53,6 +53,14 @@ public class ContentReceiver implements Receiver {
     private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
     private XQueryContext context;
 
+    /**
+     *  Receiver constructor
+     * 
+     * @param context The XQuery context
+     * @param paths   Paths that must be extracted from the TIKA XHTML document
+     * @param ref     Reference to callback function
+     * @param userData Additional user supplied datas
+     */
     public ContentReceiver(XQueryContext context, NodePath[] paths, FunctionReference ref, Sequence userData) {
         this.context = context;
         this.paths = paths;
@@ -60,6 +68,11 @@ public class ContentReceiver implements Receiver {
         this.userData = userData;
     }
 
+    /**
+     *  Get the result of the content extraction
+     * 
+     * @return 
+     */
     public Sequence getResult() {
         return result;
     }
@@ -203,6 +216,11 @@ public class ContentReceiver implements Receiver {
     public void setCurrentNode(StoredNode node) {
     }
 
+    /**
+     * Does not return anything.
+     * 
+     * @return NULL
+     */
     @Override
     public Document getDocument() {
         return null;
