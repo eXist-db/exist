@@ -1,10 +1,7 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class ConcatExpr extends PathExpr {
 
@@ -44,7 +41,13 @@ public class ConcatExpr extends PathExpr {
 		
 		StringBuilder concat = new StringBuilder();
 		for(Expression step : steps) {
-			concat.append(step.eval(contextSequence, contextItem).getStringValue());
+            Sequence seq = step.eval(contextSequence, contextItem);
+            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                Item item = i.nextItem();
+                if (Type.subTypeOf(item.getType(), Type.FUNCTION_REFERENCE))
+                    throw new XPathException(this, ErrorCodes.FOTY0013, "Got a function item as operand in string concatenation");
+                concat.append(item.getStringValue());
+            }
 		}
 		StringValue result = new StringValue(concat.toString());
 		
