@@ -236,9 +236,20 @@
     </target>
 
     <!-- =================================================================== -->
+    <!-- Check if aspectj needs to be called. If no source file is newer     -->
+	<!-- than the last build of exist.jar, aspectj should not run.           -->
+    <!-- =================================================================== -->
+	<target name="check.aspects.uptodate">
+    	<uptodate property="aspectj.uptodate" targetfile="exist.jar">
+			<srcfiles dir= "${src}" includes="org/exist/security/*.java"/>
+    	</uptodate>
+  	</target>
+
+	<!-- =================================================================== -->
     <!-- Compiles the aspects                                                -->
     <!-- =================================================================== -->
-    <target name="compile-aspectj" depends="compile,compile-tomcat-realm" description="Compiles the aspects">
+    <target name="compile-aspectj" depends="compile,compile-tomcat-realm,check.aspects.uptodate" description="Compiles the aspects"
+		unless="aspectj.uptodate">
 
         <echo
             message="Compiling aspects with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
@@ -248,7 +259,7 @@
             source="${build.compiler.source}" target="${build.compiler.target}"
             fork="true" maxmem="1024m" showWeaveInfo="true">
 
-            <include name="org/**"/>
+            <include name="org/exist/security/**"/>
             <exclude name="org/exist/http/realm/**"/>
             <!-- <include name="org/exist/security/**"/> -->
 
