@@ -2,7 +2,7 @@ xquery version "3.0";
 
 module namespace bang="http://exist-db.org/xquery/test/bang";
 
-import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $bang:works :=
     <works>
@@ -140,4 +140,10 @@ declare
     %test:assertEquals("John Doe 4")
 function bang:nodepath-reverse() {
     $bang:works/employee/pnum[. = "P4"] ! ancestor::employee ! @name ! string()
+};
+
+declare
+    %test:assertEquals("<name>John Doe 4</name>")
+function bang:constructor() {
+    $bang:works/employee[pnum = "P4"] ! <name>{@name/string()}</name>
 };

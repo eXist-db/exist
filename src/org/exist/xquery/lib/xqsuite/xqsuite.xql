@@ -113,9 +113,7 @@ declare %private function test:run-tests($func as function(*), $meta as element(
     let $argsAnnot := $meta/annotation[matches(@name, ":args")]
     return
         if ($argsAnnot) then
-            for $args in $argsAnnot
-            return
-                test:test($func, $meta, $args)
+            $argsAnnot ! test:test($func, $meta, .)
         else
             test:test($func, $meta, ())
 };
@@ -362,7 +360,7 @@ declare %private function test:equals($value as item(), $result as item()) as xs
 };
 
 declare %private function test:normalize($nodes as node()*) {
-    for $node in $nodes return test:normalize-node($node)
+    $nodes ! test:normalize-node(.)
 };
 
 declare %private function test:normalize-node($node as node()) {
@@ -537,13 +535,12 @@ declare %private function test:mkcol-recursive($collection, $components) as empt
 declare function test:to-html($output as element(testsuites)) {
     <div class="testresult">
     {
-        for $suite in $output/testsuite
-        return
+        $output/testsuite !
             <section>
-                <h2>{$suite/@package/string()}</h2>
+                <h2>{@package/string()}</h2>
                 <table>
                 {
-                    for $case in $suite/testcase
+                    for $case in testcase
                     return
                         test:print-testcase($case)
                 }
