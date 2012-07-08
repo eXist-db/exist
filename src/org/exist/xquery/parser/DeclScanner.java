@@ -283,6 +283,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"\"except\"",
 		"single slash '/'",
 		"double slash '//'",
+		"BANG",
 		"\"text\"",
 		"\"node\"",
 		"\"attribute\"",

@@ -2060,6 +2060,20 @@ throws PermissionDeniedException, EXistException, XPathException
 	( predicate [(LocationStep) step] )*
 	|
 	#(
+		BANG
+		{ 
+			PathExpr left = new PathExpr(context); 
+			PathExpr right = new PathExpr(context);
+		}
+		expr [left] expr [right]
+		{
+			OpSimpleMap map = new OpSimpleMap(context, left, right);
+			path.add(map);
+			step = path;
+		}
+	)	
+	|
+	#(
 		SLASH step=expr [path]
 		(
 			rightStep=expr [path]
