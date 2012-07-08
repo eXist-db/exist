@@ -1009,7 +1009,7 @@ pathExpr throws XPathException
 
 relativePathExpr throws XPathException
 :
-	stepExpr ( ( SLASH^ | DSLASH^ ) stepExpr )*
+	stepExpr ( ( SLASH^ | DSLASH^ | BANG^ ) stepExpr )*
 	;
 
 stepExpr throws XPathException
@@ -1937,6 +1937,7 @@ options {
 
 protected SLASH options { paraphrase="single slash '/'"; }: '/' ;
 protected DSLASH options { paraphrase="double slash '//'"; }: '/' '/' ;
+protected BANG : '!' ;
 protected MOD : '%' ;
 protected COLON : ':' ;
 protected COMMA : ',' ;
@@ -2296,6 +2297,8 @@ options {
 	|
 	{ !(inAttributeContent || inElementContent) }?
 	DSLASH { $setType(DSLASH); }
+	|
+	BANG { $setType(BANG); }
 	|
 	COLON { $setType(COLON); }
 	|
