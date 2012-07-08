@@ -248,7 +248,9 @@
             source="${build.compiler.source}" target="${build.compiler.target}"
             fork="true" maxmem="1024m" showWeaveInfo="true">
 
-            <include name="org/exist/security/**"/>
+            <include name="org/**"/>
+            <exclude name="org/exist/http/realm/**"/>
+            <!-- <include name="org/exist/security/**"/> -->
 
             <classpath>
                 <path refid="classpath.aspectj"/>
