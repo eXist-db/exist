@@ -23,10 +23,11 @@
 package org.exist.webdav;
 
 import com.bradmcevoy.http.MiltonServlet;
-
+import com.bradmcevoy.http.http11.DefaultHttp11ResponseHandler;
+import java.io.IOException;
+import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -41,7 +42,22 @@ public class MiltonWebDAVServlet extends MiltonServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         
-        LOG.info("Initializing wrapper servlet");
+        LOG.info("Initializing webdav servlet");
+        
+        // Show used version
+        Properties props = new Properties();
+        try {
+            props.load(DefaultHttp11ResponseHandler.class.getResourceAsStream("/milton.properties"));
+        } catch (IOException ex) {
+            LOG.warn("Failed to load milton properties file", ex);
+        }
+        String miltonVersion = props.getProperty("milton.version");
+
+        if (miltonVersion == null) {
+            LOG.error("Unable to determine Milton version");
+        } else {
+            LOG.info("Detected Milton WebDAV Server library version: " + miltonVersion);
+        }
         
         // Initialize Milton
         super.init(config);
