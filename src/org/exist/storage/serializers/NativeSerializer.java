@@ -125,6 +125,7 @@ public class NativeSerializer extends Serializer {
         String cdata;
         switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
+            receiver.setCurrentNode(node);
         	String defaultNS = null;
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
 	        	// declare namespaces used by this element
