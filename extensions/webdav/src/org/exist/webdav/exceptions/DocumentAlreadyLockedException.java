@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id: EXistWebdavException.java 12479 2010-08-20 21:39:32Z dizzzz $
+ *  $Id$
  */
 package org.exist.webdav.exceptions;
 
