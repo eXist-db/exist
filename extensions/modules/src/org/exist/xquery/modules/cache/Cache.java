@@ -2,7 +2,7 @@ package org.exist.xquery.modules.cache;
 
 import java.util.HashMap;
 
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
 
 /**
  * Static Global cache model
@@ -10,13 +10,13 @@ import org.exist.xquery.value.Sequence;
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
  * @version 1.0
  */
-public class Cache extends HashMap<String, Sequence>{
+public class Cache extends HashMap<String, Sequence> {
 	
 	private static final long serialVersionUID = 2560835928124595024L;
 
 	private static HashMap<String, Cache> globalCache = new HashMap<String, Cache>();
 	
-    public Cache(String name){
+    public Cache(String name) {
     	super();
     	globalCache.put(name, this);
     }
@@ -46,7 +46,15 @@ public class Cache extends HashMap<String, Sequence>{
 	public static Sequence get(String name, String key){
 		return getInstance(name).get(key);
 	}
-	
+
+    public static Sequence keys(String name) {
+        ValueSequence keys = new ValueSequence();
+        for (String key : getInstance(name).keySet()) {
+            keys.add(new StringValue(key));
+        }
+        return keys;
+    }
+
 	public Sequence remove(String key){
 		Sequence v = super.remove(key); 
 		return (v==null) ? Sequence.EMPTY_SEQUENCE : v;

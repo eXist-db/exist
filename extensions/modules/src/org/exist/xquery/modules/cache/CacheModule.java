@@ -50,7 +50,8 @@ public class CacheModule extends AbstractInternalModule {
         new FunctionDef(CacheFunction.signatures[0], CacheFunction.class),
         new FunctionDef(ClearFunction.signatures[0], ClearFunction.class),
         new FunctionDef(ClearFunction.signatures[1], ClearFunction.class),
-        new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class)
+        new FunctionDef(RemoveFunction.signatures[0], RemoveFunction.class),
+        new FunctionDef(ListFunction.signature, ListFunction.class)
     };
 
     public CacheModule(Map<String, List<? extends Object>> parameters) {
