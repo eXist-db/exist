@@ -242,7 +242,7 @@ public class LRUCache implements Cache {
         }
     }
     
-    private void shrink(int newSize) {
+    protected void shrink(int newSize) {
         flush();
         this.map = new SequencedLongHashMap<Cacheable>(newSize);
         this.max = newSize;
