@@ -21,11 +21,11 @@
  */
 package org.exist.storage.md;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
@@ -39,12 +39,13 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.XmldbURI;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class SimpleMDTest extends TestCase {
+public class SimpleMDTest {
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -67,9 +68,15 @@ public class SimpleMDTest extends TestCase {
     private static XmldbURI doc3uri = col2uri.append("test_2.xml");
     /** /db/moved/test_string.xml **/
     private static XmldbURI doc4uri = col3uri.append("test_string.xml");
+    /** /db/test/test.binary **/
+    private static XmldbURI doc5uri = col1uri.append("test.binary");
+    /** /db/moved/test.binary **/
+    private static XmldbURI doc6uri = col3uri.append("test.binary");
     
-    private static String XML = "<test/>";
+    private static String XML1 = "<test/>";
     private static String XML2 = "<test2/>";
+
+    private static String BINARY = "test";
 
     private static String wrongXML = "<test>";
 
@@ -83,7 +90,7 @@ public class SimpleMDTest extends TestCase {
     private static DocumentImpl doc1 = null;
     private static DocumentImpl doc2 = null;
 
-    //@Test
+    @Test
 	public void test_00() throws Exception {
     	System.out.println("test");
     	
@@ -167,7 +174,7 @@ public class SimpleMDTest extends TestCase {
     	cleanup();
     }
 
-    //@Test
+    @Test
 	public void test_01() throws Exception {
     	System.out.println("test_01");
     	
@@ -194,7 +201,7 @@ public class SimpleMDTest extends TestCase {
     	cleanup();
 	}
     
-    //@Test
+    @Test
 	public void test_02() throws Exception {
     	System.out.println("test_02");
     	
@@ -230,7 +237,7 @@ public class SimpleMDTest extends TestCase {
 	}
 
 	//keep uuid after restart & store new data
-    //@Test
+    @Test
 	public void _test_03() throws Exception {
     	System.out.println("test_03");
     	
@@ -246,7 +253,7 @@ public class SimpleMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            Collection col = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
 	    	Metas docMD = md.getMetas(doc1uri);
@@ -266,9 +273,9 @@ public class SimpleMDTest extends TestCase {
 	            txn = txnManager.beginTransaction();
 	            assertNotNull(txn);
 
-		    	IndexInfo info = col.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML);
+		    	IndexInfo info = col.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
-	            col.store(txn, broker, info, XML, false);
+	            col.store(txn, broker, info, XML1, false);
 	            
 	            //XXX: need to simulate unfinished transaction & crash
 	            txnManager.commit(txn);
@@ -294,7 +301,7 @@ public class SimpleMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            Collection root = broker.getCollection(col1uri);
         	assertNotNull(root);
 
 	        TransactionManager txnManager = null;
@@ -306,9 +313,9 @@ public class SimpleMDTest extends TestCase {
 	            assertNotNull(txn);
 
             
-		    	IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML);
+		    	IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
-	            root.store(txn, broker, info, XML, false);
+	            root.store(txn, broker, info, XML1, false);
 
 	            txnManager.commit(txn);
 	            
@@ -321,7 +328,7 @@ public class SimpleMDTest extends TestCase {
 	        Metas docMD = md.getMetas(doc1uri);
 	    	assertNotNull(docMD);
 	    	
-	    	assertEquals(docUUID, docMD.getUUID());
+	    	assertNotSame(docUUID, docMD.getUUID());
 
         } finally {
         	pool.release(broker);
@@ -331,7 +338,7 @@ public class SimpleMDTest extends TestCase {
 	}
 	
     //resource rename
-	//@Test
+	@Test
 	public void test_04() throws Exception {
     	startDB();
     	
@@ -387,8 +394,8 @@ public class SimpleMDTest extends TestCase {
 	}
 
     //resource move
-	//@Test
-	public void test_05() throws Exception {
+	@Test
+	public void test_recource_move() throws Exception {
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -407,7 +414,7 @@ public class SimpleMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            Collection col = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            Collection col = broker.getCollection(col2uri);
         	assertNotNull(col);
 
         	TransactionManager txnManager = null;
@@ -441,8 +448,8 @@ public class SimpleMDTest extends TestCase {
 	}
 
     //collection move
-	//@Test
-	public void test_06() throws Exception {
+	@Test
+	public void test_collection_move() throws Exception {
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -525,14 +532,13 @@ public class SimpleMDTest extends TestCase {
         } finally {
     		pool.release(broker);
     	}
-        
 
     	cleanup();
 	}
 
     //collection copy
-	//@Test
-	public void test_07() throws Exception {
+	@Test
+	public void test_collection_copy() throws Exception {
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -600,7 +606,84 @@ public class SimpleMDTest extends TestCase {
     	cleanup();
 	}
 
-	//@Test
+    //collection copy
+	@Test
+	public void test_collection_delete() throws Exception {
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc1uri);
+    	assertNotNull(docMD);
+    	
+    	String uuid1 = docMD.getUUID();
+    	
+    	docMD = md.getMetas(doc5uri);
+    	assertNotNull(docMD);
+    	
+    	String uuid2 = docMD.getUUID();
+
+    	//add first key-value
+    	docMD.put(KEY1, VALUE1);
+
+    	DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+
+            Collection parent = broker.getCollection(col3uri.removeLastSegment());
+        	assertNotNull(parent);
+
+            Collection col = broker.getCollection(col1uri);
+        	assertNotNull(col);
+
+        	System.out.println("DELETE...");
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+	            
+	            broker.removeCollection(txn, col);
+            
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+            col = broker.getCollection(col1uri);
+        	assertNull(col);
+
+	        docMD = md.getMetas(doc1uri);
+	    	assertNull(docMD);
+	    	
+	        docMD = md.getMetas(doc2uri);
+	    	assertNull(docMD);
+	    	
+	        docMD = md.getMetas(doc5uri);
+	    	assertNull(docMD);
+
+	    	DocumentImpl doc = md.getDocument(uuid1);
+	    	assertNull(doc);
+	    	
+	    	doc = md.getDocument(uuid2);
+	    	assertNull(doc);
+
+        } finally {
+    		pool.release(broker);
+    	}
+        
+
+    	cleanup();
+	}
+
+	@Test
 	public void test_08() throws Exception {
     	System.out.println("test_07");
     	
@@ -631,7 +714,7 @@ public class SimpleMDTest extends TestCase {
 	            assertNotNull(txn);
 	            System.out.println("Transaction started ...");
 	
-	            root = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+	            root = broker.getOrCreateCollection(txn, col1uri);
 	            assertNotNull(root);
 	            broker.saveCollection(txn, root);
 	
@@ -639,9 +722,9 @@ public class SimpleMDTest extends TestCase {
 	            mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 	
 	            System.out.println("store "+doc1uri);
-	            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML);
+	            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
-	            root.store(txn, broker, info, XML, false);
+	            root.store(txn, broker, info, XML1, false);
 	
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
@@ -660,7 +743,7 @@ public class SimpleMDTest extends TestCase {
 	            assertNotNull(txn);
 	            System.out.println("Transaction started ...");
 	
-	            root = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+	            root = broker.getOrCreateCollection(txn, col1uri);
 	            assertNotNull(root);
 	            broker.saveCollection(txn, root);
 	
@@ -737,10 +820,10 @@ public class SimpleMDTest extends TestCase {
             mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
             System.out.println("STORING DOCUMENT....");
-            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML);
+            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
             assertNotNull(info);
             System.out.println("STORING DOCUMENT....SECOND ROUND....");
-            root.store(txn, broker, info, XML, false);
+            root.store(txn, broker, info, XML1, false);
             assertNotNull(info.getDocument());
             System.out.println("STORING DOCUMENT....DONE.");
 
@@ -751,6 +834,9 @@ public class SimpleMDTest extends TestCase {
             root.store(txn, broker, info, XML2, false);
 
             doc2 =  info.getDocument();
+
+            System.out.println("store "+doc5uri);
+            root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
         } catch (Exception e) {
