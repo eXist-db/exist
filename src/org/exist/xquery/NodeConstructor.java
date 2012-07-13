@@ -60,9 +60,14 @@ public abstract class NodeConstructor extends AbstractExpression {
         return in_docs;
     }
 
+    @Override
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#returnsType()
-     */
+    * @see org.exist.xquery.Expression#returnsType()
+    */
     public int returnsType() {
         return Type.NODE;
     }
