@@ -4,10 +4,14 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.CacheManager;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
+import org.exist.storage.cache.LRUCache;
 import org.exist.storage.lock.Lock;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.hashtable.Object2LongHashMap;
+import org.exist.util.hashtable.SequencedLongHashMap;
 import org.exist.xmldb.XmldbURI;
+
+import java.util.Iterator;
 
 /**
  * Global cache for {@link org.exist.collections.Collection} objects. The
@@ -17,16 +21,16 @@ import org.exist.xmldb.XmldbURI;
  * 
  * @author wolf
  */
-public class CollectionCache extends LRDCache {
+public class CollectionCache extends LRUCache {
 
 	private Object2LongHashMap names;
 	private BrokerPool pool;
 
 	public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
-		super(blockBuffers, 1.8, growthThreshold, CacheManager.DATA_CACHE);
+		super(blockBuffers, 2.0, 0.000001, CacheManager.DATA_CACHE);
         this.names = new Object2LongHashMap(blockBuffers);
 		this.pool = pool;
-        setFileName("collections.dbx");
+        setFileName("collection cache");
     }
 	
 	public void add(Collection collection) {
@@ -45,60 +49,38 @@ public class CollectionCache extends LRDCache {
 
 	public Collection get(XmldbURI name) {
 		long key = names.get(name.getRawCollectionPath());
-		if (key < 0)
+		if (key < 0) {
 			return null;
+        }
 		return (Collection) get(key);
 	}
 
 	/**
 	 * Overwritten to lock collections before they are removed.
 	 */
-	protected Cacheable removeOne(Cacheable item) {
-		Collection old;
-		Lock lock;
-		double rd = 0, minRd = -1;
-		int bucket = -1;		
-		for (int i = 0; i < items.length; i++) {
-			old = (Collection)items[i];
-			if (old == null) {
-				bucket = i;
-				break;
-			} else {
-				lock = old.getLock(); 
-					// calculate the reference density
-					rd =
-						old.getReferenceCount()
-							/ (double)(totalReferences - old.getTimestamp());
-					// attempt to acquire a read lock on the collection.
-					// the collection is not considered for removal if the lock 
-					// cannot be acquired immediately.
-					if(lock.attempt(Lock.READ_LOCK)) {
-						if ((minRd < 0 || rd < minRd) && old.allowUnload()) {
-							minRd = rd;
-							bucket = i;
-						}
-						lock.release(Lock.READ_LOCK);
-					}
-			}
-		}
-		if (bucket < 0)
-			bucket = 0;
-		old = (Collection)items[bucket];
-		if (old != null) {
-			if(pool.getConfigurationManager()!=null){ // might be null during db initialization
-				pool.getConfigurationManager().invalidate(old.getURI());
+	protected void removeOne(Cacheable item) {
+        boolean removed = false;
+        SequencedLongHashMap.Entry next = map.getFirstEntry();
+        do {
+            Cacheable cached = (Cacheable) next.getValue();
+            if(cached.allowUnload() && cached.getKey() != item.getKey()) {
+                Collection old = (Collection) cached;
+                if(pool.getConfigurationManager()!=null) { // might be null during db initialization
+                    pool.getConfigurationManager().invalidate(old.getURI());
+                }
+                names.remove(old.getURI().getRawCollectionPath());
+                cached.sync(true);
+                map.remove(next.getKey());
+                removed = true;
+            } else {
+                next = next.getNext();
+                if(next == null) {
+                    LOG.debug("Unable to remove entry");
+                    next = map.getFirstEntry();
+                }
             }
-			map.remove(old.getKey());
-			names.remove(old.getURI().getRawCollectionPath());
-			old.sync(true);
-		}
-		items[bucket] = item;
-		map.put(item.getKey(), item);
-
-        if (cacheManager != null) {
-            cacheManager.requestMem(this);
-        }
-		return old;
+        } while(!removed);
+        cacheManager.requestMem(this);
 	}
 
     public void remove(Cacheable item) {
@@ -118,36 +100,41 @@ public class CollectionCache extends LRDCache {
      */
     public int getRealSize() {
         int size = 0;
-        for (int i = 0; i < items.length; i++) {
-            Collection item = (Collection) items[i];
-            if (item != null)
-                size += item.getMemorySize();
+        for (Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) get(i.next());
+            if (collection != null) {
+                size += collection.getMemorySize();
+            }
         }
         return size;
     }
 
     public void resize(int newSize) {
-        if (newSize < size) {
+        if (newSize < max) {
             shrink(newSize);
-            names = new Object2LongHashMap(newSize);
         } else {
-            LOG.debug("Growing cache from " + size + " to " + newSize);
-            Cacheable[] newItems = new Cacheable[newSize];
-            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize);
+            LOG.debug("Growing collection cache to " + newSize);
+            SequencedLongHashMap newMap = new SequencedLongHashMap(newSize * 2);
             Object2LongHashMap newNames = new Object2LongHashMap(newSize);
-            for (int i = 0; i < count; i++) {
-                newItems[i] = items[i];
-                if (items[i] != null) {
-                    newMap.put(items[i].getKey(), items[i]);
-                    newNames.put(((Collection) items[i]).getURI().getRawCollectionPath(), items[i].getKey());
-                }
+            SequencedLongHashMap.Entry next = map.getFirstEntry();
+            Cacheable cacheable;
+            while(next != null) {
+                cacheable = (Cacheable) next.getValue();
+                newMap.put(cacheable.getKey(), cacheable);
+                newNames.put(((Collection) cacheable).getURI().getRawCollectionPath(), cacheable.getKey());
+                next = next.getNext();
             }
-            this.size = newSize;
-            this.map = newMap;
-            this.names = newNames;
-            this.items = newItems;
+            max = newSize;
+            map = newMap;
+            names = newNames;
             accounting.reset();
-            accounting.setTotalSize(size);
+            accounting.setTotalSize(max);
         }
+    }
+
+    @Override
+    protected void shrink(int newSize) {
+        super.shrink(newSize);
+        names = new Object2LongHashMap(newSize);
     }
 }

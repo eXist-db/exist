@@ -36,10 +36,10 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class LRUCache implements Cache {
     
-	private int max;
-	private SequencedLongHashMap map;
+	protected int max;
+	protected SequencedLongHashMap map;
 	
-    private Accounting accounting;
+    protected Accounting accounting;
 	
     private int hitsOld = -1;
 	
@@ -47,7 +47,7 @@ public class LRUCache implements Cache {
     
     private String fileName;
     
-    private CacheManager cacheManager = null;
+    protected CacheManager cacheManager = null;
 
     private String type;
 
@@ -187,7 +187,7 @@ public class LRUCache implements Cache {
         return map.getFirstEntry();
     }
     
-	private final void removeOne(Cacheable item) {
+	protected void removeOne(Cacheable item) {
 		boolean removed = false;
 		SequencedLongHashMap.Entry next = map.getFirstEntry();
 		do {
@@ -246,7 +246,7 @@ public class LRUCache implements Cache {
         }
     }
     
-    private void shrink(int newSize) {
+    protected void shrink(int newSize) {
         flush();
         this.map = new SequencedLongHashMap(newSize);
         this.max = newSize;
