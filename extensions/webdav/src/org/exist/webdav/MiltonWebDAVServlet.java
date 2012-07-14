@@ -25,6 +25,7 @@ package org.exist.webdav;
 import com.bradmcevoy.http.MiltonServlet;
 import com.bradmcevoy.http.http11.DefaultHttp11ResponseHandler;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -47,7 +48,13 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         // Show used version
         Properties props = new Properties();
         try {
-            props.load(DefaultHttp11ResponseHandler.class.getResourceAsStream("/milton.properties"));
+            InputStream is = DefaultHttp11ResponseHandler.class.getResourceAsStream("/milton.properties");           
+            if(is==null){
+                LOG.error("Could not read the file milton.properties");
+            } else {
+                props.load(is);
+            }
+            
         } catch (IOException ex) {
             LOG.warn("Failed to load milton properties file", ex);
         }
