@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
@@ -502,6 +503,10 @@ public class RESTServer {
 
 	public void doHead(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, NotFoundException, IOException
 	{
+        XmldbURI pathUri = XmldbURI.create(path);
+        if (checkForXQueryTarget(broker, pathUri, request, response))
+            return;
+
 		Properties outputProperties = new Properties(defaultOutputKeysProperties);
 		@SuppressWarnings("unused")
 		String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
@@ -513,7 +518,6 @@ public class RESTServer {
 			encoding = "UTF-8";
 
 		DocumentImpl resource = null;
-		XmldbURI pathUri = XmldbURI.create(path);
 		try
 		{
 			resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
@@ -972,8 +976,6 @@ public class RESTServer {
 	 * will be stored as a binary resource.
 	 *
 	 * @param broker
-	 * @param tempFile
-	 *            The temp file from which the PUT will get its content
 	 * @param path
 	 *            The path to which the file should be stored
 	 * @param request
@@ -981,41 +983,32 @@ public class RESTServer {
 	 * @throws BadRequestException
 	 * @throws PermissionDeniedException
 	 */
-	public void doPut(DBBroker broker, File tempFile, XmldbURI path,
+	public void doPut(DBBroker broker, XmldbURI path,
 			HttpServletRequest request, HttpServletResponse response)
-			throws BadRequestException, PermissionDeniedException, IOException {
-		doPut(broker,(tempFile!=null)?new VirtualTempFile(tempFile):null,path,request,response);
-	}
-	
-	/**
-	 * Handles PUT requests. The request content is stored as a new resource at
-	 * the specified location. If the resource already exists, it is overwritten
-	 * if the user has write permissions.
-	 *
-	 * The resource type depends on the content type specified in the HTTP
-	 * header. The content type will be looked up in the global mime table. If
-	 * the corresponding mime type is not a know XML mime type, the resource
-	 * will be stored as a binary resource.
-	 *
-	 * @param broker
-	 * @param vtempFile
-	 *            The virtual temp file from which the PUT will get its content
-	 * @param path
-	 *            The path to which the file should be stored
-	 * @param request
-	 * @param response
-	 * @throws BadRequestException
-	 * @throws PermissionDeniedException
-	 */
-	public void doPut(DBBroker broker, VirtualTempFile vtempFile, XmldbURI path,
-			HttpServletRequest request, HttpServletResponse response)
-			throws BadRequestException, PermissionDeniedException, IOException {
-		if (vtempFile == null)
-			throw new BadRequestException("No request content found for PUT");
+            throws BadRequestException, PermissionDeniedException, IOException, NotFoundException {
 
-		TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-		Txn transaction = null;
-		try {
+        if (checkForXQueryTarget(broker, path, request, response))
+            return;
+
+        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = null;
+        VirtualTempFile vtempFile = null;
+        try {
+            // fourth, process the request
+            InputStream is = request.getInputStream();
+            long len = request.getContentLength();
+            String lenstr = request.getHeader("Content-Length");
+            if (lenstr!=null)
+                len = Long.parseLong(lenstr);
+            // put may send a lot of data, so save it
+            // to a temporary file first.
+
+            vtempFile = new VirtualTempFile();
+            vtempFile.setTempPrefix("existSRV");
+            vtempFile.setTempPostfix(".tmp");
+            vtempFile.write(is,len);
+            vtempFile.close();
+
 			XmldbURI docUri = path.lastSegment();
 			XmldbURI collUri = path.removeLastSegment();
 
@@ -1069,7 +1062,7 @@ public class RESTServer {
 				response.setStatus(HttpServletResponse.SC_CREATED);
 			} else {
 
-				InputStream is = vtempFile.getByteStream();
+				is = vtempFile.getByteStream();
 				try {
 					collection.addBinaryResource(transaction, broker, docUri, is,
 							contentType, vtempFile.length());
@@ -1099,16 +1092,22 @@ public class RESTServer {
 		} catch (LockException e) {
 			transact.abort(transaction);
 			throw new PermissionDeniedException(e.getMessage());
-		}
+		} finally {
+            if(vtempFile != null) {
+                vtempFile.delete();
+            }
+        }
 		return;
 	}
 
 	public void doDelete(DBBroker broker, String path, HttpServletRequest request, HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
-		
+        XmldbURI pathURI = XmldbURI.create(path);
+        if (checkForXQueryTarget(broker, pathURI, request, response))
+            return;
+
 		TransactionManager transact = broker.getBrokerPool().getTransactionManager();
 		Txn txn = null;
-        XmldbURI pathURI = XmldbURI.create(path);
 		try {
 			Collection collection = broker.getCollection(pathURI);
 			if (collection != null) {
@@ -1126,23 +1125,16 @@ public class RESTServer {
 					//transact.abort(txn);
 					throw new NotFoundException("No document or collection found for path: " + path);
 				} else {
-                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        MimeType.XQUERY_TYPE.getName().equals(doc.getMetadata().getMimeType()) &&
-                        request.getAttribute(XQueryURLRewrite.RQ_ATTR) != null) {
-                        // XQuery resource: handle like a POST request
-                        doPost(broker, request, response, path);
-                    } else {
-                        // remove the document
-                        LOG.debug("removing document " + path);
-                        txn = transact.beginTransaction();
+                    // remove the document
+                    LOG.debug("removing document " + path);
+                    txn = transact.beginTransaction();
 
-                        if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
-                            doc.getCollection().removeBinaryResource(txn, broker, pathURI.lastSegment());
-                        else
-                            doc.getCollection().removeXMLResource(txn, broker, pathURI.lastSegment());
+                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                        doc.getCollection().removeBinaryResource(txn, broker, pathURI.lastSegment());
+                    else
+                        doc.getCollection().removeXMLResource(txn, broker, pathURI.lastSegment());
 
-                        response.setStatus(HttpServletResponse.SC_OK);
-                    }
+                    response.setStatus(HttpServletResponse.SC_OK);
 				}
 			}
 			if (txn != null) //should not happen, just in case ...
@@ -1159,6 +1151,58 @@ public class RESTServer {
 			LOG.warn("Transaction aborted: " + e.getMessage(), e);
 		}
 	}
+
+    private boolean checkForXQueryTarget(DBBroker broker, XmldbURI path, HttpServletRequest request, HttpServletResponse response)
+            throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
+        if (request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null)
+            return false;
+        String xqueryType = MimeType.XQUERY_TYPE.getName();
+        Collection collection = broker.getCollection(path);
+        if (collection == null) {
+            XmldbURI servletPath = path;
+            DocumentImpl resource = null;
+            // work up the url path to find an
+            // xquery resource
+            while (null == resource) {
+                // traverse up the path looking for xquery objects
+
+                resource = broker.getXMLResource(servletPath, Lock.READ_LOCK);
+                if (null != resource
+                        && (resource.getResourceType() == DocumentImpl.BINARY_FILE
+                        && xqueryType.equals(resource.getMetadata().getMimeType())))
+                {
+                    break; // found a binary file with mime-type xquery or XML file with mime-type xproc
+                } else if (null != resource) {
+                    // not an xquery or xproc resource. This means we have a path
+                    // that cannot contain an xquery or xproc object even if we keep
+                    // moving up the path, so bail out now
+                    resource.getUpdateLock().release(Lock.READ_LOCK);
+                    resource = null;
+                    break;
+                }
+                servletPath = servletPath.removeLastSegment();
+                if (servletPath == XmldbURI.EMPTY_URI)
+                    break;
+            }
+            // xquery binary file found
+            if (resource != null) {
+                // found an XQuery resource, fixup request values
+                String pathInfo = path.trimFromBeginning(servletPath).toString();
+                Properties outputProperties = new Properties(defaultOutputKeysProperties);
+                try {
+                    // Execute the XQuery
+                    executeXQuery(broker, resource, request, response,
+                            outputProperties, servletPath.toString(), pathInfo);
+                } catch (XPathException e) {
+                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
+                } finally {
+                    resource.getUpdateLock().release(Lock.READ_LOCK);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
 	private String getRequestContent(HttpServletRequest request) throws IOException {
 		

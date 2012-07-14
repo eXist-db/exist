@@ -123,7 +123,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         DBBroker broker = null;
-        VirtualTempFile vtempFile = null;
         try {
             XmldbURI dbpath = XmldbURI.create(path);
             broker = getPool().get(user);
@@ -132,22 +131,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
                     response.sendError(400, "A PUT request is not allowed against a plain collection path.");
                     return;
             }
-            // fourth, process the request
-            ServletInputStream is = request.getInputStream();
-            long len = request.getContentLength();
-            String lenstr = request.getHeader("Content-Length");
-            if(lenstr!=null)
-                    len = Long.parseLong(lenstr);
-            // put may send a lot of data, so save it
-            // to a temporary file first.
-
-            vtempFile = new VirtualTempFile();
-            vtempFile.setTempPrefix("existSRV");
-            vtempFile.setTempPostfix(".tmp");
-            vtempFile.write(is,len);
-            vtempFile.close();
-
-            srvREST.doPut(broker, vtempFile, dbpath, request, response);
+            srvREST.doPut(broker, dbpath, request, response);
 
         } catch(BadRequestException e) {
             if(response.isCommitted()) {
@@ -174,9 +158,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
         } finally {
             if(broker != null) {
                 getPool().release(broker);
-            }
-            if(vtempFile != null) {
-                vtempFile.delete();
             }
         }
     }
