@@ -22,7 +22,6 @@
  */
 package org.exist.storage;
 
-import java.io.File;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -821,6 +820,4 @@ public abstract class DBBroker extends Observable {
     public abstract void backupToArchive(RawDataBackup backup) throws IOException;
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
-    
-    public abstract File getCollectionBinaryFileFsPath(XmldbURI uri);
 }

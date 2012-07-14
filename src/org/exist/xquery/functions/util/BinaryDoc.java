@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -42,7 +41,6 @@ import org.exist.xquery.value.Base64BinaryDocument;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Base64BinaryDocumentFromFile;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -108,22 +106,16 @@ public class BinaryDoc extends BasicFunction {
             }
             else if(isCalledAs("binary-doc"))
             {
-                final BinaryDocument bin = (BinaryDocument) doc;
-                //InputStream is = context.getBroker().getBinaryResource(bin);
+                BinaryDocument bin = (BinaryDocument) doc;
+                InputStream is = context.getBroker().getBinaryResource(bin);
 
-                
-                final File f = context.getBroker().getCollectionBinaryFileFsPath(bin.getURI());
-                final Base64BinaryDocumentFromFile b64doc = Base64BinaryDocumentFromFile.getInstance(context, f);
-                
                 /*
                 long binaryLength = context.getBroker().getBinaryResourceSize(bin);
 
                 byte[] data = new byte[(binaryLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)binaryLength];
                 is.read(data);
                 is.close(); */
-                //Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
-                
-                
+                Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
                 b64doc.setUrl(path);
                 return b64doc;
             }
@@ -137,10 +129,12 @@ public class BinaryDoc extends BasicFunction {
         } catch (PermissionDeniedException e) {
         	logger.info(path + ": permission denied to read resource", e);
             throw new XPathException(this, path + ": permission denied to read resource");
+        } catch (IOException e) {
+        	logger.error(path + ": I/O error while reading resource", e);
+            throw new XPathException(this, path + ": I/O error while reading resource",e);
         } finally {
-            if (doc != null) {
+            if (doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);
-            }
         }
     }
 }
