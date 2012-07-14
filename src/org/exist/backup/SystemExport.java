@@ -23,11 +23,13 @@ package org.exist.backup;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.log4j.Logger;
 
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -550,20 +552,21 @@ public class SystemExport
         }
         attr.addAttribute( Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", mimeType );
 
-        if( ( doc.getResourceType() == DocumentImpl.XML_FILE ) && ( metadata != null ) && ( doc.getDoctype() != null ) ) {
-
-            if( doc.getDoctype().getName() != null ) {
-                attr.addAttribute( Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", doc.getDoctype().getName() );
-            }
-
-            if( doc.getDoctype().getPublicId() != null ) {
-                attr.addAttribute( Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", doc.getDoctype().getPublicId() );
-            }
-
-            if( doc.getDoctype().getSystemId() != null ) {
-                attr.addAttribute( Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", doc.getDoctype().getSystemId() );
-            }
-        }
+//output by serializer
+//        if( ( doc.getResourceType() == DocumentImpl.XML_FILE ) && ( metadata != null ) && ( doc.getDoctype() != null ) ) {
+//
+//            if( doc.getDoctype().getName() != null ) {
+//                attr.addAttribute( Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", doc.getDoctype().getName() );
+//            }
+//
+//            if( doc.getDoctype().getPublicId() != null ) {
+//                attr.addAttribute( Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", doc.getDoctype().getPublicId() );
+//            }
+//
+//            if( doc.getDoctype().getSystemId() != null ) {
+//                attr.addAttribute( Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", doc.getDoctype().getSystemId() );
+//            }
+//        }
         
     	bh.backup(doc, attr);
         
@@ -592,6 +595,10 @@ public class SystemExport
             int                       nsdecls;
             NamespaceSupport          nsSupport = new NamespaceSupport();
             NodeList                  children  = doc.getChildNodes();
+            
+			final DocumentType docType = doc.getDoctype();
+            if (docType != null)
+    			receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
 
             for( int i = 0; i < children.getLength(); i++ ) {
                 StoredNode child = (StoredNode)children.item( i );
