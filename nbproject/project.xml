@@ -11,6 +11,7 @@
                 <root id="src.src4.dir" name="Index Lucene"/>
                 <root id="src.src9.dir" name="Index Sort"/>
                 <root id="src.src3.dir" name="Index Spatial"/>
+                <root id="src.src16.dir" name="Extensions Contentextraction"/>
                 <root id="src.src13.dir" name="Extensions Debuggee"/>
                 <root id="src.src14.dir" name="Extensions Exiftool"/>
                 <root id="src.src15.dir" name="Extensions EXPath"/>
