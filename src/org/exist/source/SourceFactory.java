@@ -27,9 +27,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
@@ -65,32 +67,61 @@ public class SourceFactory {
             location = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
             File f = new File(contextPath + File.separatorChar + location);
-            if(!f.canRead())
+            if(f.canRead())
             {
+
+                location = f.toURI().toASCIIString();
+                source = new FileSource(f, "UTF-8", checkXQEncoding);
+            }
+            
+            File f2 = new File(location);
+            if(f2.canRead()){
+                location = f2.toURI().toASCIIString();
+                source = new FileSource(f2, "UTF-8", checkXQEncoding);
+            }
+
+            File f3 = new File(new File(contextPath).getAbsolutePath(), location);
+            if(f3.canRead()){
+                location = f3.toURI().toASCIIString();
+                source = new FileSource(f3, "UTF-8", checkXQEncoding);
+            }
+
+            /*
+             * Try to load as an absolute path
+             */
+            File f4 = new File("/" + location);
+            if(f4.canRead()){
+                location = f4.toURI().toASCIIString();
+                source = new FileSource(f4, "UTF-8", checkXQEncoding);
+            }
+
+            /*
+             * Lastly we try to load it using EXIST_HOME as the reference point
+             */
+            File f5 = null;
+            try {
+				f5 = new File(new File(BrokerPool.getInstance().getConfiguration().getExistHome().getCanonicalPath()), location);
+				if(f5.canRead()){
+				    location = f5.toURI().toASCIIString();
+				    source = new FileSource(f5, "UTF-8", checkXQEncoding);
+				}
+			} catch (EXistException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
+            if(source == null){
             	
-            	
-                File f2 = new File(location);
-                File f3 = new File(new File(contextPath).getAbsolutePath(), location);
-                File f4 = new File("/" + location);
-                
-                if(f2.canRead()){
-                	f = f2;
-                }
-                else if(f3.canRead()){
-                    f = f3;
-                }
-                else if(f4.canRead()){
-                    f = f4;
-                }
-                else {
                 	throw new FileNotFoundException(
                             "cannot read module source from file at " + location 
-                            + ". Tried " + f.getAbsolutePath() 
-                            + " and " + f2.getAbsolutePath() + " and " + f3.getAbsolutePath() );
-                }
+                            + ". \nTried " + f.getAbsolutePath() + "\n"
+                            + " and " + f2.getAbsolutePath() + "\n" 
+                            + " and " + f3.getAbsolutePath() + "\n" 
+                            + " and " + f4.getAbsolutePath() + "\n" 
+                            + " and " + f5.getAbsolutePath() 
+                            
+                			);
             }
-            location = f.toURI().toASCIIString();
-            source = new FileSource(f, "UTF-8", checkXQEncoding);
         }
         
         /* xmldb: */
