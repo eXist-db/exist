@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 public class MiltonWebDAVServlet extends MiltonServlet {
 
     protected final static Logger LOG = Logger.getLogger(MiltonWebDAVServlet.class);
+    
+    public static String POM_PROP="/META-INF/maven/com.ettrema/milton-api/pom.properties";
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -48,7 +50,7 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         // Show used version
         Properties props = new Properties();
         try {
-            InputStream is = DefaultHttp11ResponseHandler.class.getResourceAsStream("/milton.properties");           
+            InputStream is = DefaultHttp11ResponseHandler.class.getResourceAsStream(POM_PROP);           
             if(is==null){
                 LOG.error("Could not read the file milton.properties");
             } else {
@@ -58,7 +60,7 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         } catch (IOException ex) {
             LOG.warn("Failed to load milton properties file", ex);
         }
-        String miltonVersion = props.getProperty("milton.version");
+        String miltonVersion = props.getProperty("version");
 
         if (miltonVersion == null) {
             LOG.error("Unable to determine Milton version");
