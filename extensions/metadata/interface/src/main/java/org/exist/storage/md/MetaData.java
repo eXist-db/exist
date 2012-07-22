@@ -50,6 +50,8 @@ public abstract class MetaData {
 
 	public abstract Metas addMetas(DocumentAtExist doc);
 
+	public abstract Meta getMeta(String uuid);
+
 	//low level
 	protected abstract Meta _addMeta(Metas metas, String uuid, String key, String value);
 	protected abstract Metas _addMetas(String uri, String uuid);
