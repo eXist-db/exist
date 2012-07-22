@@ -224,20 +224,23 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         // Try to validate the principal if passed from the Servlet engine
         principal = request.getUserPrincipal();
 
-        if(principal instanceof XmldbPrincipal) {
-            String username = ((XmldbPrincipal) principal).getName();
-            String password = ((XmldbPrincipal) principal).getPassword();
-
-            getLog().info("Validating Principle: " + username);
-            try {
-                return getPool().getSecurityManager().authenticate(username, password);
-            } catch (AuthenticationException e) {
-                getLog().info(e.getMessage());
-            }
-        }
-
-        if(principal instanceof Subject) {
-            return (Subject)principal;
+        if (principal != null) {
+	        if ( XmldbPrincipal.class.isAssignableFrom( principal.getClass() ) ) {
+	
+	            String username = ((XmldbPrincipal) principal).getName();
+	            String password = ((XmldbPrincipal) principal).getPassword();
+	
+	            getLog().info("Validating Principle: " + username);
+	            try {
+	                return getPool().getSecurityManager().authenticate(username, password);
+	            } catch (AuthenticationException e) {
+	                getLog().info(e.getMessage());
+	            }
+	        }
+	
+	        if (principal instanceof Subject) {
+	            return (Subject)principal;
+	        }
         }
 
         // Secondly try basic authentication
@@ -246,16 +249,6 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             return getDefaultUser();
         }
         return getAuthenticator().authenticate(request, response);
-        /*
-         * byte[] c = Base64.decode(auth.substring(6).getBytes()); String s =
-         * new String(c); int p = s.indexOf(':'); if (p ==
-         * Constants.STRING_NOT_FOUND) { return null; } String username =
-         * s.substring(0, p); String password = s.substring(p + 1);
-         * 
-         * User user = pool.getSecurityManager().getUser(username); if (user ==
-         * null) return null; if (!user.validate(password)) return null; return
-         * user;
-         */
     }
 
     protected boolean isInternalOnly() {
