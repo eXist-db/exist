@@ -290,6 +290,10 @@ public class MetaDataImpl extends MetaData {
 		return null;
 	}
 
+	public Meta getMeta(String uuid) {
+		return metadataByUUID.get(uuid);
+	}
+
 	public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
 		
 		EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
