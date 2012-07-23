@@ -155,7 +155,7 @@ public class Scheduler {
         return properties;
     }
 
-    private org.quartz.Scheduler getScheduler() {
+    protected org.quartz.Scheduler getScheduler() {
         return scheduler;
     }
 
