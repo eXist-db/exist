@@ -33,7 +33,7 @@ public interface Metas {
 
 	public Meta get(String key);
 
-	public Meta put(String key, String value);
+	public Meta put(String key, Object value);
 
 	public List<Meta> metas();
 }

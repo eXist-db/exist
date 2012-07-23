@@ -21,6 +21,8 @@
  */
 package org.exist.storage.md;
 
+import org.exist.dom.DocumentImpl;
+
 import com.eaio.uuid.UUID;
 import com.sleepycat.persist.model.DeleteAction;
 import com.sleepycat.persist.model.Entity;
@@ -53,16 +55,16 @@ public class MetaImpl implements Meta {
 	@SuppressWarnings("unused")
 	private MetaImpl() {}
 
-	protected MetaImpl(String objectUUID, String k, String v) {
+	protected MetaImpl(String objectUUID, String k, Object v) {
 		this(objectUUID, (new UUID()).toString(), k, v);
 	}
 	
-	protected MetaImpl(String objectUUID, String uuid, String k, String v) {
+	protected MetaImpl(String objectUUID, String uuid, String k, Object v) {
 		this.uuid = uuid;
 		object = objectUUID;
 		
 		key = k;
-		value = v;
+		setValue(v);
 	}
 
 	public String getUUID() {
@@ -73,8 +75,22 @@ public class MetaImpl implements Meta {
 		return key;
 	}
 
-	public String getValue() {
+	public Object getValue() {
+		try {
+			DocumentImpl doc = MetaData._.getDocument(value);
+			if (doc != null) return doc;
+		} catch (Exception e) {
+			//LOG
+		}
 		return value;
+	}
+	
+	public void setValue(Object value) {
+		if (value instanceof DocumentImpl) {
+			this.value = MetaData._.getMetas((DocumentImpl) value).getUUID();
+			//TODO: set link to master doc?
+		} else
+			this.value = value.toString(); 
 	}
 
 	public String getObject() {

@@ -248,7 +248,7 @@ public class MetaDataImpl extends MetaData {
 		docByUUID.delete(d.getUUID());
 	}
 
-	protected MetaImpl addMeta(Metas doc, String key, String value) {
+	protected MetaImpl addMeta(Metas doc, String key, Object value) {
 		MetaImpl m = new MetaImpl(doc.getUUID(), key, value);
 		metadataByUUID.put(m);
 		
