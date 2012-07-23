@@ -318,7 +318,7 @@ public class Configurator {
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
                                     continue;
                                 }
-                                LOG.warn("Unconfigured instance ["+obj+"], remove the object.");
+                                LOG.info("Unconfigured instance ["+obj+"], remove the object.");
                                 //XXX: remove by method call
                                 iterator.remove();
                                 continue;
