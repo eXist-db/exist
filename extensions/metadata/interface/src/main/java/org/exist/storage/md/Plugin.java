@@ -29,6 +29,7 @@ import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
+import org.exist.dom.DocumentImpl;
 import org.exist.plugin.Jack;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
@@ -51,6 +52,7 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	public final static String META = "meta";
 	public final static String KEY = "key";
 	public final static String VALUE = "value";
+	public final static String VALUE_IS_DOCUMENT = "value-is-document";
 	
 	public final static String PREFIX_UUID = PREFIX+":"+UUID;
 	public final static String PREFIX_KEY = PREFIX+":"+KEY;
@@ -115,7 +117,18 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 			AttributesImpl attr = new AttributesImpl();
 	        attr.addAttribute(NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", m.getUUID());
 	        attr.addAttribute(NAMESPACE_URI, KEY, PREFIX_KEY, "CDATA", m.getKey());
-	        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", m.getValue());
+	        
+	        Object value = m.getValue();
+	        if (value instanceof DocumentImpl) {
+				DocumentImpl doc = (DocumentImpl) value;
+				
+		        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", doc.getURI().toString());
+		        attr.addAttribute(NAMESPACE_URI, VALUE_IS_DOCUMENT, PREFIX_VALUE, "CDATA", "true");
+			
+	        } else {
+				
+	        	attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", value.toString());
+			}
 
 	        serializer.startElement(NAMESPACE_URI, META, PREFIX_META, attr );
 	        serializer.endElement(NAMESPACE_URI, META, PREFIX_META);

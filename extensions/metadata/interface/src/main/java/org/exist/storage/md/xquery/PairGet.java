@@ -22,6 +22,7 @@
 package org.exist.storage.md.xquery;
 
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
@@ -113,7 +114,13 @@ public class PairGet extends BasicFunction {
 			meta = metas.get(args[1].getStringValue());
 
 		ValueSequence returnSeq = new ValueSequence();
-		returnSeq.add(new StringValue(meta.getValue()));
+		
+		if (meta.getValue() instanceof DocumentImpl) {
+			returnSeq.add( new NodeProxy( (DocumentImpl) meta.getValue() ) );
+		
+		} else {
+			returnSeq.add(new StringValue(meta.getValue().toString()));
+		}
 
 		return returnSeq;
 	}

@@ -31,7 +31,7 @@ public interface Meta {
 
 	public String getKey();
 
-	public String getValue();
+	public Object getValue();
 
 	public String getObject();
 }

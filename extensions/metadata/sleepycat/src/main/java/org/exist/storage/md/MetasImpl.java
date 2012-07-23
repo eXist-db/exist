@@ -74,13 +74,13 @@ public class MetasImpl implements Metas {
 		return uuid;
 	}
 
-	public Meta put(String key, String value) {
+	public Meta put(String key, Object value) {
 		MetaImpl m = (MetaImpl)get(key);
 		if (m == null)
 			return MetaDataImpl._.addMeta(this, key, value);
 		
 		else {
-			m.value = value;
+			m.setValue(value);
 
 			MetaDataImpl._.addMeta(m);
 		}
