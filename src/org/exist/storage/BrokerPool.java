@@ -387,7 +387,7 @@ public class BrokerPool extends Observable implements Database {
     public final long DEFAULT_SYNCH_PERIOD = 120000;
     public final long DEFAULT_MAX_SHUTDOWN_WAIT = 45000;
 	//TODO : move this default setting to org.exist.collections.CollectionCache ? 
-	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 512;
+	public final int DEFAULT_COLLECTION_BUFFER_SIZE = 64;
 
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
     public static final int DEFAULT_PAGE_SIZE = 4096;

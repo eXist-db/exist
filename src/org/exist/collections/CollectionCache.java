@@ -60,6 +60,7 @@ public class CollectionCache extends LRUCache {
 
 	public void add(Collection collection, int initialRefCount) {
 		super.add(collection, initialRefCount);
+//        LOG.info("Adding collection "+ collection.getURI() + ": " + map.size() + " of " + max);
         String name = collection.getURI().getRawCollectionPath();
         names.put(name, collection.getKey());
 	}
@@ -84,19 +85,28 @@ public class CollectionCache extends LRUCache {
         SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
         do {
             Cacheable cached = next.getValue();
-            if(cached.allowUnload() && cached.getKey() != item.getKey()) {
+            if(cached.getKey() != item.getKey()) {
                 Collection old = (Collection) cached;
-                if(pool.getConfigurationManager()!=null) { // might be null during db initialization
-                    pool.getConfigurationManager().invalidate(old.getURI());
+                Lock lock = old.getLock();
+                if (lock.attempt(Lock.READ_LOCK)) {
+                    try {
+                        if (cached.allowUnload()) {
+                            if(pool.getConfigurationManager()!=null) { // might be null during db initialization
+                                pool.getConfigurationManager().invalidate(old.getURI());
+                            }
+                            names.remove(old.getURI().getRawCollectionPath());
+                            cached.sync(true);
+                            map.remove(cached.getKey());
+                            removed = true;
+                        }
+                    } finally {
+                        lock.release(Lock.READ_LOCK);
+                    }
                 }
-                names.remove(old.getURI().getRawCollectionPath());
-                cached.sync(true);
-                map.remove(next.getKey());
-                removed = true;
             } else {
                 next = next.getNext();
                 if(next == null) {
-                    LOG.debug("Unable to remove entry");
+                    LOG.info("Unable to remove entry");
                     next = map.getFirstEntry();
                 }
             }
