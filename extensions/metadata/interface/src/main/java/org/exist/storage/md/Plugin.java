@@ -191,7 +191,7 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 		System.out.println("startDocument "+document.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
-			currentMetas = md._addMetas(document.getURI().toString(), uuid);
+			currentMetas = md.replaceMetas(document.getURI(), uuid);
 		else
 			currentMetas = md.addMetas(document); 
 	}
