@@ -55,6 +55,7 @@ public abstract class MetaData {
 	//low level
 	protected abstract Meta _addMeta(Metas metas, String uuid, String key, String value);
 	protected abstract Metas _addMetas(String uri, String uuid);
+	protected abstract Metas replaceMetas(XmldbURI uri, String uuid);
 
 	public abstract Metas getMetas(DocumentAtExist doc);
 	public abstract Metas getMetas(XmldbURI uri);
