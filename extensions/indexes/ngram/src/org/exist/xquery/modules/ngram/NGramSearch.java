@@ -603,7 +603,7 @@ public class NGramSearch extends Function implements Optimizable {
         for (int i = 0; i < count; i++) {
             StringBuilder bld = new StringBuilder(ngramSize);
             for (int j = 0; j < ngramSize; j++) {
-                int next = text.codePointAt(pos);
+                int next = Character.toLowerCase(text.codePointAt(pos));
                 pos += Character.charCount(next);
                 bld.appendCodePoint(next);
             }
@@ -612,7 +612,7 @@ public class NGramSearch extends Function implements Optimizable {
         if (remainder > 0) {
             StringBuilder bld = new StringBuilder(remainder);
             for (int j = 0; j < remainder; j++) {
-                int next = text.codePointAt(pos);
+                int next = Character.toLowerCase(text.codePointAt(pos));
                 pos += Character.charCount(next);
                 bld.appendCodePoint(next);
             }
