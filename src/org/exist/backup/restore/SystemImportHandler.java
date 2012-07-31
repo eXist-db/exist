@@ -252,8 +252,8 @@ public class SystemImportHandler extends DefaultHandler {
         }
         
         //exclude /db/system collection and sub-collections, as these have already been restored
-        if ((currentCollection.getURI().startsWith(XmldbURI.SYSTEM)))
-            return;
+//        if ((currentCollection.getURI().startsWith(XmldbURI.SYSTEM)))
+//            return;
         
         //parse the sub-collection descriptor and restore
         final BackupDescriptor subDescriptor = descriptor.getChildBackupDescriptor(name);
