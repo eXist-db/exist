@@ -568,7 +568,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             bld.setLength(0);
             int offset = pos;
             for (int count = 0; count < gramSize && offset < text.length(); count++) {
-                int codepoint = text.codePointAt(offset);
+                int codepoint = Character.toLowerCase(text.codePointAt(offset));
                 offset += Character.charCount(codepoint);
                 if (count == 0)
                     pos = offset;   // advance pos to next character
