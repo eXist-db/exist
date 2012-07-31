@@ -116,32 +116,8 @@ public class XQueryTriggerTest {
     	"module namespace trigger='http://exist-db.org/xquery/trigger'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
     	"import module namespace util='http://exist-db.org/xquery/util'; " +
-    	"" +
-    	"declare function trigger:logDocumentEvent($type as xs:string, $event as xs:string, $uri as xs:anyURI) {" +
-    	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
-    	  "xmldb:update(" +
-    	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
-            "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
-              "<xu:append select='/events'>" +
-                "<xu:element name='event'>" +
-                  "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
-                  "<xu:attribute name='type'>{$type}</xu:attribute>" +
-                  "<xu:attribute name='event'>{$event}</xu:attribute>" +
-                  //"<xu:element name='collection'>{$log:collection}</xu:element>" +
-                  "<xu:element name='uri'>{$uri}</xu:element>" +
-                  "{" +
-                  	"if ($new-uri) then" + 
-                  		"<xu:element name='new-uri'>{$new-uri}</xu:element>" +
-                  	"else ()" +
-                  "}" +
-                  "<xu:element name='document'>{if (util:is-binary-doc($uri)) then util:binary-doc($uri) else doc($uri)}</xu:element>" +   
-                "</xu:element>" +            
-              "</xu:append>" +
-            "</xu:modifications>" +
-          ")" +
-        "};" +
         "" +
-    	"declare function trigger:logCollectionEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
+    	"declare function trigger:logEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
     	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
     	  "xmldb:update(" +
     	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
@@ -161,83 +137,83 @@ public class XQueryTriggerTest {
         "};" +
         "" +
         "declare function trigger:before-create-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'create', 'collection', $uri)" +
+        	"trigger:logEvent('before', 'create', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-create-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'create', 'collection', $uri)" +
+        	"trigger:logEvent('after', 'create', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:before-update-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'update', 'collection', $uri)" +
+        	"trigger:logEvent('before', 'update', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-update-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'update', 'collection', $uri)" +
+        	"trigger:logEvent('after', 'update', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'copy', 'collection', $uri)" +
+        	"trigger:logEvent('before', 'copy', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'copy', 'collection', $new-uri)" +
+        	"trigger:logEvent('after', 'copy', 'collection', $new-uri)" +
         "};" +
         "" +
         "declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'move', 'collection', $uri)" +
+        	"trigger:logEvent('before', 'move', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'move', 'collection', $new-uri)" +
+        	"trigger:logEvent('after', 'move', 'collection', $new-uri)" +
         "};" +
         "" +
         "declare function trigger:before-delete-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'delete', 'collection', $uri)" +
+        	"trigger:logEvent('before', 'delete', 'collection', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-delete-collection($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'delete', 'collection', $uri)" +
+        	"trigger:logEvent('after', 'delete', 'collection', $uri)" +
         "};" +
         "" + //DOCUMENT EVENTS
         "declare function trigger:before-create-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'create', 'document', $uri)" +
+        	"trigger:logEvent('before', 'create', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-create-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'create', 'document', $uri)" +
+        	"trigger:logEvent('after', 'create', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:before-update-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'update', 'document', $uri)" +
+        	"trigger:logEvent('before', 'update', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-update-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'update', 'document', $uri)" +
+        	"trigger:logEvent('after', 'update', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'copy', 'document', $uri)" +
+        	"trigger:logEvent('before', 'copy', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'copy', 'document', $new-uri)" +
+        	"trigger:logEvent('after', 'copy', 'document', $new-uri)" +
         "};" +
         "" +
         "declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'move', 'document', $uri)" +
+        	"trigger:logEvent('before', 'move', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'move', 'document', $new-uri)" +
+        	"trigger:logEvent('after', 'move', 'document', $new-uri)" +
         "};" +
         "" +
         "declare function trigger:before-delete-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('before', 'delete', 'document', $uri)" +
+        	"trigger:logEvent('before', 'delete', 'document', $uri)" +
         "};" +
         "" +
         "declare function trigger:after-delete-document($uri as xs:anyURI) {" +
-        	"trigger:logCollectionEvent('after', 'delete', 'document', $uri)" +
+        	"trigger:logEvent('after', 'delete', 'document', $uri)" +
         "};" +
         "";
     
