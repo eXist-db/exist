@@ -2,10 +2,10 @@
 <!-- $Id$ -->
 <project basedir="." default="jar" name="xslt">
     
-    <property name="src" value="./src"/>
-    <property name="classes" value="./classes"/>
-    <property name="test.src" value="./test/src"/>
-    <property name="test.classes" value="./test/classes"/>
+    <property name="xslt.src" value="./src"/>
+    <property name="xslt.classes" value="./classes"/>
+    <property name="xslt.test.src" value="./test/src"/>
+    <property name="xslt.test.classes" value="./test/classes"/>
     <property name="top.dir" value="../.."/>
     
     <property file="${top.dir}/build.properties"/>
@@ -50,10 +50,10 @@
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         
-        <mkdir dir="${classes}"/>
+        <mkdir dir="${xslt.classes}"/>
         <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
-            destdir="${classes}" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${src}" 
+            destdir="${xslt.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${xslt.src}" 
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
@@ -80,10 +80,10 @@
         <echo
             message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         
-        <mkdir dir="${test.classes}"/>
+        <mkdir dir="${xslt.test.classes}"/>
         <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" 
-            destdir="${test.classes}" encoding="UTF-8"
-            optimize="${build.optimize}" srcdir="${test.src}" 
+            destdir="${xslt.test.classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${xslt.test.src}" 
             source="${build.compiler.source}" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
@@ -95,7 +95,7 @@
 
     <target name="jar" depends="compile" if="include.feature.xslt.config">
         <echo message="Creating exist-xslt.jar ..."/>
-        <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-xslt.jar">  
+        <jar basedir="${xslt.classes}" jarfile="${top.dir}/${lib.extensions}/exist-xslt.jar">  
             <manifest>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
@@ -106,8 +106,8 @@
     </target>
     
     <target name="clean">
-        <delete dir="${classes}"/>
-        <delete dir="${test.classes}"/>
+        <delete dir="${xslt.classes}"/>
+        <delete dir="${xslt.test.classes}"/>
         <delete file="${top.dir}/${lib.extensions}/exist-xslt.jar" failonerror="false"/>
     </target>
 </project>
