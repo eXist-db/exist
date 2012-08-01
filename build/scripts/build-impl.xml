@@ -164,7 +164,7 @@
         <copy file="${src.webapp}/header.xml.tmpl" tofile="${src.webapp}/xquery/header.xml"
             filtering="true" overwrite="true"/>
         <copy file="${src.webapp}/xqts/config.xml.tmpl" tofile="${src.webapp}/xqts/config.xml"
-            filtering="true"/>
+            filtering="true" failonerror="false"/>
 
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
 			<filterset>
