@@ -89,6 +89,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FnFormatDates.signatures[3], FnFormatDates.class),
         new FunctionDef(FnFormatDates.signatures[4], FnFormatDates.class),
         new FunctionDef(FnFormatDates.signatures[5], FnFormatDates.class),
+        new FunctionDef(FunGenerateId.signatures[0], FunGenerateId.class),
+        new FunctionDef(FunGenerateId.signatures[1], FunGenerateId.class),
         new FunctionDef(FunGetDateComponent.fnDayFromDate, FunGetDateComponent.class),
         new FunctionDef(FunGetDateComponent.fnMonthFromDate, FunGetDateComponent.class),
         new FunctionDef(FunGetDateComponent.fnYearFromDate, FunGetDateComponent.class),

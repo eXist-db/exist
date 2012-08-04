@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -83,4 +84,6 @@ public interface NodeValue extends Item, Sequence {
 	public Node getNode();
 	
 	public Document getOwnerDocument();
+
+    public NodeId getNodeId();
 }
