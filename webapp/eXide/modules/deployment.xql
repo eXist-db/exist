@@ -96,10 +96,12 @@ declare function deploy:repo-descriptor() {
         <finish>{request:get-parameter("finish", ())}</finish>
         {
             if (request:get-parameter("owner", ())) then
-                <permissions user="{request:get-parameter('owner', ())}" 
-                    password="{request:get-parameter('password', ())}" 
-                    group="{request:get-parameter('group', ())}" 
-                    mode="{request:get-parameter('mode', ())}"/>
+                let $group := request:get-parameter("group", ())
+                return
+                    <permissions user="{request:get-parameter('owner', ())}" 
+                        password="{request:get-parameter('password', ())}" 
+                        group="{if ($group != '') then $group else 'dba'}" 
+                        mode="{request:get-parameter('mode', ())}"/>
             else
                 ()
         }
@@ -115,6 +117,7 @@ declare function deploy:store-repo($descriptor as element(), $collection as xs:s
 
 declare function deploy:mkcol-recursive($collection, $components, $userData as xs:string*, $permissions as xs:int?) {
     if (exists($components)) then
+        let $permissions := xmldb:string-to-permissions(deploy:set-execute-bit($permissions))
         let $newColl := concat($collection, "/", $components[1])
         return (
             xmldb:create-collection($collection, $components[1]),
@@ -174,14 +177,16 @@ declare function deploy:target-permissions($repoConf as element()) as xs:int {
     let $permissions := $repoConf/repo:permissions/@mode/string()
     return
         if ($permissions) then
-            util:base-to-integer(xs:int($permissions), 8)
+            if ($permissions castable as xs:int) then
+                util:base-to-integer(xs:int($permissions), 8)
+            else
+                xmldb:string-to-permissions($permissions)
         else
             util:base-to-integer(0775, 8)
 };
 
-declare function deploy:set-execute-bit($resource as xs:string) {
-    let $mode :=
-        sm:get-permissions($resource)/sm:permission/@mode
+declare function deploy:set-execute-bit($permissions as xs:int) {
+    let $mode := xmldb:permissions-to-string($permissions)
     return
         replace($mode, "(..).(..).(..).", "$1x$2x$3x")
 };
@@ -196,7 +201,7 @@ declare function deploy:copy-templates($target as xs:string, $source as xs:strin
             let $mime := xmldb:get-mime-type($targetPath)
             let $perms := 
                 if ($mime eq "application/xquery") then
-                    xmldb:string-to-permissions(deploy:set-execute-bit($targetPath))
+                    xmldb:string-to-permissions(deploy:set-execute-bit($permissions))
                 else $permissions
             return
                 xmldb:set-resource-permissions($target, $resource, $userData[1], $userData[2], $perms)
@@ -216,13 +221,13 @@ declare function deploy:store-templates-from-db($target as xs:string, $base as x
 
 declare function deploy:chmod($collection as xs:string, $userData as xs:string+, $permissions as xs:int) {
     (
-        xmldb:set-collection-permissions($collection, $userData[1], $userData[2], $permissions),
+        xmldb:set-collection-permissions($collection, $userData[1], $userData[2], xmldb:string-to-permissions(deploy:set-execute-bit($permissions))),
         for $resource in xmldb:get-child-resources($collection)
         let $path := concat($collection, "/", $resource)
         let $mime := xmldb:get-mime-type($path)
         let $perms := 
             if ($mime eq "application/xquery") then
-                xmldb:string-to-permissions(deploy:set-execute-bit($path))
+                xmldb:string-to-permissions(deploy:set-execute-bit($permissions))
             else $permissions
         return
             xmldb:set-resource-permissions($collection, $resource, $userData[1], $userData[2], $perms),

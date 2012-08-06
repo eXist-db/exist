@@ -49,7 +49,7 @@ exports.cssText = "\
 }\
 \
 .ace-clouds .ace_gutter {\
-  background: #e8e8e8;\
+  background: #ebebeb;\
   color: #333;\
 }\
 \
