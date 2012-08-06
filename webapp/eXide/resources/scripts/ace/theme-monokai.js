@@ -49,7 +49,7 @@ exports.cssText = "\
 }\
 \
 .ace-monokai .ace_gutter {\
-  background: #292a24;\
+  background: #2f3129;\
   color: #f1f1f1;\
 }\
 \

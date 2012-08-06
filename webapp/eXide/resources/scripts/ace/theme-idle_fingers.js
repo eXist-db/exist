@@ -49,13 +49,13 @@ exports.cssText = "\
 }\
 \
 .ace-idle-fingers .ace_gutter {\
-  background: #e8e8e8;\
-  color: #333;\
+  background: #3b3b3b;\
+  color: #fff;\
 }\
 \
 .ace-idle-fingers .ace_print_margin {\
   width: 1px;\
-  background: #e8e8e8;\
+  background: #3b3b3b;\
 }\
 \
 .ace-idle-fingers .ace_scroller {\
@@ -98,7 +98,7 @@ exports.cssText = "\
 }\
 \
 .ace-idle-fingers .ace_gutter_active_line {\
-  background-color : #dcdcdc;\
+  background-color: #353637;\
 }\
 \
 .ace-idle-fingers .ace_marker-layer .ace_selected_word {\

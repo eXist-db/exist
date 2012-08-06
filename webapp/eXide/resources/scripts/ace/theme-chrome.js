@@ -47,7 +47,7 @@ exports.cssText = ".ace-chrome .ace_editor {\
 }\
 \
 .ace-chrome .ace_gutter {\
-  background: #e8e8e8;\
+  background: #ebebeb;\
   color: #333;\
   overflow : hidden;\
 }\
