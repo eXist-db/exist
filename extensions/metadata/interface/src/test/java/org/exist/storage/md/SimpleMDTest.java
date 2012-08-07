@@ -24,13 +24,17 @@ package org.exist.storage.md;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -38,8 +42,10 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -536,7 +542,140 @@ public class SimpleMDTest {
     	cleanup();
 	}
 
-    //collection copy
+    //collection move with subcollections
+	@Test
+	public void test_collection_move_with_subcollection() throws Exception {
+    	startDB();
+    	
+        Collection test2;
+        DocumentImpl doc3;
+
+    	DBBroker broker = null;
+        TransactionManager txnManager = null;
+        Txn txn = null;
+        try {
+        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            
+            txnManager = pool.getTransactionManager();
+            assertNotNull(txnManager);
+            txn = txnManager.beginTransaction();
+            assertNotNull(txn);
+            
+            test2 = broker.getOrCreateCollection(txn, col2uri);
+            assertNotNull(test2);
+            broker.saveCollection(txn, test2);
+
+            doc3 = storeDocument(txn, broker, test2, doc3uri, XML1);
+            assertNotNull(doc3);
+
+            txnManager.commit(txn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            txnManager.abort(txn);
+            fail(e.getMessage());
+        } finally {
+            if (pool != null)
+                pool.release(broker);
+        }
+
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc1uri);
+    	assertNotNull(docMD);
+    	
+    	String uuid = docMD.getUUID();
+    	
+    	//add first key-value
+    	docMD.put(KEY1, VALUE1);
+
+    	//set second document
+    	docMD = md.getMetas(doc3uri);
+    	assertNotNull(docMD);
+    	
+    	String uuid2 = docMD.getUUID();
+    	
+    	//add first key-value
+    	docMD.put(KEY2, VALUE2);
+
+    	try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+
+            Collection parent = broker.getCollection(col3uri.removeLastSegment());
+        	assertNotNull(parent);
+
+            Collection col = broker.getCollection(col1uri);
+        	assertNotNull(col);
+
+        	System.out.println("MOVING...");
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+	            
+	            broker.moveCollection(txn, col, parent, col3uri.lastSegment());
+            
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("MOVED.");
+
+            Collection moved = broker.getCollection(col3uri);
+        	assertNotNull(moved);
+
+	        docMD = md.getMetas(doc4uri);
+	    	assertNotNull(docMD);
+	    	
+	    	assertEquals(uuid, docMD.getUUID());
+	    	assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
+	        docMD = md.getMetas(XmldbURI.create("/db/moved/test2/test_2.xml"));
+	    	assertNotNull(docMD);
+	    	
+	    	assertEquals(uuid2, docMD.getUUID());
+	    	assertEquals(VALUE2, docMD.get(KEY2).getValue());
+
+	    	Collection nCol = null;
+	    	txnManager = null;
+	        txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+	            
+	            nCol = broker.getOrCreateCollection(txn, col1uri);
+	            assertNotNull(nCol);
+	            broker.saveCollection(txn, nCol);
+            
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+
+	        docMD = md.getMetas(doc1uri);
+	    	assertNull(docMD);
+	    	
+	    	DocumentImpl doc = md.getDocument(uuid);
+	    	assertNotNull(doc);
+	    	assertEquals(doc4uri.toString(), doc.getURI().toString());
+	    	
+        } finally {
+    		pool.release(broker);
+    	}
+
+    	cleanup();
+	}
+
+	//collection copy
 	@Test
 	public void test_collection_copy() throws Exception {
     	startDB();
@@ -782,6 +921,18 @@ public class SimpleMDTest {
 //		
 //    	return doc;
 //	}
+	
+	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        System.out.println("STORING DOCUMENT....");
+        IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
+        assertNotNull(info);
+        System.out.println("STORING DOCUMENT....SECOND ROUND....");
+        col.store(txn, broker, info, data, false);
+        assertNotNull(info.getDocument());
+        System.out.println("STORING DOCUMENT....DONE.");
+
+        return info.getDocument();
+	}
 
 	//@BeforeClass
     public static void startDB() {
@@ -819,21 +970,8 @@ public class SimpleMDTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("STORING DOCUMENT....");
-            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
-            assertNotNull(info);
-            System.out.println("STORING DOCUMENT....SECOND ROUND....");
-            root.store(txn, broker, info, XML1, false);
-            assertNotNull(info.getDocument());
-            System.out.println("STORING DOCUMENT....DONE.");
-
-            doc1 = info.getDocument();
-
-            info = root.validateXMLResource(txn, broker, doc2uri.lastSegment(), XML2);
-            assertNotNull(info);
-            root.store(txn, broker, info, XML2, false);
-
-            doc2 =  info.getDocument();
+            doc1 = storeDocument(txn, broker, root, doc1uri, XML1);
+            doc2 = storeDocument(txn, broker, root, doc2uri, XML2);
 
             System.out.println("store "+doc5uri);
             root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
