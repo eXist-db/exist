@@ -1155,8 +1155,6 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
 
-            pool.getCollectionTrigger().beforeMoveCollection(this, transaction, collection, dstURI);
-            
             final CollectionTriggersVisitor triggersVisitor = parent.getConfiguration(this).getCollectionTriggerProxies().instantiateVisitor(this);
             triggersVisitor.beforeMoveCollection(this, transaction, collection, dstURI);
             
@@ -1169,8 +1167,6 @@ public class NativeBroker extends DBBroker {
             
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
-            
-            pool.getCollectionTrigger().afterMoveCollection(this, transaction, collection, srcURI);
             
             triggersVisitor.afterMoveCollection(this, transaction, collection, srcURI);
 	        
@@ -1216,6 +1212,12 @@ public class NativeBroker extends DBBroker {
         final XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
+        	
+            final XmldbURI srcURI = collection.getURI();
+            final XmldbURI dstURI = destination.getURI().append(newName);
+
+        	pool.getCollectionTrigger().beforeMoveCollection(this, transaction, collection, dstURI);
+	
             final XmldbURI parentName = collection.getParentURI();
             final Collection parent = openCollection(parentName, Lock.WRITE_LOCK);
             
@@ -1250,6 +1252,7 @@ public class NativeBroker extends DBBroker {
             } finally {
                 lock.release(Lock.WRITE_LOCK);
             }
+            pool.getCollectionTrigger().afterMoveCollection(this, transaction, collection, srcURI);
             
             for(Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
