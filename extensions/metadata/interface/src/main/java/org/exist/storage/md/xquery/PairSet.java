@@ -43,9 +43,9 @@ import org.exist.xquery.value.StringValue;
  */
 public class PairSet extends BasicFunction {
 	
-	private static final QName NAME = new QName("set-pair", Plugin.NAMESPACE_URI, Plugin.PREFIX);
-	private static final QName NAME_URL = new QName("set-pair-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
-	private static final String DESCRIPTION = "Set document key/value pair.";
+	private static final QName NAME = new QName("set-value", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final QName NAME_URL = new QName("set-value-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final String DESCRIPTION = "Set document's key/value pair.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "Key/value pair UUID");
 	
     public final static FunctionSignature signatures[] = {
@@ -55,20 +55,20 @@ public class PairSet extends BasicFunction {
 			new SequenceType[] { 
 				 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
-				 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The value.")
+				 new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.EXACTLY_ONE, "The value.")
 			}, 
 			RETURN
 		),
-		new FunctionSignature(
-				NAME,
-				DESCRIPTION,
-				new SequenceType[] { 
-					 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
-					 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
-					 new FunctionParameterSequenceType("value", Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The value.")
-				}, 
-				RETURN
-			),
+//		new FunctionSignature(
+//				NAME,
+//				DESCRIPTION,
+//				new SequenceType[] { 
+//					 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+//					 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
+//					 new FunctionParameterSequenceType("value", Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The value.")
+//				}, 
+//				RETURN
+//			),
 		new FunctionSignature(
 			NAME_URL,
 			DESCRIPTION,
