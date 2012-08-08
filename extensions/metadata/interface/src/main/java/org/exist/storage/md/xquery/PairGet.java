@@ -47,7 +47,7 @@ public class PairGet extends BasicFunction {
 	private static final QName NAME_URL = new QName("get-value-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
 	private static final String DESCRIPTION = "Get document value by key.";
 	private static final String DESCRIPTION_UUID = "Get document value by UUID.";
-	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Value.");
+	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "Value.");
 	
     public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
