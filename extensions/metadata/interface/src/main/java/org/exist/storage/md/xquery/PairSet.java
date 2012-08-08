@@ -60,7 +60,17 @@ public class PairSet extends BasicFunction {
 			RETURN
 		),
 		new FunctionSignature(
-			NAME,
+				NAME,
+				DESCRIPTION,
+				new SequenceType[] { 
+					 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+					 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
+					 new FunctionParameterSequenceType("value", Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The value.")
+				}, 
+				RETURN
+			),
+		new FunctionSignature(
+			NAME_URL,
 			DESCRIPTION,
 			new SequenceType[] { 
 				 new FunctionParameterSequenceType("document", Type.STRING, Cardinality.EXACTLY_ONE, "The document's URL."),
@@ -96,7 +106,11 @@ public class PairSet extends BasicFunction {
 		if (metas == null)
 			throw new XPathException(this, "No metadata found.");
 
-		Meta meta = metas.put(args[1].getStringValue(), args[2].getStringValue());
+		Meta meta;
+		if (args[2] instanceof DocumentImpl)
+			meta = metas.put(args[1].getStringValue(), args[2]);
+		else
+			meta = metas.put(args[1].getStringValue(), args[2].getStringValue());
 
 		ValueSequence returnSeq = new ValueSequence();
 		returnSeq.add(new StringValue(meta.getUUID()));
