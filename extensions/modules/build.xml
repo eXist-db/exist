@@ -26,93 +26,21 @@
     <property file="../build.properties"/>
 
     <!-- Modules (in alphabetical order) -->
-    <condition property="include.module.cache.config">
-        <istrue value="${include.module.cache}"/>
-    </condition>
-    <condition property="include.module.compression.config">
-        <istrue value="${include.module.compression}"/>
-    </condition>
-    <condition property="include.module.context.config">
-        <istrue value="${include.module.context}"/>
-    </condition>
-    <condition property="include.module.counter.config">
-        <istrue value="${include.module.counter}"/>
-    </condition>
-    <condition property="include.module.cqlparser.config">
-        <istrue value="${include.module.cqlparser}"/>
-    </condition>
-    <condition property="include.module.datetime.config">
-        <istrue value="${include.module.datetime}"/>
-    </condition>
-    <condition property="include.module.example.config">
-        <istrue value="${include.module.example}"/>
-    </condition>
-    <condition property="include.module.file.config">
-        <istrue value="${include.module.file}"/>
-    </condition>
-    <condition property="include.module.httpclient.config">
-        <istrue value="${include.module.httpclient}"/>
-    </condition>        
-    <condition property="include.module.ftpclient.config">
-        <istrue value="${include.module.ftpclient}"/>
-    </condition>
-    <condition property="include.module.image.config">
-        <istrue value="${include.module.image}"/>
-    </condition>
-    <condition property="include.module.jfreechart.config">
-        <istrue value="${include.module.jfreechart}"/>
-    </condition>
+   
 	<condition property="include.module.jfreechart_svg">
 	    <and>
             <istrue value="${include.module.jfreechart}"/>
             <istrue value="${include.module.xslfo}"/>
         </and>
     </condition>
-    <condition property="include.module.jndi.config">
-        <istrue value="${include.module.jndi}"/>
-    </condition>
-    <condition property="include.module.lib.config">
-        <istrue value="${include.module.lib}"/>
-    </condition>
-    <condition property="include.module.mail.config">
-        <istrue value="${include.module.mail}"/>
-    </condition>
-    <condition property="include.module.math.config">
-        <istrue value="${include.module.math}"/>
-    </condition>
-    <condition property="include.module.memcached.config">
-        <istrue value="${include.module.memcached}"/>
-    </condition>   
-	<condition property="include.module.oracle.config">
+  
+	<condition property="include.module.oracle_ext">
 	    <and>
             <istrue value="${include.module.oracle}"/>
             <available classname="oracle.jdbc.OracleTypes"/>
         </and>
     </condition>
-    <condition property="include.module.scheduler.config">
-        <istrue value="${include.module.scheduler}"/>
-    </condition>
-    <condition property="include.module.simpleql.config">
-        <istrue value="${include.module.simpleql}"/>
-    </condition>
-    <condition property="include.module.sql.config">
-        <istrue value="${include.module.sql}"/>
-    </condition>
-    <condition property="include.module.xmldiff.config">
-        <istrue value="${include.module.xmldiff}"/>
-    </condition>
-    <condition property="include.module.xmpp.config">
-        <istrue value="${include.module.xmpp}"/>
-    </condition>
-    <condition property="include.module.xslfo.config">
-        <istrue value="${include.module.xslfo}"/>
-    </condition>
-    <condition property="include.module.xmlcalabash.config">
-        <istrue value="${include.module.xmlcalabash}"/>
-    </condition>
-    <condition property="include.module.expathrepo.config">
-        <istrue value="${include.module.expathrepo}"/>
-    </condition>
+ 
     <path id="classpath.core">
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
@@ -153,7 +81,7 @@
         </and>
     </condition>
 
-    <target name="prepare-xslfo" unless="libs.available.xslfo" if="include.module.xslfo.config">
+    <target name="prepare-xslfo" unless="libs.available.xslfo" if="${include.module.xslfo}">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xsl-fo module"/>
@@ -179,7 +107,7 @@
    <!--
         Special targets for expath package module
     -->
-    <target name="prepare-expathrepo" if="include.module.expathrepo.config">
+    <target name="prepare-expathrepo" if="${include.module.expathrepo}">
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the expath package module"/>
         <echo message="------------------------------------------------------"/>
@@ -193,7 +121,7 @@
     <!-- 
         Special targets for xmlcalabash module 
     -->
-    <target name="prepare-xmlcalabash" if="include.module.xmlcalabash.config">
+    <target name="prepare-xmlcalabash" if="${include.module.xmlcalabash}">
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xmlcalabash module"/>
         <echo message="------------------------------------------------------"/>
@@ -213,7 +141,7 @@
     <uptodate property="parser.uptodate" srcfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
         targetfile="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.java"/>
 
-    <target name="prepare-simpleql" unless="parser.uptodate" if="include.module.simpleql.config">
+    <target name="prepare-simpleql" unless="parser.uptodate" if="${include.module.simpleql}">
         <echo message="Running ANTLR to generate XQuery parser"/>
         <antlr target="${src}/org/exist/xquery/modules/simpleql/SimpleQLParser.g"
             outputdirectory="${src}/org/exist/xquery/modules/simpleql" traceparser="${antlr.traceParser}"
@@ -227,7 +155,7 @@
     <!-- 
         Special targets for jfreechart module unless="jfreechart-present"
     -->
-    <target name="prepare-jfreechart" if="include.module.jfreechart.config">
+    <target name="prepare-jfreechart" if="${include.module.jfreechart}">
         <echo message="-------------------------------------------------------"/>
         <echo message="Downloading libraries required by the jfreechart module"/>
         <echo message="-------------------------------------------------------"/>
@@ -246,7 +174,7 @@
     <!-- 
         Special targets for memcached module
     -->
-    <target name="prepare-memcached" if="include.module.memcached.config">
+    <target name="prepare-memcached" if="${include.module.memcached}">
         <echo message="-------------------------------------------------------"/>
         <echo message="Downloading libraries required by the memcached module"/>
         <echo message="-------------------------------------------------------"/>
@@ -258,7 +186,7 @@
     <!-- 
         Special targets for xmpp module 
     -->
-    <target name="prepare-xmpp" if="include.module.xmpp.config">
+    <target name="prepare-xmpp" if="${include.module.xmpp}">
         <echo message="--------------------------------------------------"/>
         <echo message="Downloading libraries required by the XMPP module"/>
         <echo message="--------------------------------------------------"/>
@@ -276,7 +204,7 @@
     <!-- 
         Special targets for cqlparser module 
     -->
-    <target name="prepare-cqlparser" if="include.module.cqlparser.config">
+    <target name="prepare-cqlparser" if="${include.module.cqlparser}">
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the cqlparser module"/>
         <echo message="------------------------------------------------------"/>
@@ -320,32 +248,32 @@
                 <path refid="classpath.core"/>
             </classpath>
 
-        <exclude name="org/exist/xquery/modules/cache/**" unless="include.module.cache.config"/>
-            <exclude name="org/exist/xquery/modules/compression/**" unless="include.module.compression.config"/>
-            <exclude name="org/exist/xquery/modules/context/**" unless="include.module.context.config"/>
-            <exclude name="org/exist/xquery/modules/counter/**" unless="include.module.counter.config"/>
-            <exclude name="org/exist/xquery/modules/cqlparser/**" unless="include.module.cqlparser.config"/>
-            <exclude name="org/exist/xquery/modules/datetime/**" unless="include.module.datetime.config"/>
-            <exclude name="org/exist/xquery/modules/example/**" unless="include.module.example.config"/>
-            <exclude name="org/exist/xquery/modules/file/**" unless="include.module.file.config"/>
-            <exclude name="org/exist/xquery/modules/httpclient/**" unless="include.module.httpclient.config"/>
-            <exclude name="org/exist/xquery/modules/image/**" unless="include.module.image.config"/>
-            <exclude name="org/exist/xquery/modules/jfreechart/**" unless="include.module.jfreechart.config"/>
-            <exclude name="org/exist/xquery/modules/jfreechart/render/SVG**" unless="include.module.jfreechart_svg"/>
-            <exclude name="org/exist/xquery/modules/jndi/**" unless="include.module.jndi.config"/>
-            <exclude name="org/exist/xquery/modules/lib/**" unless="include.module.lib.config"/>
-			<exclude name="org/exist/xquery/modules/mail/**" unless="include.module.mail.config"/>
-            <exclude name="org/exist/xquery/modules/math/**" unless="include.module.math.config"/>
-            <exclude name="org/exist/xquery/modules/memcached/**" unless="include.module.memcached.config"/>
-            <exclude name="org/exist/xquery/modules/oracle/**" unless="include.module.oracle.config"/>
-			<exclude name="org/exist/xquery/modules/scheduler/**" unless="include.module.scheduler.config"/>
-            <exclude name="org/exist/xquery/modules/simpleql/**" unless="include.module.simpleql.config"/>
-            <exclude name="org/exist/xquery/modules/sql/**" unless="include.module.sql.config"/>
-            <exclude name="org/exist/xquery/modules/xmldiff/**" unless="include.module.xmldiff.config"/>
-            <exclude name="org/exist/xquery/modules/xmpp/**" unless="include.module.xmpp.config"/>
-            <exclude name="org/exist/xquery/modules/xslfo/**" unless="include.module.xslfo.config"/>
-            <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="include.module.xmlcalabash.config"/>
-            <exclude name="org/exist/xquery/modules/expathrepo/**" unless="include.module.expathrepo.config"/>
+        <exclude name="org/exist/xquery/modules/cache/**" unless="${include.module.cache}"/>
+            <exclude name="org/exist/xquery/modules/compression/**" unless="${include.module.compression}"/>
+            <exclude name="org/exist/xquery/modules/context/**" unless="${include.module.context}"/>
+            <exclude name="org/exist/xquery/modules/counter/**" unless="${include.module.counter}"/>
+            <exclude name="org/exist/xquery/modules/cqlparser/**" unless="${include.module.cqlparser}"/>
+            <exclude name="org/exist/xquery/modules/datetime/**" unless="${include.module.datetime}"/>
+            <exclude name="org/exist/xquery/modules/example/**" unless="${include.module.example}"/>
+            <exclude name="org/exist/xquery/modules/file/**" unless="${include.module.file}"/>
+            <exclude name="org/exist/xquery/modules/httpclient/**" unless="${include.module.httpclient}"/>
+            <exclude name="org/exist/xquery/modules/image/**" unless="${include.module.image}"/>
+            <exclude name="org/exist/xquery/modules/jfreechart/**" unless="${include.module.jfreechart}"/>
+            <exclude name="org/exist/xquery/modules/jfreechart/render/SVG**" unless="${include.module.jfreechart_svg}"/>
+            <exclude name="org/exist/xquery/modules/jndi/**" unless="${include.module.jndi}"/>
+            <exclude name="org/exist/xquery/modules/lib/**" unless="${include.module.lib}"/>
+			<exclude name="org/exist/xquery/modules/mail/**" unless="${include.module.mail}"/>
+            <exclude name="org/exist/xquery/modules/math/**" unless="${include.module.math}"/>
+            <exclude name="org/exist/xquery/modules/memcached/**" unless="${include.module.memcached}"/>
+            <exclude name="org/exist/xquery/modules/oracle/**" unless="${include.module.oracle_ext}"/>
+			<exclude name="org/exist/xquery/modules/scheduler/**" unless="${include.module.scheduler}"/>
+            <exclude name="org/exist/xquery/modules/simpleql/**" unless="${include.module.simpleql}"/>
+            <exclude name="org/exist/xquery/modules/sql/**" unless="${include.module.sql}"/>
+            <exclude name="org/exist/xquery/modules/xmldiff/**" unless="${include.module.xmldiff}"/>
+            <exclude name="org/exist/xquery/modules/xmpp/**" unless="${include.module.xmpp}"/>
+            <exclude name="org/exist/xquery/modules/xslfo/**" unless="${include.module.xslfo}"/>
+            <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="${include.module.xmlcalabash}"/>
+            <exclude name="org/exist/xquery/modules/expathrepo/**" unless="${include.module.expathrepo}"/>
         </javac>
     </target>
 
