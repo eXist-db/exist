@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apps>
+    <app name="doc">eXist-db Documentation App</app>
+    <app name="fundocs">Function Documentation App</app>
+</apps>

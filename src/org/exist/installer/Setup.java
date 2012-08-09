@@ -80,24 +80,20 @@ public class Setup {
 
         List<String> uris = new ArrayList<String>();
         for (int i = offset; i < args.length; i++) {
-            String[] appParams = args[i].split(":");
-            String name = appParams[0];
-            String onOff = appParams[1];
-            if ("on".equals(onOff)) {
-                try {
-                    File xar = findApp(home, name);
-                    if (xar != null) {
-                        System.out.println("Installing app package " + xar.getName());
-                        UserInteractionStrategy interact = new BatchUserInteraction();
-                        Package pkg = repository.getParentRepo().installPackage(xar, true, interact);
-                        String pkgName = pkg.getName();
-                        uris.add(pkgName);
-                    } else {
-                        System.err.println("App package not found: " + name + ". Skipping it.");
-                    }
-                } catch (PackageException e) {
-                    System.err.println("Failed to install application package " + name + ": " + e.getMessage());
+            String name = args[i];
+            try {
+                File xar = findApp(home, name);
+                if (xar != null) {
+                    System.out.println("Installing app package " + xar.getName());
+                    UserInteractionStrategy interact = new BatchUserInteraction();
+                    Package pkg = repository.getParentRepo().installPackage(xar, true, interact);
+                    String pkgName = pkg.getName();
+                    uris.add(pkgName);
+                } else {
+                    System.err.println("App package not found: " + name + ". Skipping it.");
                 }
+            } catch (PackageException e) {
+                System.err.println("Failed to install application package " + name + ": " + e.getMessage());
             }
         }
         String xquery =
@@ -111,7 +107,8 @@ public class Setup {
         }
         prolog.append(')');
         xquery = xquery + prolog;
-        System.out.println("Starting the installation process for each application...");
+        System.out.println("\n=== Starting the installation process for each application... ===");
+        System.out.println("\nPLEASE DO NOT ABORT\n");
         try {
             query.query(xquery);
         } catch (XMLDBException e) {
@@ -119,7 +116,7 @@ public class Setup {
             System.err.println("An error occurred while deploying applications. Some applications may " +
                     "not have been installed correctly. You can install them later using the package repository.");
         }
-        System.out.println("App installation completed.");
+        System.out.println("=== App installation completed. ===");
     }
 
     private static File getExistHome() throws EXistException {

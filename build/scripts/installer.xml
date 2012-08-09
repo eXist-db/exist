@@ -5,11 +5,13 @@
 <!-- $Id$ -->
 <project basedir="../.." default="snapshot-installer" name="Build installer">
   
-  <description>Build installer</description>
+    <description>Build installer</description>
 
 	<!-- import common targets -->
 	<import file="../../build.xml"/>
-		
+	
+	<property name="apps.dir" value="installer/apps"/>
+    
 	<target name="commandline-installer">
         <ant antfile="build.xml" dir="tools/izpack"/>
     </target>
@@ -33,6 +35,14 @@
         <filter token="version" value="${project.version}"/>
         <copy file="installer/install.xml.tmpl" tofile="installer/install.xml" 
               filtering="true" overwrite="true"/>
+        <mkdir dir="${apps.dir}"/>
+        
+        <xslt basedir="installer" in="${apps.dir}/apps.xml"
+            out="installer/jobs.xml"
+            style="jobs.xsl" classpathref="classpath.core" processor="trax"/>
+        <xslt basedir="installer" in="${apps.dir}/apps.xml"
+            out="installer/userInput.xml"
+            style="userInput.xsl" classpathref="classpath.core" processor="trax"/>
     </target>
 
     <target depends="prepare-installer,commandline-installer" name="installer" description="Create installer">

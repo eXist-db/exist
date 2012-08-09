@@ -12,8 +12,9 @@
     <property name="build.compiler" value="modern"/>
 
     <path id="classpath.izpack">
-    	<pathelement path="${izpack.dir}/lib/installer.jar"/>
-    	<pathelement path="${izpack.dir}/bin/panels/UserInputPanel.jar"/>
+        <fileset dir="${izpack.dir}/lib">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
     <!-- =================================================================== -->
