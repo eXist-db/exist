@@ -3,7 +3,7 @@
 rem $Id$
 
 if not "%JAVA_HOME%" == "" goto gotJavaHome
-set JAVA_HOME=$JDKPath
+set JAVA_HOME=$JAVA_HOME
 
 :gotJavaHome
 rem will be set by the installer

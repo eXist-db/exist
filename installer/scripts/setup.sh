@@ -9,8 +9,6 @@
 # will be set by the installer
 EXIST_HOME="%{INSTALL_PATH}"
 
-JAVA_HOME="%{JDKPath}"
-
 if [ ! -d "$JAVA_HOME" ]; then
     JAVA_HOME="%{JAVA_HOME}"
 fi
@@ -28,7 +26,7 @@ OPTIONS="-Dexist.home=$EXIST_HOME"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-	JAVA_OPTIONS="-Xms16000k -Xmx256000k"
+	JAVA_OPTIONS="-Xms64m -Xmx512m"
 fi
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed

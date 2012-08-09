@@ -53,7 +53,7 @@
 
     <panels>
         <panel classname="HTMLInfoPanel" id="start"/>
-        <panel classname="JDKPathPanel"/>
+        <!--panel classname="JDKPathPanel"/-->
         <panel classname="TargetPanel"/>
         <panel classname="UserInputPanel" id="UserInputPanel.0"/>
         <panel classname="PacksPanel"/>
@@ -242,17 +242,12 @@
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never" os="unix"/>
         </pack>
         
-        <!-- TODO disable for the moment as it breaks the installer build,
-            tried to define a condition at the top of this script
-            but it doesnt seem to work until IzPack 5.0 -->
-        <!--
-        <pack name="apps" required="no" preselected="yes" condition="apps.exist">
+        <pack name="apps" required="no" preselected="yes">
             <description>EXPath packages applications for eXist-db</description>
-            <fileset targetdir="$INSTALL_PATH/apps" dir="apps" condition="apps.exist">
+            <fileset targetdir="$INSTALL_PATH/apps" dir="installer/apps">
                 <include name="*.xar"/>
             </fileset>
         </pack>
-        -->
 
         <pack name="sources" required="no">
             <description>Java source files</description>
