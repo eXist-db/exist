@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.SocketException;
+import java.util.Observable;
 import java.util.Observer;
 
 import org.exist.storage.BrokerPool;
@@ -61,7 +62,7 @@ import org.exist.SystemProperties;
  * 
  * @author wolf
  */
-public class JettyStart implements LifeCycle.Listener {
+public class JettyStart extends Observable implements LifeCycle.Listener {
 
     protected static final Logger logger = Logger.getLogger(JettyStart.class);
 
@@ -70,6 +71,9 @@ public class JettyStart implements LifeCycle.Listener {
         start.run(args, null);
     }
 
+    public final static String SIGNAL_STARTED = "jetty started";
+    public final static String SIGNAL_ERROR = "error";
+
     private final static int STATUS_STARTING = 0;
     private final static int STATUS_STARTED = 1;
     private final static int STATUS_STOPPING = 2;
@@ -77,7 +81,8 @@ public class JettyStart implements LifeCycle.Listener {
 
     private int status = STATUS_STOPPED;
     private Thread shutdownHook = null;
-    
+    private int primaryPort = 8080;
+
     public JettyStart() {
         // Additional checks XML libs @@@@
         XmlLibraryChecker.check();
@@ -103,6 +108,9 @@ public class JettyStart implements LifeCycle.Listener {
 
         String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = shutdownHookOption.equals("true");
+
+        if (observer != null)
+            addObserver(observer);
 
         // configure database
         logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
@@ -188,10 +196,13 @@ public class JettyStart implements LifeCycle.Listener {
                 // plural s
                 allPorts.append("s");
             }
-            
+
             for(Connector connector: connectors){
                 allPorts.append(" ");
                 allPorts.append(connector.getPort());
+            }
+            if (connectors.length > 0) {
+                primaryPort = connectors[0].getPort();
             }
 
             //TODO: use pluggable interface
@@ -271,7 +282,9 @@ public class JettyStart implements LifeCycle.Listener {
                 };
                 Runtime.getRuntime().addShutdownHook(shutdownHook);
             }
-            
+
+            setChanged();
+            notifyObservers(SIGNAL_STARTED);
         } catch (MultiException e) {
 
             // Mute the BindExceptions
@@ -292,14 +305,20 @@ public class JettyStart implements LifeCycle.Listener {
             if (!hasBindException) {
                 e.printStackTrace();
             }
+            setChanged();
+            notifyObservers(SIGNAL_ERROR);
         } catch (SocketException e) {
             logger.info("----------------------------------------------------------");
             logger.info("ERROR: Could not bind to port because " +
                         e.getMessage());
             logger.info(e.toString());
             logger.info("----------------------------------------------------------");
+            setChanged();
+            notifyObservers(SIGNAL_ERROR);
         } catch (Exception e) {
             e.printStackTrace();
+            setChanged();
+            notifyObservers(SIGNAL_ERROR);
         }
     }
 
@@ -390,7 +409,11 @@ public class JettyStart implements LifeCycle.Listener {
         status = STATUS_STOPPED;
         notifyAll();
     }
-    
+
+    public int getPrimaryPort() {
+        return primaryPort;
+    }
+
     public void systemInfo() {
     	BrokerPool.systemInfo();
     }

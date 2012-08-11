@@ -100,6 +100,8 @@ public class BrokerPool extends Observable implements Database {
     public final static String SIGNAL_READINESS = "ready";
     /*** ready for writable operations */
     public final static String SIGNAL_WRITABLE = "writable";
+    /*** ready for writable operations */
+    public final static String SIGNAL_STARTED = "started";
     /*** running shutdown sequence */
     public final static String SIGNAL_SHUTDOWN = "shutdown";
 
@@ -981,11 +983,10 @@ public class BrokerPool extends Observable implements Database {
 
         // register some MBeans to provide access to this instance
         AgentFactory.getInstance().initDBInstance(this);
-        
+
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
-        
-		
+
         //setup any configured jobs
         //scheduler.setupConfiguredJobs();
         
@@ -994,6 +995,7 @@ public class BrokerPool extends Observable implements Database {
 
         scheduler.run();
 
+        statusReporter.setStatus(SIGNAL_STARTED);
         statusReporter.terminate();
         statusReporter = null;
 
@@ -1975,8 +1977,9 @@ public class BrokerPool extends Observable implements Database {
             this.status = status;
         }
 
-        public void setStatus(String status) {
+        public synchronized void setStatus(String status) {
             this.status = status;
+            notify();
         }
 
         public synchronized void terminate() {
@@ -1997,6 +2000,8 @@ public class BrokerPool extends Observable implements Database {
                     }
                 }
             }
+            BrokerPool.this.setChanged();
+            BrokerPool.this.notifyObservers(status);
         }
     }
 
