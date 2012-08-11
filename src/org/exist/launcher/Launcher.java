@@ -19,6 +19,13 @@ import java.net.URISyntaxException;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * A launcher for the eXist-db server integrated with the desktop.
+ * Shows a splash screen during startup and registers a tray icon
+ * in the system bar.
+ *
+ * @author Wolfgang Meier
+ */
 public class Launcher implements Observer {
 
     private final static Logger LOG = Logger.getLogger(Launcher.class);

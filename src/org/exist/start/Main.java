@@ -351,7 +351,7 @@ public class Main {
                 _mode = args[0];
 
             } else if (args[0].equals("launch")) {
-                _classname = "org.exist.launcher.Launcher";
+                _classname = "org.exist.launcher.LauncherWrapper";
                 _mode = "jetty";
 
             } else if (args[0].equals("shutdown")) {
@@ -370,8 +370,8 @@ public class Main {
             args = nargs;
 
         } else {
-            _classname = "org.exist.launcher.Launcher";
-            _mode = "jetty";
+            _classname = "org.exist.launcher.LauncherWrapper";
+            _mode = "other";
         }
 
         if (_debug) {

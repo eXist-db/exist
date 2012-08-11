@@ -4,6 +4,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 
+/**
+ * Display a splash screen showing the eXist-db logo and a status line.
+ *
+ * @author Wolfgang Meier
+ */
 public class SplashScreen extends JFrame {
 
     private JLabel statusLabel;
