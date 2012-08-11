@@ -363,7 +363,10 @@
         </copy>
         <copy file="${src}/org/exist/scheduler/quartz.properties"
             todir="${build.classes}/org/exist/scheduler"/>
-
+	<copy file="${src}/org/exist/launcher/icon.png"
+	    todir="${build.classes}/org/exist/launcher"/>
+	<copy file="${src}/org/exist/launcher/logo.jpg"
+	    todir="${build.classes}/org/exist/launcher"/>
         <!-- Convert native to ascii-->
         <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
             encoding="UTF-8" includes="messages*.properties"/>

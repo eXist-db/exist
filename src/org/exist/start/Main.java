@@ -350,6 +350,10 @@ public class Main {
                 _classname = "org.exist.jetty.JettyStart";
                 _mode = args[0];
 
+            } else if (args[0].equals("launch")) {
+                _classname = "org.exist.launcher.Launcher";
+                _mode = "jetty";
+
             } else if (args[0].equals("shutdown")) {
                 _classname = "org.exist.jetty.ServerShutdown";
                 _mode = "other";
@@ -366,8 +370,8 @@ public class Main {
             args = nargs;
 
         } else {
-            _classname = "org.exist.client.InteractiveClient";
-            _mode = "client";
+            _classname = "org.exist.launcher.Launcher";
+            _mode = "jetty";
         }
 
         if (_debug) {
