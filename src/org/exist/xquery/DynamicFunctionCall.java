@@ -70,7 +70,9 @@ public class DynamicFunctionCall extends AbstractExpression {
             // cachedContextInfo will stay in memory
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
-	        return ref.eval(contextSequence);
+	        Sequence result = ref.eval(contextSequence);
+            ref.resetState(false);
+            return result;
         }
     }
 
