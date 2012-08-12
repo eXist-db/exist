@@ -220,6 +220,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
         if (!postOptimization) {
             currentArguments = null;
             contextDocs = null;
+            closureVariables = null;
         }
     }
 
