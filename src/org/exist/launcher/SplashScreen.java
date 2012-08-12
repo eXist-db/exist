@@ -20,6 +20,7 @@ public class SplashScreen extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
         setUndecorated(true);
+        setAlwaysOnTop(true);
 
         // add the image label
         JLabel imageLabel = new JLabel();
