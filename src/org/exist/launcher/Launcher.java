@@ -71,9 +71,7 @@ public class Launcher implements Observer {
                     jetty.addObserver(Launcher.this);
                     jetty.run(new String[]{home}, Launcher.this);
                 } catch (Exception e) {
-                    showMessageAndExit("Error Occurred",
-                            "An error occurred during startup. Please check the logs. " +
-                                    "By default these should be in EXIST_HOME/webapp/WEB-INF/logs/exist.log");
+                    showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.");
                 }
             }
         });
@@ -150,22 +148,7 @@ public class Launcher implements Observer {
                 popup.addSeparator();
                 item = new MenuItem("exist.log");
                 popup.add(item);
-                item.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        File home = ConfigurationHelper.getExistHome();
-                        File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
-                        if (!logFile.canRead()) {
-                            trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
-                        } else {
-                            try {
-                                desktop.open(logFile);
-                            } catch (IOException e) {
-                                trayIcon.displayMessage(null, "Failed to open log file", TrayIcon.MessageType.ERROR);
-                            }
-                        }
-                    }
-                });
+                item.addActionListener(new LogActionListener());
             }
 
             popup.addSeparator();
@@ -174,9 +157,9 @@ public class Launcher implements Observer {
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    jetty.shutdown();
-                    tray.remove(trayIcon);
-                    System.exit(0);
+                jetty.shutdown();
+                tray.remove(trayIcon);
+                System.exit(0);
                 }
             });
         }
@@ -207,8 +190,7 @@ public class Launcher implements Observer {
         } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
             splash.setStatus("An error occurred! Please check the logs.");
             showMessageAndExit("Error Occurred",
-                "An error occurred during startup. Please check the logs.\n" +
-                "By default these should be in EXIST_HOME/webapp/WEB-INF/logs/exist.log");
+                "An error occurred during startup. Please check the logs.");
         }
     }
 
@@ -225,7 +207,17 @@ public class Launcher implements Observer {
     }
 
     private void showMessageAndExit(String title, String message) {
-        JOptionPane.showMessageDialog(splash, message, title, JOptionPane.WARNING_MESSAGE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        JLabel label = new JLabel(message);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(label, BorderLayout.CENTER);
+        JButton displayLogs = new JButton("View Log");
+        displayLogs.addActionListener(new LogActionListener());
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(displayLogs, BorderLayout.SOUTH);
+        JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
         System.exit(1);
     }
 
@@ -246,5 +238,26 @@ public class Launcher implements Observer {
                 LOG.info(s);
             }
         };
+    }
+
+    private class LogActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (!Desktop.isDesktopSupported())
+                return;
+            Desktop desktop = Desktop.getDesktop();
+            File home = ConfigurationHelper.getExistHome();
+            File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
+            if (!logFile.canRead()) {
+                trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
+            } else {
+                try {
+                    desktop.open(logFile);
+                } catch (IOException e) {
+                    trayIcon.displayMessage(null, "Failed to open log file", TrayIcon.MessageType.ERROR);
+                }
+            }
+        }
     }
 }
