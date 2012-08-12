@@ -78,6 +78,11 @@ public abstract class AbstractMapType extends FunctionReference
         getAccessorFunc().setArguments(arguments);
     }
 
+    @Override
+    public void resetState(boolean postOptimization) {
+        getAccessorFunc().resetState(postOptimization);
+    }
+
     protected Comparator<AtomicValue> getComparator(String collation)
             throws XPathException {
         if (collation != null) {
