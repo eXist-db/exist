@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import java.text.Collator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.*;
 
 /**
@@ -32,6 +33,8 @@ import org.exist.xquery.*;
  * @author wolf
  */
 public class FunctionReference extends AtomicValue {
+
+    private final static Logger LOG = Logger.getLogger(FunctionReference.class);
 
     protected FunctionCall functionCall;
     
@@ -69,7 +72,7 @@ public class FunctionReference extends AtomicValue {
             }
         }
     }
-    
+
     /**
      * Calls {@link FunctionCall#eval(Sequence)}.
      * 
@@ -80,7 +83,7 @@ public class FunctionReference extends AtomicValue {
     public Sequence eval(Sequence contextSequence) throws XPathException {
     	return functionCall.eval(contextSequence);
     }
-    
+
     /**
      * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
      * 
@@ -101,6 +104,12 @@ public class FunctionReference extends AtomicValue {
     public void setContext(XQueryContext context) {
     	functionCall.setContext(context);
     }
+
+    public void resetState(boolean postOptimization) {
+//        LOG.debug("Resetting state of function item " + functionCall.getSignature().toString());
+//        functionCall.resetState(postOptimization);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AtomicValue#getType()
      */
