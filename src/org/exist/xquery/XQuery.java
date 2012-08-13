@@ -25,6 +25,12 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 import com.sun.xacml.ctx.RequestCtx;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
+import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.exist.debuggee.Debuggee;
 import org.exist.security.Permission;
@@ -44,13 +50,6 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.text.NumberFormat;
-import java.util.Properties;
-
 
 /**
  * @author wolf
@@ -60,16 +59,16 @@ public class XQuery {
 
     private final static Logger LOG = Logger.getLogger(XQuery.class);
     
-    private DBBroker broker;
+    private final DBBroker broker;
      
     /**
      * 
      */
-    public XQuery(DBBroker broker) {
+    public XQuery(final DBBroker broker) {
         this.broker = broker;
     }
 
-    public XQueryContext newContext(AccessContext accessCtx) {
+    public XQueryContext newContext(final AccessContext accessCtx) {
         return new XQueryContext(broker.getBrokerPool(), accessCtx);
     }
     
@@ -77,48 +76,46 @@ public class XQuery {
         return broker.getBrokerPool().getXQueryPool();
     }
     
-    public CompiledXQuery compile(XQueryContext context, String expression) 
-    throws XPathException, PermissionDeniedException {
-    	Source source = new StringSource(expression);
+    public CompiledXQuery compile(final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
+    	final Source source = new StringSource(expression);
     	try {
-    		return compile(context, source);
-		} catch(IOException ioe) {
-			//should not happen because expression is a String
-			throw new XPathException(ioe.getMessage());
-		}
+            return compile(context, source);
+        } catch(final IOException ioe) {
+            //should not happen because expression is a String
+            throw new XPathException(ioe.getMessage());
+        }
     }
     
-    public CompiledXQuery compile(XQueryContext context, Source source) 
-    throws XPathException, IOException, PermissionDeniedException {
+    public CompiledXQuery compile(final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
         return compile(context, source, false);
     }
     
-    public CompiledXQuery compile(XQueryContext context, Source source, boolean xpointer) 
-    throws XPathException, IOException, PermissionDeniedException {
+    public CompiledXQuery compile(final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
 
-		//check execution permission
-		source.validate(broker.getSubject(), Permission.EXECUTE);
-
-		context.setSource(XACMLSource.getInstance(source));
+        context.setSource(source);
+        context.setXacmlSource(XACMLSource.getInstance(source));
 		
-        Reader reader;
+        Reader reader = null;
+        try {
+            reader = source.getReader();
+        } catch(final UnsupportedEncodingException e) {
+            throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
+        }
         
         try {
-        	reader = source.getReader();
-        } catch (UnsupportedEncodingException e) {
-        	throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
-		}
-        
-        try {
-        	CompiledXQuery compiled = compile(context, reader, xpointer);
-            return compiled;
-		} finally {
-            if (reader != null)
-        	    reader.close();
-		}
+            return compile(context, reader, xpointer);
+        } finally {
+            if(reader != null) {
+                reader.close();
+            }
+        }
     }
     
-    private CompiledXQuery compile(XQueryContext context, Reader reader, boolean xpointer) throws XPathException {
+    private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
+        
+        //check read permission
+        context.getSource().validate(broker.getSubject(), Permission.READ);
+        
         
     	//TODO: move XQueryContext.getUserFromHttpSession() here, have to check if servlet.jar is in the classpath
     	//before compiling/executing that code though to avoid a dependency on servlet.jar - reflection? - deliriumsky
@@ -131,37 +128,38 @@ public class XQuery {
 			<|wolf77|> in line 184 of XQuery.java, because it introduces another dependency on HTTP.
     	 */
     	
-    	long start = System.currentTimeMillis();
-        XQueryLexer lexer = new XQueryLexer(context, reader);
-		XQueryParser parser = new XQueryParser(lexer);
-		XQueryTreeParser treeParser = new XQueryTreeParser(context);
-		try {
-            if (xpointer)
+    	final long start = System.currentTimeMillis();
+        final XQueryLexer lexer = new XQueryLexer(context, reader);
+        final XQueryParser parser = new XQueryParser(lexer);
+        final XQueryTreeParser treeParser = new XQueryTreeParser(context);
+        try {
+            if(xpointer) {
                 parser.xpointer();
-            else
+            } else {
                 parser.xpath();
-            if (parser.foundErrors()) {
+            }
+            
+            if(parser.foundErrors()) {
             	LOG.debug(parser.getErrorMessage());
-            	throw new StaticXQueryException(
-            		parser.getErrorMessage());
+            	throw new StaticXQueryException(parser.getErrorMessage());
             }
 
-            AST ast = parser.getAST();
-            if (ast == null)
+            final AST ast = parser.getAST();
+            if(ast == null) {
                 throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
+            }
+            
 //            LOG.debug("Generated AST: " + ast.toStringTree());
-            PathExpr expr = new PathExpr(context);
-            if (xpointer)
+            final PathExpr expr = new PathExpr(context);
+            if(xpointer) {
                 treeParser.xpointer(ast, expr);
-            else
+            } else {
                 treeParser.xpath(ast, expr);
-            if (treeParser.foundErrors()) {
+            }
+            
+            if(treeParser.foundErrors()) {
                 //AST treeAst = treeParser.getAST();
-                throw new StaticXQueryException(
-                        ast.getLine(),
-                        ast.getColumn(),
-            		treeParser.getErrorMessage(),
-            		treeParser.getLastException());
+                throw new StaticXQueryException(ast.getLine(), ast.getColumn(), treeParser.getErrorMessage(), treeParser.getLastException());
             }
             
             context.getRootContext().resolveForwardReferences();
@@ -174,68 +172,79 @@ public class XQuery {
             } else {
                 LOG.debug("Query diagnostics:\n" + "[skipped: more than 150 expressions]");
             }
+            
             if (LOG.isDebugEnabled()) {
-            	NumberFormat nf = NumberFormat.getNumberInstance();
+            	final NumberFormat nf = NumberFormat.getNumberInstance();
             	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
             }
+            
             return expr;
-        } catch (RecognitionException e) {
-			LOG.debug("Error compiling query: " + e.getMessage(), e);
-			String msg = e.getMessage();
-			if (msg.endsWith(", found 'null'"))
-				msg = msg.substring(0, msg.length() - ", found 'null'".length());
+        } catch(final RecognitionException e) {
+            LOG.debug("Error compiling query: " + e.getMessage(), e);
+            String msg = e.getMessage();
+            if (msg.endsWith(", found 'null'")) {
+                msg = msg.substring(0, msg.length() - ", found 'null'".length());
+            }
             throw new StaticXQueryException(e.getLine(), e.getColumn(), msg);
-        } catch (TokenStreamException e) {
-        	LOG.debug("Error compiling query: " + e.getMessage(), e);
+        } catch(final TokenStreamException e) {
+            LOG.debug("Error compiling query: " + e.getMessage(), e);
             throw new StaticXQueryException(e.getMessage(), e);
         }
     }
     
     
-    public Sequence execute(CompiledXQuery expression, Sequence contextSequence) throws XPathException {
+    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
     	return execute(expression, contextSequence, null);
     }
     
-    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, Properties outputProperties) throws XPathException {
-    	XQueryContext context = expression.getContext();
-        Sequence result = execute(expression, contextSequence,  outputProperties, true);
+    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties) throws XPathException, PermissionDeniedException {
+    	final XQueryContext context = expression.getContext();
+        final Sequence result = execute(expression, contextSequence,  outputProperties, true);
+        
         //TODO : move this elsewhere !
-        HTTPUtils.addLastModifiedHeader( result, context );
-    	return result;
+        HTTPUtils.addLastModifiedHeader(result, context);
+    	
+        return result;
     }
     
-    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
+    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	return execute(expression, contextSequence, null, resetContext);
     }
     
-    public Sequence execute(CompiledXQuery expression, Sequence contextSequence, Properties outputProperties, boolean resetContext) throws XPathException {
-    	long start = System.currentTimeMillis();
-    	XQueryContext context = expression.getContext();
+    public Sequence execute(final CompiledXQuery expression, final Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
-		//check access to the query
-		XACMLSource source = expression.getSource();
-		try {
-			ExistPDP pdp = context.getPDP();
-			if(pdp != null) {
-				RequestCtx request = pdp.getRequestHelper().createQueryRequest(context, source);
-				pdp.evaluate(request);
-			}
-		} catch (PermissionDeniedException pde) {
-			throw new XPathException("Permission to execute query: " + source.createId() + " denied.", pde);
-		}
+        //check execute permissions
+        expression.getContext().getSource().validate(broker.getSubject(), Permission.EXECUTE);
+        
+        
+        final long start = System.currentTimeMillis();
+    	
+        final XQueryContext context = expression.getContext();
+    	
+        //check access to the query
+        final XACMLSource source = expression.getSource();
+        try {
+            final ExistPDP pdp = context.getPDP();
+            if(pdp != null) {
+                final RequestCtx request = pdp.getRequestHelper().createQueryRequest(context, source);
+                pdp.evaluate(request);
+            }
+        } catch(final PermissionDeniedException pde) {
+            throw new XPathException("Permission to execute query: " + source.createId() + " denied.", pde);
+        }
 		
         expression.reset();
-        if (resetContext) {
-        	//context.setBroker(broker);
-        	context.getWatchDog().reset();
+        if(resetContext) {
+            //context.setBroker(broker);
+            context.getWatchDog().reset();
         }
 
-        if (context.requireDebugMode()) {
-       		Debuggee debuggee = broker.getBrokerPool().getDebuggee();
-       		if (debuggee != null) {
-       			debuggee.joint(expression);
-       		}
-		}
+        if(context.requireDebugMode()) {
+            final Debuggee debuggee = broker.getBrokerPool().getDebuggee();
+            if (debuggee != null) {
+                debuggee.joint(expression);
+            }
+        }
         
         //do any preparation before execution
         context.prepareForExecution();
@@ -243,34 +252,36 @@ public class XQuery {
         context.getProfiler().traceQueryStart();
         broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
         try {
-        	Sequence result = expression.eval(contextSequence);
-        	if (LOG.isDebugEnabled()) {
-        		NumberFormat nf = NumberFormat.getNumberInstance();
-        		LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
-        	}
-        	
-        	if(outputProperties != null)
-        		context.checkOptions(outputProperties); //must be done before context.reset!
-        	
-        	return result;
+            final Sequence result = expression.eval(contextSequence);
+            if(LOG.isDebugEnabled()) {
+                final NumberFormat nf = NumberFormat.getNumberInstance();
+                LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+            }
+
+            if(outputProperties != null) {
+                context.checkOptions(outputProperties); //must be done before context.reset!
+            }
+
+            return result;
         } finally {
             context.getProfiler().traceQueryEnd(context);
             expression.reset();
-            if (resetContext)
+            if(resetContext) {
                 context.reset();
-        	broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
+            }
+            broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
         }
     }
 
-	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException, PermissionDeniedException {
-		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
-		CompiledXQuery compiled = compile(context, expression);
-		return execute(compiled, contextSequence);
+    public Sequence execute(final String expression, final Sequence contextSequence, final AccessContext accessCtx) throws XPathException, PermissionDeniedException {
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+        final CompiledXQuery compiled = compile(context, expression);
+        return execute(compiled, contextSequence);
     }
 	
-	public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
-		XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
-		CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
-		return execute(compiled, contextSequence);
+    public Sequence execute(File file, Sequence contextSequence, AccessContext accessCtx) throws XPathException, IOException, PermissionDeniedException {
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), accessCtx);
+        final CompiledXQuery compiled = compile(context, new FileSource(file, "UTF-8", true));
+        return execute(compiled, contextSequence);
     }
 }

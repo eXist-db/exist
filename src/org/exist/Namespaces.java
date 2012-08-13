@@ -43,7 +43,7 @@ public interface Namespaces {
         
     public final static String XPATH_FUNCTIONS_MATH_NS = "http://www.w3.org/2005/xpath-functions/math";
     public final static String XQUERY_OPTIONS_NS = "http://www.w3.org/2011/xquery-options";
-
+        
     public final static String XSLT_XQUERY_SERIALIZATION_NS = "http://www.w3.org/2010/xslt-xquery-serialization";
 
     public final static String W3C_XQUERY_XPATH_ERROR_NS = "http://www.w3.org/2005/xqt-errors/";

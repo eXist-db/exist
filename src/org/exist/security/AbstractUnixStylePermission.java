@@ -300,4 +300,71 @@ public abstract class AbstractUnixStylePermission implements Permission {
             }
         }
     }
+    
+    /**
+     * Utility function for external use
+     */
+    public static String typesToString(int types) {
+        final StringBuilder builder = new StringBuilder();
+        
+        if((types >> 8) > 0) {
+            if(((types >> 8) & READ) == READ) {
+                builder.append(READ_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+
+            if(((types >> 8) & WRITE) == WRITE) {
+                builder.append(WRITE_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+
+            if(((types >> 8) & EXECUTE) == EXECUTE) {
+                builder.append(EXECUTE_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+        }
+        
+        if((types >> 4) > 0) {
+            if(((types >> 4) & READ) == READ) {
+                builder.append(READ_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+
+            if(((types >> 4) & WRITE) == WRITE) {
+                builder.append(WRITE_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+
+            if(((types >> 4) & EXECUTE) == EXECUTE) {
+                builder.append(EXECUTE_CHAR);
+            } else {
+                builder.append(UNSET_CHAR);
+            }
+        }
+        
+        if((types & READ) == READ) {
+            builder.append(READ_CHAR);
+        } else {
+            builder.append(UNSET_CHAR);
+        }
+        
+        if((types & WRITE) == WRITE) {
+            builder.append(WRITE_CHAR);
+        } else {
+            builder.append(UNSET_CHAR);
+        }
+        
+        if((types & EXECUTE) == EXECUTE) {
+            builder.append(EXECUTE_CHAR);
+        } else {
+            builder.append(UNSET_CHAR);
+        }
+        
+        return builder.toString();
+    }
 }

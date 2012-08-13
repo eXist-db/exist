@@ -183,6 +183,14 @@
         <servlet-name>AtomServlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
     </servlet>
+    
+    <!--
+        EXQuery - RESTXQ
+    -->
+    <servlet>
+        <servlet-name>RestXqServlet</servlet-name>
+        <servlet-class>org.exist.extensions.exquery.restxq.impl.RestXqServlet</servlet-class>
+    </servlet>
 
     <!-- Enabled dynamic GZip of server responses
 

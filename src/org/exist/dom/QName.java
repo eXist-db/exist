@@ -151,6 +151,7 @@ public class QName implements Comparable<QName> {
      * 
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
+    @Override
     public int compareTo(QName other) {
         if(nameType_ != other.nameType_) {
             return nameType_ < other.nameType_ ? Constants.INFERIOR : Constants.SUPERIOR;
@@ -173,20 +174,31 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if(obj == null || !(obj instanceof QName)) {
             return false;
-        QName other = (QName) obj;
-        int cmp = compareTo(other);
-        if(cmp != 0)
+        }
+        
+        final QName other = (QName) obj;
+        final int cmp = compareTo(other);
+        if(cmp != 0) {
             return false;
-        if(prefix_ == null)
+        }
+        
+        if(prefix_ == null) {
             return other.prefix_ == null ? true : false;
-        else if(other.prefix_ == null)
+        } else if(other.prefix_ == null) {
             return false;
-        else
+        } else {
             return prefix_.equals(other.prefix_);
+        }
     }
 
+    /** 
+     * Checks two QNames for simply equality. Two QNames are simply equal
+     * if their namespace URIs and local names are equal.
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     public boolean equalsSimple(QName other) {
         int c;
         if (namespaceURI_ == null)

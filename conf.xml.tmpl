@@ -152,6 +152,14 @@
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
 		doc-ids="default">
 
+	<!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
+	<startup>
+		<triggers>
+			<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+		</triggers>
+	</startup>
+
+
         <!-- 
             Settings for the database connection pool:
             
@@ -738,6 +746,10 @@
 
             <!-- EXPath Cryptographic Module -->
             <module uri="http://kuberam.ro/ns/x-crypt" class="ro.kuberam.xcrypt.XcryptModule" />
+            
+            <!-- EXQuery Modules -->
+            <!-- RESTXQ -->
+            <module uri="http://exquery.org/ns/rest/annotation/" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
             
             <!-- 
                 Modules written in XQuery

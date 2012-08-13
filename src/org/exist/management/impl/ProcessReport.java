@@ -134,8 +134,8 @@ public class ProcessReport implements ProcessReportMBean {
             TabularDataSupport data = new TabularDataSupport(tabularType);
             XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
             for (int i = 0; i < watchdogs.length; i++) {
-                Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getSourceType(),
-                        watchdogs[i].getContext().getSourceKey(), Boolean.valueOf(watchdogs[i].isTerminating()) };
+                Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getXacmlSource().getType(),
+                        watchdogs[i].getContext().getXacmlSource().getKey(), Boolean.valueOf(watchdogs[i].isTerminating()) };
                 data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
             }
             return data;

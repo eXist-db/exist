@@ -17,6 +17,10 @@
 	<forward pattern="/webdav/" servlet="WebDAVServlet"/>
     <!-- Atom Publishing Protocol -->
     <forward pattern="/atom/" servlet="AtomServlet"/>
+    
+    <!-- RESTXQ -->
+    <forward pattern="/restxq/" servlet="RestXqServlet"/>
+    
     <!-- betterFORM resource-servlet -->
     <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
 

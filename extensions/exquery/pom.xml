@@ -1,0 +1,179 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+  
+    <groupId>org.existdb.extensions.exquery</groupId>
+    <artifactId>extensions-exquery-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>eXist-db EXQuery Extensions</name>
+
+    <modules>
+        <module>restxq</module>
+    </modules>
+
+    <description>The base POM for all eXist-db EXQuery extensions.</description>
+    <url>http://www.exist-db.org</url>
+    <inceptionYear>2012</inceptionYear>
+
+    <organization>
+        <name>eXist Solutions</name>
+        <url>http://www.existsolutions.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Adam Retter</name>
+            <email>adam.retter@googlemail.com</email>
+            <organization>Adam Retter Consulting</organization>
+            <organizationUrl>http://www.adamretter.org.uk</organizationUrl>
+            <timezone>BST</timezone>
+        </developer>
+    </developers>
+    
+    <licenses>
+        <license>
+            <name>The BSD 3-Clause License</name>
+            <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
+    <scm>
+        <connection>svn:https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/extensions/exquery</connection>
+        <developerConnection>svn:https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist/extensions/exquery</developerConnection>
+        <url>svn:https://exist.svn.sourceforge.net/viewvc/exist/trunk/eXist/extensions/exquery</url>
+    </scm>
+    
+    <properties>
+        <project.build.source>1.6</project.build.source>
+        <project.build.target>1.6</project.build.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>1.9.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>true</doCheck>
+                    <doUpdate>true</doUpdate>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <source>${project.build.source}</source>
+                    <target>${project.build.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                    <manifest>
+                        <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                    </manifest>
+                    <manifestEntries>
+                        <Source-Revision>${buildNumber}</Source-Revision>
+                        <Build-Timestamp>${timestamp}</Build-Timestamp>
+                        <Source-Repository>${project.scm.connection}</Source-Repository>
+                        <Implementation-URL>${project.url}</Implementation-URL>
+                    </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Attach source jars -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Attach javadoc jars -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <links>
+                        <link>http://www.exist-db.org</link>
+                        <link>http://www.exquery.org</link>
+                        <link>http://www.w3.org/TR/xquery-30/</link>
+                    </links>
+                    <packagesheader>eXist-db EXQuery Extension Packages</packagesheader>
+                    <doctitle>eXist-db EXQuery Extensions ${project.version}</doctitle>
+                    <windowtitle>eXist-db EXQuery Extensions ${project.version}</windowtitle>
+                    <bottom>
+                        <![CDATA[
+                            Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="${project.url}">eXist-db</a>. All Rights Reserved
+                        ]]>
+                    </bottom>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+        </plugins>
+        
+    </build>
+  
+</project>

@@ -71,6 +71,7 @@ import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
+import org.exist.security.AbstractUnixStylePermission;
 import org.exist.security.Account;
 import org.exist.security.MessageDigester;
 import org.exist.security.Permission;
@@ -2084,18 +2085,18 @@ public class NativeBroker extends DBBroker {
         }
         
         if(!doc.getPermissions().validate(getSubject(), accessType)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() +" not allowed to read document '"+fileName+"'");
+            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' not allowed requested access to document '" + fileName + "'");
         }
         
-       if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-           BinaryDocument bin = (BinaryDocument)doc;
-           try {
-              bin.setContentLength(getBinaryResourceSize(bin));
-           } catch (IOException ex) {
-              LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
-           }
-       }
-       return doc;
+        if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            BinaryDocument bin = (BinaryDocument)doc;
+            try {
+                bin.setContentLength(getBinaryResourceSize(bin));
+            } catch (IOException ex) {
+                LOG.fatal("Cannot get content size for "+bin.getURI(),ex);
+            }
+        }
+        return doc;
     }
 
     @Override

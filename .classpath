@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="extensions/fluent/src"/>
 	<classpathentry kind="src" path="extensions/fluent/test/src"/>
 	<classpathentry kind="src" path="extensions/expath/src"/>
+	<classpathentry kind="src" path="extensions/exquery/restxq/src/main/java"/>	
 	<classpathentry kind="src" path="extensions/indexes/sort/src"/>
 	<classpathentry kind="src" path="extensions/indexes/sort/test/src"/>
 	<classpathentry kind="src" path="extensions/indexes/lucene/src"/>
@@ -66,6 +67,15 @@
 	<classpathentry kind="lib" path="extensions/modules/lib/cssparser-0.9.5.jar"/>
 	<classpathentry kind="lib" path="extensions/modules/lib/sac-1.3.jar"/>
 	<classpathentry kind="lib" path="extensions/expath/lib/http-client-java-0.3.0.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-common-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-api-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-annotations-common-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-api-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-serialization-annotations-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery-xquery-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/lib/exquery3-xquery-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-api-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/core/clj-ds-0.0.1.jar"/>
 	<classpathentry kind="lib" path="extensions/modules/lib/cql-java-1.10.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

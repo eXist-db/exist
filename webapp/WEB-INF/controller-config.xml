@@ -27,6 +27,9 @@
   <!-- Atom Publishing Protocol -->
   <forward pattern="/atom/" servlet="AtomServlet"/>
   
+  <!-- RESTXQ -->
+  <forward pattern="/restxq/" servlet="RestXqServlet"/>
+  
   <!-- OAuth servlet -->
   <!-- 
   <forward pattern="/oauth" servlet="OAuthServlet"/>

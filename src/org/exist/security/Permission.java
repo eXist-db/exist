@@ -66,7 +66,7 @@ public interface Permission {
     public final static char USER_CHAR = 'u';
     public final static char GROUP_CHAR = 'g';
     public final static char OTHER_CHAR = 'o';
-	
+    
     public int getGroupMode();
 
     /**

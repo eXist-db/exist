@@ -277,7 +277,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             LOG.debug("query: " + xpath);
             broker = pool.get(session.getUser());
             XQueryContext context = new XQueryContext(pool, AccessContext.SOAP);
-            context.setSource(XACMLSource.getInstance(xpath));
+            context.setXacmlSource(XACMLSource.getInstance(xpath));
             
             session.registerContext(context);
             

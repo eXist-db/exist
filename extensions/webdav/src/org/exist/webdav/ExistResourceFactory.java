@@ -191,7 +191,9 @@ public class ExistResourceFactory implements ResourceFactory {
             }
 
             // Return broker to pool
-            brokerPool.release(broker);
+            if(broker != null) {
+                brokerPool.release(broker);
+            }
         }
 
         if(LOG.isDebugEnabled())

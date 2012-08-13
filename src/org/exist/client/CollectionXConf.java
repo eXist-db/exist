@@ -1,7 +1,7 @@
 /*
  * eXist Open Source Native XML Database
  *
- * Copyright (C) 2001-06 Wolfgang M. Meier wolfgang@exist-db.org
+ * Copyright (C) 2001-12 The eXist-db Project <info@exist-db.org>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -21,6 +21,16 @@
  */
 package org.exist.client;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
 import org.w3c.dom.Document;
@@ -32,17 +42,6 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
@@ -521,23 +520,18 @@ public class CollectionXConf
 	 *
 	 * @param index		The numeric index of the range index to update
 	 * @param triggerClass	The name of the new class for the trigger
+         * @param parameters The parameters to the trigger
 	 * 
 	 */
-	public void updateTrigger(int index, String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
+	public void updateTrigger(int index, String triggerClass, Properties parameters)
 	{
 		//TODO: finish this!!! - need to add code for parameters
 		
 		hasChanged = true;
 		
-		if(triggerClass != null)
+		if(triggerClass != null) {
 			triggers[index].setTriggerClass(triggerClass);
-		
-		triggers[index].setStoreDocumentEvent(STORE_DOCUMENT_EVENT);
-		triggers[index].setUpdateDocumentEvent(UPDATE_DOCUMENT_EVENT);
-		triggers[index].setRemoveDocumentEvent(REMOVE_DOCUMENT_EVENT);
-		triggers[index].setCreateCollectionEvent(CREATE_COLLECTION_EVENT);
-		triggers[index].setRenameCollectionEvent(RENAME_COLLECTION_EVENT);
-		triggers[index].setDeleteCollectionEvent(DELETE_COLLECTION_EVENT);
+                }
 	}
 	
 	/**
@@ -546,7 +540,7 @@ public class CollectionXConf
 	 * @param triggerClass The class for the Trigger
 	 * 
 	 */
-	public void addTrigger(String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
+	public void addTrigger(String triggerClass, Properties parameters)
 	{
 		//TODO: finish this!!! seee updateTrigger
 		
@@ -555,13 +549,13 @@ public class CollectionXConf
 		if(triggers == null)
 		{
 			triggers = new Trigger[1];
-			triggers[0] = new Trigger(triggerClass, STORE_DOCUMENT_EVENT, UPDATE_DOCUMENT_EVENT, REMOVE_DOCUMENT_EVENT, CREATE_COLLECTION_EVENT, RENAME_COLLECTION_EVENT, DELETE_COLLECTION_EVENT, parameters);
+			triggers[0] = new Trigger(triggerClass, parameters);
 		}
 		else
 		{
 			Trigger newTriggers[] = new Trigger[triggers.length + 1];
 			System.arraycopy(triggers, 0, newTriggers, 0, triggers.length);
-			newTriggers[triggers.length] = new Trigger(triggerClass, STORE_DOCUMENT_EVENT, UPDATE_DOCUMENT_EVENT, REMOVE_DOCUMENT_EVENT, CREATE_COLLECTION_EVENT, RENAME_COLLECTION_EVENT, DELETE_COLLECTION_EVENT, parameters);
+			newTriggers[triggers.length] = new Trigger(triggerClass, parameters);
 			triggers = newTriggers;
 		}
 	}
@@ -695,7 +689,7 @@ public class CollectionXConf
 				}
 				
 				//create the trigger
-				triggers[i] = new Trigger(trigger.getAttribute("class"), trigger.getAttribute("event"), parameters);
+				triggers[i] = new Trigger(trigger.getAttribute("class"), parameters);
 			}
 			
 			return triggers;
@@ -1118,54 +1112,17 @@ public class CollectionXConf
 	protected class Trigger
 	{
 		private String triggerClass = null;
-		private boolean STORE_DOCUMENT_EVENT = false;
-		private boolean UPDATE_DOCUMENT_EVENT = false;
-		private boolean REMOVE_DOCUMENT_EVENT = false;
-		private boolean CREATE_COLLECTION_EVENT = false;
-		private boolean RENAME_COLLECTION_EVENT = false;
-		private boolean DELETE_COLLECTION_EVENT = false;		
 		private Properties parameters = null;
 		
 		/**
 		 * Constructor
 		 * 
 		 * @param triggerClass				The fully qualified java class name of the trigger
-		 * @param STORE_DOCUMENT_EVENT		true indicates that the trigger should receive the Store Document Event
-		 * @param UPDATE_DOCUMENT_EVENT		true indicates that the trigger should receive the Update Document Event
-		 * @param REMOVE_DOCUMENT_EVENT		true indicates that the trigger should receive the Remove Document Event
-		 * @param CREATE_COLLECTION_EVENT	true indicates that the trigger should receive the Create Collection Event
-		 * @param RENAME_COLLECTION_EVENT	true indicates that the trigger should receive the Rename Collection Event
-		 * @param DELETE_COLLECTION_EVENT	true indicates that the trigger should receive the Delete Collection Event
 		 * @param parameters				Properties describing any name=value parameters for the trigger
 		 */
-		Trigger(String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
-		{
-			//set properties
-			this.triggerClass = triggerClass;
-			this.STORE_DOCUMENT_EVENT =  STORE_DOCUMENT_EVENT;
-			this.UPDATE_DOCUMENT_EVENT =  UPDATE_DOCUMENT_EVENT;
-			this.REMOVE_DOCUMENT_EVENT =  REMOVE_DOCUMENT_EVENT;
-			this.CREATE_COLLECTION_EVENT = CREATE_COLLECTION_EVENT;
-			this.RENAME_COLLECTION_EVENT = RENAME_COLLECTION_EVENT;
-			this.DELETE_COLLECTION_EVENT = DELETE_COLLECTION_EVENT;
-			this.parameters = parameters;
-		}
-		
-		Trigger(String triggerClass, String triggerEvents, Properties parameters)
+		Trigger(final String triggerClass, final Properties parameters)
 		{
 			this.triggerClass = triggerClass;
-			if(triggerEvents.indexOf("store") > -1)
-				STORE_DOCUMENT_EVENT = true;
-			if(triggerEvents.indexOf("update") > -1)
-				UPDATE_DOCUMENT_EVENT = true;
-			if(triggerEvents.indexOf("remove") > -1)
-				REMOVE_DOCUMENT_EVENT = true;
-			if(triggerEvents.indexOf("create") > -1)
-				CREATE_COLLECTION_EVENT = true;
-			if(triggerEvents.indexOf("rename") > -1)
-				RENAME_COLLECTION_EVENT = true;
-			if(triggerEvents.indexOf("delete") > -1)
-				DELETE_COLLECTION_EVENT = true;
 			this.parameters = parameters;
 		}
 		
@@ -1179,66 +1136,6 @@ public class CollectionXConf
 			this.triggerClass = triggerClass;
 		}
 		
-		public boolean getStoreDocumentEvent()
-		{
-			return STORE_DOCUMENT_EVENT;
-		}
-		
-		public void setStoreDocumentEvent(boolean store)
-		{
-			STORE_DOCUMENT_EVENT = store;
-		}
-		
-		public boolean getUpdateDocumentEvent()
-		{
-			return UPDATE_DOCUMENT_EVENT;
-		}
-		
-		public void setUpdateDocumentEvent(boolean update)
-		{
-			UPDATE_DOCUMENT_EVENT = update;
-		}
-		
-		public boolean getRemoveDocumentEvent()
-		{
-			return REMOVE_DOCUMENT_EVENT;
-		}
-		
-		public void setRemoveDocumentEvent(boolean remove)
-		{
-			REMOVE_DOCUMENT_EVENT = remove;
-		}
-		
-		public boolean getCreateCollectionEvent()
-		{
-			return CREATE_COLLECTION_EVENT;
-		}
-		
-		public void setCreateCollectionEvent(boolean create)
-		{
-			CREATE_COLLECTION_EVENT = create;
-		}
-		
-		public boolean getRenameCollectionEvent()
-		{
-			return RENAME_COLLECTION_EVENT;
-		}
-		
-		public void setRenameCollectionEvent(boolean rename)
-		{
-			RENAME_COLLECTION_EVENT = rename;
-		}
-		
-		public boolean getDeleteCollectionEvent()
-		{
-			return DELETE_COLLECTION_EVENT;
-		}
-		
-		public void setDeleteCollectionEvent(boolean delete)
-		{
-			DELETE_COLLECTION_EVENT = delete;
-		}
-		
 		//produces a collection.xconf suitable string of XML describing the trigger
 		protected String toXMLString()
 		{
@@ -1249,27 +1146,6 @@ public class CollectionXConf
 			
 				trigger.append("<trigger class=\"");
 				trigger.append(triggerClass);
-				trigger.append("\" event=\"");
-				
-				//events
-				if(STORE_DOCUMENT_EVENT)
-					trigger.append("store,");
-				if(UPDATE_DOCUMENT_EVENT)
-					trigger.append("update,");
-				if(REMOVE_DOCUMENT_EVENT)
-					trigger.append("remove,");
-				if(CREATE_COLLECTION_EVENT)
-					trigger.append("create,");
-				if(RENAME_COLLECTION_EVENT)
-					trigger.append("rename,");
-				if(DELETE_COLLECTION_EVENT)
-					trigger.append("delete,");
-				
-				//remove possible trailing comma in events attribute
-				if(trigger.charAt(trigger.length() -1 ) == ',')
-				{
-					trigger.deleteCharAt(trigger.length() - 1);
-				}
 				trigger.append("\">");
 				
 				//parameters if any
