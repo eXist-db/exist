@@ -5367,7 +5367,7 @@ public XQueryTreeParser() {
 			aValue = new LiteralValue[0];
 			}
 			
-			Annotation a = new Annotation((QName)la.get(0), aValue);
+			Annotation a = new Annotation((QName)la.get(0), aValue, signature);
 			anns[i] = a;
 			}
 			

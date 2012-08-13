@@ -167,7 +167,7 @@ public abstract class AbstractExpression implements Expression {
 
     @Override
     public XACMLSource getSource() {
-        return context.getSource();
+        return context.getXacmlSource();
     }
 
     @Override

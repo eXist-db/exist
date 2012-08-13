@@ -72,7 +72,7 @@ public class ExtCollection extends Function {
             new QName("collection", Function.BUILTIN_FUNCTION_NS),
             "Returns the documents contained in the collections specified in " +
             "the input sequence. " + XMLDBModule.COLLECTION_URI +
-            " Documents contained in subcollections are also included.",
+            " Documents contained in subcollections are also included. If no value is supplied, the statically know documents are used, for the REST Server this could be the addressed collection.",
             new SequenceType[] {
                 //Different from the offical specs
                 new FunctionParameterSequenceType("collection-uris", Type.STRING,

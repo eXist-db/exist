@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import com.sun.xacml.ctx.RequestCtx;
+import java.util.List;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
@@ -32,8 +33,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import java.util.*;
 
 /**
  * Represents a call to a user-defined function 
@@ -46,55 +45,61 @@ import java.util.*;
  */
 public class FunctionCall extends Function {
 
-	protected UserDefinedFunction functionDef;
-	protected Expression expression;
+    protected UserDefinedFunction functionDef;
+    protected Expression expression;
+
 
     // the name of the function. Used for forward references.
-	protected QName name = null;
-	protected List<Expression> arguments = null;
+    protected QName name = null;
+    protected List<Expression> arguments = null;
 	
-	private boolean recursive = false;
+    private boolean recursive = false;
 	
     protected VariableReference varDeps[];
 
     public FunctionCall(XQueryContext context, QName name, List<Expression> arguments) {
-		super(context);
-		this.name = name;
-		this.arguments = arguments;
-	}
+        super(context);
+        this.name = name;
+        this.arguments = arguments;
+    }
 	
-	public FunctionCall(XQueryContext context, UserDefinedFunction functionDef) {
-		super(context);
-		setFunction(functionDef);
-	}
+    public FunctionCall(XQueryContext context, UserDefinedFunction functionDef) {
+        super(context);
+        setFunction(functionDef);
+    }
+    
+    public FunctionCall(FunctionCall other) {
+        super(other.getContext());
+        this.name = other.name;
+        this.recursive = other.recursive;
+        this.functionDef = other.functionDef;
+        this.expression = other.expression;
+        this.mySignature = other.mySignature;
+    }
 	
-	public FunctionCall(FunctionCall other) {
-		super(other.getContext());
-		this.name = other.name;
-		this.recursive = other.recursive;
-		this.functionDef = other.functionDef;
-		this.expression = other.expression;
-		this.mySignature = other.mySignature;
-	}
 	
-	private void setFunction(UserDefinedFunction functionDef) {
-		this.functionDef = (UserDefinedFunction) functionDef.clone();
-		this.mySignature = this.functionDef.getSignature();
-		this.expression = this.functionDef;
-		this.functionDef.setCaller(this);
-		SequenceType returnType = this.functionDef.getSignature().getReturnType();
-		// add return type checks
-		if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE)
-			expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression,
-                    new Error(Error.FUNC_RETURN_CARDINALITY));
-		if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC))
-			expression = new Atomize(context, expression);
-		if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER))
-			expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, 
-                    new Error(Error.FUNC_RETURN_TYPE));
-		else if(returnType.getPrimaryType() != Type.ITEM)
-			expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
-	}
+    private void setFunction(UserDefinedFunction functionDef) {
+        this.functionDef = (UserDefinedFunction) functionDef.clone();
+        this.mySignature = this.functionDef.getSignature();
+        this.expression = this.functionDef;
+        this.functionDef.setCaller(this);
+        SequenceType returnType = this.functionDef.getSignature().getReturnType();
+        
+        // add return type checks
+        if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE) {
+                expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression, new Error(Error.FUNC_RETURN_CARDINALITY));
+        }
+        
+        if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC)) {
+                expression = new Atomize(context, expression);
+        }
+        
+        if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER)) {
+                expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
+        } else if(returnType.getPrimaryType() != Type.ITEM) {
+                expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
+        }
+    }
 	
 	/**
 	 * For calls to functions in external modules, check that the instance of the function we were
@@ -117,13 +122,13 @@ public class FunctionCall extends Function {
                         rootModule.getFunction(functionDef.getName(), getArgumentCount(), modContext);
                     if (replacementFunctionDef != null) {
                         expression = functionDef = (UserDefinedFunction) replacementFunctionDef.clone();
-                		mySignature = functionDef.getSignature();
-                		functionDef.setCaller(this);
+                        mySignature = functionDef.getSignature();
+                        functionDef.setCaller(this);
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
         
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
@@ -144,15 +149,22 @@ public class FunctionCall extends Function {
 			context.functionEnd();
 		}
 
-         varDeps = new VariableReference[getArgumentCount()];
-         for(int i = 0; i < getArgumentCount(); i++) {
-             Expression arg = getArgument(i);
-             VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
-             if (varRef != null) {
-                 varDeps[i] = varRef;
-             }
-         }
-	}
+        context.functionStart(functionDef.getSignature());
+        try {
+            expression.analyze(newContextInfo);
+        } finally {
+            context.functionEnd();
+        }
+
+        varDeps = new VariableReference[getArgumentCount()];
+        for(int i = 0; i < getArgumentCount(); i++) {
+            final Expression arg = getArgument(i);
+            final VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
+            if(varRef != null) {
+                varDeps[i] = varRef;
+            }
+        }
+    }
 	
     /**
      * Called by {@link XQueryContext} to resolve a call to a function that has not
@@ -162,48 +174,49 @@ public class FunctionCall extends Function {
      * @param functionDef
      * @throws XPathException
      */
-	public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
-		setFunction(functionDef);
-		setArguments(arguments);
-		arguments = null;
-		name = null;
-	} 
+    public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
+        setFunction(functionDef);
+        setArguments(arguments);
+        arguments = null;
+        name = null;
+    } 
 	
-	public int getArgumentCount() {
-		if (arguments == null)
-			return super.getArgumentCount();
-		else
-			return arguments.size();
-	}
+    @Override
+    public int getArgumentCount() {
+        if(arguments == null) {
+            return super.getArgumentCount();
+        }
+        
+        return arguments.size();
+    }
 	
-	public QName getQName() {
-		return name;
-	}
+    public QName getQName() {
+        return name;
+    }
 	
-	/** 
-	 * Evaluates all arguments, then forwards them to the user-defined function.
-	 * 
-	 * The return value of the user-defined function will be checked against the
-	 * provided function signature.
-	 * 
-	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
-	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		Sequence[] seq = new Sequence[getArgumentCount()];
+    /** 
+     * Evaluates all arguments, then forwards them to the user-defined function.
+     * 
+     * The return value of the user-defined function will be checked against the
+     * provided function signature.
+     * 
+     * @see org.exist.xquery.Expression#eval(Sequence, Item)
+     */
+    @Override
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        Sequence[] seq = new Sequence[getArgumentCount()];
         DocumentSet[] contextDocs = new DocumentSet[getArgumentCount()];
         for(int i = 0; i < getArgumentCount(); i++) {
-			try {
+            try {
                 seq[i] = getArgument(i).eval(contextSequence, contextItem);
-                if (varDeps != null && varDeps[i] != null) {
-                    Variable var = varDeps[i].getVariable();
-                    if (var != null)
+                if(varDeps != null && varDeps[i] != null) {
+                    final Variable var = varDeps[i].getVariable();
+                    if(var != null) {
                         contextDocs[i] = var.getContextDocs();
+                    }
                 }
-//			System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
-            } catch (XPathException e) {
+                //System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
+            } catch(XPathException e) {
                 if(e.getLine() <= 0) {
                     e.setLocation(line, column, getSource());
                 }
@@ -211,40 +224,38 @@ public class FunctionCall extends Function {
                 e.addFunctionCall(functionDef, this);
                 throw e;
             }
-		}
-		Sequence result = evalFunction(contextSequence, contextItem, seq, contextDocs);
-		if (functionDef.getSignature().getAnnotations() != null) {
-			for (Annotation ann : functionDef.getSignature().getAnnotations()) {
-				AnnotationTrigger trigger = ann.getTrigger();
-				if (trigger instanceof AnnotationTriggerOnResult) {
-					try {
-						((AnnotationTriggerOnResult) trigger).trigger(result);
-					} catch (Throwable e) {
-						throw new XPathException(this, "function '" + getSignature().getName() + "'. " +
-								e.getMessage(), e);
-					}
-				}
-			}
-		}
+        }
+        
+        final Sequence result = evalFunction(contextSequence, contextItem, seq, contextDocs);
+        try {
+            //Don't check deferred calls : it would result in a stack overflow
+            //TODO : find a solution or... is it already here ?
+            //Don't test on empty sequences since they can have several types
+            //TODO : add a prior cardinality check on wether an empty result is allowed or not
+            //TODO : should we introduce a deffered type check on VirtualNodeSet 
+            // and trigger it when the nodeSet is realized ?
+            if(!(result instanceof DeferredFunctionCall) && !(result instanceof VirtualNodeSet) && !result.isEmpty()) {
+                getSignature().getReturnType().checkType(result.getItemType());
+            }
+        } catch(XPathException e) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
+        }
 
-		try {
-			//Don't check deferred calls : it would result in a stack overflow
-			//TODO : find a solution or... is it already here ?
-			if (!(result instanceof DeferredFunctionCall) &&
-				//Don't test on empty sequences since they can have several types
-				//TODO : add a prior cardinality check on wether an empty result is allowed or not
-				//TODO : should we introduce a deffered type check on VirtualNodeSet 
-				// and trigger it when the nodeSet is realized ?
-				!(result instanceof VirtualNodeSet) &&
-                !result.isEmpty())
-				getSignature().getReturnType().checkType(result.getItemType()); 
-		} catch (XPathException e) {
-			throw new XPathException(this, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " +
-					e.getMessage(), e);
-		}
+	
+        //Annotation Triggers are bad design, disabled as breaks RESTXQ - Adam.
+        /*for (Annotation ann : functionDef.getSignature().getAnnotations()) {
+            AnnotationTrigger trigger = ann.getTrigger();
+            if (trigger instanceof AnnotationTriggerOnResult) {
+                try {
+                    ((AnnotationTriggerOnResult) trigger).trigger(result);
+                } catch (Throwable e) {
+                    throw new XPathException(this, "function '" + getSignature().getName() + "'. " + e.getMessage(), e);
+                }
+            }
+        }*/
 
-		return result;
-	}
+        return result;
+    }
 
     /**
      * @param contextSequence
@@ -257,98 +268,119 @@ public class FunctionCall extends Function {
     }
 
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
-        if (context.isProfilingEnabled()) {
+        if(context.isProfilingEnabled()) {
             context.getProfiler().start(this);     
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
+            
+            if(contextSequence != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
+            }
+            
+            if(contextItem != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }        
+            }
+        }
 
-		//check access to the method
-		try {
-			ExistPDP pdp = context.getPDP();
-			if(pdp != null) {
-				RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, getName());
-				//if request is null, this function belongs to a main module and is allowed to be called
-				//otherwise, the access must be checked
-				if(request != null)
-					pdp.evaluate(request);
-			}
-		} catch (PermissionDeniedException pde) {
-			XPathException xe = new XPathException(this, "Access to function '" + getName() + "'  denied.", pde);
-			xe.addFunctionCall(functionDef, this);
-			throw xe;
-		}
+        //check access to the method
+        try {
+            final ExistPDP pdp = context.getPDP();
+            if(pdp != null) {
+                final RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, getName());
+                //if request is null, this function belongs to a main module and is allowed to be called
+                //otherwise, the access must be checked
+                if(request != null) {
+                    pdp.evaluate(request);
+                }
+            }
+        } catch(PermissionDeniedException pde) {
+            final XPathException xe = new XPathException(this, "Access to function '" + getName() + "'  denied.", pde);
+            xe.addFunctionCall(functionDef, this);
+            throw xe;
+        }
 		
         functionDef.setArguments(seq, contextDocs);
         
         if(isRecursive()) {
-//            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
+            //LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
             return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem, seq, contextDocs);
         } else {
             
-        	//XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
-        	context.stackEnter(this);
+            //XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
+            context.stackEnter(this);
+
+            context.functionStart(functionDef.getSignature());
+            final LocalVariable mark = context.markLocalVariables(true);
+            context.pushInScopeNamespaces(false);
             
-        	context.functionStart(functionDef.getSignature());
-                LocalVariable mark = context.markLocalVariables(true);
-                context.pushInScopeNamespaces(false);
             try {
-                if (context.getProfiler().traceFunctions())
+                if(context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceFunctionStart(this);
+                }
+                
                 long start = System.currentTimeMillis();
-    			Sequence returnSeq = expression.eval(contextSequence, contextItem);
-    			while (returnSeq instanceof DeferredFunctionCall &&
-    					functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
-//    				 LOG.debug("Executing function: " + functionDef.getSignature());
-    				returnSeq = ((DeferredFunctionCall) returnSeq).execute();
-    			}
-                if (context.getProfiler().traceFunctions())
+                
+                Sequence returnSeq = expression.eval(contextSequence, contextItem);
+                while(returnSeq instanceof DeferredFunctionCall &&
+                    functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
+                    LOG.trace("Executing function: " + functionDef.getSignature());
+                    returnSeq = ((DeferredFunctionCall) returnSeq).execute();
+                }
+                
+                if(context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceFunctionEnd(this, (System.currentTimeMillis() - start));
-                if (context.isProfilingEnabled())
+                }
+                
+                if(context.isProfilingEnabled()) {
                     context.getProfiler().end(this, "", returnSeq);
-    			return returnSeq;
-    		} catch(XPathException e) {
-    			if(e.getLine() <= 0)
+                }
+                
+                return returnSeq;
+    		
+            } catch(XPathException e) {
+                // append location of the function call to the exception message:
+                if(e.getLine() <= 0) {
                     e.setLocation(line, column);
-    			// append location of the function call to the exception message:
-    			e.addFunctionCall(functionDef, this);
-    			throw e;
-    		} finally {
+                }
+    			
+                e.addFunctionCall(functionDef, this);
+                throw e;
+            } finally {
                 context.popInScopeNamespaces();
                 context.popLocalVariables(mark);
                 context.functionEnd();
-                
+
                 context.stackLeave(this);
-    		}
+            }
         }
     }
 
-	 /* (non-Javadoc)
-	 * @see org.exist.xquery.PathExpr#resetState()
-	 */
+    /**
+     * @see org.exist.xquery.PathExpr#resetState()
+     */
+    @Override
     public void resetState(boolean postOptimization) {
-         super.resetState(postOptimization);
-         if (expression.needsReset() || postOptimization)
-        	 expression.resetState(postOptimization);
-	}
+        super.resetState(postOptimization);
+        if(expression.needsReset() || postOptimization) {
+            expression.resetState(postOptimization);
+        }
+    }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
-    */
+    /**
+     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
+     */
+    @Override
     public void setContextDocSet(DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
         functionDef.setContextDocSet(contextSet);
     }
 
+    @Override
     public void accept(ExpressionVisitor visitor) {
         // forward to the called function
         for(int i = 0; i < getArgumentCount(); i++) {
-        	getArgument(i).accept(visitor);
-		}
-		functionDef.accept(visitor);
+            getArgument(i).accept(visitor);
+        }
+        functionDef.accept(visitor);
     }
 
     private class DeferredFunctionCallImpl extends DeferredFunctionCall {
@@ -366,13 +398,13 @@ public class FunctionCall extends Function {
             this.contextDocs = contextDocs;
         }
         
+        @Override
         protected Sequence execute() throws XPathException {
             context.pushDocumentContext();
-            
-//            context.stackEnter(expression);
-
+            //context.stackEnter(expression);
             context.functionStart(functionDef.getSignature());
-            LocalVariable mark = context.markLocalVariables(true);
+            final LocalVariable mark = context.markLocalVariables(true);
+            
             try {
                 
                 /*
@@ -381,21 +413,20 @@ public class FunctionCall extends Function {
                  */
                 functionDef.setArguments(seq, contextDocs);
                 
-                Sequence returnSeq = expression.eval(contextSequence, contextItem);
-//                LOG.debug("Returning from execute()");
+                final Sequence returnSeq = expression.eval(contextSequence, contextItem);
+                LOG.trace("Returning from execute()");
                 return returnSeq;
             } catch(XPathException e) {
-                if(e.getLine() == 0)
-                    e.setLocation(line, column);
                 // append location of the function call to the exception message:
+                if(e.getLine() == 0) {
+                    e.setLocation(line, column);
+                }
                 e.addFunctionCall(functionDef, FunctionCall.this);
                 throw e;
             } finally {
                 context.popLocalVariables(mark);
                 context.functionEnd();
-                
-//                context.stackLeave(expression);
-                
+                //context.stackLeave(expression);
                 context.popDocumentContext();
             }
         }
