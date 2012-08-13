@@ -3,9 +3,9 @@
 <book xmlns:dc="http://purl.org/dc/elements/1.1/">
   <bookinfo>
     <graphic fileref="logo.jpg"/>
-    <productname>Open Source Native XML Database</productname>
+    <productname>eXist-db – Open Source Native XML Database</productname>
     <title>XQuery Extension Modules Documentation</title>
-    <date>September 2009</date>
+    <date>August 2012</date>
     <author>
       <firstname>Adam</firstname>
       <surname>Retter</surname>
@@ -43,13 +43,22 @@
         </address>
       </affiliation>
     </author>
+    <author>
+      <firstname>Leif-Jöran</firstname>
+      <surname>Olsson</surname>
+      <affiliation>
+        <address format="linespecific">
+          <email>ljo at exist-db.org</email>
+        </address>
+      </affiliation>
+    </author>
   </bookinfo>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
   <chapter>
     <title>XQuery Extension Modules Documentation</title>
-    <para>eXist provides a pluggable module interface that allows extension modules to be easily
+    <para>eXist-db provides a pluggable module interface that allows extension modules to be easily
       developed in Java. These extension modules can provide additional XQuery functions through a
-      custom namespace. The extension modules have full access to the eXist db, its internal API,
+      custom namespace. The extension modules have full access to the eXist-db database, its internal API,
       the context of the executing XQuery and the HTTP Session (if appropriate).</para>
     <para>The source code for extension modules should be placed in their own folder inside
         <filename>$EXIST_HOME/extensions/modules/src/org/exist/xquery/modules</filename>. They may
@@ -59,10 +68,10 @@
     <para>Modules associated to modularized indexes should be placed in the
         <filename>$EXIST_HOME/extensions/indexes/*/xquery/modules/*</filename> hierarchy. They will
       be compiled automatically by the standard build targets or as indicated above.</para>
-    <para>eXist must also be told which modules to load, this is done in
+    <para>eXist-db must also be told which modules to load, this is done in
         <filename>conf.xml</filename> and the Class name and Namespace for each module is listed
-      below. Note - eXist will require a restart to load the new module. Once a Module is configured
-      and loaded eXist will display the module and its function definitions as part of the <ulink
+      below. Note – eXist-db will require a restart to load any new modules added. Once a Module is configured
+      and loaded eXist-db will display the module and its function definitions as part of the <ulink
         url="xquery/functions.xql">function library</ulink> page or through
         <command>util:decribe-function()</command>.</para>
 
@@ -179,9 +188,9 @@
       <title>JNDI Directory Module</title>
       <para> This extension module allows you to access and manipulate JNDI-based directories, such
         as LDAP, using XQuery functions. It can be very useful if you want to integration and LDAP
-        directory into an eXist/XQuery based application.</para>
+        directory into an eXist-db/XQuery based application.</para>
       <para>To compile it, set the parameter include.module.jndi = true in
-        $EXIST_HOME/extensions/modules/build.properties file.</para>
+        $EXIST_HOME/extensions/local.build.properties file (create it if missing).</para>
       <para>Then, to enable it, edit the appropriate module entry in conf.xml</para>
       <para>
         <command>Creator:</command>&#160;<dc:creator>Andrzej Taramina, Chaeron
@@ -232,7 +241,7 @@
 
     <section id="module_scheduler">
       <title>Scheduler Module</title>
-      <para>Provides access to eXist's Scheduler for the purposes of scheduling job's and
+      <para>Provides access to eXist-db's Scheduler for the purposes of scheduling job's and
         manipulating existing job's.</para>
       <para>
         <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
@@ -310,14 +319,14 @@
 
     <section id="module_xprocxq">
       <title>XProcxq Module</title>
-      <para>This module provides XProc functionality to eXist.</para>
+      <para>This module provides XProc functionality to eXist-db.</para>
       <para>
         <command>Creator:</command>&#160;<dc:creator>
           <ulink url="http://www.webcomposite.com">James R. Fuller</ulink>
         </dc:creator>
         <command>Licence:</command>&#160;MPL v1.1 <command>Features Used:</command>&#160;<ulink
           url="http://www.expath.org">expath http library</ulink>
-        <command>Status:</command>&#160;in development for v1.3/1.4 release </para>
+        <command>Status:</command>&#160;in development for v2.0 release </para>
       <para>
         <command>Class:</command>&#160;static xquery module via extensions/xprocxq.jar
           <command>Namespace:</command>&#160;http://xproc.net/xproc </para>

@@ -2,13 +2,21 @@
     <!-- $Id$ -->
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <title>Open Source Native XML Database</title>
-        <date>September 2009</date>
+        <productname>eXist-db – Open Source Native XML Database</productname>
+	<title>Acknowledgements</title>
+        <date>August 2012</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
             </affiliation>
         </author>
         <style> table { margin-left: 15px; margin-right: 15px; } td { margin-bottom: 2em;
@@ -24,7 +32,7 @@
             <title>Supporters</title>
 
             <para>We would like to thank the following organizations and corporations for supporting
-                and sponsoring the development of eXist:</para>
+                and sponsoring the development of eXist-db:</para>
 
             <table cellspacing="0" cellpadding="15">
                 <tr>
@@ -96,6 +104,16 @@
                     <td align="center">
                         <a href="http://www.bbaw.de/bbaw/Akademie/">
                             <img border="0" src="resources/BBAW_Logo.png"/>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="description"> Travelling and development costs sponsored by <a href="http://spraakbanken.gu.se/"
+                            >Språkbanken (The Swedish Language Bank)</a> of <a href="http://www.gu.se/"
+                            >University of Gothenburg</a>. </td>
+                    <td align="center">
+                        <a href="http://spraakbanken.gu.se/">
+                            <img border="0" src="resources/sb_logo.png"/>
                         </a>
                     </td>
                 </tr>
