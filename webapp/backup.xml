@@ -3,9 +3,9 @@
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <productname>Open Source Native XML Database</productname>
-        <title>eXist - Database Backup / Restore</title>
-        <date>September 2009</date>
+        <productname>eXist-db – Open Source Native XML Database</productname>
+        <title>Database Backup and Restore</title>
+        <date>August 2012</date>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
@@ -17,22 +17,22 @@
     <chapter>
         <title>Database Backup and Restore</title>
         <abstract>
-            <para>This section discusses eXist's database backup/restore procedures. eXist provides
+            <para>This section discusses eXist-db's database backup/restore procedures. eXist-db provides
                 different methods for creating backups, which will be explained below. Backups are
                 strongly recommended for data protection in the event you experience a system crash
                 or loss of data. Backups are also very useful for exporting data in order to
                 re-import all or parts of the data to a different database, e.g. while upgrading
-                eXist to a newer version.</para>
+                eXist-db to a newer version.</para>
             <note>
-                <para>Most of the information in this document applies to eXist 1.2.5 and 1.4.0 (or
-                    SVN trunk), but there are a few exceptions: eXist 1.2.5 does not support
+                <para>Most of the information in this document applies to eXist-db v1.2.x, 1.4.x, and 2.x (or
+                    SVN trunk), but there are a few exceptions: eXist-db version 1.2.5 does not support
                     incremental backups and there's no web interface to trigger or view
                     backups.</para>
             </note>
         </abstract>
         <section>
             <title>Backup Format</title>
-            <para>During backup, eXist exports the contents of its database (as standard XML files)
+            <para>During backup, eXist-db exports the contents of its database (as standard XML files)
                 to a hierarchy of directories on the hard drive. This hierarchy is organized
                 according to the organization of collections in the database.</para>
             <para>Other files stored during backup include index configuration files and user
@@ -42,7 +42,7 @@
                 resource. You will find one <filename>__contents__.xml</filename> file in each
                 directory created by the backup. This descriptor file is required to restore the
                 backup.</para>
-            <para>Since eXist uses an open XML format rather than a proprietary format for its
+            <para>Since eXist-db uses an open XML format rather than a proprietary format for its
                 database files, users can manually modify files in the backup directories without
                 requiring special software. Any changes made to these files are reflected in the
                 database with a restore or once the data is imported to another database
@@ -54,12 +54,16 @@
                 removing the <option>password</option> attribute, or set it to a default value and
                 restore the document.</para>
             <note>
-                <para> When migrating to a new eXist version, take care to use a version of the
+                <para> When migrating to a new eXist-db version, take care to use a version of the
                     client corresponding to your server version. Usually, the backup process is
                     backwards compatible. However, using a newer client version to create the backup
                     from a server running an older version may sometimes lead to unexpected
                     problems.</para>
             </note>
+            <important>
+                <para>Due to limitations of the ZIP format, please make sure the size of your zipped backup does
+                not exceed 4 gigabytes. All backup methods support backups to the file system as an alternative.</para>
+            </important>
         </section>
         <section>
             <title>Backup Methods</title>
@@ -82,7 +86,7 @@
                 <varlistentry>
                     <term>Server-side</term>
                     <listitem>
-                        <para>Server-side backups are usually run through eXist's job scheduler,
+                        <para>Server-side backups are usually run through eXist-db's job scheduler,
                             though they can also be triggered via the web interface. This type of
                             backup extracts the data directly from the low-level database files. It
                             is thus much faster then a client-side backup. It also supports
@@ -174,7 +178,7 @@
             <title>Server-side Backup</title>
             <para>This is now the recommended backup method. To guarantee consistency, server-side
                 backups are always executed as system tasks, which means that the database will be
-                switched to a protected service mode before the backup starts. eXist will wait for
+                switched to a protected service mode before the backup starts. eXist-db will wait for
                 all pending transactions to complete before it enters protected mode. A database
                 checkpoint will be performed and the backup task is executed. While the system task
                 is running, no new transactions will be allowed. Concurrent requests by other
@@ -187,7 +191,7 @@
                 <graphic fileref="resources/backup4.png"/>
             </screenshot>
             <note>
-                <para>eXist <emphasis>1.2.4</emphasis> and <emphasis>1.2.5</emphasis> do not offer a
+                <para>eXist-db versions <emphasis>1.2.4</emphasis> and <emphasis>1.2.5</emphasis> do not offer a
                     web interface for backups yet. However, you can schedule the backup or trigger
                     it from an XQuery as described below.</para>
             </note>
@@ -196,7 +200,7 @@
                 the task. You can click on <guibutton>Refresh</guibutton> to update the view, which
                 lists all backup archives currently available within the standard backup directory.
                 Click on the name of an archive to download it.</para>
-            <para>Beginning with version 1.2.5, eXist can also create <emphasis>incremental
+            <para>Beginning with version 1.2.5, eXist-db can also create <emphasis>incremental
                     backups</emphasis>. Only resources which were modified since the last backup are
                 archived.</para>
             <para>All backups will be stored in ZIP format into a directory <filename
@@ -236,7 +240,7 @@
                 <title>Scheduling Backups and Consistency Checks</title>
                 <para>The core class for the server-side backup as well as consistency checks is
                     called <classname>ConsistencyCheckTask</classname>. It can be registered as a
-                    system task with eXist's <ulink url="configuration.xml#N104CF"
+                    system task with eXist-db's <ulink url="configuration.xml#N104CF"
                         >scheduler</ulink>. To do this, add the following definition to the scheduler
                     section in <filename>conf.xml</filename>:</para>
                 <example>
@@ -245,6 +249,7 @@
     cron-trigger="0 0 0/12 * * ?">
     <!-- the output directory. paths are relative to the data dir -->
     <parameter name="output" value="export"/>
+    <parameter name="zip" value="yes"/>
     <parameter name="backup" value="yes"/>
     <parameter name="incremental" value="yes"/>
 	<parameter name="incremental-check" value="no"/>
@@ -263,7 +268,7 @@
                         <term>output</term>
                         <listitem>
                             <para>The directory to which the backup is written. Relative paths are
-                                interpreted relative to eXist's main data directory.</para>
+                                interpreted relative to eXist-db's main data directory.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
@@ -276,6 +281,16 @@
                                 backup.</para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>zip</term>
+                        <listitem>
+                            <para>If set to "yes", the backup will be written into a zip archive. For larger databases, please
+                            make sure the generated archive is smaller than 4 gigabytes. Due to limitations of the zip format,
+                            archives larger than 4 gigabytes may not be readable. In this case, use a backup to the file system
+                            instead.</para>
+                        </listitem>
+                    </varlistentry>
+                    
                     <varlistentry>
                         <term>incremental</term>
                         <listitem>
@@ -332,14 +347,14 @@
                 <screenshot>
                     <graphic align="right" fileref="resources/exportgui.png"/>
                 </screenshot>
-                <para>eXist provides a graphical interface to the consistency check and backup
+                <para>eXist-db provides a graphical interface to the consistency check and backup
                     utilities which can be used in case of an emergency, in particular if the
                     database does not start up properly anymore. The tool needs direct access to the
                     database files, so any running database instance has to be stopped before
                     launching the GUI.</para>
                 <para>Use the following command line to start the utility:</para>
                 <synopsis>java -jar start.jar org.exist.backup.ExportGUI</synopsis>
-                <para>If you installed the eXist distribution using the installer, a shortcut to
+                <para>If you installed the eXist-db distribution using the installer, a shortcut to
                     this should have been placed into the start menu, so you don't need to type
                     above command.</para>
                 <para>On a headless system you can use the command-line version instead:</para>
@@ -355,12 +370,12 @@
             <section>
                 <title>Using JMX to View Check Reports</title>
                 <para>If Java Management Extensions (JMX) are enabled in the Java VM that is running
-                    eXist, you can use a JMX client to see the latest consistency check reports. The
+                    eXist-db, you can use a JMX client to see the latest consistency check reports. The
                     screenshot shows jconsole, which is included with the Java 5 and 6 JDKs.</para>
                 <screenshot>
                     <graphic fileref="resources/jconsole.png"/>
                 </screenshot>
-                <para>eXist also includes a command-line JMX client. Call it with parameter
+                <para>eXist-db also includes a command-line JMX client. Call it with parameter
                     <parameter>-s</parameter> to see the latest consistency report:</para>
                 <synopsis>java -jar start.jar org.exist.management.client.JMXClient -s</synopsis>
                 <para>This may produce output as shown below:</para>
@@ -395,7 +410,7 @@
                     as follows:</para>
                 <procedure>
                     <step>
-                        <para>Stop the running eXist database instance</para>
+                        <para>Stop the running eXist-db database instance</para>
                     </step>
                     <step>
                         <para>Change into directory <filename
@@ -405,10 +420,10 @@
                     <step>
                         <para>Remove all <filename>.dbx</filename>, <filename>.lck</filename> and
                             <filename>.log</filename> files. This means removing all your old
-                            data! eXist will recreate those files upon the next restart.</para>
+                            data! eXist-db will recreate those files upon the next restart.</para>
                     </step>
                     <step>
-                        <para>Start eXist again and launch a restore.</para>
+                        <para>Start eXist-db again and launch a restore.</para>
                     </step>
                 </procedure>
             </section>
@@ -417,7 +432,7 @@
                 <para>To restore the database files from a backup, you can again use either the
                     Admin Client, or the backup command line utility.</para>
                 <note>
-                    <para>For eXist 1.2.x, the restore tool can not directly read from a zipped
+                    <para>For eXist-db 1.2.x, the restore tool can not directly read from a zipped
                         backup. You have to extract it before restoring. Version 1.4 can handle the
                         zip.</para>
                     <para>Also, if you experience any issues with bad characters in collection
@@ -440,7 +455,7 @@
                         <screenshot>
                             <graphic fileref="resources/backup2.png"/>
                         </screenshot>
-                        <para>eXist 1.3 allows to directly select the ZIP archive of a
+                        <para>eXist-db versions above 1.2.x allows to directly select the ZIP archive of a
                             backup.</para>
                     </step>
                     <step>
@@ -479,8 +494,8 @@
             <title>Standalone Backup/Restore</title>
             <section>
                 <title>Standalone Backup/Restore on Server platforms</title>
-                <para>The above instructions assume that you have a standard eXist installation directory in place, either from a release package or a full build environment. That is not
-                    always the case on remotely deployed server instances that might be running using only an eXist WAR file in an application server (eg. Tomcat).</para>
+                <para>The above instructions assume that you have a standard eXist-db installation directory in place, either from a release package or a full build environment. That is not
+                    always the case on remotely deployed server instances that might be running using only an eXist-db WAR file in an application server (eg. Tomcat).</para>
                 <para>To support such deployment scenarios, and make it easier to do restores local to the deployed server, there is an ant build target called:
                     <synopsis>backrest</synopsis></para>
                 <para>Building the backrest target will create a fully-self contained zip file in the backrest directory that can be copied to a remote server and used to do both restores and backups local to that server.

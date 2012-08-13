@@ -3,10 +3,10 @@
 <book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <productname>Open Source Native XML Database</productname>
+        <productname>eXist-db – Open Source Native XML Database</productname>
         <title>Legacy Full Text Index</title>
-        <date>September 2009</date>
-        <orgname>The eXist Project</orgname>
+        <date>August 2012</date>
+        <orgname>The eXist-db Project</orgname>
     </bookinfo>
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sidebar.xml"/>
     <chapter>
@@ -17,9 +17,9 @@
             are then stored in the index.</para>
 
         <important>
-            <para>Historically, eXist has been creating a default full text index on all text nodes
+            <para>Historically, eXist-db has been creating a default full text index on all text nodes
                 and attribute values. This is no longer the case! Creating default indexes on data
-                which you may never use is too expensive, in particular, since eXist is now
+                which you may never use is too expensive, in particular, since eXist-db is now
                 providing a wider range of different indexes which can be much better optimized than
                 the default index and will offer superior performance.</para>
         </important>
@@ -30,9 +30,9 @@
             disable the default index-all behaviour and define some explicit full text indexes on
             your documents. The details of this process will be described below.</para>
 
-        <para>The full text index is only used in combination with eXist's fulltext search
-            extensions. In particular, you can use the following eXist-specific operators and
-            functions that apply a fulltext index:</para>
+        <para>The legacy full text index is only used in combination with eXist-db's fulltext search
+            extensions. In particular, you can use the following eXist-db-specific operators and
+            functions that apply a full text index:</para>
 
         <itemizedlist>
             <listitem>
@@ -47,34 +47,34 @@
         <note>
             <para>It is important to note that, if you have disabled full text indexing for certain
                 elements, these operators and functions will also be effectively disabled, and will
-                not return matches. As a result, eXist will not return results for queries that
-                normally would have results provided fulltext indexing was enabled. Note also that
+                not return matches. As a result, eXist-db will not return results for queries that
+                normally would have results provided full text indexing was enabled. Note also that
                 this is in direct contrast to the operation of range indexing, which does fallback
                 to full searching of the document if no range index applies (see below).</para>
         </note>
 
         <section id="ftidxconf">
-            <title>Full text index configuration</title>
+            <title>Legacy full text index configuration</title>
 
-            <para>The <emphasis>fulltext index</emphasis> is defined by the
+            <para>The <emphasis>legacy full text index</emphasis> is defined by the
                     <sgmltag>fulltext</sgmltag> element - along with <sgmltag>include</sgmltag>,
                     <sgmltag>exclude</sgmltag> and <sgmltag>create</sgmltag> elements. The full text
                 index is currently subject to a major redesign and the configuration syntax somewhat
-                reflects this because it is a bit inconsistent. eXist's current default behaviour is
+                reflects this because it is a bit inconsistent. Its current default behaviour is
                 to create a full text index on all text nodes in a document. The
                     <sgmltag>include</sgmltag> and <sgmltag>exclude</sgmltag> tags are used to add
-                or hide nodes from the default indexing. The indexes created by the default indexing
+                or hide nodes from the default indexing. The indexes created by the legacy full text indexing
                 are always context-dependant. The nodes to include/exclude are thus specified via a
                     <option>path</option> attribute, not a <option>qname</option> attribute. </para>
 
             <para>However, you can create explicit indexes on a qname using the
                     <sgmltag>create</sgmltag> element. This is the recommended approach. In fact, as
                 the full text index is currently being redesigned, we are not sure if we will keep
-                the current default full text indexing in its current state. A fulltext
+                the legacy full text indexing in its current state. A full text
                 configuration which only uses <sgmltag>create</sgmltag> elements is shown below: </para>
 
             <example>
-                <title>Full text index configuration</title>
+                <title>Legacy full text index configuration</title>
                 <programlisting>
                     <markup><![CDATA[
 <fulltext default="none" attributes="false">
@@ -87,11 +87,11 @@
             </example>
 
             <para>With this example, the full text default attribute is set to "none", which
-                disables the default full text indexing for all document elements. Attribute nodes
+                disables the legacy full text indexing for all document elements. Attribute nodes
                 are handled separately. Setting <option>attributes="false"</option> disables the
                 default indexing for attributes as well. </para>
 
-            <para>The first child element creates a standard full text index on all
+            <para>The first child element creates a legacy full text index on all
                     <sgmltag>author</sgmltag> elements, identified by their
                     <emphasis>qname</emphasis>. The second one puts an index on
                     <sgmltag>title</sgmltag>, but adds an option <option>content="mixed"</option>.
@@ -126,7 +126,7 @@
         </section>
         
         <section id="ftidx">
-            <title>Querying Text (Fulltext Searching)</title>
+            <title>Querying Text (Full text Searching)</title>
             <para>The standard XPath/XQuery function library contains most of the common string
                 manipulation functions provided by most programming languages. However, these
                 functions are insufficient for conducting keyword or phrase searches inside a
@@ -146,9 +146,9 @@
                 be found - for example, "databases" might have been written with a capital
                 letter at the start of the sentence, and so would not be included in the
                 results.</para>
-            <para>To resolve this issue, eXist offers additional operators and extension
-                functions for efficient, index-based access to the full-text content of nodes.
-                With eXist, you could alternatively formulate the above query as follows:</para>
+            <para>To resolve this issue, eXist-db offers additional operators and extension
+                functions for efficient, index-based access to the full text content of nodes.
+                With eXist-db, you could alternatively formulate the above query as follows:</para>
             <synopsis format="linespecific">//chapter[near(., 'XML database?', 50)]</synopsis>
             <para>This will return all chapters containing both keywords in the correct order,
                 and as well, will find matches that have under 50 words between them.
@@ -159,8 +159,8 @@
                 an order of magnitude faster than the standard XPath query above.</para>
             <section>
                 <title>Operators</title>
-                <para>In this section, we discuss each of eXist's text-search extensions. In
-                    cases where the order and distance of search terms is not important, eXist
+                <para>In this section, we discuss each of eXist-db's text-search extensions. In
+                    cases where the order and distance of search terms is not important, eXist-db
                     offers two additional operators for simple keyword queries: <command
                         moreinfo="none">&amp;=</command> and <command moreinfo="none"
                             >|=</command>.</para>
@@ -191,7 +191,7 @@
                         moreinfo="none">|=</command>operations, keyword search strings are
                         split into tokens using the default tokenizer function. The current
                         implementation of this operation will work well for all European
-                        languages. For non-European languages, however, eXist uses the
+                        languages. For non-European languages, however, eXist-db uses the
                         predefined Unicode code points (0 to 10FFFF) to determine where the
                         string will be split.</para>
                 </note>
@@ -223,7 +223,7 @@
                 </note>
             </section>
             <section>
-                <title>Functions</title>
+                <title>Functions utilising the legacy full text index</title>
                 <variablelist>
                     <varlistentry>
                         <term>near()</term>
@@ -267,7 +267,7 @@
                                 XQuery core library, <command>text:match-all()</command> and
                                 <command>text:match-any()</command> try to match the regular
                                 expression argument against the keywords contained in the
-                                full-text index, but <emphasis>NOT</emphasis> against the entire
+                                full text index, but <emphasis>NOT</emphasis> against the entire
                                 text.</para>
                             <para>For example, assume you have a document that contains the
                                 following paragraph:</para>
@@ -296,7 +296,7 @@
                                     example, the expression</para>
                                 <synopsis format="linespecific">//SPEECH[text:match-all(LINE, 'li[vf]e')]</synopsis>
                                 <para>will match 'live', 'life', but not 'lives'.</para>
-                                <para>eXist uses the <ulink
+                                <para>eXist-db uses the <ulink
                                     url="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html"
                                     >java.util.regex API</ulink> for regular expressions. A
                                     description of the supported regexp syntax can be found on

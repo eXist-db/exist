@@ -3,16 +3,23 @@
 <book xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <productname>Open Source Native XML Database</productname>
-        <title>eXist-db download</title>
-        <date>September 2009</date>
+        <productname>eXist-db – Open Source Native XML Database</productname>
+        <title>Downloading eXist-db</title>
+        <date>August 2012</date>
         <author>
             <firstname>Dannes</firstname>
             <surname>Wessels</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>dizzzz@exist-db.org</email>
+                    <email>dizzzz at exist-db.org</email>
                 </address>
+            </affiliation>
+        </author>
+        <author>
+            <firstname>Leif-Jöran</firstname>
+            <surname>Olsson</surname>
+            <affiliation>
+                <address format="linespecific"><email>ljo at exist-db.org</email></address>
             </affiliation></author>
     </bookinfo>
     <xi:include href="sidebar.xml"/>
@@ -36,8 +43,8 @@
                     url="http://sourceforge.net/donate/index.php?group_id=17691">
                     <graphic fileref="resources/project-support.jpg"/>
                 </ulink></para>
-            <para>eXist as an Open Source community depends on the contributions of volunteers. Making a donation acknowledges their efforts, and helps to finance the few things that we need to keep the project running smoothly.</para>
-            <para>Another way to support eXist is to <ulink url="acknowledge.xml">sponsor</ulink> the addition of new features, that you may need for your own applications or from our own <ulink url="roadmap.xml">roadmap</ulink>.</para>
+            <para>eXist-db as an Open Source community depends on the contributions of volunteers. Making a donation acknowledges their efforts, and helps to finance the few things that we need to keep the project running smoothly.</para>
+            <para>Another way to support eXist-db is to <ulink url="acknowledge.xml">sponsor</ulink> the addition of new features, that you may need for your own applications or from our own <ulink url="roadmap.xml">roadmap</ulink>.</para>
             <para>Members of our development team and community have come together commercially under the umbrella of <ulink url="http://www.existsolutions.com">eXist Solutions</ulink>. They are available for <ulink url="http://www.existsolutions.com/consultancy.xml">Consultancy</ulink>, <ulink url="http://www.existsolutions.com/training.xml">Training</ulink> or <ulink url="http://www.existsolutions.com/consultancy.xml">Bespoke Development</ulink> on a flexible basis, as such if you need some extra support or development resource, please <ulink url="http://www.existsolutions.com/contact.xml">contact us</ulink> at <ulink url="mailto:info@existsolutions.com">info@existsolutions.com</ulink>.</para>
             <para><ulink url="http://www.existsolutions.com">eXist Solutions</ulink> can also provide annual <ulink url="http://www.existsolutions.com/support.xml">Production and Development Support</ulink> plans. Should your organisation require contractual support, please see <ulink url="http://www.existsolutions.com/support.xml">this page</ulink>.</para>  
         </section>
@@ -105,7 +112,7 @@
                     </tr>
                     <tr>
                         <td align="left" colspan="2">The 1.4.2 release still includes Cocoon 2.1.11.
-                            Starting with release 1.5 cocoon will only available as an optional
+                            Starting with exist-db version 2.0 cocoon will only available as an optional
                             block. The development team is looking for a maintainer for this code.
                             If you have experience with Cocoon please drop us a message on the
                             developer's list, otherwise this feature will be removed in the
@@ -144,22 +151,20 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.2/eXist-1.2.6-rev9165.war/download"
                                 >eXist-1.2.6-rev9165.war</ulink>
                         </td>
-                        <td>Web application archive, ready to be installed into an existing
-                            servlet-engine like Tomcat or Jetty. </td>
+                        <td>Web application archive, ready to be installed into an existing servlet-engine like Tomcat
+                            or Jetty. </td>
                     </tr>
                     <tr>
-                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as
-                            Cocoon block</th>
+                        <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
                     </tr>
                     <tr>
-                        <td align="left" colspan="2"> The standard distribution already ships with
-                            Cocoon. However, this version is a bit older and offers only a subset of
-                            the available Cocoon modules (called "blocks" in Cocoon). If you work a
-                            lot with Cocoon, you might prefer to have eXist integrated into full
-                            Cocoon build. The installer-based distribution contains build scripts to
-                            set up eXist as a block in Cocoon. Please refer to the <ulink
-                                url="building.xml"> documentation</ulink>. As a service to Cocoon
-                            users, we also provide a pre-compiled Cocoon 2.1.11 below: </td>
+                        <td align="left" colspan="2"> The standard distribution already ships with Cocoon. However, this
+                            version is a bit older and offers only a subset of the available Cocoon modules (called
+                            "blocks" in Cocoon). If you work a lot with Cocoon, you might prefer to have eXist
+                            integrated into full Cocoon build. The installer-based distribution contains build scripts
+                            to set up eXist as a block in Cocoon. Please refer to the <ulink url="building.xml">
+                                documentation</ulink>. As a service to Cocoon users, we also provide a pre-compiled
+                            Cocoon 2.1.11 below: </td>
                     </tr>
                     <tr>
                         <td>
@@ -167,9 +172,8 @@
                                 url="http://sourceforge.net/projects/exist/files/Stable/1.2/cocoon-2.1.11-with-eXist-1.2.6.war"
                                 > cocoon-2.1.11-with-eXist-1.2.6.war </ulink>
                         </td>
-                        <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2
-                            as a block. You should find eXist in
-                                <code>http://my-server:port/cocoon/samples/blocks/exist/</code>.</td>
+                        <td>This is Cocoon version 2.1.11 build with standard options and eXist 1.2 as a block. You
+                            should find eXist in <code>http://my-server:port/cocoon/samples/blocks/exist/</code>.</td>
                     </tr>
                 </table>
             </section>
@@ -178,35 +182,30 @@
             <title>Important Notes</title>
             <section>
                 <title>Java versions</title>
-                <para>eXist-db version <emphasis>1.4.x</emphasis> requires
-                        <emphasis>Java5</emphasis>. The database has been implemented and tested
-                    with the Java implementation of Sun. Implementations of other vendors will
-                    probably work but have not been tested as extensively.</para>
+                <para>eXist-db version <emphasis>1.4.x</emphasis> requires <emphasis>Java5</emphasis>. The database has
+                    been implemented and tested with the Java implementation of Sun. Implementations of other vendors
+                    will probably work but have not been tested as extensively.</para>
             </section>
             <section>
                 <title>Endorsed library</title>
-                <para>eXist-db heavily depends on the Apache <ulink
-                        url="http://xerces.apache.org/xerces2-j/">Xerces2</ulink> parser, Apache
-                        <ulink url="http://xml.apache.org/xalan-j">Xalan</ulink>-Java XSLT processor
-                    and the Apache XML Commons <ulink
-                        url="http://xml.apache.org/commons/components/resolver/index.html"
-                        >Resolver</ulink> libraries. When eXist-db is installed in a servlet
-                    container like tomcat, these jar files must be made available to eXist via the
-                        <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/standards/index.html"
-                        >java</ulink>
-                    <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html"
-                        >endorsed</ulink> feature.</para>
+                <para>eXist-db heavily depends on the Apache <ulink url="http://xerces.apache.org/xerces2-j/"
+                        >Xerces2</ulink> parser, Apache <ulink url="http://xml.apache.org/xalan-j">Xalan</ulink>-Java
+                    XSLT processor and the Apache XML Commons <ulink
+                        url="http://xml.apache.org/commons/components/resolver/index.html">Resolver</ulink> libraries.
+                    When eXist-db is installed in a servlet container like tomcat, these jar files must be made
+                    available to eXist via the <ulink
+                        url="http://java.sun.com/j2se/1.5.0/docs/guide/standards/index.html">java</ulink>
+                    <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/class-loader-howto.html">endorsed</ulink>
+                    feature.</para>
             </section>
             <section>
                 <title>Tomcat</title>
                 <para>Due to some restrictions of Apache <ulink
                         url="https://sourceforge.net/tracker/?func=detail&amp;atid=117691&amp;aid=1760998&amp;group_id=17691"
-                        >Tomcat</ulink> the validation functions do not fully work on stored
-                    documents (using the <emphasis>xmldb:exist:///</emphasis>-type URLs - Note the
-                    three slashes). </para>
-                <para>By default Apache Tomcat is started with a limited HeapSize. This heapsize
-                    must be increased to have optimal performance and to prevent "Out of Memory"
-                    errors.</para>
+                        >Tomcat</ulink> the validation functions do not fully work on stored documents (using the
+                        <emphasis>xmldb:exist:///</emphasis>-type URLs - Note the three slashes). </para>
+                <para>By default Apache Tomcat is started with a limited HeapSize. This heapsize must be increased to
+                    have optimal performance and to prevent "Out of Memory" errors.</para>
             </section>
         </section>
     </chapter>
