@@ -133,8 +133,6 @@ public class Type {
         defineSubType(NODE, NAMESPACE);
         defineSubType(NODE, CDATA_SECTION);
 
-        //THIS type system is broken - some of the below should be sub-types of ANY_SIMPLE_TYPE
-        //and some should not!
         defineSubType(ITEM, ATOMIC);
         defineSubType(ATOMIC, STRING);
         defineSubType(ATOMIC, BOOLEAN);

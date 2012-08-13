@@ -84,18 +84,6 @@ public class HttpRequestWrapper implements RequestWrapper {
      * Constructs a wrapper for the given servlet request. multipart/form-data 
      * will be parsed when available upon indication.
      *
-     * Defaults to UTF-8 encoding
-     * 
-     * @param servletRequest The request as viewed by the servlet
-     */
-    public HttpRequestWrapper(HttpServletRequest servletRequest) {
-        this(servletRequest, "UTF-8", "UTF-8");
-    }
-    
-    /**
-     * Constructs a wrapper for the given servlet request. multipart/form-data 
-     * will be parsed when available upon indication.
-     *
      * @param servletRequest The request as viewed by the servlet
      * @param formEncoding The encoding of the request's forms
      * @param containerEncoding The encoding of the servlet
