@@ -351,8 +351,12 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
+        } catch (PermissionDeniedException e) {
+    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
+    		TriggerStatePerThread.setTransaction(null);
+        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
         }
-	}
+    }
     
     /**
      * @link org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
@@ -437,6 +441,9 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         } catch (XPathException e) {
         	//Should never be reached
 			LOG.error("Error during trigger finish", e);
+        } catch (PermissionDeniedException e) {
+        	//Should never be reached
+        	LOG.error(e);
         }
         
 		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);

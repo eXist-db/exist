@@ -921,47 +921,12 @@ public abstract class Serializer implements XMLReader {
 		Item item;
 		for(int i = --start; i < start + count; i++) {
 			item = seq.itemAt(i);
-			if (item == null) {
-				LOG.debug("item " + i + " not found");
-				continue;
-			}
-
-                        if (Type.subTypeOf(item.getType(), Type. NODE)) {
-				NodeValue node = (NodeValue) item;
-				
-                                if(typed) {
-                                    //TODO the typed and wrapped stuff should ideally be replaced
-                                    //with Marshaller.marshallItem
-                                    //unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
-                                    //results in a stack overflow
-                                    //TODO consider a full XDM serializer in place of this for these special needs
-                                    
-                                    serializeTypePreNode(node);
-                                    if(node.getType() == Type.ATTRIBUTE) {
-                                        serializeTypeAttributeValue(node);
-                                    } else {
-                                        serializeToReceiver(node, false);
-                                    }
-                                    serializeTypePostNode(node);
-                                } else {
-                                    serializeToReceiver(node, false);
-                                }
-			} else {
-				if(wrap) {
-					attrs = new AttrList();
-					attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
-					receiver.startElement(ELEM_VALUE_QNAME, attrs);
-				}
-				try {
-					receiver.characters(item.getStringValue());
-				} catch (XPathException e) {
-					throw new SAXException(e.getMessage(), e);
-				}
-				if(wrap) {
-					receiver.endElement(ELEM_VALUE_QNAME);
-				}
-			}
-
+                        if (item == null) {
+                            LOG.debug("item " + i + " not found");
+                            continue;
+                        }
+                        
+			itemToSAX(item, typed, wrap, attrs);
 		}
 		
 		if(wrap) {
@@ -970,6 +935,94 @@ public abstract class Serializer implements XMLReader {
 		}
 		receiver.endDocument();
 	}
+        
+        /**
+	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
+	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
+	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
+	 * 
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * 
+	 * @param item
+	 * @param start
+	 * @param count
+	 * @param wrap Indicates whether the output should be wrapped
+         * @param typed Indicates whether the output types should be wrapped
+	 * @throws SAXException
+	 */
+	public void toSAX(Item item, boolean wrap, boolean typed) throws SAXException {
+            try {
+                setStylesheetFromProperties(null);
+            } catch (TransformerConfigurationException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+            
+            setXSLHandler(null, false);
+            AttrList attrs = new AttrList();
+            attrs.addAttribute(ATTR_HITS_QNAME, "1");
+            attrs.addAttribute(ATTR_START_QNAME, "1");
+            attrs.addAttribute(ATTR_COUNT_QNAME, "1");
+            if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
+                attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
+            }
+		
+            receiver.startDocument();
+            
+            if(wrap) {
+                receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
+                receiver.startElement(ELEM_RESULT_QNAME, attrs);
+            }
+		
+                        
+            itemToSAX(item, typed, wrap, attrs);
+		
+            if(wrap) {
+                receiver.endElement(ELEM_RESULT_QNAME);
+                receiver.endPrefixMapping("exist");
+            }
+            
+            receiver.endDocument();
+	}
+        
+        private void itemToSAX(Item item, boolean typed, boolean wrap, AttrList attrs) throws SAXException {
+            
+
+            if(Type.subTypeOf(item.getType(), Type. NODE)) {
+                NodeValue node = (NodeValue) item;
+
+                if(typed) {
+                    //TODO the typed and wrapped stuff should ideally be replaced
+                    //with Marshaller.marshallItem
+                    //unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
+                    //results in a stack overflow
+                    //TODO consider a full XDM serializer in place of this for these special needs
+
+                    serializeTypePreNode(node);
+                    if(node.getType() == Type.ATTRIBUTE) {
+                        serializeTypeAttributeValue(node);
+                    } else {
+                        serializeToReceiver(node, false);
+                    }
+                    serializeTypePostNode(node);
+                } else {
+                    serializeToReceiver(node, false);
+                }
+            } else {
+                if(wrap) {
+                        attrs = new AttrList();
+                        attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
+                        receiver.startElement(ELEM_VALUE_QNAME, attrs);
+                }
+                try {
+                        receiver.characters(item.getStringValue());
+                } catch (XPathException e) {
+                        throw new SAXException(e.getMessage(), e);
+                }
+                if(wrap) {
+                        receiver.endElement(ELEM_VALUE_QNAME);
+                }
+            }
+        }
 
     public void toReceiver(NodeProxy p, boolean highlightMatches) throws SAXException {
         toReceiver(p, highlightMatches, true);

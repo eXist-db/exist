@@ -139,7 +139,9 @@ public class ExistDocument extends ExistResource {
                 document.getUpdateLock().release(Lock.READ_LOCK);
             }
 
-            brokerPool.release(broker);
+            if(broker != null) {
+                brokerPool.release(broker);
+            }
 
             isInitialized = true;
         }
@@ -794,7 +796,9 @@ public class ExistDocument extends ExistResource {
                 document.getUpdateLock().release(Lock.WRITE_LOCK);
             }
 
-            brokerPool.release(broker);
+            if(broker != null) {
+                brokerPool.release(broker);
+            }
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Finished create lock");

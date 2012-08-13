@@ -140,7 +140,7 @@ public class ProcessMonitor {
             runningQueries.remove(watchdog);
         }
 
-        String sourceKey = watchdog.getContext().getSourceKey();
+        String sourceKey = watchdog.getContext().getXacmlSource().getKey();
         synchronized(queryHistories) {
             QueryHistory qh = queryHistories.get(sourceKey);
             if(qh == null) {

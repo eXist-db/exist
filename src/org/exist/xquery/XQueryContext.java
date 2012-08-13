@@ -300,7 +300,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private boolean                                    isShared                      = false;
 
-    private XACMLSource                                source                        = null;
+    private Source source = null;
+    
+    private XACMLSource                                xacmlSource                        = null;
 
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
@@ -623,39 +625,16 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
-    public void setSource( XACMLSource source )
-    {
-        this.source = source;
+    @Override
+    public void setXacmlSource(final XACMLSource xacmlSource) {
+        this.xacmlSource = xacmlSource;
     }
 
 
-    public XACMLSource getSource()
-    {
-        return( source );
+    @Override
+    public XACMLSource getXacmlSource() {
+        return xacmlSource;
     }
-
-
-    /**
-     * Returns the Source Key of the XQuery associated with this context.
-     *
-     * @return  source key
-     */
-    public String getSourceKey()
-    {
-        return( source.getKey() );
-    }
-
-
-    /**
-     * Returns the Source Type of the XQuery associated with this context.
-     *
-     * @return  source type
-     */
-    public String getSourceType()
-    {
-        return( source.getType() );
-    }
-
 
     /**
      * Declare a user-defined static prefix/namespace mapping.
@@ -2904,7 +2883,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
             // Set source information on module context
 //            String sourceClassName = source.getClass().getName();
-            modContext.setSource( XACMLSource.getInstance( source ) );
+            modContext.setXacmlSource( XACMLSource.getInstance( source ) );
 //            modContext.setSourceKey(source.getKey().toString());
             // Extract the source type from the classname by removing the package prefix and the "Source" suffix
 //            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
@@ -3500,6 +3479,15 @@ public class XQueryContext implements BinaryValueManager, Context
         return xqueryVersion;
     }
 
+    @Override
+    public Source getSource() {
+        return source;
+    }
+
+    @Override
+    public void setSource(final Source source) {
+        this.source = source;
+    }
 
 
     // ====================================================================================
@@ -3564,6 +3552,5 @@ public class XQueryContext implements BinaryValueManager, Context
                 ( (UpdateListener)listeners.get( i ) ).debug();
             }
         }
-
     }
 }

@@ -151,7 +151,7 @@ public class RESTServer {
 		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
 	}
 
-	protected final static Properties defaultOutputKeysProperties = new Properties();
+	public final static Properties defaultOutputKeysProperties = new Properties();
 
 	static {
 		defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");

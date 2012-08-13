@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+  
+    <parent>
+        <groupId>org.existdb.extensions.exquery</groupId>
+        <artifactId>extensions-exquery-parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>extensions-exquery-restxq</artifactId>
+    <packaging>jar</packaging>
+  
+    <name>eXist-db RESTXQ Impl</name>
+    <description>eXist-db EXQuery RESTXQ Project Implementation</description>
+    
+    <properties>
+        <existdb.version>2.0-SNAPSHOT</existdb.version>
+        <restxq.version>${project.version}</restxq.version>
+    </properties>
+    
+    <dependencies>
+        
+        <dependency>
+            <groupId>org.exquery</groupId>
+            <artifactId>exquery-restxq-api</artifactId>
+            <version>${restxq.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.exquery</groupId>
+            <artifactId>exquery-restxq</artifactId>
+            <version>${restxq.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.existdb</groupId> <!-- TODO check lib/core/xmldb.jar -->
+            <artifactId>xmldb-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+         
+        <!--
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-dom-api</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-storage-api</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-xquery</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-core-api</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-util</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb</groupId>
+            <artifactId>existdb-security-api</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.existdb.web</groupId>
+            <artifactId>existdb-http-api</artifactId>
+            <version>${existdb.version}</version>
+        </dependency>
+        -->
+        
+    </dependencies>
+  
+</project>

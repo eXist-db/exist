@@ -1,6 +1,10 @@
 package org.exist.xqdoc.xquery;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -18,11 +22,6 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xqdoc.conversion.XQDocException;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Scan extends BasicFunction {
 
@@ -167,12 +166,17 @@ public class Scan extends BasicFunction {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
             XQueryContext xc = xquery.newContext(AccessContext.INITIALIZE);
             try {
-				normalizeXQuery = xquery.compile(xc, source);
-			} catch (PermissionDeniedException e) {
-				throw new XPathException(this, e);
-			}
+                normalizeXQuery = xquery.compile(xc, source);
+                normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
+            } catch(final PermissionDeniedException e) {
+                throw new XPathException(this, e);
+            }
         }
-        normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
-        return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);
+        
+        try {
+            return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);
+        } catch(final PermissionDeniedException e) {
+            throw new XPathException(this, e);
+        }
     }
 }

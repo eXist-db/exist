@@ -164,7 +164,7 @@ public class Profiler {
     }
 
     public final void traceQueryEnd(XQueryContext context) {
-        stats.recordQuery(context.getSourceKey(), (System.currentTimeMillis() - queryStart));
+        stats.recordQuery(context.getXacmlSource().getKey(), (System.currentTimeMillis() - queryStart));
     }
 
     public final void traceFunctionStart(Function function) {
@@ -176,10 +176,11 @@ public class Profiler {
     public final void traceFunctionEnd(Function function, long elapsed) {
         if (stats.isEnabled()) {
             String source;
-            if (function instanceof InternalFunctionCall)
+            if (function instanceof InternalFunctionCall) {
                 source = ((InternalFunctionCall) function).getFunction().getClass().getName();
-            else
-                source = function.getContext().getSourceKey();
+            } else {
+                source = function.getContext().getXacmlSource().getKey();
+            }
             source = String.format("%s [%d:%d]", source, function.getLine(), function.getColumn());
             stats.recordFunctionCall(function.getSignature().getName(), source, elapsed);
         }
@@ -189,7 +190,7 @@ public class Profiler {
     }
 
     public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {
-        stats.recordIndexUse(expression, indexType, context.getSourceKey(), mode, elapsed);
+        stats.recordIndexUse(expression, indexType, context.getXacmlSource().getKey(), mode, elapsed);
     }
 
     private void save() {

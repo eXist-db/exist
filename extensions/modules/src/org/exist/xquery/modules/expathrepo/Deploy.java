@@ -371,11 +371,10 @@ public class Deploy extends BasicFunction {
 		CompiledXQuery compiled;
 		try {
 			compiled = xqs.compile(ctx, new FileSource(xquery, "UTF-8", false));
+                        return xqs.execute(compiled, null);
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(this, e);
 		}
-		Sequence setupResult = xqs.execute(compiled, null);
-		return setupResult;
 	}
  
 	/**

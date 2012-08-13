@@ -436,7 +436,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-metadata,extension-expath,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-metadata,extension-expath,extension-exquery-restxq,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
         description="Build all">
         <antcall target="sign"/>
     </target>
@@ -624,7 +624,7 @@
 		<delete dir="${src.webapp}/WEB-INF/data/lucene"/>
 		<delete dir="${src.webapp}/WEB-INF/data/sanity"/>
         <delete>
-            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters"
+            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
         <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
@@ -651,6 +651,7 @@
         <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/exiftool" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/expath" target="clean" inheritall="false"/>
+        <ant antfile="build.xml" dir="extensions/exquery/restxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/metadata" target="clean" inheritall="false"/>
@@ -738,6 +739,10 @@
 
     <target name="extension-expath" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/expath" inheritall="false"/>
+    </target>
+    
+    <target name="extension-exquery-restxq" depends="prepare-extensions,jar">
+        <ant antfile="build.xml" dir="extensions/exquery/restxq" inheritall="false"/>
     </target>
 
     <target name="extension-versioning" depends="prepare-extensions,jar">

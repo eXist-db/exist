@@ -8,42 +8,34 @@ import org.exist.dom.QName;
  * @author Adam Retter <adam@exist-db.org>
  */
 public class Annotation {
-
+    
     private final QName name;
     private final LiteralValue value[];
-
-    public Annotation(QName name) {
-        this(name, new LiteralValue[0]);
+    private final FunctionSignature signature;
+    
+    public Annotation(final QName name, final FunctionSignature signature) {
+        this(name, new LiteralValue[0], signature);
     }
-
-    public Annotation(QName name, LiteralValue[] value) {
+    
+    public Annotation(final QName name, final LiteralValue[] value, final FunctionSignature signature) {
        this.name = name;
        this.value = value;
+       this.signature = signature;
     }
-
+    
     public QName getName() {
         return name;
     }
-
+    
     public LiteralValue[] getValue() {
         return value;
     }
     
-    public String toString() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("%");
-    	sb.append(name);
-    	sb.append(" ");
-    	
-    	for (int i = 0; i < value.length; i++) {
-    		sb.append(value[i].toString());
-    		if (i != value.length - 1)
-    			sb.append(", ");
-    	}
-    	return sb.toString();
+    /**
+     * Get the signature of the function on which this
+     * annotation was placed
+     */
+    public FunctionSignature getFunctionSignature() {
+        return signature;
     }
-
-	public AnnotationTrigger getTrigger() {
-		return Annotations.getTrigger(this);
-	}
 }

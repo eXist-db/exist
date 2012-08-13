@@ -21,6 +21,7 @@ import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.XACMLSource;
+import org.exist.source.Source;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
@@ -112,24 +113,14 @@ public interface Context {
 	 * @return  number of expression objects
 	 */
 	public int getExpressionCount();
+        
+        public void setSource(Source source);
+        
+        public Source getSource();
 
-	public void setSource(XACMLSource source);
-
-	public XACMLSource getSource();
-
-	/**
-	 * Returns the Source Key of the XQuery associated with this context.
-	 *
-	 * @return  source key
-	 */
-	public String getSourceKey();
-
-	/**
-	 * Returns the Source Type of the XQuery associated with this context.
-	 *
-	 * @return  source type
-	 */
-	public String getSourceType();
+	public void setXacmlSource(XACMLSource xacmlSource);
+        
+	public XACMLSource getXacmlSource();
 
 	/**
 	 * Declare a user-defined static prefix/namespace mapping.

@@ -15,6 +15,7 @@
                 <root id="src.src13.dir" name="Extensions Debuggee"/>
                 <root id="src.src14.dir" name="Extensions Exiftool"/>
                 <root id="src.src15.dir" name="Extensions EXPath"/>
+                <root id="src.src17.dir" name="Extensions EXQuery - RESTXQ"/>
                 <root id="eXist-1.33.dir" name="Extensions Fluent"/>
                 <root id="src.src.dir" name="Extensions Modules"/>
                 <root id="src.src10.dir" name="Extensions Security - ActiveDirectory"/>
