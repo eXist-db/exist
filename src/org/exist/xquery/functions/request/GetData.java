@@ -24,7 +24,9 @@ package org.exist.xquery.functions.request;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
+
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
@@ -38,8 +40,21 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Variable;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

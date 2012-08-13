@@ -109,12 +109,12 @@ public class GetRunningXQueries extends BasicFunction
 		builder.startElement( new QName( "xquery", NAMESPACE_URI, PREFIX ), null );
 		
 		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
-		builder.addAttribute( new QName( "sourceType", null, null ), context.getXacmlSource().getType() );
+		builder.addAttribute( new QName( "sourceType", null, null ), context.getSourceType() );
                 builder.addAttribute( new QName( "started", null, null), new DateTimeValue(new Date(watchdog.getStartTime())).getStringValue());
 		builder.addAttribute( new QName( "terminating", null, null ), ( watchdog.isTerminating() ? "true" : "false" ) );
 		
 		builder.startElement( new QName( "sourceKey", NAMESPACE_URI, PREFIX ), null );
-		builder.characters( context.getXacmlSource().getKey() );
+		builder.characters( context.getSourceKey() );
 		builder.endElement();
 
 		builder.startElement( new QName( "xqueryExpression", NAMESPACE_URI, PREFIX ), null );
