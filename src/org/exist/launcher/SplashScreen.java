@@ -14,13 +14,14 @@ public class SplashScreen extends JFrame {
     private JLabel statusLabel;
 
     public SplashScreen() {
+        setUndecorated(true);
+        setBackground(new Color(255, 255, 255, 125));
+        setAlwaysOnTop(true);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
         URL imageURL = SplashScreen.class.getResource("logo.jpg");
         ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
-        setBackground(new Color(255, 255, 255, 125));
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
-        setUndecorated(true);
-        setAlwaysOnTop(true);
 
         // add the image label
         JLabel imageLabel = new JLabel();
