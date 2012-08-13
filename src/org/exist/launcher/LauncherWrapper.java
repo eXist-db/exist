@@ -8,10 +8,12 @@ import org.apache.tools.ant.types.Path;
 import org.exist.util.ConfigurationHelper;
 
 import java.io.*;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * A wrapper to call {@link Launcher} with correct VM settings.
- * Spawns a new Java process using Ant. Mainly used when launching
+ * A wrapper to start a Java process using start.jar with correct VM settings.
+ * Spawns a new Java VM using Ant. Mainly used when launching
  * eXist by double clicking on start.jar.
  *
  * @author Tobi Krebs
@@ -19,51 +21,65 @@ import java.io.*;
  */
 public class LauncherWrapper {
 
+    private final static String LAUNCHER = org.exist.launcher.Launcher.class.getName();
+    private final static String OS = System.getProperty("os.name").toLowerCase();
+
     public final static void main(String[] args) {
-        LauncherWrapper wrapper = new LauncherWrapper();
-        wrapper.startServer();
+        LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
+        wrapper.launch();
     }
 
-    private void startServer() {
+    protected String command;
+    protected File output;
+
+    public LauncherWrapper(String command) {
+        this.command = command;
+    }
+
+    public void launch() {
+        String home = System.getProperty("exist.home", ".");
         Project project = new Project();
+        project.setBasedir(home);
 
         DefaultLogger logger = new DefaultLogger();
         logger.setOutputPrintStream(System.out);
         logger.setErrorPrintStream(System.err);
-        logger.setMessageOutputLevel(Project.MSG_INFO);
+        logger.setMessageOutputLevel(Project.MSG_DEBUG);
         project.addBuildListener(logger);
 
         Java java = new Java();
         java.setFork(true);
         java.setSpawn(true);
-        java.setClassname(org.exist.start.Main.class.getName());
+        //java.setClassname(org.exist.start.Main.class.getName());
         java.setProject(project);
-        java.setClasspath(Path.systemClasspath);
+        java.setJar(new File(home, "start.jar"));
+        //Path path = java.createClasspath();
+        //path.setPath("start.jar");
 
         Commandline.Argument jvmArgs = java.createJvmarg();
-        String javaOpts = getJavaOpts();
+        String javaOpts = getJavaOpts(home);
         jvmArgs.setLine(javaOpts);
         System.out.println("Java opts: " + javaOpts);
 
         Commandline.Argument args = java.createArg();
-        args.setLine(org.exist.launcher.Launcher.class.getName());
+        args.setLine(command);
 
         java.init();
-        java.executeJava();
+        java.execute();
     }
 
-    protected String getJavaOpts() {
-        String home = System.getProperty("exist.home", ".");
+    protected String getJavaOpts(String home) {
         StringBuilder opts = new StringBuilder();
 
         opts.append(getVMOpts());
 
-        opts.append(" ");
-        opts.append("-Dexist.home=");
+        if (command.equals(LAUNCHER) && OS.equals("mac os x")) {
+            opts.append(" -Dapple.awt.UIElement=true");
+        }
+        opts.append(" -Dexist.home=");
         opts.append(home);
 
-        opts.append(" ");
-        opts.append("-Djava.endorsed.dirs=");
+        opts.append(" -Djava.endorsed.dirs=");
         opts.append(home + "/lib/endorsed");
 
         return opts.toString();
@@ -72,6 +88,7 @@ public class LauncherWrapper {
     protected String getVMOpts() {
         StringBuilder opts = new StringBuilder();
         InputStream is = null;
+        Properties vmProperties = new Properties();
         File propFile = ConfigurationHelper.lookup("vm.properties");
         try {
             if (propFile.canRead()) {
@@ -81,16 +98,22 @@ public class LauncherWrapper {
                 is = LauncherWrapper.class.getResourceAsStream("vm.properties");
             }
             if (is != null) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (!line.matches("^\\s*#.*"))
-                        opts.append(' ').append(line);
-                }
+                vmProperties.load(is);
                 is.close();
             }
         } catch (IOException e) {
             System.err.println("vm.properties not found");
+        }
+        for (Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
+            String key = entry.getKey().toString();
+            if (key.equals("vmoptions")) {
+                opts.append(' ').append(entry.getValue());
+            } else if (key.startsWith("vmoptions.")) {
+                String os = key.substring("vmoptions.".length()).toLowerCase();
+                if (OS.contains(os)) {
+                    opts.append(' ').append(entry.getValue());
+                }
+            }
         }
         return opts.toString();
     }

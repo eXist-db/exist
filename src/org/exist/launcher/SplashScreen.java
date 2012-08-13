@@ -16,7 +16,7 @@ public class SplashScreen extends JFrame {
     public SplashScreen() {
         URL imageURL = SplashScreen.class.getResource("logo.jpg");
         ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
-        setBackground(Color.black);
+        setBackground(new Color(255, 255, 255, 125));
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
         setUndecorated(true);
@@ -30,7 +30,7 @@ public class SplashScreen extends JFrame {
         // message label
         statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
         statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.BOLD, 14));
-        statusLabel.setForeground(Color.white);
+        statusLabel.setForeground(Color.black);
 
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it

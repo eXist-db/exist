@@ -34,11 +34,15 @@ public class Launcher implements Observer {
     private MenuItem startItem;
 
     public static void main(final String[] args) {
-        String nativeLF = UIManager.getSystemLookAndFeelClassName();
-        try {
-            UIManager.setLookAndFeel(nativeLF);
-        } catch (Exception e) {
-            // can be safely ignored
+        String os = System.getProperty("os.name", "");
+        // Switch to native look and feel except for Linux (ugly)
+        if (!os.equals("Linux")) {
+            String nativeLF = UIManager.getSystemLookAndFeelClassName();
+            try {
+                UIManager.setLookAndFeel(nativeLF);
+            } catch (Exception e) {
+                // can be safely ignored
+            }
         }
         /* Turn off metal's use of bold fonts */
         UIManager.put("swing.boldMetal", Boolean.FALSE);
@@ -77,26 +81,40 @@ public class Launcher implements Observer {
         });
 
         Image image = new ImageIcon("icon.png", "eXist-db Logo").getImage();
-        trayIcon = new TrayIcon(image);
+        trayIcon = new TrayIcon(image, "eXist-db Launcher");
+        trayIcon.setImageAutoSize(true);
         final SystemTray tray = SystemTray.getSystemTray();
+
+        PopupMenu popup = createMenu(home, tray);
+        trayIcon.setPopupMenu(popup);
+        try {
+            tray.add(trayIcon);
+        } catch (AWTException e) {
+            System.out.println("Tray icon could not be added");
+            return;
+        }
+    }
+
+    private PopupMenu createMenu(final String home, final SystemTray tray) {
         PopupMenu popup = new PopupMenu();
-        startItem = new MenuItem("Start");
+        startItem = new MenuItem("Start server");
         startItem.setEnabled(false);
         popup.add(startItem);
         startItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (jetty.isStarted()) {
-                    trayIcon.displayMessage(null, "Server already started", TrayIcon.MessageType.WARNING);
-                } else {
-                    jetty.run(new String[]{home}, Launcher.this);
-                    stopItem.setEnabled(true);
-                    startItem.setEnabled(false);
-                }
+            if (jetty.isStarted()) {
+                trayIcon.displayMessage(null, "Server already started", TrayIcon.MessageType.WARNING);
+            } else {
+                jetty.run(new String[]{home}, Launcher.this);
+                stopItem.setEnabled(true);
+                startItem.setEnabled(false);
+                trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
+            }
             }
         });
 
-        stopItem = new MenuItem("Stop");
+        stopItem = new MenuItem("Stop server");
         popup.add(stopItem);
         stopItem.addActionListener(new ActionListener() {
             @Override
@@ -104,6 +122,7 @@ public class Launcher implements Observer {
                 jetty.shutdown();
                 stopItem.setEnabled(false);
                 startItem.setEnabled(true);
+                trayIcon.setToolTip("eXist-db stopped");
             }
         });
 
@@ -113,7 +132,7 @@ public class Launcher implements Observer {
             popup.addSeparator();
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                item = new MenuItem("Open Browser");
+                item = new MenuItem("Open homepage");
                 popup.add(item);
                 item.addActionListener(new ActionListener() {
                     @Override
@@ -143,16 +162,25 @@ public class Launcher implements Observer {
                         }
                     }
                 });
+                item = new MenuItem("Open Java Admin Client");
+                popup.add(item);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        LauncherWrapper wrapper = new LauncherWrapper("client");
+                        wrapper.launch();
+                    }
+                });
             }
             if (desktop.isSupported(Desktop.Action.OPEN)) {
                 popup.addSeparator();
-                item = new MenuItem("exist.log");
+                item = new MenuItem("Open exist.log");
                 popup.add(item);
                 item.addActionListener(new LogActionListener());
             }
 
             popup.addSeparator();
-            item = new MenuItem("Quit (stop db)");
+            item = new MenuItem("Quit (and stop server)");
             popup.add(item);
             item.addActionListener(new ActionListener() {
                 @Override
@@ -163,14 +191,7 @@ public class Launcher implements Observer {
                 }
             });
         }
-
-        trayIcon.setPopupMenu(popup);
-        try {
-            tray.add(trayIcon);
-        } catch (AWTException e) {
-            System.out.println("Tray icon could not be added");
-            return;
-        }
+        return popup;
     }
 
     public void update(Observable o, Object arg) {
