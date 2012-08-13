@@ -196,15 +196,24 @@ public class FunctionSignature {
 	}
 
 
+    @Override
     public boolean equals(Object obj) {
-        FunctionSignature other = (FunctionSignature) obj;
-        if (name == null) {
-        	if (other.name != null)
-        		return false;
-        	return getArgumentCount() == other.getArgumentCount();
+        if(obj == null || !(obj instanceof FunctionSignature)) {
+            return false;
         }
-        if (name.equalsSimple(other.name))
+        
+        final FunctionSignature other = (FunctionSignature) obj;
+        if (name == null) {
+            if(other.name != null) {
+                return false;
+            }    
             return getArgumentCount() == other.getArgumentCount();
+        }
+        
+        if(name.equalsSimple(other.name)) {
+            return getArgumentCount() == other.getArgumentCount();
+        }
+        
         return false;
     }
 }
