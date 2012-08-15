@@ -240,36 +240,42 @@ public class ExecuteFunction extends BasicFunction
                             builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), rsmd.getColumnTypeName( i + 1 ) );
                             builder.addAttribute( new QName( TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs" ), Type.getTypeName( SQLUtils.sqlTypeToXMLType( rsmd.getColumnType( i + 1 ) ) ) );
 
-                            if(rs.wasNull()) {
-
-                                // Add a null indicator attribute if the value was SQL Null
-                                builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
-                            }
-
                             //get the content
                             if(rsmd.getColumnType(i+1) == Types.SQLXML) {
                                 //parse sqlxml value
                                 try {
-                                    SQLXML sqlXml = rs.getSQLXML(i+1);
+                                    final SQLXML sqlXml = rs.getSQLXML(i+1);
+                                    
+                                    if(rs.wasNull()) {
+                                        // Add a null indicator attribute if the value was SQL Null
+                                        builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
+                                    } else {
 
-                                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                                    factory.setNamespaceAware(true);
-                                    InputSource src = new InputSource(sqlXml.getCharacterStream());
-                                    SAXParser parser = factory.newSAXParser();
-                                    XMLReader xr = parser.getXMLReader();
+                                        SAXParserFactory factory = SAXParserFactory.newInstance();
+                                        factory.setNamespaceAware(true);
+                                        InputSource src = new InputSource(sqlXml.getCharacterStream());
+                                        SAXParser parser = factory.newSAXParser();
+                                        XMLReader xr = parser.getXMLReader();
 
-                                    SAXAdapter adapter = new AppendingSAXAdapter(builder);
-                                    xr.setContentHandler(adapter);
-                                    xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-                                    xr.parse(src);
+                                        SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                        xr.setContentHandler(adapter);
+                                        xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                                        xr.parse(src);
+                                    }
                                 } catch(Exception e) {
                                     throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
                                 }
                             } else {
                                 //otherwise assume string value
-                                String colValue = rs.getString(i + 1);
-                                if(colValue != null) {
-                                    builder.characters(SQLUtils.escapeXmlText( colValue ));
+                                final String colValue = rs.getString(i + 1);
+                                
+                                if(rs.wasNull()) {
+                                    // Add a null indicator attribute if the value was SQL Null
+                                    builder.addAttribute( new QName( "null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX ), "true" );
+                                } else {
+                                    if(colValue != null) {
+                                        builder.characters(SQLUtils.escapeXmlText( colValue ));
+                                    }
                                 }
                             }
 
