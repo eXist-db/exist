@@ -145,6 +145,8 @@ public class ExecuteFunction extends BasicFunction
         if( con == null ) {
             return( Sequence.EMPTY_SEQUENCE );
         }
+        
+        boolean preparedStmt = false;
 
         //setup the SQL statement
         String    sql           = null;
@@ -169,6 +171,8 @@ public class ExecuteFunction extends BasicFunction
                 executeResult = stmt.execute( sql );
             } else if( args.length == 4 ) {
 
+                preparedStmt = true;
+                
                 //get the prepared statement
                 long                     statementUID = ( (IntegerValue)args[1].itemAt( 0 ) ).getLong();
                 PreparedStatementWithSQL stmtWithSQL  = SQLModule.retrievePreparedStatement( context, statementUID );
@@ -399,9 +403,10 @@ public class ExecuteFunction extends BasicFunction
                 catch( SQLException se ) {
                     LOG.warn( "Unable to cleanup JDBC results", se );
                 }
+                rs   = null;
             }
 
-            if( stmt != null ) {
+            if(!preparedStmt && stmt != null ) {
 
                 try {
                     stmt.close();
@@ -409,11 +414,9 @@ public class ExecuteFunction extends BasicFunction
                 catch( SQLException se ) {
                     LOG.warn( "Unable to cleanup JDBC results", se );
                 }
+                stmt = null;
             }
-
-            // explicitly ready for Garbage Collection
-            rs   = null;
-            stmt = null;
+            
         }
     }
     
