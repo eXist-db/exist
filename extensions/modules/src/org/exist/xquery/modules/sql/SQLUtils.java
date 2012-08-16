@@ -55,6 +55,8 @@ public final class SQLUtils {
             return( Types.VARCHAR );
         } else if(sqlType.equals("SQLXML")) {
             return Types.SQLXML;
+        } else if(sqlType.equals("TIMESTAMP")) {
+            return Types.TIMESTAMP;
         } else {
             return( Types.VARCHAR ); //default
         }
@@ -141,6 +143,10 @@ public final class SQLUtils {
 
             case Types.SQLXML: {
                 return(Type.NODE);
+            }
+                
+            case Types.TIMESTAMP: {
+                return Type.DATE_TIME;
             }
 
             default: {
