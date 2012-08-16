@@ -60,6 +60,7 @@ import java.sql.Types;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.memtree.AppendingSAXAdapter;
+import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -427,7 +428,11 @@ public class ExecuteFunction extends BasicFunction
 
             for( int i = 0; i < paramElements.getLength(); i++ ) {
                 Element param = ( (Element)paramElements.item( i ) );
-                String  value = param.getFirstChild().getNodeValue();
+                Node child = param.getFirstChild();
+                if(child instanceof ReferenceNode) {
+                    child = ((ReferenceNode)child).getReference().getNode();
+                }
+                String  value = child.getNodeValue();
                 String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
 
                 ( (PreparedStatement)stmt ).setObject( i+1, value, SQLUtils.sqlTypeFromString( type ) );
