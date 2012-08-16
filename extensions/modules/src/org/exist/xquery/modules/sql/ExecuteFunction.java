@@ -56,12 +56,14 @@ import java.sql.SQLException;
 import java.sql.SQLRecoverableException;
 import java.sql.SQLXML;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.memtree.AppendingSAXAdapter;
 import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;
+import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -421,7 +423,7 @@ public class ExecuteFunction extends BasicFunction
         }
     }
     
-    private void setParametersOnPreparedStatement( Statement stmt, Element parametersElement ) throws SQLException
+    private void setParametersOnPreparedStatement( Statement stmt, Element parametersElement ) throws SQLException, XPathException
     {
         if( parametersElement.getNamespaceURI().equals( SQLModule.NAMESPACE_URI ) && parametersElement.getLocalName().equals( PARAMETERS_ELEMENT_NAME ) ) {
             NodeList paramElements = parametersElement.getElementsByTagNameNS( SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME );
@@ -432,10 +434,20 @@ public class ExecuteFunction extends BasicFunction
                 if(child instanceof ReferenceNode) {
                     child = ((ReferenceNode)child).getReference().getNode();
                 }
-                String  value = child.getNodeValue();
-                String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
+                
+                final String  value = child.getNodeValue();
+                final String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
+                final int sqlType = SQLUtils.sqlTypeFromString(type);
 
-                ( (PreparedStatement)stmt ).setObject( i+1, value, SQLUtils.sqlTypeFromString( type ) );
+                if(sqlType == Types.TIMESTAMP) {
+                    final DateTimeValue dv = new DateTimeValue(value);    
+                    final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
+                    ((PreparedStatement)stmt).setTimestamp(i+1, timestampValue);
+                } else {
+                    ((PreparedStatement)stmt).setObject(i+1, value, sqlType);
+                }
+
+                
             }
         }
     }
