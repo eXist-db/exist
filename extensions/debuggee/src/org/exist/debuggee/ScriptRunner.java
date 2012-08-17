@@ -27,6 +27,7 @@ import java.util.Observer;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.debuggee.dbgp.packets.Stop;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
@@ -101,7 +102,8 @@ public class ScriptRunner implements Runnable, Observer {
 //	        	broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
 //	        }
 		
-		} catch (EXistException e) {
+		} catch (PermissionDeniedException pde) {
+                } catch (EXistException e) {
 		} catch (XPathException e) {
 		} finally {
 			if (db != null)
