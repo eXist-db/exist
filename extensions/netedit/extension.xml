@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="netedit">
+
+ <property file="../local.build.properties"/>
+ <property file="../build.properties"/>
+
+ <property name="extension.name" value="${ant.project.name}"/>
+ <property name="existhome.dir" location="../.."/>
+ 
+ <property name="extension.include" value="${include.feature.netedit}"/>
+ 
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+ 
+ <target name="dist" if="${extension.include}">
+     <antcall target="common.dist"/>
+     <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
+     <echo message="!! Please run &apos;$EXIST_HOME/build.[bat|sh] -f extensions\netedit\jarsigner.xml&apos; "/>
+     <echo message="!! once manually to use a default keystore to sign the required jars or put !!"/>
+     <echo message="!! your own certificate in $EXIST_HOME/key.store and sign for enabling netedit client !!"/>
+     <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
+ </target>
+
+</project>

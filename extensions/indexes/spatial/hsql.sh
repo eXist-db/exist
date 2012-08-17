@@ -19,7 +19,7 @@ else
     HSQL_DATA="${EXIST_HOME}/$1"
 fi
 
-JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -cp ${HSQL_LIB}/hsqldb-1.8.1.2.jar"
+JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -cp ${HSQL_LIB}/hsqldb.jar"
 
 
 ${JAVA_HOME}/bin/java ${JAVA_OPTIONS} org.hsqldb.util.DatabaseManagerSwing --url jdbc:hsqldb:${HSQL_DATA}

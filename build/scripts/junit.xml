@@ -24,7 +24,7 @@
 
 
     <target name="test"
-            depends="test-prepare, test-local,  test-fluent, test-indexing, test-xqdoc, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
+        depends="test-prepare, test-local, test-extensions, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -54,9 +54,9 @@
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
         <copy todir="${junit.reports}/classes/org/exist/config/mapping"
             file="${junit.reports}/src/org/exist/config/mapping/Mapping.xml"/>
-        <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
+       <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/>
         <ant antfile="build.xml" dir="extensions/xqdoc" target="compile-tests"/>
-        <ant antfile="build.xml" dir="extensions/xslt" target="compile-tests"/>
+        <ant antfile="build.xml" dir="extensions/xslt" target="compile-tests"/>  -->
     </target>
 
     <!-- Seperate target for creating folders -->
@@ -223,7 +223,11 @@
     </target>
 
     <!-- Test set 5: tests on custom index modules -->
-    <target name="test-indexing" depends="prepare-extensions">
+    <target name="test-extensions" depends="prepare-extensions">
+        <ant antfile="${build.scripts}/extensions-build.xml" target="test" inheritAll="false"/>
+    </target>
+    
+<!--    <target name="test-indexing" depends="prepare-extensions">
         <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
     </target>
 
@@ -237,7 +241,7 @@
     
     <target name="test-svn" depends="prepare-extensions">
         <ant antfile="build.xml" dir="extensions/svn" target="test-svn"/>
-    </target>
+    </target>-->
 
     <!-- Helper target for starting server -->
     <target name="start-server">
