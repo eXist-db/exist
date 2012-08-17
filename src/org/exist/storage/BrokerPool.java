@@ -35,6 +35,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.*;
 import org.exist.config.ConfigurationDocumentTrigger;
@@ -896,12 +897,9 @@ public class BrokerPool extends Observable implements Database {
 
         statusReporter.setStatus(SIGNAL_READINESS);
 
-		//Get a manager to handle further collections configuration
-        try {
-            collectionConfigurationManager = new CollectionConfigurationManager(broker);
-        } catch (Exception e) {
-            LOG.error("Found an error while initializing database: " + e.getMessage(), e);
-        }
+        //Get a manager to handle further collections configuration
+        initCollectionConfigurationManager(broker);
+        
         
         //wake-up the plugins manager
         pluginManager.startUp(broker);
@@ -1272,9 +1270,21 @@ public class BrokerPool extends Observable implements Database {
      * Returns a manager for accessing the database instance's collection configuration files.
      * @return The manager
      */
+    @Override
     public CollectionConfigurationManager getConfigurationManager() {
         return collectionConfigurationManager;
-    }        
+    }
+
+    public void initCollectionConfigurationManager(final DBBroker broker) {
+        if(collectionConfigurationManager == null) {
+            try {
+                   collectionConfigurationManager = new CollectionConfigurationManager(broker);
+            } catch(final Exception e) {
+                LOG.error("Found an error while initializing database: " + e.getMessage(), e);
+            }
+        }
+    }
+    
 
     /**
      * Returns a cache in which the database instance's collections are stored.

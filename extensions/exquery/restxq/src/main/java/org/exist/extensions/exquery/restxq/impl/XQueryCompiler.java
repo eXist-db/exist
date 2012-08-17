@@ -49,7 +49,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class XQueryCompiler {
     
-    private final static String XQUERY_MIME_TYPE = "application/xquery";
+    public final static String XQUERY_MIME_TYPE = "application/xquery";
     
     public static CompiledXQuery compile(final DBBroker broker, final URI xqueryLocation) throws RestXqServiceCompilationException {
         

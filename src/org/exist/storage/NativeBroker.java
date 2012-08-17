@@ -50,6 +50,8 @@ import org.exist.collections.Collection;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTriggersVisitor;
 import org.exist.collections.triggers.DocumentTriggersVisitor;
 import org.exist.collections.triggers.TriggerException;
@@ -187,6 +189,8 @@ public class NativeBroker extends DBBroker {
     public static int OFFSET_COLLECTION_ID = 0;
     public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
+    public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
+    
     /** the database files */
     protected CollectionStore collectionsDb;
     protected DOMFile domDb;
@@ -633,6 +637,38 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    private final String readInitCollectionConfig() {
+        final File fInitCollectionConfig = new File(pool.getConfiguration().getExistHome(), INIT_COLLECTION_CONFIG);
+        if(fInitCollectionConfig.exists() && fInitCollectionConfig.isFile()) {
+            
+            InputStream is = null;
+            try {
+                final StringBuilder initCollectionConfig = new StringBuilder();
+                
+                is = new FileInputStream(fInitCollectionConfig);
+                int read = -1;
+                byte buf[] = new byte[1024];
+                while((read = is.read(buf)) != -1) {
+                    initCollectionConfig.append(new String(buf, 0, read));
+                }
+                
+                return initCollectionConfig.toString();
+            } catch(final IOException ioe) {
+                LOG.error(ioe.getMessage(), ioe);
+            } finally {
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch(final IOException ioe) {
+                        LOG.warn(ioe.getMessage(), ioe);
+                    }
+                }
+            }
+                    
+        };
+        return null;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.storage.DBBroker#getOrCreateCollection(org.exist.storage.txn.Txn, org.exist.xmldb.XmldbURI)
      */
@@ -663,6 +699,26 @@ public class NativeBroker extends DBBroker {
                     
                     //TODO : acquire lock manually if transaction is null ?
                     saveCollection(transaction, current);
+                    
+                    
+                    //import an initial collection configuration
+                    try {
+                        final String initCollectionConfig = readInitCollectionConfig();
+                        if(initCollectionConfig != null) {
+                            CollectionConfigurationManager collectionConfigurationManager = pool.getConfigurationManager();
+                            if(collectionConfigurationManager == null) {
+                                //might not yet have been initialised
+                                pool.initCollectionConfigurationManager(this);
+                                collectionConfigurationManager = pool.getConfigurationManager();
+                            }
+                            
+                            if(collectionConfigurationManager != null) {
+                                collectionConfigurationManager.addConfiguration(transaction, this, current, initCollectionConfig);
+                            }
+                        }
+                    } catch(final CollectionConfigurationException cce) {
+                        LOG.error("Could not load initial collection configuration for /db: " + cce.getMessage(), cce);
+                    }
                 }
                 
                 for(int i=1;i<segments.length;i++) {
