@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <triggers>
+        <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
+    </triggers>
+</collection>

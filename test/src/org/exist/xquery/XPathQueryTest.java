@@ -153,33 +153,29 @@ public class XPathQueryTest extends XMLTestCase {
     private Collection testCollection;
     private String query;
     
-    protected void setUp() {
-        if (uri.startsWith("xmldb:exist://localhost"))
+    @Override
+    protected void setUp() throws Exception {
+        if (uri.startsWith("xmldb:exist://localhost")) {
             initServer();
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
-            
-            Collection root =
-                    DatabaseManager.getCollection(
-                    uri,
-                    "admin",
-                    "");
-            CollectionManagementService service =
-                    (CollectionManagementService) root.getService(
-                    "CollectionManagementService",
-                    "1.0");
-            testCollection = service.createCollection("test");
-            assertNotNull(testCollection);
-        } catch (ClassNotFoundException e) {
-        } catch (InstantiationException e) {
-        } catch (IllegalAccessException e) {
-        } catch (XMLDBException e) {
-            e.printStackTrace();
         }
+        
+        // initialize driver
+        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+        Collection root =
+                DatabaseManager.getCollection(
+                uri,
+                "admin",
+                "");
+        CollectionManagementService service =
+                (CollectionManagementService) root.getService(
+                "CollectionManagementService",
+                "1.0");
+        testCollection = service.createCollection("test");
+        assertNotNull(testCollection);
     }
     
 	private void initServer() {
@@ -194,6 +190,7 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
+    @Override
     protected void tearDown() throws Exception {
         try {
             TestUtils.cleanupDB();

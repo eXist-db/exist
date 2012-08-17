@@ -29,7 +29,9 @@ package org.exist.extensions.exquery.restxq.impl;
 import java.util.*;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -116,14 +118,23 @@ public class RestXqTrigger extends FilteringTrigger {
     }
     
     private List<RestXqService> findServices(final DBBroker broker, final DocumentImpl document) throws TriggerException {
-        try {
-            final CompiledXQuery compiled = XQueryCompiler.compile(broker, document);
-            return XQueryInspector.findServices(compiled);
-        } catch(final RestXqServiceCompilationException rxsce) {
-            throw new TriggerException(rxsce.getMessage(), rxsce);
-        } catch(final ExQueryException eqe) {
-            throw new TriggerException(eqe.getMessage(), eqe);
+        
+        //ensure we have a binary document with the correct mimetype
+        if(document instanceof BinaryDocument) {
+            final DocumentMetadata metadata = document.getMetadata();
+            if(metadata.getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE)){
+                try {
+                    final CompiledXQuery compiled = XQueryCompiler.compile(broker, document);
+                    return XQueryInspector.findServices(compiled);
+                } catch(final RestXqServiceCompilationException rxsce) {
+                    throw new TriggerException(rxsce.getMessage(), rxsce);
+                } catch(final ExQueryException eqe) {
+                    throw new TriggerException(eqe.getMessage(), eqe);
+                }
+            }
         }
+        
+        return new ArrayList<RestXqService>();
     }
     
     private RestXqServiceRegistry getRegistry(final DBBroker broker) {
