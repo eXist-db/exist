@@ -99,4 +99,17 @@ public class BinaryValueFromFile extends BinaryValue {
     public Object toJavaObject() throws XPathException {
     	return file;
     }
+
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // do not close if this object is part of the contextSequence
+        if (contextSequence == this ||
+                (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
+            return;
+        try {
+            this.close();
+        } catch (IOException e) {
+            // ignore at this point
+        }
+    }
 }

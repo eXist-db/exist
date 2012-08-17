@@ -254,7 +254,7 @@ public class LetExpr extends BindingExpression {
                 }
             } finally {
                 // Restore the local variable stack
-                context.popLocalVariables(mark);
+                context.popLocalVariables(mark, resultSequence);
             }
             //Special processing for groupBy : one return per group in groupedSequence 
             if (groupSpecs!=null){ 

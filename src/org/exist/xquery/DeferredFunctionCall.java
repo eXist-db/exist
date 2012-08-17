@@ -284,4 +284,9 @@ public abstract class DeferredFunctionCall implements Sequence {
     public boolean isCacheable() {
         return false;
     }
+
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // nothing to do
+    }
 }

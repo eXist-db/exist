@@ -92,4 +92,18 @@ public class BinaryValueFromInputStream extends BinaryValue {
             is.close();
         }
     }
+
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // do not close if this object is part of the contextSequence
+        if (contextSequence == this ||
+            (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
+            return;
+        LOG.warn("Closing input stream");
+        try {
+            this.close();
+        } catch (IOException e) {
+            LOG.warn("Error during cleanup of binary value: " + e.getMessage(), e);
+        }
+    }
 }

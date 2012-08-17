@@ -318,7 +318,7 @@ public class ForExpr extends BindingExpression {
             }
         } finally {
             // restore the local variable stack 
-            context.popLocalVariables(mark);
+            context.popLocalVariables(mark, resultSequence);
         }
         // bv : Special processing for groupBy : one return per group in groupedSequence 
         //TODO : positional variable ! 

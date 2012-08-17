@@ -71,18 +71,14 @@ public class DeferredFunctionCallTest {
         //expectations for DeferredFunctionCall.execute
         mockContext.pushDocumentContext();
         mockContext.functionStart(mockFunctionSignature);
-        expect(mockContext.markLocalVariables(true)).andReturn(mockMark);
         mockContext.stackEnter((Expression)anyObject());
-        expect(mockContext.markLocalVariables(true)).andReturn(mockMark);
         
         expect(mockContext.declareVariableBinding((LocalVariable)anyObject())).andReturn(null); 
         expect(mockFunctionSignature.getArgumentTypes()).andReturn(mockArgumentTypes); 
         
         expect(mockExpression.eval(mockContextSequence, mockContextItem)).andReturn(Sequence.EMPTY_SEQUENCE);
-        
-        mockContext.popLocalVariables(mockMark);
+
         mockContext.stackLeave((Expression)anyObject());
-        mockContext.popLocalVariables(mockMark);
         mockContext.functionEnd();
         mockContext.popDocumentContext();
         

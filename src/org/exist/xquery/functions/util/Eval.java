@@ -383,11 +383,12 @@ public class Eval extends BasicFunction {
                 LOG.info("there now");
                 exprContext = initContextSequence;
             }
-
+            Sequence result = null;
             try{
-                return execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext, cache);
+                result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext, cache);
+                return result;
             } finally {
-                cleanup(evalContext, innerContext, oldDocs, mark, expr, sequence);
+                cleanup(evalContext, innerContext, oldDocs, mark, expr, sequence, result);
             }
         } catch(XPathException e) {
             try {
@@ -400,7 +401,8 @@ public class Eval extends BasicFunction {
         }
     }
 
-    private void cleanup(XQueryContext evalContext, XQueryContext innerContext, DocumentSet oldDocs, LocalVariable mark, Item expr, Sequence sequence) {
+    private void cleanup(XQueryContext evalContext, XQueryContext innerContext, DocumentSet oldDocs, LocalVariable mark, Item expr,
+                         Sequence sequence, Sequence resultSequence) {
         if(innerContext != evalContext) {
            innerContext.reset();
         }

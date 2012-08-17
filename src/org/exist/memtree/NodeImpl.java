@@ -801,7 +801,11 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     public String getBaseURI() {
         return( null );
     }
-    
+
+    public void destroy(Sequence contextSequence) {
+        // nothing to do
+    }
+
     protected XmldbURI calculateBaseURI() {
     	return null;
     }
