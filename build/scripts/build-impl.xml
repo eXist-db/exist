@@ -436,8 +436,9 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-indexes,extension-metadata,extension-expath,extension-exquery-restxq,extension-versioning,extension-xqdoc,extension-fluent,extension-xprocxq,extension-debuggee,extension-netedit,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-xslt,extension-svn,extension-webdav,extension-contentextraction,extension-exiftool,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-metadata,extension-exquery-restxq,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
         description="Build all">
+        <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
         <antcall target="sign"/>
     </target>
 
@@ -517,7 +518,7 @@
             <link href="http://lucene.apache.org/java/2_9_4/api/all/"/>
         </javadoc>
 
-        <ant antfile="build.xml" dir="extensions/fluent" target="javadoc"/>
+        <ant antfile="${build.scripts}/extensions-build.xml" target="javadoc" inheritAll="false"/>
 
         <delete dir="${build.src}"/>
     </target>
@@ -647,28 +648,18 @@
         <delete failonerror="no" dir="cat"/>
         
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/contentextraction" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/debuggee" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/exiftool" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/expath" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/exquery/restxq" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/fluent" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/indexes" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/metadata" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/netedit" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/oauth"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/versioning" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/webdav" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/xqdoc" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/xslt" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
+        
+        <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
 
         <antcall target="extensions-xslt"/>
     </target>
@@ -729,38 +720,14 @@
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
     </target>
 
-    <target name="extension-indexes" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/indexes" inheritall="false"/>
-    </target>
-
     <target name="extension-metadata" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/metadata" inheritall="false"/>
     </target>
-
-    <target name="extension-expath" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/expath" inheritall="false"/>
-    </target>
-    
+   
     <target name="extension-exquery-restxq" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/exquery/restxq" inheritall="false"/>
     </target>
-
-    <target name="extension-versioning" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/versioning" inheritall="false"/>
-    </target>
     
-    <target name="extension-debuggee" depends="jar">
-        <ant antfile="build.xml" dir="extensions/debuggee" inheritall="false"/>
-    </target>
-    
-    <target name="extension-netedit" depends="jar">
-        <ant antfile="build.xml" dir="extensions/netedit" inheritall="false"/>
-    </target>
-    
-    <target name="extension-xslt" depends="jar">
-        <ant antfile="build.xml" dir="extensions/xslt" inheritall="false"/>
-    </target>
-
     <target name="extension-svn" depends="jar">
         <ant antfile="build.xml" dir="extensions/svn" inheritall="false"/>
     </target>
@@ -780,14 +747,6 @@
     <target name="extension-security-activedirectory" depends="jar">
         <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
     </target>
-
-    <target name="extension-xqdoc" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/xqdoc" inheritall="false"/>
-    </target>
-        
-    <target name="extension-fluent" depends="jar">
-        <ant antfile="build.xml" dir="extensions/fluent" inheritall="false"/>
-    </target>
     
     <target name="extension-xprocxq" depends="jar">
         <ant antfile="build.xml" dir="extensions/xprocxq" inheritall="false"/>
@@ -795,18 +754,6 @@
     
     <target name="samples" depends="jar" description="Build samples">
         <ant antfile="build.xml" dir="samples"/>
-    </target>
-
-    <target name="extension-webdav" depends="jar">
-        <ant antfile="build.xml" dir="extensions/webdav" inheritall="false"/>
-    </target>
-
-    <target name="extension-contentextraction" depends="jar">
-        <ant antfile="build.xml" dir="extensions/contentextraction" inheritall="false"/>
-    </target>
-
-     <target name="extension-exiftool" depends="jar">
-        <ant antfile="build.xml" dir="extensions/exiftool" inheritall="false"/>
     </target>
 
     <target name="extensions-xar" depends="jar">

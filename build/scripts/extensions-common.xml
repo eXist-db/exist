@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+to dadd: -pre-compile steps
+-->
+<project basedir="." default="all" name="common">
+
+   <description>Reusable build script for all exist-db extensions </description>
+
+   <!-- must be overridden by scripts -->
+   <property name="extension.name" value="NONAME"/>
+
+   <!-- import misc properties -->
+   <property name="existhome.dir" location="../.."/>
+   <property file="${existhome.dir}/build.properties"/>
+
+   <property file="local.build.properties"/>
+   <property file="build.properties"/>
+
+   <property file="../local.build.properties"/>
+   <property file="../build.properties"/>
+
+
+   <property file="local.new.properties"/>
+   <property file="new.properties"/>
+
+   <!-- set global properties for this build -->
+
+   <property name="src.dir" location="src"/>
+
+   <property name="build.dir" location="build"/>
+   <property name="build.classes.dir" location="${build.dir}/classes"/>
+   <property name="build.javadoc.dir" location="${build.dir}/javadoc"/>
+
+   <property name="test.dir" location="test"/>
+   <property name="test.build.dir" location="${build.dir}/test"/>
+   <property name="test.classes.dir" location="${test.build.dir}/classes"/>
+   <property name="test.src.dir" location="${test.dir}/src"/>
+   <property name="test.resources.dir" location="${test.dir}/resources"/>
+
+   <property name="lib.dir" location="lib"/>
+
+   <property name="dist.dir" location="${existhome.dir}/lib/extensions"/>
+   <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}.jar"/>
+
+   <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
+
+   <property name="extension.include" value="yes"/>
+
+   <!-- Additional task defs  -->
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+         <pathelement location="${existhome.dir}/tools/ant/lib/ant-contrib-1.0b3.jar"/>
+      </classpath>
+   </taskdef>
+
+   <!-- global checks -->
+   <available file="ivy.xml" property="ivyxml.present"/>
+   <available file="${test.src.dir}" property="testsource.present"/>
+
+   <!-- lib paths -->
+   <path id="classpath.core">
+      <fileset dir="${lib.dir}" erroronmissingdir="false">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/${lib.core}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/${lib.optional}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/${lib.endorsed}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/${lib.user}">
+         <include name="*.jar"/>
+      </fileset>
+      <!-- lib.extensions must be excluded -->
+      <fileset dir="${existhome.dir}/tools/ant/lib">
+         <include name="*.jar"/>
+      </fileset>
+      <pathelement path="${existhome.dir}/exist.jar"/>
+      <pathelement path="${existhome.dir}/exist-optional.jar"/>
+      <pathelement path="${existhome.dir}/start.jar"/>
+      <pathelement path="${java.class.path}"/>
+   </path>
+
+   <path id="classpath.test">
+      <fileset dir="${existhome.dir}/${lib.test}">
+         <include name="*.jar"/>
+      </fileset>
+      <pathelement path="${test.classes.dir}"/>
+      <!-- needed for org/exist/TestUtils -->
+      <pathelement path="${existhome.dir}/test/classes"/>
+   </path>
+
+   <path id="classpath.extensions">
+      <fileset dir="${existhome.dir}/${lib.extensions}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${existhome.dir}/extensions">
+         <include name="**/lib/*.jar"/>
+      </fileset>
+   </path>
+
+   <path id="classpath.aspectj">
+      <fileset dir="${existhome.dir}/${tools.aspectj}/lib">
+         <include name="*.jar"/>
+      </fileset>
+   </path>
+
+   <target name="all">
+      <echo>====================================================================</echo>
+      <echo>Extension '${extension.name}' ('${ant.project.name}')</echo>
+      <echo>====================================================================</echo>
+      <antcall target="dist"/>
+   </target>
+
+   <target name="init">
+      <echo>Initializing '${extension.name}'</echo>
+      
+      <!-- Create the time stamp -->
+      <tstamp/>
+      
+      <antcall target="download-3rd-party"/>
+   </target>
+
+   <target name="compile" description="Compile sources" if="${extension.include}">
+
+      <echo>Compiling '${extension.name}'</echo>
+      <antcall target="init"/>
+      <antcall target="compile-src"/>
+      <antcall target="compile-test"/>
+   </target>
+
+   <target name="compile-src" description="Compile sources" if="${extension.include}">
+
+      <echo>Compiling sources '${extension.name}'</echo>
+      
+      <mkdir dir="${build.classes.dir}"/>
+
+      <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+         destdir="${build.classes.dir}" encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.dir}"
+         source="${build.compiler.source}" target="${build.compiler.target}">
+         <classpath>
+            <path refid="classpath.core"/>
+         </classpath>
+      </javac>
+   </target>
+
+   <!-- Determine if tests really should be compiled -->
+   <condition property="run.tests">
+      <and>
+         <istrue value="${extension.include}"/>
+         <istrue value="${testsource.present}"/>
+      </and>
+   </condition>
+
+   <target name="compile-test" description="Compile test sources" if="${run.tests}">
+
+      <echo>Compiling tests '${extension.name}'</echo>
+      
+      <mkdir dir="${test.classes.dir}"/>
+
+      <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+         destdir="${test.classes.dir}" encoding="UTF-8" optimize="${build.optimize}" srcdir="${test.src.dir}"
+         source="${build.compiler.source}" target="${build.compiler.target}">
+         <classpath>
+            <path refid="classpath.core"/>
+            <pathelement path="${build.classes.dir}"/>
+            <path refid="classpath.test"/>
+         </classpath>
+      </javac>
+   </target>
+
+   <target name="dist" description="Generate distributable" if="${extension.include}">
+
+      <echo>Generating jar for '${extension.name}'</echo>
+      
+      <antcall target="compile"/>
+      
+      <copy todir="${build.classes.dir}">
+         <fileset dir="${src.dir}">
+            <exclude name="**/*.java"/>
+            <exclude name="**/*.bak"/>
+            <exclude name="**/*~"/>
+         </fileset>
+      </copy>
+
+      <jar jarfile="${dist.extension.jar}" basedir="${build.classes.dir}" compress="yes">
+         <manifest>
+            <attribute name="Project-Name" value="${project.name}"/>
+            <attribute name="Project-Version" value="${project.version}"/>
+            <attribute name="Project-Build" value="${DSTAMP}"/>
+            <attribute name="Project-CodeName" value="${project.codename}"/>
+            <attribute name="SVN-Revision" value="${svn.revision}"/>
+            <attribute name="Extension-Name" value="${extension.name}"/>
+         </manifest>
+      </jar>
+   </target>
+
+   <target name="clean" description="Clean generated files (classes, jars)">
+      <echo>Cleaning '${extension.name}'</echo>
+      <delete dir="${build.dir}"/>
+      <delete file="${dist.extension.jar}"/>
+      <delete dir="${test.build.dir}"/>
+      <antcall target="clean-3rd-party"/>
+   </target>
+
+   <target name="javadoc" description="Generate javadoc" if="${extension.include}">
+      <echo>Generating javadoc for '${extension.name}'</echo>
+
+      <mkdir dir="${build.javadoc.dir}"/>
+
+      <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="${build.javadoc.dir}"
+         doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
+         source="${build.compiler.source}" sourcepath="${src.dir}">
+         <classpath>
+            <path refid="classpath.core"/>
+         </classpath>
+         <link href="http://xmldb.exist-db.org/javadoc/"/>
+         <link href="http://java.sun.com/javase/6/docs/api/"/>
+         <link href="http://java.sun.com/javaee/5/docs/api/"/>
+      </javadoc>
+
+      <jar jarfile="${build.dir}/exist-${extension.name}-javadoc.jar" basedir="${build.javadoc.dir}" compress="yes">
+         <manifest>
+            <attribute name="Project-Name" value="${project.name}"/>
+            <attribute name="Project-Version" value="${project.version}"/>
+            <attribute name="Project-Build" value="${DSTAMP}"/>
+            <attribute name="Project-CodeName" value="${project.codename}"/>
+            <attribute name="SVN-Revision" value="${svn.revision}"/>
+            <attribute name="Extension-Name" value="${extension.name}"/>
+         </manifest>
+      </jar>
+   </target>
+
+   <!-- Only download jars if ivy.xml file is present -->
+   <target name="download-3rd-party" description="Download thirdparty jar files" xmlns:ivy="antlib:org.apache.ivy.ant"
+      if="ivyxml.present">
+      <echo>Retrieving 3rd party jar files '${extension.name}'</echo>
+      <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
+      <ivy:retrieve/>
+   </target>
+
+   <!-- Only remove jars from lib if ivy.xml file is present -->
+   <target name="clean-3rd-party" description="Remove thirdparty jar files" if="ivyxml.present">
+      <echo>Removing 3rd party jar files '${extension.name}'</echo>
+      <delete includeemptydirs="true">
+         <fileset dir="${lib.dir}" includes="*.jar"/>
+      </delete>
+   </target>
+
+   <!-- 
+      ====== Tests ======
+   -->
+   <target name="test-prepare" description="....." if="${run.tests}"> </target>
+
+   <target name="test" description="....." if="${run.tests}">
+      <echo>====================================================================</echo>
+      <echo>Executing tests '${extension.name}'</echo>
+      <echo>====================================================================</echo>
+      
+      <antcall target="compile-test"/>
+
+      <mkdir dir="${junit.report.dir}"/>
+
+      <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
+         maxmemory="${junit.forked.VM.maxmemory}">
+
+         <classpath>
+            <path refid="classpath.core"/>
+            <path refid="classpath.extensions"/>
+            <path refid="classpath.test"/>
+            <path refid="classpath.aspectj"/>
+            <pathelement path="${build.classes.dir}"/>
+            <pathelement path="${test.classes.dir}"/>
+         </classpath>
+
+         <formatter type="plain"/>
+         <formatter type="xml"/>
+
+         <batchtest fork="yes" todir="${junit.report.dir}">
+            <fileset dir="${test.classes.dir}">
+               <include name="**/*Test.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+   </target>
+
+</project>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="xUnit">
+
+ <property file="../local.build.properties"/>
+ <property file="../build.properties"/>
+
+ <property name="extension.name" value="${ant.project.name}"/>
+ <property name="existhome.dir" location="../.."/>
+ 
+ <property name="extension.include" value="${include.feature.xUnit}"/>
+ 
+ <!-- specific overrules -->
+ <property name="src.dir" location="src/main/java"/>
+ <property name="test.src.dir" location="src/test/java"/>
+ 
+ 
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+
+ <!-- over rule original target, junit is needed -->
+ <target name="compile" depends="init" description="Compile test sources" if="${extension.include}">
+       <echo>Compiling '${extension.name}'</echo>
+       <mkdir dir="${build.classes.dir}"/>
+       <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+          destdir="${build.classes.dir}" encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.dir}"
+          source="${build.compiler.source}" target="${build.compiler.target}">
+          <classpath>
+             <path refid="classpath.core"/>
+             <path refid="classpath.test"/>
+          </classpath>
+       </javac>
+    </target>
+
+</project>

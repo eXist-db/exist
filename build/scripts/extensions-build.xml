@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="existdb">
+
+ <!-- 
+
+    all               Build and test everything; create a distribution, optionally install. 
+    clean             Delete all generated files and directories. 
+    deploy            Deploy the code, usually to a remote server. 
+    dist              Produce the distributables. 
+    distclean         Clean up the distribution files only. 
+    docs              Generate all documentation. 
+    init              Initialize the build: create directories, call <tstamp> and other common actions. 
+    install           Perform a local installation. 
+    javadocs          Generate the Javadoc pages. 
+    printerdocs       Generate printable documents. 
+    test              Run the unit tests. 
+    uninstall         Remove a local installation. 
+ -->
+ <property name="existhome.dir" location="../.."/>
+
+ <target name="all" description="Compile sources, create jars">
+  <echo>${ant.project.name}</echo>
+  <echo>basedir=${basedir}</echo>
+  <echo>existhome.dir=${existhome.dir}</echo>
+
+  <subant target="all">
+   <fileset dir="${existhome.dir}/">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+
+ </target>
+
+ <target name="clean" description="Clean generated files (classes, jars)">
+  <echo>${existhome.dir}</echo>
+  <echo>${basedir}</echo>
+  <subant target="clean">
+   <fileset dir="${existhome.dir}">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+ </target>
+
+ <target name="dist" description="Create jar files.">
+  <subant target="dist">
+   <fileset dir="${existhome.dir}/">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+ </target>
+
+ <target name="compile" description="Compile sources">
+  <subant target="compile">
+   <fileset dir="${existhome.dir}/">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+ </target>
+
+ <target name="clean-all" description="Clean download, data etc."> </target>
+
+ <target name="init" description="Initialize the build."> </target>
+
+ <target name="test" description="Run tests.">
+  <subant target="test">
+   <fileset dir="${existhome.dir}/">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+ </target>
+
+ <target name="javadoc" description="Generate javadoc.">
+
+  <subant target="javadoc">
+   <fileset dir="${existhome.dir}/">
+    <include name="extensions/indexes/*/extension.xml"/>
+    <include name="extensions/extension.xml"/>
+    <include name="extensions/*/extension.xml"/>
+   </fileset>
+  </subant>
+
+ </target>
+
+</project>

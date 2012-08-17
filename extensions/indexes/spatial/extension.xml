@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="spatial">
+
+ <property file="../local.build.properties"/>
+ <property file="../build.properties"/>
+
+ <property name="extension.name" value="index-${ant.project.name}"/>
+ <property name="existhome.dir" location="../../.."/>
+
+ <property name="extension.include" value="${include.index.spatial}"/>
+
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+
+ <target name="download-3rd-party" description="Download thirdparty jar files">
+  <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+  
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1.1/geoapi-nogenerics-2.1.1.jar"
+   classname="org.opengis.geometry.Geometry"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-api/2.4.5/gt2-api-2.4.5.jar"
+   classname="org.geotools.event.GTRoot"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-epsg-extension/2.4.5/gt2-epsg-extension-2.4.5.jar"
+   classname="org.geotools.referencing.factory.epsg.EsriExtension"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-epsg-wkt/2.4.5/gt2-epsg-wkt-2.4.5.jar"
+   classname="org.geotools.referencing.crs.EPSGCRSAuthorityFactory"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-main/2.4.5/gt2-main-2.4.5.jar"
+   classname="org.geotools.factory.BasicFactories"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-metadata/2.4.5/gt2-metadata-2.4.5.jar"
+   classname="org.geotools.metadata.AbstractMetadata"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-referencing/2.4.5/gt2-referencing-2.4.5.jar"
+   classname="org.geotools.referencing.Console"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/org/geotools/gt2-xml/2.4.5/gt2-xml-2.4.5.jar"
+   classname="org.geotools.xml.DocumentFactory"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/javax/units/jsr108/0.01/jsr108-0.01.jar" classname="javax.units.SI"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/com/vividsolutions/jts/1.8/jts-1.8.jar"
+   classname="com.vividsolutions.jts.JTSVersion"/>
+  <fetch classpathref="classpath.core" dest="${lib.dir}" usecache="true"
+   url="http://download.osgeo.org/webdav/geotools/java3d/vecmath/1.3.1/vecmath-1.3.1.jar"
+   classname="javax.vecmath.GVector"/>
+  
+  <fetch classpathref="classpath.core" dest="${lib.dir}" 
+   url="http://sourceforge.net/projects/hsqldb/files/hsqldb/hsqldb_1_8_1/hsqldb_1_8_1_3.zip/download" classname="org.hsqldb.Database">
+   
+   <patternset>
+    <include name="**/hsqldb*.jar"/>
+   </patternset>
+  </fetch>
+  
+  <antcall target="download-15385-SS7886-5i1"/>
+ </target>
+
+ <available file="${test.resources.dir}/15385-SS7886-5i1.gml" property="15385-SS7886-5i1.present"/>
+
+ <target name="download-15385-SS7886-5i1" unless="15385-SS7886-5i1.present">
+  
+  <mkdir dir="${test.resources.dir}"/>
+  
+  <!-- Download, unzip and cleanup data set -->
+  <get src="http://data.exist-db.org/spatial/os-mastermap-topography-layer-sample-data.gz"
+   dest="${test.resources.dir}/15385-SS7886-5i1.gz" verbose="true"/>
+  <gunzip src="${test.resources.dir}/15385-SS7886-5i1.gz" dest="${test.resources.dir}/15385-SS7886-5i1.gml"/>
+  <delete file="${test.resources.dir}/15385-SS7886-5i1.gz"/>
+
+  <!-- Retrieve copy of the license -->
+  <get src="http://data.exist-db.org/spatial/ordnance-survey-discover-data-licence.pdf" dest="${test.resources.dir}"/>
+  <get src="http://data.exist-db.org/spatial/README.txt" dest="${test.resources.dir}"/>
+ </target>
+
+</project>
