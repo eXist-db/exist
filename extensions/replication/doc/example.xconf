@@ -1,0 +1,54 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <triggers>
+        <trigger class="org.exist.replication.jms.publish.ReplicationTrigger">
+
+            <!-- 
+                Setup InitialContext, values must be identical with subscriber (conf.xml)
+                see javax.naming>InitialContext#InitialContext(Hashtable) 
+            -->
+
+            <!-- 
+                Initial context provider 
+            -->
+            <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
+
+            <!-- 
+                URL of message broker 
+            --> 
+            <parameter name="java.naming.provider.url" value="tcp://miniserver.local:61616"/>
+
+            <!-- 
+                Lookup connection factory
+                see javax.naming.InitialContext#lookup(String) 
+            -->
+            <parameter name="connectionfactory" value="ConnectionFactory"/>
+
+            <!--
+                Lookup destination (topic)
+                see javax.naming.InitialContext#lookup(String) 
+            -->
+            <parameter name="topic" value="dynamicTopics/eXistdb"/>
+
+            <!--
+                Set client identifier for this connection.
+                see javax.jms.Connection#setClientID(string)
+            -->
+            <parameter name="client-id" value="PublisherId"/>
+
+            <!-- 
+                Set time-to-live in milliseconds, default value is 0 (unlimited) 
+                see javax.jms.MessageProducer#setTimeToLive(long)
+                [Optional]
+            -->
+            <parameter name="time-to-live" value="0"/> 
+
+            <!--
+                Sets the producer priority, value 0-9 ; default is 4.
+                see javax.jms.MessageProducer#setPriority(int)
+                [Optional]
+            -->
+            <parameter name="priority" value="4"/>
+
+        </trigger>
+    </triggers>
+</collection>

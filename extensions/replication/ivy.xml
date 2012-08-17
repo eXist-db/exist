@@ -1,0 +1,53 @@
+<!--
+    Ivy module to retrieve the tika jar, including dependancies, excluding duplicate jars
+
+    $Id$
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="tika"/>
+    <dependencies>
+        <!--<dependency org="org.apache.activemq" name="activemq-core" rev="5.6.0"  conf="*->*,!sources,!javadoc">
+            
+            <exclude module="slf4j-api"/>
+            <exclude module="commons-logging"/>
+            <exclude module="kahadb"/>
+            <exclude module="org.osgi.core"/>
+            <exclude module="spring-context"/>
+            <exclude module="commons-net"/>
+            <exclude module="jasypt"/>
+            
+
+            <exclude module="activemq-openwire-generator"/>
+            <exclude module="activemq-protobuf"/>
+            <exclude module="activemq-jmdns_1.0"/>
+            <exclude module="activemq-jaas"/>
+            <exclude module="geronimo-jta_1.0.1B_spec"/>
+            
+            
+            <exclude module="groovy-all"/>
+
+            
+            <exclude module="xbean-spring"/>
+            <exclude module="spring-aop"/>
+            <exclude module="commons-logging"/>
+              
+            <exclude module="commons-pool"/>   
+            <exclude module="xalan"/>
+            <exclude module="ant"/>
+            <exclude module="xpp3_min"/>
+            <exclude module="derby"/>
+               
+            <exclude module="aopalliance"/>   
+             
+            <exclude module="xstream"/>
+            <exclude module="stax-api"/>
+            <exclude module="gram"/>
+            <exclude module="jettison"/>
+            <exclude module="geronimo-jacc_1.1_spec"/>
+            <exclude module="geronimo-annotation_1.0_spec"/>
+ 
+        </dependency>-->
+        <dependency org="org.apache.activemq" name="activemq-all" rev="5.6.0" conf="*->*,!sources,!javadoc"/>
+        
+    </dependencies>
+</ivy-module>
