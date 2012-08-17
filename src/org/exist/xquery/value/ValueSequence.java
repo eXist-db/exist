@@ -347,6 +347,20 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         }
     }
 
+    @Override
+    public void destroy(Sequence contextSequence) {
+        for (int i = 0; i <= size; i++) {
+            ((Sequence)values[i]).destroy(contextSequence);
+        }
+    }
+
+    public boolean containsValue(AtomicValue value) {
+        for (int i = 0; i <= size; i++) {
+            if (values[i] == value)
+                return true;
+        }
+        return false;
+    }
     public void sortInDocumentOrder() {
         if (size == UNSET_SIZE)
             return;

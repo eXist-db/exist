@@ -34,17 +34,27 @@ public class LocalVariable extends VariableImpl {
 
 	protected LocalVariable before = null;
 	protected LocalVariable after = null;
-	
-	public LocalVariable(QName qname) {
-		super(qname);
+	protected boolean isClosureVar = false;
+
+    public LocalVariable(QName qname) {
+        super(qname);
+    }
+
+	public LocalVariable(LocalVariable other, boolean isClosureVar) {
+		super(other);
+        this.isClosureVar = isClosureVar;
 	}
 
 	public LocalVariable(LocalVariable other) {
-		super(other);
+		this(other, false);
 	}
 	
 	public void addAfter(LocalVariable var) {
 		this.after = var;
 		var.before = this;
 	}
+
+    public boolean isClosureVar() {
+        return isClosureVar;
+    }
 }

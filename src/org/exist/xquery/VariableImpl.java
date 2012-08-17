@@ -159,7 +159,12 @@ public class VariableImpl implements Variable {
     public void setIsInitialized(boolean initialized) {
         this.initialized = initialized;
     }
-    
+
+    public void destroy(Sequence contextSequence) {
+        if (value != null)
+            value.destroy(contextSequence);
+    }
+
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("$" + qname.getStringValue());

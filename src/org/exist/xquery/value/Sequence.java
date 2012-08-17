@@ -272,4 +272,9 @@ public interface Sequence {
     public int getState();
 
     public boolean hasChanged(int previousState);
+
+    /**
+     * Clean up any resources used by the items in this sequence.
+     */
+    void destroy(Sequence contextSequence);
 }

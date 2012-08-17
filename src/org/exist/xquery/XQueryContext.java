@@ -2057,7 +2057,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public List<Variable> getLocalStack() {
     	List<Variable> variables = new ArrayList<Variable>(10);
     	
-    	LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
+    	LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
 
@@ -2065,7 +2065,7 @@ public class XQueryContext implements BinaryValueManager, Context
                 break;
             }
 
-            variables.add( new LocalVariable(var) );
+            variables.add( new LocalVariable(var, true) );
         }
 
         return ( variables );
@@ -2569,13 +2569,29 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
 
+    public void popLocalVariables(LocalVariable var) {
+        popLocalVariables(var, null);
+    }
+
     /**
      * Restore the local variable stack to the position marked by variable var.
      *
      * @param  var
+     *
      */
-    public void popLocalVariables( LocalVariable var )
+    public void popLocalVariables(LocalVariable var, Sequence resultSeq)
     {
+        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+
+        for( LocalVariable old = lastVar; old != null; old = old.before ) {
+
+            if( old == end ) {
+                break;
+            }
+            // reset variable unless it is a closure variable (inherited from context)
+            if (!old.isClosureVar())
+                old.destroy(resultSeq);
+        }
         if( var != null ) {
             var.after = null;
 
@@ -2586,7 +2602,6 @@ public class XQueryContext implements BinaryValueManager, Context
         lastVar = var;
         variableStackSize--;
     }
-
 
     /**
      * Returns the current size of the stack. This is used to determine where a variable has been declared.

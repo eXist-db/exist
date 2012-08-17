@@ -197,7 +197,7 @@ public class TryCatchExpression extends AbstractExpression {
                             
                             
                         } finally {
-                            context.popLocalVariables(mark1);
+                            context.popLocalVariables(mark1, catchResultSeq);
                         }
 
                     } else {
@@ -213,7 +213,7 @@ public class TryCatchExpression extends AbstractExpression {
 
 
             } finally {
-                context.popLocalVariables(mark0);
+                context.popLocalVariables(mark0, catchResultSeq);
             }
 
             return catchResultSeq;

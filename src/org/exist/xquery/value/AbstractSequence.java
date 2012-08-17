@@ -285,4 +285,9 @@ public abstract class AbstractSequence implements Sequence {
     public boolean hasChanged(int previousState) {
         return true;
     }
+
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // do nothing by default
+    }
 }

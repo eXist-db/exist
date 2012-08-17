@@ -115,7 +115,7 @@ public class TypeswitchExpression extends AbstractExpression {
         		result = defaultClause.returnClause.eval(contextSequence);
         	}
         } finally {
-        	context.popLocalVariables(mark);
+        	context.popLocalVariables(mark, result);
         }
         
         return result;

@@ -83,6 +83,7 @@ public class CatchFunction extends Function {
         // Get exception classes
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
 
+        Sequence result = null;
         // Try to evaluate try-code
         try {
             context.pushDocumentContext();
@@ -90,11 +91,11 @@ public class CatchFunction extends Function {
 
             try {
                 // Actually execute try-code
-                return getArgument(1).eval(contextSequence, contextItem);
-
+                result = getArgument(1).eval(contextSequence, contextItem);
+                return result;
             } finally {
                 context.popDocumentContext();
-                context.popLocalVariables(mark);
+                context.popLocalVariables(mark, result);
             }
 
         // Handle exception

@@ -311,7 +311,8 @@ public class FunctionCall extends Function {
             context.functionStart(functionDef.getSignature());
             final LocalVariable mark = context.markLocalVariables(true);
             context.pushInScopeNamespaces(false);
-            
+
+            Sequence returnSeq = null;
             try {
                 if(context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceFunctionStart(this);
@@ -319,7 +320,7 @@ public class FunctionCall extends Function {
                 
                 long start = System.currentTimeMillis();
                 
-                Sequence returnSeq = expression.eval(contextSequence, contextItem);
+                returnSeq = expression.eval(contextSequence, contextItem);
                 while(returnSeq instanceof DeferredFunctionCall &&
                     functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
                     LOG.trace("Executing function: " + functionDef.getSignature());
@@ -346,7 +347,7 @@ public class FunctionCall extends Function {
                 throw e;
             } finally {
                 context.popInScopeNamespaces();
-                context.popLocalVariables(mark);
+                context.popLocalVariables(mark, returnSeq);
                 context.functionEnd();
 
                 context.stackLeave(this);
@@ -404,7 +405,7 @@ public class FunctionCall extends Function {
             //context.stackEnter(expression);
             context.functionStart(functionDef.getSignature());
             final LocalVariable mark = context.markLocalVariables(true);
-            
+            Sequence returnSeq = null;
             try {
                 
                 /*
@@ -413,7 +414,7 @@ public class FunctionCall extends Function {
                  */
                 functionDef.setArguments(seq, contextDocs);
                 
-                final Sequence returnSeq = expression.eval(contextSequence, contextItem);
+                returnSeq = expression.eval(contextSequence, contextItem);
                 LOG.trace("Returning from execute()");
                 return returnSeq;
             } catch(XPathException e) {
@@ -424,7 +425,7 @@ public class FunctionCall extends Function {
                 e.addFunctionCall(functionDef, FunctionCall.this);
                 throw e;
             } finally {
-                context.popLocalVariables(mark);
+                context.popLocalVariables(mark, returnSeq);
                 context.functionEnd();
                 //context.stackLeave(expression);
                 context.popDocumentContext();

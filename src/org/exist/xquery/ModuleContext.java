@@ -31,6 +31,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.Sequence;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -339,6 +340,10 @@ public class ModuleContext extends XQueryContext {
 
     public void popLocalVariables(LocalVariable var) {
         parentContext.popLocalVariables(var);
+    }
+
+    public void popLocalVariables(LocalVariable var, Sequence resultSequence) {
+        parentContext.popLocalVariables(var, resultSequence);
     }
 
     public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {

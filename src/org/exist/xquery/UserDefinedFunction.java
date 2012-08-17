@@ -30,7 +30,6 @@ import org.exist.xquery.value.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author wolf
@@ -128,6 +127,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
         LocalVariable mark = context.markLocalVariables(true);
         if (closureVariables != null)
         	context.restoreStack(closureVariables);
+        Sequence result = null;
 		try {
 			QName varName;
 			LocalVariable var;
@@ -150,11 +150,11 @@ public class UserDefinedFunction extends Function implements Cloneable {
  						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
  						", got " + currentArguments[j].getItemCount());
 			}
-			Sequence result = body.eval(contextSequence, contextItem);
+			result = body.eval(contextSequence, contextItem);
 			return result;
 		} finally {
 			// restore the local variable stack
-            context.popLocalVariables(mark);
+            context.popLocalVariables(mark, result);
             context.stackLeave(this);
 //            context.expressionEnd(this);
         }

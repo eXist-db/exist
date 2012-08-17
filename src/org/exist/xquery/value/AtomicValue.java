@@ -402,6 +402,11 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         return true;
     }
 
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // nothing to be done by default
+    }
+
     private final static class EmptyValue extends AtomicValue {
 		
     	public boolean hasOne() {

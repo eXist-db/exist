@@ -1104,6 +1104,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return false;
     }
 
+    @Override
+    public void destroy(Sequence contextSequence) {
+        // Nothing to do
+    }
+
     public boolean isCacheable() {
         return true;
     }
