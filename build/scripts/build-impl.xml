@@ -426,7 +426,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extension-svn,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extensions-xar,test-compile"
         description="Build all">
         
         <!--  hand over build to extensions build -->
@@ -635,7 +635,6 @@
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
@@ -711,10 +710,6 @@
 
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
-    </target>
-    
-    <target name="extension-svn" depends="jar">
-        <ant antfile="build.xml" dir="extensions/svn" inheritall="false"/>
     </target>
     
     <target name="extension-xprocxq" depends="jar">
