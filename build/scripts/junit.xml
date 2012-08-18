@@ -223,25 +223,10 @@
     </target>
 
     <!-- Test set 5: tests on custom index modules -->
-    <target name="test-extensions" depends="prepare-extensions">
+    <target name="test-extensions">
         <ant antfile="${build.scripts}/extensions-build.xml" target="test" inheritAll="false"/>
     </target>
-    
-<!--    <target name="test-indexing" depends="prepare-extensions">
-        <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
-    </target>
 
-    <target name="test-xqdoc" depends="prepare-extensions">
-        <ant antfile="build.xml" dir="extensions/xqdoc" target="test"/>
-    </target>
-    
-    <target name="test-fluent" depends="prepare-extensions">
-        <ant antfile="build.xml" dir="extensions/fluent" target="test"/>
-    </target>
-    
-    <target name="test-svn" depends="prepare-extensions">
-        <ant antfile="build.xml" dir="extensions/svn" target="test-svn"/>
-    </target>-->
 
     <!-- Helper target for starting server -->
     <target name="start-server">

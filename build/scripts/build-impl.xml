@@ -27,8 +27,6 @@
     <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="build.examples" value="${build}/examples"/>
     <property name="build.extensions" value="./extensions"/>
-    <property name="build.extensions.indexes" value="${build.extensions}/indexes"/>
-    <property name="build.extensions.metadata" value="${build.extensions}/metadata"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
@@ -51,14 +49,6 @@
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
     <available file="${catalina.home}/bin" property="catalina.present"/>
     <available file="key.store" property="key.store.present"/>
-
-    <!-- check build file for index extensions -->
-    <uptodate property="extensions.uptodate" srcfile="${build.extensions.indexes}/modules.xml"
-        targetfile="${build.extensions.indexes}/build.xml"/>
-
-    <!-- check build file for metadata storage extensions -->
-    <uptodate property="extensions.uptodate" srcfile="${build.extensions.metadata}/backends.xml"
-        targetfile="${build.extensions.metadata}/build.xml"/>
 
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
@@ -436,7 +426,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-metadata,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
         description="Build all">
         <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
         <antcall target="sign"/>
@@ -597,7 +587,7 @@
     <!-- ================================================================== -->
     <!-- Cleanup                                                            -->
     <!-- ================================================================== -->
-    <target name="clean" description="Cleanup" depends="prepare-extensions">
+    <target name="clean" description="Cleanup">
         <echo message="-------------------------"/>
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
@@ -648,7 +638,6 @@
         <delete failonerror="no" dir="cat"/>
         
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/metadata" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
@@ -660,15 +649,13 @@
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
         
         <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
-
-        <antcall target="extensions-xslt"/>
     </target>
 
     <target name="clean-conf" description="Cleanup config file">
         <delete failonerror="no" file="conf.xml"/>
     </target>
 
-    <target name="clean-all" description="Cleanup deeper" depends="prepare-extensions">
+    <target name="clean-all" description="Cleanup deeper">
         <!-- javadoc -->
         <delete dir="${src.webapp}/api"/>
 
@@ -718,10 +705,6 @@
 
     <target name="extension-modules" depends="jar">
         <ant antfile="build.xml" dir="extensions/modules" inheritall="false"/>
-    </target>
-
-    <target name="extension-metadata" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/metadata" inheritall="false"/>
     </target>
     
     <target name="extension-svn" depends="jar">
@@ -789,20 +772,7 @@
         <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
-
-    <!-- ====================================================== -->
-    <!-- Generate build files for index extensions -->
-    <!-- ====================================================== -->
-    <target name="prepare-extensions" depends="extensions-xslt" unless="extensions.uptodate"/>
     
-    <target name="extensions-xslt" >
-        <xslt basedir="${build.extensions.indexes}" in="${build.extensions.indexes}/modules.xml"
-            out="${build.extensions.indexes}/build.xml"
-            style="${build.extensions.indexes}/generate.xsl" classpathref="classpath.core" processor="trax"/>
-        <xslt basedir="${build.extensions.metadata}" in="${build.extensions.metadata}/backends.xml"
-            out="${build.extensions.metadata}/build.xml"
-            style="${build.extensions.metadata}/generate.xsl" classpathref="classpath.core" processor="trax"/>
-    </target>
 
     <!-- ============================================================================ -->
     <!-- Download additional files                                                    -->

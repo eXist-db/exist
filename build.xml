@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ======================================================================= -->
-<!-- eXist 1.x build file                                                    -->
+<!-- eXist 2.x build file                                                    -->
 <!-- ======================================================================= -->
-
 <!-- $Id$ -->
-
 <project basedir="." default="all" name="eXist-DB">
     
     <description>eXist Open Source Native XML Database</description>
@@ -27,21 +24,17 @@
     <import file="build/scripts/installer.xml"/>
     <import file="build/scripts/dist.xml"/>
     
-    <!-- Specialties -->
-    
+    <!-- Specialties -->   
     <import file="build/scripts/minimal.xml"/>
     
-    <!-- Additional scripts -->
-    
+    <!-- Additional scripts -->   
     <import file="build/scripts/junit.xml"/>
     <import file="build/scripts/performance.xml"/>
     <import file="build/scripts/quality.xml"/>
-    <!--import file="build/scripts/demoserver.xml"/-->
     <import file="build/scripts/static-docs.xml"/>
     <import file="build/scripts/subversion.xml"/>
     
-    <!-- Standalone backup/restore distribution build -->
-    
+    <!-- Standalone backup/restore distribution build -->  
     <import file="build/scripts/backrest.xml"/>
     
 </project>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="metadata-interface">
+
+ <property file="../../local.build.properties"/>
+ <property file="../../build.properties"/>
+ 
+ <property file="../local.build.properties"/>
+ <property file="../build.properties"/>
+
+ <property name="extension.name" value="${ant.project.name}"/>
+ <property name="existhome.dir" location="../../.."/>
+ 
+ <property name="extension.include" value="${include.feature.metadata}"/>
+ 
+ <!-- specific overrules -->
+ <property name="src.dir" location="src/main/java"/>
+ <property name="test.src.dir" location="src/test/java"/>
+ 
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+ 
+ <target name="download-3rd-party" description="Download thirdparty jar files">
+  <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+   
+   <fetch classpathref="classpath.core" dest="${existhome.dir}/${lib.user}" 
+                        url="http://eaio.com/maven2/com/eaio/uuid/uuid/3.3/uuid-3.3.jar" 
+                        classname="com.eaio.uuid.UUID"
+                        usecache="true"/>
+  </target>
+
+  <target name="clean-3rd-party" description="Remove thirdparty jar files">
+        <echo>Removing 3rd party jar files '${extension.name}'</echo>
+        <delete includeemptydirs="true">
+           <fileset dir="${existhome.dir}/${lib.user}" includes="uuid-*.jar"/>
+        </delete>
+     </target>
+     
+</project>
