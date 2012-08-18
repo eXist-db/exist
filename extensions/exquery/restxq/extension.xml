@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="restxq">
+
+ <property file="../../local.build.properties"/>
+ <property file="../../build.properties"/>
+
+ <property name="extension.name" value="${ant.project.name}"/>
+ <property name="existhome.dir" location="../../.."/>
+ 
+ <property name="extension.include" value="${include.feature.exquery.restxq}"/>
+ 
+ <!-- specific overrules -->
+ <property name="src.dir" location="src/main/java"/>
+ <property name="test.src.dir" location="src/test/java"/>
+ 
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+
+</project>

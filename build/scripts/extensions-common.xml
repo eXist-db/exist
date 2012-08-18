@@ -62,6 +62,10 @@ to dadd: -pre-compile steps
       <fileset dir="${lib.dir}" erroronmissingdir="false">
          <include name="*.jar"/>
       </fileset>
+      <!-- one level up, take into account if existing -->
+      <fileset dir="../lib" erroronmissingdir="false">
+         <include name="*.jar"/> 
+      </fileset>
       <fileset dir="${existhome.dir}/${lib.core}">
          <include name="*.jar"/>
       </fileset>

@@ -22,12 +22,15 @@
   <echo>${ant.project.name}</echo>
   <echo>basedir=${basedir}</echo>
   <echo>existhome.dir=${existhome.dir}</echo>
+  
+  <!-- <include name="extensions/indexes/*/extension.xml"/>
+  <include name="extensions/extension.xml"/>
+  <include name="extensions/*/extension.xml"/>
+  <include name="extensions/exquery/*/extension.xml"/> -->
 
   <subant target="all">
    <fileset dir="${existhome.dir}/">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
+       <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
 
@@ -38,9 +41,7 @@
   <echo>${basedir}</echo>
   <subant target="clean">
    <fileset dir="${existhome.dir}">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
+       <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
  </target>
@@ -48,20 +49,14 @@
  <target name="dist" description="Create jar files.">
   <subant target="dist">
    <fileset dir="${existhome.dir}/">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
+    <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
  </target>
 
  <target name="compile" description="Compile sources">
   <subant target="compile">
-   <fileset dir="${existhome.dir}/">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
-   </fileset>
+   <include name="extensions/**/extension.xml"/>
   </subant>
  </target>
 
@@ -72,9 +67,7 @@
  <target name="test" description="Run tests.">
   <subant target="test">
    <fileset dir="${existhome.dir}/">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
+    <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
  </target>
@@ -83,9 +76,7 @@
 
   <subant target="javadoc">
    <fileset dir="${existhome.dir}/">
-    <include name="extensions/indexes/*/extension.xml"/>
-    <include name="extensions/extension.xml"/>
-    <include name="extensions/*/extension.xml"/>
+    <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
 

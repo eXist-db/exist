@@ -436,7 +436,7 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-metadata,extension-exquery-restxq,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-metadata,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
         description="Build all">
         <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
         <antcall target="sign"/>
@@ -722,10 +722,6 @@
 
     <target name="extension-metadata" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/metadata" inheritall="false"/>
-    </target>
-   
-    <target name="extension-exquery-restxq" depends="prepare-extensions,jar">
-        <ant antfile="build.xml" dir="extensions/exquery/restxq" inheritall="false"/>
     </target>
     
     <target name="extension-svn" depends="jar">
