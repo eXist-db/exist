@@ -607,17 +607,6 @@
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
 
-        <!-- valuable data? -->
-        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
-        <delete dir="${src.webapp}/WEB-INF/data/journal"/>
-        <delete dir="${src.webapp}/WEB-INF/data/fs"/>
-        <delete dir="${src.webapp}/WEB-INF/data/fs.journal"/>
-		<delete dir="${src.webapp}/WEB-INF/data/lucene"/>
-		<delete dir="${src.webapp}/WEB-INF/data/sanity"/>
-        <delete>
-            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
-                excludes=".DO_NOT_DELETE"/>
-        </delete>
         <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
         
         <delete dir="samples/classes"/>
@@ -655,9 +644,21 @@
         <delete failonerror="no" file="conf.xml"/>
     </target>
 
-    <target name="clean-all" description="Cleanup deeper">
+    <target name="clean-all" description="Cleanup deeper, data is reoved">
         <!-- javadoc -->
         <delete dir="${src.webapp}/api"/>
+        
+        <!-- valuable data? -->
+        <delete dir="${src.webapp}/WEB-INF/data/backup"/>
+        <delete dir="${src.webapp}/WEB-INF/data/journal"/>
+        <delete dir="${src.webapp}/WEB-INF/data/fs"/>
+        <delete dir="${src.webapp}/WEB-INF/data/fs.journal"/>
+        <delete dir="${src.webapp}/WEB-INF/data/lucene"/>
+        <delete dir="${src.webapp}/WEB-INF/data/sanity"/>
+        <delete>
+            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
+                excludes=".DO_NOT_DELETE"/>
+        </delete>
 
         <!-- derived files -->
         <delete failonerror="no" file="client.properties"/>
@@ -682,7 +683,9 @@
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
             <fileset dir="${junit.reports}/external" includes="*"/>
         </delete>
-        <delete failonerror="no" dir="${jetty.dir}/tmp"/>
+        <delete failonerror="no">
+            <fileset dir="${jetty.dir}/tmp" includes="*"/>
+        </delete> 
         <mkdir dir="${jetty.dir}/tmp"/>
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
