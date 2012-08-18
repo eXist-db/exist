@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="security-oauth">
+
+   <property file="../../local.build.properties"/>
+   <property file="../../build.properties"/>
+
+   <property name="extension.name" value="${ant.project.name}"/>
+   <property name="existhome.dir" location="../../.."/>
+
+   <property name="extension.include" value="${include.feature.security.oauth}"/>
+
+   <!-- import common.xml here -->
+   <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+
+   <path id="classpath.jetty">
+      <fileset dir="${existhome.dir}/tools/jetty/lib">
+         <include name="*.jar"/>
+      </fileset>
+   </path>
+
+   <!-- over write target, reference to jetty is required -->
+   <target name="compile-src" depends="init" description="Compile test sources" if="${extension.include}">
+      <echo>Compiling '${extension.name}'</echo>
+      <mkdir dir="${build.classes.dir}"/>
+      <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
+         destdir="${build.classes.dir}" encoding="UTF-8" optimize="${build.optimize}" srcdir="${src.dir}"
+         source="${build.compiler.source}" target="${build.compiler.target}">
+         <classpath>
+            <path refid="classpath.core"/>
+            <path refid="classpath.jetty"/>
+         </classpath>
+      </javac>
+   </target>
+
+</project>

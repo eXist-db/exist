@@ -426,9 +426,15 @@
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
     <target name="all"
-        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extension-security-openid,extension-security-oauth,extension-security-ldap,extension-security-activedirectory,extension-svn,extensions-xar,test-compile"
+        depends="prepare,jar,wrapper,extension-betterform,extension-modules,extension-xprocxq,extension-svn,extensions-xar,test-compile"
         description="Build all">
+        
+        <!--  hand over build to extensions build -->
         <ant antfile="${build.scripts}/extensions-build.xml" target="all" inheritAll="false"/>
+        
+        <!--  this module must be built after the ldap extension -->
+        <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
+        
         <antcall target="sign"/>
     </target>
 
@@ -629,9 +635,6 @@
         <ant antfile="build.xml" dir="extensions/betterform" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/ldap"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/openid"  target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="extensions/security/oauth"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/svn" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
@@ -712,22 +715,6 @@
     
     <target name="extension-svn" depends="jar">
         <ant antfile="build.xml" dir="extensions/svn" inheritall="false"/>
-    </target>
-
-    <target name="extension-security-openid" depends="jar">
-        <ant antfile="build.xml" dir="extensions/security/openid" inheritall="false"/>
-    </target>
-    
-    <target name="extension-security-oauth" depends="jar">
-        <ant antfile="build.xml" dir="extensions/security/oauth" inheritall="false"/>
-    </target>
-
-	<target name="extension-security-ldap" depends="jar">
-        <ant antfile="build.xml" dir="extensions/security/ldap" inheritall="false"/>
-    </target>
-
-    <target name="extension-security-activedirectory" depends="jar">
-        <ant antfile="build.xml" dir="extensions/security/activedirectory" inheritall="false"/>
     </target>
     
     <target name="extension-xprocxq" depends="jar">

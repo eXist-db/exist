@@ -113,6 +113,12 @@ to dadd: -pre-compile steps
          <include name="*.jar"/>
       </fileset>
    </path>
+   
+   <path id="classpath.jetty">
+      <fileset dir="${existhome.dir}/tools/jetty/lib">
+         <include name="*.jar"/>
+      </fileset>
+   </path>
 
    <target name="all">
       <echo>====================================================================</echo>
