@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="svn">
+
+ <property file="../local.build.properties"/>
+ <property file="../build.properties"/>
+
+ <property name="extension.name" value="${ant.project.name}"/>
+ <property name="existhome.dir" location="../.."/>
+ 
+ <property name="extension.include" value="${include.feature.svn}"/>
+ 
+ <!-- import common.xml here -->
+ <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
+ 
+
+ <target name="download-3rd-party" description="Download thirdparty jar files">
+    <echo>Retrieving 3rd party jar files '${extension.name}'</echo>
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
+    <fetch classpathref="classpath.core" dest="${existhome.dir}/${lib.user}" 
+                 url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
+         <patternset>
+            <include name="**/svnkit.jar"/>
+            <include name="**/svnkit-cli.jar"/>
+     </patternset>
+   </fetch>
+ </target>
+
+ <target name="clean-3rd-party" description="Remove thirdparty jar files" >
+    <echo>Removing 3rd party jar files '${extension.name}'</echo>
+    <delete includeemptydirs="true">
+       <fileset dir="${existhome.dir}/${lib.user}" includes="svnkit*.jar"/>
+    </delete>
+ </target>
+
+</project>
