@@ -47,7 +47,6 @@
 
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
-    <available file="${catalina.home}/bin" property="catalina.present"/>
     <available file="key.store" property="key.store.present"/>
 
     <!-- additional set of ant tasks -->
@@ -90,18 +89,6 @@
         <fileset dir="${jetty.dir}/lib">
             <include name="*.jar"/>
         </fileset>
-    </path>
-
-    <path id="classpath.catalina">
-        <fileset dir="${catalina.home}/bin">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${catalina.home}/server/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <!--fileset dir="${catalina.home}/common/lib">
-        <include name="*.jar"/>
-        </fileset-->
     </path>
 
     <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
@@ -196,8 +183,6 @@
 
             <include name="org/**"/>
             <include name="org/exist/schema/**"/>
-            <exclude name="org/exist/http/realm/**"/>
-            <exclude name="doxygen"/>
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
@@ -208,22 +193,6 @@
         <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile" /> -->
     </target>
 
-    <!-- =================================================================== -->
-    <!-- Compile the Tomcat realm                                            -->
-    <!-- =================================================================== -->
-    <target name="compile-tomcat-realm" if="catalina.present" description="Compile the Tomcat realm">
-        <echo
-            message="Compiling Tomcat Realm  with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
-        <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
-            encoding="UTF-8" optimize="${build.optimize}" srcdir="${src}"
-            source="${build.compiler.source}" target="${build.compiler.target}">
-            <include name="org/exist/http/realm/**"/>
-            <classpath>
-                <path refid="classpath.core"/>
-                <path refid="classpath.catalina"/>
-            </classpath>
-        </javac>
-    </target>
 
     <!-- =================================================================== -->
     <!-- Check if aspectj needs to be called. If no source file is newer     -->
@@ -238,7 +207,7 @@
 	<!-- =================================================================== -->
     <!-- Compiles the aspects                                                -->
     <!-- =================================================================== -->
-    <target name="compile-aspectj" depends="compile,compile-tomcat-realm,check.aspects.uptodate" description="Compiles the aspects"
+    <target name="compile-aspectj" depends="compile,check.aspects.uptodate" description="Compiles the aspects"
 		unless="aspectj.uptodate">
 
         <echo
@@ -250,7 +219,6 @@
             fork="true" maxmem="1024m" showWeaveInfo="true">
 
             <include name="org/**"/>
-            <exclude name="org/exist/http/realm/**"/>
             <!-- <include name="org/exist/security/**"/> -->
 
             <classpath>
@@ -301,7 +269,7 @@
     <!-- ================================================================== -->
     <!-- Create jar files                    				    -->
     <!-- ================================================================== -->
-    <target name="jar" depends="compile, compile-tomcat-realm, compile-aspectj"
+    <target name="jar" depends="compile,compile-aspectj"
         description="Create eXist unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
@@ -478,7 +446,6 @@
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
                 <path refid="classpath.aspectj"/>                
-                <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
             </classpath>
             <link href="http://xmldb.exist-db.org/javadoc/"/>
             <link href="http://java.sun.com/javase/6/docs/api/"/>
@@ -541,7 +508,6 @@
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
-                <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
             </classpath>
             <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${tools.ant}/lib/UMLGraph-5.2.jar">
                     <!-- Parameter definitions are at http://www.umlgraph.org/doc/cd-opt.html -->
