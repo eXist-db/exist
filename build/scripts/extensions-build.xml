@@ -22,7 +22,7 @@
   <echo>${ant.project.name}</echo>
   <echo>basedir=${basedir}</echo>
   <echo>existhome.dir=${existhome.dir}</echo>
-  
+
   <!-- <include name="extensions/indexes/*/extension.xml"/>
   <include name="extensions/extension.xml"/>
   <include name="extensions/*/extension.xml"/>
@@ -30,7 +30,7 @@
 
   <subant target="all">
    <fileset dir="${existhome.dir}/">
-       <include name="extensions/**/extension.xml"/>
+    <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
 
@@ -41,7 +41,7 @@
   <echo>${basedir}</echo>
   <subant target="clean">
    <fileset dir="${existhome.dir}">
-       <include name="extensions/**/extension.xml"/>
+    <include name="extensions/**/extension.xml"/>
    </fileset>
   </subant>
  </target>

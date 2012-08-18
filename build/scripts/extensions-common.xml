@@ -64,7 +64,7 @@ to dadd: -pre-compile steps
       </fileset>
       <!-- one level up, take into account if existing -->
       <fileset dir="../lib" erroronmissingdir="false">
-         <include name="*.jar"/> 
+         <include name="*.jar"/>
       </fileset>
       <fileset dir="${existhome.dir}/${lib.core}">
          <include name="*.jar"/>
@@ -78,7 +78,9 @@ to dadd: -pre-compile steps
       <fileset dir="${existhome.dir}/${lib.user}">
          <include name="*.jar"/>
       </fileset>
-      <!-- lib.extensions must be excluded -->
+      <!-- 
+         lib.extensions must be excluded to prevent circular dependencies
+      -->
       <fileset dir="${existhome.dir}/tools/ant/lib">
          <include name="*.jar"/>
       </fileset>
@@ -121,15 +123,14 @@ to dadd: -pre-compile steps
 
    <target name="init">
       <echo>Initializing '${extension.name}'</echo>
-      
+
       <!-- Create the time stamp -->
       <tstamp/>
-      
+
       <antcall target="download-3rd-party"/>
    </target>
 
    <target name="compile" description="Compile sources" if="${extension.include}">
-
       <echo>Compiling '${extension.name}'</echo>
       <antcall target="init"/>
       <antcall target="compile-src"/>
@@ -137,9 +138,8 @@ to dadd: -pre-compile steps
    </target>
 
    <target name="compile-src" description="Compile sources" if="${extension.include}">
-
       <echo>Compiling sources '${extension.name}'</echo>
-      
+
       <mkdir dir="${build.classes.dir}"/>
 
       <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
@@ -162,7 +162,7 @@ to dadd: -pre-compile steps
    <target name="compile-test" description="Compile test sources" if="${run.tests}">
 
       <echo>Compiling tests '${extension.name}'</echo>
-      
+
       <mkdir dir="${test.classes.dir}"/>
 
       <javac includeAntRuntime="false" debug="${build.debug}" deprecation="${build.deprecation}"
@@ -179,9 +179,9 @@ to dadd: -pre-compile steps
    <target name="dist" description="Generate distributable" if="${extension.include}">
 
       <echo>Generating jar for '${extension.name}'</echo>
-      
+
       <antcall target="compile"/>
-      
+
       <copy todir="${build.classes.dir}">
          <fileset dir="${src.dir}">
             <exclude name="**/*.java"/>
@@ -263,7 +263,7 @@ to dadd: -pre-compile steps
       <echo>====================================================================</echo>
       <echo>Executing tests '${extension.name}'</echo>
       <echo>====================================================================</echo>
-      
+
       <antcall target="compile-test"/>
 
       <mkdir dir="${junit.report.dir}"/>
