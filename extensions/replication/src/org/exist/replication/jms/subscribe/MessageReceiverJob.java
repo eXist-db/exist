@@ -28,7 +28,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.exist.replication.shared.JmsConnectionExceptionListener;
-import org.exist.replication.shared.ClientParameters;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.storage.BrokerPool;
@@ -86,8 +85,7 @@ public class MessageReceiverJob extends UserJavaJob {
             // TODO DW: should this be configurable?
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            // TODO switch
-            boolean isDurable = true;
+            // Set durable messaging, when required
             if (parameters.isDurable()) {
                 // Set subscriber
                 TopicSubscriber topicSubscriber = session.createDurableSubscriber(

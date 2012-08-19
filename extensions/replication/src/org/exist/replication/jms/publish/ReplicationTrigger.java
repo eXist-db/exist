@@ -25,16 +25,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
-import org.exist.replication.shared.MessageHelper;
-import org.exist.replication.shared.TransportException;
-import org.exist.replication.shared.eXistMessage;
-
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.replication.shared.MessageHelper;
+import org.exist.replication.shared.TransportException;
+import org.exist.replication.shared.eXistMessage;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -72,6 +71,9 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         MessageHelper.retrieveDocMetadata(md, document.getMetadata());
         MessageHelper.retrieveFromDocument(md, document);
         MessageHelper.retrievePermission(md, document.getPermissions());
+        
+        // The content is always gzip-ped
+        md.put(MessageHelper.EXIST_MESSAGE_CONTENTENCODING, "gzip");
 
         // Serialize document
         try {

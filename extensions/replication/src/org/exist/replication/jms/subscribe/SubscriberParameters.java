@@ -26,8 +26,9 @@ import org.exist.replication.shared.ClientParameters;
 import org.exist.scheduler.JobException;
 
 /**
- *
- * @author Dannes Wessels
+ * Subscriber  specific properties.
+ * 
+ * @author Dannes Wessels dannes@exist-db.org
  */
 public class SubscriberParameters extends ClientParameters {
 
