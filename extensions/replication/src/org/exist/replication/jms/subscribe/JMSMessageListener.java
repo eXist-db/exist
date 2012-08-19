@@ -53,7 +53,8 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
 /**
- *
+ *  JMS listener for receiving m
+ * 
  * @author Dannes Wessels
  */
 public class JMSMessageListener implements MessageListener {
@@ -264,9 +265,6 @@ public class JMSMessageListener implements MessageListener {
         if (mime == null) {
             mime = MimeType.BINARY_TYPE;
         }
-
-
-
 
 
         // Get OWNER
@@ -598,9 +596,7 @@ public class JMSMessageListener implements MessageListener {
 
             // Create collection
             Collection newCollection = broker.getOrCreateCollection(txn, sourcePath);
-            
-            Permission perm = newCollection.getPermissions();
-            
+                        
             // Set owner,group and permissions
             Permission permission = newCollection.getPermissions();
             if (userName != null) {

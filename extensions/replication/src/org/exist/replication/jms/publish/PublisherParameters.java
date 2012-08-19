@@ -26,8 +26,9 @@ import org.exist.replication.shared.ClientParameters;
 import org.exist.replication.shared.TransportException;
 
 /**
- *
- * @author Dannes Wessels
+ * Publisher specific properties.
+ * 
+ * @author Dannes Wessels dannes@exist-db.org
  */
 public class PublisherParameters extends ClientParameters {
 

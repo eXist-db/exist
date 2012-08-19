@@ -40,8 +40,9 @@ import org.exist.storage.serializers.Serializer;
 import org.xml.sax.SAXException;
 
 /**
- *
- * @author wessels
+ *  Helper class for retrieving (meta)data from an in eXist stored document.
+ * 
+ * @author Dannes Wessels
  */
 public class MessageHelper {
     
@@ -51,7 +52,8 @@ public class MessageHelper {
     public static final String EXIST_RESOURCE_MIMETYPE = "exist.resource.mimetype";
     public static final String EXIST_RESOURCE_OWNER = "exist.resource.owner";
     public static final String EXIST_RESOURCE_TYPE = "exist.resource.type";
-    public static final String EXIST_RESOURCE_MODE = "exist.resource.permission.mode";;
+    public static final String EXIST_RESOURCE_MODE = "exist.resource.permission.mode";
+    public static final String EXIST_MESSAGE_CONTENTENCODING = "exist.message.content-encoding";
 
     private final static Logger LOG = Logger.getLogger(MessageHelper.class);
     
@@ -76,6 +78,9 @@ public class MessageHelper {
      * @throws IOException 
      */
     public static byte[] serialize(DBBroker broker, DocumentImpl document) throws IOException {
+        
+        // This is the weak spot, the data is serialized into
+        // a byte array. Better to have an overloap to a file,
         byte[] payload;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
