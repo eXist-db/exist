@@ -1622,12 +1622,13 @@ public class BrokerPool extends Observable {
 
                 signalSystemStatus(SIGNAL_SHUTDOWN);
 
-                if (hangingThreads)
-                    // do not write a checkpoint if some threads did not return before shutdown
-                    // there might be dirty transactions
-                    transactionManager.shutdown(false);
-                else
-                    transactionManager.shutdown(true);
+                transactionManager.shutdown();
+//                if (hangingThreads)
+//                    // do not write a checkpoint if some threads did not return before shutdown
+//                    // there might be dirty transactions
+//                    transactionManager.shutdown(false);
+//                else
+//                    transactionManager.shutdown(true);
 
                 // deregister JMX MBeans
                 AgentFactory.getInstance().closeDBInstance(this);

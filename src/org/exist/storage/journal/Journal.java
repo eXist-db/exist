@@ -235,6 +235,7 @@ public class Journal {
 		} catch (BufferOverflowException e) {
 			throw new TransactionException("Buffer overflow while writing log record: " + loggable.dump(), e);
 		}
+        pool.getTransactionManager().trackOperation(loggable.getTransactionId());
     }
     
     /**
@@ -309,8 +310,7 @@ public class Journal {
      * Write a checkpoint record to the journal and flush it. If switchLogFiles is true,
      * a new journal will be started, but only if the file is larger than
      * {@link #MIN_REPLACE}. The old log is removed.
-     * 
-     * @param txnId
+     *
      * @param switchLogFiles
      * @throws TransactionException
      */
@@ -457,14 +457,14 @@ public class Journal {
 	 * Shut down the journal. This will write a checkpoint record
 	 * to the log, so recovery manager knows the file has been
 	 * closed in a clean way.
-	 * 
-	 * @param txnId
+	 *
 	 */
     public void shutdown(long txnId, boolean checkpoint) {
         if (currentBuffer == null)
             return; // the db has probably shut down already
         if (!BrokerPool.FORCE_CORRUPTION) {
             if (checkpoint) {
+                LOG.info("Transaction journal cleanly shutting down with checkpoint...");
                 try {
                     writeToLog(new Checkpoint(txnId));
                 } catch (TransactionException e) {

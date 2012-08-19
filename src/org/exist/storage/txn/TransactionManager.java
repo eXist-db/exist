@@ -22,6 +22,9 @@
 package org.exist.storage.txn;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,6 +39,8 @@ import org.exist.storage.SystemTaskManager;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.util.ReadOnlyException;
+import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -70,7 +75,7 @@ public class TransactionManager {
 
     private boolean forceRestart = false;
 
-    private int activeTransactions = 0;
+    private Map<Long, TxnCounter> transactions = new HashMap<Long, TxnCounter>();
 
     private Lock lock = new ReentrantLock();
 
@@ -110,15 +115,11 @@ public class TransactionManager {
     public void initialize() throws EXistException, ReadOnlyException {
         if (enabled)
             journal.initialize();
-        activeTransactions = 0;
+        transactions.clear();
     }
     
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public boolean isIdle() {
-        return activeTransactions == 0;
     }
 
     /**
@@ -145,13 +146,15 @@ public class TransactionManager {
 
 			public Txn execute() {
 				long txnId = nextTxnId++;
+                LOG.debug("Starting new transaction: " + txnId);
+                Txn txn = new Txn(txnId);
 	            try {
 	                journal.writeToLog(new TxnStart(txnId));
 	            } catch (TransactionException e) {
 	                LOG.warn("Failed to create transaction. Error writing to log file.", e);
 	            }
-	            ++activeTransactions;
-	            return new Txn(txnId);
+                transactions.put(txn.getId(), new TxnCounter());
+                return txn;
 			}
         	
         }.run();
@@ -169,7 +172,6 @@ public class TransactionManager {
 
         new RunWithLock<Object>() {
         	public Object execute() {
-        		--activeTransactions;
                 if (enabled) {
                     try {
 						journal.writeToLog(new TxnCommit(txn.getId()));
@@ -180,7 +182,9 @@ public class TransactionManager {
                         journal.flushToLog(true);
                 }
                 txn.releaseAll();
+                transactions.remove(txn.getId());
                 processSystemTasks();
+                LOG.debug("Committed transaction: " + txn.getId());
                 return null;
         	}
         }.run();
@@ -192,7 +196,6 @@ public class TransactionManager {
 
         new RunWithLock<Object>() {
         	public Object execute() {
-        		--activeTransactions;
                 try {
                     journal.writeToLog(new TxnAbort(txn.getId()));
                 } catch (TransactionException e) {
@@ -201,10 +204,24 @@ public class TransactionManager {
                 if (!groupCommit)
                     journal.flushToLog(true);
                 txn.releaseAll();
+                transactions.remove(txn.getId());
                 processSystemTasks();
                 return null;
         	}
         }.run();
+    }
+
+    /**
+     * Keep track of a new operation within the given transaction.
+     *
+     * @param txnId
+     */
+    public void trackOperation(long txnId) {
+        TxnCounter count = transactions.get(txnId);
+        // checkpoint operations do not create a transaction, so we have to check for null here
+        if (count != null) {
+            count.increment();
+        }
     }
 
     public Lock getLock() {
@@ -241,12 +258,25 @@ public class TransactionManager {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
         }
     }
-    
+
+    public void shutdown() {
+        LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
+        boolean clean = transactions.isEmpty();
+        if (!clean) {
+            LOG.warn("There are uncommitted transactions. A recovery run may be triggered upon restart.");
+            for (Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
+                LOG.warn("Uncommitted transaction: " + entry.getKey() + ". Pending operations: " +
+                        entry.getValue().counter);
+            }
+        }
+        shutdown(clean);
+    }
+
     public void shutdown(boolean checkpoint) {
         if (enabled) {
         	long txnId = nextTxnId++;
             journal.shutdown(txnId, checkpoint);
-            activeTransactions = 0;
+            transactions.clear();
         }
     }
 
@@ -262,7 +292,7 @@ public class TransactionManager {
     public void processSystemTasks() {
     	new RunWithLock<Object>() {
     		public Object execute() {
-    			if (activeTransactions == 0)
+    			if (transactions.isEmpty())
                     taskManager.processTasks();
     			return null;
     		}
@@ -301,5 +331,18 @@ public class TransactionManager {
     	}
     	
     	public abstract T execute();
+    }
+
+    /**
+     * Keep track of the number of operations processed within a transaction.
+     * This is used to determine if there are any uncommitted transactions
+     * during shutdown.
+     */
+    private final static class TxnCounter {
+        int counter = 0;
+
+        public void increment() {
+            counter++;
+        }
     }
 }
