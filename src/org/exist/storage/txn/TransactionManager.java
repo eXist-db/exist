@@ -261,15 +261,8 @@ public class TransactionManager {
 
     public void shutdown() {
         LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
-        boolean clean = transactions.isEmpty();
-        if (!clean) {
-            LOG.warn("There are uncommitted transactions. A recovery run may be triggered upon restart.");
-            for (Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
-                LOG.warn("Uncommitted transaction: " + entry.getKey() + ". Pending operations: " +
-                        entry.getValue().counter);
-            }
-        }
-        shutdown(clean);
+        int uncommitted = uncommittedTransaction();
+        shutdown(uncommitted == 0);
     }
 
     public void shutdown(boolean checkpoint) {
@@ -278,6 +271,23 @@ public class TransactionManager {
             journal.shutdown(txnId, checkpoint);
             transactions.clear();
         }
+    }
+
+    private int uncommittedTransaction() {
+        int count = 0;
+        if (transactions.isEmpty())
+            return count;
+        for (Map.Entry<Long, TxnCounter> entry : transactions.entrySet()) {
+            if (entry.getValue().counter > 0) {
+                LOG.warn("Found an uncommitted transaction with id " + entry.getKey() + ". Pending operations: " +
+                    entry.getValue().counter);
+                count++;
+            }
+        }
+        if (count > 0) {
+            LOG.warn("There are uncommitted transactions. A recovery run may be triggered upon restart.");
+        }
+        return count;
     }
 
     public void triggerSystemTask(final SystemTask task) {
