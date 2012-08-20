@@ -262,7 +262,7 @@ public class RealmImpl extends AbstractRealm {
         }
 
         if(!account.isEnabled()) {
-            throw new AuthenticationException(AuthenticationException.ACCOUNT_LOCKED, "Account '" + accountName + "' is dissabled.");
+            throw new AuthenticationException(AuthenticationException.ACCOUNT_LOCKED, "Account '" + accountName + "' is disabled.");
         }
 
         final Subject subject = new SubjectImpl((AccountImpl) account, credentials);
