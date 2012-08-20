@@ -266,11 +266,13 @@ to dadd: -pre-compile steps
    <target name="test-prepare" description="....." if="${run.tests}"> </target>
 
    <target name="test" description="....." if="${run.tests}">
+       
+      <antcall target="compile-test"/>
+      
       <echo>====================================================================</echo>
       <echo>Executing tests '${extension.name}'</echo>
       <echo>====================================================================</echo>
-
-      <antcall target="compile-test"/>
+    
 
       <mkdir dir="${junit.report.dir}"/>
 
