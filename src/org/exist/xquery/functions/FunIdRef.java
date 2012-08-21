@@ -180,7 +180,7 @@ public class FunIdRef extends Function {
 	}
 
 	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		NodeSet attribs = context.getBroker().getValueIndex().find(Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
+		NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
 		NodeProxy n;
 		for (Iterator i = attribs.iterator(); i.hasNext();) {
 			n = (NodeProxy) i.next();

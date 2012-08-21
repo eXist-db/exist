@@ -54,6 +54,7 @@ import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -627,42 +628,44 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, boolean mixedIndex)
+    public NodeSet find(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, boolean mixedIndex)
             throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null)
-            findAll(relation, docs, contextSet, axis, null, value, result);
+            findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
         else {
             List qnames = new LinkedList();
             qnames.add(qname);
-            findAll(relation, docs, contextSet, axis, qnames, value, result);
+            findAll(watchDog, relation, docs, contextSet, axis, qnames, value, result);
             if (mixedIndex)
-                findAll(relation, docs, contextSet, axis, null, value, result);
+                findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
         }
         return result;
     }
 
-    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
+    public NodeSet find(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
             throws TerminatedException {
-        return find(relation, docs, contextSet, axis, qname, value, false);
+        return find(watchDog, relation, docs, contextSet, axis, qname, value, false);
     }
 
-    public NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException {
+    public NodeSet findAll(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value) throws TerminatedException {
         final NodeSet result = new NewArrayNodeSet();
-        findAll(relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
-        findAll(relation, docs, contextSet, axis, null, value, result);
+        findAll(watchDog, relation, docs, contextSet, axis, getDefinedIndexes(docs), value, result);
+        findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
         return result;
     }
 
     /** find
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
-    private NodeSet findAll(int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames,
+    private NodeSet findAll(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, List qnames,
                             Indexable value, NodeSet result)
             throws TerminatedException {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+            if (watchDog != null)
+                watchDog.proceed(null);
             final int collectionId = ((Collection) iter.next()).getId();
             final int idxOp = checkRelationOp(relation);
             Value searchKey, prefixKey;
@@ -721,31 +724,31 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return result;
     }
 
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type)
+    public NodeSet match(XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type)
             throws TerminatedException, EXistException {
-        return match(docs, contextSet, axis, expr, qname, type, 0, true);
+        return match(watchDog, docs, contextSet, axis, expr, qname, type, 0, true);
     }
 
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type,
+    public NodeSet match(XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type,
                          int flags, boolean caseSensitiveQuery)
             throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
         if (qname == null)
-            matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+            matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
         else {
             List qnames = new LinkedList();
             qnames.add(qname);
-            matchAll(docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result);
+            matchAll(watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result);
         }
         return result;
     }
 
-    public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags,
+    public NodeSet matchAll(XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags,
                             boolean caseSensitiveQuery)
             throws TerminatedException, EXistException {
         final NodeSet result = new NewArrayNodeSet();
-        matchAll(docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result);
-        matchAll(docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
+        matchAll(watchDog, docs, contextSet, axis, expr, getDefinedIndexes(docs), type, flags, caseSensitiveQuery, result);
+        matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result);
         return result;
     }
 
@@ -753,7 +756,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
 	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
-    public NodeSet matchAll(DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags,
+    public NodeSet matchAll(XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, List qnames, int type, int flags,
                             boolean caseSensitiveQuery, NodeSet result)
         throws TerminatedException, EXistException {        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
@@ -775,6 +778,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
+            watchDog.proceed(null);
             final int collectionId = ((Collection) iter.next()).getId();
             Value searchKey;
             if (qnames == null) {

@@ -328,7 +328,7 @@ public class XACMLUtil implements UpdateListener
 		NodeSet nodeSet = documentSet.docsToNodeSet();
 
         NativeValueIndex valueIndex = broker.getValueIndex();
-        Sequence results = valueIndex.find(Constants.EQ, documentSet, null, NodeSet.ANCESTOR, attributeQName, comparison);
+        Sequence results = valueIndex.find(null, Constants.EQ, documentSet, null, NodeSet.ANCESTOR, attributeQName, comparison);
 //        Sequence results = index.findByQName(attributeQName, comparison, nodeSet);
 		//TODO : should we honour (# exist:force-index-use #) ? 
 

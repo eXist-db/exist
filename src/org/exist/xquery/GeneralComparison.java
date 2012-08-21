@@ -303,12 +303,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
                 if(truncation == Constants.TRUNC_NONE) {
                     temp =
-                        context.getBroker().getValueIndex().find(relation, contextSequence.getDocumentSet(),
+                        context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(),
                                 contextSet, NodeSet.DESCENDANT, contextQName, (Indexable)key);
                     hasUsedIndex = true;
                 } else {
                     try {
-                        temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), contextSet,
+                        temp = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(), contextSet,
                                 NodeSet.DESCENDANT, getRegexp(key.getStringValue()).toString(),
                                 contextQName, DBBroker.MATCH_REGEXP);
                         hasUsedIndex = true;
@@ -663,9 +663,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                             NodeSet ns;
                             if (indexScan)
-                                ns = context.getBroker().getValueIndex().findAll(relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key);
+                                ns = context.getBroker().getValueIndex().findAll(context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, (Indexable)key);
                             else {
-                                ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key, indexMixed);
+                                ns = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key, indexMixed);
                             }
                             hasUsedIndex = true;
 
@@ -686,10 +686,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             try {
                                 NodeSet ns;
                                 if (indexScan)
-                                    ns = context.getBroker().getValueIndex().matchAll(docs, nodes, NodeSet.ANCESTOR,
+                                    ns = context.getBroker().getValueIndex().matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR,
                                         getRegexp(key.getStringValue()).toString(), DBBroker.MATCH_REGEXP, 0, true);
                                 else
-                                    ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
+                                    ns = context.getBroker().getValueIndex().match(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR,
                                         getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
 								hasUsedIndex = true;
 

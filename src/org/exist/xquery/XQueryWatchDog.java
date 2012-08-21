@@ -117,16 +117,18 @@ public class XQueryWatchDog {
     		throw new TerminatedException(expr.getLine(), expr.getColumn(),
     				"The query has been killed by the server.");
     	}
-        final long elapsed = System.currentTimeMillis() - startTime;
-        if(elapsed > timeout) {
-            if(expr == null)
-                expr = context.getRootExpression();
-            NumberFormat nf = NumberFormat.getNumberInstance();
-            LOG.warn("Query exceeded predefined timeout (" + nf.format(elapsed) + " ms.): " + 
-                    ExpressionDumper.dump(expr));
-            cleanUp();
-            throw new TerminatedException.TimeoutException(expr.getLine(), expr.getColumn(),
-                    "The query exceeded the predefined timeout and has been killed.");
+        if (timeout != Long.MAX_VALUE) {
+            final long elapsed = System.currentTimeMillis() - startTime;
+            if(elapsed > timeout) {
+                if(expr == null)
+                    expr = context.getRootExpression();
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                LOG.warn("Query exceeded predefined timeout (" + nf.format(elapsed) + " ms.): " +
+                        ExpressionDumper.dump(expr));
+                cleanUp();
+                throw new TerminatedException.TimeoutException(expr.getLine(), expr.getColumn(),
+                        "The query exceeded the predefined timeout and has been killed.");
+            }
         }
     }
     
