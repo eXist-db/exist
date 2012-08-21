@@ -396,6 +396,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
         result = new ExtArrayNodeSet();
         for(Iterator i = nodes.iterator(); i.hasNext(); ) {
+            context.getWatchDog().proceed(this);
             NodeProxy node = (NodeProxy) i.next();
             if (match(node.getStringValue(), pattern, flags))
                 result.add(node);

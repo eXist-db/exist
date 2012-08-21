@@ -196,7 +196,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             for (Iterator<Expression> iter = steps.iterator(); iter.hasNext();) {
                 
                 expr = (Expression) iter.next();
-                
+                context.getWatchDog().proceed(expr);
                 //TODO : maybe this could be detected by the parser ? -pb    
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
                         //Ugly workaround to allow preceding *text* nodes.
@@ -227,6 +227,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     int p = context.getContextPosition();
                     
                     for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
+                        context.getWatchDog().proceed(expr);
                         context.setContextPosition(p);
                         Item current = iterInner.nextItem();   
                         //0 or 1 item
