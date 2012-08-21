@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.util.*;
+
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
@@ -140,4 +142,12 @@ public class RestXqTrigger extends FilteringTrigger {
     private RestXqServiceRegistry getRegistry(final DBBroker broker) {
         return RestXqServiceRegistryManager.getRegistry(broker.getBrokerPool());
     }
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
 }

@@ -182,4 +182,12 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
 	@Override
 	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 	}
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
 }

@@ -39,7 +39,6 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
@@ -640,5 +639,13 @@ public class VersioningTrigger extends FilteringTrigger {
 	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) 
 	throws TriggerException {
 		after(broker, transaction, null, true); //TODO: check
+	}
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 	}
 }

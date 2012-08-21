@@ -538,6 +538,8 @@ public abstract class DBBroker extends Observable {
      */
     public abstract void storeXMLResource(Txn transaction, DocumentImpl doc);
 
+    public abstract void storeMetadata(Txn transaction, DocumentImpl doc) throws TriggerException;
+
     /**
      * Stores the given data under the given binary resource descriptor
      * (BinaryDocument).

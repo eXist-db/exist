@@ -21,6 +21,7 @@
  */
 package org.exist.collections.triggers;
 
+import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -174,5 +175,13 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
 
 	@Override
 	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	}
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 	}
 }

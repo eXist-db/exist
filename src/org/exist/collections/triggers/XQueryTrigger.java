@@ -915,6 +915,16 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 			execute(false, broker, transaction, afterDeleteDocument, uri);
 	}
 
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+		// TODO Auto-generated method stub
+	}
+
 	/*public String toString() {
 		return "collection=" + collection + "\n" +
 			"modifiedDocument=" + TriggerStatePerThread.getModifiedDocument() + "\n" +

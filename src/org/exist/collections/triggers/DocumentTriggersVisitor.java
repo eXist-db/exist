@@ -346,4 +346,18 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     public LexicalHandler getLexicalInputHandler() {
         return this.lexicalHandler;
     }
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        for(DocumentTrigger trigger : getTriggers()) {
+        	trigger.beforeUpdateDocumentMetadata(broker, txn, document);
+        }
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        for(DocumentTrigger trigger : getTriggers()) {
+        	trigger.afterUpdateDocumentMetadata(broker, txn, document);
+        }
+	}
 }
