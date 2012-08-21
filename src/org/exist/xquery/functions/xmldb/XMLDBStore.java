@@ -30,10 +30,12 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
@@ -72,7 +74,12 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
 	
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
-	
+
+    protected static final Properties SERIALIZATION_PROPERTIES = new Properties();
+    static {
+        SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+    }
+
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -191,12 +198,13 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 						StringWriter writer = new StringWriter();
 						SAXSerializer serializer = new SAXSerializer();
 						serializer.setOutput(writer, null);
-						item.toSAX(context.getBroker(), serializer, null);
+						item.toSAX(context.getBroker(), serializer, SERIALIZATION_PROPERTIES);
 						resource.setContent(writer.toString());
 					} else {
 						ContentHandler handler = ((XMLResource)resource).setContentAsSAX();
 						handler.startDocument();
-						item.toSAX(context.getBroker(), handler, null);
+
+						item.toSAX(context.getBroker(), handler, SERIALIZATION_PROPERTIES);
 						handler.endDocument();
 					}
 				} else {
