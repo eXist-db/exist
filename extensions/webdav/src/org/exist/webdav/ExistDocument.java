@@ -427,7 +427,7 @@ public class ExistDocument extends ExistResource {
             // Check if Resource is already locked. @@ToDo
             if (userLock != null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Resource was already locked locked, ignored.");
+                    LOG.debug("Resource was already locked, ignored.");
                 }
             }
 
@@ -440,7 +440,7 @@ public class ExistDocument extends ExistResource {
                 throw new PermissionDeniedException(userLock.getName());
             }
 
-            // Check for request fo shared lock. @@TODO
+            // Check for request for shared lock. @@TODO
             if (inputToken.getScope() == LockToken.LOCK_SCOPE_SHARED) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Shared locks are not implemented.");
@@ -461,7 +461,7 @@ public class ExistDocument extends ExistResource {
             // Make token persistant
             txnManager = brokerPool.getTransactionManager();
             txn = txnManager.beginTransaction();
-            broker.storeXMLResource(txn, document);
+            broker.storeMetadata(txn, document);
             txnManager.commit(txn);
 
             if (LOG.isDebugEnabled()) {
@@ -487,7 +487,16 @@ public class ExistDocument extends ExistResource {
             //-----------------------
             throw e;
 
-        } finally {
+        } catch (TriggerException e) {
+            LOG.error(e);
+            //dead code, remove?
+            if (txnManager != null) {
+                txnManager.abort(txn);
+            }
+            //-----------------------
+            throw new EXistException(e);
+
+		} finally {
 
             // TODO: check if can be done earlier
             if (document != null) {

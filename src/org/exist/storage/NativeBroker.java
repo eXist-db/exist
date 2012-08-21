@@ -2000,7 +2000,22 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private File getCollectionFile(File dir,XmldbURI uri,boolean create) throws IOException {
+    public void storeMetadata(final Txn transaction, final DocumentImpl doc) throws TriggerException {
+    	Collection col = doc.getCollection();
+        DocumentTriggersVisitor triggersVisitor = null;
+        if(col.isTriggersEnabled()) {
+            triggersVisitor = col.getConfiguration(this).getDocumentTriggerProxies().instantiateVisitor(this);
+            triggersVisitor.beforeUpdateDocumentMetadata(this, transaction, doc);
+        }
+
+    	storeXMLResource(transaction, doc);
+    	
+    	if (triggersVisitor != null)
+            triggersVisitor.afterUpdateDocumentMetadata(this, transaction, doc);
+    		
+    }
+
+	private File getCollectionFile(File dir,XmldbURI uri,boolean create) throws IOException {
        return getCollectionFile(dir,null,uri,create);
     }
     

@@ -22,9 +22,11 @@
 package org.exist.config;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
@@ -282,5 +284,27 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         }
         return attrs;
     }
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn,
+			DocumentImpl document) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn,
+			DocumentImpl document) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void configure(DBBroker broker, Collection parent,
+			Map<String, List<? extends Object>> parameters)
+			throws TriggerException {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

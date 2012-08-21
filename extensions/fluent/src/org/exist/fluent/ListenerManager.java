@@ -443,5 +443,13 @@ public class ListenerManager {
 			EventKey key = new EventKey(uri.toString(), Trigger.AFTER_REMOVE);
 			INSTANCE.fire(key, null, null, true);
 		}
+
+		@Override
+		public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+		}
+		
+		@Override
+		public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+		}
 	}
 }
