@@ -558,7 +558,7 @@ public class ExistDocument extends ExistResource {
             document.getMetadata().setLockToken(null);
 
             // Make it persistant
-            broker.storeXMLResource(txn, document);
+            broker.storeMetadata(txn, document);
             txnManager.commit(txn);
 
         } catch (EXistException e) {
@@ -571,7 +571,12 @@ public class ExistDocument extends ExistResource {
             LOG.error(e);
             throw e;
 
-        } finally {
+        } catch (TriggerException e) {
+            txnManager.abort(txn);
+            LOG.error(e);
+            throw new EXistException(e);
+
+		} finally {
 
             if (document != null) {
                 document.getUpdateLock().release(Lock.WRITE_LOCK);
