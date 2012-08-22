@@ -167,13 +167,13 @@ public class Scan extends BasicFunction {
             XQueryContext xc = xquery.newContext(AccessContext.INITIALIZE);
             try {
                 normalizeXQuery = xquery.compile(xc, source);
-                normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
             } catch(final PermissionDeniedException e) {
                 throw new XPathException(this, e);
             }
         }
         
         try {
+            normalizeXQuery.getContext().declareVariable("xqdoc:doc", input);
             return xquery.execute(normalizeXQuery, Sequence.EMPTY_SEQUENCE);
         } catch(final PermissionDeniedException e) {
             throw new XPathException(this, e);
