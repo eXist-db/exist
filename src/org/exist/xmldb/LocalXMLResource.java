@@ -156,6 +156,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			// Case 5: content is a document or internal node
 		} else {
 		    DocumentImpl document = null;
+			Subject preserveSubject = pool.getSubject();
 			DBBroker broker = null;
 			try {
 				broker = pool.get(user);
@@ -191,6 +192,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			} finally {
 			    closeDocument(document, Lock.READ_LOCK);
 				pool.release(broker);
+				pool.setSubject(preserveSubject);
 			}
 		}
 	}
@@ -198,6 +200,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	public Node getContentAsDOM() throws XMLDBException {
 		if (root != null) {
             if(root instanceof NodeImpl) {
+        		Subject preserveSubject = pool.getSubject();
     			DBBroker broker = null;
     			try {
     				broker = pool.get(user);
@@ -207,6 +210,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
     				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     			} finally {
     				pool.release(broker);
+    				pool.setSubject(preserveSubject);
     			}
             }
 			return root;
@@ -215,6 +219,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 					"cannot return an atomic value as DOM node");
 		} else {
 		    DocumentImpl document = null;
+			Subject preserveSubject = pool.getSubject();
 			DBBroker broker = null;
 			try {
 				broker = pool.get(user);
@@ -232,11 +237,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			} finally {
 			    parent.getCollection().releaseDocument(document, Lock.READ_LOCK);
 				pool.release(broker);
+				pool.setSubject(preserveSubject);
 			}
 		}
 	}
 
 	public void getContentAsSAX(ContentHandler handler) throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		// case 1: content is an external DOM node
 		if (root != null && !(root instanceof NodeValue)) {
@@ -266,6 +273,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 						.getMessage(), e);
 			} finally {
 				pool.release(broker);
+				pool.setSubject(preserveSubject);
 			}
 			
 		// case 3: content is an internal node or a document
@@ -303,6 +311,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 						.getMessage(), e);
 			} finally {
 				pool.release(broker);
+				pool.setSubject(preserveSubject);
 			}
 		}
 	}
@@ -329,6 +338,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public Date getCreationTime() throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -339,10 +349,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 					e);
 		} finally {
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 	}
 
 	public Date getLastModificationTime() throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -353,6 +365,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 					e);
 		} finally {
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 	}
 	
@@ -360,6 +373,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	 * @see org.exist.xmldb.EXistResource#getContentLength()
 	 */
 	public long getContentLength() throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -370,6 +384,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 					e);
 		} finally {
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 	}
 
@@ -470,6 +485,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	 * @see org.exist.xmldb.EXistResource#getMode()
 	 */
 	public Permission getPermissions() throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
@@ -479,6 +495,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
         } finally {
 	        pool.release(broker);
+			pool.setSubject(preserveSubject);
 	    }
 	}
 	
@@ -522,6 +539,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	public NodeProxy getNode() throws XMLDBException {
 	    if(proxy != null)
 	        return proxy;
+		Subject preserveSubject = pool.getSubject();
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
@@ -532,10 +550,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
         } finally {
 	        pool.release(broker);
+			pool.setSubject(preserveSubject);
 	    }
 	}
 
 	public  DocumentType getDocType() throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
@@ -550,10 +570,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 					e);
 		} finally {
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 }
 	
 	public void setDocType(DocumentType doctype) throws XMLDBException {
+		Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		DocumentImpl document = null;
 		 TransactionManager transact = pool.getTransactionManager();
@@ -583,6 +605,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		} finally {
 			closeDocument(document, Lock.WRITE_LOCK);
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 }
 }

@@ -62,6 +62,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		MutableDocumentSet docs = new DefaultDocumentSet();
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
+    	Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		org.exist.collections.Collection c = parent.getCollection();
 		try {
@@ -126,6 +127,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			if(processor != null)
 				processor.reset();
 			pool.release(broker);
+			pool.setSubject(preserveSubject);
 		}
 	}
 

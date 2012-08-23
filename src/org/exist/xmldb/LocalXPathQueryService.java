@@ -163,6 +163,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	public ResourceSet execute(Source source) 
 		throws XMLDBException {
 			long start = System.currentTimeMillis();
+	    	Subject preserveSubject = brokerPool.getSubject();
 			DBBroker broker = null;
 			Sequence result;
 			try {
@@ -205,6 +206,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} finally {
 				brokerPool.release(broker);
+	            brokerPool.setSubject(preserveSubject);
 			}
 			LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
 			if(result != null)
@@ -222,6 +224,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
     public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
+    	Subject preserveSubject = brokerPool.getSubject();
         DBBroker broker = null;
         try {
             long start = System.currentTimeMillis();
@@ -241,6 +244,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
             brokerPool.release(broker);
+            brokerPool.setSubject(preserveSubject);
         }
     }
     
@@ -377,6 +381,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     throws XMLDBException {
     	long start = System.currentTimeMillis();
         CompiledXQuery expr = (CompiledXQuery)expression;
+    	Subject preserveSubject = brokerPool.getSubject();
     	DBBroker broker = null;
     	Sequence result;
     	XQueryContext context = expr.getContext();
@@ -404,6 +409,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 //                reservedBroker = broker;
 //            else
                 brokerPool.release(broker);
+                brokerPool.setSubject(preserveSubject);
     	}
     	LOG.debug("query took " + (System.currentTimeMillis() - start) + " ms.");
     	if(result != null)
