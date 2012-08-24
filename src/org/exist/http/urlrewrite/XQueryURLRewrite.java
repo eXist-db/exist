@@ -412,7 +412,8 @@ public class XQueryURLRewrite extends HttpServlet {
             if (status >= 400) {
                 if (modelView != null && modelView.hasErrorHandlers()) {
                     data = ((CachingResponseWrapper) wrappedResponse).getData();
-                    modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));
+                    String msg = data == null ? "" : new String(data, "UTF-8");
+                    modifiedRequest.setAttribute(RQ_ATTR_ERROR, msg);
                     applyViews(null, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
                     break;
                 } else {
@@ -529,7 +530,6 @@ public class XQueryURLRewrite extends HttpServlet {
      * @param action
      * @param request
      * @param response
-     * @param filterChain
      * @throws IOException
      * @throws ServletException
      */
