@@ -46,6 +46,10 @@ declare function repomanager:publicrepo() as element()
 
                     let $http-response := httpclient:get(xs:anyURI($package-url), false(), ())
                     let $name := tokenize($package-url, "/")[last()]
+                    (: application/xar is not correct, it is not officially registered. :)
+                    (: Must be application/x-xar or application/x-xar+zip instead. :)
+                    (: I am not sure about the +zip, it should not be treated as a ZIP file. :)
+                    (: TODO: Add the XAR MIME type to the Pkg spec. :)
                     let $package-mimetype := "application/xar"
                     let $package-data := xs:base64Binary($http-response/httpclient:body/text())
                     let $stored := xmldb:store($repomanager:coll, $name, $package-data, $package-mimetype)
@@ -111,6 +115,33 @@ declare function repomanager:upload() as element()
     </div>
 };
 
+declare function repomanager:cxan-install() as element()
+{
+  let $abbrev  := request:get-parameter('pkg-abbrev', ())
+  let $name    := request:get-parameter('pkg-name', ())
+  let $version := request:get-parameter('pkg-version', ())
+  let $host    := ( 'http://test.cxan.org/', 'http://cxan.org/' )[1]
+  let $uri     := concat($host, 'file?name=', $name, '&amp;id=', $abbrev, '&amp;version=', $version)
+  return
+    <div class="process">
+       <h3>Actions:</h3>
+       <ul>
+          <li>Package abbrev: '{ $abbrev }'</li>
+          <li>Package name: '{ $name }'</li>
+          <li>Package version: '{ $version }'</li>
+          <li> {
+            if ( $abbrev[.] and $name[.] ) then
+              <span style="color:#FF2400">Package abbrev and name cannot be both set!</span>
+            else if ( repo:install($uri) ) then
+              <em>Successfully installed</em>
+            else
+              <span style="color:#FF2400">Error installing the package (check the logs)</span>
+          }
+          </li>
+       </ul>
+    </div>
+};
+
 declare function repomanager:activate() as element()
 {
     let $name := request:get-parameter("name", ())
@@ -171,6 +202,10 @@ declare function repomanager:process-action() as element()*
             else if($action eq "Upload Package") then
             (
                 repomanager:upload()
+            )
+            else if($action eq "CXAN Install") then
+            (
+                repomanager:cxan-install()
             )
             else if($action eq "download") then
             (
@@ -319,6 +354,35 @@ declare function repomanager:show-public() {
     </div>
 };
 
+declare function repomanager:show-cxan() {
+    <form method="POST" action="admin.xql">
+        <input type="hidden" name="panel" value="repo"/>
+        <div>Install a package from CXAN directly within eXist.</div>
+        <table>
+            <tr>
+               <td>Abbrev:</td>
+               <td><input name="pkg-abbrev" size="50" value=""/></td>
+               <td>e.g. functx</td>
+            </tr>
+            <tr>
+               <td>Name:</td>
+               <td><input name="pkg-name" size="50" value=""/></td>
+               <td>e.g. http://www.functx.com</td>
+            </tr>
+            <tr>
+               <td>Version:</td>
+               <td><input name="pkg-version" size="50" value=""/></td>
+               <td>e.g. 1.0.2, empty for latest</td>
+            </tr>
+            <tr>
+               <td><input type="submit" name="action" value="CXAN Install"/></td>
+            </tr>
+        </table>
+        <div><i>Note: Package abbrev and name are mutually exclusive, but one is required.</i></div>
+        <div><i>Note: For now, this uses CXAN's repository at test.cxan.org.  We will make cxan.org available in the future.</i></div>
+    </form>
+};
+
 declare function repomanager:main() as element() {
     let $action := lower-case(request:get-parameter("action", "set repository"))
     let $repocol :=  if (collection($repomanager:coll)) then () else xmldb:create-collection('/db/system','repo')
@@ -331,6 +395,7 @@ declare function repomanager:main() as element() {
                 <li><a href="#installed">Installed</a></li>
                 <li><a href="#public">Public Repo</a></li>
                 <li><a href="#upload">Upload</a></li>
+                <li><a href="#cxan">CXAN</a></li>
             </ul>
             <div class="tab-container">
                 <div class="content">
@@ -350,6 +415,9 @@ declare function repomanager:main() as element() {
                         </table>
                         <span><i>Note: You can upload example .xar packages located under webapp/repo/packages</i></span>
                     </form>
+                </div>
+                <div class="content">
+                    { repomanager:show-cxan() }
                 </div>
             </div>
         </div>
