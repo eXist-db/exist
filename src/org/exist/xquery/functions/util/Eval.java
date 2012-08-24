@@ -49,6 +49,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 import org.exist.security.UUIDGenerator;
 import org.exist.source.DBSource;
 import org.exist.source.FileSource;
@@ -224,11 +225,13 @@ public class Eval extends BasicFunction {
         private final XQueryContext callersContext;
         private final Sequence contextSequence;
         private final Sequence args[];
+        private final Subject subject;
 
         public CallableEval(XQueryContext context, Sequence contextSequence, Sequence args[]) {
             this.callersContext = context;
             this.contextSequence = contextSequence;
             this.args = args;
+            this.subject = callersContext.getSubject();
         }
 
         @Override
@@ -245,7 +248,7 @@ public class Eval extends BasicFunction {
             
             try {
                 final XQueryContext context = callersContext.copyContext(); //make a copy
-                broker = db.get(callersContext.getSubject()); //get a new broker
+                broker = db.get(subject); //get a new broker
 
                 return doEval(context, contextSequence, args);
             } catch(EXistException ex) {
