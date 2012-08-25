@@ -60,7 +60,8 @@ public class Launcher implements Observer {
 
     public Launcher(final String[] args) {
         if (!SystemTray.isSupported()) {
-            System.out.println("Not supported");
+            showMessageAndExit("Not supported", "Running eXist-db via the launcher is not supported on your platform. " +
+                    "Please run it using startup.sh/startup.bat.");
             return;
         }
         final String home = getJettyHome();
@@ -80,19 +81,35 @@ public class Launcher implements Observer {
             }
         });
 
-        Image image = new ImageIcon("icon.png", "eXist-db Logo").getImage();
+        final SystemTray tray = SystemTray.getSystemTray();
+        Dimension iconDim = tray.getTrayIconSize();
+        LOG.debug("Icon size: " + iconDim.getWidth() + "x" + iconDim.getHeight());
+        String iconFile;
+        if (iconDim.getWidth() <= 16.0)
+            iconFile = "icon16.png";
+        else if (iconDim.getWidth() <= 24.0)
+            iconFile = "icon24.png";
+        else
+            iconFile = "icon32.png";
+        LOG.debug("Using icon: " + iconFile);
+        Image image = Toolkit.getDefaultToolkit().getImage(Launcher.class.getResource(iconFile));
         trayIcon = new TrayIcon(image, "eXist-db Launcher");
         trayIcon.setImageAutoSize(true);
-        final SystemTray tray = SystemTray.getSystemTray();
 
         PopupMenu popup = createMenu(home, tray);
         trayIcon.setPopupMenu(popup);
         try {
             tray.add(trayIcon);
         } catch (AWTException e) {
-            System.out.println("Tray icon could not be added");
+            showMessageAndExit("Launcher failed", "Tray icon could not be added");
             return;
         }
+        trayIcon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
+            }
+        });
     }
 
     private PopupMenu createMenu(final String home, final SystemTray tray) {
@@ -132,13 +149,13 @@ public class Launcher implements Observer {
             popup.addSeparator();
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                item = new MenuItem("Open homepage");
+                item = new MenuItem("Open dashboard");
                 popup.add(item);
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         try {
-                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/");
+                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/dashboard/");
                             desktop.browse(url);
                         } catch (URISyntaxException e) {
                             trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
