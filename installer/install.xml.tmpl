@@ -20,7 +20,7 @@
     </locale>
 
     <resources>
-        <res id="Installer.image" src="installer/ilogo.jpg"/>
+        <res id="Installer.image" src="installer/installer-logo.png"/>
         <res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
         <res id="Unix_shortcutSpec.xml" src="installer/UnixShortcutSpec.xml"/>
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
@@ -175,6 +175,12 @@
                 <include name="backup.bat"/>
             </fileset>
 
+            <fileset dir="installer/scripts" targetdir="$INSTALL_PATH">
+                <include name="eXist-db.app/**"/>
+            </fileset>
+            <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaApplicationStub"
+                stage="never" os="unix"/>
+
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
                 <include name="*.sh"/>
             </fileset>
@@ -207,6 +213,9 @@
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
+
+            <executable targetfile="$INSTALL_PATH/start.jar" stage="never" os="unix"/>
+            
             <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never" os="unix"/>
@@ -243,7 +252,7 @@
         </pack>
         
         <pack name="apps" required="no" preselected="yes">
-            <description>EXPath packages applications for eXist-db</description>
+            <description>EXPath packaged applications for eXist-db</description>
             <fileset targetdir="$INSTALL_PATH/apps" dir="installer/apps">
                 <include name="*.xar"/>
             </fileset>
@@ -283,6 +292,7 @@
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
+                <exclude name="apps/**"/>
                 <exclude name=".*"/>
             </fileset>
             <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
