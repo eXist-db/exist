@@ -7,14 +7,14 @@
         <!-- Auto-generated file. Please do not edit. -->
         <processing>
             <logfiledir>$INSTALL_PATH</logfiledir>
-            <job name="Set password for admin user ...">
+            <job name="Initial Database Setup ...">
                 <os family="windows"/>
                 <executefile name="$INSTALL_PATH/bin/setup.bat">
                     <arg>pass:$adminPasswd</arg>
                     <xsl:apply-templates/>
                 </executefile>
             </job>
-            <job name="Set password for admin user ...">
+            <job name="Initial Database Setup ...">
                 <os family="unix"/>
                 <executefile name="$INSTALL_PATH/bin/setup.sh">
                     <arg>pass:$adminPasswd</arg>

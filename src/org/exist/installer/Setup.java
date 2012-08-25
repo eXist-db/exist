@@ -96,26 +96,27 @@ public class Setup {
                 System.err.println("Failed to install application package " + name + ": " + e.getMessage());
             }
         }
-        String xquery =
-            "import module namespace repo=\"http://exist-db.org/xquery/repo\" " +
-            "at \"java:org.exist.xquery.modules.expathrepo.ExpathPackageModule\"; (";
-        StringBuilder prolog = new StringBuilder();
-        for (String uri : uris) {
-            if (prolog.length() > 0)
-                prolog.append(", ");
-            prolog.append(" repo:deploy(\"" + uri + "\")");
-        }
-        prolog.append(')');
-        xquery = xquery + prolog;
+
         System.out.println("\n=== Starting the installation process for each application... ===");
         System.out.println("\nPLEASE DO NOT ABORT\n");
-        try {
-            query.query(xquery);
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            System.err.println("An error occurred while deploying applications. Some applications may " +
-                    "not have been installed correctly. You can install them later using the package repository.");
+
+        String prolog =
+            "import module namespace repo=\"http://exist-db.org/xquery/repo\" " +
+            "at \"java:org.exist.xquery.modules.expathrepo.ExpathPackageModule\";\n";
+        for (String uri : uris) {
+            StringBuilder xquery = new StringBuilder(prolog);
+            xquery.append(" repo:deploy(\"" + uri + "\")");
+            System.out.print("Installing app package: " + uri + "... ");
+            try {
+                query.query(xquery.toString());
+            } catch (XMLDBException e) {
+                e.printStackTrace();
+                System.err.println("An error occurred while deploying application: " + uri +
+                        ". You can install it later using the package repository.");
+            }
+            System.out.println("DONE.");
         }
+
         System.out.println("=== App installation completed. ===");
     }
 

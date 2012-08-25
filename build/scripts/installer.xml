@@ -121,7 +121,6 @@
 
     </target>
 
-
     <target name="copy_scripts">
         <filter filtersfile="installer/scripts/scripts.properties" />
         
@@ -134,5 +133,17 @@
                 <exclude name="run.bat"/>
             </fileset>
         </copy>
+    </target>
+    
+    <target name="extract-apps">
+        <mkdir dir="installer/temp"/>
+        <unzip dest="installer/temp">
+            <fileset dir="installer/apps">
+                <include name="*.xar"/>
+            </fileset>
+            <patternset>
+                <include name="expath-pkg.xml"/>
+            </patternset>
+        </unzip>
     </target>
 </project>
