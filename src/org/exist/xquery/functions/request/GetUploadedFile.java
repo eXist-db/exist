@@ -24,16 +24,10 @@ package org.exist.xquery.functions.request;
 
 import org.apache.log4j.Logger;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
