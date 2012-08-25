@@ -77,10 +77,10 @@ public class LauncherWrapper {
             opts.append(" -Dapple.awt.UIElement=true");
         }
         opts.append(" -Dexist.home=");
-        opts.append(home);
+        opts.append('"').append(home).append('"');
 
         opts.append(" -Djava.endorsed.dirs=");
-        opts.append(home + "/lib/endorsed");
+        opts.append('"').append(home + "/lib/endorsed").append('"');
 
         return opts.toString();
     }
