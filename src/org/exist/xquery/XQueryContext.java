@@ -2714,7 +2714,7 @@ public class XQueryContext implements BinaryValueManager, Context
                 Source moduleSource;
 
                 if( location.startsWith( XmldbURI.XMLDB_URI_PREFIX )
-                        || ( ( location.indexOf( ':' ) < 0 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
+                        || ( ( location.indexOf( ':' ) == -1 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
 
                     // Is the module source stored in the database?
                     try {
