@@ -77,6 +77,9 @@ public class XQueryCompiler {
                     final XQueryContext context = xquery.newContext(AccessContext.REST);
                     final Source source = new DBSource(broker, (BinaryDocument)document, true);
 
+                    //set the module load path for any module imports that are relative
+                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((XmldbURI)source.getKey()).removeLastSegment());
+                    
                     return broker.getXQueryService().compile(context, source);
                 } else {
                     throw new RestXqServiceCompilationException("Invalid mimetype '" +  metadata.getMimeType() + "' for XQuery: "  + document.getURI().toString().toString());
