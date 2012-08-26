@@ -142,6 +142,11 @@ public class XPathException extends Exception {
         this.errorCode = errorCode;
         this.errorVal = errorVal;
     }
+    
+    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
+        this(errorCode, errorDesc);
+        this.errorVal = errorVal;
+    }
 
     //useful at static analysis time
     public XPathException(ErrorCode errorCode, String errorDesc) {
@@ -152,6 +157,11 @@ public class XPathException extends Exception {
         } else {
             this.message = errorDesc;
         }
+    }
+    
+    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+        this(errorCode, errorDesc, cause);
+        this.errorVal = errorVal;
     }
     
     public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
