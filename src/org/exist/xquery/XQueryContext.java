@@ -2731,12 +2731,12 @@ public class XQueryContext implements BinaryValueManager, Context
                             sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
 
                             if(sourceDoc == null) {
-                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to anything.");
+                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to anything.", new ValueSequence(new StringValue(location)));
                                 
                             }
 
                             if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
-                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to an XQuery.");
+                                throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to an XQuery.", new ValueSequence(new StringValue(location)));
                             }
                             
                             moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
@@ -2745,14 +2745,14 @@ public class XQueryContext implements BinaryValueManager, Context
                             module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
 
                         } catch(PermissionDeniedException e) {
-                            throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", e);
+                            throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
                         } finally {
                             if(sourceDoc != null) {
                                 sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                             }
                         }
                     } catch(URISyntaxException e) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", e);
+                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
                     }
                     
                 } else {
@@ -2764,11 +2764,11 @@ public class XQueryContext implements BinaryValueManager, Context
                         moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
 
                     } catch(MalformedURLException e) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", e);
+                        throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
                     } catch(IOException e) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", e);
+                        throw new XPathException(ErrorCodes.XQST0059, "Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
                     } catch(PermissionDeniedException e) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", e);
+                        throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
                     }
 
                     // we don't know if the module will get returned, oh well
