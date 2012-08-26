@@ -39,6 +39,7 @@
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar"/>
+	<classpathentry kind="lib" path="lib/core/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-api-2.4-M1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-epsg-wkt-2.4-M1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/spatial/lib/gt2-main-2.4-M1.jar"/>
