@@ -2904,6 +2904,7 @@ public class XQueryContext implements BinaryValueManager, Context
 //            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
 
             modExternal.setSource( source );
+            modContext.setSource(source);
             modExternal.setIsReady(true);
             return( modExternal );
         }
