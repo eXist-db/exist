@@ -89,7 +89,6 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
 	
-            //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
             serializer.toSAX((Item)result.getValue(), false, false);
 	
             writer.flush();

@@ -119,7 +119,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     private Match match = null;
 
     private ContextItem context = null;
-
+    
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
@@ -165,6 +165,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.nodeType = nodeType;
         this.internalAddress = address;
         this.nodeId = nodeId;
+    }
+    
+    public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType, long address, Match match, ContextItem context) {
+        this.doc = doc;
+        this.nodeType = nodeType;
+        this.internalAddress = address;
+        this.nodeId = nodeId;
+        this.match = match;
+        this.context = context;
     }
 
     public void update(ElementImpl element) {
@@ -1517,6 +1526,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         return this.doc;
     }
 
+    public DocumentImpl getDoc() {
+        return doc;
+    }
+    
     public DocumentImpl getDoc(int docId) {
         if (docId == this.doc.getDocId())
             return this.doc;
