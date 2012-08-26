@@ -29,14 +29,22 @@ package org.exist.extensions.exquery.restxq.impl;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.exist.extensions.exquery.restxq.impl.adapters.AnnotationAdapter;
+import org.exist.source.DBSource;
+import org.exist.source.Source;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Annotation;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.ExternalModule;
+import org.exist.xquery.Module;
 import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.XQueryContext;
 import org.exquery.ExQueryException;
 import org.exquery.annotation.AnnotationException;
 import org.exquery.restxq.ResourceFunction;
@@ -93,5 +101,47 @@ public class XQueryInspector {
         }
         
         return services;
+    }
+    
+    public static Map<String, Set<String>> getDependencies(final CompiledXQuery compiled) {
+        final Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
+        getDependencies(compiled.getContext(), dependencies);
+        return dependencies;
+    }
+    
+    private static void getDependencies(final XQueryContext xqyCtx, final Map<String, Set<String>> dependencies) {
+        
+        final String xqueryUri = getDbUri(xqyCtx.getSource());
+        Set<String> depSet = dependencies.get(xqueryUri);
+        
+        final Iterator<Module> itModule = xqyCtx.getModules();
+        while(itModule.hasNext()) {
+            final Module module = itModule.next();
+            if(module instanceof ExternalModule) {
+                final ExternalModule extModule = (ExternalModule)module;
+                final Source source = extModule.getSource();
+                if(source instanceof DBSource) {
+                    final String moduleUri = getDbUri(source);
+                    if(depSet == null) {
+                        depSet = new HashSet<String>();
+                    }
+                    depSet.add(moduleUri);
+                }
+                
+                getDependencies(extModule.getContext(), dependencies);
+            }
+        }
+        
+        if(depSet != null) {
+            dependencies.put(xqueryUri, depSet);
+        }
+    }
+    
+    private static String getDbUri(Source source) {
+        if(source != null && source instanceof DBSource) {
+            return ((XmldbURI)source.getKey()).toString();
+        } else {
+            return null;
+        }
     }
 }
