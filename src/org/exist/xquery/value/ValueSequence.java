@@ -107,6 +107,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         this.enforceOrder = ordered;
     }
     
+    public ValueSequence(final Item... items) throws XPathException {
+        values = new Item[items.length];
+        for(final Item item : items) {
+            add(item);
+        }
+    }
+    
     public void keepUnOrdered(boolean flag) {
     	keepUnOrdered = flag;
     }
