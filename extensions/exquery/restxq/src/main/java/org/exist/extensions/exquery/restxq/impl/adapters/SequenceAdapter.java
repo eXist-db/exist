@@ -28,6 +28,7 @@ package org.exist.extensions.exquery.restxq.impl.adapters;
 
 import java.util.Iterator;
 import org.apache.log4j.Logger;
+import org.exist.dom.NodeProxy;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
@@ -86,7 +87,11 @@ public class SequenceAdapter implements Sequence<Item> {
 
                     @Override
                     public Item getValue() {
-                        return item;
+                        if(item instanceof NodeProxy) {
+                            return DomEnhancingNodeProxyAdapter.create((NodeProxy)item); //RESTXQ expects to find DOM Nodes not NodeProxys
+                        } else {
+                            return item;
+                        }
                     }
                 };
             }
