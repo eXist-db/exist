@@ -10,8 +10,11 @@ public class XQueryTest extends TestCase {
     
     static Main mn = null;
     
-    static String query_url = "http://localhost:8080/exist/services/Query";
-    static String admin_url = "http://localhost:8080/exist/services/Admin";
+    static String jetty_port = System.getProperty("jetty.port");
+    static String localhost = "http://localhost:" + jetty_port;
+    static String query_url = localhost + "/exist/services/Query";
+    static String admin_url = localhost + "/exist/services/Admin";
+
     String testColl = "/db/test";
     
     Query query;

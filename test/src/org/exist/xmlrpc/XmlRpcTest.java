@@ -50,8 +50,9 @@ import java.util.*;
  */
 public class XmlRpcTest {    
 	
-	private static JettyStart server = null;
-    private final static String URI = "http://localhost:8088/xmlrpc";
+    private static JettyStart server = null;
+    // jetty.port.standalone
+    private final static String URI = "http://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
         
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
     

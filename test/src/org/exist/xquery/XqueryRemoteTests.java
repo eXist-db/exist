@@ -36,7 +36,8 @@ public class XqueryRemoteTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for org.exist.xquery");
         //$JUnit-BEGIN$
-        XPathQueryTest.setURI("xmldb:exist://localhost:8088/xmlrpc" + XmldbURI.ROOT_COLLECTION);
+	// jetty.port.standalone
+        XPathQueryTest.setURI("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION);
         suite.addTestSuite(XPathQueryTest.class);
         //$JUnit-END$
         return suite;

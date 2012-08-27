@@ -88,7 +88,8 @@ public class DebugClient implements ResponseListener {
     }
 
     private void run(String arguments) {
-        String target = "http://127.0.0.1:8080/exist/" + arguments;
+	// jetty.port.jetty
+        String target = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/" + arguments;
         System.out.println("Connecting to " + target);
         try {
             source = debugger.init(target);

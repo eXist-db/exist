@@ -41,16 +41,40 @@
       <Arg>
           <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
             <Set name="host"><SystemProperty name="jetty.host" /></Set>
-            <Set name="port"><SystemProperty name="jetty.port" default="8088"/></Set>
+            <Set name="port">
+	      <SystemProperty name="jetty.port" default="8088"/>
+	    </Set>
             <Set name="maxIdleTime">300000</Set>
             <Set name="Acceptors">2</Set>
             <Set name="statsOn">false</Set>
-            <Set name="confidentialPort">8443</Set>
+            <Set name="confidentialPort">
+	      <SystemProperty name="jetty.port.ssl" default="8451"/>
+	    </Set>
 	    <Set name="lowResourcesConnections">20000</Set>
 	    <Set name="lowResourcesMaxIdleTime">5000</Set>
           </New>
       </Arg>
     </Call>
+
+    <!-- if NIO is not available, use org.eclipse.jetty.server.ssl.SslSocketConnector -->
+    
+    <Call name="addConnector">
+      <Arg>
+	<New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+          <Set name="Port">
+	    <SystemProperty name="jetty.port.ssl" default="8451"/>
+	</Set>
+        <Set name="maxIdleTime">30000</Set>
+        <Set name="Acceptors">2</Set>
+        <Set name="AcceptQueueSize">100</Set>
+        <Set name="Keystore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
+        <Set name="Password">secret</Set>
+        <Set name="KeyPassword">secret</Set>
+        <Set name="truststore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
+        <Set name="trustPassword">secret</Set>
+      </New>
+    </Arg>
+  </Call>
 
     <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
     <!-- To add a HTTPS SSL connector                                    -->

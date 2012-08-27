@@ -40,7 +40,8 @@ public class GetDataTest extends RESTTest {
 
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
-        root = DatabaseManager.getCollection("xmldb:exist://localhost:8088/xmlrpc/db", "admin", "");
+	// jetty.port.standalone
+        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db", "admin", "");
         BinaryResource res = (BinaryResource)root.createResource(XQUERY_FILENAME, "BinaryResource");
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);

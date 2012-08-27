@@ -65,7 +65,8 @@ public class Client implements Runnable {
             	Thread.sleep(1000);
 
             	// connect to a page you're interested...
-            	PostMethod getMethod = new PostMethod("http://localhost:8080/exist/admin/admin.xql?panel=xqueries");
+		// jetty.port.jetty
+            	PostMethod getMethod = new PostMethod("http://localhost:" + System.getProperty("jetty.port") + "/exist/admin/admin.xql?panel=xqueries");
 
             	// ...using the session ID retrieved before
             	for (Header header : headers) {
@@ -87,7 +88,8 @@ public class Client implements Runnable {
 
 	private String getURL() {
 		if (manager == null)
-			return "http://localhost:8080/exist/admin";
+		    // jetty.port.jetty
+		    return "http://localhost:" + System.getProperty("jetty.port") + "/exist/admin";
 		else 
 			return manager.getURL();
 	}

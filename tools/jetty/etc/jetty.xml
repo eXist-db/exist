@@ -7,7 +7,7 @@
 <!-- Documentation of this file format can be found at:              -->
 <!-- http://docs.codehaus.org/display/JETTY/jetty.xml                -->
 <!--                                                                 -->
-<!-- $Id$                                                                -->
+<!-- $Id$          -->
 <!-- =============================================================== -->
 
 
@@ -50,7 +50,9 @@
         <Set name="maxIdleTime">300000</Set>
         <Set name="Acceptors">2</Set>
         <Set name="statsOn">false</Set>
-        <Set name="confidentialPort">8443</Set>
+        <Set name="confidentialPort">
+	  <SystemProperty name="jetty.port.ssl" default="8443"/>
+	</Set>
         <Set name="lowResourcesConnections">20000</Set>
         <Set name="lowResourcesMaxIdleTime">5000</Set>
       </New>
@@ -63,7 +65,9 @@
   <Call name="addConnector">
     <Arg>
       <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-        <Set name="Port">8443</Set>
+        <Set name="Port">
+	  <SystemProperty name="jetty.port.ssl" default="8443"/>
+	</Set>
         <Set name="maxIdleTime">30000</Set>
         <Set name="Acceptors">2</Set>
         <Set name="AcceptQueueSize">100</Set>

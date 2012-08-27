@@ -62,10 +62,10 @@ import static org.junit.Assert.assertTrue;
 public class RESTServiceTest {
 
     private static JettyStart server = null;
+    // jetty.port.standalone
+    private final static String SERVER_URI = "http://localhost:" + System.getProperty("jetty.port") + "/rest";
 
-    private final static String SERVER_URI = "http://localhost:8088/rest";
-
-    private final static String SERVER_URI_REDIRECTED = "http://localhost:8088";
+    private final static String SERVER_URI_REDIRECTED = "http://localhost:" + System.getProperty("jetty.port");
 
     private final static String COLLECTION_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test";
 

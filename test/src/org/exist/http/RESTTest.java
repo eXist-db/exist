@@ -10,7 +10,8 @@ import static org.junit.Assert.fail;
 
 public abstract class RESTTest {
 
-    protected final static String REST_URL = "http://localhost:8088";
+    // jetty.port.standalone
+    protected final static String REST_URL = "http://localhost:" + System.getProperty("jetty.port");
     protected final static String COLLECTION_ROOT_URL = REST_URL + XmldbURI.ROOT_COLLECTION;
     protected static JettyStart server = null;
     protected static HttpClient client = new HttpClient();

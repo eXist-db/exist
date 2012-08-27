@@ -39,7 +39,8 @@ public class SecurityManagerRoundtripTest {
     public static LinkedList<String[]> instances() {
         LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
-        params.add(new String[] { "xmldb:exist://localhost:8088/xmlrpc" });
+	// jetty.port.standalone
+        params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
         return params;
     }
 

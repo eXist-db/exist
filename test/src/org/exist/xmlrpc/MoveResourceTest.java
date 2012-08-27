@@ -34,9 +34,10 @@ public class MoveResourceTest extends TestCase {
     
     private JettyStart server;
 
-    private final static String URI = "http://localhost:8088/xmlrpc";
+    // jetty.port.standalone
+    private final static String URI = "http://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
 
-    private final static String REST_URI = "http://localhost:8088";
+    private final static String REST_URI = "http://localhost:" + System.getProperty("jetty.port");
 
     public MoveResourceTest(String string) {
         super(string);

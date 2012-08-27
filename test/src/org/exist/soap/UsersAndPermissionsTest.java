@@ -10,8 +10,6 @@ public class UsersAndPermissionsTest extends TestCase {
     
     static Main mn = null;
     
-    static String query_url = "http://localhost:8080/exist/services/Query";
-    static String admin_url = "http://localhost:8080/exist/services/Admin";
     String testUser = "BertieBeetle";
     String testPassword = "srfg.hj7Ld-";
     String testHome = "/db/home/BertieBeetle";
@@ -34,9 +32,9 @@ public class UsersAndPermissionsTest extends TestCase {
         }
         
         QueryService service = new QueryServiceLocator();
-        query = service.getQuery(new URL(query_url));
+        query = service.getQuery(new URL(XQueryTest.query_url));
         AdminService aservice = new AdminServiceLocator();
-        admin = aservice.getAdmin(new URL(admin_url));
+        admin = aservice.getAdmin(new URL(XQueryTest.admin_url));
         sessionId = admin.connect("admin","");
     }
     

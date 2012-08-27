@@ -20,22 +20,25 @@ public class XmldbURITest {
         XmldbURI.xmldbUriFor("/db");
         XmldbURI.xmldbUriFor("xmldb:exist:///db");
         XmldbURI.xmldbUriFor("xmldb:exist://localhost/db");
-        XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
-        XmldbURI.xmldbUriFor("//localhost:8080/db");
+	// jetty.port.jetty
+        XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/db");
+        XmldbURI.xmldbUriFor("//localhost:" + System.getProperty("jetty.port") + "/db");
         XmldbURI.xmldbUriFor("./db");
         XmldbURI.xmldbUriFor("../db");
         XmldbURI.xmldbUriFor("/db/test");
         XmldbURI.xmldbUriFor("xmldb:exist:///db/test");
         XmldbURI.xmldbUriFor("xmldb:exist://localhost/db/test");
-        XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db/test");
-        XmldbURI.xmldbUriFor("//localhost:8080/db/test");
+	// jetty.port.jetty
+        XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/db/test");
+        XmldbURI.xmldbUriFor("//localhost:" + System.getProperty("jetty.port") + "/db/test");
         XmldbURI.xmldbUriFor("./");
         XmldbURI.xmldbUriFor("../");
         XmldbURI.xmldbUriFor("/db/");
         XmldbURI.xmldbUriFor("xmldb:exist:///db/");
         XmldbURI.xmldbUriFor("xmldb:exist://localhost/db/");
-        XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db/");
-        XmldbURI.xmldbUriFor("//localhost:8080/db/");
+	// jetty.port.jetty
+        XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/db/");
+        XmldbURI.xmldbUriFor("//localhost:" + System.getProperty("jetty.port") + "/db/");
         //XXX: this MUST work or no MS OS support at all
         //XmldbURI.xmldbUriFor("D:\\workspace\\");
     }
@@ -53,7 +56,8 @@ public class XmldbURITest {
         } catch (URISyntaxException e) {
         }
         try{
-            XmldbURI.xmldbUriFor("exist://localhost:8080/db");
+	    // jetty.port.jetty
+            XmldbURI.xmldbUriFor("exist://localhost:" + System.getProperty("jetty.port") + "/db");
             fail("Invalid constructor threw no exception!");
         } catch (URISyntaxException e) {
         }
@@ -84,17 +88,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor2() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
+	// jetty.port.jetty
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8080, xmldbURI.getPort());
+	// jetty.port.jetty
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/exist/xmlrpc");
+	// jetty.port.jetty
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8080, xmldbURI.getPort());
+	// jetty.port.jetty
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -102,17 +110,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor3() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals("xmlrpc", xmldbURI.getApiName());
@@ -120,17 +132,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor4() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -148,25 +164,31 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor6() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist2://localhost:8088/webdav/db");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist2://localhost:" + System.getProperty("jetty.port") + "/webdav/db");
         assertEquals("exist2", xmldbURI.getInstanceName());
-        xmldbURI = XmldbURI.create("xmldb:exist2://localhost:8088/webdav/db");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist2://localhost:" + System.getProperty("jetty.port") + "/webdav/db");
         assertEquals("exist2", xmldbURI.getInstanceName());
     }
 
     @Test
     public void xmldbURIConstructor7() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/db");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc/db");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -174,17 +196,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor8() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav/db");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav/db");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -192,17 +218,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor9() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -210,17 +240,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIConstructor10() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav/xmlrpc/db");
+	// jetty.port.standalone
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
-        xmldbURI = XmldbURI.create("xmldb:exist://localhost:8088/webdav/xmlrpc/db");
+	// jetty.port.standalone
+        xmldbURI = XmldbURI.create("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals(8088, xmldbURI.getPort());
+	// jetty.port.standalone
+        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -406,9 +440,9 @@ public class XmldbURITest {
     /*
     public void testXmldbURIChangePart1() {
         try {
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
             xmldbURI.setInstanceName("exist2");
-            assertEquals("xmldb:exist2://localhost:8088/xmlrpc/webdav/db", xmldbURI.toString());
+            assertEquals("xmldb:exist2://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -416,9 +450,9 @@ public class XmldbURITest {
     
     public void testXmldbURIChangePart2() {
         try {
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
             xmldbURI.setHost("remotehost");
-            assertEquals("xmldb:exist://remotehost:8088/xmlrpc/webdav/db", xmldbURI.toString());
+            assertEquals("xmldb:exist://remotehost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -426,9 +460,9 @@ public class XmldbURITest {
     
     public void testXmldbURIChangePart3() {
         try {
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
-            xmldbURI.setPort(8080);
-            assertEquals("xmldb:exist://localhost:8080/xmlrpc/webdav/db", xmldbURI.toString());
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
+            xmldbURI.setPort(System.getProperty("jetty.port"));
+            assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -436,7 +470,7 @@ public class XmldbURITest {
     
     public void testXmldbURIChangePart4() {
         try {
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
             xmldbURI.setPort(-1);
             assertEquals("xmldb:exist://localhost/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
@@ -446,9 +480,9 @@ public class XmldbURITest {
     
     public void testXmldbURIChangePart5() {
         try {
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/webdav/db");
             xmldbURI.setContext("/webdav");
-            assertEquals("xmldb:exist://localhost:8088/webdav/db", xmldbURI.toString());
+            assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -495,29 +529,29 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIEquals2() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
-        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/db");
+        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/db");
         assertTrue(xmldbURI1.equals(xmldbURI2));
     }
 
     @Test
     public void xmldbURIEquals3() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
-        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc");
+        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc");
         assertTrue(xmldbURI1.equals(xmldbURI2));
     }
 
     @Test
     public void xmldbURIEquals4() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
-        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc/db");
+        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc/db");
         assertTrue(xmldbURI1.equals(xmldbURI2));
     }
 
     @Test
     public void xmldbURIEquals5() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8088/db");
-        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8088/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:" + System.getProperty("jetty.port") + "/db");
+        XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:" + System.getProperty("jetty.port") + "/db");
         assertTrue(xmldbURI1.equals(xmldbURI2));
     }
 
@@ -541,22 +575,22 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIIsContextAbsolute1() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/exist/xmlrpc/db");
         assertTrue(xmldbURI1.isContextAbsolute());
     }
 
     @Test
     public void xmldbURINormalizeContext1() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/./xmlrpc/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/./xmlrpc/db");
         XmldbURI xmldbURI2 = xmldbURI1.normalizeContext();
-        assertEquals("xmldb:exist://localhost:8080/exist/xmlrpc/db", xmldbURI2.toString());
+        assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc/db", xmldbURI2.toString());
     }
 
     @Test
     public void xmldbURINormalizeContext2() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/../xmlrpc/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/../xmlrpc/db");
         XmldbURI xmldbURI2 = xmldbURI1.normalizeContext();
-        assertEquals("xmldb:exist://localhost:8080/xmlrpc/db", xmldbURI2.toString());
+        assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db", xmldbURI2.toString());
     }
     
     @Test
@@ -568,14 +602,14 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIRelativizeContext1() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/exist/xmlrpc/db");
         URI uri = new URI("/exist/xmlrpc");
         assertEquals("/exist/xmlrpc", xmldbURI.relativizeContext(uri).toString());
     }
 
     @Test
     public void xmldbURIRelativizeContext2() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc/db");
         URI uri = new URI("/exist/exist/xmlrpc");
         assertEquals("/exist/exist/xmlrpc", xmldbURI.relativizeContext(uri).toString());
     }
@@ -597,7 +631,7 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIResolveContext1() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/a/b/xmlrpc/db");
         URI uri = new URI("..");
         //Strange but it's like this
         assertEquals("/a/b/", xmldbURI.resolveContext(uri).toString());
@@ -605,7 +639,7 @@ public class XmldbURITest {
     
     @Test
     public void xmldbURIResolveContext2() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/a/b/xmlrpc/db");
         URI uri = new URI("../..");
         //Strange but it's like this
         assertEquals("/a/", xmldbURI.resolveContext(uri).toString());
@@ -630,7 +664,7 @@ public class XmldbURITest {
     @Test
     public void xmldbURIResolveContext4() throws URISyntaxException {
         //Null context here ;-)
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db");
         //Up and up...
         URI uri = new URI("/../../..");
         //Strange but it's like this
@@ -639,21 +673,21 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIIsCollectionNameAbsolute1() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db");
         assertTrue(xmldbURI1.isCollectionPathAbsolute());
     }
 
     @Test
     public void xmldbURINormalizeCollectionName1() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/./collection");
-        assertEquals("xmldb:exist://localhost:8080/xmlrpc/db/collection", xmldbURI.normalizeCollectionPath().toString());
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/./collection");
+        assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/collection", xmldbURI.normalizeCollectionPath().toString());
     }
 
     @Test
     public void xmldbURINormalizeCollectionName2() throws URISyntaxException {
-        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/../collection");
+        XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/../collection");
         XmldbURI xmldbURI2 = xmldbURI1.normalizeCollectionPath();
-        assertEquals("xmldb:exist://localhost:8080/xmlrpc/collection", xmldbURI2.toString());
+        assertEquals("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/collection", xmldbURI2.toString());
     }
 
     @Test
@@ -665,14 +699,14 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIRelativizeCollectionName1() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/db/collection");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/db/collection");
         URI uri = new URI("/db/collection");
         assertEquals("/db/collection", xmldbURI.relativizeCollectionPath(uri).toString());
     }
 
     @Test
     public void xmldbURIRelativizeCollectionName2() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/collection");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/collection");
         URI uri = new URI("/db/db/collection");
         assertEquals("/db/db/collection", xmldbURI.relativizeCollectionPath(uri).toString());
     }
@@ -694,14 +728,14 @@ public class XmldbURITest {
 
     @Test
     public void xmldbURIResolveCollectionName1() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/a/b");
         URI uri = new URI("..");
         assertEquals("/db/a/", xmldbURI.resolveCollectionPath(uri).toString());
     }
 
     @Test
     public void xmldbURIResolveCollectionName2() throws URISyntaxException {
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db/a/b");
         URI uri = new URI("../..");
         assertEquals("/db/", xmldbURI.resolveCollectionPath(uri).toString());
     }
@@ -717,7 +751,7 @@ public class XmldbURITest {
     @Test
     public void xmldbURIResolveCollectionName4() throws URISyntaxException {
         //Null context here ;-)
-        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
+        XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc/db");
         //Up and up...
         URI uri = new URI("/../../..");
         //Strange but it's like this

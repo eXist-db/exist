@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-to dadd: -pre-compile steps
+to add: -pre-compile steps
+$Id$
 -->
 <project basedir="." default="all" name="common">
 
@@ -45,6 +46,11 @@ to dadd: -pre-compile steps
    <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
 
    <property name="extension.include" value="yes"/>
+
+    <!-- jetty.port and jetty.port.ssl with defaults. /ljo -->
+    <property name="jetty.port" value="8080" />
+    <property name="jetty.port.ssl" value="8443" />
+
 
    <!-- Additional task defs  -->
    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
@@ -278,6 +284,9 @@ to dadd: -pre-compile steps
 
       <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
          maxmemory="${junit.forked.VM.maxmemory}">
+
+        <sysproperty key="jetty.port" value="${jetty.port}" />
+        <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
 
          <classpath>
             <path refid="classpath.core"/>
