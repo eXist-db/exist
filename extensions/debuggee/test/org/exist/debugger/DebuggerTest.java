@@ -59,8 +59,9 @@ public class DebuggerTest implements ResponseListener {
 		
 		//if resource don't exist throw exception
 		try {
-			debugger.init("http://127.0.0.1:8080/xquery/fibo.xql");
-			assertNotNull("The resource don't exist, but debugger din't throw exception.", null);
+		    // jetty.port.jetty
+			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/xquery/fibo.xql");
+			assertNotNull("The resource don't exist, but debugger don't throw exception.", null);
 		} catch (Exception e) {
 			exception = e;
 		}
@@ -68,7 +69,8 @@ public class DebuggerTest implements ResponseListener {
 		assertEquals(exception.getClass().toString(), "class java.io.IOException");
 		
 		try {
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+		    // jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 			assertNotNull("Debugging source can't be NULL.", source);
             source.stop();
 		} catch (Exception e) {
@@ -86,7 +88,8 @@ public class DebuggerTest implements ResponseListener {
 			debugger = DebuggerImpl.getDebugger();
 
 			System.out.println("sending init request");
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+			// jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -201,7 +204,8 @@ public class DebuggerTest implements ResponseListener {
 		
 		try {
 			System.out.println("sending init request");
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+			// jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -234,7 +238,8 @@ public class DebuggerTest implements ResponseListener {
 		
 		try {
 			System.out.println("sending init request");
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+			// jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -271,7 +276,8 @@ public class DebuggerTest implements ResponseListener {
 		
 		try {
 			System.out.println("sending init request");
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/fibo.xql");
+			// jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
@@ -314,7 +320,8 @@ public class DebuggerTest implements ResponseListener {
 
 		try {
 			System.out.println("sending init request");
-			DebuggingSource source = debugger.init("http://127.0.0.1:8080/exist/xquery/debug-test.xql");
+			// jetty.port.jetty
+			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/debug-test.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 
@@ -353,7 +360,8 @@ public class DebuggerTest implements ResponseListener {
 		
 		try {
 			System.out.println("sending init request");
-			debugger.init("http://127.0.0.1:8080/exist/logo.jpg");
+			// jetty.port.jetty
+			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/logo.jpg");
 
 			assertTrue("This point should not be reached", false);
 
@@ -366,7 +374,8 @@ public class DebuggerTest implements ResponseListener {
 
 		try {
 			System.out.println("sending init request");
-			debugger.init("http://127.0.0.1:8080/notExist/fibo.xql");
+			// jetty.port.jetty
+			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/notExist/fibo.xql");
 
 			assertTrue("This point should not be reached", false);
 
@@ -380,7 +389,8 @@ public class DebuggerTest implements ResponseListener {
 	
 	@Test
 	public void testStepInto() throws Exception {
-		String url = "http://127.0.0.1:8080/exist/xquery/json-test.xql";
+	    // jetty.port.jetty
+		String url = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/json-test.xql";
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
 
@@ -430,7 +440,8 @@ public class DebuggerTest implements ResponseListener {
 	@Test
 	public void testStoredInDB() throws Exception {
 		store("script.xql", script);
-		String url = "http://127.0.0.1:8080/exist/rest/db/test/script.xql";
+		// jetty.port.jetty
+		String url = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/rest/db/test/script.xql";
 		
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();

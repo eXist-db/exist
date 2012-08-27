@@ -39,7 +39,8 @@ public class DatabaseUnderLoadTest {
 		database = new org.exist.start.Main("jetty");
 		database.run(new String[]{"jetty"});
 		
-		manager = new ClientsManager(5, "http://localhost:8080/exist/admin");
+		// jetty.port.jetty
+		manager = new ClientsManager(5, "http://localhost:" + System.getProperty("jetty.port") + "/exist/admin");
 		manager.start();
 		
 		try {

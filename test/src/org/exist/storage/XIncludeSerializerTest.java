@@ -59,8 +59,9 @@ public class XIncludeSerializerTest {
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
 
-    private final static String XMLRPC_URI = "http://127.0.0.1:8088/xmlrpc";
-    private final static String REST_URI = "http://admin:admin@127.0.0.1:8088/db/xinclude_test";
+    // jetty.port.standalone
+    private final static String XMLRPC_URI = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/xmlrpc";
+    private final static String REST_URI = "http://admin:admin@127.0.0.1:" + System.getProperty("jetty.port") + "/db/xinclude_test";
 
     private final static String XML_DATA1 =
     	"<test xmlns:xi='" + XIncludeFilter.XINCLUDE_NS + "'>" +

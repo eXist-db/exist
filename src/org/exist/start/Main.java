@@ -642,6 +642,7 @@ public class Main {
         }
 
         // expathrepo
+	// fixme! - check this expathrepo addition to jetty main. /ljo
         try {
             File repo;
             String existHome = System.getProperty("exist.home");

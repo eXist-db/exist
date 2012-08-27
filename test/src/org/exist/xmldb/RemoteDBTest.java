@@ -35,8 +35,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 public abstract class RemoteDBTest extends TestCase {
 	
 	protected static JettyStart server = null;
-
-	protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";
+    // jetty.port.standalone
+    protected final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
     private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 

@@ -41,8 +41,8 @@ import org.xmldb.api.modules.XQueryService;
 import junit.textui.TestRunner;
 
 public class RemoteQueryTest extends RemoteDBTest {
-
-	private static String uri = "xmldb:exist://localhost:8088/xmlrpc" + XmldbURI.ROOT_COLLECTION;
+    // jetty.port.standalone
+	private static String uri = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
 	
 	private Collection testCollection;
 	private Collection xmlrpcCollection;

@@ -150,7 +150,8 @@ public class DocTest {
 		HttpClient client = new HttpClient();
 
 		// connect to a login page to retrieve session ID
-		PostMethod method = new PostMethod("http://localhost:8080/exist/rest/test/text.xq");
+		// jetty.port.jetty
+		PostMethod method = new PostMethod("http://localhost:" + System.getProperty("jetty.port") + "/exist/rest/test/text.xq");
 
     	System.out.println( client.executeMethod(method) );
 

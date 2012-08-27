@@ -9,9 +9,7 @@ import org.exist.start.Main;
 public class CopyMoveTest extends TestCase {
     
     static Main mn = null;
-    
-    static String query_url = "http://localhost:8080/exist/services/Query";
-    static String admin_url = "http://localhost:8080/exist/services/Admin";
+
     String testColl = "/db/test";
     
     Query query;
@@ -29,13 +27,13 @@ public class CopyMoveTest extends TestCase {
             mn = new Main("jetty");
             mn.run(new String[]{"jetty"});
         }
-        
+
         //super.setUp();
         QueryService service = new QueryServiceLocator();
-        query = service.getQuery(new URL(query_url));
+        query = service.getQuery(new URL(XQueryTest.query_url));
         q_session = query.connect("admin","");
         AdminService aservice = new AdminServiceLocator();
-        admin = aservice.getAdmin(new URL(admin_url));
+        admin = aservice.getAdmin(new URL(XQueryTest.admin_url));
         a_session = admin.connect("admin","");
     }
     

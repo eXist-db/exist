@@ -12,8 +12,8 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
     
-    <description>eXist Open Source Native XML Database</description>
-    <display-name>eXist XML Database</display-name>
+    <description>eXist-db – Open Source Native XML Database</description>
+    <display-name>eXist-db XML Database</display-name>
 
     <!-- 
         Initialize Log4j using a servlet.
@@ -50,9 +50,9 @@
     </servlet>
 
     <!-- 
-        EXistServlet provides Rest access to eXist
+        EXistServlet provides Rest access to eXist-db
 	DatabaseAdminServlet: this servlet can be used to ensure that
-        eXist is running in the background. Just set the start-parameter 
+        eXist-db is running in the background. Just set the start-parameter 
         to true and load-on-startup to 1 
     -->
     <servlet>
@@ -60,7 +60,7 @@
         <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
     
         <!--
-            where to find eXist's configuration file relative to the basedir 
+            where to find eXist-db's configuration file relative to the basedir 
             of the web-application.
         -->
         <init-param>
@@ -69,7 +69,7 @@
         </init-param>
 
         <!-- 
-            eXist's home directory. All file names in the configuration file 
+            eXist-db's home directory. All file names in the configuration file 
             will be relative to this directory.
         -->
         <init-param>

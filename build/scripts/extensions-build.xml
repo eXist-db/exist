@@ -64,7 +64,7 @@
 
  <target name="init" description="Initialize the build."> </target>
 
- <target name="test" description="Run tests.">
+ <target name="test" description="Run tests on extensions.">
   <subant target="test">
    <fileset dir="${existhome.dir}/">
     <include name="extensions/**/extension.xml"/>
@@ -72,7 +72,7 @@
   </subant>
  </target>
 
- <target name="javadoc" description="Generate javadoc.">
+ <target name="javadoc" description="Generate javadoc for extensions.">
 
   <subant target="javadoc">
    <fileset dir="${existhome.dir}/">

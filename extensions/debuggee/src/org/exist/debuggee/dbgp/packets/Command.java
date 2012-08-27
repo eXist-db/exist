@@ -203,6 +203,7 @@ public abstract class Command implements Packet {
 			}
 		} else
 			return "dbgp://"+fileuri.getType().toLowerCase()+fileuri.getKey();
-//		return "http://localhost:8080/eXist/admin/admin.xql";
+		// jetty.port.jetty
+//		return "http://localhost:" + System.getProperty("jetty.port") + "/eXist/admin/admin.xql";
 	}
 }

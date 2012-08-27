@@ -34,7 +34,8 @@ public class FragmentsTest extends ConcurrentTestBase {
         junit.textui.TestRunner.run(FragmentsTest.class);
     }
 
-    private final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc" + XmldbURI.ROOT_COLLECTION;
+    // jetty.port.jetty
+    private final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/exist/xmlrpc" + XmldbURI.ROOT_COLLECTION;
     
     private final static String QUERY =
         "let $node := " +

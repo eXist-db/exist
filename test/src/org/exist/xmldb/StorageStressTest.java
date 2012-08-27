@@ -41,7 +41,8 @@ public class StorageStressTest extends TestCase {
 
 	private static JettyStart server = null;
 	//TODO : why a remote test ?
-	protected final static String URI = "xmldb:exist://localhost:8088/xmlrpc";    
+    // jetty.port.standalone
+	protected final static String URI = "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";    
 	//protected final static String URI = "xmldb:exist://";    
     public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
     private final static String COLLECTION_NAME = "unit-testing-collection";
