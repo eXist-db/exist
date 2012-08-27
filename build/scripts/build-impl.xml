@@ -615,10 +615,7 @@
         <delete failonerror="no" file="conf.xml"/>
     </target>
 
-    <target name="clean-all" description="Cleanup deeper, data is reoved">
-        <!-- javadoc -->
-        <delete dir="${src.webapp}/api"/>
-        
+    <target name="clean-default-data-dir" description="Remove contents in default data directory">
         <!-- valuable data? -->
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
@@ -630,8 +627,12 @@
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
+    </target>
 
-        <!-- derived files -->
+    <target name="clean-all" depends="clean-default-data-dir" description="Cleanup deeper, data is removed">
+        <!-- javadoc -->
+        <delete dir="${src.webapp}/api"/>
+                <!-- derived files -->
         <delete failonerror="no" file="client.properties"/>
         <delete failonerror="no" file="conf.xml"/>
         <delete failonerror="no" file="descriptor.xml"/>
