@@ -93,7 +93,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.jetty
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -102,7 +102,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.jetty
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -115,7 +115,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -124,7 +124,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals("xmlrpc", xmldbURI.getApiName());
@@ -137,7 +137,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -146,7 +146,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -179,7 +179,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -188,7 +188,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -201,7 +201,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -210,7 +210,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -223,7 +223,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -232,7 +232,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -245,7 +245,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -254,7 +254,7 @@ public class XmldbURITest {
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
 	// jetty.port.standalone
-        assertEquals(System.getProperty("jetty.port"), xmldbURI.getPort());
+        assertEquals(System.getProperty("jetty.port"), "" + xmldbURI.getPort());
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
