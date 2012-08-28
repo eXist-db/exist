@@ -97,7 +97,9 @@ public class ModuleContext extends XQueryContext {
                     }
 		        } else {
                     String dir = FileUtils.dirname(location);
-		            if (parentContext.moduleLoadPath.equals(".")) {
+                    if (dir.matches("^[a-z]+:.*")) {
+                        moduleLoadPath = dir;
+                    } else if (parentContext.moduleLoadPath.equals(".")) {
 		                if (! dir.equals(".")) {
 		                    if (dir.startsWith("/"))
 		                        moduleLoadPath = "." + dir;
@@ -316,6 +318,16 @@ public class ModuleContext extends XQueryContext {
 
     public void popLocalVariables(LocalVariable var) {
         parentContext.popLocalVariables(var);
+    }
+
+    @Override
+    public Map<QName, Variable> getLocalVariables() {
+        return parentContext.getLocalVariables();
+    }
+
+    @Override
+    public Map<QName, Variable> getGlobalVariables() {
+        return parentContext.getGlobalVariables();
     }
 
     public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {
