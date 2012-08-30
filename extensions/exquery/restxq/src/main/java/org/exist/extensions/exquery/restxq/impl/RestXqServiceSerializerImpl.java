@@ -43,6 +43,8 @@ import org.exquery.http.HttpResponse;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.impl.serialization.AbstractRestXqServiceSerializer;
 import org.exquery.restxq.impl.serialization.SerializationProperty;
+import org.exquery.serialization.annotation.MethodAnnotation;
+import org.exquery.serialization.annotation.MethodAnnotation.SupportedMethod;
 import org.exquery.xquery.TypedValue;
 import org.xml.sax.SAXException;
 
@@ -114,9 +116,14 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
     private Properties serializationPropertiesToProperties(final Map<SerializationProperty, String> serializationProperties) {
         final Properties props = new Properties();
         
-        //TODO need to check the keys are correct for sax!
         for(final Entry<SerializationProperty, String> serializationProperty : serializationProperties.entrySet()) {
-            props.setProperty(serializationProperty.getKey().name(), serializationProperty.getValue());
+            
+            if(serializationProperty.getKey() == SerializationProperty.METHOD && serializationProperty.getValue().equals(SupportedMethod.html.name())) {
+                //Map HTML -> HTML5 as eXist doesnt have a html serializer that isnt html5
+                props.setProperty(serializationProperty.getKey().name().toLowerCase(), SupportedMethod.html5.name());
+            } else {
+                props.setProperty(serializationProperty.getKey().name().toLowerCase(), serializationProperty.getValue());
+            }
         }
         
         return props;
