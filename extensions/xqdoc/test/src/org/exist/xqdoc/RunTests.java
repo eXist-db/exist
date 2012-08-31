@@ -89,6 +89,9 @@ public class RunTests {
 	public static void tearDownAfterClass() {
 		files = null;
 		try {
+			Collection root =
+				DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+				
 			DatabaseInstanceManager dim =
 			    (DatabaseInstanceManager) root.getService(
 			        "DatabaseInstanceManager", "1.0");
