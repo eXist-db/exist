@@ -335,4 +335,14 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             Collection collection) throws TriggerException {
         // Ignored
     }
+
+    @Override
+    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // ToDo to be implemented
+    }
+
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // ToDO to be implemented
+    }
 }
