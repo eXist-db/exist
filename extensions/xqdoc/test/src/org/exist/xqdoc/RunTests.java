@@ -90,7 +90,7 @@ public class RunTests {
 		files = null;
 		try {
 			DatabaseInstanceManager dim =
-			    (DatabaseInstanceManager) testCollection.getService(
+			    (DatabaseInstanceManager) root.getService(
 			        "DatabaseInstanceManager", "1.0");
 			dim.shutdown();
 		} catch (Exception e) {
