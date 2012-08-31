@@ -354,22 +354,24 @@ public class JMSMessageListener implements MessageListener {
                 // Stream into database
                 VirtualTempFile vtf = new VirtualTempFile(em.getPayload());
                 VirtualTempFileInputSource vt = new VirtualTempFileInputSource(vtf);
-                InputStream bis = vt.getByteStream();
+                InputStream byteInputStream = vt.getByteStream();
 
-                GZIPInputStream gis = new GZIPInputStream(bis);
-                InputSource is = new InputSource(gis);
+                // DW: future improvement: determine compression based on property.
+                
+                GZIPInputStream gis = new GZIPInputStream(byteInputStream);
+                InputSource inputsource = new InputSource(gis);
 
-                IndexInfo info = collection.validateXMLResource(txn, broker, docURI, is);
+                IndexInfo info = collection.validateXMLResource(txn, broker, docURI, inputsource);
                 doc = info.getDocument();
                 doc.getMetadata().setMimeType(mimeType);
 
                 // reconstruct gzip input stream
-                bis.reset();
-                gis = new GZIPInputStream(bis);
-                is = new InputSource(gis);
+                byteInputStream.reset();
+                gis = new GZIPInputStream(byteInputStream);
+                inputsource = new InputSource(gis);
 
-                collection.store(txn, broker, info, is, false);
-                is.getByteStream().close();
+                collection.store(txn, broker, info, inputsource, false);
+                inputsource.getByteStream().close();
 
             } else {
 
