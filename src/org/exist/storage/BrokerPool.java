@@ -773,12 +773,14 @@ public class BrokerPool extends Observable implements Database {
         return true;
     }
     
-    /**Initializes the database instance.
-	 * @throws EXistException
-	 */
-	protected void initialize() throws EXistException, DatabaseConfigurationException {
-        if (LOG.isDebugEnabled())
+    /**
+     * Initializes the database instance.
+     * @throws EXistException
+     */
+    protected void initialize() throws EXistException, DatabaseConfigurationException {
+        if(LOG.isDebugEnabled()) {
             LOG.debug("initializing database instance '" + instanceName + "'...");
+        }
         
         //Flag to indicate that we are initializing
         status = INITIALIZING;
@@ -786,7 +788,7 @@ public class BrokerPool extends Observable implements Database {
         statusReporter = new StatusReporter(SIGNAL_STARTUP);
         statusReporter.start();
 
-        boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
+        final boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
         //create the security manager
         securityManager = new SecurityManagerImpl(this);
@@ -804,13 +806,14 @@ public class BrokerPool extends Observable implements Database {
         xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
         int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
-        if(bufferSize == -1)
-        	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
+        if(bufferSize == -1) {
+            bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
+        }
         collectionCache = new CollectionCache(this, bufferSize, 0.0001);
         collectionCacheMgr = new CollectionCacheManager(this, collectionCache);
 
         // compute how much memory should be reserved for caches to grow
-        Runtime rt = Runtime.getRuntime();
+        final Runtime rt = Runtime.getRuntime();
         long maxMem = rt.maxMemory();
         long minFree = maxMem / 5;
         reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
@@ -836,154 +839,157 @@ public class BrokerPool extends Observable implements Database {
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
         // create a first broker to initialize the security manager
-		//createBroker();
+                //createBroker();
 		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
         // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
 		//DBBroker broker = inactiveBrokers.peek();
 		// dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
-		DBBroker broker = get(securityManager.getSystemSubject());
-		try {
+        final DBBroker broker = get(securityManager.getSystemSubject());
+        try {
        
-        if (isReadOnly()) {
-            transactionManager.setEnabled(false);
-        }
+            if(isReadOnly()) {
+                transactionManager.setEnabled(false);
+            }
         
-		//Run the recovery process
-        //TODO : assume 
-        boolean recovered = false;
-		if (isTransactional()) {
-			recovered = transactionManager.runRecovery(broker);
-            //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
-            if (!recovered) {
-                try {
-                    if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
-                        Txn txn = transactionManager.beginTransaction();
-                        try {
-                            //TODO : use a root collection final member
-                            broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
-                            transactionManager.commit(txn);
-                        } catch (IOException e) {
-                            transactionManager.abort(txn);
-                        } catch (PermissionDeniedException e) {
-                            transactionManager.abort(txn);
-                        } catch (TriggerException e) {
-                            transactionManager.abort(txn);
+            //Run the recovery process
+            //TODO : assume 
+            boolean recovered = false;
+            if(isTransactional()) {
+                recovered = transactionManager.runRecovery(broker);
+                //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
+                if(!recovered) {
+                    try {
+                        if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
+                            final Txn txn = transactionManager.beginTransaction();
+                            try {
+                                //TODO : use a root collection final member
+                                broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
+                                transactionManager.commit(txn);
+                            } catch (IOException e) {
+                                transactionManager.abort(txn);
+                            } catch (PermissionDeniedException e) {
+                                transactionManager.abort(txn);
+                            } catch (TriggerException e) {
+                                transactionManager.abort(txn);
+                            }
                         }
+                    } catch(PermissionDeniedException pde) {
+                        LOG.fatal(pde.getMessage(), pde);
                     }
-                } catch(PermissionDeniedException pde) {
-                    LOG.fatal(pde.getMessage(), pde);
                 }
             }
-        }
 
-        /* initialise required collections if they dont exist yet */
-        if(!exportOnly) {
+            /* initialise required collections if they dont exist yet */
+            if(!exportOnly) {
+                try {
+                    initialiseSystemCollections(broker);
+                } catch(PermissionDeniedException pde) {
+                    LOG.error(pde.getMessage(), pde);
+                    throw new EXistException(pde.getMessage(), pde);
+                }
+            }
+        
+            //create the plugin manager
+            pluginManager = new PluginsManagerImpl(this, broker);
+
+            //TODO : from there, rethink the sequence of calls.
+            // WM: attention: a small change in the sequence of calls can break
+            // either normal startup or recovery.
+        
+            status = OPERATING;
+
+            statusReporter.setStatus(SIGNAL_READINESS);
+
+            //Get a manager to handle further collections configuration
+            initCollectionConfigurationManager(broker);
+
+
+            //wake-up the plugins manager
+            pluginManager.startUp(broker);
+
+            //wake-up the security manager
+            securityManager.attach(this, broker);
+
+            //have to do this after initializing = false
+            // so that the policies collection is saved
+            if(securityManager.isXACMLEnabled()) {
+                securityManager.getPDP().initializePolicyCollection();
+            }
+		
+            //If necessary, launch a task to repair the DB
+            //TODO : merge this with the recovery process ?
+            if(recovered) {
+                try {
+                    broker.repair();
+                } catch (PermissionDeniedException e) {
+                    LOG.warn("Error during recovery: " + e.getMessage(), e);
+                }
+                
+                if(((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
+                    final ConsistencyCheckTask task = new ConsistencyCheckTask();
+                    final Properties props = new Properties();
+                    props.setProperty("backup", "no");
+                    props.setProperty("output", "sanity");
+                    task.configure(conf, props);
+                    task.execute(broker);
+                }
+            }
+
+            //OK : the DB is repaired; let's make a few RW operations
+            statusReporter.setStatus(SIGNAL_WRITABLE);
+
+            //initialize configurations watcher trigger
             try {
-                initialiseSystemCollections(broker);
+        	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
+            } catch(PermissionDeniedException pde) {
+                //XXX: do not catch exception!
+                LOG.error(pde.getMessage(), pde);
+            }
+
+            // remove temporary docs
+            try {
+                broker.cleanUpTempResources(true);
             } catch(PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
-                throw new EXistException(pde.getMessage(), pde);
             }
+
+            sync(broker, Sync.MAJOR_SYNC);
+        
+            //require to allow access by BrokerPool.getInstance();  
+            instances.put(instanceName, this);
+        } finally {
+            release(broker);
         }
         
-    	//create the plugin manager
-    	pluginManager = new PluginsManagerImpl(this, broker);
-
-        //TODO : from there, rethink the sequence of calls.
-        // WM: attention: a small change in the sequence of calls can break
-        // either normal startup or recovery.
-        
-		status = OPERATING;
-
-        statusReporter.setStatus(SIGNAL_READINESS);
-
-        //Get a manager to handle further collections configuration
-        initCollectionConfigurationManager(broker);
-        
-        
-        //wake-up the plugins manager
-        pluginManager.startUp(broker);
-        
-        //wake-up the security manager
-        securityManager.attach(this, broker);
-
-		//have to do this after initializing = false
-		// so that the policies collection is saved
-		if(securityManager.isXACMLEnabled())
-			securityManager.getPDP().initializePolicyCollection();
-		
-        //If necessary, launch a task to repair the DB
-        //TODO : merge this with the recovery process ?
-        if (recovered) {
-            try {
-                broker.repair();
-            } catch (PermissionDeniedException e) {
-                LOG.warn("Error during recovery: " + e.getMessage(), e);
-            }
-            if (((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
-                ConsistencyCheckTask task = new ConsistencyCheckTask();
-                Properties props = new Properties();
-                props.setProperty("backup", "no");
-                props.setProperty("output", "sanity");
-                task.configure(conf, props);
-                task.execute(broker);
-            }
-        }
-
-        //OK : the DB is repaired; let's make a few RW operations
-        statusReporter.setStatus(SIGNAL_WRITABLE);
-
-        //initialize configurations watcher trigger
-        try {
-        	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
-            
-        } catch(PermissionDeniedException pde) {
-        	//XXX: do not catch exception!
-            LOG.error(pde.getMessage(), pde);
-        }
-
-        // remove temporary docs
-        try {
-            broker.cleanUpTempResources(true);
-        } catch(PermissionDeniedException pde) {
-            LOG.error(pde.getMessage(), pde);
-        }
-
-        sync(broker, Sync.MAJOR_SYNC);
-        
-        	//require to allow access by BrokerPool.getInstance();  
-        	instances.put(instanceName, this);
-		} finally {
-			release(broker);
-		}
-        
-		//Create a default configuration file for the root collection
-		//TODO : why can't we call this from within CollectionConfigurationManager ?
-		//TODO : understand why we get a test suite failure
+        //Create a default configuration file for the root collection
+        //TODO : why can't we call this from within CollectionConfigurationManager ?
+        //TODO : understand why we get a test suite failure
         //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
         //collectionConfigurationManager.checkRootCollectionConfig(broker);		
 
 
-/* TODO: start adam */
+        /* TODO: start adam */
 		
-		//Schedule the system tasks	            
-	    /*for (int i = 0; i < systemTasks.size(); i++) {
-	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
-	        initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
-	    }		
+        //Schedule the system tasks	            
+        /*for (int i = 0; i < systemTasks.size(); i++) {
+            //TODO : remove first argument when SystemTask has a getPeriodicity() method
+            initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
+        }		
 		systemTasksPeriods = null;*/
 		
-/* TODO: end adam */		
+        /* TODO: end adam */		
 
-		//Create the minimal number of brokers required by the configuration 
-		for (int i = 1; i < minBrokers; i++)
-			createBroker();        
+        //Create the minimal number of brokers required by the configuration 
+        for(int i = 1; i < minBrokers; i++) {
+            createBroker();      
+        }
 
         // register some MBeans to provide access to this instance
         AgentFactory.getInstance().initDBInstance(this);
 
-        if (LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("database instance '" + instanceName + "' initialized");
+        }
 
         //setup any configured jobs
         //scheduler.setupConfiguredJobs();
@@ -998,10 +1004,10 @@ public class BrokerPool extends Observable implements Database {
         statusReporter = null;
 
         callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
-	}
+    }
 	    
-	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
-	//TODO : make it protected ?
+    //TODO : remove the period argument when SystemTask has a getPeriodicity() method
+    //TODO : make it protected ?
     /*private void initSystemTask(SingleInstanceConfiguration.SystemTaskConfig config, SystemTask task) throws EXistException {
         try {
             if (config.getCronExpr() == null) {
