@@ -957,6 +957,8 @@ public class BrokerPool extends Observable implements Database {
         
             //require to allow access by BrokerPool.getInstance();  
             instances.put(instanceName, this);
+            
+            callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
         } finally {
             release(broker);
         }
@@ -1002,8 +1004,6 @@ public class BrokerPool extends Observable implements Database {
         statusReporter.setStatus(SIGNAL_STARTED);
         statusReporter.terminate();
         statusReporter = null;
-
-        callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
     }
 	    
     //TODO : remove the period argument when SystemTask has a getPeriodicity() method
@@ -1025,13 +1025,13 @@ public class BrokerPool extends Observable implements Database {
         }
     }*/
 
-    private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker broker) {
-        for(String startupTriggerClass : startupTriggerClasses) {
-            
+    private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker sysBroker) {
+        
+        for(final String startupTriggerClass : startupTriggerClasses) {
             try {
                 final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerClass);
                 final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(broker);
+                startupTrigger.execute(sysBroker);
             } catch(ClassNotFoundException cnfe) {
                 LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + cnfe.getMessage(), cnfe);
             } catch(InstantiationException ie) {

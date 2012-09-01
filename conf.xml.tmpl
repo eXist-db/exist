@@ -152,12 +152,16 @@
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
 		doc-ids="default">
 
-	<!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
-	<startup>
-		<triggers>
-			<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-		</triggers>
-	</startup>
+       	<!--
+       	    Startup Triggers are executed before the database becomes generally available
+       	    for service and have complete access to the database as the SYSTEM broker
+       	-->
+       	<startup>
+       		<triggers>
+       		    <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
+       			<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+       		</triggers>
+       	</startup>
 
 
         <!-- 
