@@ -46,8 +46,10 @@ import org.exist.storage.ProcessMonitor;
 import org.exist.xquery.AbstractExpression;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.VariableDeclaration;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
@@ -115,6 +117,16 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             final UserDefinedFunction fn = findFunction(xquery, resourceFunction.getFunctionSignature());
             
             final XQueryContext xqueryContext = xquery.getContext();
+            
+            //START workaround: evaluate global variables in modules, as they are reset by XQueryContext.reset()
+            final Expression rootExpr = xqueryContext.getRootExpression();
+            for(int i = 0; i < rootExpr.getSubExpressionCount(); i++) {
+                final Expression subExpr = rootExpr.getSubExpression(i);
+                if(subExpr instanceof VariableDeclaration) {
+                    subExpr.eval(null);
+                }
+            }
+            //END workaround
             
             //setup monitoring
             processMonitor = broker.getBrokerPool().getProcessMonitor();
