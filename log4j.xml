@@ -90,6 +90,16 @@
         </layout>
     </appender>
     
+    <appender name="exist.restxq" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/restxq.log"/>
+        <param name="MaxFileSize" value="5MB"/>
+        <param name="MaxBackupIndex" value="3"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
     <!--
     <appender name="exist.statistics" class="org.apache.log4j.RollingFileAppender">
         <param  name="File" value="${exist.home}/webapp/WEB-INF/logs/statistics.log"/>
@@ -165,7 +175,11 @@
         <priority value="info"/>
         <appender-ref ref="exist.urlrewrite"/>
 	</category>
-        
+    
+    <category name="org.exist.extensions.exquery.restxq" additivity="false">
+        <priority value="info"/>
+        <appender-ref ref="exist.restxq"/>
+    </category>    
         
     <!-- Logging 3rd party libraries -->
   
