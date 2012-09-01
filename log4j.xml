@@ -219,7 +219,7 @@
 
     <!-- ========[ROOT logger]======== -->
     <root>
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="exist.core"/>
     </root>
     
