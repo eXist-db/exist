@@ -76,7 +76,6 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
         //reset the state of the query
         xquery.reset();
         xquery.getContext().getWatchDog().reset();
-        xquery.getContext().reset();
         xquery.getContext().prepareForExecution();
         
         return xquery;
@@ -90,6 +89,10 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
             if(queries == null) {
                 queries = new Stack<CompiledXQuery>();
             }
+            
+            //reset the query and context
+            xquery.reset();
+            xquery.getContext().reset();
             
             queries.push(xquery);
             
