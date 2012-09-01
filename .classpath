@@ -35,6 +35,7 @@
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
 	<classpathentry kind="src" path="extensions/commands/src"/>
+	<classpathentry kind="src" path="extensions/replication/src"/>
 	<classpathentry kind="lib" path="lib/core/pkg-repo.jar"/>
 	<classpathentry kind="lib" path="lib/user/smack.jar"/>
 	<classpathentry kind="lib" path="lib/user/smackx.jar"/>
@@ -78,6 +79,7 @@
 	<classpathentry kind="lib" path="extensions/exquery/restxq/lib/exquery-restxq-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/core/clj-ds-0.0.1.jar"/>
 	<classpathentry kind="lib" path="extensions/modules/lib/cql-java-1.10.jar"/>
+	<classpathentry kind="lib" path="extensions/replication/lib/activemq-all-5.6.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
