@@ -113,27 +113,32 @@ public class XQueryInspector {
         
         final String xqueryUri = getDbUri(xqyCtx.getSource());
         Set<String> depSet = dependencies.get(xqueryUri);
+        if(depSet == null) {
         
-        final Iterator<Module> itModule = xqyCtx.getModules();
-        while(itModule.hasNext()) {
-            final Module module = itModule.next();
-            if(module instanceof ExternalModule) {
-                final ExternalModule extModule = (ExternalModule)module;
-                final Source source = extModule.getSource();
-                if(source instanceof DBSource) {
-                    final String moduleUri = getDbUri(source);
-                    if(depSet == null) {
-                        depSet = new HashSet<String>();
+            final Iterator<Module> itModule = xqyCtx.getModules();
+            while(itModule.hasNext()) {
+                final Module module = itModule.next();
+                if(module instanceof ExternalModule) {
+                    final ExternalModule extModule = (ExternalModule)module;
+                    final Source source = extModule.getSource();
+                    if(source instanceof DBSource) {
+                        final String moduleUri = getDbUri(source);
+                        if(depSet == null) {
+                            depSet = new HashSet<String>();
+                        }
+                        depSet.add(moduleUri);
+                        
+                        /*
+                         * must merge map here as recursive function
+                         * can cause problems with recursive
+                         * module imports m1 -> m2 -> m2 -> m1
+                         */
+                        dependencies.put(xqueryUri, depSet);
                     }
-                    depSet.add(moduleUri);
+
+                    getDependencies(extModule.getContext(), dependencies);
                 }
-                
-                getDependencies(extModule.getContext(), dependencies);
             }
-        }
-        
-        if(depSet != null) {
-            dependencies.put(xqueryUri, depSet);
         }
     }
     
