@@ -449,11 +449,12 @@ public class Configuration implements ErrorHandler
 
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
-            LOG.warn( "Configuration problem: failed to load class for module " + uri
-                    + "; class: " + clazz + "; message: " + e.getMessage(), e );
+            LOG.error( "Configuration problem: class not found for module '" + uri
+                    + "' (ClassNotFoundException); class:'" + clazz 
+                    + "'; message:'" + e.getMessage() + "'");
 
         } catch( NoClassDefFoundError e ) {
-            LOG.warn( "Module " + uri + " could not be initialized due to a missing "
+            LOG.error( "Module " + uri + " could not be initialized due to a missing "
                     + "dependancy (NoClassDefFoundError): " + e.getMessage(), e );
         }
 
