@@ -26,15 +26,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
+import java.util.Map.Entry;
 import org.apache.log4j.Logger;
-
-import org.exist.collections.Collection;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
@@ -56,8 +58,22 @@ public class RestXqTrigger extends FilteringTrigger {
     
     protected final static Logger LOG = Logger.getLogger(RestXqTrigger.class);
     
+    /**
+     * Key is XQuery Module URI
+     * Value is set of XQuery Module URIs on which the Module indicated by the Key depends on
+     */
     final static Map<String, Set<String>> dependenciesTree = new HashMap<String, Set<String>>();
+    
+    /**
+     * Key is the missing Module URI
+     * Value is the Set of XQuery Module URIs that require the missing Module indicated by the Key
+     */
     final static Map<String, Set<String>> missingDependencies = new HashMap<String, Set<String>>();
+    
+    /**
+     * The list of XQuerys that could not be compiled
+     * for reasons other than missing dependencies
+     */
     final static Set<String> invalidQueries = new HashSet<String>();
     
     @Override
@@ -76,46 +92,42 @@ public class RestXqTrigger extends FilteringTrigger {
 
     @Override
     public void afterCreateDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document) throws TriggerException {
-        //TOOD ideally the compilation step would be in beforeCreateDocument - but we cant access the new module source at that point!
-        final List<RestXqService> services = findServices(broker, document);
-        registerServices(broker, services);
+        after(broker, document);
     }
 
     @Override
     public void beforeUpdateDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document) throws TriggerException {
-        deregisterServices(broker, document.getURI());
+        before(broker, document);
     }
 
     @Override
     public void afterUpdateDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document) throws TriggerException {
-        //TOOD ideally the compilation step would be in beforeUpdateDocument - but we cant access the new module source at that point!
-        final List<RestXqService> services = findServices(broker, document);
-        registerServices(broker, services);
+        after(broker, document);
     }
 
     @Override
     public void beforeCopyDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document, final XmldbURI newUri) throws TriggerException {
-        
+        before(broker, document);
     }
 
     @Override
     public void afterCopyDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document, final XmldbURI oldUri) throws TriggerException {
-     
+        after(broker, document);
     }
 
     @Override
     public void beforeMoveDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document, final XmldbURI newUri) throws TriggerException {
-     
+        before(broker, document);
     }
 
     @Override
     public void afterMoveDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document, final XmldbURI oldUri) throws TriggerException {
-        
+        after(broker, document);
     }
 
     @Override
     public void beforeDeleteDocument(final DBBroker broker, final Txn transaction, final DocumentImpl document) throws TriggerException {
-        deregisterServices(broker, document.getURI());
+        before(broker, document);
     }
 
     @Override
@@ -123,63 +135,177 @@ public class RestXqTrigger extends FilteringTrigger {
         
     }
     
-    private void registerServices(final DBBroker broker, final List<RestXqService> services) throws TriggerException {
+    @Override
+    public void beforeUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
+    }
+
+    @Override
+    public void afterUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
+    }
+    
+    private void before(final DBBroker broker, final DocumentImpl document) {
+        if(isXquery(document)) {
+            deregisterServices(broker, document.getURI());
+        }
+    }
+    
+    private void after(final DBBroker broker, final DocumentImpl document) throws TriggerException {
+        if(isXquery(document)) {
+            try {
+                final List<RestXqService> services = findServices(broker, document);
+                registerServices(broker, services);
+            } catch(final ExQueryException eqe) {
+               throw new TriggerException(eqe.getMessage(), eqe);
+            }
+        }
+    }
+    
+    private boolean isXquery(final DocumentImpl document) {
+         return document instanceof BinaryDocument && document.getMetadata().getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
+    }
+    
+    private void registerServices(final DBBroker broker, final List<RestXqService> services) {
         getRegistry(broker).register(services);
     }
     
-    private void deregisterServices(final DBBroker broker, final XmldbURI xqueryLocation) throws TriggerException{
+    private void deregisterServices(final DBBroker broker, final XmldbURI xqueryLocation) {
+        
         getRegistry(broker).deregister(xqueryLocation.getURI());
         
-        //TODO check the dependencies tree:
-        //1) remove dependant xquery module services
-        //2) update the missingDependencies 
+        //find and remove services from modules that depend on this one
+        for(final String dependant : getDependants(xqueryLocation)) {
+            try {
+                getRegistry(broker).deregister(new URI(dependant));
+            } catch(final URISyntaxException urise) {
+                LOG.error(urise.getMessage(), urise);
+            }
+        }
+        
+        /*
+         * update the missingDependencies??
+         * Probaly not needed as this will be done in find services
+         */
     }
     
-    private List<RestXqService> findServices(final DBBroker broker, final DocumentImpl document) throws TriggerException {
+    private Set<String> getDependants(final XmldbURI xqueryLocation) {
+        final Set<String> dependants = new HashSet<String>();
         
-        //ensure we have a binary document with the correct mimetype
-        if(document instanceof BinaryDocument) {
-            final DocumentMetadata metadata = document.getMetadata();
-            if(metadata.getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE)){
-                try {
-                    final CompiledXQuery compiled = XQueryCompiler.compile(broker, document);
-                    
-                    /*
-                     * examine the compiled query, record all modules and modules of modules.
-                     * Keep a dependencies list so that we can act on it if a module is deleted.
-                     */ 
-                    final Map<String, Set<String>> queryDependenciesTree = XQueryInspector.getDependencies(compiled);
-                    recordQueryDependenciesTree(queryDependenciesTree);
-                    
-                    //TODO
-                    
-                    //2) re-compile and examine any queries with missing dependencies,
-                    //that have been resolved (just call this function and register fn per module) (could/should be done asynchronously)
-                    
-                    //3) remove any re-compiled query from the invalid queries list
-                    
-                    return XQueryInspector.findServices(compiled);
-                } catch(final RestXqServiceCompilationException rxsce) {
-                    
-                    //if there was a missing dependency then record it
-                    final String missingModuleHint = extractMissingModuleHint(rxsce);
-                    if(missingModuleHint != null) {
-                        recordMissingDependency(missingModuleHint, document.getURI());
-                    } else {
-                        recordInvalidQuery(document.getURI());
-                        LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage(), rxsce);
-                    }
-                } catch(final ExQueryException eqe) {
-                    throw new TriggerException(eqe.getMessage(), eqe);
+        //make a copy of the dependenciesTree into depTree
+        final Map<String, Set<String>> depTree;
+        synchronized(dependenciesTree) {
+            depTree = new HashMap<String, Set<String>>(dependenciesTree);
+        }
+        
+        //find all modules that have a dependency on this one
+        for(final Entry<String, Set<String>> depTreeEntry : depTree.entrySet()) {
+            for(String dependency : depTreeEntry.getValue()) {
+                if(dependency.equals(xqueryLocation.toString())) {
+                    dependants.add(depTreeEntry.getKey());
+                    continue;
                 }
             }
+        }
+        return dependants;
+    }
+    
+    private List<RestXqService> findServices(final DBBroker broker, final DocumentImpl document) throws ExQueryException {
+        
+        try {
+            final CompiledXQuery compiled = XQueryCompiler.compile(broker, document);
+
+            /*
+             * examine the compiled query, record all modules and modules of modules.
+             * Keep a dependencies list so that we can act on it if a module is deleted.
+             */ 
+            final Map<String, Set<String>> queryDependenciesTree = XQueryInspector.getDependencies(compiled);
+            recordQueryDependenciesTree(queryDependenciesTree);
+
+            /*
+             * A compiled query may be a missing dependency for another query
+             * so reexamine queries with missing dependencies
+             */
+            reexamineModulesWithResolvedDependencies(broker, document.getURI().toString());
+
+            /*
+             * remove any potentially re-compiled query from the
+             * invalid queries list
+             */ 
+            removeInvalidQuery(document.getURI());
+
+            return XQueryInspector.findServices(compiled);
+        } catch(final RestXqServiceCompilationException rxsce) {
+
+            //if there was a missing dependency then record it
+            final String missingModuleHint = extractMissingModuleHint(rxsce);
+            if(missingModuleHint != null) {
+                recordMissingDependency(missingModuleHint, document.getURI());
+            } else {
+                recordInvalidQuery(document.getURI());
+                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage(), rxsce);
+            }
+
+            /*
+             * This may be the recompilation of a query
+             * so we should unregister any of its missing
+             * services. Luckily this is taken care of in
+             * the before{EVENT} trigger functions
+             */
         }
         
         return new ArrayList<RestXqService>();
     }
     
+   
+    /**
+     * Gets the modules that have a missing dependency
+     * on the module indicated by compiledModuleURI
+     * and attempts to re-compile them and register their
+     * services
+     */
+    private void reexamineModulesWithResolvedDependencies(final DBBroker broker, final String compiledModuleUri) {
+        
+        final Set<String> dependants;
+        synchronized(missingDependencies) {
+            final Set<String> deps = missingDependencies.get(compiledModuleUri);
+            if(deps != null) {
+                dependants = new HashSet(deps);
+            } else {
+                dependants = new HashSet();
+            }
+        }
+        
+        for(final String dependant : dependants) {
+            
+            try {
+                LOG.info("Missing dependency '" + compiledModuleUri +"' has been added to the database, re-examining '" + dependant + "'...");
+                
+                final DocumentImpl dependantModule = broker.getResource(XmldbURI.create(dependant), Permission.READ);
+                final List<RestXqService> services = findServices(broker, dependantModule);
+                registerServices(broker, services);
+            } catch(final PermissionDeniedException pde) {
+                LOG.error(pde.getMessage(), pde);
+            } catch(final ExQueryException eqe) {
+                
+            }
+            
+            //remove the resolve dependecies from the missing dependencies
+            synchronized(missingDependencies) {
+                final Set<String> missingDependants = missingDependencies.get(compiledModuleUri);
+                missingDependants.remove(dependant);
+                if(missingDependants.isEmpty()) {
+                    missingDependencies.remove(compiledModuleUri);
+                }
+            }
+        }
+    }
+    
     private void recordQueryDependenciesTree(final Map<String, Set<String>> queryDependenciesTree) {
         synchronized(dependenciesTree) {
+            
+            //Its not a merge its an ovewrite!
+            dependenciesTree.putAll(queryDependenciesTree);
+            
+            /*
             for(final String key : queryDependenciesTree.keySet()) {
                 Set<String> dependencies = dependenciesTree.get(key);
                 if(dependencies == null) {
@@ -187,9 +313,14 @@ public class RestXqTrigger extends FilteringTrigger {
                 } else {
                     dependencies.addAll(queryDependenciesTree.get(key));
                 }
-                
-                dependenciesTree.put(key, dependencies);
-            }
+                dependenciesTree.put(key, dependencies); 
+            }*/
+        }
+    }
+    
+    private void removeInvalidQuery(final XmldbURI xqueryUri) {
+        synchronized(invalidQueries) {
+            invalidQueries.remove(xqueryUri.toString());
         }
     }
     
@@ -247,12 +378,4 @@ public class RestXqTrigger extends FilteringTrigger {
     private RestXqServiceRegistry getRegistry(final DBBroker broker) {
         return RestXqServiceRegistryManager.getRegistry(broker.getBrokerPool());
     }
-
-	@Override
-	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
-
-	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
 }
