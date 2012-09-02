@@ -31,9 +31,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
-import org.exist.xmldb.XmldbURI;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.TypeAdapter;
@@ -43,6 +43,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ProcessMonitor;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AbstractExpression;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
@@ -54,6 +55,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DateValue;
@@ -83,6 +87,8 @@ import org.exquery.xquery3.FunctionSignature;
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
+    
+    private final static Logger LOG = Logger.getLogger(ResourceFunctionExecutorImpl.class);
     
     private final BrokerPool brokerPool;
 
@@ -242,38 +248,57 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     }
 
     
-    //TODO this needs to be abstracted into EXQuery library
-    private <X> TypedValue<X> convertToType(final TypedValue typedValue, final org.exquery.xquery.Type destinationType, final Class<X> underlyingDestinationClass) throws RestXqServiceException {
+    //TODO this needs to be abstracted into EXQuery library / or not, see the TODOs below
+    private <X> TypedValue<X> convertToType(final XQueryContext xqueryContext, final String argumentName, final TypedValue typedValue, final org.exquery.xquery.Type destinationType, final Class<X> underlyingDestinationClass) throws RestXqServiceException {
         
-        //TODO check type conversion from typedValue.getType() -> destinationType is even possible? if not throw exception
         //TODO consider changing Types that can be used as <T> to TypedValue to a set of interfaces for XDM types that
         //require absolute minimal implementation, and we provide some default or abstract implementations if possible
         
         final Item convertedValue;
         try {
-            convertedValue = new StringValue((String)typedValue.getValue()).convertTo(TypeAdapter.toExistType(destinationType));
-        } catch(XPathException xpe) {
-            throw new RestXqServiceException("TODO need to implement error code for problem with parameter conversion!");
-        }
-        
-        if(typedValue.getType() == org.exquery.xquery.Type.STRING) {
+            final int existDestinationType = TypeAdapter.toExistType(destinationType);
             
-            return new TypedValue<X>() {
-
-                @Override
-                public org.exquery.xquery.Type getType() {
-                    return destinationType;
-                }
-
-                @Override
-                public X getValue() {
-                    return (X)convertedValue;
-                }
-            };
+            final Item value;
             
-        } else {
-            return null;
+            //TODO This type system is a complete mess:
+            //EXQuery XDM should not have any concrete types, just interfaces
+            //some of the abstract code in EXQuery needs to be able to instantiate types.
+            //Consider a factory or java.util.ServiceLoader pattern
+            if(typedValue instanceof org.exquery.xdm.type.StringTypedValue) {
+                value = new StringValue(((org.exquery.xdm.type.StringTypedValue)typedValue).getValue());
+            } else if(typedValue instanceof org.exquery.xdm.type.Base64BinaryTypedValue) {
+                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue());
+            } else {
+                value = (Item)typedValue.getValue();
+            }
+
+            if(existDestinationType == value.getType()) {
+                convertedValue = value;
+            } else if(value instanceof AtomicValue) {
+                convertedValue = value.convertTo(existDestinationType);
+            } else {
+                LOG.warn("Could not convert parameter '" + argumentName + "' from '" + typedValue.getType().name() + "' to '" + destinationType.name() + "'.");
+                convertedValue = value;
+            }
+            
+        } catch(final XPathException xpe) {
+            //TODO define an ErrorCode
+            throw new RestXqServiceException("TODO need to implement error code for problem with parameter conversion!: " +  xpe.getMessage(), xpe);
         }
+            
+        return new TypedValue<X>() {
+
+            @Override
+            public org.exquery.xquery.Type getType() {
+                //return destinationType;
+                return TypeAdapter.toExQueryType(convertedValue.getType());
+            }
+
+            @Override
+            public X getValue() {
+                return (X)convertedValue;
+            }
+        };
     }
     
     private org.exist.xquery.value.Sequence convertToExistSequence(final XQueryContext xqueryContext, final TypedArgumentValue argument, final int fnParameterType) throws RestXqServiceException, XPathException  {
@@ -344,7 +369,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                     destinationClass = Item.class;
             }
             
-            final TypedValue<? extends Item> val = convertToType(value, destinationType, destinationClass);
+            final TypedValue<? extends Item> val = convertToType(xqueryContext, argument.getArgumentName(), value, destinationType, destinationClass);
             
             sequence.add(val.getValue());
         }
