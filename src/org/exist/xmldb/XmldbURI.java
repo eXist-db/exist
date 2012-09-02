@@ -81,6 +81,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
 
     /** '/db/system' **/
     public final static XmldbURI SYSTEM = create(SYSTEM_COLLECTION);
+    /** '/db/system' **/
+    @Deprecated
     public final static XmldbURI SYSTEM_COLLECTION_URI = create(SYSTEM_COLLECTION);
     
     @Deprecated
