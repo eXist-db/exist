@@ -37,6 +37,7 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldClassMask;
 import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -49,7 +50,8 @@ import org.exist.xmldb.XmldbURI;
 @ConfigurationClass("scheduler")
 public class SchedulerManager implements Configurable, Startable {
 
-	private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("scheduler");
+	/* /db/system/scheduler */
+	private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
 	private final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("scheduler.xml");
 
     private final static Logger LOG = Logger.getLogger(SchedulerManager.class);
@@ -64,8 +66,10 @@ public class SchedulerManager implements Configurable, Startable {
 	private Configuration configuration = null;
 	
 	protected final org.quartz.Scheduler scheduler;
+	protected Database db;
 	
 	public SchedulerManager(Database db) {
+		this.db = db;
 		scheduler = db.getScheduler().getScheduler();
 	}
 
@@ -76,23 +80,13 @@ public class SchedulerManager implements Configurable, Startable {
         Txn txn = null;
 		
         Collection systemCollection = null;
-        try {
-	        systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-                if(systemCollection == null) {
-                    txn = transaction.beginTransaction();
-                    systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-                    if (systemCollection == null)
-                            return;
-                    systemCollection.setPermissions(0770);
-                    broker.saveCollection(txn, systemCollection);
-
-                    transaction.commit(txn);
-                }
-        } catch (Exception e) {
-            transaction.abort(txn);
-            e.printStackTrace();
-            LOG.debug("loading acl failed: " + e.getMessage());
-        }
+		try {
+			systemCollection = broker.getCollection(XmldbURI.SYSTEM);
+	        if(systemCollection == null)
+	        	throw new EXistException("/db/system collecton does not exist!");
+		} catch (PermissionDeniedException e) {
+			throw new EXistException(e);
+		}
 
         try {
             collection = broker.getCollection(COLLECTION_URI);
@@ -113,7 +107,7 @@ public class SchedulerManager implements Configurable, Startable {
         } catch (Exception e) {
             transaction.abort(txn);
             e.printStackTrace();
-            LOG.debug("loading configuration failed: " + e.getMessage());
+            LOG.debug("loading configuration failed: " + e.getMessage(), e);
         }
 
         Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
@@ -132,5 +126,9 @@ public class SchedulerManager implements Configurable, Startable {
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+
+	public void stop() {
+//		scheduler.shutdown();
 	}
 }
