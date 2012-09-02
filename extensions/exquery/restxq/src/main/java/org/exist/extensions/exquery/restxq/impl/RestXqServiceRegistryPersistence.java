@@ -96,6 +96,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     
     private void loadRegistry(final File fRegistry) {
         
+        log.info("Loading RESTXQ registry from: " + fRegistry.getAbsolutePath());
+        
         LineNumberReader reader = null;
         DBBroker broker = null;
         try {
@@ -133,6 +135,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
                 try { reader.close(); } catch(final IOException ioe) { log.warn(ioe.getMessage(), ioe); }
             }
         }
+        
+        log.info("RESTXQ registry loaded.");
     }
     
     @Override
@@ -146,7 +150,6 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     }
     
     private synchronized void updateRegistryOnDisk(final RestXqService restXqService, final UpdateAction updateAction) {
-        
         //we can ignore the change in service provided to this function as args, as we just write the details of all
         //services to disk, overwritting the old registry
         
@@ -160,6 +163,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
             if(fNewRegistry.exists()) {
                 fNewRegistry.delete();
             }
+            
+            log.info("Updating new RESTXQ registry on disk: " + fNewRegistry.getAbsolutePath());
             
             PrintWriter writer = null;
             try {
@@ -207,6 +212,9 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
                 //replace the original reistry with the new registry
                 FileUtils.deleteQuietly(fRegistry);
                 FileUtils.moveFile(fNewRegistry, fRegistry);
+                
+                log.info("Replaced RESTXQ registry with new registry: " + fRegistry.getAbsolutePath());
+                
             } catch(final IOException ioe) {
                 log.error("Could not replace RESTXQ registry with updated registry: " + ioe.getMessage(), ioe);
             }
