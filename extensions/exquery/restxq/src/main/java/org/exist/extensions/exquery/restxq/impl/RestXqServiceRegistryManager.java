@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exquery.restxq.RestXqServiceRegistry;
 import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
@@ -36,6 +37,8 @@ import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
  */
 public final class RestXqServiceRegistryManager {
     
+    private final static Logger LOG = Logger.getLogger(RestXqServiceRegistryManager.class);
+    
     private static RestXqServiceRegistryImpl registry = null;
     private static RestXqServiceRegistryPersistence persistence = null;
     
@@ -43,6 +46,7 @@ public final class RestXqServiceRegistryManager {
     public static synchronized RestXqServiceRegistry getRegistry(final BrokerPool pool) {
         
         if(registry == null) {
+            LOG.info("Initialising RESTXQ...");
             registry = new RestXqServiceRegistryImpl();
             
             //add logging listener
@@ -51,10 +55,16 @@ public final class RestXqServiceRegistryManager {
             //add compiled cache cleanup listener
             registry.addListener(new RestXqServiceCompiledXQueryCacheCleanupListener());
             
-            //add persistence listener, must load registry before listening for registered events
+            //add persistence listener
             persistence = new RestXqServiceRegistryPersistence(pool, registry);
+            
+            //load registry
             persistence.loadRegistry();
+            
+            //NOTE: must load registry before listening for registered events
             registry.addListener(persistence);
+            
+            LOG.info("RESTXQ is ready.");
         }
         
         return registry;
