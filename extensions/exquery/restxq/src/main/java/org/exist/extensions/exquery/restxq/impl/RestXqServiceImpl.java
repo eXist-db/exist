@@ -259,9 +259,11 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
             reader = getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = new MemTreeBuilder();
+            builder.startDocument();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
             reader.parse(src);
+            builder.endDocument();
             Document doc = receiver.getDocument();
 
             result = (NodeValue)doc;
