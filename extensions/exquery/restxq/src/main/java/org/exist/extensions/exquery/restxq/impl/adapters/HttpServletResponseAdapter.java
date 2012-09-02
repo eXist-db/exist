@@ -30,40 +30,42 @@ import java.io.IOException;
 import java.io.OutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.exquery.http.HttpResponse;
+import org.exquery.http.HttpStatus;
 
 /**
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
 public class HttpServletResponseAdapter implements HttpResponse {
+    
     private final HttpServletResponse response;
 
-    public HttpServletResponseAdapter(HttpServletResponse response) {
+    public HttpServletResponseAdapter(final HttpServletResponse response) {
         this.response = response;
     }
 
     @Override
-    public void setHeader(String name, String value) {
+    public void setHeader(final String name, final String value) {
         response.setHeader(name, value);
     }
 
     @Override
-    public void setStatus(int status, String reason) {
-        response.setStatus(status, reason);
+    public void setStatus(final HttpStatus status, final String reason) {
+        response.setStatus(status.getStatus(), reason);
     }
 
     @Override
-    public void setStatus(int status) {
-        response.setStatus(status);
+    public void setStatus(final HttpStatus status) {
+        response.setStatus(status.getStatus());
     }
 
     @Override
-    public boolean containsHeader(String name) {
+    public boolean containsHeader(final String name) {
         return response.containsHeader(name);
     }
 
     @Override
-    public void setContentType(String contentType) {
+    public void setContentType(final String contentType) {
         response.setContentType(contentType);
     }
 
