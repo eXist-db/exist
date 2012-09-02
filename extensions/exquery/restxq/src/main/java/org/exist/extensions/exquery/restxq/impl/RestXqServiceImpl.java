@@ -32,8 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
+import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
+import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
 import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -47,8 +51,6 @@ import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.BinaryValueManager;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.StringValue;
 import org.exquery.http.HttpRequest;
 import org.exquery.http.HttpResponse;
@@ -58,10 +60,8 @@ import org.exquery.restxq.RestXqErrorCodes;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.RestXqServiceSerializer;
 import org.exquery.restxq.impl.AbstractRestXqService;
-import org.exquery.xdm.type.AbstractTypedValue;
 import org.exquery.xdm.type.SequenceImpl;
 import org.exquery.xquery.Sequence;
-import org.exquery.xquery.Type;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -157,7 +157,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
         }
 
-        Item result = null;
+        Sequence result = null;
         try {
 
             //was there any POST content?
@@ -186,7 +186,11 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
                         //binary data
                         try {
-                            result = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);
+                            
+                            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);
+                            if(binaryValue != null) {
+                                result = new SequenceImpl<BinaryValue>(new BinaryTypedValue(binaryValue));
+                            }
                         } catch(XPathException xpe) {
                             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, xpe);
                         }
@@ -195,7 +199,10 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
                 if(result == null) {
                     //2) not binary, try and parse as an XML documemnt
-                    result = parseAsXml(is);
+                    final DocumentImpl doc = parseAsXml(is);
+                    if(doc != null) {
+                        result = new SequenceImpl<Document>(new DocumentTypedValue(doc));
+                    }
                 }
 
                 if(result == null) {
@@ -210,7 +217,10 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                         //reset the stream, as we need to reuse for string parsing
                         is.reset();
 
-                        result = parseAsString(is, encoding);
+                        final StringValue str = parseAsString(is, encoding);
+                        if(str != null) {
+                            result = new SequenceImpl<StringValue>(new StringTypedValue(str));
+                        }
                     } catch(IOException ioe) {
                         throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
                     }
@@ -236,19 +246,20 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             }
         }
         
-        return new SequenceImpl<Item>(new ItemTypedValue(result));
+        return result;
     }
     
+    /*
     private class ItemTypedValue extends AbstractTypedValue<Item> {
 
         public ItemTypedValue(final Item value) {
             super(Type.ITEM, value);
         }
-    }
+    }*/
     
-    private NodeValue parseAsXml(final InputStream is) {
+    private DocumentImpl parseAsXml(final InputStream is) {
 
-        NodeValue result = null;
+        DocumentImpl result = null;
         XMLReader reader = null;
 
         try {
@@ -264,9 +275,9 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             reader.setContentHandler(receiver);
             reader.parse(src);
             builder.endDocument();
-            Document doc = receiver.getDocument();
+            final Document doc = receiver.getDocument();
 
-            result = (NodeValue)doc;
+            result = (DocumentImpl)doc;
         } catch(SAXException saxe) {
             //do nothing, we will default to trying to return a string below
         } catch(IOException ioe) {
