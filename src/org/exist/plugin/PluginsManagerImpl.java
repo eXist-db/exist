@@ -57,7 +57,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 	private final static Logger LOG = Logger.getLogger(PluginsManagerImpl.class);
 
-	public final static XmldbURI PLUGINS_COLLETION_URI = XmldbURI.SYSTEM_COLLECTION_URI.append("plugins");
+	public final static XmldbURI COLLETION_URI = XmldbURI.SYSTEM.append("plugins");
 	public final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("config.xml");
 
 	@ConfigurationFieldAsAttribute("version")
@@ -94,10 +94,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
         Txn txn = null;
 
         try {
-	        collection = broker.getCollection(PLUGINS_COLLETION_URI);
+	        collection = broker.getCollection(COLLETION_URI);
 			if (collection == null) {
 				txn = transaction.beginTransaction();
-				collection = broker.getOrCreateCollection(txn, PLUGINS_COLLETION_URI);
+				collection = broker.getOrCreateCollection(txn, COLLETION_URI);
 				if (collection == null) return;
 					//if db corrupted it can lead to unrunnable issue
 					//throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
@@ -144,6 +144,12 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 //		} catch (PermissionDeniedException e) {
 //			//LOG?
 //		}
+		
+		for (Jack jack : jacks.values()) {
+			if (jack instanceof Startable) {
+				((Startable) jack).startUp(broker);
+			}
+		}
 	}
 	
 	
@@ -166,6 +172,8 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 			jacks.put(plugin.getName(), plgn);
 
 			runPlugins.add(className);
+			
+			//TODO: if (jack instanceof Startable) { ((Startable) jack).startUp(broker); }
 		} catch (Throwable e) {
 			//e.printStackTrace();
 		}
