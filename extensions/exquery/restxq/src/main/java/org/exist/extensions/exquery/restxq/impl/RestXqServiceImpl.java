@@ -95,7 +95,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 for(final BinaryValue binaryValue : binaryValues) {
                     try {
                         binaryValue.close();
-                    } catch (IOException ioe) {
+                    } catch(final IOException ioe) {
                         LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                     }
                 }
@@ -153,7 +153,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             }
             
             is.mark(Integer.MAX_VALUE);
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
         }
 
@@ -191,7 +191,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                             if(binaryValue != null) {
                                 result = new SequenceImpl<BinaryValue>(new BinaryTypedValue(binaryValue));
                             }
-                        } catch(XPathException xpe) {
+                        } catch(final XPathException xpe) {
                             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, xpe);
                         }
                     }
@@ -221,7 +221,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                         if(str != null) {
                             result = new SequenceImpl<StringValue>(new StringTypedValue(str));
                         }
-                    } catch(IOException ioe) {
+                    } catch(final IOException ioe) {
                         throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
                     }
                 }
@@ -231,7 +231,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             if(cache != null) {
                 try {
                     cache.invalidate();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     LOG.error(ioe.getMessage(), ioe);
                 }
             }
@@ -240,7 +240,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             if(is != null && !(result instanceof BinaryValue)) {
                 try {
                     is.close();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     LOG.error(ioe.getMessage(), ioe);
                 }
             }
@@ -248,14 +248,6 @@ public class RestXqServiceImpl extends AbstractRestXqService {
         
         return result;
     }
-    
-    /*
-    private class ItemTypedValue extends AbstractTypedValue<Item> {
-
-        public ItemTypedValue(final Item value) {
-            super(Type.ITEM, value);
-        }
-    }*/
     
     private DocumentImpl parseAsXml(final InputStream is) {
 
@@ -278,9 +270,9 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             final Document doc = receiver.getDocument();
 
             result = (DocumentImpl)doc;
-        } catch(SAXException saxe) {
+        } catch(final SAXException saxe) {
             //do nothing, we will default to trying to return a string below
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             if(reader != null) {
@@ -291,14 +283,14 @@ public class RestXqServiceImpl extends AbstractRestXqService {
         return result;
     }
     
-    private static StringValue parseAsString(InputStream is, String encoding) throws IOException {
+    private static StringValue parseAsString(final InputStream is, final String encoding) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];
         int read = -1;
         while ((read = is.read(buf)) > -1) {
             bos.write(buf, 0, read);
         }
-        String s = new String(bos.toByteArray(), encoding);
+        final String s = new String(bos.toByteArray(), encoding);
         return new StringValue(s);
     }
 }
