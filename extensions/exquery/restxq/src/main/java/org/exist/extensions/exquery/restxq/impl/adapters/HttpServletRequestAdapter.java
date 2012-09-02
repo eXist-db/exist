@@ -36,6 +36,7 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
+import org.exquery.http.HttpHeaderName;
 import org.exquery.http.HttpMethod;
 import org.exquery.http.HttpRequest;
 
@@ -81,15 +82,20 @@ public class HttpServletRequestAdapter implements HttpRequest {
     }
 
     @Override
-    public int getContentLength() {
-       return request.getContentLength();
-    }
-
-    @Override
     public String getContentType() {
         return request.getContentType();
     }
+    
+    @Override
+    public int getContentLength() {
+        return request.getContentLength();
+    }
 
+    @Override
+    public String getHeader(final String httpHeaderName) {
+        return request.getHeader(httpHeaderName);
+    }
+    
     @Override
     public String getCharacterEncoding() {
         return request.getCharacterEncoding();
