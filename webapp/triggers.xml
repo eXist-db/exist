@@ -198,7 +198,9 @@
 							<para><emphasis>bindingPrefix</emphasis>: This should be the namespace that the XQuery resides in. If this is omitted then a default of "local" is assumed.</para>
 						</listitem>
 						<listitem>
-							<para>Any other parameters will be passed to the XQuery as external variables of type xs:string</para>
+							<para>Any other parameters will be passed to the XQuery as external variables of type xs:string
+							    <note><para>Important: in order to successfully pass parameters as external variables to the called XQuery module, the trigger definition <emphasis>must</emphasis> declare the correct namespace prefix that is used in the called XQuery module, by means of the <emphasis>bindingPrefix</emphasis> parameter. Otherwise, references to external variables in the called XQuery module will produce 'undefined value' errors.</para></note>
+							</para>
 						</listitem>
 					</itemizedlist>
                     <para>The <emphasis>event</emphasis> attribute must be present and list each of the event types that the XQuery trigger should
@@ -214,6 +216,7 @@
     <triggers>
 		<trigger class="org.exist.collections.triggers.XQueryTrigger">
 			<parameter name="url" value="xmldb:exist://localhost/db/myTrigger.xql"/>
+			<parameter name="bindingPrefix" value="trigger"/>
 			<parameter name="triggersLogFile" value="/db/triggersLog.xml"/>
 		</trigger>
 		
@@ -269,7 +272,7 @@ module namespace trigger='http://exist-db.org/xquery/trigger';
 
 declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
 
-declare variable $local:triggersLogFile external;
+declare variable $trigger:triggersLogFile external;
 
 declare function trigger:before-create-collection($uri as xs:anyURI) {
 	local:logEvent(<log type="before" event="create" object="collection" uri="{$uri}"/>)
@@ -353,9 +356,9 @@ declare function trigger:after-delete-document($uri as xs:anyURI) {
 
 declare function local:logEvent($entry as element(log)) {
     let $logfile := 
-      if(not(doc-available($local:triggersLogFile))) then
+      if(not(doc-available($trigger:triggersLogFile))) then
 	  (
-		xmldb:store(string-join(tokenize($local:triggersLogFile, '/')[position() ne last()], '/'), tokenize($local:triggersLogFile, '/')[last()], <triggers/>)
+		xmldb:store(string-join(tokenize($trigger:triggersLogFile, '/')[position() ne last()], '/'), tokenize($trigger:triggersLogFile, '/')[last()], <triggers/>)
 	  )
 	  else()
 	return
@@ -366,7 +369,7 @@ declare function local:logEvent($entry as element(log)) {
  	        doc($entry/@uri)
 	      else ()
 	    }</trigger>
-	  into doc($local:triggersLogFile)/triggers
+	  into doc($trigger:triggersLogFile)/triggers
 };
 ]]>
         			</programlisting>
