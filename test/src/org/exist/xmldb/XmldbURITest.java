@@ -844,5 +844,14 @@ public class XmldbURITest {
                     + "/" + TestConstants.TEST_BINARY_URI.toString() ,
                     (TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI)).toString()
                 );
-    } 
+    }
+    
+    @Test
+    public void appendRelative() {
+        final XmldbURI originalUri = XmldbURI.create("/db/colA/col1/col2/col3");
+        
+        final XmldbURI newUri = originalUri.append("../../../../colB/other");
+        
+        assertEquals("/db/colB/other", newUri.toString());
+    }
 }
