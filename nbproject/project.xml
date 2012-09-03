@@ -30,6 +30,7 @@
             </source-roots>
             <test-roots>
                 <root id="test.src.dir" name="Core Test"/>
+                <root id="test.java.dir" name="Extensions EXQuery - RESTXQ Test"/>
                 <root id="test.test.dir" name="Extensions Debuggee Test"/>
                 <root id="test.eXist-1.32.dir" name="Extensions Fluent Test"/>
                 <root id="test.src2.dir" name="Extensions XSLT test"/>
