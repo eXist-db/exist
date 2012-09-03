@@ -365,13 +365,19 @@ public class RestXqTrigger extends FilteringTrigger {
         LOG.warn("Module '" + xqueryUri + "' has a missing dependency on '" + moduleUri + "'. Will re-examine if the missing module is added.");
     }
     
-    private String getAbsoluteModuleHint(final String moduleHint, final XmldbURI xqueryUri) {
+    protected String getAbsoluteModuleHint(final String moduleHint, final XmldbURI xqueryUri) {
         if(moduleHint.startsWith(XmldbURI.ROOT_COLLECTION)) {
+            //absolute simple path
             return moduleHint;
         } else if(moduleHint.startsWith(XmldbURI.EMBEDDED_SERVER_URI.toString())) {
             return moduleHint.replace(XmldbURI.EMBEDDED_SERVER_URI.toString(), "");
+        } else if(moduleHint.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
+            return moduleHint.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, "");
         } else {
-            return xqueryUri.removeLastSegment().append(moduleHint).toString();
+            //relative to the xqueryUri
+            final XmldbURI xqueryPath = xqueryUri.removeLastSegment();
+            
+            return xqueryPath.append(moduleHint).toString();
         }
     }
     
