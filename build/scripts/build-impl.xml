@@ -609,6 +609,12 @@
         <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
         
         <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
+        
+        <!-- fall back -->
+        <delete failonerror="no">
+            <fileset dir="${lib.extensions}" includes="*.jar"/>
+        </delete> 
+        
     </target>
 
     <target name="clean-conf" description="Cleanup config file">
