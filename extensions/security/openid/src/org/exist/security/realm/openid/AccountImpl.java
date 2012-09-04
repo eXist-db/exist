@@ -49,8 +49,13 @@ public class AccountImpl extends SubjectAccreditedImpl {
 		if ("www.google.com".equals(uri.getAuthority()))
 			return uri.getQuery().replace("id=", "") + "@google.com";
 		
-		return uri.getAuthority();
-//		return id.replace("https://", "/");
+//		return uri.getAuthority();
+		String tmp = id.replace("https://", "/");
+		tmp = tmp.replace("http://", "/");
+		if (tmp.endsWith("/"))
+			tmp.subSequence(0, tmp.length()-1);
+		
+		return tmp;
 	}
 
 	public AccountImpl(AbstractAccount account, Identifier identifier) throws ConfigurationException {
