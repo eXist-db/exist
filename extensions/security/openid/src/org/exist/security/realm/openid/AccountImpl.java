@@ -21,6 +21,7 @@
  */
 package org.exist.security.realm.openid;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -55,7 +56,11 @@ public class AccountImpl extends SubjectAccreditedImpl {
 		if (tmp.endsWith("/"))
 			tmp.subSequence(0, tmp.length()-1);
 		
-		return tmp;
+		try {
+			return java.net.URLEncoder.encode(tmp,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new ConfigurationException(e);
+		}
 	}
 
 	public AccountImpl(AbstractAccount account, Identifier identifier) throws ConfigurationException {
