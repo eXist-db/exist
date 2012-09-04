@@ -148,7 +148,8 @@ public class FileSystemListener implements MessageListener {
         File file = new File(dir, srcDoc);
 
         switch (em.getResourceOperation()) {
-            case CREATE_UPDATE:
+            case CREATE:
+            case UPDATE:
                 // Create dirs if not existent
 
                 dir.mkdirs();
@@ -222,7 +223,8 @@ public class FileSystemListener implements MessageListener {
 
 
         switch (em.getResourceOperation()) {
-            case CREATE_UPDATE:
+            case CREATE:
+            case UPDATE:
                 try {
                     // Create dirs if not existent
                     FileUtils.forceMkdir(src);

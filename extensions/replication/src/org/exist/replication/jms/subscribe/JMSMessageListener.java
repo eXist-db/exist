@@ -189,7 +189,8 @@ public class JMSMessageListener implements MessageListener {
     private void handleDocument(eXistMessage em) {
 
         switch (em.getResourceOperation()) {
-            case CREATE_UPDATE:
+            case CREATE:
+            case UPDATE:
                 createDocument(em);
                 break;
 
@@ -221,7 +222,8 @@ public class JMSMessageListener implements MessageListener {
 
 
         switch (em.getResourceOperation()) {
-            case CREATE_UPDATE:
+            case CREATE:
+            case UPDATE:
                 createCollection(em);
                 break;
 

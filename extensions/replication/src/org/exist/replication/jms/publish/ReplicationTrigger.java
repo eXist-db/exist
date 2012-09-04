@@ -52,9 +52,8 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     //
     // Document Triggers
     //
-    @Override
-    public void afterCreateDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document) throws TriggerException {
+    private void afterUpdateCreateDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document, eXistMessage.ResourceOperation operation) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
@@ -63,7 +62,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         // Create Message
         eXistMessage msg = new eXistMessage();
         msg.setResourceType(eXistMessage.ResourceType.DOCUMENT);
-        msg.setResourceOperation(eXistMessage.ResourceOperation.CREATE_UPDATE);
+        msg.setResourceOperation(operation);
         msg.setResourcePath(document.getURI().toString());
 
         // Retrieve Metadata
@@ -87,6 +86,17 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         // Send Message   
         sendMessage(msg);
     }
+    
+    @Override
+    public void afterCreateDocument(DBBroker broker, Txn transaction,
+            DocumentImpl document) throws TriggerException {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(document.getURI().toString());
+        }
+
+        this.afterUpdateCreateDocument(broker, transaction, document, eXistMessage.ResourceOperation.CREATE);
+    }
 
     @Override
     public void afterUpdateDocument(DBBroker broker, Txn transaction,
@@ -96,7 +106,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             LOG.debug(document.getURI().toString());
         }
 
-        this.afterCreateDocument(broker, transaction, document);
+        this.afterUpdateCreateDocument(broker, transaction, document, eXistMessage.ResourceOperation.UPDATE);
     }
 
     @Override
@@ -168,7 +178,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         // Create Message
         eXistMessage msg = new eXistMessage();
         msg.setResourceType(eXistMessage.ResourceType.COLLECTION);
-        msg.setResourceOperation(eXistMessage.ResourceOperation.CREATE_UPDATE);
+        msg.setResourceOperation(eXistMessage.ResourceOperation.CREATE);
         msg.setResourcePath(collection.getURI().toString());
 
         // Send Message   
@@ -227,7 +237,23 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         // Send Message   
         sendMessage(msg);
     }
+    
+    // 
+    // Metadata triggers
+    //    
+    @Override
+    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // ToDo to be implemented
+    }
 
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // ToDO to be implemented
+    }
+    
+    //
+    // Misc         
+    //
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
@@ -336,13 +362,4 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         // Ignored
     }
 
-    @Override
-    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        // ToDo to be implemented
-    }
-
-    @Override
-    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        // ToDO to be implemented
-    }
 }
