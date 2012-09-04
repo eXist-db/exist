@@ -26,7 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.File;
 import java.io.IOException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -34,9 +33,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.http.servlets.AbstractExistHttpServlet;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletResponseAdapter;
+import org.exist.http.servlets.AbstractExistHttpServlet;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -90,13 +89,15 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                     }
                 });
             
+          
+            
             final RestXqService service = getRegistry().findService(requestAdapter);
             if(service != null) {
                 
                 service.service(
                     requestAdapter,
                     new HttpServletResponseAdapter(response),
-                    new ResourceFunctionExecutorImpl(getPool()),
+                    new ResourceFunctionExecutorImpl(getPool(), request.getContextPath() + request.getServletPath(), request.getRequestURI()),
                     new RestXqServiceSerializerImpl(getPool())
                 );
             } else {

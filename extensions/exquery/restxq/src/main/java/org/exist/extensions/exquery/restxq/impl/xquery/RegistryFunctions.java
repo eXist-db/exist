@@ -47,7 +47,7 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class ResourceFunctions extends BasicFunction {
+public class RegistryFunctions extends BasicFunction {
     
     public final static QName RESOURCE_FUNCTIONS = new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
     public final static QName RESOURCE_FUNCTION = new QName("resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
@@ -60,14 +60,14 @@ public class ResourceFunctions extends BasicFunction {
     public final static FunctionSignature signatures[] = {
 		
         new FunctionSignature(
-            new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX ),
+            new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "Gets a list of all the registered resource functions.",
             FunctionSignature.NO_ARGS,
             new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of registered resource functions.")
         )
     };
     
-    public ResourceFunctions(final XQueryContext context, final FunctionSignature signature) {
+    public RegistryFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

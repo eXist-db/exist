@@ -43,25 +43,31 @@ public class RestXqModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "2.0";
     
     private final static FunctionDef[] signatures = {
-        new FunctionDef(ResourceFunctions.signatures[0], ResourceFunctions.class)
+        new FunctionDef(RegistryFunctions.signatures[0], RegistryFunctions.class),
+        new FunctionDef(UriFunctions.signatures[0], UriFunctions.class),
+        new FunctionDef(UriFunctions.signatures[1], UriFunctions.class)
     };
     
     public RestXqModule(final Map<String, List<? extends Object>> parameters) {
         super(signatures, parameters);
     }
 
+    @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
 
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getDescription() {
-        return "RESTXQ XQuery helper functions";
+        return "RESTXQ Function Module";
     }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
