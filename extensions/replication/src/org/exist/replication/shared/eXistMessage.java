@@ -64,7 +64,7 @@ public class eXistMessage {
      */
     public enum ResourceOperation {
 
-        CREATE, UPDATE, DELETE, MOVE, COPY
+        CREATE, UPDATE, DELETE, MOVE, COPY, METADATA
     }
 
     /**
