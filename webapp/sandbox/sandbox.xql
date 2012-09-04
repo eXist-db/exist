@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.0";
 
 (: $Id$ :)
 
@@ -75,8 +75,13 @@ declare function sandbox:check-query($query as xs:string) as element() {
     </ajax-response>
 };
 
-declare function sandbox:display-page() as element() {
+declare function sandbox:display-page($display-page) {
     util:declare-option("exist:serialize", "media-type=text/html method=xhtml"),
+    
+    $display-page()
+};
+
+declare function sandbox:standard-display-page() as element() {
     <html>
         <head>
             <title>XQuery Sandbox</title>
@@ -88,6 +93,15 @@ declare function sandbox:display-page() as element() {
 
 			<script src="scripts/yui/yui-combined2.7.0.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/sandbox.js"/>
+            <script language="Javascript">
+            <!--
+                //can be used to specify a diffrent base URI
+                //if you were to use sandbox.xql as a module and
+                //provide a different function to display-page
+            
+                var overrideBaseUri = null;
+            -->
+            </script>
         </head>
         <body class=" yui-skin-sam">
             <div id="header">
@@ -222,4 +236,4 @@ return
     else if ($check) then
         sandbox:check-query($check)
     else
-        sandbox:display-page()
+        sandbox:display-page(sandbox:standard-display-page#0)

@@ -11,6 +11,8 @@ var endOffset = 0;
 
 var timer = null;
 
+var baseUri = "";
+
 // the currently edited resource
 var currentResource = null;
 
@@ -23,6 +25,11 @@ Event.addListener(window, 'resize', resize);
 
 // Initialize after DOM was loaded
 Event.onDOMReady(function () {
+    
+    if(overrideBaseUri != null) {
+        baseUri = overrideBaseUri;
+    }
+
     currentResource = new Resource();
     var mainMenu = new YAHOO.widget.MenuBar('mainmenu', { autosubmenudisplay: true, hidedelay: 750, lazyload: true });
     mainMenu.render();
@@ -212,7 +219,7 @@ function loadQuery() {
             },
             failure: requestFailed
         };
-        YAHOO.util.Connect.asyncRequest('GET', 'load.xql?load=' + encodeURIComponent(args[1]), callback);
+        YAHOO.util.Connect.asyncRequest('GET', baseUri + 'load.xql?load=' + encodeURIComponent(args[1]), callback);
     });
     dialog.show();
 }
@@ -274,7 +281,7 @@ function retrieveStored() {
         failure: requestFailed
     };
     log('Loading query examples ...');
-    YAHOO.util.Connect.asyncRequest('GET', 'get-examples.xql', callback);
+    YAHOO.util.Connect.asyncRequest('GET', baseUri + 'get-examples.xql', callback);
 }
 
 /**
@@ -313,7 +320,7 @@ function exportData() {
             },
             failure: requestFailed
         };
-        YAHOO.util.Connect.asyncRequest('POST', 'sandbox.xql', callback, params);
+        YAHOO.util.Connect.asyncRequest('POST', baseUri + 'sandbox.xql', callback, params);
     });
     dialog.show();
 }
@@ -365,7 +372,7 @@ function compileAndCheck() {
         },
         failure: requestFailed
     };
-    YAHOO.util.Connect.asyncRequest('POST', 'sandbox.xql', callback, params);
+    YAHOO.util.Connect.asyncRequest('POST', baseUri + 'sandbox.xql', callback, params);
 	timer = null;
 }
 
@@ -384,7 +391,7 @@ function execQuery() {
         success: showQueryResponse,
         failure: requestFailed
     };
-    YAHOO.util.Connect.asyncRequest('POST', 'execute', callback, params);
+    YAHOO.util.Connect.asyncRequest('POST', baseUri + 'execute', callback, params);
 	message('Query sent ...');
 }
 
@@ -479,7 +486,7 @@ function retrieveNext() {
             success: itemRetrieved,
             failure: requestFailed
         };
-        YAHOO.util.Connect.asyncRequest('GET', url, callback);
+        YAHOO.util.Connect.asyncRequest('GET', baseUri + url, callback);
 	} else {
         message('', false);
     }
@@ -557,7 +564,7 @@ function doSaveQuery() {
         success: queryStored,
         failure: requestFailed
     };
-    YAHOO.util.Connect.asyncRequest('POST', 'sandbox.xql', callback, params);
+    YAHOO.util.Connect.asyncRequest('POST', baseUri + 'sandbox.xql', callback, params);
     this.hide();
     this.destroy();
 }
