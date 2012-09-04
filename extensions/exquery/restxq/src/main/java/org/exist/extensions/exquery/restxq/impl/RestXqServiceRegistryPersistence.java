@@ -141,11 +141,15 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     
     @Override
     public void registered(final RestXqService service) {
+        //TODO consider a pause before writting to disk of maybe 1 second or so
+        //to allow updates to batched together i.e. when one xquery has many resource functions
         updateRegistryOnDisk(service, UpdateAction.ADD);
     }
 
     @Override
     public void deregistered(final RestXqService service) {
+        //TODO consider a pause before writting to disk of maybe 1 second or so
+        //to allow updates to batched together i.e. when one xquery has many resource functions
         updateRegistryOnDisk(service, UpdateAction.REMOVE);
     }
     
