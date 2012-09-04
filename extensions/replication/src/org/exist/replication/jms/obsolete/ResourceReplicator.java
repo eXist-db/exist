@@ -22,12 +22,10 @@
 package org.exist.replication.jms.obsolete;
 
 import java.util.Properties;
-
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 

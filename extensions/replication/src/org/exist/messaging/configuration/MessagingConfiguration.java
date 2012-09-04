@@ -21,7 +21,6 @@
  */
 package org.exist.messaging.configuration;
 
-import org.exist.messaging.configuration.NodeParser;
 import org.exist.xquery.XPathException;
 
 
