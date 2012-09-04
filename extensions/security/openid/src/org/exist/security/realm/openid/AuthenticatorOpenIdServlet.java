@@ -91,12 +91,7 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 			HttpClientFactory.setProxyProperties(proxyProps);
 		}
 
-		try {
-			this.manager = new ConsumerManager();
-		} catch (ConsumerException e) {
-			throw new ServletException(e);
-		}
-
+		manager = new ConsumerManager();
 		manager.setAssociations(new InMemoryConsumerAssociationStore());
 		manager.setNonceVerifier(new InMemoryNonceVerifier(5000));
 		manager.setMinAssocSessEnc(AssociationSessionType.DH_SHA256);
@@ -384,13 +379,13 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 				return principal; 
 			}
 		} catch (OpenIDException e) {
-			//XXX: present error to the user
+			LOG.error(e);
 		} catch (ConfigurationException e) {
-			//XXX: present error to the user
+			LOG.error(e);
 		} catch (PermissionDeniedException e) {
-			//XXX: present error to the user
+			LOG.error(e);
 		} catch (EXistException e) {
-			//XXX: present error to the user
+			LOG.error(e);
 		}
 
 		return null;
