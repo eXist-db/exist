@@ -59,7 +59,7 @@ public class JmsMessageReceiver implements MessageReceiver {
 
         String connectionFactory = jmc.getConnectionFactory();
 
-        String destination = jmc.getDestination();
+        //String destination = jmc.getDestination();
         
         MyListener myListener = new MyListener(ref, xqcontext);
 
