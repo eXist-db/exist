@@ -23,15 +23,11 @@
 package org.exist.messaging;
 
 import java.util.Properties;
-
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-
-
 import org.apache.log4j.Logger;
 import org.exist.memtree.NodeImpl;
-
 import org.exist.messaging.configuration.JmsMessagingConfiguration;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

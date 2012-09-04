@@ -21,11 +21,10 @@
  */
 package org.exist.messaging.xquery;
 
-import org.exist.messaging.configuration.JmsMessagingConfiguration;
-
 import org.exist.dom.QName;
 import org.exist.memtree.NodeImpl;
 import org.exist.messaging.JmsMessageReceiver;
+import org.exist.messaging.configuration.JmsMessagingConfiguration;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 

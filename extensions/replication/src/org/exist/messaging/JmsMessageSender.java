@@ -26,20 +26,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-
 import org.exist.messaging.configuration.JmsMessagingConfiguration;
 import org.exist.messaging.configuration.MessagingMetadata;
 import org.exist.storage.serializers.Serializer;
