@@ -56,7 +56,7 @@ public class MyListener implements MessageListener {
         try {
             LOG.info(message.getStringProperty("name") + " Id=" + message.getJMSMessageID() + " type=" + message.getJMSType());
 
-            NodeImpl report = createReport(message);
+            //NodeImpl report = createReport(message);
             Item content = null;
 
             LOG.info("report created");
@@ -115,7 +115,7 @@ public class MyListener implements MessageListener {
             try {
                 LOG.info("execute");
 
-                Sequence ret = ref.evalFunction(null, null, params);
+                /* Sequence ret = */ ref.evalFunction(null, null, params);
                 
                 // Never reaches here, due to NPE.
                 LOG.info("done");

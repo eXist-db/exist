@@ -493,7 +493,7 @@ public class JMSMessageListener implements MessageListener {
 
         XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
         XmldbURI colURI = sourcePath.removeLastSegment();
-        XmldbURI docURI = sourcePath.lastSegment();
+        //XmldbURI docURI = sourcePath.lastSegment();
 
 
         DBBroker broker = null;
@@ -544,8 +544,8 @@ public class JMSMessageListener implements MessageListener {
     private void createCollection(eXistMessage em) {
 
         XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
-        XmldbURI colURI = sourcePath.removeLastSegment();
-        XmldbURI docURI = sourcePath.lastSegment();
+        //XmldbURI colURI = sourcePath.removeLastSegment();
+        //XmldbURI docURI = sourcePath.lastSegment();
         
         Map<String, Object> props = em.getMetadata();
         
@@ -729,8 +729,8 @@ public class JMSMessageListener implements MessageListener {
     private void relocateCollection(eXistMessage em, boolean keepCollection) {
 
         XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
-        XmldbURI sourceColURI = sourcePath.removeLastSegment();
-        XmldbURI sourceDocURI = sourcePath.lastSegment();
+        //XmldbURI sourceColURI = sourcePath.removeLastSegment();
+        //XmldbURI sourceDocURI = sourcePath.lastSegment();
 
         XmldbURI destPath = XmldbURI.create(em.getDestinationPath());
         XmldbURI destColURI = destPath.removeLastSegment();
