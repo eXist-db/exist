@@ -193,6 +193,10 @@ public class JMSMessageListener implements MessageListener {
             case UPDATE:
                 createDocument(em);
                 break;
+                
+//            case METADATA;
+//                updateMetadataDocument(em);
+//                break;
 
             case DELETE:
                 deleteDocument(em);
