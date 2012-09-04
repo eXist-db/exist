@@ -43,7 +43,6 @@ import org.exquery.http.HttpResponse;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.impl.serialization.AbstractRestXqServiceSerializer;
 import org.exquery.restxq.impl.serialization.SerializationProperty;
-import org.exquery.serialization.annotation.MethodAnnotation;
 import org.exquery.serialization.annotation.MethodAnnotation.SupportedMethod;
 import org.exquery.xquery.TypedValue;
 import org.xml.sax.SAXException;

@@ -74,6 +74,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exquery.restxq.Namespace;
 import org.exquery.restxq.ResourceFunction;
 import org.exquery.restxq.ResourceFunctionExecuter;
 import org.exquery.restxq.RestXqServiceException;
@@ -90,10 +91,17 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     
     private final static Logger LOG = Logger.getLogger(ResourceFunctionExecutorImpl.class);
     
+    public final static QName XQ_VAR_BASE_URI = new QName("base-uri", Namespace.ANNOTATION_NS);
+    public final static QName XQ_VAR_URI = new QName("uri", Namespace.ANNOTATION_NS);
+    
     private final BrokerPool brokerPool;
+    private final String uri;
+    private final String baseUri;
 
-    public ResourceFunctionExecutorImpl(final BrokerPool brokerPool) {
+    public ResourceFunctionExecutorImpl(final BrokerPool brokerPool, final String baseUri, final String uri) {
         this.brokerPool = brokerPool;
+        this.baseUri = baseUri;
+        this.uri = uri;
     }
 
     private BrokerPool getBrokerPool() {
@@ -123,6 +131,9 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             final UserDefinedFunction fn = findFunction(xquery, resourceFunction.getFunctionSignature());
             
             final XQueryContext xqueryContext = xquery.getContext();
+            
+            //TODO this is a workaround?
+            declareVariables(xqueryContext);
             
             //START workaround: evaluate global variables in modules, as they are reset by XQueryContext.reset()
             final Expression rootExpr = xqueryContext.getRootExpression();
@@ -171,9 +182,16 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
                 getBrokerPool().release(broker);
             }
             
-            //return the compiled query to the pool
-            cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);
+            if(xquery != null) {
+                //return the compiled query to the pool
+                cache.returnCompiledQuery(resourceFunction.getXQueryLocation(), xquery);
+            }
         }
+    }
+    
+    private void declareVariables(final XQueryContext xqueryContext) throws XPathException {
+        xqueryContext.declareVariable(XQ_VAR_BASE_URI, baseUri);
+        xqueryContext.declareVariable(XQ_VAR_URI, uri);
     }
     
     /**
