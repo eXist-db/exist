@@ -241,14 +241,28 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     // 
     // Metadata triggers
     //    
-    @Override
-    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        // ToDo to be implemented
-    }
 
     @Override
     public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        // ToDO to be implemented
+        
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(document.getURI().toString());
+        }
+
+        // Create Message
+        eXistMessage msg = new eXistMessage();
+        msg.setResourceType(eXistMessage.ResourceType.DOCUMENT);
+        msg.setResourceOperation(eXistMessage.ResourceOperation.METADATA);
+        msg.setResourcePath(document.getURI().toString());
+
+        // Retrieve Metadata
+        Map<String, Object> md = msg.getMetadata();
+        MessageHelper.retrieveDocMetadata(md, document.getMetadata());
+        MessageHelper.retrieveFromDocument(md, document);
+        MessageHelper.retrievePermission(md, document.getPermissions());
+
+        // Send Message   
+        sendMessage(msg);
     }
     
     //
@@ -323,6 +337,11 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             DocumentImpl document) throws TriggerException {
         // Ignored
     }
+    
+    @Override
+    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        // Ignored
+    }
 
     @Override
     @Deprecated
@@ -361,5 +380,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             Collection collection) throws TriggerException {
         // Ignored
     }
+    
+    
 
 }
