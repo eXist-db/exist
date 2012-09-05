@@ -425,10 +425,13 @@ public class JMSMessageListener implements MessageListener {
     }
     
     /**
-     * Created document in database
+     *  Metadata is updated in database
      */
     private void updateMetadataDocument(eXistMessage em) {
-        // to fill in
+        // Permissions
+        // Mimetype
+        // owner/groupname
+        
     }
 
     /**
