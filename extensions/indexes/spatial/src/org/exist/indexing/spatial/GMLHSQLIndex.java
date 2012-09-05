@@ -24,7 +24,11 @@
 package org.exist.indexing.spatial;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -32,7 +36,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -41,7 +47,7 @@ import org.w3c.dom.Element;
 
 /**
  */
-public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
+public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSupport {
 
     private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);
 
@@ -268,4 +274,28 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
                 rs.close();
         }
     }
+
+	@Override
+	public void backupToArchive(RawDataBackup backup) throws IOException {
+        File directory = new File(getDataDir());
+        File[] files = directory.listFiles( 
+            new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(db_file_name_prefix);
+                }
+            }
+        );
+        for (File file : files) {
+			OutputStream os = backup.newEntry(file.getName());
+			InputStream is = new FileInputStream(file);
+	        byte[] buf = new byte[1024];
+	        int len;
+	        while ((len = is.read(buf)) > 0) {
+	            os.write(buf, 0, len);
+	        }
+	        is.close();
+	        backup.closeEntry();
+        }
+	}
+	
 }

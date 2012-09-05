@@ -1,11 +1,15 @@
 package org.exist.storage.structural;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -15,7 +19,7 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.w3c.dom.Element;
 
-public class NativeStructuralIndex extends AbstractIndex {
+public class NativeStructuralIndex extends AbstractIndex implements RawBackupSupport {
 
     protected static final Logger LOG = Logger.getLogger(NativeStructuralIndex.class);
 
@@ -97,4 +101,11 @@ public class NativeStructuralIndex extends AbstractIndex {
     public boolean checkIndex(DBBroker broker) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+	@Override
+	public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(btree.getFile().getName());
+        btree.backupToStream(os);
+        backup.closeEntry();
+	}
 }

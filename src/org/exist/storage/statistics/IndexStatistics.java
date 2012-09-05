@@ -1,9 +1,11 @@
 package org.exist.storage.statistics;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.dom.QName;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -16,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 
 /**
@@ -27,7 +31,7 @@ import java.nio.channels.FileChannel;
  * and depth of elements in the database (see @link DataGuide). This forms
  * the basis for advanced query optimizations.
  */
-public class IndexStatistics extends AbstractIndex {
+public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
     public final static String ID = IndexStatistics.class.getName();
 
@@ -119,4 +123,18 @@ public class IndexStatistics extends AbstractIndex {
     public String toString() {
         return dataGuide.toString();
     }
+
+	@Override
+	public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(dataFile.getName());
+		InputStream is = new FileInputStream(dataFile);
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+            os.write(buf, 0, len);
+        }
+        is.close();
+        backup.closeEntry();
+	}
+	
 }
