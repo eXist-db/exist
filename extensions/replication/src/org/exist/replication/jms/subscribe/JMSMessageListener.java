@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.replication.shared.MessageHelper;
 import org.exist.replication.shared.eXistMessage;
 import org.exist.security.Account;
@@ -431,6 +432,63 @@ public class JMSMessageListener implements MessageListener {
         // Permissions
         // Mimetype
         // owner/groupname
+        
+       XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
+        XmldbURI colURI = sourcePath.removeLastSegment();
+        XmldbURI docURI = sourcePath.lastSegment();
+
+        // References to the database
+        DBBroker broker = null;
+        Collection collection = null;
+        DocumentImpl resource = null;
+
+        TransactionManager txnManager = brokerPool.getTransactionManager();
+        Txn txn = txnManager.beginTransaction();
+
+        try {
+            // TODO get user
+            broker = brokerPool.get(securityManager.getSystemSubject());
+
+            // Open collection if possible, else abort
+            collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
+            if (collection == null) {
+                String errorText = "Collection does not exist " + colURI;
+                LOG.debug(errorText);
+                txnManager.abort(txn);
+                throw new MessageReceiveException(errorText);
+            }
+
+            // Open document if possible, else abort
+            resource = collection.getDocument(broker, docURI);
+            if (resource == null) {
+                String errorText = "No resource found for path: " + sourcePath;
+                LOG.debug(errorText);
+                txnManager.abort(txn);
+                throw new MessageReceiveException(errorText);
+            }
+
+            DocumentMetadata metadata = resource.getMetadata();
+            //DW: to do something
+            
+
+            // Commit change
+            txnManager.commit(txn);
+
+        } catch (Throwable e) {
+            LOG.error(e);
+            txnManager.abort(txn);
+            throw new MessageReceiveException(e.getMessage(), e);
+
+        } finally {
+
+            // TODO: check if can be done earlier
+            if (collection != null) {
+                collection.release(Lock.WRITE_LOCK);
+            }
+
+            brokerPool.release(broker);
+
+        }
         
     }
 
