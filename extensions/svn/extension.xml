@@ -25,11 +25,14 @@
    </fetch>
  </target>
 
+ <!-- do not clean up this jars because of conflict on windows with ant -->
+ <!-- 
  <target name="clean-3rd-party" description="Remove thirdparty jar files" >
     <echo>Removing 3rd party jar files '${extension.name}'</echo>
     <delete includeemptydirs="true">
        <fileset dir="${existhome.dir}/${lib.user}" includes="svnkit*.jar"/>
     </delete>
  </target>
+ -->
 
 </project>
