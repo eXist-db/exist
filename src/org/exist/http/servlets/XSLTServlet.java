@@ -21,6 +21,7 @@
  */
 package org.exist.http.servlets;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
@@ -79,9 +80,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -312,21 +311,20 @@ public class XSLTServlet extends HttpServlet {
     private Templates getSource(Subject user, HttpServletRequest request, HttpServletResponse response,
                                 SAXTransformerFactory factory, String stylesheet)
         throws ServletException, IOException {
-        
-        // TODO looks like a fall back to filesystem. Will work for Unix, not for win32?
-        // TODO or is it a relative path to .......
+
+        // Check if stylesheet contains an URI. If not, try to resolve from file system
         if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
+            // replace double slash
+            stylesheet = stylesheet.replaceAll("//", "/");
             File f = new File(stylesheet);
             if (f.canRead()) {
                 // Found file, get URI
                 stylesheet = f.toURI().toASCIIString();
-                
+
             } else {
-                // TODO cannot read file, what does this mean?
-                if (f.isAbsolute()) {
-                	if (stylesheet.startsWith("//")) {
-                        stylesheet = stylesheet.replaceFirst("//", "/");
-                    }
+                // if the stylesheet path is absolute, it must be resolved relative to the webapp root
+                // f.isAbsolute is problematic on windows.
+                if (stylesheet.startsWith("/")) {
 
                 	String url = getServletContext().getRealPath(stylesheet);
                 	if (url == null) {
@@ -339,6 +337,7 @@ public class XSLTServlet extends HttpServlet {
                     stylesheet = f.toURI().toASCIIString();
                     
                 } else {
+                    // relative path is relative to the current working directory
                     f = new File(getCurrentDir(request), stylesheet);
                     stylesheet = f.toURI().toASCIIString();
                 }
@@ -351,7 +350,8 @@ public class XSLTServlet extends HttpServlet {
             }
         }
 
-        // TODO please explain what happens here
+        // Try to figure out the base directory of the stylesheet file.
+        // This is required to locate resources imported within the stylesheet.
         String base;
         int p = stylesheet.lastIndexOf("/");
         if(p != Constants.STRING_NOT_FOUND) {
