@@ -8,8 +8,10 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
@@ -18,18 +20,24 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.util.Version;
 
-public class LuceneIndex extends AbstractIndex {
+public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
     public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_34;
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
     public final static String ID = LuceneIndex.class.getName();
+
+	private static final String DIR_NAME = "lucene";
 
     protected Directory directory;
     protected Analyzer defaultAnalyzer;
@@ -82,7 +90,7 @@ public class LuceneIndex extends AbstractIndex {
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        File dir = new File(getDataDir(), "lucene");
+        File dir = new File(getDataDir(), DIR_NAME);
         if (LOG.isDebugEnabled())
             LOG.debug("Opening Lucene index directory: " + dir.getAbsolutePath());
         if (dir.exists()) {
@@ -332,4 +340,21 @@ public class LuceneIndex extends AbstractIndex {
         searcherUseCount--;
         notifyAll();
     }
+
+	@Override
+	public void backupToArchive(RawDataBackup backup) throws IOException {
+		for (String name : directory.listAll()) {
+			String path = DIR_NAME + "/" + name;
+			OutputStream os = backup.newEntry(path);
+			InputStream is = new FileInputStream(new File(getDataDir(), path));
+	        byte[] buf = new byte[1024];
+	        int len;
+	        while ((len = is.read(buf)) > 0) {
+	            os.write(buf, 0, len);
+	        }
+	        is.close();
+	        backup.closeEntry();
+		}
+	}
+	
 }

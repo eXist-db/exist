@@ -515,7 +515,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public void backupToArchive(RawDataBackup backup) throws IOException {
-        for (byte i = 0; i < ALL_STORAGE_FILES.length; i++) {
+        for (byte i : ALL_STORAGE_FILES) {
             Paged paged = getStorage(i);
             if (paged == null) {
                 LOG.warn("Storage file is null: " + i);

@@ -1,8 +1,10 @@
 package org.exist.indexing.sort;
 
 import org.apache.log4j.Logger;
+import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BTreeStore;
@@ -11,6 +13,8 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * SortIndex helps to improve the performance of 'order by' expressions in XQuery.
@@ -24,7 +28,7 @@ import java.io.File;
  * on the same node set.
  *
  */
-public class SortIndex extends AbstractIndex {
+public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     protected static final Logger LOG = Logger.getLogger(SortIndex.class);
 
@@ -90,4 +94,12 @@ public class SortIndex extends AbstractIndex {
     public boolean checkIndex(DBBroker broker) {
         return false;
     }
+
+	@Override
+	public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(btree.getFile().getName());
+        btree.backupToStream(os);
+        backup.closeEntry();
+	}
+	
 }
