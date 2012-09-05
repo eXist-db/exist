@@ -194,9 +194,9 @@ public class JMSMessageListener implements MessageListener {
                 createDocument(em);
                 break;
                 
-//            case METADATA;
-//                updateMetadataDocument(em);
-//                break;
+            case METADATA:
+                updateMetadataDocument(em);
+                break;
 
             case DELETE:
                 deleteDocument(em);
@@ -422,6 +422,13 @@ public class JMSMessageListener implements MessageListener {
             brokerPool.release(broker);
 
         }
+    }
+    
+    /**
+     * Created document in database
+     */
+    private void updateMetadataDocument(eXistMessage em) {
+        // to fill in
     }
 
     /**
