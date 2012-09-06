@@ -21,17 +21,17 @@
  */
 package org.exist.xquery;
 
+/**
+ * To be implement by expressions which can be rewritten by the query
+ * optimizer.
+ */
 public interface RewritableExpression {
 
     public void replace(Expression oldExpr, Expression newExpr);
 
     public void remove(Expression oldExpr) throws XPathException;
 
-    public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException;
-
     public Expression getPrevious(Expression current);
 
     public Expression getFirst();
-
-    boolean allowMixedNodesInReturn();
 }

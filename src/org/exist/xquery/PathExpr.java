@@ -138,19 +138,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     @Override
-    public void remove(Expression oldExpr) throws XPathException {
+    public void remove(Expression oldExpr) {
         int idx = steps.indexOf(oldExpr);
-        if (idx < 0)
-            throw new XPathException(this, "Internal optimizer error: step to remove was not found");
+        if (idx < 0) {
+            LOG.warn("Expression to remove not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
+            return;
+        }
         steps.remove(idx);
-    }
-
-    @Override
-    public void insertAfter(Expression exprBefore, Expression newExpr) throws XPathException {
-        int idx = steps.indexOf(exprBefore);
-        if (idx < 0)
-            throw new XPathException(this, "Internal optimizer error: step to remove was not found");
-        steps.add(idx + 1, newExpr);
     }
 
     /* END RewritableExpression API */

@@ -29,7 +29,7 @@ import org.exist.xquery.parser.XQueryAST;
 import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.XACMLSource;
 
-public class DebuggableExpression implements Expression {
+public class DebuggableExpression implements Expression, RewritableExpression {
 
     private Expression expression;
 
@@ -47,6 +47,7 @@ public class DebuggableExpression implements Expression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
         expression.analyze(contextInfo);
     }
 
@@ -153,6 +154,27 @@ public class DebuggableExpression implements Expression {
 
     public Boolean match(Sequence contextSequence, Item item) throws XPathException {
         return expression.match(contextSequence, item);
+    }
+
+    @Override
+    public void replace(Expression oldExpr, Expression newExpr) {
+        if (oldExpr == expression)
+            expression = newExpr;
+    }
+
+    @Override
+    public void remove(Expression oldExpr) throws XPathException {
+        throw new XPathException("Method remove is not supported");
+    }
+
+    @Override
+    public Expression getPrevious(Expression current) {
+        return null;
+    }
+
+    @Override
+    public Expression getFirst() {
+        return expression;
     }
 
     @Override
