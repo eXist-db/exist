@@ -233,7 +233,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     protected boolean                                  baseURISetInProlog            = false;
 
-    private String                                     moduleLoadPath                = ".";
+    protected String                                     moduleLoadPath                = ".";
 
     protected String                                   defaultFunctionNamespace      = Function.BUILTIN_FUNCTION_NS;
     protected AnyURIValue                              defaultElementNamespace       = AnyURIValue.EMPTY_URI;
