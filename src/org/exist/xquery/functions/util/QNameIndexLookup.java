@@ -140,7 +140,7 @@ public class QNameIndexLookup extends Function {
         if (comparisonCriterium instanceof Indexable) {
             NativeValueIndex valueIndex = context.getBroker().getValueIndex();
             result =
-                valueIndex.find(Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
+                valueIndex.find(context.getWatchDog(), Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
             qname, comparisonCriterium);
         } else {
             String message = "The comparison criterium must be an Indexable: " +

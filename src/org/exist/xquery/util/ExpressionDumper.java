@@ -36,6 +36,8 @@ public class ExpressionDumper {
     public final static int DEFAULT_INDENT_AMOUNT = 4;
     
     public static String dump(Expression expr) {
+        if (expr == null)
+            return "";
         StringWriter writer = new StringWriter();
         ExpressionDumper dumper = new ExpressionDumper(writer);
         expr.dump(dumper);

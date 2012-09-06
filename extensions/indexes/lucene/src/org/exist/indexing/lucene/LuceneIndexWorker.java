@@ -107,9 +107,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 
@@ -427,7 +425,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public NodeSet query(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
         List<QName> qnames, String queryStr, int axis, Properties options)
-        throws IOException, ParseException {
+            throws IOException, ParseException, TerminatedException {
         qnames = getDefinedIndexes(qnames);
         NodeSet resultSet = new NewArrayNodeSet();
         boolean returnAncestor = axis == NodeSet.ANCESTOR;
@@ -441,7 +439,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 setOptions(options, parser);
                 Query query = parser.parse(queryStr);
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                    returnAncestor, searcher, query);
+                    returnAncestor, searcher, query, context.getWatchDog());
             }
         } finally {
             index.releaseSearcher(searcher);
@@ -513,7 +511,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
                 if (query != null) {
 	                searchAndProcess(contextId, qname, docs, contextSet, resultSet,
-                        returnAncestor, searcher, query);
+                        returnAncestor, searcher, query, context.getWatchDog());
                 }
             }
         } finally {
@@ -534,7 +532,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                    returnAncestor, searcher, query);
+                    returnAncestor, searcher, query, context.getWatchDog());
             }
         } finally {
             index.releaseSearcher(searcher);
@@ -544,15 +542,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
             NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-            IndexSearcher searcher, Query query) throws IOException {
+            IndexSearcher searcher, Query query, XQueryWatchDog watchDog) throws IOException, TerminatedException {
         LuceneHitCollector collector = new LuceneHitCollector();
         searcher.search(query, collector);
-        processHits(collector.getDocs(), searcher, contextId, qname, docs, contextSet, resultSet, returnAncestor, query);
+        processHits(collector.getDocs(), searcher, contextId, qname, docs, contextSet, resultSet, returnAncestor, query, watchDog);
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
             String field, String queryString, int axis, Properties options)
-            throws IOException, ParseException {
+            throws IOException, ParseException, TerminatedException {
         NodeSet resultSet = new NewArrayNodeSet();
         boolean returnAncestor = axis == NodeSet.ANCESTOR;
         IndexSearcher searcher = null;
@@ -564,7 +562,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             setOptions(options, parser);
             Query query = parser.parse(queryString);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
-                returnAncestor, searcher, query);
+                returnAncestor, searcher, query, context.getWatchDog());
         } finally {
             index.releaseSearcher(searcher);
         }
@@ -576,8 +574,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * map them to the corresponding XML nodes in eXist.
      */
     private void processHits(List<ScoreDoc> hits, IndexSearcher searcher, int contextId, QName qname, DocumentSet docs, NodeSet contextSet,
-                             NodeSet resultSet, boolean returnAncestor, Query query) {
+                             NodeSet resultSet, boolean returnAncestor, Query query, XQueryWatchDog watchDog) throws TerminatedException {
         for (ScoreDoc scoreDoc : hits) {
+            watchDog.proceed(null);
             try {
                 Document doc = searcher.doc(scoreDoc.doc, NODE_FIELD_SELECTOR);
                 String fDocId = doc.get(FIELD_DOC_ID);

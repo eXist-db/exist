@@ -232,7 +232,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             flags = parseFlags(flagsArg);
         }
         try {
-            preselectResult = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(),
+            preselectResult = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(),
                     useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
                     contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
             hasUsedIndex = true;
@@ -422,9 +422,9 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     if (LOG.isTraceEnabled())
                         LOG.trace("Using range index for fn:matches expression: " + pattern);
                     if (indexScan)
-                        result = index.matchAll(docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
                     else
-                        result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                        result = index.match(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
                 } catch (EXistException e) {
                     throw new XPathException(this, e);
                 }
