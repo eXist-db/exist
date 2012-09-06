@@ -373,7 +373,15 @@ public class AuthenticatorOpenIdServlet extends HttpServlet {
 					}
 				}
 				//update metadata
-				OpenIDRealm.instance.updateAccount(principal);
+				Database db = OpenIDRealm.instance.getDatabase();
+				org.exist.security.Subject currentSubject = db.getSubject();
+				try {
+					db.setSubject(db.getSecurityManager().getSystemSubject());
+				
+					OpenIDRealm.instance.updateAccount(principal);
+				} finally {
+					db.setSubject(currentSubject);
+				}
 				
                 OpenIDUtility.registerUser(principal);
 				return principal; 
