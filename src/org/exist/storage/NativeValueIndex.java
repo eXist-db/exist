@@ -25,6 +25,7 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 
+import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Node;
 
 import org.exist.EXistException;
@@ -760,51 +761,51 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value ) throws TerminatedException
+    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value ) throws TerminatedException
     {
-        return( find( relation, docs, contextSet, axis, qname, value, null, false ) );
+        return( find( watchDog, relation, docs, contextSet, axis, qname, value, null, false ) );
     }
 
-    public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator ) throws TerminatedException
+    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator ) throws TerminatedException
     {
-        return( find( relation, docs, contextSet, axis, qname, value, collator, false ) );
+        return( find( watchDog, relation, docs, contextSet, axis, qname, value, collator, false ) );
     }
 
-    public NodeSet find( int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator, boolean mixedIndex ) throws TerminatedException
+    public NodeSet find( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value, Collator collator, boolean mixedIndex ) throws TerminatedException
     {
         final NodeSet result = new NewArrayNodeSet();
 
         if( qname == null ) {
-            findAll( relation, docs, contextSet, axis, null, value, result, collator );
+            findAll( watchDog, relation, docs, contextSet, axis, null, value, result, collator );
         } else {
             List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
-            findAll( relation, docs, contextSet, axis, qnames, value, result, collator );
+            findAll( watchDog, relation, docs, contextSet, axis, qnames, value, result, collator );
             if (mixedIndex)
-                findAll(relation, docs, contextSet, axis, null, value, result);
+                findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
         }
         return( result );
     }
 
 
-    public NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value ) throws TerminatedException
+    public NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value ) throws TerminatedException
     {
-        return( findAll( relation, docs, contextSet, axis, value, null ) );
+        return( findAll( watchDog, relation, docs, contextSet, axis, value, null ) );
     }
 
 
-    public NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value, Collator collator ) throws TerminatedException
+    public NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, Indexable value, Collator collator ) throws TerminatedException
     {
         final NodeSet result = new NewArrayNodeSet();
-        findAll( relation, docs, contextSet, axis, getDefinedIndexes( docs ), value, result, collator );
-        findAll( relation, docs, contextSet, axis, null, value, result, collator );
+        findAll( watchDog, relation, docs, contextSet, axis, getDefinedIndexes( docs ), value, result, collator );
+        findAll( watchDog, relation, docs, contextSet, axis, null, value, result, collator );
         return( result );
     }
 
 
-    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result ) throws TerminatedException
+    private NodeSet findAll( XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result ) throws TerminatedException
     {
-        return( findAll( relation, docs, contextSet, axis, qnames, value, result, null ) );
+        return( findAll( watchDog, relation, docs, contextSet, axis, qnames, value, result, null ) );
     }
 
 
@@ -824,7 +825,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      *
      * @throws  TerminatedException  DOCUMENT ME!
      */
-    private NodeSet findAll( int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result, Collator collator ) throws TerminatedException
+    private NodeSet findAll(XQueryWatchDog watchDog, int relation, DocumentSet docs, NodeSet contextSet, int axis, List<QName> qnames, Indexable value, NodeSet result, Collator collator ) throws TerminatedException
     {
         final SearchCallback cb   = new SearchCallback( docs, contextSet, result, axis == NodeSet.ANCESTOR );
         final Lock           lock = dbValues.getLock();
@@ -834,6 +835,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final int idxOp        = checkRelationOp( relation );
             Value     searchKey;
             Value     prefixKey;
+
+            watchDog.proceed(null);
 
             if( qnames == null ) {
 
@@ -906,57 +909,57 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public NodeSet match( DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type ) throws TerminatedException, EXistException
+    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type ) throws TerminatedException, EXistException
     {
-        return( match( docs, contextSet, axis, expr, qname, type, null, 0 ) );
+        return( match( watchDog, docs, contextSet, axis, expr, qname, type, null, 0 ) );
     }
 
 
-    public NodeSet match( DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, Collator collator, int truncation ) throws TerminatedException, EXistException
+    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
-        return( match( docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation ) );
+        return( match( watchDog, docs, contextSet, axis, expr, qname, type, 0, true, collator, truncation ) );
     }
 
 
-    public NodeSet match( DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
+    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
     {
-        return( match( docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0 ) );
+        return( match( watchDog, docs, contextSet, axis, expr, qname, type, flags, caseSensitiveQuery, null, 0 ) );
     }
 
 
-    public NodeSet match( DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
+    public NodeSet match( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
         final NodeSet result = new NewArrayNodeSet();
 
         if( qname == null ) {
-            matchAll( docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
+            matchAll( watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
         } else {
             List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
-            matchAll( docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation );
+            matchAll( watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation );
         }
         return( result );
     }
 
 
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
+    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery ) throws TerminatedException, EXistException
     {
-        return( matchAll( docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0 ) );
+        return( matchAll( watchDog,     docs, contextSet, axis, expr, type, flags, caseSensitiveQuery, null, 0 ) );
     }
 
 
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
+    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, int type, int flags, boolean caseSensitiveQuery, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
         final NodeSet result = new NewArrayNodeSet();
-        matchAll( docs, contextSet, axis, expr, getDefinedIndexes( docs ), type, flags, caseSensitiveQuery, result, collator, truncation );
-        matchAll( docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
+        matchAll( watchDog, docs, contextSet, axis, expr, getDefinedIndexes( docs ), type, flags, caseSensitiveQuery, result, collator, truncation );
+        matchAll( watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
         return( result );
     }
 
 
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result ) throws TerminatedException, EXistException
+    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result ) throws TerminatedException, EXistException
     {
-        return( matchAll( docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, null, 0 ) );
+        return( matchAll( watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, null, 0 ) );
     }
 
 
@@ -980,7 +983,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @throws  TerminatedException  DOCUMENT ME!
      * @throws  EXistException       DOCUMENT ME!
      */
-    public NodeSet matchAll( DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
+    public NodeSet matchAll( XQueryWatchDog watchDog, DocumentSet docs, NodeSet contextSet, int axis, String expr, List<QName> qnames, int type, int flags, boolean caseSensitiveQuery, NodeSet result, Collator collator, int truncation ) throws TerminatedException, EXistException
     {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
@@ -1051,6 +1054,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final int collectionId = iter.next().getId();
             Value     searchKey;
 
+            watchDog.proceed(null);
             if( qnames == null ) {
 
                 try {
