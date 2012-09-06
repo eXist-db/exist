@@ -85,7 +85,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 		
 		//Temporary for testing
 		addPlugin("org.exist.storage.md.Plugin");
-		
+		addPlugin("org.exist.scheduler.Plugin");
 	}
 
 	@Override

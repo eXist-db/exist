@@ -42,15 +42,20 @@ import org.quartz.JobExecutionException;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-class XQueryJob implements org.quartz.Job {
+public class XQueryJob implements org.quartz.Job {
+	
+	public XQueryJob() {}
 
     @Override
     public final void execute(JobExecutionContext jec) throws JobExecutionException {
         
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
         
-        final Job description = (Job)jobDataMap.get("Job");
+        final Job description = (Job)jobDataMap.get(Job.DETAILS);
         
+        if (description == null)
+        	throw new JobExecutionException("Internal error, job description missing, abort.");
+
         if (description.getDatabase() == null)
         	throw new JobExecutionException("Internal error, database missing, abort.");
 

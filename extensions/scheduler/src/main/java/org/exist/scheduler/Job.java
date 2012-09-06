@@ -29,6 +29,7 @@ import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
+import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.AbstractAccount;
 import org.exist.security.SecurityManager;
@@ -47,6 +48,11 @@ import org.quartz.Trigger;
  */
 @ConfigurationClass("job")
 public class Job implements Configurable {
+	
+	protected static final String DETAILS = "DETAILs";
+
+	@ConfigurationFieldAsAttribute("id")
+	private String id;
 
 	@ConfigurationFieldAsElement("name")
 	private String name;
@@ -83,7 +89,10 @@ public class Job implements Configurable {
 	}
 	
 	private JobDetail getJobDetail() throws ConfigurationException {
-		return new JobDetail(name, group, getJobClass());
+		JobDetail details = new JobDetail(name, group, getJobClass());
+		
+		details.getJobDataMap().put(DETAILS, this);
+		return details;
 	}
 	
 	private Trigger getTrigger() throws ConfigurationException {
