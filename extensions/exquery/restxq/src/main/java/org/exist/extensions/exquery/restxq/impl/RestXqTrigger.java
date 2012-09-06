@@ -241,7 +241,7 @@ public class RestXqTrigger extends FilteringTrigger {
                 recordMissingDependency(missingModuleHint, document.getURI());
             } else {
                 recordInvalidQuery(document.getURI());
-                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage(), rxsce);
+                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage());
             }
 
             /*
@@ -285,7 +285,7 @@ public class RestXqTrigger extends FilteringTrigger {
             } catch(final PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
             } catch(final ExQueryException eqe) {
-                
+                LOG.error(eqe.getMessage(), eqe);
             }
             
             //remove the resolve dependecies from the missing dependencies
