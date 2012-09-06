@@ -25,6 +25,7 @@ import org.exist.xquery.pragmas.Optimize;
 import org.apache.log4j.Logger;
 import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -193,6 +194,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public void visitAndExpr(OpAnd and) {
         if (predicates > 0) {
+            // inside a filter expression, we can often replace a logical and with
+            // a chain of filters, which can then be further optimized
             Expression parent = and.getParent();
             if (!(parent instanceof PathExpr)) {
             	if (LOG.isTraceEnabled())
@@ -234,7 +237,25 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 	}
 
-	public void visitPredicate(Predicate predicate) {
+    @Override
+    public void visitGeneralComparison(GeneralComparison comparison) {
+        // Check if the left operand is a path expression ending in a
+        // text() step. This step is unnecessary and makes it hard
+        // to further optimize the expression. We thus try to remove
+        // the extra text() step automatically.
+        // TODO should insert a pragma instead of removing the step
+        // we don't know at this point if there's an index to use
+//        Expression expr = comparison.getLeft();
+//        if (expr instanceof PathExpr) {
+//            PathExpr pathExpr = (PathExpr) expr;
+//            Expression last = pathExpr.getLastExpression();
+//            if (pathExpr.getLength() > 1 && last instanceof Step && ((Step)last).getTest().getType() == Type.TEXT) {
+//                pathExpr.remove(last);
+//            }
+//        }
+    }
+
+    public void visitPredicate(Predicate predicate) {
         ++predicates;
         super.visitPredicate(predicate);
         --predicates;

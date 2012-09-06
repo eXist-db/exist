@@ -353,10 +353,5 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	public void remove(Expression oldExpr) throws XPathException {
 	}
 	
-	@Override
-	public void insertAfter(Expression exprBefore, Expression newExpr)
-			throws XPathException {
-	}
-	
 	/* END RewritableExpression API */
 }

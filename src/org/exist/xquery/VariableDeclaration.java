@@ -204,12 +204,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	@Override
 	public void remove(Expression oldExpr) throws XPathException {
 	}
-	
-	@Override
-	public void insertAfter(Expression exprBefore, Expression newExpr)
-			throws XPathException {
-	}
-	
+
 	/* END RewritableExpression API */
 	
 	@Override

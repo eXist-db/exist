@@ -188,12 +188,5 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     public void remove(Expression oldExpr) throws XPathException {
         //Nothing to do
     }
-
-    @Override
-    public void insertAfter(Expression exprBefore, Expression newExpr)
-            throws XPathException {
-        //Nothing to do
-    }
-
     /* END RewritableExpression API */
 }
