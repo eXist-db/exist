@@ -85,6 +85,17 @@
                 <include name="aspectjrt-*.jar"/>
             </lib>
 
+            <!-- Include expath jars  -->
+            <lib dir="extensions/expath/lib">
+                <include name="*.jar"/>
+            </lib>
+            <!-- Include exquery jars  -->
+            <lib dir="extensions/exquery/lib">
+                <include name="*.jar"/>
+            </lib>
+            <lib dir="extensions/exquery/restxq/lib">
+                <include name="*.jar"/>
+            </lib>
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
