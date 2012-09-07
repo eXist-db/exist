@@ -59,5 +59,10 @@ public class EXistOutputKeys {
      * Applies to JSON serialization only: sets the jsonp callback function
      */
     public final static String JSONP = "jsonp";
-	
+
+    /**
+     * JSON serialization: prefix XML attributes with a '@' when serializing
+     * them as JSON properties
+     */
+    public final static String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
 }

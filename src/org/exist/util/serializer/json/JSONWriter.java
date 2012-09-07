@@ -53,7 +53,8 @@ public class JSONWriter extends XMLWriter {
 	protected Stack<JSONObject> stack = new Stack<JSONObject>();
 
 	protected boolean useNSPrefix = false;
-        private String jsonp = null;
+    protected boolean prefixAttributes = false;
+    private String jsonp = null;
 	
 	public JSONWriter() {
 		// empty
@@ -76,8 +77,9 @@ public class JSONWriter extends XMLWriter {
                 
 		final String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
 		useNSPrefix = useNSProp.equalsIgnoreCase("yes");
-                
-                jsonp = properties.getProperty(EXistOutputKeys.JSONP);
+        String prefixForAttr = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
+        prefixAttributes = prefixForAttr.equalsIgnoreCase("yes");
+        jsonp = properties.getProperty(EXistOutputKeys.JSONP);
 	}
 
 	@Override
@@ -174,7 +176,8 @@ public class JSONWriter extends XMLWriter {
 		} else if (qname.equals("json:literal")) {
 			parent.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
 		} else {
-			JSONSimpleProperty obj = new JSONSimpleProperty(qname, value);
+            String name = prefixAttributes ? "@" + qname : qname;
+			JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
 			parent.addObject(obj);
 		}
 	}
