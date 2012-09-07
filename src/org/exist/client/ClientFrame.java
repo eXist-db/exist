@@ -401,31 +401,9 @@ public class ClientFrame extends JFrame
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
         		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //FIXME: Prevent owerwrite. Security?
-                Collection collection = client.current;
-                XMLResource result = null;
-                String nameres = JOptionPane.showInputDialog(null,
-                        Messages.getString("ClientFrame.38")); //$NON-NLS-1$
-                if (nameres != null) {
-                    try {
-                        result = (XMLResource) collection.createResource(
-                                URIUtils.urlEncodeUtf8(nameres), XMLResource.RESOURCE_TYPE);
-                        result.setContent(Messages.getString("ClientFrame.39")); //$NON-NLS-1$
-                        String mimeType = MimeType.XML_TYPE.getName();
-            		    MimeType mime = MimeTable.getInstance().getContentTypeFor(nameres);
-                        if (mime != null) {
-                            mimeType = mime.getName();
-                        }
-                        ((EXistResource)result).setMimeType(mimeType);
-                        collection.storeResource(result);
-                        collection.close();
-                        client.reloadCollection();
-                    } catch (XMLDBException ev) {
-                        showErrorMessage(ev.getMessage(), ev);
-                    }
-                    
-                }
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                newBlankDocument(e);
             }
         });
         fileMenu.add(item);
@@ -837,6 +815,13 @@ public class ClientFrame extends JFrame
         else if (cmd.equals(PASTE))
             shell.paste();
     }
+    
+    private void newBlankDocument(final ActionEvent e) {
+        
+        final JFrame dialog = new NewResourceDialog(client);
+        dialog.setVisible(true);
+    }
+    
     
     private void goUpAction(ActionEvent ev) {
         display(Messages.getString("ClientFrame.94")); //$NON-NLS-1$
