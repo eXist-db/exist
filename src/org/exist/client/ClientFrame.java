@@ -1544,8 +1544,9 @@ public class ClientFrame extends JFrame
     }
     
     private void actionFinished() {
-        if (!process.getStatus())
+        if (!process.getStatus()) {
             close();
+        }
         displayPrompt();
     }
     
@@ -1568,9 +1569,18 @@ public class ClientFrame extends JFrame
                     // open a document for editing
                     ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     try {
-                        DocumentView view = new DocumentView(client, resource.getName(), properties);
-                        view.setSize(new Dimension(640, 400));
-                        view.viewDocument();
+                        Resource doc = client.retrieve(resource.getName(), properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
+                        
+                        if(((EXistResource)doc).getMimeType().equals("application/xquery")) {
+                            final Collection collection = client.getCollection();
+                            final QueryDialog dialog = new QueryDialog(client, collection, doc, properties);
+                            dialog.setVisible(true);
+                        } else {
+                            final DocumentView view = new DocumentView(client, resource.getName(), doc, properties);
+                            view.setSize(new Dimension(640, 400));
+                            view.viewDocument();
+                        }
+                        //doc will be closed in one of the dialogs above when they are closed
                     }
                     catch (XMLDBException ex) {
                         showErrorMessage(Messages.getString("ClientFrame.206") + ex.getMessage(), ex); //$NON-NLS-1$

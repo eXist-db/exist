@@ -93,11 +93,11 @@ class DocumentView extends JFrame {
 	protected JPopupMenu popup;
 	protected Properties properties;
 	
-	public DocumentView(InteractiveClient client, XmldbURI resourceName, Properties properties) throws XMLDBException
+	public DocumentView(InteractiveClient client, XmldbURI resourceName, Resource resource, Properties properties) throws XMLDBException
 	{
         super( URIUtils.urlDecodeUtf8(resourceName.lastSegment()) ); 
 		this.resourceName = resourceName;
-		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
+		this.resource = resource;
 		this.client = client;
 		this.collection = client.getCollection();
 		this.properties = properties;
