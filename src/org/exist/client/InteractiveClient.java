@@ -1120,12 +1120,13 @@ public class InteractiveClient {
     /**
      * @param args
      */
-    private void editResource(XmldbURI name) {
+    private void editResource(final XmldbURI name) {
         try {
-            DocumentView view = new DocumentView(this, name, properties);
+            final Resource doc = retrieve(name, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
+            final DocumentView view = new DocumentView(this, name, doc, properties);
             view.setSize(new Dimension(640, 400));
             view.viewDocument();
-        } catch (XMLDBException ex) {
+        } catch (final XMLDBException ex) {
             errorln("XMLDB error: " + ex.getMessage());
         }
     }

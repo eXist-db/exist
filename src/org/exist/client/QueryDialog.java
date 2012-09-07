@@ -27,6 +27,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,9 +37,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
@@ -59,15 +61,16 @@ import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
-
-import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -87,24 +90,62 @@ public class QueryDialog extends JFrame {
 	private JComboBox collections= null;
 	private SpinnerNumberModel count;
 	private DefaultComboBoxModel history= new DefaultComboBoxModel();
-    private Font display = new Font("Monospaced", Font.BOLD, 12);
+        private Font display = new Font("Monospaced", Font.BOLD, 12);
 	private JTextField statusMessage;
 	private JTextField queryPositionDisplay;
 	private JProgressBar progress;
 	private JButton submitButton;
 	private JButton killButton;
 	private QueryThread q=null;
+        private Resource resource = null;
 
-	public QueryDialog(InteractiveClient client, Collection collection, Properties properties) {
-		super(Messages.getString("QueryDialog.0"));
-		this.collection= collection;
-		this.properties= properties;
-        this.client = client;
-		setupComponents();
-		pack();
+        private QueryDialog(final InteractiveClient client, final Collection collection, final Properties properties, boolean loadedFromDb) {
+            super(Messages.getString("QueryDialog.0"));
+            this.collection= collection;
+            this.properties= properties;
+            this.client = client;
+            setupComponents(loadedFromDb);
+            pack();
+	}
+        
+	public QueryDialog(final InteractiveClient client, final Collection collection, final Properties properties) {
+            this(client, collection, properties, false);
 	}
 
-	private void setupComponents() {
+        public QueryDialog(final InteractiveClient client, final Collection collection, final Resource resource, final Properties properties) throws XMLDBException {
+            this(client, collection, properties, true);
+            this.resource = resource;
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent ev) {
+                    try {
+                        UserManagementService service = (UserManagementService) collection
+                            .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                        service.unlockResource(resource);
+                    } catch (XMLDBException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            
+            //set the content of the query
+            query.setText(new String((byte[])resource.getContent()));
+            
+            //set title
+            setTitle(Messages.getString("QueryDialog.0") + ": " + resource.getId());
+        }
+
+        private void saveToDb(final String queryText) {
+            
+            try {
+                resource.setContent(queryText);
+                collection.storeResource(resource);
+            } catch(final XMLDBException xmldbe) {
+                ClientFrame.showErrorMessage(xmldbe.getMessage(), xmldbe);
+            }
+        }
+        
+	private void setupComponents(boolean loadedFromDb) {
 		getContentPane().setLayout(new BorderLayout());
 		JToolBar toolbar = new JToolBar();
 		
@@ -118,6 +159,19 @@ public class QueryDialog extends JFrame {
 		});
 		toolbar.add(button);
 		
+                if(loadedFromDb) {
+                    url= getClass().getResource("icons/SaveAs23.gif");
+                    button= new JButton(new ImageIcon(url));
+                    button.setToolTipText("Save to database");
+                    button.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            saveToDb(query.getText());
+                        }
+                    });
+                    toolbar.add(button);
+                }
+                
 		url= getClass().getResource("icons/SaveAs24.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveastooltip"));
@@ -128,7 +182,7 @@ public class QueryDialog extends JFrame {
 		});
 		toolbar.add(button);
 
-		url= getClass().getResource("icons/SaveAs24.gif");
+		url= getClass().getResource("icons/SaveAs25.gif");
 		button= new JButton(new ImageIcon(url));
 		button.setToolTipText(Messages.getString("QueryDialog.saveresultstooltip"));
 		button.addActionListener(new ActionListener() {
@@ -295,20 +349,21 @@ public class QueryDialog extends JFrame {
         label = new JLabel(Messages.getString("QueryDialog.contextlabel"));
         optionsPanel.add(label);
         
-		final Vector<String> data= new Vector<String>();
+		final List<String> data= new ArrayList<String>();
 		try {
 			Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-			data.addElement(collection.getName());
+			data.add(collection.getName());
 			getCollections(root, collection, data);
 		} catch (XMLDBException e) {
 			ClientFrame.showErrorMessage(
 					Messages.getString("QueryDialog.collectionretrievalerrormessage")+".", e);
 		}
-		collections= new JComboBox(data);
+		collections= new JComboBox(new java.util.Vector(data));
 		collections.addActionListener(new ActionListener() {
+                    @Override
 			public void actionPerformed(ActionEvent e) {
 				int p = collections.getSelectedIndex();
-				String context = data.elementAt(p);
+				String context = data.get(p);
 				try {
 					collection = client.getCollection(context);
 				} catch (XMLDBException e1) {
@@ -329,10 +384,11 @@ public class QueryDialog extends JFrame {
 		return tabs;
 	}
 
-	private Vector<String> getCollections(Collection root, Collection collection, Vector<String> collectionsList)
+	private List<String> getCollections(Collection root, Collection collection, List<String> collectionsList)
 			throws XMLDBException {
-		if(!collection.getName().equals(root.getName()))
+		if(!collection.getName().equals(root.getName())) {
 			collectionsList.add(root.getName());
+                }
 		String[] childCollections= root.listChildCollections();
 		Collection child;
 		for (int i= 0; i < childCollections.length; i++) {
