@@ -99,7 +99,8 @@ public class NewResourceDialog extends JFrame {
         grid.setConstraints(lblResourceType, c);
         getContentPane().add(lblResourceType);
         
-        final JComboBox cmbResourceTypes = new JComboBox<ResourceType>(ResourceType.values());
+        //final JComboBox cmbResourceTypes = new JComboBox<ResourceType>(ResourceType.values());
+        final JComboBox cmbResourceTypes = new JComboBox(ResourceType.values());
         cmbResourceTypes.setSelectedIndex(0);
         cmbResourceTypes.addActionListener(new ActionListener() {
             @Override
