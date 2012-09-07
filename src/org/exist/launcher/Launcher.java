@@ -80,11 +80,15 @@ public class Launcher implements Observer {
     private JettyStart jetty;
 
     public Launcher(final String[] args) {
-        if (!SystemTray.isSupported()) {
+        SystemTray tray = null;
+        try {
+            tray = SystemTray.getSystemTray();
+        } catch (Exception e) {
             showMessageAndExit("Not supported", "Running eXist-db via the launcher is not supported on your platform. " +
-                    "Please run it using startup.sh/startup.bat.");
+                "Please run it using startup.sh/startup.bat.");
             return;
         }
+
         final String home = getJettyHome();
         captureConsole();
 
@@ -102,7 +106,6 @@ public class Launcher implements Observer {
             }
         });
 
-        final SystemTray tray = SystemTray.getSystemTray();
         Dimension iconDim = tray.getTrayIconSize();
         LOG.debug("Icon size: " + iconDim.getWidth() + "x" + iconDim.getHeight());
         String iconFile;
