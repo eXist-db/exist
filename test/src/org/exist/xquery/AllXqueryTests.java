@@ -51,7 +51,8 @@ import org.junit.runners.Suite;
         DuplicateAttributesTest.class,
         StoredModuleTest.class,
         TransformTest.class,
-        DeferredFunctionCallTest.class
+        DeferredFunctionCallTest.class,
+        UnionTest.class
 })
 public class AllXqueryTests {
 }
