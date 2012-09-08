@@ -64,30 +64,37 @@ public class OpAnd extends LogicalOp {
             Sequence ls = left.eval(contextSequence, null);
             doOptimize = doOptimize && ls.isPersistentSet();
             if (doOptimize) {
-                Sequence rs = right.eval(contextSequence, null);
-                if (rs.isPersistentSet()) {
-                    NodeSet rl = ls.toNodeSet();
-                    rl = rl.getContextNodes(left.getContextId()); 
-                    // TODO: optimize and return false if rl.isEmpty() ?
-                    NodeSet rr = rs.toNodeSet();
-                    rr = rr.getContextNodes(right.getContextId());
-                    result = rr.intersection(rl); 
-                    //<test>{() and ()}</test> has to return <test>false</test>    			
-                    if (getParent() instanceof EnclosedExpr ||
-                        //First, the intermediate PathExpr
-                        (getParent() != null && getParent().getParent() == null)) {
-                        result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
-                    }
-                } else {
-                    // fall back if right sequence is not persistent
-                    boolean rl = ls.effectiveBooleanValue();
-                    if (!rl) {
-                        result = BooleanValue.FALSE;
-                    } else {
-                        boolean rr = rs.effectiveBooleanValue();
-                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                    }
-                }
+            	
+            	if (getParent() instanceof Predicate)
+            		result = right.eval(ls, null);
+
+            	else {
+            		Sequence rs = right.eval(contextSequence, null);
+
+	            	if (rs.isPersistentSet()) {
+	                    NodeSet rl = ls.toNodeSet();
+	                    rl = rl.getContextNodes(left.getContextId()); 
+	                    // TODO: optimize and return false if rl.isEmpty() ?
+	                    NodeSet rr = rs.toNodeSet();
+	                    rr = rr.getContextNodes(right.getContextId());
+	                    result = rr.intersection(rl);
+	                    //<test>{() and ()}</test> has to return <test>false</test>    			
+	                    if (getParent() instanceof EnclosedExpr ||
+	                        //First, the intermediate PathExpr
+	                        (getParent() != null && getParent().getParent() == null)) {
+	                        result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+	                    }
+	                } else {
+	                    // fall back if right sequence is not persistent
+	                    boolean rl = ls.effectiveBooleanValue();
+	                    if (!rl) {
+	                        result = BooleanValue.FALSE;
+	                    } else {
+	                        boolean rr = rs.effectiveBooleanValue();
+	                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+	                    }
+	                }
+            	}
             } else {
                 boolean rl = ls.effectiveBooleanValue();
                 //Immediately return false if the left operand is false
