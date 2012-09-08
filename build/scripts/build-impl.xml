@@ -278,6 +278,7 @@
         <!--copy file="${src}/CatalogManager.properties" todir="${build.classes}"/-->
         <copy todir="${build.classes}/org/exist/client">
             <fileset dir="${src}/org/exist/client">
+		<include name="*.tmpl"/>
                 <include name="icons/**.png"/>
                 <include name="icons/**.gif"/>
                 <include name="*.xsl"/>
