@@ -63,7 +63,8 @@ public class OpAnd extends LogicalOp {
             Expression right = getRight();
             
             setContextId(getExpressionId());
-            contextSequence.setSelfAsContext(getContextId());
+            if (doOptimize)
+            	contextSequence.setSelfAsContext(getContextId());
             
 //            System.out.println("getContextId "+getContextId());
 //            System.out.println("optimize "+optimize);
