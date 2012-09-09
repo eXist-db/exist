@@ -47,7 +47,7 @@ import java.util.Observer;
  *
  * @author Wolfgang Meier
  */
-public class Launcher implements Observer {
+public class Launcher {
 
     private final static Logger LOG = Logger.getLogger(Launcher.class);
 
@@ -67,6 +67,7 @@ public class Launcher implements Observer {
         }
         /* Turn off metal's use of bold fonts */
         UIManager.put("swing.boldMetal", Boolean.FALSE);
+
         //Schedule a job for the event-dispatching thread:
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -92,17 +93,22 @@ public class Launcher implements Observer {
         final String home = getJettyHome();
         captureConsole();
 
-        splash = new SplashScreen();
+        splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent windowEvent) {
-                try {
-                    jetty = new JettyStart();
-                    jetty.addObserver(Launcher.this);
-                    jetty.run(new String[]{home}, Launcher.this);
-                } catch (Exception e) {
-                    showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.");
-                }
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            jetty = new JettyStart();
+                            jetty.addObserver(splash);
+                            jetty.run(new String[]{home}, splash);
+                        } catch (Exception e) {
+                            showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.");
+                        }
+                    }
+                }.start();
             }
         });
 
@@ -147,10 +153,12 @@ public class Launcher implements Observer {
             if (jetty.isStarted()) {
                 trayIcon.displayMessage(null, "Server already started", TrayIcon.MessageType.WARNING);
             } else {
-                jetty.run(new String[]{home}, Launcher.this);
-                stopItem.setEnabled(true);
-                startItem.setEnabled(false);
-                trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
+                jetty.run(new String[]{home}, null);
+                if (jetty.isStarted()) {
+                    stopItem.setEnabled(true);
+                    startItem.setEnabled(false);
+                    trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
+                }
             }
             }
         });
@@ -235,25 +243,10 @@ public class Launcher implements Observer {
         return popup;
     }
 
-    public void update(Observable o, Object arg) {
-        if (splash == null)
-            return;
-        if (JettyStart.SIGNAL_STARTED.equals(arg)) {
-            trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
-            splash.setStatus("Server started!");
-            splash.setVisible(false);
-            startItem.setEnabled(false);
-            stopItem.setEnabled(true);
-            splash = null;
-        } else if (BrokerPool.SIGNAL_STARTUP.equals(arg)) {
-            splash.setStatus("Starting eXist-db ...");
-        } else if (BrokerPool.SIGNAL_WRITABLE.equals(arg)) {
-            splash.setStatus("eXist-db is up. Waiting for web server ...");
-        } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
-            splash.setStatus("An error occurred! Please check the logs.");
-            showMessageAndExit("Error Occurred",
-                "An error occurred during startup. Please check the logs.");
-        }
+    protected void signalStarted() {
+        trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
+        startItem.setEnabled(false);
+        stopItem.setEnabled(true);
     }
 
     private String getJettyHome() {
@@ -268,7 +261,7 @@ public class Launcher implements Observer {
         return standaloneFile.getAbsolutePath();
     }
 
-    private void showMessageAndExit(String title, String message) {
+    protected void showMessageAndExit(String title, String message) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 

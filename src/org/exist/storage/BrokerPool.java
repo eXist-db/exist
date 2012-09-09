@@ -1656,6 +1656,10 @@ public class BrokerPool extends Observable implements Database {
         }
     }
 
+    public void reportStatus(String message) {
+        if (statusReporter != null)
+            statusReporter.setStatus(message);
+    }
 	public long getMajorSyncPeriod()
 	{
 		return majorSyncPeriod;
