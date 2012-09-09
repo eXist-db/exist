@@ -61,14 +61,40 @@ public class OpAnd extends LogicalOp {
                 doOptimize = false;
             Expression left = getLeft();
             Expression right = getRight();
+            
+            setContextId(getExpressionId());
+            contextSequence.setSelfAsContext(getContextId());
+            
+//            System.out.println("getContextId "+getContextId());
+//            System.out.println("optimize "+optimize);
+//            System.out.println("contextSequence "+contextSequence);
+//            
+//            System.out.println("getParent() "+getParent());
+//            System.out.println("left "+left);
+            
             Sequence ls = left.eval(contextSequence, null);
             doOptimize = doOptimize && ls.isPersistentSet();
             if (doOptimize) {
             	
-            	if (getParent() instanceof Predicate)
-            		result = right.eval(ls, null);
+            	if (inPredicate) {
+//            		System.out.println(Dependency.dependsOn(right, Dependency.CONTEXT_ITEM));
+            		
+                    NodeSet lr = ls.toNodeSet();
+                    lr = lr.getContextNodes(getContextId()); 
 
-            	else {
+//                    System.out.println("ls "+ls);
+//                    System.out.println("lr "+lr);
+//
+//                    System.out.println("right "+right);
+
+                    Sequence rs = right.eval(lr, null);
+                    
+                    NodeSet rr = rs.toNodeSet();
+                    result = rr.getContextNodes(getContextId()); 
+
+//                    System.out.println("rs "+rs);
+//                    System.out.println("rr "+result);
+            	} else {
             		Sequence rs = right.eval(contextSequence, null);
 
 	            	if (rs.isPersistentSet()) {
