@@ -53,13 +53,15 @@ public class Deployment {
 
     private final static Logger LOG = Logger.getLogger(Deployment.class);
 
-    private final static QName SETUP_ELEMENT = new QName("setup", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName PRE_SETUP_ELEMENT = new QName("prepare", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName POST_SETUP_ELEMENT = new QName("finish", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName TARGET_COLL_ELEMENT = new QName("target", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName PERMISSIONS_ELEMENT = new QName("permissions", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName CLEANUP_ELEMENT = new QName("cleanup", ExpathPackageModule.NAMESPACE_URI);
-    private static final QName DEPLOYED_ELEMENT = new QName("deployed", ExpathPackageModule.NAMESPACE_URI);
+    private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
+
+    private final static QName SETUP_ELEMENT = new QName("setup", REPO_NAMESPACE);
+    private static final QName PRE_SETUP_ELEMENT = new QName("prepare", REPO_NAMESPACE);
+    private static final QName POST_SETUP_ELEMENT = new QName("finish", REPO_NAMESPACE);
+    private static final QName TARGET_COLL_ELEMENT = new QName("target", REPO_NAMESPACE);
+    private static final QName PERMISSIONS_ELEMENT = new QName("permissions", REPO_NAMESPACE);
+    private static final QName CLEANUP_ELEMENT = new QName("cleanup", REPO_NAMESPACE);
+    private static final QName DEPLOYED_ELEMENT = new QName("deployed", REPO_NAMESPACE);
 
     private DBBroker broker;
 
