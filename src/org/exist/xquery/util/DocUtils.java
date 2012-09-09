@@ -35,6 +35,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -200,18 +201,22 @@ public class DocUtils {
 		}	 	  
 		return document;
 	}
-	
+
+    public static org.exist.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {
+        return parse(context.getBroker().getBrokerPool(), context, istream);
+    }
+
 	/**
 	 * Utility function to parse an input stream into an in-memory DOM document.
 	 * 
-	 * @param context
+	 * @param pool
 	 * @param istream
 	 * @return document
 	 * @throws XPathException
 	 */
-	public static org.exist.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {
+	public static org.exist.memtree.DocumentImpl parse(BrokerPool pool, XQueryContext context, InputStream istream) throws XPathException {
 		// we use eXist's in-memory DOM implementation
-        XMLReader reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
+        XMLReader reader = pool.getParserPool().borrowXMLReader();
         InputSource src = new InputSource(istream);
         SAXAdapter adapter = new SAXAdapter(context);
         reader.setContentHandler(adapter);
