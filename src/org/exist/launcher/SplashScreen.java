@@ -21,24 +21,31 @@
  */
 package org.exist.launcher;
 
+import org.exist.jetty.JettyStart;
+import org.exist.storage.BrokerPool;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Display a splash screen showing the eXist-db logo and a status line.
  *
  * @author Wolfgang Meier
  */
-public class SplashScreen extends JFrame {
+public class SplashScreen extends JFrame implements Observer {
 
 	private static final long serialVersionUID = -8449133653386075547L;
 
 	private JLabel statusLabel;
+    private Launcher launcher;
 
-    public SplashScreen() {
+    public SplashScreen(Launcher launcher) {
+        this.launcher = launcher;
         setUndecorated(true);
-        setBackground(new Color(255, 255, 255, 125));
+        setBackground(new Color(255, 255, 255, 255));
         setAlwaysOnTop(true);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -55,6 +62,7 @@ public class SplashScreen extends JFrame {
         statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
         statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.BOLD, 14));
         statusLabel.setForeground(Color.black);
+        statusLabel.setSize(new Dimension(icon.getIconWidth(), 60));
 
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it
@@ -65,6 +73,30 @@ public class SplashScreen extends JFrame {
     }
 
     public void setStatus(final String status) {
-        statusLabel.setText(status);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                statusLabel.setText(status);
+            }
+        });
+    }
+
+    public void update(Observable o, Object arg) {
+        if (JettyStart.SIGNAL_STARTED.equals(arg)) {
+            launcher.signalStarted();
+
+            setStatus("Server started!");
+            setVisible(false);
+        } else if (BrokerPool.SIGNAL_STARTUP.equals(arg)) {
+            setStatus("Starting eXist-db ...");
+        } else if (BrokerPool.SIGNAL_WRITABLE.equals(arg)) {
+            setStatus("eXist-db is up. Waiting for web server ...");
+        } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
+            setStatus("An error occurred! Please check the logs.");
+            launcher.showMessageAndExit("Error Occurred",
+                    "An error occurred during startup. Please check the logs.");
+        } else {
+            setStatus(arg.toString());
+        }
     }
 }
