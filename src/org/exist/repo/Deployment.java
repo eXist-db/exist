@@ -25,7 +25,6 @@ import org.exist.util.SyntaxException;
 import org.exist.util.serializer.AttrList;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.modules.expathrepo.ExpathPackageModule;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
@@ -42,7 +41,6 @@ import java.io.*;
 import java.util.Date;
 import java.util.Stack;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 /**
