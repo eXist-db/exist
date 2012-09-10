@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>AND operator tests</testName>
+    <description>
+        <p>And operator under predicate tests</p>
+        <author>Dmitriy Shabanov</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="test"/>
+        <store collection="/db/test" name="text1.xml">
+            <set>
+				<msg id="1">
+    				<inform priority="normal">
+       				    <person>Peter</person>
+       				    <read-by>Alex</read-by>
+        			</inform>
+    			</msg>
+				<msg id="2">
+    				<inform priority="normal">
+       				    <person>Peter</person>
+        			</inform>
+					<inform priority="normal">
+	       			    <read-by>Alex</read-by>
+    	    		</inform>
+    			</msg>
+			</set>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/test"/>
+    </tearDown>
+    <test output="xml">
+        <task>and under predicate</task>
+        <code>collection("/db/test")//msg[./inform[@priority = "normal" and ./person = "Peter" and ./read-by = "Alex"]]</code>
+        <expected>
+			<msg id="1">
+				<inform priority="normal">
+					<person>Peter</person>
+					<read-by>Alex</read-by>
+				</inform>
+			</msg>
+        </expected>
+    </test>
+</TestSet>
