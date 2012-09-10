@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.exist.EXistException;
+import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
@@ -44,7 +45,7 @@ import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.impl.serialization.AbstractRestXqServiceSerializer;
 import org.exquery.restxq.impl.serialization.SerializationProperty;
 import org.exquery.serialization.annotation.MethodAnnotation.SupportedMethod;
-import org.exquery.xquery.TypedValue;
+import org.exquery.xquery.Sequence;
 import org.xml.sax.SAXException;
 
 /**
@@ -64,12 +65,12 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
     }
     
     @Override
-    protected void serializeBinaryBody(final TypedValue value, final HttpResponse response) throws RestXqServiceException {
+    protected void serializeBinaryBody(final Sequence result, final HttpResponse response) throws RestXqServiceException {
         throw new UnsupportedOperationException("TODO adam needs to implement this yet!");
     }
 
     @Override
-    protected void serializeNodeBody(final TypedValue result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
+    protected void serializeNodeBody(final Sequence result, final HttpResponse response, final Map<SerializationProperty, String> serializationProperties) throws RestXqServiceException {
         
         DBBroker broker = null;
         SAXSerializer sax = null;
@@ -90,7 +91,7 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
 	
-            serializer.toSAX((Item)result.getValue(), false, false);
+            serializer.toSAX(((SequenceAdapter)result).getExistSequence());
 	
             writer.flush();
             writer.close();
