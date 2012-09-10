@@ -79,6 +79,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
@@ -935,6 +936,45 @@ public abstract class Serializer implements XMLReader {
 		}
 		receiver.endDocument();
 	}
+        
+        /**
+	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
+	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
+	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
+	 * 
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * 
+	 * @param seq
+	 * @param start
+	 * @param count
+	 * @param wrap Indicates whether the output should be wrapped
+         * @param typed Indicates whether the output types should be wrapped
+	 * @throws SAXException
+	 */
+    public void toSAX(Sequence seq) throws SAXException {
+        try {
+            setStylesheetFromProperties(null);
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        
+        setXSLHandler(null, false);
+
+        receiver.startDocument();
+
+        try {
+            Item item;
+            final SequenceIterator itSeq = seq.iterate();
+            while(itSeq.hasNext()) {
+                item = itSeq.nextItem();
+                itemToSAX(item, false, false, null);
+            }
+        } catch(final XPathException xpe) {
+            throw new SAXException(xpe.getMessage(), xpe);
+        }
+
+        receiver.endDocument();
+    }
         
         /**
 	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter

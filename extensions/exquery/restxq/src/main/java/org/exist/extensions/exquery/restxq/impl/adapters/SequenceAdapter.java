@@ -102,4 +102,18 @@ public class SequenceAdapter implements Sequence<Item> {
             }
         };
     }
+
+    @Override
+    public Sequence<Item> tail() {
+        try {
+            return new SequenceAdapter(sequence.tail());
+        } catch(final XPathException xpe) {
+            LOG.error(xpe.getMessage(), xpe);
+            return new SequenceAdapter(org.exist.xquery.value.Sequence.EMPTY_SEQUENCE);
+        }
+    }
+    
+    public org.exist.xquery.value.Sequence getExistSequence() {
+        return sequence;
+    }
 }
