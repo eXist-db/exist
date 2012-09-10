@@ -290,21 +290,30 @@ public class Optimize extends Pragma {
                 continue;
             QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
             if (config == null) {
+                // no index found for this collection
                 if (LOG.isTraceEnabled())
                     LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
                         "on " + qname);
-                return Type.ITEM;   // found a collection without index
-            }
+                // if enfoceIndexUse == "always", continue to check other collections
+                // for indexes. It is sufficient if one collection defines an index
+                if (enforceIndexUse == null || !"always".equals(enforceIndexUse))
+                    return Type.ITEM;   // found a collection without index
+            } else {
             int type = config.getType();
-            if (indexType == Type.ITEM) {
-                indexType = type;
-                if (enforceIndexUse != null && "always".equals(enforceIndexUse))
-                	return indexType;
-            } else if (indexType != type) {
-                if (LOG.isTraceEnabled())
-                    LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                        "with the required type " + Type.getTypeName(type) + " on " + qname);
-                return Type.ITEM;   // found a collection with a different type
+                if (indexType == Type.ITEM) {
+                    indexType = type;
+                    // if enforceIndexUse == "always", it is sufficient if one collection
+                    // defines an index. Just return it.
+                    if (enforceIndexUse != null && "always".equals(enforceIndexUse))
+                        return indexType;
+                } else if (indexType != type) {
+                    // found an index with a bad type. cannot optimize.
+                    // TODO: should this continue checking other collections?
+                    if (LOG.isTraceEnabled())
+                        LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
+                            "with the required type " + Type.getTypeName(type) + " on " + qname);
+                    return Type.ITEM;   // found a collection with a different type
+                }
             }
         }
         return indexType;
