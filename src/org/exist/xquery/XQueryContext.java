@@ -107,6 +107,7 @@ import java.util.TreeMap;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class XQueryContext {
+    public static final String						   ENFORCE_INDEX_USE_ATTRIBUTE					    = "enforce-index-use";
 
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
 	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
@@ -124,6 +125,7 @@ public class XQueryContext {
 	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
 	public static final String PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL = "xquery.raise-error-on-failed-retrieval";
 	public static final boolean XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT = false;
+    public static final String						   PROPERTY_ENFORCE_INDEX_USE						= "xquery.enforce-index-use";
 
 	//TODO : move elsewhere ?
 	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
@@ -2633,7 +2635,7 @@ public class XQueryContext {
     public void setXQueryContextVar(String name, Object XQvar)
     {
     	XQueryContextVars.put(name, XQvar);
-    }
+   }
     
     /**
 	 * Get an XQuery Context variable.
