@@ -296,7 +296,7 @@
       <module fileurl="file://$PROJECT_DIR$/eXist.iml" filepath="$PROJECT_DIR$/eXist.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/intellij" />
   </component>
   <component name="ResourceManagerContainer">
@@ -312,25 +312,6 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
-              <option name="branchMap">
-                <map>
-                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/branches">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/releases">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                  <entry key="https://exist.svn.sourceforge.net/svnroot/exist/tags">
-                    <value>
-                      <list />
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://exist.svn.sourceforge.net/svnroot/exist/branches" />
