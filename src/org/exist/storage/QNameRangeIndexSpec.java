@@ -36,7 +36,7 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
 	public QNameRangeIndexSpec(Map<String, String> namespaces, String name, String typeStr) 
 	throws DatabaseConfigurationException {
 		try {
-            this.type = Type.getType(typeStr);
+            this.type = getSuperType(Type.getType(typeStr));
         } catch (XPathException e) {
             throw new DatabaseConfigurationException("Unknown type: " + typeStr);
         }

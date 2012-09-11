@@ -120,7 +120,20 @@ public abstract class RangeIndexSpec {
 	public static final boolean hasQNameOrValueIndex(int type) {
 		return (type & HAS_VALUE_OR_MIXED_INDEX_MASK) > 0;
 	}
-    
+
+    /**
+     * Replace subtypes of string and integer with their
+     * base type for the index. Using xs:int instead of xs:integer
+     * for an index does not have any advantage.
+     */
+    protected static final int getSuperType(int type) {
+        if (Type.subTypeOf(type, Type.INTEGER))
+            return Type.INTEGER;
+        if (Type.subTypeOf(type, Type.STRING))
+            return Type.STRING;
+        return type;
+    }
+
     protected int type;
 
 	protected RangeIndexSpec() {
