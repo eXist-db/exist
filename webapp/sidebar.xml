@@ -70,17 +70,17 @@
         <item>
             <link href="api/index.html">Javadocs</link>
         </item>
-        <item>
+        <!--item>
         	<link href="http://demo.exist-db.org/exist/xquery/svnlog.xql">ChangeLog</link>
+        </item-->
+        <item>
+            <link href="https://sourceforge.net/p/exist/bugs/">Bug Tracker</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
+            <link href="https://sourceforge.net/p/exist/code">Subversion</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
-        </item>
-        <item>
-            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Submit Patches</link>
+            <link href="https://sourceforge.net/p/exist/patches/">Submit Patches</link>
         </item>
     </group>
     <group name="Administration">

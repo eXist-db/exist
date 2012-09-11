@@ -109,13 +109,11 @@
 								(<a href="http://demo.exist-db.org/exist/irclog/irclog.xql">transcript</a>).</p>
 
             <p>All eXist-db sources are freely available via a SourceForge <a
-                    href="http://sourceforge.net/svn/?group_id=17691">subversion</a> repository. The
+                    href="https://sourceforge.net/p/exist/code">subversion</a> repository. The
                     <a href="http://www.ohloh.net/projects/252?p=eXist">source code</a> is made <a
                     href="http://www.koders.com/info.aspx?c=ProjectInfo&amp;pid=682GN3WEP5P26GKNXC359DMVCE"
                     >browsable</a> and is continuously <a
-                    href="http://fisheye3.atlassian.com/browse/exist/">monitored</a> and <a
-                    href="http://parabuild.viewtier.com:8080/parabuild/index.htm?cid=eeca&amp;view=detailed&amp;buildid=321"
-                    >built</a>.</p>
+                    href="http://fisheye3.atlassian.com/browse/exist/">monitored</a>.</p>
 
 
 
