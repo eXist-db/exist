@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2008-2012 The eXist-db Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.indexing.lucene;
 
@@ -161,8 +161,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
     }
 
     private void scanMatches(NodeProxy p) {
-        // Collect the text content of all descendants of p. Remember the start offsets
-        // of the text nodes for later use.
+        // Collect the text content of all descendants of p. 
+	// Remember the start offsets of the text nodes for later use.
         NodePath path = getPath(p);
         LuceneIndexConfig idxConf = config.getConfig(path).next();
         
@@ -176,21 +176,21 @@ public class LuceneMatchListener extends AbstractMatchListener {
             while (reader.hasNext()) {
                 int ev = reader.next();
                 switch (ev) {
-                    case XMLStreamConstants.END_ELEMENT:
-                        if (--level < 0)
-                            break;
-                        textOffset += extractor.endElement(reader.getQName());
-                        break;
-                    case XMLStreamConstants.START_ELEMENT:
-                        ++level;
-                        textOffset += extractor.startElement(reader.getQName());
-                        break;
-                    case XMLStreamConstants.CHARACTERS:
-                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                        textOffset += extractor.beforeCharacters();
-                        offsets.add(textOffset, nodeId);
-                        textOffset += extractor.characters(reader.getXMLText());
-                        break;
+		case XMLStreamConstants.END_ELEMENT:
+		    if (--level < 0)
+			break;
+		    textOffset += extractor.endElement(reader.getQName());
+		    break;
+		case XMLStreamConstants.START_ELEMENT:
+		    ++level;
+		    textOffset += extractor.startElement(reader.getQName());
+		    break;
+		case XMLStreamConstants.CHARACTERS:
+		    NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+		    textOffset += extractor.beforeCharacters();
+		    offsets.add(textOffset, nodeId);
+		    textOffset += extractor.characters(reader.getXMLText());
+		    break;
                 }
             }
         } catch (IOException e) {
@@ -199,11 +199,13 @@ public class LuceneMatchListener extends AbstractMatchListener {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
         
-        // retrieve the Analyzer for the NodeProxy that was used for indexing and querying
+        // Retrieve the Analyzer for the NodeProxy that was used for
+	// indexing and querying.
         Analyzer analyzer = idxConf.getAnalyzer();
         if (analyzer == null) {
-        	// otherwise use system default Lucene analyzer (from conf.xml) to tokenize the text and find matching query terms
-        	analyzer = index.getDefaultAnalyzer();
+	    // Otherwise use system default Lucene analyzer (from conf.xml)
+	    // to tokenize the text and find matching query terms.
+	    analyzer = index.getDefaultAnalyzer();
         }
         LOG.debug("Analyzer: " + analyzer + " for path: " + path);
         String str = extractor.getText().toString();
@@ -212,25 +214,25 @@ public class LuceneMatchListener extends AbstractMatchListener {
         //Token token;
         try {
 
-            while(stream.incrementToken()) {
+            while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query query = termMap.get(text);
                 if (query != null) {
-                    // phrase queries need to be handled differently to filter
-                    // out wrong matches: only the phrase should be marked, not single
-                    // words which may also occur elsewhere in the document
+                    // Phrase queries need to be handled differently to filter
+                    // out wrong matches: only the phrase should be marked, not
+		    // single words which may also occur elsewhere in the document
                     if (query instanceof PhraseQuery) {
                         PhraseQuery phraseQuery = (PhraseQuery) query;
                         Term[] terms = phraseQuery.getTerms();
                         if (text.equals(terms[0].text())) {
-                            // scan the following text and collect tokens to see if
-                            // they are part of the phrase
+                            // Scan the following text and collect tokens to see
+			    // if they are part of the phrase.
                             stream.mark();
                             int t = 1;
                             List<State> stateList = new ArrayList<State>(terms.length);
                             stateList.add(stream.captureState());
                             
-                            while(stream.incrementToken() && t < terms.length) {
+                            while (stream.incrementToken() && t < terms.length) {
                                 text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
                                     stateList.add(stream.captureState());
@@ -238,12 +240,14 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                         break;
                                     }
                                 } else {
-                                    stream.reset();
+				    // Don't reset the token stream since we will 
+				    // miss matches. /ljo
+                                    //stream.reset();
                                     break;
                                 }
                             }
                             
-                            if(stateList.size() == terms.length) {
+                            if (stateList.size() == terms.length) {
                                 // we indeed have a phrase match. record the offsets of its terms.
                                 int lastIdx = -1;
                                 for (int i = 0; i < terms.length; i++) {
@@ -259,14 +263,14 @@ public class LuceneMatchListener extends AbstractMatchListener {
                                             offset.setEndOffset(offsetAttr.endOffset() - offsets.offsets[idx]);
                                         else
                                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                                                offsetAttr.endOffset() - offsets.offsets[idx]);
+						       offsetAttr.endOffset() - offsets.offsets[idx]);
                                     else
                                         nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                            offsetAttr.endOffset() - offsets.offsets[idx]));
+									      offsetAttr.endOffset() - offsets.offsets[idx]));
                                     lastIdx = idx;
                                 }
                             }
-                        }
+                        } // End of phrase handling
                     } else {
                         
                         OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
@@ -275,10 +279,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         Offset offset = nodesWithMatch.get(nodeId);
                         if (offset != null)
                             offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                                offsetAttr.endOffset() - offsets.offsets[idx]);
+				       offsetAttr.endOffset() - offsets.offsets[idx]);
                         else {
                             nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                offsetAttr.endOffset() - offsets.offsets[idx]));
+								  offsetAttr.endOffset() - offsets.offsets[idx]));
                         }
                     }
                 }
