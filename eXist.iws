@@ -105,11 +105,25 @@
   <component name="ChangeListManager">
     <list readonly="true" id="9c94c8a9-f5ba-4ada-96fc-bdc14754ba2b" name="Default" comment="" />
     <list id="c2cbb0af-73e4-419e-a2b6-663e0bbfd989" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
-    <list default="true" id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[repo]  added status field to public repo">
+    <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[repo]  added status field to public repo">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndex.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndex.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/counter/Counters.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/counter/Counters.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/dom/SymbolTable.java" afterPath="$PROJECT_DIR$/src/org/exist/dom/SymbolTable.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/DataBackup.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/DataBackup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/btree/Paged.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/btree/Paged.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/statistics/IndexStatistics.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/statistics/IndexStatistics.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndex.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndex.java" />
+    </list>
+    <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
+    <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="Revert: [ignore]  update idea project">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
     </list>
-    <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
     <ignored path="$USER_HOME$/.grails/" />
     <ignored path="$USER_HOME$/.griffon/" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -218,7 +232,17 @@
     <subPane subId="Unnamed" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="NativeBroker.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="533" column="13" selection-start="21258" selection-end="21258" vertical-scroll-proportion="0.24824685">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -273,7 +297,7 @@
     <option name="CLIENT" value="" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="24" />
+    <option name="y" value="924" />
     <option name="width" value="1600" />
     <option name="height" value="876" />
   </component>
@@ -468,6 +492,30 @@
       <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="PackagesPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -488,8 +536,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="Favorites">
         <subPane subId="eXist">
           <PATH>
@@ -1479,15 +1525,16 @@
       <changelist id="9c94c8a9-f5ba-4ada-96fc-bdc14754ba2b" name="Default" comment="[documentation] adding more testing related doc" />
       <changelist id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="" />
       <changelist id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="" />
+      <changelist id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="" />
       <created>1258752091419</created>
-      <updated>1280324174092</updated>
+      <updated>1347368406247</updated>
     </task>
     <task id="LOCAL-00001" summary="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)">
       <changelist id="c2cbb0af-73e4-419e-a2b6-663e0bbfd989" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
       <created>1278753104546</created>
       <updated>1278753104546</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -1511,22 +1558,23 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="24" width="1600" height="876" extended-state="6" />
+    <frame x="0" y="924" width="1600" height="876" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3018018" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
-      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49469495" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
+      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19141914" sideWeight="0.6141141" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4347241" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3753754" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42838195" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35135135" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23226704" sideWeight="0.72183096" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23225807" sideWeight="0.50530505" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24580646" sideWeight="0.6177645" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24580646" sideWeight="0.571618" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3820513" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1543,7 +1591,6 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33483484" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.53518516" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="true" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.42914173" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
@@ -1599,7 +1646,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="[intellij] .iws had some additional vars defined unrelated to eXist" />
+    <option name="LAST_COMMIT_MESSAGE" value="Revert: [ignore]  update idea project" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1612,7 +1659,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="[repo] added missing files to packages" />
     <MESSAGE value="[repo] adding new example package, myApp, which eventually will be how" />
     <MESSAGE value="[fixed] introduced path bug in repo package manager, fixed" />
     <MESSAGE value="[fixed] introduced multiple math jar bug in example package, fixed" />
@@ -1637,6 +1683,7 @@
     <MESSAGE value="[repo]  adding missing image" />
     <MESSAGE value="[repo]  added status field to public repo" />
     <MESSAGE value="[intellij] .iws had some additional vars defined unrelated to eXist" />
+    <MESSAGE value="Revert: [ignore]  update idea project" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1882,7 +1929,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/start/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="278" column="39" selection-start="11241" selection-end="11241" vertical-scroll-proportion="2.1280992">
+        <state line="278" column="39" selection-start="11241" selection-end="11241" vertical-scroll-proportion="2.1280992" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.ipr">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="30" selection-start="413" selection-end="413" vertical-scroll-proportion="0.23141655">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="533" column="13" selection-start="21258" selection-end="21258" vertical-scroll-proportion="0.24824685">
           <folding />
         </state>
       </provider>
