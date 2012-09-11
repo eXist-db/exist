@@ -1,8 +1,8 @@
 package org.exist.xquery.modules.xslfo;
 
+import jp.co.antenna.XfoJavaCtl.MessageListener;
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.NodeValue;
@@ -11,7 +11,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
@@ -53,7 +52,6 @@ public class AntennaHouseProcessorAdapter implements ProcessorAdapter {
 
     @Override
     public void cleanup() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private class FOContentHandler extends SAXSerializer {
@@ -74,15 +72,26 @@ public class AntennaHouseProcessorAdapter implements ProcessorAdapter {
             LOG.info("Transforming fo input: " + xmlFile.getAbsolutePath());
 
             try {
-                xmlWriter.close();
-                FileInputStream is = new FileInputStream(xmlFile);
+                getWriter().close();
+                InputStream is = new BufferedInputStream(new FileInputStream(xmlFile));
 
                 Object formatterObj = formatter.newInstance();
 
+                Method setListener = formatter.getMethod("setMessageListener", MessageListener.class);
+                setListener.invoke(formatterObj, new LogListener());
                 renderMethod.invoke(formatterObj, is, out, "@PDF");
             } catch (Exception e) {
+                LOG.debug(e.getMessage(), e);
                 throw new SAXException(e.getMessage(), e);
             }
+        }
+    }
+
+    private class LogListener implements MessageListener {
+
+        @Override
+        public void onMessage(int errorLevel, int errorCode, String message) {
+            LOG.info("error-level: " + errorLevel + ": " + message);
         }
     }
 }
