@@ -37,7 +37,7 @@
     		user="${config.username}" password="${config.password}"
     		createcollection="true">
             <fileset dir=".">
-                <include name="xqts.xconf"/>
+                <include name="collection.xconf"/>
             </fileset>
         </xmldb:store>
     	
