@@ -44,7 +44,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
             throw new DatabaseConfigurationException("The path attribute is required in index.create");
         path = new NodePath(namespaces, pathStr, false);
         try {
-            type = Type.getType(typeStr);
+            type = getSuperType(Type.getType(typeStr));
         } catch (XPathException e) {
             throw new DatabaseConfigurationException("Unknown type: " + typeStr);
         }
