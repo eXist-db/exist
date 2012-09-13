@@ -12,29 +12,4 @@
  <!-- import common.xml here -->
  <import file="${existhome.dir}/build/scripts/extensions-common.xml"/>
 
- 
- <target name="test">
-     <echo>Executing tests '${extension.name}' ${extension.include}</echo>
-     <antcall target="common.compile-test"/>
-      <mkdir dir="${junit.report.dir}"/>
-      <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
-               maxmemory="${junit.forked.VM.maxmemory}">
-               
-               <classpath>
-         <path refid="classpath.core"/>
-         <path refid="classpath.extensions"/>
-         <path refid="classpath.test"/>
-         <path refid="classpath.aspectj"/>
-         <pathelement path="${build.classes.dir}"/>
-         <pathelement path="${test.classes.dir}"/>
-         </classpath>
-
-         <formatter type="plain"/>
-         <formatter type="xml"/>
-
-         <test name="org.exist.xqdoc.RunTests"
-             todir="${junit.report.dir}/"/>
-     </junit>
- </target>
-
-</project>
+ </project>
