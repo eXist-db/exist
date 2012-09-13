@@ -106,8 +106,10 @@
 <!ATTLIST estuary country IDREFS #REQUIRED>
 <!ELEMENT length (#PCDATA)>
 <!ELEMENT depth (#PCDATA)>
+<!ELEMENT through (#PCDATA)>
+<!ATTLIST through lake IDREFS #REQUIRED>
 
-<!ELEMENT river (name,located*,to*,area?,length?,source?,estuary?)>
+<!ELEMENT river (name,located*,to*,through*,area?,length?,source?,estuary?)>
 <!ATTLIST river id ID #REQUIRED
                 country IDREFS #REQUIRED>
 
@@ -123,7 +125,7 @@
 <!ATTLIST located country IDREF #REQUIRED
                   province IDREFS #IMPLIED>
 
-<!ELEMENT lake (name,located*,to*,area?,elevation?,depth?,longitude?,latitude?)>
+<!ELEMENT lake (name,located*,to*,through?,area?,elevation?,depth?,longitude?,latitude?)>
 <!ATTLIST lake id ID #REQUIRED
                country IDREFS #REQUIRED
                island IDREF #IMPLIED
