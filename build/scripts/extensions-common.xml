@@ -300,6 +300,8 @@ $Id$
          <formatter type="plain"/>
          <formatter type="xml"/>
 
+	 <test fork="yes" name="${extension.smoke.tests.class}" todir="${junit.report.dir}" if="${extension.run.smoke.tests}"/>
+
          <batchtest fork="yes" todir="${junit.report.dir}">
             <fileset dir="${test.classes.dir}">
                <include name="**/*Test.class"/>

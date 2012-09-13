@@ -1,4 +1,4 @@
-package org.exist.xqdoc;
+package xquery.xqdoc;
 
 
 import static org.junit.Assert.fail;
@@ -27,7 +27,7 @@ import org.xmldb.api.modules.XMLResource;
 
 public class RunTests {
 
-    private final static String TEST_DIR = "extensions/xqdoc/test/src/org/exist/xqdoc";
+    private final static String TEST_DIR = "extensions/xqdoc/test/src/xquery/xqdoc";
 
     private final static String TEST_QUERY = TEST_DIR + "/runTests.xql";
 
