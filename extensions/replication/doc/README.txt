@@ -36,12 +36,11 @@ eXistdb
 Get Started
 ===========
 - For 'Master' server (publisher)
-  - Create collection '/db/mycollection' that shall be monitored for document changes
+  - Create collection '/db/mycollection/' that shall be monitored for document changes
   - Create collection '/db/system/config/db/mycollection/'
-  - Create in there a document 'collection.xconf' add the content below of 
-    to the document
-  - Fill the correct value for 'java.naming.provider.url' that matches your message broker
-  
+  - Create in there a document 'collection.xconf' and add the following content to 
+    the document:
+
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <triggers>
             <trigger class="org.exist.replication.jms.publish.ReplicationTrigger">
@@ -59,13 +58,14 @@ Get Started
         </triggers>
     </collection>
 
-  - Set value for "client-id"
+  - Set the correct value for 'java.naming.provider.url' that matches your message broker
+  - Set a unique value for the "client-id" parameter.
   
-- For each 'Slave' (subscriber)
-  - Add a job to conf.xml, update the value of "java.naming.provider.url"
-  - Fill the correct value for 'java.naming.provider.url' that matches your message broker
 
-   <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.MessageReceiverJob">
+- For each 'Slave' (subscriber)
+  - Add a job to conf.xml:
+
+    <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.MessageReceiverJob">
 
         <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
         <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
@@ -79,9 +79,10 @@ Get Started
 
     </job>
 
-  - Set values for "cclient-id" and 'subscriber-name'
+  - Set the correct value for 'java.naming.provider.url' that matches your message broker
+  - Set unique values for "client-id" and 'subscriber-name'
 
-  - Create the collection '/db/mycollection' , this is the collection that receives the 
+  - Create the collection '/db/mycollection/' , this is the collection that receives the 
     documents that are updated in the same collection on the 'Master' server.
 
     
