@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -95,6 +96,7 @@ public class DataBackup implements SystemTask {
         
         try {
 			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+            out.setLevel(Deflater.NO_COMPRESSION);
             Callback cb = new Callback(out);
             broker.backupToArchive(cb);
             // close the zip file

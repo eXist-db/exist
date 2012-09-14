@@ -288,7 +288,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         for (File file : files) {
 			OutputStream os = backup.newEntry(file.getName());
 			InputStream is = new FileInputStream(file);
-	        byte[] buf = new byte[1024];
+	        byte[] buf = new byte[4096];
 	        int len;
 	        while ((len = is.read(buf)) > 0) {
 	            os.write(buf, 0, len);

@@ -347,7 +347,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 			String path = DIR_NAME + "/" + name;
 			OutputStream os = backup.newEntry(path);
 			InputStream is = new FileInputStream(new File(getDataDir(), path));
-	        byte[] buf = new byte[1024];
+	        byte[] buf = new byte[4096];
 	        int len;
 	        while ((len = is.read(buf)) > 0) {
 	            os.write(buf, 0, len);

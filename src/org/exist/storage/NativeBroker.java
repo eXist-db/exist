@@ -514,7 +514,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void backupToArchive(RawDataBackup backup) throws IOException {
+    public void backupToArchive(RawDataBackup backup) throws IOException, EXistException {
         for (byte i : ALL_STORAGE_FILES) {
             Paged paged = getStorage(i);
             if (paged == null) {
@@ -525,10 +525,30 @@ public class NativeBroker extends DBBroker {
             paged.backupToStream(os);
             backup.closeEntry();
         }
-        OutputStream os = backup.newEntry(pool.getSymbols().getFile().getName());
-        pool.getSymbols().backupSymbolsTo(os);
-        backup.closeEntry();
+        pool.getSymbols().backupToArchive(backup);
+        backupBinary(backup, fsDir, "");
         pool.getIndexManager().backupToArchive(backup);
+        //TODO backup counters
+        //TODO USE zip64 or tar to create snapshots larger then 4Gb
+    }
+
+    private void backupBinary(RawDataBackup backup, File file, String path) throws IOException {
+        path = path + "/" + file.getName();
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                backupBinary(backup, f, path);
+            }
+        } else {
+            OutputStream os = backup.newEntry(path);
+            InputStream is = new FileInputStream(file);
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = is.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
+            is.close();
+            backup.closeEntry();
+        }
     }
 
     @Override
