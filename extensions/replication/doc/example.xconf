@@ -3,19 +3,16 @@
         <trigger class="org.exist.replication.jms.publish.ReplicationTrigger">
 
             <!-- 
-                Setup InitialContext, values must be identical with subscriber (conf.xml)
-                see javax.naming>InitialContext#InitialContext(Hashtable) 
-            -->
-
-            <!-- 
-                Initial context provider 
+                Class name of the initial context provider, default value for ActiveMQ
+                see javax.naming.Context#INITIAL_CONTEXT_FACTORY
             -->
             <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
 
             <!-- 
-                URL of message broker 
+                URL of the message broker, default value for ActiveMQ 
+                see javax.naming.Context#PROVIDER_URL
             --> 
-            <parameter name="java.naming.provider.url" value="tcp://miniserver.local:61616"/>
+            <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
 
             <!-- 
                 Lookup connection factory
@@ -38,16 +35,18 @@
             <!-- 
                 Set time-to-live in milliseconds, default value is 0 (unlimited) 
                 see javax.jms.MessageProducer#setTimeToLive(long)
+
                 [Optional]
             -->
-            <parameter name="time-to-live" value="0"/> 
+            <!--<parameter name="time-to-live" value="0"/>-->
 
             <!--
                 Sets the producer priority, value 0-9 ; default is 4.
                 see javax.jms.MessageProducer#setPriority(int)
+
                 [Optional]
             -->
-            <parameter name="priority" value="4"/>
+            <!-- <parameter name="priority" value="4"/>-->
 
         </trigger>
     </triggers>

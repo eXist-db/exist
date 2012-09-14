@@ -3,16 +3,18 @@
         -->
         <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.MessageReceiverJob">
             
-            <!-- 
-                Setup InitialContext
-                see javax.naming>InitialContext#InitialContext(Hashtable) 
-            -->
             
-            <!-- Initial context provider -->
+            <!-- 
+                Class name of the initial context provider, default value for ActiveMQ
+                see javax.naming.Context#INITIAL_CONTEXT_FACTORY
+            -->
             <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
                    
-            <!-- URL of message broker -->       
-            <parameter name="java.naming.provider.url" value="tcp://miniserver.local:61616"/>
+            <!-- 
+                URL of the message broker, default value for ActiveMQ
+                see javax.naming.Context#PROVIDER_URL
+            -->       
+            <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
             
             
             <!-- 
@@ -27,9 +29,9 @@
             -->
             <parameter name="topic" value="dynamicTopics/eXistdb"/>
 
-            <!-- 
-                Set client identifier for this connection
-                see javax.jms.Connection.html#setClientID(String) 
+            <!--
+                Set client identifier for this connection.
+                see javax.jms.Connection#setClientID(string)
             -->
             <parameter name="client-id" value="SubscriberId"/>
             
@@ -41,9 +43,31 @@
             
             <!-- 
                 Set the subscription is durable. default = yes
-                see JMS javax.jms.TopicSession#createDurableSubscriber(Topic,String) 
+                see JMS javax.jms.Session#createDurableSubscriber(Topic,String) 
+                see JMS javax.jms.Session#createConsumer(Destination, String, boolean)
+                
                 [Optional]
             -->
-            <parameter name="durable" value="yes"/>
+            <!--<parameter name="durable" value="yes"/>-->
+            
+             <!-- 
+                A JMS API message selector allows a message consumer to specify 
+                the messages it is interested in. The syntax of the expression is based 
+                on a subset of the SQL92 conditional expression syntax.
+                
+                see javax.jms.Message
+                
+                [Optional]
+            -->
+            <!--<parameter name="messageselector" value="property1 = 'a' OR property2 = 'b'"/>-->
+            
+             <!-- 
+                If set, inhibits delivery of messages published by its own connection
+                default = yes
+                
+                [Optional]
+            -->
+            <!--<parameter name="nolocal" value="yes"/>-->
+   
 
         </job>
