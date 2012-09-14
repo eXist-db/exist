@@ -22,54 +22,69 @@ ActimeMQ
 --------
 - Download recent version from ActiveMQ from http://activemq.apache.org/download.html ; 
   Note that the TGZ file has additional unix (linux, MacOsX) support, the ZIP file
-  is for Windows.
+  is for Windows. The contents of the archives actually differ.
 - Extract content to disk, refered as ACTIVEMQ_HOME
 - Copy the activemq-all-X.Y.Z.jar file to EXIST_HOME/lib/user
 
 eXistdb
 -------
-- Build replication extension (modify extensions/build.properties) or copy the
+- Build replication extension (modify extensions/local.build.properties) or copy the
   pre-built version of exist-replication.jar to lib/extensions
 
+
+
+Get Started
+===========
 - For 'Master' server (publisher)
   - Create collection '/db/mycollection' that shall be monitored for document changes
-  - Create collection '/db/system/config/db/mycollection/', add the file collection.xconf
-  - Add a collection.xconf file for the directory for which the content below;
-    Fill in the right hostname/url of the activemq message broker:
+  - Create collection '/db/system/config/db/mycollection/'
+  - Create in there a document 'collection.xconf' add the content below of 
+    to the document
+  - Fill the correct value for 'java.naming.provider.url' that matches your message broker
   
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <triggers>
-            <trigger class="org.exist.replication.jms.publish.ClusterTrigger">
+            <trigger class="org.exist.replication.jms.publish.ReplicationTrigger">
+
                 <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
-                <parameter name="java.naming.provider.url" value="tcp://miniserver.local:61616"/>
+                <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
+
                 <parameter name="connectionfactory" value="ConnectionFactory"/>
                 <parameter name="topic" value="dynamicTopics/eXistdb"/>
-                <parameter name="client.connection.client-id" value="PublisherId"/>  
-                <parameter name="producer.time-to-live" value="0"/>    
-		<parameter name="producer.priority" value="4"/> 
+
+                <!-- Set value -->
+                <parameter name="client-id" value="SetPublisherId"/>  
+
             </trigger>
         </triggers>
     </collection>
-  
-- For each 'Slave' (subscriber), a job must be started via conf.xml; the URL must 
-  match the 'Master' configuration of the previous section. Create the collection 
-  '/db/mycollection' since the location of the distributed documents will be mirrored 
-  from the 'Master' server.
 
-    <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.JMSReceiveJob">
+  - Set value for "client-id"
+  
+- For each 'Slave' (subscriber)
+  - Add a job to conf.xml, update the value of "java.naming.provider.url"
+  - Fill the correct value for 'java.naming.provider.url' that matches your message broker
+
+   <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.MessageReceiverJob">
+
         <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
-        <parameter name="java.naming.provider.url" value="tcp://miniserver.local:61616"/>
+        <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
 
         <parameter name="connectionfactory" value="ConnectionFactory"/>
-
         <parameter name="topic" value="dynamicTopics/eXistdb"/>
 
-        <parameter name="client.connection.client-id" value="SubscriberId"/>
-        <parameter name="client.topicsession.subscriber-name" value="SubscriptionId"/>
+        <!-- set values -->
+        <parameter name="client-id" value="SetSubscriberId"/> 
+        <parameter name="subscriber-name" value="SetSubscriptionId"/> 
 
-        <parameter name="client.nolocal" value="yes"/>
-        <parameter name="client.messageselector" value="Foo='Bar'"/>
     </job>
+
+  - Set values for "cclient-id" and 'subscriber-name'
+
+  - Create the collection '/db/mycollection' , this is the collection that receives the 
+    documents that are updated in the same collection on the 'Master' server.
+
+    
 
 
 Start-up
@@ -85,11 +100,12 @@ Start-up
 - Start Master
     cd EXISTMASTER_HOME
     ./bin/startup.sh
+
     
 Distribute
 ----------
-- Create a document in the master server in /db/mycollection/ (e.g. using the 
-  java client, or eXide ; login as admin);  The document will be automatically 
+- Create a document in the master server in '/db/mycollection/' (e.g. using the 
+  java client or eXide; login as admin);  The document will be automatically 
   replicated to the slave servers.
 
  
@@ -102,8 +118,3 @@ Performance Test
   for $i in (1000 to 3000)
   return
     xmldb:store('/db/mycollection', concat('mydoc', $i , ".xml"), $doc)
-
-
-    
-    
-    
