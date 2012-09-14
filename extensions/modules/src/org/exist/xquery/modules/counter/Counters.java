@@ -1,11 +1,6 @@
 package org.exist.xquery.modules.counter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -13,12 +8,19 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
+import org.exist.backup.RawDataBackup;
+import org.exist.indexing.AbstractIndex;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.RawBackupSupport;
+import org.exist.storage.DBBroker;
+import org.exist.storage.btree.DBException;
+import org.exist.util.DatabaseConfigurationException;
 
 /**
  * @author Jasper Linthorst (jasper.linthorst@gmail.com)
  *
  */
-public class Counters {
+public class Counters implements RawBackupSupport {
 
     private final static Logger LOG = Logger.getLogger(Counters.class);
     
@@ -79,6 +81,13 @@ public class Counters {
         if (instance == null) {
             LOG.debug("Initializing counters.");
             instance = new Counters(dataDir);
+        }
+        return instance;
+    }
+
+    public static Counters getInstance() throws EXistException {
+        if (instance == null) {
+            instance = getInstance(COUNTERSTORE);
         }
         return instance;
     }
@@ -198,4 +207,21 @@ public class Counters {
 
         p.close();
     }
+
+    @Override
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        if (!store.exists())
+            return;
+        OutputStream os = backup.newEntry(store.getName());
+        InputStream is = new FileInputStream(store);
+        byte[] buf = new byte[4096];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+            os.write(buf, 0, len);
+        }
+        is.close();
+        os.close();
+        backup.closeEntry();
+    }
+
 }

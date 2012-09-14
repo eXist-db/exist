@@ -226,7 +226,7 @@ public abstract class Paged {
      */
     public void backupToStream(OutputStream os) throws IOException {
         raf.seek(0);
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[4096];
         int len;
         while ((len = raf.read(buf)) > 0) {
             os.write(buf, 0, len);

@@ -128,7 +128,7 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 	public void backupToArchive(RawDataBackup backup) throws IOException {
         OutputStream os = backup.newEntry(dataFile.getName());
 		InputStream is = new FileInputStream(dataFile);
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[4096];
         int len;
         while ((len = is.read(buf)) > 0) {
             os.write(buf, 0, len);

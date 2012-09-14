@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.backup.RawDataBackup;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
@@ -392,6 +393,11 @@ public class SymbolTable {
         fis.close();
     }
 
+    public void backupToArchive(RawDataBackup backup) throws IOException {
+        OutputStream os = backup.newEntry(getFile().getName());
+        backupSymbolsTo(os);
+    }
+
     public void flush() throws EXistException {
         //Noting to do ? -pb
     }
@@ -517,7 +523,6 @@ public class SymbolTable {
         /**
          * Append a new entry to the .dbx file
          *
-         * @param type
          * @param id
          * @param key
          */
