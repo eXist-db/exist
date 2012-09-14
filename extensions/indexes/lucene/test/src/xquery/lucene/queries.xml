@@ -3,6 +3,7 @@
 	<description>
 		<para>Tests for the Lucene extensions</para>
 		<author>Wolfgang Meier</author>
+		<author>Leif-Jöran Olsson</author>
 	</description>
 	<setup>
 		<create-collection parent="/db/system" name="config"/>
@@ -11,8 +12,6 @@
 		<store collection="/db/system/config/db/lucene" name="collection.xconf">
 			<collection xmlns="http://exist-db.org/collection-config/1.0">
 				<index>
-					<!-- Disable the standard full text index -->
-					<fulltext default="none" attributes="false"></fulltext>
 					<!-- Lucene index is configured below -->
 					<lucene>
 						<analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
@@ -39,6 +38,11 @@
 				<p>Eins zwei drei vier zwei fünf sechs.</p>
 				<p>Sieben acht <b>neun</b> zehn acht.</p>
 				<para>The stopwords should not be indexed.</para>
+				<p>Det är flera ord och fraser i det här stycket 
+				som börjar med det är flera ord och fraser.
+				Dessutom är stycket något krystat komponerat med
+				ord och fraser i långa rader, men det är nu dags 
+				att verkligen sluta upprepa ord och fraser.</p>
 				<tt:note>Note using different namespace.</tt:note>
 				<x>
 					<y>Nested <z>nodes</z></y>
@@ -395,6 +399,23 @@
 		</expected>
 	</test>
 	<test output="xml">
+		<task>Phrase highlighting 6: multiple phrases match</task>
+		<code>declare namespace exist="http://exist.sourceforge.net/NS/exist"; for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., '"ord och fraser"')] return util:expand($hit)//exist:match</code>
+		<expected>
+		  <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">ord och fraser</exist:match>
+		  <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">ord och fraser</exist:match>
+		  <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">ord och fraser</exist:match>
+		  <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">ord och fraser</exist:match>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Phrase highlighting 7: phrase with same start token as previously occuring token.</task>
+		<code>declare namespace exist="http://exist.sourceforge.net/NS/exist"; for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., '"stycket något krystat"')] return util:expand($hit)//exist:match</code>
+		<expected>
+		  <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">stycket något krystat</exist:match>
+		</expected>
+	</test>
+	<test output="xml">
 		<task>Match highlighting: prefix query</task>
 		<code> for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., 'neu*')] return
 			util:expand($hit/b) </code>
@@ -497,22 +518,47 @@
 			}
 			</terms>]]></code>
 		<expected>
-			<terms>
-				<t>acht</t>
-				<t>drei</t>
-				<t>eins</t>
-				<t>first</t>
-				<t>fünf</t>
-				<t>level</t>
-				<t>neun</t>
-				<t>sechs</t>
-				<t>second</t>
-				<t>sieben</t>
-				<t>third</t>
-				<t>vier</t>
-				<t>zehn</t>
-				<t>zwei</t>
-			</terms>
+		  <terms>
+                    <t>acht</t>
+                    <t>att</t>
+                    <t>börjar</t>
+                    <t>dags</t>
+                    <t>dessutom</t>
+                    <t>det</t>
+                    <t>drei</t>
+                    <t>eins</t>
+                    <t>first</t>
+                    <t>flera</t>
+                    <t>fraser</t>
+                    <t>fünf</t>
+                    <t>här</t>
+                    <t>i</t>
+                    <t>komponerat</t>
+                    <t>krystat</t>
+                    <t>level</t>
+                    <t>långa</t>
+                    <t>med</t>
+                    <t>men</t>
+		    <t>neun</t>
+                    <t>nu</t>
+                    <t>något</t>
+                    <t>och</t>
+                    <t>ord</t>
+                    <t>rader</t>
+                    <t>sechs</t>
+                    <t>second</t>
+                    <t>sieben</t>
+                    <t>sluta</t>
+                    <t>som</t>
+                    <t>stycket</t>
+                    <t>third</t>
+                    <t>upprepa</t>
+                    <t>verkligen</t>
+                    <t>vier</t>
+                    <t>zehn</t>
+                    <t>zwei</t>
+                    <t>är</t>
+		  </terms>
 		</expected>
 	</test>
 	<test output="xml">
@@ -530,11 +576,14 @@
 			}
 			</terms>]]></code>
 		<expected>
-			<terms>
-				<t>sechs</t>
-				<t>second</t>
-				<t>sieben</t>
-			</terms>
+		  <terms>
+                    <t>sechs</t>
+                    <t>second</t>
+                    <t>sieben</t>
+                    <t>sluta</t>
+                    <t>som</t>
+                    <t>stycket</t>
+		  </terms>
 		</expected>
 	</test>
 	<test output="xml">
@@ -568,10 +617,13 @@
 			}
 			</terms>]]></code>
 		<expected>
-			<terms>
-				<t>sechs</t>
-				<t>sieben</t>
-			</terms>
+		  <terms>
+		    <t>sechs</t>
+                    <t>sieben</t>
+                    <t>sluta</t>
+                    <t>som</t>
+                    <t>stycket</t>
+		  </terms>
 		</expected>
 	</test>
 	<test output="xml">

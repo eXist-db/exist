@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSet xmlns:stats="http://exist-db.org/xquery/profiling">
-    <testName>Lucene indexing tests</testName>
+    <testName>Lucene indexing tests: analyzers</testName>
     <description>
-        <para>Tests for the Lucene extensions</para>
+        <para>Tests for Lucene analyzers</para>
         <author>Wolfgang Meier</author>
     </description>
     <setup>
