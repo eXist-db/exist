@@ -54,7 +54,7 @@ public class FunctionCall extends Function {
     protected List<Expression> arguments = null;
 	
     private boolean recursive = false;
-	
+
     protected VariableReference varDeps[];
 
     public FunctionCall(XQueryContext context, QName name, List<Expression> arguments) {
@@ -308,17 +308,18 @@ public class FunctionCall extends Function {
             //XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
             context.stackEnter(this);
 
+            long start = System.currentTimeMillis();
+            if(context.getProfiler().traceFunctions()) {
+                if (context.tailRecursiveCall(getSignature()))
+                    start = -1;
+                context.getProfiler().traceFunctionStart(this);
+            }
             context.functionStart(functionDef.getSignature());
             final LocalVariable mark = context.markLocalVariables(true);
             context.pushInScopeNamespaces(false);
 
             Sequence returnSeq = null;
             try {
-                if(context.getProfiler().traceFunctions()) {
-                    context.getProfiler().traceFunctionStart(this);
-                }
-                
-                long start = System.currentTimeMillis();
                 
                 returnSeq = expression.eval(contextSequence, contextItem);
                 while(returnSeq instanceof DeferredFunctionCall &&
@@ -328,7 +329,7 @@ public class FunctionCall extends Function {
                 }
                 
                 if(context.getProfiler().traceFunctions()) {
-                    context.getProfiler().traceFunctionEnd(this, (System.currentTimeMillis() - start));
+                    context.getProfiler().traceFunctionEnd(this, start < 0 ? 0 : System.currentTimeMillis() - start);
                 }
                 
                 if(context.isProfilingEnabled()) {
