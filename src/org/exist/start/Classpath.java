@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -18,7 +19,7 @@ import java.util.Vector;
  * Class to handle CLASSPATH construction
  * @author Jan Hlavat�
  */
-public class Classpath {
+public class Classpath implements Iterable<File> {
 
     Vector<File> _elements = new Vector<File>();    
 
@@ -90,8 +91,8 @@ public class Classpath {
         }
         return cp.toString();
     }
-    
-    public ClassLoader getClassLoader(ClassLoader parent) {
+
+    public EXistClassLoader getClassLoader(ClassLoader parent) {
         int cnt = _elements.size();
         URL[] urls = new URL[cnt];
         for (int i=0; i < cnt; i++) {
@@ -108,6 +109,11 @@ public class Classpath {
         if (parent == null) {
             parent = ClassLoader.getSystemClassLoader();
         }
-        return new URLClassLoader(urls, parent);
+        return new EXistClassLoader(urls, parent);
+    }
+
+    @Override
+    public Iterator<File> iterator() {
+        return _elements.iterator();
     }
 }

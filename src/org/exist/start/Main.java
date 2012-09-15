@@ -8,22 +8,15 @@
  */
 package org.exist.start;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.exist.storage.BrokerPool;
+
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import org.exist.storage.BrokerPool;
 
 /**
  * @author Jan Hlavaty (hlavac@code.cz)
@@ -455,7 +448,7 @@ public class Main {
             }
 
             Classpath _classpath = constructClasspath(_home_dir, args);
-            ClassLoader cl = _classpath.getClassLoader(null);
+            EXistClassLoader cl = _classpath.getClassLoader(null);
             Thread.currentThread().setContextClassLoader(cl);
 
             if (_debug) {
@@ -640,53 +633,6 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // expathrepo
-	// fixme! - check this expathrepo addition to jetty main. /ljo
-        try {
-            File repo;
-            String existHome = System.getProperty("exist.home");
-            if (existHome != null) {
-                new File(existHome + "/webapp/WEB-INF/expathrepo").mkdir();
-                repo = new File(existHome + "/webapp/WEB-INF/expathrepo");
-
-            } else {
-                new File(System.getProperty("java.io.tmpdir") + "/expathrepo").mkdir();
-                repo = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
-            }
-
-            File[] modules = repo.listFiles(new FileFilter() {
-
-                public boolean accept(File file) {
-                    return file.isDirectory() && !file.getName().startsWith(".");
-                }
-            });
-
-            if (modules != null) {
-                for (File module : modules) {
-                    File exist = new File(module, ".exist");
-                    if (exist.exists()) {
-                        if (!exist.isDirectory()) {
-                            throw new IOException("The .exist config dir is not a dir: " + exist);
-                        }
-
-                        File cp = new File(exist, "classpath.txt");
-                        if (cp.exists()) {
-                            BufferedReader reader = new BufferedReader(new FileReader(cp));
-                            try {
-                                _classpath.addComponent(reader.readLine());
-                                ;
-                            } finally {
-                                reader.close();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        // expathrepo
 
         // try to find javac and add it in classpaths
         String java_home = System.getProperty("java.home");

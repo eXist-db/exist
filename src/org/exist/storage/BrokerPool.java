@@ -51,6 +51,7 @@ import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.plugin.PluginsManager;
 import org.exist.plugin.PluginsManagerImpl;
+import org.exist.repo.ClasspathHelper;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.AuthenticationException;
@@ -584,6 +585,8 @@ public class BrokerPool extends Observable implements Database {
     private final Calendar startupTime = Calendar.getInstance();
 
     private BrokerWatchdog watchdog = null;
+
+    private ClassLoader classLoader;
     
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
@@ -603,7 +606,9 @@ public class BrokerPool extends Observable implements Database {
 
         if (statusObserver != null)
             addObserver(statusObserver);
-        
+
+        this.classLoader = Thread.currentThread().getContextClassLoader();
+
 		//TODO : ensure that the instance name is unique ?
         //WM: needs to be done in the configure method.
 		this.instanceName = instanceName;
@@ -1001,6 +1006,8 @@ public class BrokerPool extends Observable implements Database {
 
         scheduler.run();
 
+        ClasspathHelper.updateClasspath(this);
+
         statusReporter.setStatus(SIGNAL_STARTED);
         statusReporter.terminate();
         statusReporter = null;
@@ -1107,6 +1114,15 @@ public class BrokerPool extends Observable implements Database {
 
     public int getPageSize() {
         return pageSize;
+    }
+
+    /**
+     * Returns the class loader used when this BrokerPool was configured.
+     *
+     * @return
+     */
+    public ClassLoader getClassLoader() {
+        return this.classLoader;
     }
 
     /**
