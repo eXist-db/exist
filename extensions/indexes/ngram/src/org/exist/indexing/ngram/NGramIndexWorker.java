@@ -958,7 +958,6 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             String ngram;
             try {
                 ngram = new String(key.getData(), NGramQNameKey.NGRAM_OFFSET, key.getLength() - NGramQNameKey.NGRAM_OFFSET, "UTF-8");
-                LOG.debug("Found ngram: " + ngram);
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;

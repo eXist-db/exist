@@ -66,7 +66,6 @@ public class BTreeCache extends LRUCache {
         } while(!removed);
         accounting.replacedPage(item);
         if (growthFactor > 1.0 && accounting.resizeNeeded()) {
-            accounting.stats();
             cacheManager.requestMem(this);
         }
     }
