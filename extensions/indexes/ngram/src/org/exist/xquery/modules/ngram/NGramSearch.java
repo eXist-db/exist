@@ -39,21 +39,7 @@ import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.BasicExpressionVisitor;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocationStep;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Optimizable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunStringToCodepoints;
 import org.exist.xquery.modules.ngram.query.AlternativeStrings;
 import org.exist.xquery.modules.ngram.query.EmptyExpression;
@@ -230,6 +216,8 @@ public class NGramSearch extends Function implements Optimizable {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
 
+        long start = System.currentTimeMillis();
+
         NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(
             NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
@@ -238,6 +226,11 @@ public class NGramSearch extends Function implements Optimizable {
         qnames.add(contextQName);
         preselectResult = processMatches(index, docs, qnames, key, useContext ? contextSequence.toNodeSet() : null,
             NodeSet.DESCENDANT);
+
+        if( context.getProfiler().traceFunctions() ) {
+            // report index use
+            context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+        }
         return preselectResult;
     }
 
@@ -252,6 +245,7 @@ public class NGramSearch extends Function implements Optimizable {
             if (input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
+                long start = System.currentTimeMillis();
                 NodeSet inNodes = input.toNodeSet();
                 DocumentSet docs = inNodes.getDocumentSet();
                 NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController()
@@ -267,6 +261,10 @@ public class NGramSearch extends Function implements Optimizable {
                     qnames.add(contextQName);
                 }
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
+                if( context.getProfiler().traceFunctions() ) {
+                    // report index use
+                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                }
             }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
