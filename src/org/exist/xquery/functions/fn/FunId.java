@@ -226,4 +226,11 @@ public class FunId extends Function {
             }
         }
     }
+
+    @Override
+    public int getDependencies() {
+        // fn:id can operate on the entire context sequence at once - unless the
+        // argument depends on the context item
+        return getArgument(0).getDependencies();
+    }
 }
