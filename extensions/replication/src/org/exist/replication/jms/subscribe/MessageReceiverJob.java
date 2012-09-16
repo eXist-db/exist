@@ -113,7 +113,8 @@ public class MessageReceiverJob extends UserJavaJob {
             // Start it all
             connection.start();
 
-            LOG.info("Sucessfull subscribed '" + parameters.getSubscriberName() + "' to '" + parameters.getTopic() + "'");
+            LOG.info("Sucessfull subscribed '" + parameters.getSubscriberName() 
+                    + "' to '" + parameters.getTopic() + "'");
 
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
