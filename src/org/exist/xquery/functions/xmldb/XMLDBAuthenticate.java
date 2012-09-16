@@ -162,23 +162,24 @@ public class XMLDBAuthenticate extends BasicFunction {
         }
         
         try {
-        	Subject user;
+            Subject user;
         	
-        	try {
+            try {
             	SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
             	user = sm.authenticate(userName, password);
-        	} catch (AuthenticationException e) {
-                logger.error("Unable to authenticate user: "+userName);
+            } catch (AuthenticationException e) {
+                logger.error("Unable to authenticate user: " + userName + " " + getLocation());
                 return BooleanValue.FALSE;
-			} catch (EXistException e) {
-                logger.error("Unable to authenticate user: "+userName);
-	            return BooleanValue.FALSE;
-			}
+            } catch (EXistException e) {
+                logger.error("Unable to authenticate user: " + userName + " " + getLocation(), e);
+                return BooleanValue.FALSE;
+            }
+            
             Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
 
             if( root == null ) {
-                logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist");
-	            return BooleanValue.FALSE;
+                logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist " + getLocation());
+                return BooleanValue.FALSE;
             }
 			
             if( isCalledAs( "login" ) ) {
@@ -190,8 +191,13 @@ public class XMLDBAuthenticate extends BasicFunction {
 			
             return BooleanValue.TRUE;
         } catch (XMLDBException e) {
+            logger.error(getLocation() + " : " + e.getMessage(), e);
             return BooleanValue.FALSE;
         }
+    }
+    
+    private String getLocation() {
+        return "@ " + getContext().getXacmlSource().getKey() + " [" + getLine() + ":" + getColumn() + "]";
     }
 	
 	/**
