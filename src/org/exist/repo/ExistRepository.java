@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.transform.stream.StreamSource;
+
+import org.exist.EXistException;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -157,6 +159,22 @@ public class ExistRepository {
             }
         }
         return null;
+    }
+
+    public static ExistRepository getRepository(File home) throws PackageException {
+        if (home != null){
+            File repo_dir = new File(home, EXPATH_REPO_DEFAULT);
+            // ensure the dir exists
+            repo_dir.mkdir();
+            FileSystemStorage storage = new FileSystemStorage(repo_dir);
+            return new ExistRepository(storage);
+        } else {
+            File repo_dir = new File(System.getProperty("java.io.tmpdir"), EXPATH_REPO_DIR);
+            // ensure the dir exists
+            repo_dir.mkdir();
+            FileSystemStorage storage = new FileSystemStorage(repo_dir);
+            return new ExistRepository(storage);
+        }
     }
 
     /** The wrapped EXPath repository. */

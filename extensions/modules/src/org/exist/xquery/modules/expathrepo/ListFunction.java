@@ -47,7 +47,6 @@ public class ListFunction extends BasicFunction {
             Repository parent_repo = repo.getParentRepo();
             for ( Packages pkg :  parent_repo.listPackages() ) {
                 String name = pkg.name();
-                System.out.println(name);
                 result.add(new StringValue(name));
             }
         } catch (Exception ex ) {

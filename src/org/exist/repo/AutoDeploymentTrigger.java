@@ -28,7 +28,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         if (!autodeployDir.canRead() && autodeployDir.isDirectory())
             return;
         try {
-            ExistRepository repo = getRepository(homeDir);
+            ExistRepository repo = ExistRepository.getRepository(homeDir);
             UserInteractionStrategy interact = new BatchUserInteraction();
             File[] xars = autodeployDir.listFiles(new FileFilter() {
                 @Override
@@ -45,10 +45,11 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     LOG.debug("Checking package " + name);
                     Packages packages = repo.getParentRepo().getPackages(name);
                     if (packages != null) {
-                        LOG.info("Found: " + packages.name());
                         LOG.info("Application package " + name + " already installed. Skipping.");
                     } else {
+                        // installing the xar into the expath repo
                         org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
+                        ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
                         String pkgName = pkg.getName();
                         broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
                         deployment.deploy(pkgName, repo, null);
@@ -61,31 +62,9 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 }
             }
-        } catch (EXistException e) {
+        } catch (PackageException e) {
             LOG.warn("Exception caught while initializing expath repository: " + e.getMessage(), e);
             broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
-        }
-    }
-
-    private static ExistRepository getRepository(File home) throws EXistException {
-        try {
-            if (home != null){
-                File repo_dir = new File(home, "webapp/WEB-INF/expathrepo");
-                // ensure the dir exists
-                repo_dir.mkdir();
-                FileSystemStorage storage = new FileSystemStorage(repo_dir);
-                return new ExistRepository(storage);
-            } else {
-                File repo_dir = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
-                // ensure the dir exists
-                repo_dir.mkdir();
-                FileSystemStorage storage = new FileSystemStorage(repo_dir);
-                return new ExistRepository(storage);
-            }
-        }
-        catch ( PackageException ex ) {
-            // problem with pkg-repo.jar throwing exception
-            throw new EXistException("Problem setting expath repository", ex);
         }
     }
 
