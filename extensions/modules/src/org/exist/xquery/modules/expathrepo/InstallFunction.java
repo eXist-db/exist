@@ -8,8 +8,10 @@ import org.apache.log4j.Logger;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
+import org.exist.repo.ClasspathHelper;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
@@ -25,9 +27,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.UserInteractionStrategy;
+import org.expath.pkg.repo.*;
+import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 
 
@@ -69,12 +70,13 @@ public class InstallFunction extends BasicFunction {
         
         ExistRepository repo = getContext().getRepository();
         Repository parent_repo = repo.getParentRepo();
-        
+
         try {
-        	if (isCalledAs("install")) {
+            Package pkg;
+            if (isCalledAs("install")) {
         		// download .xar from a URI
         		URI uri = _getURI(pkgOrPath);
-        		parent_repo.installPackage(uri, force, interact);
+                pkg = parent_repo.installPackage(uri, force, interact);
         	} else {
         		// .xar is stored as a binary resource
         		BinaryDocument doc = null;
@@ -82,13 +84,15 @@ public class InstallFunction extends BasicFunction {
         			doc = _getDocument(pkgOrPath);
         			File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
         			LOG.debug("Installing file: " + file.getAbsolutePath());
-        			parent_repo.installPackage(file, force, interact);
+        			pkg = parent_repo.installPackage(file, force, interact);
         		} finally {
         			if (doc != null)
         				doc.getUpdateLock().release(Lock.READ_LOCK);
         		}
         	}
-        
+            ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+            if (info != null && !info.getJars().isEmpty())
+                ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
             removed = BooleanValue.TRUE;
         } catch (PackageException ex ) {
         	logger.debug(ex.getMessage(), ex);
