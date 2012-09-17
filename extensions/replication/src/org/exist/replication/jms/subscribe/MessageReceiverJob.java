@@ -41,21 +41,24 @@ import org.exist.storage.BrokerPool;
 public class MessageReceiverJob extends UserJavaJob {
 
     private final static Logger LOG = Logger.getLogger(MessageReceiverJob.class);
-    private final static String JOB_NAME = "JMSReceiveJob";
+    private final static String JOB_NAME = "MessageReceiverJob";
     private String jobName = JOB_NAME;
 
     @Override
     public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
-
+        
         // Get from .xconf file, fill defaults when needed
         SubscriberParameters parameters = new SubscriberParameters();
         parameters.setSingleValueParameters(params);
         parameters.processParameters();
         parameters.fillActiveMQbrokerDefaults();
+        
+        LOG.info("Starting subscription of '" + parameters.getSubscriberName() 
+                    + "' to '" + parameters.getTopic() + "'");
 
-        Properties contextProps = parameters.getInitialContextProps();
-
-        LOG.debug(parameters.getReport());
+        if(LOG.isDebugEnabled()){
+            LOG.debug(parameters.getReport());
+        }
 
         // Setup listeners
         JMSMessageListener jmsListener = new JMSMessageListener(brokerpool);
@@ -63,6 +66,7 @@ public class MessageReceiverJob extends UserJavaJob {
 
         try {
             // Setup context
+            Properties contextProps = parameters.getInitialContextProps();
             Context context = new InitialContext(contextProps);
 
             // Lookup topic
@@ -113,11 +117,10 @@ public class MessageReceiverJob extends UserJavaJob {
             // Start it all
             connection.start();
 
-            LOG.info("Sucessfull subscribed '" + parameters.getSubscriberName() 
-                    + "' to '" + parameters.getTopic() + "'");
+            LOG.info("Subscription was sucessful.");
 
         } catch (Throwable t) {
-            LOG.error(t.getMessage(), t);
+            LOG.error("Unable to subscribe: " + t.getMessage() + ";  " + parameters.getReport(), t);
             throw new JobException(JobException.JOB_ABORT_THIS, t.getMessage());
         }
     }
