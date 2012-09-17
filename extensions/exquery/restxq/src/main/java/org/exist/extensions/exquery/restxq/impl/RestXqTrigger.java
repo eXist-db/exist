@@ -176,6 +176,9 @@ public class RestXqTrigger extends FilteringTrigger {
         for(final String dependant : getDependants(xqueryLocation)) {
             try {
                 getRegistry(broker).deregister(new URI(dependant));
+                
+                //record the now missing dependency
+                recordMissingDependency(xqueryLocation.toString(), XmldbURI.create(dependant));
             } catch(final URISyntaxException urise) {
                 LOG.error(urise.getMessage(), urise);
             }
