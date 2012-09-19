@@ -21,8 +21,15 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
     public final static String AUTODEPLOY_DIRECTORY = "autodeploy";
 
+    public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
+
     @Override
     public void execute(DBBroker broker) {
+        // do not process if the system property exist.autodeploy=off
+        String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
+        if (property.equalsIgnoreCase("off"))
+            return;
+
         File homeDir = broker.getConfiguration().getExistHome();
         File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
         if (!autodeployDir.canRead() && autodeployDir.isDirectory())
