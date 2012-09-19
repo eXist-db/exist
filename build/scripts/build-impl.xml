@@ -44,7 +44,7 @@
     <import file="./subversion.xml"/>
     <import file="./junit.xml"/>
     <import file="./antlr3.xml"/>
-
+    
     <!-- setup conditional properties -->
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
     <available file="key.store" property="key.store.present"/>
@@ -583,8 +583,6 @@
         <delete dir="${junit.reports}/jdepend"/>
         <delete dir="${junit.reports}/classes"/>
 
-        <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
-        
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
         <delete failonerror="no" file="exist.jar"/>
@@ -698,7 +696,7 @@
     </target>
 
     <target name="extensions-xar" depends="jar">
-        <ant antfile="build.xml" dir="webapp/repo" inheritall="false"/>
+        <ant antfile="build/scripts/setup.xml" dir="." inheritall="false"/>
     </target>
     
     <target name="cleandocs">
