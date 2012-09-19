@@ -103,9 +103,9 @@ public class TemporaryFileManager {
         final boolean deleted = tempFile.delete();
         
         if(deleted) {
-            LOG.info("Deleted temporary file: " + tempFile.getAbsolutePath());
+            LOG.debug("Deleted temporary file: " + tempFile.getAbsolutePath());
         } else {
-            LOG.warn("Could not delete temporary file: " + tempFile.getAbsolutePath() + ". Returning to stack for re-use.");
+            LOG.debug("Could not delete temporary file: " + tempFile.getAbsolutePath() + ". Returning to stack for re-use.");
             
             //if we couldnt delete it, add it to the stack of available files
             //for reuse in the future.
@@ -133,7 +133,7 @@ public class TemporaryFileManager {
     private void deleteFolder(File folder) {
         try {
             FileUtils.deleteDirectory(folder);
-            LOG.info("Deleted temporary folder: " + folder.getAbsolutePath());
+            LOG.debug("Deleted temporary folder: " + folder.getAbsolutePath());
         } catch(IOException ioe) {
             LOG.warn("Unable to delete temporary folder: " + folder.getAbsolutePath(), ioe);
         }

@@ -99,7 +99,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
         if (contextSequence == this ||
             (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
             return;
-        LOG.warn("Closing input stream");
+        LOG.debug("Closing input stream");
         try {
             this.close();
         } catch (IOException e) {
