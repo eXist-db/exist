@@ -160,6 +160,11 @@
        		<triggers>
        		    <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
        			<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+			<!-- 
+			 ! AutoDeploymentTrigger will install any .xar application package it finds
+			 ! in the autodeploy directory unless the application has already been installed
+			 ! in the db. -->	
+       			<trigger class="org.exist.repo.AutoDeploymentTrigger"/>
        		</triggers>
        	</startup>
 
