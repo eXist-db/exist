@@ -25,6 +25,7 @@ import org.exist.jetty.JettyStart;
 import org.exist.storage.BrokerPool;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.net.URL;
 import java.util.Observable;
@@ -60,8 +61,9 @@ public class SplashScreen extends JFrame implements Observer {
 
         // message label
         statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
-        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.BOLD, 14));
+        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 14));
         statusLabel.setForeground(Color.black);
+        statusLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
         statusLabel.setSize(new Dimension(icon.getIconWidth(), 60));
 
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
