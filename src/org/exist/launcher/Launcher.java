@@ -202,7 +202,7 @@ public class Launcher {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         try {
-                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/eXide/");
+                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
                             desktop.browse(url);
                         } catch (URISyntaxException e) {
                             trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
