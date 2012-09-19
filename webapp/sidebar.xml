@@ -54,7 +54,7 @@
             <link href="xquery/acronyms.xql">XML Acronyms</link>
         </item>
         <item>
-            <link href="eXide/" target="_new">XQuery IDE (eXide)</link>
+            <link href="apps/eXide/" target="_new">XQuery IDE (eXide)</link>
         </item>
         <item>
             <link href="sandbox/sandbox.xql" target="_sandbox">XQuery Sandbox</link>
