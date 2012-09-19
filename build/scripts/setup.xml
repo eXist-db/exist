@@ -24,27 +24,29 @@
   <property name="public-repo" value="http://demo.exist-db.org/exist/apps/public-repo/public/"/>
   <property name="autostart-dir" value="autodeploy"/>
   
-  <!--  Automatically download standard xar packages from public repository
+  <target name="prepare">
+    <mkdir dir="${autostart-dir}"/>
+    <!--  Automatically download standard xar packages from public repository
         if autostart directory is empty.
   -->
-  <path id="autostart-files">
-    <fileset dir="${autostart-dir}">
-      <include name="*.xar"/>
-    </fileset>
-  </path>
-  
-  <property name="autostart-files" refid="autostart-files"/>
-  
-  <condition property="autostart-empty"> 
-    <equals arg1="" arg2="${autostart-files}"/> 
-  </condition>
+    <path id="autostart-files">
+      <fileset dir="${autostart-dir}">
+        <include name="*.xar"/>
+      </fileset>
+    </path>
+    
+    <property name="autostart-files" refid="autostart-files"/>
+    
+    <condition property="autostart-empty"> 
+      <equals arg1="" arg2="${autostart-files}"/> 
+    </condition>
+  </target>
   
   <!-- 
     Download jar files the author website. This is newest version of the library, 
     if the URL is updated in time. The download size is significantly larger.
   -->
-  <target name="setup" description="Download standard xar packages." if="autostart-empty">
-
+  <target name="setup" depends="prepare" description="Download standard xar packages." if="autostart-empty">
     <foreach list="${autodeploy}" target="download-xar" param="xar"></foreach>
   </target>
   
