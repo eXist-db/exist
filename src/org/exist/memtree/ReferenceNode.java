@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -106,5 +107,10 @@ public class ReferenceNode extends NodeImpl {
             throws XPathException {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public String getNodeValue() throws DOMException {
+		return getReference().getNode().getNodeValue();
     }
 }
