@@ -25,6 +25,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.inspect.*;
+import org.exist.xquery.functions.inspect.InspectFunction;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +54,7 @@ public class UtilModule extends AbstractInternalModule
         new FunctionDef( BuiltinFunctions.signatures[2], BuiltinFunctions.class ),
         new FunctionDef( BuiltinFunctions.signatures[3], BuiltinFunctions.class ),
         new FunctionDef( BuiltinFunctions.signatures[4], BuiltinFunctions.class ),
-        new FunctionDef( InspectFunction.signature, InspectFunction.class),
+        new FunctionDef(InspectFunction.SIGNATURE_DEPRECATED, InspectFunction.class),
         new FunctionDef( ModuleInfo.moduleDescriptionSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.registeredModuleSig, ModuleInfo.class ),
         new FunctionDef( ModuleInfo.registeredModulesSig, ModuleInfo.class ),
