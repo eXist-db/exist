@@ -101,8 +101,8 @@ public class AnyURIValue extends AtomicValue {
 		this.uri = uri.toString();
 	}
 	public AnyURIValue(String s) throws XPathException {
-		String wsTrimString = StringValue.trimWhitespace(s);
-		String escapedString = escape(StringValue.trimWhitespace(wsTrimString));
+		String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
+		String escapedString = escape(wsTrimString);
         try {
 			new URI(escapedString);
 		} catch (URISyntaxException e) {
@@ -402,5 +402,23 @@ public class AnyURIValue extends AtomicValue {
         if (obj instanceof AnyURIValue)
             return ((AnyURIValue)obj).uri.equals(uri);
         return false;
+    }
+
+    private String normalizeEscaped(String in) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < in.length(); i++) {
+            char ch = in.charAt(i);
+            if (ch == '%') {
+                builder.append(ch);
+                for (int j = 1; j <= 2 && i + j < in.length(); j++) {
+                    ch = in.charAt(i + j);
+                    builder.append(Character.toUpperCase(ch));
+                }
+                i += 2;
+            } else {
+                builder.append(ch);
+            }
+        }
+        return builder.toString();
     }
 }
