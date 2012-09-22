@@ -17,8 +17,6 @@
     </classpath>
   </taskdef>
   
-  <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
-  
   <property file="build.properties"/>
   
   <property name="public-repo" value="http://demo.exist-db.org/exist/apps/public-repo/public/"/>
@@ -51,6 +49,7 @@
   </target>
   
   <target name="download-xar">
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
     <fetch dest="${autostart-dir}" url="${public-repo}/${xar}"/>
   </target>
 </project>
