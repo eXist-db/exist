@@ -51,8 +51,8 @@ import java.util.Map;
 public class ModuleContext extends XQueryContext {
 
 	private XQueryContext parentContext;
-    private final String modulePrefix;
-    private final String moduleNamespace;
+    private String modulePrefix;
+    private String moduleNamespace;
     private final String location;
 
 	/**
@@ -75,7 +75,12 @@ public class ModuleContext extends XQueryContext {
 	String getModuleNamespace() {
 		return moduleNamespace;
 	}
-	
+
+    public void setModuleNamespace(String prefix, String namespaceURI) {
+        this.modulePrefix = prefix;
+        this.moduleNamespace = namespaceURI;
+    }
+
 	void setModulesChanged() {
 		parentContext.setModulesChanged();
 	}

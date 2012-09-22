@@ -334,6 +334,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"NMSTART",
 		"NMCHAR",
 		"WS",
+		"XQuery XQDoc comment",
 		"XQuery comment",
 		"PREDEFINED_ENTITY_REF",
 		"CHAR_REF",

@@ -252,15 +252,16 @@ public interface XQueryTokenTypes {
 	int NMSTART = 228;
 	int NMCHAR = 229;
 	int WS = 230;
-	int EXPR_COMMENT = 231;
-	int PREDEFINED_ENTITY_REF = 232;
-	int CHAR_REF = 233;
-	int S = 234;
-	int NEXT_TOKEN = 235;
-	int CHAR = 236;
-	int BASECHAR = 237;
-	int IDEOGRAPHIC = 238;
-	int COMBINING_CHAR = 239;
-	int DIGIT = 240;
-	int EXTENDER = 241;
+	int XQDOC_COMMENT = 231;
+	int EXPR_COMMENT = 232;
+	int PREDEFINED_ENTITY_REF = 233;
+	int CHAR_REF = 234;
+	int S = 235;
+	int NEXT_TOKEN = 236;
+	int CHAR = 237;
+	int BASECHAR = 238;
+	int IDEOGRAPHIC = 239;
+	int COMBINING_CHAR = 240;
+	int DIGIT = 241;
+	int EXTENDER = 242;
 }
