@@ -3923,8 +3923,12 @@ public XQueryTreeParser() {
 		
 		if (myModule == null)
 		myModule = new ExternalModuleImpl(uri.getText(), m.getText());
-		else
+		else {
 		myModule.setNamespace(m.getText(), uri.getText());
+		if (myModule.getContext() != null)
+				((ModuleContext)myModule.getContext()).setModuleNamespace(m.getText(), uri.getText());
+		}
+		myModule.setDescription(m.getDoc());
 		context.declareNamespace(m.getText(), uri.getText());
 		staticContext.declareNamespace(m.getText(), uri.getText());
 		
@@ -5336,6 +5340,7 @@ public XQueryTreeParser() {
 						throw e;
 					}
 					FunctionSignature signature= new FunctionSignature(qn);
+					signature.setDescription(name.getDoc());
 					UserDefinedFunction func= new UserDefinedFunction(context, signature);
 					func.setASTNode(name);
 					List varList= new ArrayList(3);
@@ -9991,6 +9996,7 @@ public XQueryTreeParser() {
 		"NMSTART",
 		"NMCHAR",
 		"WS",
+		"XQuery XQDoc comment",
 		"XQuery comment",
 		"PREDEFINED_ENTITY_REF",
 		"CHAR_REF",

@@ -93,6 +93,10 @@ public class XQueryParser extends antlr.LLkParser       implements XQueryTokenTy
 		return buf.toString();
 	}
 
+	public String getXQDoc() {
+		return lexer.getXQDoc();
+	}
+
 	protected void handleException(Exception e) {
 		foundError= true;
 		exceptions.add(e);
@@ -1029,7 +1033,9 @@ inputState.guessing--;
 		if ( inputState.guessing==0 ) {
 			moduleDecl_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			
-					moduleDecl_AST = (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(MODULE_DECL,prefix.getText())).add(uri_AST));
+					moduleDecl_AST = 
+						(org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(MODULE_DECL,prefix.getText(),org.exist.xquery.parser.XQueryFunctionAST.class.getName())).add(uri_AST));
+					moduleDecl_AST.setDoc(getXQDoc());
 				
 			currentAST.root = moduleDecl_AST;
 			currentAST.child = moduleDecl_AST!=null &&moduleDecl_AST.getFirstChild()!=null ?
@@ -2327,8 +2333,9 @@ inputState.guessing--;
 			if ( inputState.guessing==0 ) {
 				functionDecl_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				
-					  	functionDecl_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(3)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(FUNCTION_DECL,name)).add(ann).add(functionDecl_AST)); 
+					  	functionDecl_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(3)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(FUNCTION_DECL,name,org.exist.xquery.parser.XQueryFunctionAST.class.getName())).add(ann).add(functionDecl_AST));
 						functionDecl_AST.copyLexInfo(lp_AST);
+						functionDecl_AST.setDoc(getXQDoc());
 					
 				currentAST.root = functionDecl_AST;
 				currentAST.child = functionDecl_AST!=null &&functionDecl_AST.getFirstChild()!=null ?
@@ -13746,6 +13753,7 @@ inputState.guessing--;
 		"NMSTART",
 		"NMCHAR",
 		"WS",
+		"XQuery XQDoc comment",
 		"XQuery comment",
 		"PREDEFINED_ENTITY_REF",
 		"CHAR_REF",
@@ -13908,7 +13916,7 @@ inputState.guessing--;
 		data[0]=-16L;
 		data[1]=-1L;
 		data[2]=-1125902054326273L;
-		data[3]=1125899906842623L;
+		data[3]=2251799813685247L;
 		return data;
 	}
 	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());

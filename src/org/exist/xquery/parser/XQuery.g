@@ -103,6 +103,10 @@ options {
 		return buf.toString();
 	}
 
+	public String getXQDoc() {
+		return lexer.getXQDoc();
+	}
+
 	protected void handleException(Exception e) {
 		foundError= true;
 		exceptions.add(e);
@@ -217,7 +221,9 @@ libraryModule throws XPathException:
 moduleDecl throws XPathException: 
 	"module"! "namespace"! prefix:NCNAME EQ! uri:STRING_LITERAL SEMICOLON!
 	{
-		#moduleDecl = #(#[MODULE_DECL, prefix.getText()], uri);
+		#moduleDecl = 
+			#(#[MODULE_DECL, prefix.getText(), org.exist.xquery.parser.XQueryFunctionAST.class.getName()], uri);
+		#moduleDecl.setDoc(getXQDoc());
 	}
 	;
 
@@ -438,8 +444,9 @@ functionDecl [XQueryAST ann] throws XPathException
 	RPAREN! ( returnType )?
 	( functionBody | "external" )
 	{ 
-	  	#functionDecl= #(#[FUNCTION_DECL, name], #ann, #functionDecl); 
+	  	#functionDecl= #(#[FUNCTION_DECL, name, org.exist.xquery.parser.XQueryFunctionAST.class.getName()], #ann, #functionDecl);
 		#functionDecl.copyLexInfo(#lp);
+		#functionDecl.setDoc(getXQDoc());
 	}
 	exception catch [RecognitionException e]
 	{ 
@@ -1917,7 +1924,7 @@ options {
 	protected char attrDelimChar = '"';
 	protected boolean inComment= false;
 	protected boolean inPragma = false;
-	
+	protected String xqDoc = null;
 	protected XQueryContext context = null;
 	
 	public XQueryLexer(XQueryContext context, Reader in) {
@@ -1925,6 +1932,12 @@ options {
 		this.context = context;
 	}
 	
+	public String getXQDoc() {
+		String doc = xqDoc;
+		xqDoc = null;
+		return doc;
+	}
+
 	private void parseLinefeeds(String str) {
 		char ch;
 		for (int i = 0;  i < str.length(); i++) {
@@ -2029,6 +2042,15 @@ protected WS
 		|
 		'\r'
 	)+
+	;
+
+protected XQDOC_COMMENT
+options {
+	testLiterals=false;
+	paraphrase="XQuery XQDoc comment";
+}
+:
+	"(:~" ( options { greedy=false; }: ( . | EXPR_COMMENT ) )* ":)"
 	;
 
 protected EXPR_COMMENT
@@ -2248,6 +2270,12 @@ options {
 			$setText("WS");
 		} else
 			$setType(Token.SKIP);
+	}
+	|
+	( '(' ':' '~' ) => XQDOC_COMMENT
+	{
+		xqDoc = $getText;
+		$setType(Token.SKIP);
 	}
 	|
 	EXPR_COMMENT

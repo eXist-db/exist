@@ -26,6 +26,9 @@ import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 /**
  * An external library module implemented in XQuery and loaded
  * through the "import module" directive.
@@ -35,6 +38,8 @@ import org.exist.storage.DBBroker;
 public interface ExternalModule extends Module {
 
     public void setNamespace(String prefix, String namespace);
+
+    public void setDescription(String desc);
 
     /**
      * Declare a new function. Called by the XQuery compiler

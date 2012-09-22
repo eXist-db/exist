@@ -2849,7 +2849,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @throws  XPathException
      */
-    private ExternalModule compileModule( String prefix, String namespaceURI,
+    public ExternalModule compileModule( String prefix, String namespaceURI,
                                         String location, Source source ) throws XPathException
     {
         LOG.debug( "Loading module from " + location );
@@ -2892,7 +2892,7 @@ public class XQueryContext implements BinaryValueManager, Context
             
             modExternal.setRootExpression(path);
 
-            if( !modExternal.getNamespaceURI().equals( namespaceURI ) ) {
+            if(namespaceURI != null && !modExternal.getNamespaceURI().equals(namespaceURI)) {
                 throw( new XPathException( "namespace URI declared by module (" + modExternal.getNamespaceURI() + ") does not match namespace URI in import statement, which was: " + namespaceURI ) );
             }
 

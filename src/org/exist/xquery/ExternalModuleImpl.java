@@ -22,10 +22,7 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -42,6 +39,8 @@ public class ExternalModuleImpl implements ExternalModule {
 
     private String mNamespaceURI;
     private String mPrefix;
+
+    private String description = "User Defined Module";
 
     private boolean isReady = false;
 
@@ -75,9 +74,12 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#getDescription()
      */
     public String getDescription() {
-        return "User defined module";
+        return description;
     }
 
+    public void setDescription(String desc) {
+        this.description = desc;
+    }
     /* (non-Javadoc)
      * @see org.exist.xquery.Module#getReleaseVersion()
      */
@@ -255,7 +257,7 @@ public class ExternalModuleImpl implements ExternalModule {
         return  rootExpression;
     }
 
-    private boolean isPrivate(FunctionSignature signature) {
+    public boolean isPrivate(FunctionSignature signature) {
     	Annotation[] annots = signature.getAnnotations();
     	if (annots != null) {
 	        for (Annotation annot : annots) {

@@ -89,7 +89,15 @@ public class XQueryAST extends CommonAST {
 		return column;
 	}
 	
-	
+	public void setDoc(String doc) {
+        // implemented by subclasses
+    }
+
+    public String getDoc() {
+        // might be implemented by subclasses
+        return null;
+    }
+
 //	/* (non-Javadoc)
 //	 * @see antlr.BaseAST#toString()
 //	 */

@@ -149,7 +149,11 @@ public class FunctionSignature {
 	public String getDescription() {
 		return description;
 	}
-	
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 	public boolean isOverloaded() {
 		return isOverloaded;
 	}
