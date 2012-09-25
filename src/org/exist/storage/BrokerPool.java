@@ -116,6 +116,8 @@ public class BrokerPool extends Observable implements Database {
     public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
     public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
     public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
+    public static final String DISK_SPACE_MIN_ATTRIBUTE = "minDiskSpace";
+
     public static final String DATA_DIR_ATTRIBUTE = "files";
     //TODO : move elsewhere ?
     public final static String RECOVERY_ENABLED_ATTRIBUTE = "enabled";
@@ -135,6 +137,8 @@ public class BrokerPool extends Observable implements Database {
     public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
     public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
     public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
+    public static final String DISK_SPACE_MIN_PROPERTY = "db-connection.diskSpaceMin";
+
     //TODO : move elsewhere ?
     public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
     //TODO : move elsewhere ? Get fully qualified class name ?
@@ -729,6 +733,7 @@ public class BrokerPool extends Observable implements Database {
         	//TODO : why not automatically register Sync in system tasks ?
 //            scheduler.createPeriodicJob(2500, new Sync(), 2500);
             SyncTask syncTask = new SyncTask();
+            syncTask.configure(conf, null);
             scheduler.createPeriodicJob(2500, new SystemTaskJob(SyncTask.getJobName(), syncTask), 2500);
         }
         

@@ -939,6 +939,22 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        String diskSpace = getConfigAttributeValue(con, BrokerPool.DISK_SPACE_MIN_ATTRIBUTE);
+
+        if( diskSpace != null ) {
+
+            if( diskSpace.endsWith( "M" ) || diskSpace.endsWith( "m" ) ) {
+                diskSpace = diskSpace.substring( 0, diskSpace.length() - 1 );
+            }
+
+            try {
+                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, new Integer(diskSpace));
+            }
+            catch( NumberFormatException nfe ) {
+                LOG.warn( nfe );
+            }
+        }
+
         NodeList securityConf             = con.getElementsByTagName( BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME );
         String   securityManagerClassName = BrokerPool.DEFAULT_SECURITY_CLASS;
 

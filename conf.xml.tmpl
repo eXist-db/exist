@@ -138,6 +138,13 @@
 
             If you need stable, incremental ids, set the option doc-ids to
             "incremental".
+        - minDiskSpace:
+            The amount of disk space (in megabytes) which should be available for
+            the database to continue operations. If free disk space goes below
+            the configured limit, eXist-db will flush all buffers to disk and
+            switch to read-only mode in order to prevent potential data loss. 
+            Set the limit large enough to allow all pending operations to 
+            complete. The default is 1 gigabyte.
     
         =====================================================================
         
@@ -150,7 +157,7 @@
     -->
     <db-connection cacheSize="48M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-		doc-ids="default">
+		doc-ids="default" minDiskSpace="1024M">
 
        	<!--
        	    Startup Triggers are executed before the database becomes generally available
