@@ -40,6 +40,7 @@ public class XQDocHelper {
 
     private StringBuilder description = new StringBuilder();
     private Map<String, String> parameters = new HashMap<String, String>();
+    private String returnValue = null;
     private Map<String, String> meta = new HashMap<String, String>();
 
     public XQDocHelper() {
@@ -62,6 +63,8 @@ public class XQDocHelper {
     public void setTag(String tag, String content) {
         if (tag.equals("@param")) {
             setParameter(content);
+        } else if (tag.equals("@return")) {
+            returnValue = content;
         } else {
             meta.put(tag, content);
         }
@@ -69,11 +72,10 @@ public class XQDocHelper {
 
     protected void enhance(FunctionSignature signature) {
         signature.setDescription(description.toString());
-        String returnDesc = meta.get("@return");
-        if (returnDesc != null) {
+        if (returnValue != null) {
             SequenceType returnType = signature.getReturnType();
             FunctionReturnSequenceType newType =
-                    new FunctionReturnSequenceType(returnType.getPrimaryType(), returnType.getCardinality(), returnDesc);
+                    new FunctionReturnSequenceType(returnType.getPrimaryType(), returnType.getCardinality(), returnValue);
             signature.setReturnType(newType);
         }
         SequenceType[] args = signature.getArgumentTypes();
@@ -84,6 +86,12 @@ public class XQDocHelper {
                 if (desc != null)
                     argType.setDescription(desc);
             }
+        }
+        for (Map.Entry<String, String> entry: meta.entrySet()) {
+            String key = entry.getKey();
+            if (key.length() > 1 && key.charAt(0) == '@')
+                key = key.substring(1);
+            signature.addMetadata(key, entry.getValue());
         }
     }
 

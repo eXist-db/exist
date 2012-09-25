@@ -9,6 +9,8 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.Map;
+
 public class InspectFunction extends BasicFunction {
 
     public final static FunctionSignature SIGNATURE_DEPRECATED =
@@ -36,6 +38,8 @@ public class InspectFunction extends BasicFunction {
     private final static QName FUNCTION_QNAME = new QName("function");
     private final static QName ANNOTATION_QNAME = new QName("annotation");
     private final static QName ANNOTATION_VALUE_QNAME = new QName("value");
+    private static final QName VERSION_QNAME = new QName("version");
+    private static final QName AUTHOR_QNAME = new QName("author");
 
     public InspectFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -76,6 +80,14 @@ public class InspectFunction extends BasicFunction {
             builder.startElement(DESCRIPTION_QNAME, null);
             builder.characters(sig.getDescription());
             builder.endElement();
+        }
+        Map<String, String> metadata = sig.getMetadata();
+        if (metadata != null) {
+            for (Map.Entry<String, String> meta : metadata.entrySet()) {
+                builder.startElement(new QName(meta.getKey()), null);
+                builder.characters(meta.getValue());
+                builder.endElement();
+            }
         }
         if (sig.isDeprecated()) {
             builder.startElement(DEPRECATED_QNAME, null);

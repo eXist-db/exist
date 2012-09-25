@@ -27,6 +27,9 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Describes the signature of a built-in or user-defined function, i.e.
  * its name, the type and cardinality of its arguments and its return type.
@@ -61,6 +64,7 @@ public class FunctionSignature {
 	private boolean isOverloaded = false;
 	private String description = null;
 	private String deprecated = null;
+    private Map<String, String> metadata = null;
 	
 	public FunctionSignature(QName name) {
 		this(name, null, DEFAULT_TYPE, false);
@@ -152,6 +156,27 @@ public class FunctionSignature {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void addMetadata(String key, String value) {
+        if (metadata == null) {
+            metadata = new HashMap<String, String>(5);
+        }
+        String old = metadata.get(key);
+        if (old != null)
+            // if the key exists, simply append the new value
+            value = old + ", " + value;
+        metadata.put(key, value);
+    }
+
+    public String getMetadata(String key) {
+        if (metadata == null)
+            return null;
+        return metadata.get(key);
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
 	public boolean isOverloaded() {
