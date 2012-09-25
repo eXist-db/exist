@@ -36,7 +36,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.md.MetaData;
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -56,7 +56,7 @@ public class Check extends BasicFunction {
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("create", Plugin.NAMESPACE_URI, Plugin.PREFIX),
+			new QName("create", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX),
 			"",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EMPTY));

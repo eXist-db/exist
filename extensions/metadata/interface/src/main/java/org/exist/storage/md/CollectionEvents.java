@@ -80,7 +80,7 @@ public class CollectionEvents implements CollectionTrigger {
 		try {
 	        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
 	            DocumentImpl doc = i.next();
-	            Plugin._.md.moveMetas(
+	            MDStorageManager._.md.moveMetas(
             		collection.getURI().append(doc.getFileURI()), 
             		newUri.append(doc.getFileURI())
         		);
@@ -97,7 +97,7 @@ public class CollectionEvents implements CollectionTrigger {
 	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
         for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             DocumentImpl doc = i.next();
-            Plugin._.md.delMetas(doc.getURI());
+            MDStorageManager._.md.delMetas(doc.getURI());
         }
 
 		final XmldbURI uri = collection.getURI();

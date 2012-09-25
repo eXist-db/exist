@@ -24,7 +24,7 @@ package org.exist.storage.md.xquery;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
@@ -68,14 +68,14 @@ public class MetadataModule extends AbstractInternalModule {
 	 * @see org.exist.xquery.Module#getNamespaceURI()
 	 */
 	public String getNamespaceURI() {
-		return Plugin.NAMESPACE_URI;
+		return MDStorageManager.NAMESPACE_URI;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Module#getDefaultPrefix()
 	 */
 	public String getDefaultPrefix() {
-		return Plugin.PREFIX;
+		return MDStorageManager.PREFIX;
 	}
 
     public String getReleaseVersion() {
