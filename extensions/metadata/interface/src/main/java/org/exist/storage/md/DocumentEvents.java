@@ -55,7 +55,7 @@ public class DocumentEvents extends FilteringTrigger {
 	@Override
 	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 //		System.out.println("afterCreateDocument "+document.getURI());
-		Plugin._.md.addMetas(document);
+		MDStorageManager._.md.addMetas(document);
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class DocumentEvents extends FilteringTrigger {
 	@Override
 	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 //		System.out.println("afterCopyDocument "+document.getURI());
-		Plugin._.md.copyMetas(oldUri, document);
+		MDStorageManager._.md.copyMetas(oldUri, document);
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class DocumentEvents extends FilteringTrigger {
 	@Override
 	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 //		System.out.println("afterMoveDocument "+oldUri+" to "+document.getURI());
-		Plugin._.md.moveMetas(oldUri, document.getURI());
+		MDStorageManager._.md.moveMetas(oldUri, document.getURI());
 	}
 
 	@Override
@@ -94,7 +94,15 @@ public class DocumentEvents extends FilteringTrigger {
 	@Override
 	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 //		System.out.println("afterDeleteDocument "+uri);
-		Plugin._.md.delMetas(uri);
+		MDStorageManager._.md.delMetas(uri);
+	}
+
+	@Override
+	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+	}
+
+	@Override
+	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 	}
 
 	@Override

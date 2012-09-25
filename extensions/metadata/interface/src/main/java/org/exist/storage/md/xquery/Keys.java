@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,8 +42,8 @@ import org.exist.xquery.value.*;
  */
 public class Keys extends BasicFunction {
 	
-	private static final QName NAME = new QName("keys", Plugin.NAMESPACE_URI, Plugin.PREFIX);
-	private static final QName NAME_URL = new QName("keys-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final QName NAME = new QName("keys", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME_URL = new QName("keys-by-url", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
 //	private static final QName NAME_UUID = new QName("keys-by-uuid", Plugin.NAMESPACE_URI, Plugin.PREFIX);
 	private static final String DESCRIPTION = "Get the set of keys for a document's metadata record";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The resource's metadata field keys");

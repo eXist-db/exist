@@ -25,7 +25,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.storage.md.MetaData;
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -40,7 +40,7 @@ import org.exist.xquery.value.*;
  */
 public class DocumentByUUID extends BasicFunction {
 	
-	private static final QName NAME = new QName("document-by-uuid", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final QName NAME = new QName("document-by-uuid", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
 	private static final String DESCRIPTION = "Get the document by UUID.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "Resources which have given UUID");
 	

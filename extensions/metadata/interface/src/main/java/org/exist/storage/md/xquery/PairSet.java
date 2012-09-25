@@ -26,7 +26,7 @@ import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,8 +43,8 @@ import org.exist.xquery.value.StringValue;
  */
 public class PairSet extends BasicFunction {
 	
-	private static final QName NAME = new QName("set-value", Plugin.NAMESPACE_URI, Plugin.PREFIX);
-	private static final QName NAME_URL = new QName("set-value-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final QName NAME = new QName("set-value", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME_URL = new QName("set-value-by-url", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
 	private static final String DESCRIPTION = "Set document's key/value pair.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "Key/value pair UUID");
 	

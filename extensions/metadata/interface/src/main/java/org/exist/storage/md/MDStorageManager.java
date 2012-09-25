@@ -30,7 +30,7 @@ import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
-import org.exist.plugin.Jack;
+import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.serializer.SAXSerializer;
@@ -43,7 +43,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class Plugin implements Jack, BackupHandler, RestoreHandler {
+public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	
 	public final static String PREFIX = "md";
 	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";
@@ -59,11 +59,11 @@ public class Plugin implements Jack, BackupHandler, RestoreHandler {
 	public final static String PREFIX_META = PREFIX+":"+META;
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 
-	protected static Plugin _ = null;
+	protected static MDStorageManager _ = null;
 	
 	MetaData md;
 	
-	public Plugin(PluginsManager manager) throws PermissionDeniedException {
+	public MDStorageManager(PluginsManager manager) throws PermissionDeniedException {
 		try {
 			@SuppressWarnings("unchecked")
 			Class<? extends MetaData> backend = 

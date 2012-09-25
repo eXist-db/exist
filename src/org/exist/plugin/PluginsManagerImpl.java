@@ -71,7 +71,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 //	private Map<String, PluginInfo> foundClasses = new LinkedHashMap<String, PluginInfo>();
 	
-	private Map<String, Jack> jacks = new HashMap<String, Jack>();
+	private Map<String, Plug> jacks = new HashMap<String, Plug>();
 	
 	private Configuration configuration = null;
 	
@@ -82,10 +82,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 	public PluginsManagerImpl(Database db, DBBroker broker) throws ConfigurationException {
 		this.db = db;
 		
-		
 		//Temporary for testing
-		addPlugin("org.exist.storage.md.Plugin");
-		addPlugin("org.exist.scheduler.Plugin");
+		addPlugin("org.exist.scheduler.SchedulerManager");
+		addPlugin("org.exist.storage.md.MDStorageManager");
+		addPlugin("org.exist.monitoring.MonitoringManager");
 	}
 
 	@Override
@@ -122,12 +122,12 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 //			File pluginsFolder = new File(libFolder, "plugins");
 //			placesToSearch.put(pluginsFolder.getAbsolutePath(), pluginsFolder);
 			
-			for (Class<? extends Jack> plugin : listServices(Jack.class)) {
+			for (Class<? extends Plug> plugin : listServices(Plug.class)) {
 				//System.out.println("found plugin "+plugin);
 				
 				try {
-					Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
-					Jack plgn = ctor.newInstance(this);
+					Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
+					Plug plgn = ctor.newInstance(this);
 					
 					jacks.put(plugin.getName(), plgn);
 				} catch (Throwable e) {
@@ -145,7 +145,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 //			//LOG?
 //		}
 		
-		for (Jack jack : jacks.values()) {
+		for (Plug jack : jacks.values()) {
 			if (jack instanceof Startable) {
 				((Startable) jack).startUp(broker);
 			}
@@ -164,10 +164,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 			return;
 		
 		try {
-			Class<? extends Jack> plugin = (Class<? extends Jack>) Class.forName(className);
+			Class<? extends Plug> plugin = (Class<? extends Plug>) Class.forName(className);
 			
-			Constructor<? extends Jack> ctor = plugin.getConstructor(PluginsManager.class);
-			Jack plgn = ctor.newInstance(this);
+			Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
+			Plug plgn = ctor.newInstance(this);
 			
 			jacks.put(plugin.getName(), plgn);
 
@@ -175,12 +175,12 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 			
 			//TODO: if (jack instanceof Startable) { ((Startable) jack).startUp(broker); }
 		} catch (Throwable e) {
-			//e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 	
 	public void sync() {
-		for (Jack plugin : jacks.values()) {
+		for (Plug plugin : jacks.values()) {
 			try {
 				plugin.sync();
 			} catch (Throwable e) {
@@ -190,7 +190,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 	}
 
 	public void shutdown() {
-		for (Jack plugin : jacks.values()) {
+		for (Plug plugin : jacks.values()) {
 			try {
 				plugin.stop();
 			} catch (Throwable e) {
@@ -257,7 +257,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void backup(Collection colection, AttributesImpl attrs) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(colection, attrs);
 				}
@@ -266,7 +266,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(colection, serializer);
 				}
@@ -275,7 +275,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void backup(DocumentAtExist document, AttributesImpl attrs) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(document, attrs);
 				}
@@ -284,7 +284,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					((BackupHandler) plugin).backup(document, serializer);
 				}
@@ -303,7 +303,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void setDocumentLocator(Locator locator) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).setDocumentLocator(locator);
 				}
@@ -312,7 +312,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void startDocument() throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startDocument();
 				}
@@ -321,7 +321,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void endDocument() throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endDocument();
 				}
@@ -330,7 +330,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void startPrefixMapping(String prefix, String uri) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
 				}
@@ -339,7 +339,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void endPrefixMapping(String prefix) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endPrefixMapping(prefix);
 				}
@@ -348,7 +348,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
 				}
@@ -357,7 +357,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endElement(uri, localName, qName);
 				}
@@ -366,7 +366,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).characters(ch, start, length);
 				}
@@ -375,7 +375,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
 				}
@@ -384,7 +384,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void processingInstruction(String target, String data) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).processingInstruction(target, data);
 				}
@@ -393,7 +393,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void skippedEntity(String name) throws SAXException {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).skippedEntity(name);
 				}
@@ -402,7 +402,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void startCollectionRestore(Collection colection, Attributes atts) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startCollectionRestore(colection, atts);
 				}
@@ -411,7 +411,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void endCollectionRestore(Collection colection) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endCollectionRestore(colection);
 				}
@@ -420,7 +420,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startDocumentRestore(document, atts);
 				}
@@ -429,7 +429,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 
 		@Override
 		public void endDocumentRestore(DocumentAtExist document) {
-			for (Jack plugin : jacks.values()) {
+			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endDocumentRestore(document);
 				}

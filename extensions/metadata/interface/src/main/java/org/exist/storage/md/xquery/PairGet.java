@@ -27,7 +27,7 @@ import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;
-import org.exist.storage.md.Plugin;
+import org.exist.storage.md.MDStorageManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,8 +43,8 @@ import org.exist.xquery.value.StringValue;
  */
 public class PairGet extends BasicFunction {
 	
-	private static final QName NAME = new QName("get-value", Plugin.NAMESPACE_URI, Plugin.PREFIX);
-	private static final QName NAME_URL = new QName("get-value-by-url", Plugin.NAMESPACE_URI, Plugin.PREFIX);
+	private static final QName NAME = new QName("get-value", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME_URL = new QName("get-value-by-url", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
 	private static final String DESCRIPTION = "Get document value by key.";
 	private static final String DESCRIPTION_UUID = "Get document value by UUID.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "Value.");

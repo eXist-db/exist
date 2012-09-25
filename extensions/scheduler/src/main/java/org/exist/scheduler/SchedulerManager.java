@@ -37,6 +37,8 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldClassMask;
 import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.plugin.Plug;
+import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -48,7 +50,7 @@ import org.exist.xmldb.XmldbURI;
  *
  */
 @ConfigurationClass("scheduler")
-public class SchedulerManager implements Configurable, Startable {
+public class SchedulerManager implements Plug, Configurable, Startable {
 
 	/* /db/system/scheduler */
 	private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
@@ -68,8 +70,8 @@ public class SchedulerManager implements Configurable, Startable {
 	protected final org.quartz.Scheduler scheduler;
 	protected Database db;
 	
-	public SchedulerManager(Database db) {
-		this.db = db;
+	public SchedulerManager(PluginsManager pm) {
+		db = pm.getDatabase();
 		scheduler = db.getScheduler().getScheduler();
 	}
 
@@ -119,6 +121,14 @@ public class SchedulerManager implements Configurable, Startable {
 	}
 
 	@Override
+	public void sync() {
+	}
+
+	public void stop() {
+//		scheduler.shutdown();
+	}
+
+	@Override
 	public boolean isConfigured() {
 		return configuration != null;
 	}
@@ -126,9 +136,5 @@ public class SchedulerManager implements Configurable, Startable {
 	@Override
 	public Configuration getConfiguration() {
 		return configuration;
-	}
-
-	public void stop() {
-//		scheduler.shutdown();
 	}
 }

@@ -22,15 +22,15 @@
 package org.exist.plugin;
 
 /**
- * 'Plug to' interface.
+ * 'Plug by' interface.
  * 
  * Plugin manager must implement this interface 
- * and must have constructor with PluginsManager parameter.
+ * and must have constructor with PluginsManager as parameter.
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Jack {
+public interface Plug {
 
 
 	/**
