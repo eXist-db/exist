@@ -21,29 +21,51 @@ options {
 }
 {
 	private String encoding = null;
-	
+	private String version = null;
+	private String moduleNamespace = null;
+	private String modulePrefix = null;
+
 	public String getEncoding() {
 		return encoding;
 	}
 	
-	private String version = null;
-	
 	public String getVersion() {
 		return  version;
+	}
+
+	public String getNamespace() {
+		return moduleNamespace;
+	}
+
+	public String getPrefix() {
+		return modulePrefix;
 	}
 }
 
 versionDecl throws XPathException
 :
-	"xquery" "version" v:STRING_LITERAL
-	( 
-		"encoding" enc:STRING_LITERAL!
+	(
+		"xquery" "version" v:STRING_LITERAL
+		( 
+			"encoding" enc:STRING_LITERAL
+			{
+				encoding = enc.getText();
+			}
+		)?
+		SEMICOLON
 		{
-			encoding = enc.getText();
+			version = v.getText();
+		}
+	)?
+	( 
+		"module" "namespace" prefix:NCNAME EQ uri:STRING_LITERAL SEMICOLON
+		{
+			modulePrefix = prefix.getText();
+			moduleNamespace = uri.getText();
+			System.out.println("Found module: " + moduleNamespace);
 		}
 	)?
 	{
-		version = v.getText();
 		throw new XPathException("Processing stopped");
 	}
 	;

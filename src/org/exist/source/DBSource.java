@@ -30,6 +30,7 @@ import java.io.Reader;
 
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
@@ -138,6 +139,19 @@ public class DBSource extends AbstractSource {
         ByteArrayInputStream is = new ByteArrayInputStream(data);
         checkEncoding(is);
         return new String(data, encoding);
+    }
+
+    public QName isModule() throws IOException {
+        InputStream raw = broker.getBinaryResource(doc);
+        long binaryLength = broker.getBinaryResourceSize(doc);
+        if(binaryLength > (long)Integer.MAX_VALUE) {
+            throw new IOException("Resource too big to be read using this method.");
+        }
+        byte [] data = new byte[(int)binaryLength];
+        raw.read(data);
+        raw.close();
+        ByteArrayInputStream is = new ByteArrayInputStream(data);
+        return getModuleDecl(is);
     }
 
     private void checkEncoding(InputStream is) throws IOException {

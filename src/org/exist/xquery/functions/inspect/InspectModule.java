@@ -19,13 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
-/**
- * Created with IntelliJ IDEA.
- * User: wolf
- * Date: 21.09.12
- * Time: 14:19
- * To change this template use File | Settings | File Templates.
- */
 public class InspectModule extends BasicFunction {
 
     public final static FunctionSignature signature =
@@ -76,12 +69,13 @@ public class InspectModule extends BasicFunction {
                     }
 
                     DBSource moduleSource = new DBSource( tempContext.getBroker(), (BinaryDocument)sourceDoc, true );
-
-                    // we don't know if the module will get returned, oh well
+                    tempContext.setModuleLoadPath("xmldb:exist:///db");
                     module = compile(tempContext, location, moduleSource);
 
                 } catch(PermissionDeniedException e) {
                     throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                } catch(Exception e) {
+                    throw new XPathException(this, "Error while loading XQuery module: " + locationUri.toString(), e);
                 } finally {
                     if(sourceDoc != null) {
                         sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
@@ -120,13 +114,10 @@ public class InspectModule extends BasicFunction {
         return builder.getDocument().getNode(nodeNr);
     }
 
-    private ExternalModule compile(XQueryContext tempContext, String location, Source source) throws XPathException {
-        ExternalModule module =
-            tempContext.getBroker().getBrokerPool().getXQueryPool().borrowModule(tempContext.getBroker(), source, tempContext);
-
-        if(module == null) {
-            module = tempContext.compileModule(null, null, location, source);
-        }
-        return module;
+    private ExternalModule compile(XQueryContext tempContext, String location, Source source) throws XPathException, IOException {
+        QName qname = source.isModule();
+        if (qname == null)
+            return null;
+        return tempContext.compileModule(qname.getLocalName(), qname.getNamespaceURI(), location, source);
     }
 }

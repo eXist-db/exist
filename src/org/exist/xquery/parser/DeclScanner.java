@@ -30,15 +30,24 @@ public class DeclScanner extends antlr.LLkParser       implements DeclScannerTok
  {
 
 	private String encoding = null;
-	
+	private String version = null;
+	private String moduleNamespace = null;
+	private String modulePrefix = null;
+
 	public String getEncoding() {
 		return encoding;
 	}
 	
-	private String version = null;
-	
 	public String getVersion() {
 		return  version;
+	}
+
+	public String getNamespace() {
+		return moduleNamespace;
+	}
+
+	public String getPrefix() {
+		return modulePrefix;
 	}
 
 protected DeclScanner(TokenBuffer tokenBuf, int k) {
@@ -68,20 +77,72 @@ public DeclScanner(ParserSharedInputState state) {
 		
 		Token  v = null;
 		Token  enc = null;
+		Token  prefix = null;
+		Token  uri = null;
 		
-		match(LITERAL_xquery);
-		match(LITERAL_version);
-		v = LT(1);
-		match(STRING_LITERAL);
 		{
 		switch ( LA(1)) {
-		case LITERAL_encoding:
+		case LITERAL_xquery:
 		{
-			match(LITERAL_encoding);
-			enc = LT(1);
+			match(LITERAL_xquery);
+			match(LITERAL_version);
+			v = LT(1);
 			match(STRING_LITERAL);
+			{
+			switch ( LA(1)) {
+			case LITERAL_encoding:
+			{
+				match(LITERAL_encoding);
+				enc = LT(1);
+				match(STRING_LITERAL);
+				
+								encoding = enc.getText();
+							
+				break;
+			}
+			case SEMICOLON:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
+			match(SEMICOLON);
 			
-						encoding = enc.getText();
+						version = v.getText();
+					
+			break;
+		}
+		case EOF:
+		case LITERAL_module:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		{
+		switch ( LA(1)) {
+		case LITERAL_module:
+		{
+			match(LITERAL_module);
+			match(LITERAL_namespace);
+			prefix = LT(1);
+			match(NCNAME);
+			match(EQ);
+			uri = LT(1);
+			match(STRING_LITERAL);
+			match(SEMICOLON);
+			
+						modulePrefix = prefix.getText();
+						moduleNamespace = uri.getText();
+						System.out.println("Found module: " + moduleNamespace);
 					
 			break;
 		}
@@ -96,7 +157,6 @@ public DeclScanner(ParserSharedInputState state) {
 		}
 		}
 		
-				version = v.getText();
 				throw new XPathException("Processing stopped");
 			
 	}

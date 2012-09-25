@@ -22,9 +22,11 @@
  */
 package org.exist.source;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.parser.DeclScanner;
 import org.exist.xquery.parser.XQueryLexer;
@@ -74,7 +76,12 @@ public abstract class AbstractSource implements Source {
     public void setCacheTimestamp(long timestamp) {
         cacheTime = timestamp;
     }
-    
+
+    @Override
+    public QName isModule() throws IOException {
+        return null;
+    }
+
     /**
      * Check if the XQuery file declares a content encoding in the
      * XQuery declaration.
@@ -95,5 +102,31 @@ public abstract class AbstractSource implements Source {
             //Nothing to do
         }
         return scanner.getEncoding();
+    }
+
+    /**
+     * Check if the source is an XQuery module. If yes, return a QName containing
+     * the module prefix as local name and the module namespace as namespace URI.
+     *
+     * @param is
+     * @return QName describing the module namespace or null if the source is not
+     * a module.
+     */
+    protected final static QName getModuleDecl(InputStream is) {
+        XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
+        DeclScanner scanner = new DeclScanner(lexer);
+        try {
+            scanner.versionDecl();
+        } catch (RecognitionException e) {
+            //Nothing to do
+        } catch (TokenStreamException e) {
+            //Nothing to do
+        } catch (XPathException e) {
+            //Nothing to do
+        }
+        if (scanner.getNamespace() != null) {
+            return new QName(scanner.getPrefix(), scanner.getNamespace());
+        }
+        return null;
     }
 }

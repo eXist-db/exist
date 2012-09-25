@@ -24,6 +24,7 @@ package org.exist.source;
 
 import java.io.*;
 
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -126,7 +127,17 @@ public class FileSource extends AbstractSource {
             }
         }
     }
-    
+
+    @Override
+    public QName isModule() throws IOException {
+        FileInputStream is = new FileInputStream(filePath);
+        try {
+            return getModuleDecl(is);
+        } finally {
+            is.close();
+        }
+    }
+
     public String toString() {
     	return filePath;
     }

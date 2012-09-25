@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.InputStream;
 
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -107,6 +108,8 @@ public interface Source {
      * @param  subject The subject
      * @param  perm The requested permissions
      */
-    public void validate(Subject subject, int perm) throws PermissionDeniedException;	
+    public void validate(Subject subject, int perm) throws PermissionDeniedException;
+
+    public QName isModule() throws IOException;
 
 }
