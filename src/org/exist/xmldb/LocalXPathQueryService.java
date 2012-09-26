@@ -38,6 +38,7 @@ import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.LockException;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
+import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 
@@ -127,6 +128,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 
 	public ResourceSet query(XMLResource res, String query, String sortBy)
 		throws XMLDBException {
+		final Node n = ((LocalXMLResource) res).root;
+		if (n != null && n instanceof org.exist.memtree.NodeImpl) {
+			
+			XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()) };
+			return doQuery(query, docs, (org.exist.memtree.NodeImpl)n, sortBy);
+		}
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
@@ -305,7 +312,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	private ResourceSet doQuery(
 		String query,
 		XmldbURI[] docs,
-		NodeSet contextSet,
+		Sequence contextSet,
 		String sortExpr)
 		throws XMLDBException {
 		CompiledExpression expr = compile(query);
@@ -377,7 +384,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
     private ResourceSet execute(XmldbURI[] docs, 
-    	NodeSet contextSet, CompiledExpression expression, String sortExpr) 
+		Sequence contextSet, CompiledExpression expression, String sortExpr) 
     throws XMLDBException {
     	long start = System.currentTimeMillis();
         CompiledXQuery expr = (CompiledXQuery)expression;
