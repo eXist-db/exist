@@ -13,11 +13,13 @@ import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.exist.xquery.xqdoc.XQDocHelper;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 public class InspectModule extends BasicFunction {
 
@@ -105,6 +107,19 @@ public class InspectModule extends BasicFunction {
         attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
         attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
         int nodeNr = builder.startElement(MODULE_QNAME, attribs);
+        XQDocHelper.parse(module);
+        if (module.getDescription() != null) {
+            builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
+            builder.characters(module.getDescription());
+            builder.endElement();
+        }
+        if (module.getMetadata() != null) {
+            for (Map.Entry<String, String> entry: module.getMetadata().entrySet()) {
+                builder.startElement(new QName(entry.getKey()), null);
+                builder.characters(entry.getValue());
+                builder.endElement();
+            }
+        }
         for (FunctionSignature sig : module.listFunctions()) {
             if (!((ExternalModuleImpl)module).isPrivate(sig)) {
                 InspectFunction.generateDocs(sig, builder);

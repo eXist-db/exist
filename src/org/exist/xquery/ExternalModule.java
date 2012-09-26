@@ -28,6 +28,7 @@ import org.exist.storage.DBBroker;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * An external library module implemented in XQuery and loaded
@@ -40,6 +41,10 @@ public interface ExternalModule extends Module {
     public void setNamespace(String prefix, String namespace);
 
     public void setDescription(String desc);
+
+    public void addMetadata(String key, String value);
+
+    public Map<String, String> getMetadata();
 
     /**
      * Declare a new function. Called by the XQuery compiler

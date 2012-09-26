@@ -31,15 +31,15 @@ public class InspectFunction extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"));
 
-    private final static QName ARGUMENT_QNAME = new QName("argument");
-    private final static QName DEPRECATED_QNAME = new QName("deprecated");
-    private final static QName DESCRIPTION_QNAME = new QName("description");
-    private final static QName RETURN_QNAME = new QName("returns");
-    private final static QName FUNCTION_QNAME = new QName("function");
-    private final static QName ANNOTATION_QNAME = new QName("annotation");
-    private final static QName ANNOTATION_VALUE_QNAME = new QName("value");
-    private static final QName VERSION_QNAME = new QName("version");
-    private static final QName AUTHOR_QNAME = new QName("author");
+    protected final static QName ARGUMENT_QNAME = new QName("argument");
+    protected final static QName DEPRECATED_QNAME = new QName("deprecated");
+    protected final static QName DESCRIPTION_QNAME = new QName("description");
+    protected final static QName RETURN_QNAME = new QName("returns");
+    protected final static QName FUNCTION_QNAME = new QName("function");
+    protected final static QName ANNOTATION_QNAME = new QName("annotation");
+    protected final static QName ANNOTATION_VALUE_QNAME = new QName("value");
+    protected static final QName VERSION_QNAME = new QName("version");
+    protected static final QName AUTHOR_QNAME = new QName("author");
 
     public InspectFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
