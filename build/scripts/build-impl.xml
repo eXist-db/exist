@@ -695,7 +695,7 @@
         <ant antfile="build.xml" dir="samples"/>
     </target>
 
-    <target name="extensions-xar" depends="jar">
+    <target name="extensions-xar" depends="jar" if="${use.autodeploy.feature}" >
         <ant antfile="build/scripts/setup.xml" dir="." inheritall="false"/>
     </target>
     

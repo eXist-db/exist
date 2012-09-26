@@ -41,8 +41,7 @@
   </target>
   
   <!-- 
-    Download jar files the author website. This is newest version of the library, 
-    if the URL is updated in time. The download size is significantly larger.
+    Download xar files from the package website.
   -->
   <target name="setup" depends="prepare" description="Download standard xar packages." if="autostart-empty">
     <foreach list="${autodeploy}" target="download-xar" param="xar"></foreach>
