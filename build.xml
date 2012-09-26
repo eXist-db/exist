@@ -8,7 +8,7 @@
     <description>eXist Open Source Native XML Database</description>
     
     <!-- import default properties from file -->
-    
+    <property file="local.build.properties"/>
     <property file="build.properties"/>
     
     <!-- set proxy if needed, use properties in build.properties  -->
