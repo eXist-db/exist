@@ -2,6 +2,7 @@ package org.exist.xquery.xqdoc;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -25,17 +26,36 @@ public class XQDocHelper {
         if (desc == null || !desc.startsWith("(:")) {
             return;
         }
+        XQDocHelper helper = parseComment(desc);
+        if (helper == null)
+            return;
+        helper.enhance(signature);
+    }
+
+    public static void parse(ExternalModule module) {
+        String desc = module.getDescription();
+        if (desc == null || !desc.startsWith("(:")) {
+            return;
+        }
+        XQDocHelper helper = parseComment(desc);
+        if (helper == null)
+            return;
+        helper.enhance(module);
+    }
+
+    private static XQDocHelper parseComment(String desc) {
         XQDocLexer lexer = new XQDocLexer(new StringReader(desc));
         XQDocParser parser = new XQDocParser(lexer);
-        XQDocHelper helper = new XQDocHelper();
         try {
+            XQDocHelper helper = new XQDocHelper();
             parser.xqdocComment(helper);
-            helper.enhance(signature);
+            return helper;
         } catch (RecognitionException e) {
             // ignore: comment will be shown unparsed
         } catch (TokenStreamException e) {
             // ignore: comment will be shown unparsed
         }
+        return null;
     }
 
     private StringBuilder description = new StringBuilder();
@@ -92,6 +112,16 @@ public class XQDocHelper {
             if (key.length() > 1 && key.charAt(0) == '@')
                 key = key.substring(1);
             signature.addMetadata(key, entry.getValue());
+        }
+    }
+
+    protected void enhance(ExternalModule module) {
+        module.setDescription(description.toString());
+        for (Map.Entry<String, String> entry: meta.entrySet()) {
+            String key = entry.getKey();
+            if (key.length() > 1 && key.charAt(0) == '@')
+                key = key.substring(1);
+            module.addMetadata(key, entry.getValue());
         }
     }
 

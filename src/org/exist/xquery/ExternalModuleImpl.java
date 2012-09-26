@@ -41,6 +41,7 @@ public class ExternalModuleImpl implements ExternalModule {
     private String mPrefix;
 
     private String description = "User Defined Module";
+    private Map<String, String> metadata = null;
 
     private boolean isReady = false;
 
@@ -80,9 +81,25 @@ public class ExternalModuleImpl implements ExternalModule {
     public void setDescription(String desc) {
         this.description = desc;
     }
+
+    public void addMetadata(String key, String value) {
+        if (metadata == null) {
+            metadata = new HashMap<String, String>();
+        }
+        String old = metadata.get(key);
+        if (old != null) {
+            value = old + ", " + value;
+        }
+        metadata.put(key, value);
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getReleaseVersion()
-     */
+    * @see org.exist.xquery.Module#getReleaseVersion()
+    */
     public String getReleaseVersion() {
         return "user-defined";
     }
