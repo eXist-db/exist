@@ -2275,6 +2275,10 @@ options {
 	( '(' ':' '~' ) => XQDOC_COMMENT
 	{
 		xqDoc = $getText;
+		for (int i = 0; i < xqDoc.length(); i++) {
+			if (xqDoc.charAt(i) == '\n')
+				newline();
+		}
 		$setType(Token.SKIP);
 	}
 	|
