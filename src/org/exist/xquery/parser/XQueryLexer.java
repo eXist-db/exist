@@ -4250,6 +4250,10 @@ inputState.guessing--;
 				if ( inputState.guessing==0 ) {
 					
 							xqDoc = new String(text.getBuffer(),_begin,text.length()-_begin);
+							for (int i = 0; i < xqDoc.length(); i++) {
+								if (xqDoc.charAt(i) == '\n')
+									newline();
+							}
 							_ttype = Token.SKIP;
 						
 				}
