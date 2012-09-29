@@ -239,7 +239,7 @@
             <fileset dir="${src}/org/exist/xquery/parser">
                 <include name="*.java"/>
                 <include name="*.txt"/>
-                <exclude name="XQueryAST.java"/>
+                <exclude name="XQuery*AST.java"/>
             </fileset>
         </delete>
         <antlr target="${src}/org/exist/xquery/parser/XQuery.g"
@@ -257,6 +257,12 @@
         </antlr>
         <antlr target="${src}/org/exist/xquery/parser/DeclScanner.g"
             outputdirectory="${src}/org/exist/xquery/parser">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </antlr>
+        <antlr target="${src}/org/exist/xquery/xqdoc/parser/XQDocParser.g"
+            outputdirectory="${src}/org/exist/xquery/xqdoc/parser">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
@@ -632,6 +638,7 @@
             <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*,counters,restxq.registry"
                 excludes=".DO_NOT_DELETE"/>
         </delete>
+        <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
     </target>
 
     <target name="clean-all" depends="clean-default-data-dir" description="Cleanup deeper, data is removed">
