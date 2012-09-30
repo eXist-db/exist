@@ -42,24 +42,55 @@ import org.exist.backup.SystemExport;
 public class FnExport extends BasicFunction {
 
 	protected final static Logger logger = Logger.getLogger(FnExport.class);
+	
+	protected final static QName NAME = 
+		new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	
+	protected final static String DESCRIPTION =
+		"Restore the database or a section of the database (admin user only).";
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Restore the database or a section of the database (admin user only).",
+	protected final static FunctionParameterSequenceType DIRorFILE = 
+		new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
+		"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
+
+	protected final static FunctionParameterSequenceType INCREMENTAL = 
+		new FunctionParameterSequenceType("incremental", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
+		"Flag to do incremental export.");
+
+	protected final static FunctionParameterSequenceType ZIP = 
+		new FunctionParameterSequenceType("zip", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
+		"Flag to do export to zip file.");
+
+	protected final static  FunctionReturnSequenceType RESULT = 
+		new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the export results");
+
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			NAME,
+			DESCRIPTION,
 			new SequenceType[] {
-					new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-							"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file."),
-					new FunctionParameterSequenceType("incremental", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
-							"Flag to do incremental export."),
-					new FunctionParameterSequenceType("zip", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
-							"Flag to do export to zip file.") 
+				DIRorFILE,
+				INCREMENTAL,
+				ZIP
+			},
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the export results")
+		),
+		new FunctionSignature(
+			new QName("export-silently", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+			DESCRIPTION +
+			"Messagers from exporter reroute to logs.",
+			new SequenceType[] {
+				DIRorFILE,
+				INCREMENTAL,
+				ZIP
 			}, 
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the export results"));
+			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the export results")
+		)
+	};
 
 	public final static QName EXPORT_ELEMENT = new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-	
 
-	public FnExport(XQueryContext context) {
+	public FnExport(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -75,10 +106,13 @@ public class FnExport extends BasicFunction {
         boolean zip = false;
         if (args[2].hasOne())
         	zip = args[2].effectiveBooleanValue();
-
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        builder.startDocument();
-        builder.startElement(EXPORT_ELEMENT, null);
+        
+        MemTreeBuilder builder = null;
+        if (NAME.equals( mySignature.getName() )) {
+	        builder = context.getDocumentBuilder();
+	        builder.startDocument();
+	        builder.startElement(EXPORT_ELEMENT, null);
+        }
         
         try {
         	SystemExport export = new SystemExport(context.getBroker(), new Callback(builder), null, true);
@@ -86,10 +120,13 @@ public class FnExport extends BasicFunction {
         } catch (Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
-        
-        builder.endElement();
-        builder.endDocument();
-        return (NodeValue) builder.getDocument().getDocumentElement();
+        if (builder == null) {
+        	return Sequence.EMPTY_SEQUENCE;
+        } else {
+	        builder.endElement();
+	        builder.endDocument();
+	        return (NodeValue) builder.getDocument().getDocumentElement();
+        }
     }
     
     private static class Callback implements SystemExport.StatusCallback {
@@ -108,23 +145,35 @@ public class FnExport extends BasicFunction {
     	
 		@Override
 		public void startCollection(String path) throws TerminatedException {
-            builder.startElement(COLLECTION_ELEMENT, null);
-            builder.characters(path);
-            builder.endElement();
+			if (builder == null)
+				SystemExport.LOG.info("Collection "+path);
+			else {
+	            builder.startElement(COLLECTION_ELEMENT, null);
+	            builder.characters(path);
+	            builder.endElement();
+			}
 		}
 
 		@Override
 		public void startDocument(String name, int current, int count) throws TerminatedException {
-            builder.startElement(RESOURCE_ELEMENT, null);
-            builder.characters(name);
-            builder.endElement();
+			if (builder == null)
+				SystemExport.LOG.info("Document "+name);
+			else {
+	            builder.startElement(RESOURCE_ELEMENT, null);
+	            builder.characters(name);
+	            builder.endElement();
+			}
 		}
 
 		@Override
 		public void error(String message, Throwable exception) {
-            builder.startElement(ERROR_ELEMENT, null);
-            builder.characters(message);
-            builder.endElement();
+			if (builder == null)
+				SystemExport.LOG.error(message, exception);
+			else {
+	            builder.startElement(ERROR_ELEMENT, null);
+	            builder.characters(message);
+	            builder.endElement();
+			}
 		}
     }
 }

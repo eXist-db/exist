@@ -100,6 +100,14 @@
         </layout>
     </appender>
     
+    <appender name="exist.backup" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/backup.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
     <!--
     <appender name="exist.statistics" class="org.apache.log4j.RollingFileAppender">
         <param  name="File" value="${exist.home}/webapp/WEB-INF/logs/statistics.log"/>
@@ -153,6 +161,11 @@
 		<!-- 
 		<appender-ref ref="exist.statistics"/> 
 		-->
+    </category>
+    
+    <category name="org.exist.backup.SystemExport" additivity="false">
+        <priority value="trace"/>
+        <appender-ref ref="exist.backup"/>
     </category>
     
     <category name="org.exist.security.xacml" additivity="false">
