@@ -23,7 +23,6 @@ package org.exist.xquery.modules.cache;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -35,8 +34,6 @@ import org.exist.xquery.FunctionDef;
  * @version 1.0
  */
 public class CacheModule extends AbstractInternalModule {
-
-    private final static Logger logger = Logger.getLogger(CacheModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cache";
 
