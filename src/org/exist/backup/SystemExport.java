@@ -88,7 +88,7 @@ import org.exist.storage.DataBackup;
  */
 public class SystemExport
 {
-    private final static Logger     LOG                     = Logger.getLogger( SystemExport.class );
+    public final static Logger     LOG                     = Logger.getLogger( SystemExport.class );
 
     private static final XmldbURI   TEMP_COLLECTION         = XmldbURI.createInternal( XmldbURI.TEMP_COLLECTION );
     private static final XmldbURI   CONTENTS_URI            = XmldbURI.createInternal( "__contents__.xml" );
@@ -210,7 +210,7 @@ public class SystemExport
             }
             output.setProperties( properties );
 
-            Date               date = ( prevBackup == null ) ? null : prevBackup.getDate();
+            Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
             CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );
             broker.getCollectionsFailsafe( cb );
 
@@ -355,9 +355,9 @@ public class SystemExport
      */
     private void export( BackupHandler bh, Collection current, BackupWriter output, Date date, BackupDescriptor prevBackup, List<ErrorReport> errorList, MutableDocumentSet docs ) throws IOException, SAXException, TerminatedException, PermissionDeniedException
     {
-        if( callback != null ) {
-            callback.startCollection( current.getURI().toString() );
-        }
+//        if( callback != null ) {
+//            callback.startCollection( current.getURI().toString() );
+//        }
 
         if( ( monitor != null ) && !monitor.proceed() ) {
             throw( new TerminatedException( "system export terminated by db" ) );

@@ -30,7 +30,6 @@ import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.backup.restore.SystemImportHandler;
 import org.exist.backup.restore.listener.RestoreListener;
@@ -52,8 +51,6 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class SystemImport {
-    
-    private final static Logger LOG = Logger.getLogger(SystemImport.class);
     
     private Database db;
     
