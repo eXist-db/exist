@@ -126,7 +126,7 @@ public class VersioningTrigger extends FilteringTrigger {
     	Subject activeSubject = broker.getSubject();
 
     	try {
-    		broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+    		broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
     		if (vDoc != null && !removeLast) {
     			if(!(vDoc instanceof BinaryDocument)) {
@@ -242,7 +242,7 @@ public class VersioningTrigger extends FilteringTrigger {
     			}
     		}
     	} finally {
-    		broker.setUser(activeSubject);
+    		broker.setSubject(activeSubject);
     	}
     }
     
@@ -257,7 +257,7 @@ public class VersioningTrigger extends FilteringTrigger {
         Subject activeSubject = broker.getSubject();
 
         try {
-            broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+            broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
             Collection collection = document.getCollection();
             if (collection.getURI().startsWith(VERSIONS_COLLECTION))
@@ -308,7 +308,7 @@ public class VersioningTrigger extends FilteringTrigger {
         } catch (Exception e) {
             LOG.warn("Caught exception in VersioningTrigger: " + e.getMessage(), e);
         } finally {
-            broker.setUser(activeSubject);
+            broker.setSubject(activeSubject);
         }
     }
 
@@ -319,7 +319,7 @@ public class VersioningTrigger extends FilteringTrigger {
     	Subject activeSubject = broker.getSubject();
 
     	try {
-    		broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+    		broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
 
     		if (!remove) {
     			try {
@@ -419,7 +419,7 @@ public class VersioningTrigger extends FilteringTrigger {
     			}
     		}
     	} finally {
-    		broker.setUser(activeSubject);
+    		broker.setSubject(activeSubject);
     	}
     }
 
