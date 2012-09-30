@@ -260,7 +260,7 @@ public class TransactionManager {
     public void reindex(DBBroker broker) {
     	Subject currentUser = broker.getSubject();
     	
-        broker.setUser(broker.getBrokerPool().getSecurityManager().getSystemSubject());
+        broker.setSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
         try {
             broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
 
@@ -268,7 +268,7 @@ public class TransactionManager {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
             
         } finally {
-        	broker.setUser(currentUser);
+        	broker.setSubject(currentUser);
         }
     }
 

@@ -1417,7 +1417,7 @@ public class BrokerPool extends Observable implements Database {
 			//Try to get an active broker
 			DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if(broker != null) {
-				broker.setUser(subject);
+				broker.setSubject(subject);
 				return true;
 			}
 		//}
@@ -1903,7 +1903,7 @@ public class BrokerPool extends Observable implements Database {
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all
                 if (broker != null) {
-                    broker.setUser(securityManager.getSystemSubject());
+                    broker.setSubject(securityManager.getSystemSubject());
                     broker.shutdown();
                 }
                 collectionCacheMgr.deregisterCache(collectionCache);
