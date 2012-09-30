@@ -31,8 +31,10 @@ import org.exist.storage.DBBroker;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
+@Deprecated
 public interface Startable {
 	
+	@Deprecated
 	public void startUp(DBBroker broker) throws EXistException;
 
 	//public void shutDown(DBBroker broker) throws EXistException;
