@@ -87,11 +87,11 @@ public class AsUser extends Function {
 		Subject oldUser = broker.getSubject();
 		try {
 			logger.info("Setting the authenticated user to: [" + username + "]");
-			broker.setUser(user);
+			broker.setSubject(user);
 			return getArgument(2).eval(contextSequence, contextItem);
 		} finally {
         	logger.info("Returning the user to the original user: [" + oldUser.getName() + "]");
-        	broker.setUser(oldUser);
+        	broker.setSubject(oldUser);
 		}
     }
 
