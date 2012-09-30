@@ -82,7 +82,7 @@ public class KillRunningXQuery extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		if( !context.getSubject().hasDbaRole() ) {
-			throw( new XPathException( this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to kill a running xquery" ) );
+			throw( new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to kill a running xquery" ) );
 		}
 		
 		killXQuery( args );
