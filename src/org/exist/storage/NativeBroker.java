@@ -73,7 +73,6 @@ import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.AbstractUnixStylePermission;
 import org.exist.security.Account;
 import org.exist.security.MessageDigester;
 import org.exist.security.Permission;
@@ -273,7 +272,7 @@ public class NativeBroker extends DBBroker {
 		
         indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         xmlSerializer = new NativeSerializer(this, config);
-        setUser(pool.getSecurityManager().getSystemSubject());
+        setSubject(pool.getSecurityManager().getSystemSubject());
 
         try {
             //TODO : refactor so that we can,
@@ -1855,7 +1854,7 @@ public class NativeBroker extends DBBroker {
         //store the currentUser
         Subject currentUser = getSubject();
         //elevate getUser() to DBA_USER
-        setUser(pool.getSecurityManager().getSystemSubject() );
+        setSubject(pool.getSecurityManager().getSystemSubject() );
         //start a transaction
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
