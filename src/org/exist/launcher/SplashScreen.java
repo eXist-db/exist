@@ -97,6 +97,8 @@ public class SplashScreen extends JFrame implements Observer {
             setStatus("An error occurred! Please check the logs.");
             launcher.showMessageAndExit("Error Occurred",
                     "An error occurred during startup. Please check the logs.");
+        } else if (BrokerPool.SIGNAL_SHUTDOWN.equals(arg)) {
+            launcher.signalShutdown();
         } else {
             setStatus(arg.toString());
         }
