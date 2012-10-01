@@ -24,6 +24,7 @@ package org.exist.dom;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -509,6 +510,14 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 break;
             }
             if (next.getNextDirect() == null) {
+                if (next == context) {
+                    // context items should not be shared between proxies,
+                    // but for performance reason, if there's only a single
+                    // context item, it will be shared. we thus have to create
+                    // a copy before appending a new item.
+                    next = new ContextItem(next.getContextId(), next.getNode());
+                    context = next;
+                }
                 next.setNextContextItem(new ContextItem(contextId, contextNode));
                 break;
             }
@@ -536,27 +545,36 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param node a <code>NodeProxy</code> value
      */
     public void copyContext(NodeProxy node) {
-        context = node.getContext();
+//        context = node.getContext();
+        deepCopyContext(node);
     }
 
     /**
-     * The method <code>deepCopyContext</code>
+     * Copy the context items from the given node into this node.
+     * Context items are used to keep track of context nodes inside predicates.
      *
      * @param node a <code>NodeProxy</code> value
      */
     public void deepCopyContext(NodeProxy node) {
         context = null;
-        ContextItem newContext = null;
-        ContextItem next = node.context;
-        while (next != null) {
-            if (newContext == null) {
-                newContext = new ContextItem(next.getContextId(), next.getNode());
-                context = newContext;
-            } else {
+        if (node.context == null)
+            return;
+        if (node.context.getNextDirect() == null) {
+            // if there's a single context item, we just
+            // copy a reference to it. addContextNode will take
+            // care of this and create a copy before appending
+            // a new item
+            context = node.context;
+        } else {
+            ContextItem next = node.context;
+            ContextItem newContext = new ContextItem(next.getContextId(), next.getNode());
+            context = newContext;
+            next = next.getNextDirect();
+            while (next != null) {
                 newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
                 newContext = newContext.getNextDirect();
+                next = next.getNextDirect();
             }
-            next = next.getNextDirect();
         }
     }
 
