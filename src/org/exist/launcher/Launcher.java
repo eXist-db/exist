@@ -249,6 +249,12 @@ public class Launcher {
         stopItem.setEnabled(true);
     }
 
+    protected void signalShutdown() {
+        trayIcon.setToolTip("eXist-db server stopped");
+        startItem.setEnabled(true);
+        stopItem.setEnabled(false);
+    }
+
     private String getJettyHome() {
         String jettyProperty = System.getProperty("jetty.home");
         if(jettyProperty==null) {
