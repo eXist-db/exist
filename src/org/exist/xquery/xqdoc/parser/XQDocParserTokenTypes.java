@@ -11,7 +11,7 @@ public interface XQDocParserTokenTypes {
 	int TAG = 5;
 	int XQDOC_END = 6;
 	int TRIM = 7;
-	int COLON = 8;
+	int SIMPLE_COLON = 8;
 	int CHARS = 9;
 	int AT = 10;
 }

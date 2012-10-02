@@ -43,7 +43,10 @@ contents returns [String content]
 	(
 		TRIM { buf.append('\n'); }
 		|
-		COLON
+		SIMPLE_COLON { 
+			if (buf.charAt(buf.length() - 1) != '\n')
+				buf.append(':');
+		}
 		|
 		c:CHARS { buf.append(c.getText()); }
 	)+
@@ -59,11 +62,13 @@ options {
 
 XQDOC_START: "(:~";
 XQDOC_END: ":)";
+
 AT: '@';
+
 CHARS: (~('\n' | '@' | ':'))+;
 
 TRIM: '\n' ('\t' | ' ')*;
 
-COLON: (':' ~(')'));
+SIMPLE_COLON: (':' ~(')')) => ':';
 
 TAG: '@' ('A'..'Z' | 'a'..'z' | '0'..'9')+;

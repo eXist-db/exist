@@ -62,7 +62,7 @@ public XQDocParser(ParserSharedInputState state) {
 					break;
 				}
 				case TRIM:
-				case COLON:
+				case SIMPLE_COLON:
 				case CHARS:
 				{
 					c=contents();
@@ -141,8 +141,14 @@ public XQDocParser(ParserSharedInputState state) {
 						buf.append('\n');
 					}
 				}
-				else if ((LA(1)==COLON)) {
-					match(COLON);
+				else if ((LA(1)==SIMPLE_COLON)) {
+					match(SIMPLE_COLON);
+					if ( inputState.guessing==0 ) {
+						
+									if (buf.charAt(buf.length() - 1) != '\n')
+										buf.append(':');
+								
+					}
 				}
 				else if ((LA(1)==CHARS)) {
 					c = LT(1);
@@ -183,7 +189,7 @@ public XQDocParser(ParserSharedInputState state) {
 		"TAG",
 		"XQDOC_END",
 		"TRIM",
-		"COLON",
+		"SIMPLE_COLON",
 		"CHARS",
 		"AT"
 	};
