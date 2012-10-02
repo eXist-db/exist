@@ -27,8 +27,8 @@ public class InspectModule extends BasicFunction {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("inspect-module", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-            "Compiles a module from source (without importing it) and returns a sequence of function items " +
-            "defined in the module.",
+            "Compiles a module from source (without importing it) and returns an XML fragment describing the " +
+            "module and the functions/variables contained in it.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE,
                         "The location URI of the module to inspect"),
@@ -45,62 +45,7 @@ public class InspectModule extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        String moduleLoadPath = context.getModuleLoadPath();
-        String location = args[0].getStringValue();
-        XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
-        ExternalModule module = null;
-        if(location.startsWith( XmldbURI.XMLDB_URI_PREFIX)
-            || ((location.indexOf(':') == -1) && moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
-            // Is the module source stored in the database?
-            try {
-                XmldbURI locationUri = XmldbURI.xmldbUriFor( location );
-
-                if( moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) {
-                    XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
-                    locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
-                }
-
-                DocumentImpl sourceDoc = null;
-                try {
-                    sourceDoc = tempContext.getBroker().getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
-
-                    if(sourceDoc == null) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to anything.", new ValueSequence(new StringValue(location)));
-                    }
-
-                    if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to an XQuery.", new ValueSequence(new StringValue(location)));
-                    }
-
-                    DBSource moduleSource = new DBSource( tempContext.getBroker(), (BinaryDocument)sourceDoc, true );
-                    tempContext.setModuleLoadPath("xmldb:exist:///db");
-                    module = compile(tempContext, location, moduleSource);
-
-                } catch(PermissionDeniedException e) {
-                    throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
-                } catch(Exception e) {
-                    throw new XPathException(this, "Error while loading XQuery module: " + locationUri.toString(), e);
-                } finally {
-                    if(sourceDoc != null) {
-                        sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
-                    }
-                }
-            } catch(URISyntaxException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
-            }
-        } else {
-            // No. Load from file or URL
-            try {
-                Source moduleSource = SourceFactory.getSource(tempContext.getBroker(), moduleLoadPath, location, true);
-                module = compile(tempContext, location, moduleSource);
-            } catch(MalformedURLException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
-            } catch(IOException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Source for module not found module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
-            } catch(PermissionDeniedException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
-            }
-        }
+        ExternalModule module = InspectionModule.loadModule(context, args[0].getStringValue(), false);
 
         if (module == null)
             return Sequence.EMPTY_SEQUENCE;
@@ -142,12 +87,5 @@ public class InspectModule extends BasicFunction {
         }
         builder.endElement();
         return builder.getDocument().getNode(nodeNr);
-    }
-
-    private ExternalModule compile(XQueryContext tempContext, String location, Source source) throws XPathException, IOException {
-        QName qname = source.isModule();
-        if (qname == null)
-            return null;
-        return tempContext.compileModule(qname.getLocalName(), qname.getNamespaceURI(), location, source);
     }
 }
