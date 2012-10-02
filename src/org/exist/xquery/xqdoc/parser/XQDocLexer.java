@@ -63,11 +63,7 @@ tryAgain:
 					mXQDOC_END(true);
 					theRetToken=_returnToken;
 				}
-				else if ((LA(1)==':') && (_tokenSet_0.member(LA(2)))) {
-					mCOLON(true);
-					theRetToken=_returnToken;
-				}
-				else if ((LA(1)=='@') && (_tokenSet_1.member(LA(2)))) {
+				else if ((LA(1)=='@') && (_tokenSet_0.member(LA(2)))) {
 					mTAG(true);
 					theRetToken=_returnToken;
 				}
@@ -75,12 +71,16 @@ tryAgain:
 					mAT(true);
 					theRetToken=_returnToken;
 				}
-				else if ((_tokenSet_2.member(LA(1))) && (true)) {
+				else if ((_tokenSet_1.member(LA(1))) && (true)) {
 					mCHARS(true);
 					theRetToken=_returnToken;
 				}
 				else if ((LA(1)=='\n')) {
 					mTRIM(true);
+					theRetToken=_returnToken;
+				}
+				else if ((LA(1)==':') && (true)) {
+					mSIMPLE_COLON(true);
 					theRetToken=_returnToken;
 				}
 				else {
@@ -157,9 +157,9 @@ tryAgain:
 		int _cnt16=0;
 		_loop16:
 		do {
-			if ((_tokenSet_2.member(LA(1)))) {
+			if ((_tokenSet_1.member(LA(1)))) {
 				{
-				match(_tokenSet_2);
+				match(_tokenSet_1);
 				}
 			}
 			else {
@@ -210,17 +210,12 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	public final void mCOLON(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	public final void mSIMPLE_COLON(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = COLON;
+		_ttype = SIMPLE_COLON;
 		int _saveIndex;
 		
-		{
 		match(':');
-		{
-		match(_tokenSet_0);
-		}
-		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
@@ -235,8 +230,8 @@ tryAgain:
 		
 		match('@');
 		{
-		int _cnt25=0;
-		_loop25:
+		int _cnt26=0;
+		_loop26:
 		do {
 			switch ( LA(1)) {
 			case 'A':  case 'B':  case 'C':  case 'D':
@@ -270,10 +265,10 @@ tryAgain:
 			}
 			default:
 			{
-				if ( _cnt25>=1 ) { break _loop25; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt26>=1 ) { break _loop26; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt25++;
+			_cnt26++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -285,21 +280,13 @@ tryAgain:
 	
 	
 	private static final long[] mk_tokenSet_0() {
-		long[] data = new long[2048];
-		data[0]=-2199023255560L;
-		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-		data[1023]=9223372036854775807L;
-		return data;
-	}
-	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
-	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[1025];
 		data[0]=287948901175001088L;
 		data[1]=576460743847706622L;
 		return data;
 	}
-	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
-	private static final long[] mk_tokenSet_2() {
+	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
+	private static final long[] mk_tokenSet_1() {
 		long[] data = new long[2048];
 		data[0]=-288230376151712776L;
 		data[1]=-2L;
@@ -307,6 +294,6 @@ tryAgain:
 		data[1023]=9223372036854775807L;
 		return data;
 	}
-	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
+	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	
 	}
