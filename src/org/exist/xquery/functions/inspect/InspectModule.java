@@ -19,6 +19,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.Map;
 
 public class InspectModule extends BasicFunction {
@@ -36,6 +37,7 @@ public class InspectModule extends BasicFunction {
                 "An XML fragment describing the module and all functions contained in it."));
 
     private static final QName MODULE_QNAME = new QName("module");
+    private static final QName VARIABLE_QNAME = new QName("variable");
 
     public InspectModule(XQueryContext context) {
         super(context, signature);
@@ -120,6 +122,19 @@ public class InspectModule extends BasicFunction {
                 builder.endElement();
             }
         }
+        // variables
+        for (VariableDeclaration var: module.getVariableDeclarations()) {
+            attribs.clear();
+            attribs.addAttribute("", "name", "name", "CDATA", var.getName());
+            SequenceType type = var.getSequenceType();
+            if (type != null) {
+                attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
+                attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+            }
+            builder.startElement(VARIABLE_QNAME, attribs);
+            builder.endElement();
+        }
+        // functions
         for (FunctionSignature sig : module.listFunctions()) {
             if (!((ExternalModuleImpl)module).isPrivate(sig)) {
                 InspectFunction.generateDocs(sig, builder);

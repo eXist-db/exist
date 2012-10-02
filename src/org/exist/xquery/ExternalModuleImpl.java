@@ -173,6 +173,10 @@ public class ExternalModuleImpl implements ExternalModule {
         return mGlobalVariables.keySet().iterator();
     }
 
+    public Collection<VariableDeclaration> getVariableDeclarations() {
+        return mGlobalVariables.values();
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
      */
