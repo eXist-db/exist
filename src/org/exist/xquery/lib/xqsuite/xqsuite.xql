@@ -110,7 +110,7 @@ declare %private function test:call-func-with-annotation($functions as function(
  : using the supplied parameters.
  :)
 declare %private function test:run-tests($func as function(*), $meta as element(function)) {
-    let $argsAnnot := $meta/annotation[matches(@name, ":args")]
+    let $argsAnnot := $meta/annotation[matches(@name, ":args?")][not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
     return
         if ($argsAnnot) then
             $argsAnnot ! test:test($func, $meta, .)
@@ -122,8 +122,9 @@ declare %private function test:run-tests($func as function(*), $meta as element(
  : The main function for running a single test. Executes the test function
  : and compares the result against each assertXXX annotation.
  :)
-declare %private function test:test($func as function(*), $meta as element(function), $args as element(annotation)?) {
-    let $assertions := test:get-assertions($meta, $args)
+declare %private function test:test($func as function(*), $meta as element(function), $firstArg as element(annotation)?) {
+    let $args := test:get-run-args($firstArg)
+    let $assertions := test:get-assertions($meta, $firstArg)
     let $assertError := $assertions[contains(@name, ":assertError")]
     return
         if (exists($assertions)) then
@@ -168,66 +169,136 @@ declare %private function test:test($func as function(*), $meta as element(funct
  : assertions apply to the result of running the function with the parameters given
  : in the preceding %args.
  :)
-declare %private function test:get-assertions($meta as element(function), $args as element(annotation)?) {
-    if ($args) then
-        let $nextArgs := $args/following-sibling::annotation[contains(@name, ":args")]
+declare %private function test:get-assertions($meta as element(function), $firstArg as element(annotation)?) {
+    if ($firstArg) then
+        let $nextBlock := 
+            $firstArg/following-sibling::annotation[matches(@name, ":args?")]
+                [preceding-sibling::annotation[1][contains(@name, ":assert")]][1]
         return
-            $args/following-sibling::annotation[contains(@name, ":assert")]
-            except
-            $nextArgs/following-sibling::annotation[contains(@name, ":assert")]
+            if ($nextBlock) then
+                $firstArg/following-sibling::annotation[contains(@name, ":assert")]
+                intersect
+                $nextBlock/preceding-sibling::annotation[contains(@name, ":assert")]
+            else
+                $firstArg/following-sibling::annotation[contains(@name, ":assert")]
     else
         $meta/annotation[contains(@name, ":assert")]
 };
 
 (:~
- : Map any arguments from the %args annotation into function parameters and evaluate
+ : Collect %test:arg and %test:args for the current run.
+ :)
+declare %private function test:get-run-args($firstArg as element(annotation)?) {
+    if ($firstArg) then
+        let $nextBlock := 
+            $firstArg/following-sibling::annotation[matches(@name, ":args?")]
+                [preceding-sibling::annotation[1][contains(@name, ":assert")]][1]
+        return (
+            $firstArg,
+            if ($nextBlock) then
+                $firstArg/following-sibling::annotation[matches(@name, ":args?")]
+                intersect
+                $nextBlock/preceding-sibling::annotation
+            else
+                $firstArg/following-sibling::annotation[matches(@name, ":args?")]
+        )
+    else
+        ()
+};
+
+(:~
+ : Map any arguments from the %args or %arg annotations into function parameters and evaluate
  : the resulting function. 
  :)
 declare %private function test:call-test($func as function(*), $meta as element(function), $args as element(annotation)*) {
-    let $argCount := count($meta/argument)
-    let $testArgs := $args/value/string()
+    let $funArgs :=
+        if ($args[1]/@name = "test:args") then
+            test:map-arguments($args/value/string(), $meta/argument)
+        else
+            test:map-named-arguments($meta/argument, $args)
     return
-        if (count($testArgs) != $argCount) then
+        test:apply($func, $meta, $funArgs)
+};
+
+(:~
+ : Map a sequence of %arg annotations to named function parameters.
+ :)
+declare %private function test:map-named-arguments($funcArgs as element(argument)*, $testArgs as element(annotation)*) {
+    let $mappedArgs :=
+        for $arg in $funcArgs
+        let $argName := $arg/@var/string()
+        let $testArg := $testArgs[value[1] = $argName]
+        return
+            if (empty($testArg)) then
+                error($test:WRONG_ARG_COUNT, "No matching %test:arg found for parameter " || $argName)
+            else
+                test:map-named-argument(subsequence($testArg/value, 2), $arg)
+    return
+        if (count($mappedArgs) != count($funcArgs)) then
+            error(
+                $test:WRONG_ARG_COUNT, 
+                "The number of arguments specified via test:arg must match the arguments of the function to test"
+            )
+        else
+            $mappedArgs
+};
+
+declare %private function test:map-named-argument($testArgs as element(value)*, $funcArg as element(argument)) {
+    let $data :=
+        try {
+            test:cast($testArgs, $funcArg)
+        } catch * {
+            error($test:TYPE_ERROR, "Failed to cast annotation arguments to required target type " || $funcArg/@type)
+        }
+    return
+        (: If we need to return a sequence of values, enclose them into a closure function :)
+        function() { $data }
+};
+
+(:~
+ : For %args: transform each annotation parameter into the type required for the function parameter.
+ :)
+declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
+    if (exists($testArgs)) then
+        if (count($testArgs) != count($funcArgs)) then
             error(
                 $test:WRONG_ARG_COUNT, 
                 "The number of arguments specified in test:args must match the arguments of the function to test"
             )
         else
-            let $args := test:map-arguments($testArgs, $meta/argument)
-            return
-                test:apply($func, $meta, $args)
-};
-
-(:~
- : Transform the annotation to the type required by the function parameter.
- :)
-declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
-    if (exists($testArgs)) then
-        map-pairs(function($targ, $farg) {
-            switch (string($farg/@type))
-                case "xs:string" return
-                    string($targ)
-                case "xs:integer" case "xs:int" return
-                    xs:integer($targ)
-                case "xs:decimal" return
-                    xs:decimal($targ)
-                case "xs:float" case "xs:double" return
-                    xs:double($targ)
-                case "xs:date" return
-                    xs:date($targ)
-                case "xs:dateTime" return
-                    xs:dateTime($targ)
-                case "xs:time" return
-                    xs:time($targ)
-                case "element()" return
-                    util:parse($targ)/*
-                case "text()" return
-                    text { string($targ) }
-                default return
-                    $targ
-        }, $testArgs, $funcArgs)
+            map-pairs(function($targ as xs:string, $farg as element(argument)) {
+                let $data := test:cast($targ, $farg)
+                return
+                    function() { $data }
+            }, $testArgs, $funcArgs)
     else
         ()
+};
+
+declare %private function test:cast($targs as xs:string*, $farg as element(argument)) {
+    for $targ in $targs
+    return
+        switch (string($farg/@type))
+            case "xs:string" return
+                string($targ)
+            case "xs:integer" case "xs:int" return
+                xs:integer($targ)
+            case "xs:decimal" return
+                xs:decimal($targ)
+            case "xs:float" case "xs:double" return
+                xs:double($targ)
+            case "xs:date" return
+                xs:date($targ)
+            case "xs:dateTime" return
+                xs:dateTime($targ)
+            case "xs:time" return
+                xs:time($targ)
+            case "element()" return
+                util:parse($targ)/*
+            case "text()" return
+                text { string($targ) }
+            default return
+                $targ
 };
 
 declare function test:apply($func as function(*), $meta as element(function), $args as item()*) {
@@ -250,19 +321,19 @@ declare %private function test:apply($func as function(*), $args as item()*) {
         case 0 return
             $func()
         case 1 return
-            $func($args[1])
+            $func($args[1]())
         case 2 return
-            $func($args[1], $args[2])
+            $func($args[1](), $args[2]())
         case 3 return
-            $func($args[1], $args[2], $args[3])
+            $func($args[1](), $args[2](), $args[3]())
         case 4 return
-            $func($args[1], $args[2], $args[3], $args[4])
+            $func($args[1](), $args[2](), $args[3](), $args[4]())
         case 5 return
-            $func($args[1], $args[2], $args[3], $args[4], $args[5])
+            $func($args[1](), $args[2](), $args[3](), $args[4](), $args[5]())
         case 6 return
-            $func($args[1], $args[2], $args[3], $args[4], $args[5], $args[6])
+            $func($args[1](), $args[2](), $args[3](), $args[4](), $args[5](), $args[6]())
         case 7 return
-            $func($args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7])
+            $func($args[1](), $args[2](), $args[3](), $args[4](), $args[5](), $args[6](), $args[7]())
         default return
             error($test:WRONG_ARG_COUNT, "Function takes too many arguments")
 };
