@@ -66,6 +66,8 @@ public interface ExternalModule extends Module {
 
     public void analyzeGlobalVars() throws XPathException;
 
+    public Collection<VariableDeclaration> getVariableDeclarations();
+
     /**
      * Get the source object this module has been read from.
      *

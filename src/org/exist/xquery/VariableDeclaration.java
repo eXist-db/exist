@@ -51,6 +51,10 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 		this.expression = expr;
 	}
 
+    public String getName() {
+        return qname;
+    }
+
 	/**
 	 * Set the sequence type of the variable.
 	 * 
@@ -59,7 +63,11 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	public void setSequenceType(SequenceType type) {
 		this.sequenceType = type;
 	}
-	
+
+    public SequenceType getSequenceType() {
+        return sequenceType;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
