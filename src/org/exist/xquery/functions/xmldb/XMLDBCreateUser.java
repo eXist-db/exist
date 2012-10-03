@@ -86,7 +86,7 @@ public class XMLDBCreateUser extends BasicFunction {
 		if (!context.getSubject().hasDbaRole()) {
 			XPathException xPathException = new XPathException(this,
 					"Permission denied, calling user '"
-							+ context.getUser().getName()
+							+ context.getSubject().getName()
 							+ "' must be a DBA to call this function.");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
