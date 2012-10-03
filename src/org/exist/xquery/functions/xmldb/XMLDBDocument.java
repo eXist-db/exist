@@ -122,7 +122,7 @@ public class XMLDBDocument extends Function {
                 context.getBroker().getAllXMLResources(mdocs);
             } catch(PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
-                throw new XPathException(pde.getMessage(), pde);
+                throw new XPathException(this, pde);
             }
 	    docs = mdocs;
 	    //	        }

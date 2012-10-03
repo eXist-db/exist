@@ -82,7 +82,7 @@ public class XMLDBDeleteUser extends BasicFunction {
         Subject contextUser = context.getSubject();
 		if (contextUser.hasDbaRole()) {
 			if (contextUser.getName().equals(user)) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must not be deleting itself");
+				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must not be deleting itself");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			} else {
@@ -102,7 +102,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 			}
         	
         } else {
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getUser().getName() + "' must be a DBA to delete a user");
+			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to delete a user");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
         }

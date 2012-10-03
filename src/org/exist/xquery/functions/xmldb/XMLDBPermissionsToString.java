@@ -40,8 +40,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.security.SecurityManager;
-import org.exist.security.Subject;
 
 /**
  * @author wolf
@@ -99,7 +97,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
                 Permission perm = UnixStylePermissionAider.fromString(permissionsString);
                 return new IntegerValue(perm.getMode());
             } catch(SyntaxException se) {
-                throw new XPathException(se.getMessage(), se);
+                throw new XPathException(this, se);
             }
         }
     }
