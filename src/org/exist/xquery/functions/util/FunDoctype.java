@@ -77,7 +77,7 @@ public class FunDoctype extends Function {
                     context.getBroker().getXMLResourcesByDoctype(next, docs);
                 } catch(PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
-                    throw new XPathException(pde.getMessage(), pde);
+                    throw new XPathException(pde);
                 }
             }
         }

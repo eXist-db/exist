@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.functions.inspect.*;
 import org.exist.xquery.functions.inspect.InspectFunction;
 
 import java.util.Arrays;
