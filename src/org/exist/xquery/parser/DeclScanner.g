@@ -62,7 +62,6 @@ versionDecl throws XPathException
 		{
 			modulePrefix = prefix.getText();
 			moduleNamespace = uri.getText();
-			System.out.println("Found module: " + moduleNamespace);
 		}
 	)?
 	{

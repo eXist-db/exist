@@ -142,7 +142,6 @@ public DeclScanner(ParserSharedInputState state) {
 			
 						modulePrefix = prefix.getText();
 						moduleNamespace = uri.getText();
-						System.out.println("Found module: " + moduleNamespace);
 					
 			break;
 		}
