@@ -164,7 +164,8 @@ public class MessageHelper {
     public static void retrieveFromDocument(Map<String, Object> props, DocumentImpl document){
         
             props.put(EXIST_RESOURCE_TYPE, 
-                    (document.getResourceType() == DocumentImpl.XML_FILE ? "XML" : "BINARY")); 
+                    (document.getResourceType() == DocumentImpl.XML_FILE ? 
+		     eXistMessage.ResourceType.DOCUMENT : "BINARY")); 
             props.put(EXIST_RESOURCE_DOCUMENTID, document.getDocId()); 
             props.put(EXIST_RESOURCE_CONTENTLENGTH, document.getContentLength()); 
         
