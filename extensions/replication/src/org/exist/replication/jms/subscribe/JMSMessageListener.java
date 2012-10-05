@@ -564,7 +564,7 @@ public class JMSMessageListener implements MessageListener {
     private void deleteCollection(eXistMessage em) {
 
         XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
-        XmldbURI colURI = sourcePath.removeLastSegment();
+        //XmldbURI colURI = sourcePath.removeLastSegment();
         //XmldbURI docURI = sourcePath.lastSegment();
 
 
@@ -580,7 +580,8 @@ public class JMSMessageListener implements MessageListener {
 
 
             // Open collection if possible, else abort
-            collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
+            //collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
+            collection = broker.openCollection(sourcePath, Lock.WRITE_LOCK);
             if (collection == null) {
                 txnManager.abort(txn);
                 return;

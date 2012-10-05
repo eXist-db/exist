@@ -70,6 +70,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         MessageHelper.retrieveDocMetadata(md, document.getMetadata());
         MessageHelper.retrieveFromDocument(md, document);
         MessageHelper.retrievePermission(md, document.getPermissions());
+
         
         // The content is always gzip-ped
         md.put(MessageHelper.EXIST_MESSAGE_CONTENTENCODING, "gzip");
@@ -180,6 +181,9 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         msg.setResourceType(eXistMessage.ResourceType.COLLECTION);
         msg.setResourceOperation(eXistMessage.ResourceOperation.CREATE);
         msg.setResourcePath(collection.getURI().toString());
+
+        Map<String, Object> md = msg.getMetadata();
+        MessageHelper.retrievePermission(md, collection.getPermissions());
 
         // Send Message   
         sendMessage(msg);
