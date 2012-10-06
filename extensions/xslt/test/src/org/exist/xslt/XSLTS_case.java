@@ -39,13 +39,10 @@ import junit.framework.Assert;
 
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;
-import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.Before;
@@ -265,4 +262,8 @@ public class XSLTS_case extends TestCase {
 		return result;
 	}
 
+	@Override
+	protected String getCollection() {
+		return "/db/XQTS";
+	}
 }
