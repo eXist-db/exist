@@ -55,7 +55,12 @@ public class DateTimeModule extends AbstractInternalModule
         new FunctionDef(DateForFunction.signature, DateForFunction.class),
         new FunctionDef(DateRangeFunctions.signature[0], DateRangeFunctions.class),
         new FunctionDef(DateRangeFunctions.signature[1], DateRangeFunctions.class),
-        new FunctionDef(DateRangeFunctions.signature[2], DateRangeFunctions.class)
+        new FunctionDef(DateRangeFunctions.signature[2], DateRangeFunctions.class),
+
+        new FunctionDef(Timestamp.signature[0], Timestamp.class),
+        new FunctionDef(Timestamp.signature[1], Timestamp.class),
+
+        new FunctionDef(TimestampToDateTime.signature[0], TimestampToDateTime.class),
     };
 
 
