@@ -151,7 +151,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
 	protected abstract AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException;
 	
-	protected long getTimeInMillis() {
+	public long getTimeInMillis() {
 		// use getImplicitCalendar() rather than relying on toGregorianCalendar timezone defaulting
 		// to maintain consistency
 		return getImplicitCalendar().toGregorianCalendar().getTimeInMillis();
