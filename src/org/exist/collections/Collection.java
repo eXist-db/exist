@@ -1215,7 +1215,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     }
                 } catch (IOException e) {
                     // mark is not supported: exception is expected, do nothing
-                    LOG.error("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
+                    LOG.debug("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
                 }
                 XMLReader reader = getReader(broker, false, info.getCollectionConfig());
                 info.setReader(reader, null);
