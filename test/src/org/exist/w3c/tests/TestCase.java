@@ -49,7 +49,6 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
@@ -142,13 +141,15 @@ public abstract class TestCase {
 		synchronized (database) {
 			if (testCollection == null) {
 				loadTS();
-				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
+				testCollection = DatabaseManager.getCollection("xmldb:exist://"+getCollection(), "admin", "");
 				if (testCollection == null) {
 					Assert.fail("There is no Test Suite data at database");
 				}
 			}
 		}
 	}
+	
+	protected abstract String getCollection();
 
 	/**
 	 * @throws java.lang.Exception
