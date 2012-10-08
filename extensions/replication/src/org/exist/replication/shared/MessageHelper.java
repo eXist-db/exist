@@ -162,10 +162,9 @@ public class MessageHelper {
     
     
     public static void retrieveFromDocument(Map<String, Object> props, DocumentImpl document){
-        
-            props.put(EXIST_RESOURCE_TYPE, 
-                    (document.getResourceType() == DocumentImpl.XML_FILE ? 
-		     eXistMessage.ResourceType.DOCUMENT : "BINARY")); 
+            // We do not differ between DOCUMENT subtypes,
+	    // mime-type is set in document metadata EXIST_RESOURCE_MIMETYPE. /ljo
+            props.put(EXIST_RESOURCE_TYPE, eXistMessage.ResourceType.DOCUMENT); 
             props.put(EXIST_RESOURCE_DOCUMENTID, document.getDocId()); 
             props.put(EXIST_RESOURCE_CONTENTLENGTH, document.getContentLength()); 
         

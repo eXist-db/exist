@@ -530,7 +530,7 @@ public class JMSMessageListener implements MessageListener {
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
-
+	    // This delete is based on mime-type /ljo 
             if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                 collection.removeBinaryResource(txn, broker, resource.getFileURI());
 
