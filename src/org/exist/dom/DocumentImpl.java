@@ -64,7 +64,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 import org.exist.security.ACLPermission;
-import org.exist.security.Subject;
 
 /**
  *  Represents a persistent document object in the database;
@@ -542,6 +541,25 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             for (int i = 0; i < children; i++) { 
                 childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
             }
+        } catch (IOException e) {
+            LOG.error("IO error while reading document data for document " + fileURI, e);
+            //TODO : raise exception ?
+        }
+    }
+
+    public void readWithMetadata(VariableByteInput istream) throws IOException, EOFException {
+        try {
+            docId = istream.readInt();
+            fileURI = XmldbURI.createInternal(istream.readUTF());
+            getPermissions().read(istream);
+            //Should be > 0 ;-)
+            children = istream.readInt();
+            childAddress = new long[children];
+            for (int i = 0; i < children; i++) { 
+                childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+            }
+            metadata = new DocumentMetadata();
+            metadata.read(pool, istream);
         } catch (IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
             //TODO : raise exception ?
