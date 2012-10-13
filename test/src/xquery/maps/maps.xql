@@ -267,3 +267,21 @@ function mt:mixedNumeric() {
     return
         ($map(2), $map("key"))
 };
+
+declare
+    %test:assertEquals("<c ns='c'/>", "<c ns='c'/>")
+function mt:pathExpr() as element(c)+ {
+    let $test := 
+        <a>
+            <b ns="b">
+                <c ns="c"/>
+            </b>
+        </a>
+    let $map :=
+        map {
+            "a" := $test//c,
+            "b" := ($test//c)
+        }
+    return
+        ($map("a"), $map("b"))
+};

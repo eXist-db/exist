@@ -2976,10 +2976,13 @@ throws XPathException, PermissionDeniedException, EXistException
 		(
 			#(
 				COLON
-				{ PathExpr kv = new PathExpr(context); }
-				step=expr[kv]
-				step=expr[kv]
-				{ expr.map(kv); }
+				{ 
+					PathExpr key = new PathExpr(context);
+					PathExpr value = new PathExpr(context);
+				}
+				step=expr[key]
+				step=expr[value]
+				{ expr.map(key, value); }
 			)
 		)*
 	)

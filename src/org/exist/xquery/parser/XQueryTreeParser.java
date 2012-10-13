@@ -9400,12 +9400,15 @@ public XQueryTreeParser() {
 				org.exist.xquery.parser.XQueryAST tmp124_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,COLON);
 				_t = _t.getFirstChild();
-				PathExpr kv = new PathExpr(context);
-				step=expr(_t,kv);
+				
+									PathExpr key = new PathExpr(context);
+									PathExpr value = new PathExpr(context);
+								
+				step=expr(_t,key);
 				_t = _retTree;
-				step=expr(_t,kv);
+				step=expr(_t,value);
 				_t = _retTree;
-				expr.map(kv);
+				expr.map(key, value);
 				_t = __t340;
 				_t = _t.getNextSibling();
 			}
