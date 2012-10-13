@@ -985,9 +985,17 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String,
      *           java.lang.String)
      */
-    public NodeList getElementsByTagNameNS(String arg0, String arg1) {
-        // TODO Auto-generated method stub
-        return null;
+    public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
+        NodeListImpl nl = new NodeListImpl();
+        for (int i = 1; i < size; i++) {
+            if (nodeKind[i] == Node.ELEMENT_NODE) {
+                QName qn = nodeName[i];
+                if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName)) {
+                    nl.add(getNode(i));
+                }
+            }
+        }
+        return nl;
     }
 
     /*
