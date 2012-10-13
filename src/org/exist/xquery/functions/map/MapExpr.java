@@ -21,8 +21,8 @@ public class MapExpr extends AbstractExpression {
         super(context);
     }
 
-    public void map(PathExpr path) {
-        Mapping mapping = new Mapping(path.getExpression(0), path.getExpression(1));
+    public void map(PathExpr key, PathExpr value) {
+        Mapping mapping = new Mapping(key.simplify(), value.simplify());
         this.mappings.add(mapping);
     }
 
