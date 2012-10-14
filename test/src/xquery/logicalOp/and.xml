@@ -25,6 +25,9 @@
     			</msg>
 			</set>
         </store>
+        <store collection="/db/test" name="text2.xml">
+            <a a1="1"/>
+        </store>
     </setup>
     <tearDown>
         <remove-collection collection="/db/test"/>
@@ -39,6 +42,20 @@
 					<read-by>Alex</read-by>
 				</inform>
 			</msg>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>and under predicate</task>
+        <code>collection("/db/test")//a[@a1 = 1 and true()]</code>
+        <expected>
+            <a a1="1"/>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>and under predicate</task>
+        <code>collection("/db/test")//a[@a1 = 1 and @a1 = 1 and true()]</code>
+        <expected>
+            <a a1="1"/>
         </expected>
     </test>
 </TestSet>
