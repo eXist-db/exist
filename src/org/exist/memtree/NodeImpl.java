@@ -421,7 +421,6 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
      * @see org.w3c.dom.Node#normalize()
      */
     public void normalize() {
-        throw( new RuntimeException( "Can not call normalize() on node type " + this.getNodeType() ) );
     }
 
     /* (non-Javadoc)
