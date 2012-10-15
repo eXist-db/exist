@@ -101,9 +101,13 @@ public class ModuleContext extends XQueryContext {
                     if (parentContext.getModuleLoadPath().equals ("."))
                         setModuleLoadPath(locationUri.toString());
                     else {
-                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.getModuleLoadPath());
-                        XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
-                        setModuleLoadPath(moduleLoadUri.toString());
+                    	try {
+	                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.getModuleLoadPath());
+	                        XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
+	                        setModuleLoadPath(moduleLoadUri.toString());
+                    	} catch (URISyntaxException e) {
+                            setModuleLoadPath(locationUri.toString());
+						}
                     }
 		        } else {
                     String dir = FileUtils.dirname(location);
