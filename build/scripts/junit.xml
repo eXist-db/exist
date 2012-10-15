@@ -137,9 +137,9 @@
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
-	    <test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
-	    <test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.fulltext.AllFulltextTests" todir="${junit.reports.dat}"/>
+	    	<test fork="yes" name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
+	    	<test fork="yes" name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
+	    	<!-- <test fork="yes" name="org.exist.fulltext.AllFulltextTests" todir="${junit.reports.dat}"/> -->
             <test fork="yes" name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
 
             <!-- Execute all other tests except those that have to be called manually.   -->
@@ -158,12 +158,12 @@
                     <exclude name="**/storage/lock/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
-		    <exclude name="**/collections/*.java"/>
+		    		<exclude name="**/collections/*.java"/>
                     <exclude name="**/security/*.java"/>
                     <exclude name="org/exist/*.java"/>
                     <exclude name="**/fulltext/**/*.java"/>
-		    <exclude name="org/exist/http/underheavyload/*.java"/>
-		    <exclude name="org/exist/util/hashtable/Abstract*.java"/>
+		    		<exclude name="org/exist/http/underheavyload/*.java"/>
+		    		<exclude name="org/exist/util/hashtable/Abstract*.java"/>
                     <exclude name="xquery/**/*.java"/>
                 </fileset>
             </batchtest>
