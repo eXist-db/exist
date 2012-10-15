@@ -5947,7 +5947,7 @@ public XQueryTreeParser() {
 		_t = _t.getFirstChild();
 		
 					FunctionParameterSequenceType var = new FunctionParameterSequenceType(varname.getText());
-					// var.setCardinality(Cardinality.ZERO_OR_MORE);
+					var.setCardinality(Cardinality.ZERO_OR_MORE);
 					vars.add(var);
 				
 		{
@@ -5959,6 +5959,7 @@ public XQueryTreeParser() {
 			org.exist.xquery.parser.XQueryAST tmp88_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 			match(_t,LITERAL_as);
 			_t = _t.getFirstChild();
+			var.setCardinality(Cardinality.EXACTLY_ONE);
 			sequenceType(_t,var);
 			_t = _retTree;
 			_t = __t67;
