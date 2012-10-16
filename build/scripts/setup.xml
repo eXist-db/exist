@@ -48,7 +48,12 @@
   </target>
   
   <target name="download-xar">
-    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
+      
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
+        <classpath>
+          <pathelement location="tools/ant/lib/asocat-exist.jar"/>
+        </classpath>
+    </taskdef>
     <fetch dest="${autostart-dir}" url="${public-repo}/${xar}"/>
   </target>
 </project>
