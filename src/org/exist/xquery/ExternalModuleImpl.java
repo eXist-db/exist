@@ -110,7 +110,7 @@ public class ExternalModuleImpl implements ExternalModule {
         UserDefinedFunction fn = mFunctionMap.get(id);
         if (fn == null)
         	return null;
-        if (callerContext != getContext() && isPrivate(fn.getSignature())) {
+        if (callerContext != getContext() && fn.getSignature().isPrivate()) {
         	throw new XPathException(ErrorCodes.XPST0017, "Calling a private function from outside its module");
         }
         return fn;
@@ -276,19 +276,5 @@ public class ExternalModuleImpl implements ExternalModule {
      */
     public Expression getRootExpression() {
         return  rootExpression;
-    }
-
-    public boolean isPrivate(FunctionSignature signature) {
-    	Annotation[] annots = signature.getAnnotations();
-    	if (annots != null) {
-	        for (Annotation annot : annots) {
-	        	QName qn = annot.getName();
-	        	if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && 
-	        		qn.getLocalName().equals("private")) {
-	        		return true;
-	        	}
-	        }
-    	}
-        return false;
     }
 }

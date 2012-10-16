@@ -51,13 +51,15 @@ public class ModuleFunctions extends BasicFunction {
     private void addFunctionRefsFromModule(ValueSequence resultSeq, ExternalModule module) throws XPathException {
         FunctionSignature signatures[] = module.listFunctions();
         for (FunctionSignature signature : signatures) {
-            UserDefinedFunction func = module.getFunction(signature.getName(), signature.getArgumentCount(), context);
-            // could be null if private function
-            if (func != null) {
-                // create function reference
-                FunctionCall funcCall = new FunctionCall(context, func);
-                funcCall.setLocation(getLine(), getColumn());
-                resultSeq.add(new FunctionReference(funcCall));
+            if (!signature.isPrivate()) {
+                UserDefinedFunction func = module.getFunction(signature.getName(), signature.getArgumentCount(), context);
+                // could be null if private function
+                if (func != null) {
+                    // create function reference
+                    FunctionCall funcCall = new FunctionCall(context, func);
+                    funcCall.setLocation(getLine(), getColumn());
+                    resultSeq.add(new FunctionReference(funcCall));
+                }
             }
         }
     }
