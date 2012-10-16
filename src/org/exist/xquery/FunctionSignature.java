@@ -22,6 +22,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
@@ -197,7 +198,21 @@ public class FunctionSignature {
 	public void setDeprecated(String message) {
 		deprecated = message;
 	}
-	
+
+    public boolean isPrivate() {
+        Annotation[] annotations = getAnnotations();
+        if (annotations != null) {
+            for (Annotation annot : annotations) {
+                QName qn = annot.getName();
+                if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) &&
+                        qn.getLocalName().equals("private")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append(name.getStringValue());
