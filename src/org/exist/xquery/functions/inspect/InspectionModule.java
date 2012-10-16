@@ -87,11 +87,11 @@ public class InspectionModule extends AbstractInternalModule {
                     sourceDoc = tempContext.getBroker().getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
 
                     if(sourceDoc == null) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to anything.", new ValueSequence(new StringValue(location)));
+                        throw moduleLoadException("Module location hint URI '" + location + " does not refer to anything.", location);
                     }
 
                     if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
-                        throw new XPathException(ErrorCodes.XQST0059, "Module location hint URI '" + location + " does not refer to an XQuery.", new ValueSequence(new StringValue(location)));
+                        throw moduleLoadException("Module location hint URI '" + location + " does not refer to an XQuery.", location);
                     }
 
                     DBSource moduleSource = new DBSource( tempContext.getBroker(), (BinaryDocument)sourceDoc, true );
@@ -99,16 +99,16 @@ public class InspectionModule extends AbstractInternalModule {
                     module = compile(tempContext, location, moduleSource);
 
                 } catch(PermissionDeniedException e) {
-                    throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                    throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
                 } catch(Exception e) {
-                    throw new XPathException(ErrorCodes.XQST0059, "Error while loading XQuery module: " + locationUri.toString(), e);
+                    throw moduleLoadException("Error while loading XQuery module: " + locationUri.toString(), location, e);
                 } finally {
                     if(sourceDoc != null) {
                         sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                     }
                 }
             } catch(URISyntaxException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
             }
         } else {
             // No. Load from file or URL
@@ -116,14 +116,24 @@ public class InspectionModule extends AbstractInternalModule {
                 Source moduleSource = SourceFactory.getSource(tempContext.getBroker(), moduleLoadPath, location, true);
                 module = compile(tempContext, location, moduleSource);
             } catch(MalformedURLException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Invalid module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
             } catch(IOException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Source for module not found module location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                throw moduleLoadException("Source for module not found module location hint URI '" + location + ".", location, e);
             } catch(PermissionDeniedException e) {
-                throw new XPathException(ErrorCodes.XQST0059, "Permission denied to read module source from location hint URI '" + location + ".", new ValueSequence(new StringValue(location)), e);
+                throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
             }
         }
         return module;
+    }
+    
+    //TODO should this be like the one in XQueryContext or the one in ModuleContext?
+    protected static XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
+        return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation)));
+    }
+    
+    //TODO should this be like the one in XQueryContext or the one in ModuleContext?
+    protected static XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e) throws XPathException {
+        return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation)), e);
     }
 
     private static ExternalModule compile(XQueryContext tempContext, String location, Source source) throws XPathException, IOException {

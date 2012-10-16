@@ -40,6 +40,8 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.ValueSequence;
 
 
 /**
@@ -268,6 +270,23 @@ public class ModuleContext extends XQueryContext {
                 newModules.put(module.getNamespaceURI(), module);
         }
         modules = newModules;
+    }
+    
+    @Override
+    final protected XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
+       return moduleLoadException(message, moduleLocation, null);
+    }
+    
+    @Override
+    final protected XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e) throws XPathException {
+        //final String dependantModule = XmldbURI.create(moduleLoadPath).append(location).toString();
+        final String dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath()).append(location).toString();
+        
+        if(e == null) {
+            return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)));
+        } else {
+            return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)), e);
+        }
     }
 
 	/* (non-Javadoc)
