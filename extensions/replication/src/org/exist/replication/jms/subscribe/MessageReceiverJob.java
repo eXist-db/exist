@@ -117,10 +117,10 @@ public class MessageReceiverJob extends UserJavaJob {
             // Start it all
             connection.start();
 
-            LOG.info("Subscription was sucessful.");
+            LOG.info("Subscription was successful.");
 
         } catch (Throwable t) {
-            LOG.error("Unable to subscribe: " + t.getMessage() + ";  " + parameters.getReport(), t);
+            LOG.error("Unable to start subscription: " + t.getMessage() + ";  " + parameters.getReport(), t);
             throw new JobException(JobException.JOB_ABORT_THIS, t.getMessage());
         }
     }
