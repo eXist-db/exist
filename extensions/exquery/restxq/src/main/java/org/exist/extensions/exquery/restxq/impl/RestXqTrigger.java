@@ -239,9 +239,20 @@ public class RestXqTrigger extends FilteringTrigger {
         } catch(final RestXqServiceCompilationException rxsce) {
 
             //if there was a missing dependency then record it
-            final String missingModuleHint = extractMissingModuleHint(rxsce);
+            final MissingModuleHint missingModuleHint = extractMissingModuleHint(rxsce);
             if(missingModuleHint != null) {
-                recordMissingDependency(missingModuleHint, document.getURI());
+                
+                if(missingModuleHint.dependantModule == null) {
+                    recordMissingDependency(missingModuleHint.moduleHint, document.getURI());
+                } else {
+                    //avoids wrong missing dependency dependant being recorded for a complex module tree
+                    try {
+                        recordMissingDependency(missingModuleHint.moduleHint, XmldbURI.xmldbUriFor(missingModuleHint.dependantModule));
+                    } catch(final URISyntaxException use) {
+                        recordInvalidQuery(document.getURI());
+                        LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage());
+                    }
+                }
             } else {
                 recordInvalidQuery(document.getURI());
                 LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + rxsce.getMessage());
@@ -280,11 +291,30 @@ public class RestXqTrigger extends FilteringTrigger {
         for(final String dependant : dependants) {
             
             try {
-                LOG.info("Missing dependency '" + compiledModuleUri +"' has been added to the database, re-examining '" + dependant + "'...");
                 
                 final DocumentImpl dependantModule = broker.getResource(XmldbURI.create(dependant), Permission.READ);
-                final List<RestXqService> services = findServices(broker, dependantModule);
-                registerServices(broker, services);
+                
+                /**
+                 * This null check is needed, as a dependency module may have been renamed,
+                 * and so is no longer accessible under its old URI.
+                 *
+                 * However if its dependant module (compiledModuleUri) compiles
+                 * (which it must have for this function to be invoked)
+                 * then we can assume that the dependant module references the new
+                 * module dependency (in the case of a module move/rename)
+                 * or the dependency has been removed
+                 */
+                if(dependantModule != null) {
+                    LOG.info("Missing dependency '" + compiledModuleUri +"' has been added to the database, re-examining '" + dependant + "'...");
+                    
+                    final List<RestXqService> services = findServices(broker, dependantModule);
+                    registerServices(broker, services);
+                } else {
+                    LOG.info("Dependant '" + compiledModuleUri + "' has been resolved. Dependency on: " + dependant + "was removed");
+                    
+                    //we need to remove dependant from the dependenciesTree of dependant
+                    removeDependency(dependant, compiledModuleUri);
+                }
             } catch(final PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
             } catch(final ExQueryException eqe) {
@@ -292,32 +322,24 @@ public class RestXqTrigger extends FilteringTrigger {
             }
             
             //remove the resolve dependecies from the missing dependencies
-            synchronized(missingDependencies) {
-                final Set<String> missingDependants = missingDependencies.get(compiledModuleUri);
-                missingDependants.remove(dependant);
-                if(missingDependants.isEmpty()) {
-                    missingDependencies.remove(compiledModuleUri);
-                }
+            removeMissingDependency(compiledModuleUri, dependant);
+        }
+    }
+    
+    private void removeMissingDependency(final String dependency, final String dependant) {
+        synchronized(missingDependencies) {
+            final Set<String> missingDependants = missingDependencies.get(dependency);
+            missingDependants.remove(dependant);
+            if(missingDependants.isEmpty()) {
+                missingDependencies.remove(dependency);
             }
         }
     }
     
     private void recordQueryDependenciesTree(final Map<String, Set<String>> queryDependenciesTree) {
         synchronized(dependenciesTree) {
-            
             //Its not a merge its an ovewrite!
             dependenciesTree.putAll(queryDependenciesTree);
-            
-            /*
-            for(final String key : queryDependenciesTree.keySet()) {
-                Set<String> dependencies = dependenciesTree.get(key);
-                if(dependencies == null) {
-                    dependencies = queryDependenciesTree.get(key);
-                } else {
-                    dependencies.addAll(queryDependenciesTree.get(key));
-                }
-                dependenciesTree.put(key, dependencies); 
-            }*/
         }
     }
     
@@ -333,20 +355,48 @@ public class RestXqTrigger extends FilteringTrigger {
         }
     }
 
-    private String extractMissingModuleHint(final RestXqServiceCompilationException rxsce) {
+    private class MissingModuleHint {
+        public String moduleHint = null;
+        public String dependantModule = null;
+    }
+    
+    private MissingModuleHint extractMissingModuleHint(final RestXqServiceCompilationException rxsce) {
+        
+        MissingModuleHint missingModuleHint = null;
+        
         if(rxsce.getCause() instanceof XPathException) {
             final XPathException xpe = (XPathException)rxsce.getCause();
             if(xpe.getErrorCode() == ErrorCodes.XQST0059) {
                 final Sequence errorVals = xpe.getErrorVal();
-                if(errorVals != null && errorVals.getItemCount() == 1) {
-                    final Item errorVal = errorVals.itemAt(0);
-                    if(errorVal instanceof StringValue) {
-                        return ((StringValue)errorVal).getStringValue();
+                
+                if(errorVals != null && errorVals.getItemCount() > 0){
+                    
+                    final Item errorVal1 = errorVals.itemAt(0);
+                    if(errorVal1 instanceof StringValue) {
+                        if(missingModuleHint == null) {
+                            missingModuleHint = new MissingModuleHint();
+                        }
+                        missingModuleHint.moduleHint = ((StringValue)errorVal1).getStringValue();
+                    }
+                    
+                    if(errorVals.getItemCount() == 2) {
+                        final Item errorVal2 = errorVals.itemAt(1);
+                        if(errorVal2 instanceof StringValue) {
+                            if(missingModuleHint == null) {
+                                missingModuleHint = new MissingModuleHint();
+                            }
+                            
+                            final String dependantModuleUri = ((StringValue)errorVal2).getStringValue();
+                            
+                            //path will be of xmldb:exist:///db/a/c/1.xqm form so change it to /db/a/c/1.xqm form
+                            missingModuleHint.dependantModule = makeDbAbsolutePath(dependantModuleUri);
+                        }
                     }
                 }
             }
         }
-        return null;
+        
+        return missingModuleHint;
     }
     
     private void recordMissingDependency(final String moduleHint, final XmldbURI xqueryUri) {
@@ -368,6 +418,16 @@ public class RestXqTrigger extends FilteringTrigger {
         LOG.warn("Module '" + xqueryUri + "' has a missing dependency on '" + moduleUri + "'. Will re-examine if the missing module is added.");
     }
     
+    private void removeDependency(final String dependant, final String dependency) {
+        synchronized(dependenciesTree) {
+            final Set<String> dependencies = dependenciesTree.get(dependant);
+            dependencies.remove(dependency);
+            if(dependencies.isEmpty()) {
+                dependenciesTree.remove(dependant);
+            }
+        }
+    }
+    
     protected String getAbsoluteModuleHint(final String moduleHint, final XmldbURI xqueryUri) {
         if(moduleHint.startsWith(XmldbURI.ROOT_COLLECTION)) {
             //absolute simple path
@@ -377,11 +437,26 @@ public class RestXqTrigger extends FilteringTrigger {
         } else if(moduleHint.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
             return moduleHint.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, "");
         } else {
+            
             //relative to the xqueryUri
             final XmldbURI xqueryPath = xqueryUri.removeLastSegment();
             
             return xqueryPath.append(moduleHint).toString();
         }
+    }
+    
+    /**
+     * Converts an xmldb:exist:// path to an Absolute DB path
+     * 
+     * e.g. path  xmldb:exist:///db/a/c/1.xqm form will to /db/a/c/1.xqm form
+     */
+    private String makeDbAbsolutePath(String dependantModuleUri) {
+        dependantModuleUri = dependantModuleUri.replace(XmldbURI.EMBEDDED_SERVER_URI.toString(), "");
+        dependantModuleUri = dependantModuleUri.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, "");
+        if(!dependantModuleUri.isEmpty() && !dependantModuleUri.startsWith("/")) {
+            dependantModuleUri = dependantModuleUri.substring(dependantModuleUri.indexOf("/"));
+        }
+        return dependantModuleUri;
     }
     
     private RestXqServiceRegistry getRegistry(final DBBroker broker) {
