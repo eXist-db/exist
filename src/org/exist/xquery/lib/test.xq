@@ -39,7 +39,7 @@ declare function t:store-files($action as element(store-files)) {
         xdb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };
 
-declare function t:setup($setup as element(setup)) {
+declare function t:setup($setup as element(setup)?) {
     for $action in $setup/*
     return
         t:setup-action($action)
