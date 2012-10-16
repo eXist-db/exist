@@ -79,14 +79,6 @@ public class JMSMessageSender implements MessageSender {
             // Lookup connection factory        
             ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
 
-            // Lookup topic
-            Destination destination = (Destination) context.lookup(parameters.getTopic());
-            if (!(destination instanceof Topic)) {
-                String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
-                LOG.error(errorText);
-                throw new TransportException(errorText);
-            }
-
             // Setup connection
             Connection connection = cf.createConnection();
 
@@ -95,6 +87,14 @@ public class JMSMessageSender implements MessageSender {
 
             // TODO DW: should this be configurable?
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+            // Lookup topic
+            Destination destination = (Destination) context.lookup(parameters.getTopic());
+            if (!(destination instanceof Topic)) {
+                String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
+                LOG.error(errorText);
+                throw new TransportException(errorText);
+            }
 
             // Create message
             MessageProducer producer = session.createProducer(destination);
