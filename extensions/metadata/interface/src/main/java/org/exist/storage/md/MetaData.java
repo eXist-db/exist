@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -49,6 +50,7 @@ public abstract class MetaData {
 	public abstract List<DocumentImpl> matchDocuments(String key, String value) throws EXistException, PermissionDeniedException;
 
 	public abstract Metas addMetas(DocumentAtExist doc);
+	public abstract Metas addMetas(Collection col);
 
 	public abstract Meta getMeta(String uuid);
 
@@ -61,6 +63,8 @@ public abstract class MetaData {
 	public abstract Metas getMetas(XmldbURI uri);
 
 	public abstract void copyMetas(XmldbURI oldDoc, DocumentImpl newDoc);
+	public abstract void copyMetas(XmldbURI oldDoc, Collection newCol);
+
 	public abstract void moveMetas(XmldbURI oldUri, XmldbURI newUri);
 
 	public abstract void delMetas(XmldbURI uri);
