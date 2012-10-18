@@ -136,6 +136,16 @@ public class MetaDataImpl extends MetaData {
 		return d;
 	}
 
+    private Metas _addMetas(Collection col) {
+		MetasImpl d = new MetasImpl(col.getURI());
+		docByUUID.put(d);
+		
+		if (LOG.isDebugEnabled())
+			LOG.debug("addMetas "+d.getUUID()+" "+col.getURI());
+
+		return d;
+	}
+
     protected Metas _addMetas(String uri, String uuid) {
 		MetasImpl d = new MetasImpl(uri, uuid);
 		docByUUID.put(d);
@@ -161,6 +171,15 @@ public class MetaDataImpl extends MetaData {
 	}
 
     public Metas addMetas(DocumentAtExist doc) {
+    	Metas _d = getMetas(doc.getURI(), false);
+    	
+    	if (_d != null)
+    		return _d;
+    	
+		return _addMetas(doc);
+	}
+
+    public Metas addMetas(Collection doc) {
     	Metas _d = getMetas(doc.getURI(), false);
     	
     	if (_d != null)
@@ -397,6 +416,24 @@ public class MetaDataImpl extends MetaData {
 		MetasImpl ms = (MetasImpl)getMetas(oldDoc);
 		
 		MetasImpl newMs = (MetasImpl) addMetas(newDoc);
+
+		if(ms != null)
+		{
+			EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities();
+			try {
+				for (MetaImpl m : sub)
+					newMs.put(m.getKey(), m.getValue());
+	
+			} finally {
+				sub.close();
+			}
+		}
+	}
+
+	public void copyMetas(XmldbURI oldDoc, Collection newCol) {
+		MetasImpl ms = (MetasImpl)getMetas(oldDoc);
+		
+		MetasImpl newMs = (MetasImpl) addMetas(newCol);
 
 		if(ms != null)
 		{

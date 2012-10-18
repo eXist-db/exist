@@ -64,6 +64,8 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
+		System.out.println("afterCreateCollection "+collection.getURI());
+		MDStorageManager._.md.addMetas(collection);
 	}
 
 	@Override
@@ -72,6 +74,8 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
+		System.out.println("afterCopyCollection "+collection.getURI());
+		MDStorageManager._.md.copyMetas(oldUri, collection);
 	}
 
 	@Override
@@ -92,6 +96,8 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
+		System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
+		MDStorageManager._.md.moveMetas(oldUri, collection.getURI());
 	}
 	
 	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
@@ -131,6 +137,7 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+		System.out.println("afterDeleteCollection "+uri);
+		MDStorageManager._.md.delMetas(uri);
 	}
-
 }
