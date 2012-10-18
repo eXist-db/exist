@@ -84,11 +84,11 @@ public class JMSMessageListener implements MessageListener {
         eXistMessage em = new eXistMessage();
 
         try {
-            String value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_TYPE);
+            String value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_TYPE).toUpperCase();
             eXistMessage.ResourceType resourceType = eXistMessage.ResourceType.valueOf(value);
             em.setResourceType(resourceType);
 
-            value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_OPERATION);
+            value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_OPERATION).toUpperCase();
             eXistMessage.ResourceOperation changeType = eXistMessage.ResourceOperation.valueOf(value);
             em.setResourceOperation(changeType);
 
@@ -97,7 +97,6 @@ public class JMSMessageListener implements MessageListener {
 
             value = bm.getStringProperty(eXistMessage.EXIST_DESTINATION_PATH);
             em.setDestinationPath(value);
-
 
             // This is potentially memory intensive
             long size = bm.getBodyLength();
