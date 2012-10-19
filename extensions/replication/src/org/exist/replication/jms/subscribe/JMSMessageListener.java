@@ -131,12 +131,7 @@ public class JMSMessageListener implements MessageListener {
 
                 // Report some details into logging
                 if (LOG.isDebugEnabled()) {
-                    String txt = em.getResourceOperation() + " : " + em.getResourceType()
-                            + " from " + em.getResourcePath();
-                    if (em.getDestinationPath() != null) {
-                        txt = txt + " to " + em.getDestinationPath();
-                    }
-                    LOG.debug(txt);
+                    LOG.debug(em.getReport());
                 }
 
                 Enumeration e = msg.getPropertyNames();
