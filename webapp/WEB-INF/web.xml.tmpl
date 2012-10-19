@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--+
     | Configuration file for the web application.
     |
     | The URL mapping for rest, xmlrpc, soap etc are handled now by the
     | XQueryURLRewrite servlet filter. See for details below.
     |
-    | Version: @version@
-    |
     | $Id: web.xml 14172 2011-04-12 09:49:26Z deliriumsky $
     +-->
-
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
 
     <description>eXist Open Source Native XML Database</description>
     <display-name>eXist XML Database</display-name>
 
-	<!--
+    <!--
 	 | ScaleImageJAI servlet: scale images on the fly and cache
 	 | the output. Commented out by default.
 	 +-->
-	<!--
+    <!--
     <servlet>
         <servlet-name>ScaleImageJAI</servlet-name>
         <servlet-class>org.exist.http.servlets.ScaleImageJAI</servlet-class>
@@ -37,7 +33,7 @@
         </init-param>
     </servlet>
     -->
-    
+
     <!--
         Log4jInit initializes Log4j.
         Only needed when eXist is deployed as a .war file in e.g. Tomcat.
@@ -107,7 +103,7 @@
             <param-value>true</param-value>
         </init-param>
 
-		<!--
+        <!--
 			If parameter "hidden" is set to true, direct access to the
 			REST interface will be denied. Only requests coming from the
 			URL rewriting will be processed.
@@ -118,10 +114,10 @@
 			can expose defined URLs to the outside world via URL rewriting
 			while hiding the rest of the database.
 		-->
-		<init-param>
-			<param-name>hidden</param-name>
-			<param-value>false</param-value>
-		</init-param>
+        <init-param>
+            <param-name>hidden</param-name>
+            <param-value>false</param-value>
+        </init-param>
 
         <load-on-startup>2</load-on-startup>
     </servlet>
@@ -130,11 +126,11 @@
         JMXservlet is a servlet to monitor the database. It returns status information 
         for the database based on the JMX interface.
     -->
-	<servlet>
-	    <servlet-name>JMXServlet</servlet-name>
+    <servlet>
+        <servlet-name>JMXServlet</servlet-name>
         <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
-	</servlet>
-    
+    </servlet>
+
     <!--
         Milton provides the WebDAV interface
     -->
@@ -164,28 +160,12 @@
 
         <!-- Uncomment to enable debugging -->
         <!--
-            <init-param>
+        <init-param>
             <param-name>filter_0</param-name>
             <param-value>com.bradmcevoy.http.DebugFilter</param-value>
-            </init-param>
+        </init-param>
         -->
     </servlet>
-
-    <!--
-        WebDAVServlet provides the old WebDAV interface. 
-        This interface is deprecatedand should not be used anymore.
-    -->
-    <!-- 
-    <servlet>
-        <servlet-name>WebDAVServlet</servlet-name>
-        <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
-
-        <init-param>
-            <param-name>authentication</param-name>
-            <param-value>basic</param-value>
-        </init-param>
-    </servlet>
-    -->
 
     <!--
         XQueryServlet generates HTML from an XQuery file.
@@ -253,7 +233,7 @@
         <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
     </servlet>
 
-	<!--
+    <!--
 	<servlet>
         <servlet-name>OAuthServlet</servlet-name>
         <servlet-class>org.exist.security.realm.oauth.OAuthServlet</servlet-class>
