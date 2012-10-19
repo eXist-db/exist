@@ -54,7 +54,7 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
 /**
- *  JMS listener for receiving m
+ *  JMS listener for receiving JMS messages
  * 
  * @author Dannes Wessels
  */
@@ -84,13 +84,11 @@ public class JMSMessageListener implements MessageListener {
         eXistMessage em = new eXistMessage();
 
         try {
-            String value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_TYPE).toUpperCase();
-            eXistMessage.ResourceType resourceType = eXistMessage.ResourceType.valueOf(value);
-            em.setResourceType(resourceType);
+            String value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_TYPE);
+            em.setResourceType(value);
 
-            value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_OPERATION).toUpperCase();
-            eXistMessage.ResourceOperation changeType = eXistMessage.ResourceOperation.valueOf(value);
-            em.setResourceOperation(changeType);
+            value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_OPERATION);
+            em.setResourceOperation(value);
 
             value = bm.getStringProperty(eXistMessage.EXIST_SOURCE_PATH);
             em.setResourcePath(value);
@@ -107,6 +105,11 @@ public class JMSMessageListener implements MessageListener {
         } catch (JMSException ex) {
             String errorMessage = "Unable to convert incoming message. ("
                     + ex.getErrorCode() + "):  " + ex.getMessage();
+            LOG.error(errorMessage, ex);
+            throw new MessageReceiveException(errorMessage);
+            
+        } catch (IllegalArgumentException ex) {
+            String errorMessage = "Unable to convert incoming message. " + ex.getMessage();
             LOG.error(errorMessage, ex);
             throw new MessageReceiveException(errorMessage);
         }

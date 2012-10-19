@@ -48,6 +48,14 @@ public class FileSystemListener implements MessageListener {
         eXistMessage em = new eXistMessage();
 
         try {
+            Enumeration e = bm.getPropertyNames();
+            while(e.hasMoreElements()){
+                Object next = e.nextElement();
+                if(next instanceof String){
+                    em.getMetadata().put( (String) next, bm.getObjectProperty( (String) next) );
+                }
+            } 
+                
             String value = bm.getStringProperty(eXistMessage.EXIST_RESOURCE_TYPE);
             eXistMessage.ResourceType resourceType = eXistMessage.ResourceType.valueOf(value);
             em.setResourceType(resourceType);
@@ -63,7 +71,7 @@ public class FileSystemListener implements MessageListener {
             em.setDestinationPath(value);
 
             long size = bm.getBodyLength();
-            LOG.debug("length=" + size);
+            LOG.debug("actual length=" + size);
 
             // This is potentially memory intensive
             byte[] payload = new byte[(int) size];
@@ -98,7 +106,7 @@ public class FileSystemListener implements MessageListener {
             Enumeration names = message.getPropertyNames();
             for (Enumeration<?> e = names; e.hasMoreElements();) {
                 String key = (String) e.nextElement();
-                sb.append("'" + key + "='" + message.getStringProperty(key) + "'");
+                sb.append("'" + key + "='" + message.getStringProperty(key) + "' ");
             }
             LOG.info(sb.toString());
 
@@ -112,13 +120,12 @@ public class FileSystemListener implements MessageListener {
 
                 eXistMessage em = convertMessage(bm);
 
+
                 switch (em.getResourceType()) {
                     case DOCUMENT:
-                        LOG.info("document");
                         handleDocument(em);
                         break;
                     case COLLECTION:
-                        LOG.info("collection");
                         handleCollection(em);
                         break;
                     default:
@@ -135,6 +142,8 @@ public class FileSystemListener implements MessageListener {
     }
 
     private void handleDocument(eXistMessage em) {
+        
+        LOG.info(em.getReport());
 
         // Get original path
         String resourcePath = em.getResourcePath();
