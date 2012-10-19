@@ -32,7 +32,7 @@ import java.util.Map;
 public class eXistMessage {
 
     /**
-     * Header to describe operation on resource, e.g. CREATE_UPDATE
+     * Header to describe operation on resource, e.g. CREATE UPDATE
      */
     public final static String EXIST_RESOURCE_OPERATION = "exist.resource.operation";
     
@@ -63,7 +63,6 @@ public class eXistMessage {
      * Atomic operations on resources
      */
     public enum ResourceOperation {
-
         CREATE, UPDATE, DELETE, MOVE, COPY, METADATA
     }
 
@@ -71,12 +70,18 @@ public class eXistMessage {
      * Types of exist-db resources
      */
     public enum ResourceType {
-
         DOCUMENT, COLLECTION
     }
 
     public void setResourceOperation(ResourceOperation type) {
         resourceOperation = type;
+    }
+    
+    /**
+     * @throws IllegalArgumentException When argument cannot be converted to enum value.
+     */
+    public void setResourceOperation(String type) {
+        resourceOperation = ResourceOperation.valueOf(type.toUpperCase());
     }
 
     public ResourceOperation getResourceOperation() {
@@ -85,6 +90,13 @@ public class eXistMessage {
 
     public void setResourceType(ResourceType type) {
         resourceType = type;
+    }
+    
+    /**
+     * @throws IllegalArgumentException When argument cannot be converted to enum value.
+     */
+    public void setResourceType(String type) {
+        resourceType = eXistMessage.ResourceType.valueOf(type.toUpperCase());
     }
 
     public ResourceType getResourceType() {
@@ -121,5 +133,32 @@ public class eXistMessage {
 
     public Map<String, Object> getMetadata() {
         return metaData;
+    }
+    
+    public String getReport() {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("Message summary: ");
+        sb.append("ResourceType='").append(resourceType.toString()).append("'  ");
+        sb.append("ResourceOperation='").append(resourceOperation).append("'  ");
+        
+        sb.append("ResourcePath='").append(path).append("'  ");
+        
+        if(destination!=null){
+            sb.append("DestinationPath='").append(resourceType.toString()).append("'  ");
+        }
+        
+        if(payload!=null){
+            sb.append("PayloadSize='").append(payload.length).append("'  ");
+        }
+        
+        for(String key : metaData.keySet()){
+            Object val=metaData.get(key);
+            if(val != null){
+                sb.append(key).append("='").append(val.toString()).append("'  ");
+            }
+        }
+        
+        return sb.toString();
     }
 }

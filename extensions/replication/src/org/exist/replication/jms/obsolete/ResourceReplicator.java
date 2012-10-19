@@ -71,7 +71,7 @@ public class ResourceReplicator {
             connection.start();
 
 
-            LOG.info("receiver is ready");
+            LOG.info("Receiver is ready");
             
         } catch (Throwable t) {
             LOG.error(t.getMessage(),t);
