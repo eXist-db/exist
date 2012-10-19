@@ -135,6 +135,9 @@ public class eXistMessage {
         return metaData;
     }
     
+    /**
+     * Get one-liner report of message, including the JMS properties.
+     */
     public String getReport() {
         StringBuilder sb = new StringBuilder();
         
@@ -152,6 +155,8 @@ public class eXistMessage {
             sb.append("PayloadSize='").append(payload.length).append("'  ");
         }
         
+        sb.append("###  ");
+                
         for(String key : metaData.keySet()){
             Object val=metaData.get(key);
             if(val != null){
