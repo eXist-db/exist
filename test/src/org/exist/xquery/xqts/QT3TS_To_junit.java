@@ -69,7 +69,7 @@ public class QT3TS_To_junit {
         try {
             convertor.startup();
 //            convertor.create();
-//        	convertor.load();
+        	convertor.load();
         	convertor.create();
         } catch (Exception e) {
             e.printStackTrace();
