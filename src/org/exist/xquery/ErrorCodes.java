@@ -30,7 +30,7 @@ import org.exist.dom.QName;
  */
 public class ErrorCodes {
     
-    /* XPath 2.0 http://www.w3.org/TR/xpath20/#id-errors */
+	/* XPath 2.0 http://www.w3.org/TR/xpath20/#id-errors */
     public static ErrorCode XPST0001 = new W3CErrorCode("XPST0001", "It is a static error if analysis of an expression relies on some component of the static context that has not been assigned a value.");
     public static ErrorCode XPDY0002 = new W3CErrorCode("XPDY0002", "It is a dynamic error if evaluation of an expression relies on some part of the dynamic context that has not been assigned a value.");
     public static ErrorCode XPST0003 = new W3CErrorCode("XPST0003", "It is a static error if an expression is not a valid instance of the grammar defined in A.1 EBNF.");
@@ -185,6 +185,8 @@ public class ErrorCodes {
     public static ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
     public static ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", " Invalid date/time formatting component");
 
+    public static final ErrorCode XTDE1310 = new W3CErrorCode("XTDE1310", " Invalid decimal format picture string.");
+    
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]

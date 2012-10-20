@@ -3,7 +3,6 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.xquery.Constants;
-import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 
 public abstract class NumericValue extends ComputableValue {
