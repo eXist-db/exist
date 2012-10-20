@@ -12,4 +12,5 @@ import org.junit.runners.Suite;
         FTMatchListenerTest.class
 })
 public class AllFulltextTests {
+	//TODO: rewrite to use others indexes (FT will be removed)
 }
