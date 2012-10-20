@@ -222,7 +222,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     
     
     @Override
-    public void startUp(final DBBroker broker) throws EXistException {
+    public void start(final DBBroker broker) throws EXistException {
 
         initialiseRealmStorage(broker);
         
@@ -238,8 +238,17 @@ public abstract class AbstractRealm implements Realm, Configurable {
             throw new EXistException(le);
         }
     }
+    
 
-    public void save() throws PermissionDeniedException, EXistException, IOException {
+	@Override
+	public void sync(DBBroker broker) throws EXistException {
+	}
+
+	@Override
+	public void stop(DBBroker broker) throws EXistException {
+	}
+
+	public void save() throws PermissionDeniedException, EXistException, IOException {
         configuration.save();
     }
 

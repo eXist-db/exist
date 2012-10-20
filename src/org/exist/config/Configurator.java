@@ -55,6 +55,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
+import org.exist.LifeCycle;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.*;
@@ -437,18 +438,19 @@ public class Configurator {
             if (obj == null)
             	return null;
             
-            if (obj instanceof Startable) {
+            if (obj instanceof LifeCycle) {
                 BrokerPool db = null;
                 try {
                     db = BrokerPool.getInstance();
                 } catch (EXistException e) {
                     //ignore if database is starting-up
+                	//TODO: add to BrokerPool static list to activate when ready
                 }
                 if (db != null) {
                     DBBroker broker = null;
                     try {
                         broker = db.get(null);
-                        ((Startable) obj).startUp(broker);
+                        ((LifeCycle) obj).start(broker);
                     } finally {
                         db.release(broker);
                     }

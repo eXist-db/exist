@@ -21,6 +21,9 @@
  */
 package org.exist.plugin;
 
+import org.exist.LifeCycle;
+import org.exist.config.Configurable;
+
 /**
  * 'Plug by' interface.
  * 
@@ -30,17 +33,6 @@ package org.exist.plugin;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface Plug {
-
-
-	/**
-	 * This method called during synchronization.
-	 */
-	public void sync();
-
-	/**
-	 * This method called during shutdown.
-	 */
-	public void stop();
+public interface Plug extends Configurable, LifeCycle {
 
 }

@@ -29,6 +29,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
+import org.exist.LifeCycle;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
@@ -53,7 +54,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  */
 @ConfigurationClass("plugin-manager")
-public class PluginsManagerImpl implements Configurable, PluginsManager, Startable {
+public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCycle {
 
 	private final static Logger LOG = Logger.getLogger(PluginsManagerImpl.class);
 
@@ -89,7 +90,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 	}
 
 	@Override
-	public void startUp(DBBroker broker) throws EXistException {
+	public void start(DBBroker broker) throws EXistException {
         TransactionManager transaction = db.getTransactionManager();
         Txn txn = null;
 
@@ -146,12 +147,33 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 //		}
 		
 		for (Plug jack : jacks.values()) {
-			if (jack instanceof Startable) {
-				((Startable) jack).startUp(broker);
+			if (jack instanceof LifeCycle) {
+				((LifeCycle) jack).start(broker);
 			}
 		}
 	}
 	
+	@Override
+	public void sync(DBBroker broker) {
+		for (Plug plugin : jacks.values()) {
+			try {
+				plugin.sync(broker);
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
+	}
+
+	@Override
+	public void stop(DBBroker broker) throws EXistException {
+		for (Plug plugin : jacks.values()) {
+			try {
+				plugin.stop(broker);
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
+	}
 	
 	public String version() {
 		return version;
@@ -178,27 +200,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, Startab
 //			e.printStackTrace();
 		}
 	}
-	
-	public void sync() {
-		for (Plug plugin : jacks.values()) {
-			try {
-				plugin.sync();
-			} catch (Throwable e) {
-				LOG.error(e);
-			}
-		}
-	}
 
-	public void shutdown() {
-		for (Plug plugin : jacks.values()) {
-			try {
-				plugin.stop();
-			} catch (Throwable e) {
-				LOG.error(e);
-			}
-		}
-	}
-	
 	public Database getDatabase() {
 		return db;
 	}
