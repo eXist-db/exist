@@ -235,8 +235,8 @@ public class FnFormatNumbers extends BasicFunction {
 						break;
 
 					case 2:
-						//XXX: error
-						break;
+						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310,
+							"");
 
 					case 3:
 					case 4:
@@ -269,8 +269,8 @@ public class FnFormatNumbers extends BasicFunction {
 						break;
 
 					case 4:
-						//XXX: error
-						break;
+						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310,
+							"");
 
 					case 5:
 						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
@@ -389,15 +389,15 @@ public class FnFormatNumbers extends BasicFunction {
 			
 			if (mlMIN == 0 && !ds) mlMIN = 1;
 			
-			System.out.println("prefix = "+prefix);
-			System.out.println("suffix = "+suffix);
-			System.out.println("ds = "+ds);
-			System.out.println("isPercent = "+isPercent);
-			System.out.println("isPerMille = "+isPerMille);
-			System.out.println("ml = "+mlMAX);
-			System.out.println("fl = "+flMAX);
-			System.out.println("mg = "+mg);
-			System.out.println("fg = "+fg);
+//			System.out.println("prefix = "+prefix);
+//			System.out.println("suffix = "+suffix);
+//			System.out.println("ds = "+ds);
+//			System.out.println("isPercent = "+isPercent);
+//			System.out.println("isPerMille = "+isPerMille);
+//			System.out.println("ml = "+mlMAX);
+//			System.out.println("fl = "+flMAX);
+//			System.out.println("mg = "+mg);
+//			System.out.println("fg = "+fg);
 		}
 	}
 }
