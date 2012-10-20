@@ -25,14 +25,17 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
+import org.exist.config.Configuration;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
@@ -81,13 +84,18 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 		manager.getDatabase().getCollectionTriggers().add(new CollectionEvents());
 	}
 	
+
 	@Override
-	public void sync() {
+	public void start(DBBroker broker) throws EXistException {
+	}
+
+	@Override
+	public void sync(DBBroker broker) throws EXistException {
 		md.sync();
 	}
 
 	@Override
-	public void stop() {
+	public void stop(DBBroker broker) throws EXistException {
 		md.close();
 	}
 
@@ -198,5 +206,17 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 	@Override
 	public void endDocumentRestore(DocumentAtExist document) {
+	}
+
+	@Override
+	public boolean isConfigured() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Configuration getConfiguration() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

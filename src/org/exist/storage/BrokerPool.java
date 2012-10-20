@@ -35,7 +35,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.*;
 import org.exist.config.ConfigurationDocumentTrigger;
@@ -913,9 +912,8 @@ public class BrokerPool extends Observable implements Database {
             //Get a manager to handle further collections configuration
             initCollectionConfigurationManager(broker);
 
-
             //wake-up the plugins manager
-            pluginManager.startUp(broker);
+            pluginManager.start(broker);
 
             //wake-up the security manager
             securityManager.attach(this, broker);
@@ -1718,7 +1716,7 @@ public class BrokerPool extends Observable implements Database {
             cacheManager.checkCaches();
             
             if (pluginManager != null)
-            	pluginManager.sync();
+            	pluginManager.sync(broker);
             
             lastMajorSync = System.currentTimeMillis();
             if (LOG.isDebugEnabled())
@@ -1876,7 +1874,11 @@ public class BrokerPool extends Observable implements Database {
                 LOG.debug("Calling shutdown ...");
                 
             	if (pluginManager != null)
-                	pluginManager.shutdown();
+					try {
+						pluginManager.stop(null);
+					} catch (EXistException e) {
+	                    LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
+					}
                 
                 // closing down external indexes
                 try {
@@ -1898,6 +1900,7 @@ public class BrokerPool extends Observable implements Database {
                     //TODO : this broker is *not* marked as active and may be reused by another process !
                     //TODO : use get() then release the broker ?
                     // WM: deadlock risk if not all brokers returned properly.
+                	//TODO: always createBroker? -dmitriy
                     broker = inactiveBrokers.peek();
 
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?

@@ -102,8 +102,8 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public void startUp(DBBroker broker) throws EXistException {
-        super.startUp(broker);
+    public void start(DBBroker broker) throws EXistException {
+        super.start(broker);
     }
 
     private String ensureCase(String username) {

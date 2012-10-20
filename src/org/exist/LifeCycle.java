@@ -21,14 +21,13 @@
  */
 package org.exist;
 
-import org.exist.config.Startable;
 import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface LifeCycle extends Startable {
+public interface LifeCycle {
 
 	public void start(DBBroker broker) throws EXistException;
 

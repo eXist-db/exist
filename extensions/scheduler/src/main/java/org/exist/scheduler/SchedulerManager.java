@@ -28,15 +28,8 @@ import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.config.Configurable;
-import org.exist.config.Configuration;
-import org.exist.config.ConfigurationException;
-import org.exist.config.Configurator;
-import org.exist.config.Startable;
-import org.exist.config.annotation.ConfigurationClass;
-import org.exist.config.annotation.ConfigurationFieldAsElement;
-import org.exist.config.annotation.ConfigurationFieldClassMask;
-import org.exist.config.annotation.ConfigurationReferenceBy;
+import org.exist.config.*;
+import org.exist.config.annotation.*;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
@@ -50,7 +43,7 @@ import org.exist.xmldb.XmldbURI;
  *
  */
 @ConfigurationClass("scheduler")
-public class SchedulerManager implements Plug, Configurable, Startable {
+public class SchedulerManager implements Plug {
 
 	/* /db/system/scheduler */
 	private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
@@ -76,7 +69,7 @@ public class SchedulerManager implements Plug, Configurable, Startable {
 	}
 
 	@Override
-	public void startUp(DBBroker broker) throws EXistException {
+	public void start(DBBroker broker) throws EXistException {
 
         TransactionManager transaction = broker.getDatabase().getTransactionManager();
         Txn txn = null;
@@ -115,17 +108,18 @@ public class SchedulerManager implements Plug, Configurable, Startable {
         Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
         configuration = Configurator.configure(this, _config_);
 	}
-	
-	public void addJob(Configuration config) throws ConfigurationException {
-		jobs.add( new Job(this, config) );
+
+	@Override
+	public void sync(DBBroker broker) throws EXistException {
 	}
 
 	@Override
-	public void sync() {
+	public void stop(DBBroker broker) throws EXistException {
+//		scheduler.shutdown();
 	}
 
-	public void stop() {
-//		scheduler.shutdown();
+	public void addJob(Configuration config) throws ConfigurationException {
+		jobs.add( new Job(this, config) );
 	}
 
 	@Override

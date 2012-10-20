@@ -212,7 +212,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
 
         for (Realm realm : realms) {
-            realm.startUp(broker);
+            realm.start(broker);
         }
 		   
         enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
