@@ -531,4 +531,63 @@
             <test name="org.exist.xslt.xslts_1_1_0.AllTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
+    
+    <!-- QT3 tests -->
+    <available file="${junit.reports}/external/QT3-test-suite" property="qt3.present"/>
+
+    <target name="download-qt3" description="Download QT3 file." unless="qt3.present">
+        <mkdir dir="${junit.reports}/external"/>
+
+        <get src="https://dl.dropbox.com/u/69715939/QT3-test-suite-121020.zip"
+            dest="${junit.reports}/external/QT3-test-suite-121020.zip" verbose="true" usetimestamp="true"/>
+
+        <unzip src="${junit.reports}/external/QT3-test-suite-121020.zip" dest="${junit.reports}/external/QT3-test-suite"/>
+    </target>
+
+    <available file="${junit.reports}/src/org/exist/xquery/xqts/qt3" property="qt3_junit.present"/>
+    
+    <target name="prepare-qt3" depends="download-qt3" unless="qt3_junit.present">
+
+        <echo message="---------------------------------------"/>
+        <echo message="Generating junit tests from QT3 ......"/>
+        <echo message="---------------------------------------"/>
+        <delete failonerror="false">
+            <fileset dir="${junit.reports}/org/exist/xquery/xqts/qt3/"/>
+        </delete>
+        <java classname="org.exist.xquery.xqts.QT3TS_To_junit">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.jmxagent" value="" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+        </java>
+        <echo>JUnit tests generated.</echo>
+    </target>
+    
+    <!-- Test QT3: Query 3 Test Suite -->
+    <target name="test-qt3" depends="prepare-qt3, test-prepare">
+        <echo message="--------------"/>
+        <echo message="QT3 tests    "/>
+        <echo message="--------------"/>
+        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
+            <sysproperty key="exist.home" value="${basedir}" />
+
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.aspectj"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.ant_launcher"/>
+            <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
+            
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+
+            <batchtest fork="yes" todir="${junit.reports.dat}">
+                <fileset dir="${junit.reports}/src">
+                    <include name="org/exist/xquery/xqts/qt3/*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
 </project>
