@@ -93,20 +93,20 @@ public class Configurator {
     protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 
     //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
-    protected static ConfigurationAnnotatedFields getConfigurationAnnotatedFields(Class<?> clazz) {
-        ConfigurationAnnotatedFields fields = new ConfigurationAnnotatedFields();
+    protected static AFields getConfigurationAnnotatedFields(Class<?> clazz) {
+        AFields fields = new AFields();
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(ConfigurationFieldAsAttribute.class)) {
-                fields.addAttribute(new ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>
+                fields.addAttribute(new AField<ConfigurationFieldAsAttribute>
                     (field.getAnnotation(ConfigurationFieldAsAttribute.class), field));
             } else if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
-                fields.addElement(new ConfigurationAnnotatedField<ConfigurationFieldAsElement>
+                fields.addElement(new AField<ConfigurationFieldAsElement>
                     (field.getAnnotation(ConfigurationFieldAsElement.class), field));
             }
         }
         Class<?> superClass = clazz.getSuperclass();
         if (superClass.isAnnotationPresent(ConfigurationClass.class)) { //XXX: remove? this force to have annotation at superclass
-            ConfigurationAnnotatedFields superFields = getConfigurationAnnotatedFields(superClass);
+            AFields superFields = getConfigurationAnnotatedFields(superClass);
             fields.addAllAttributes(superFields.getAttributes());
             fields.addAllElements(superFields.getElements());
         }
@@ -203,14 +203,14 @@ public class Configurator {
     }
 
     private static Configuration configureByCurrent(Configurable instance, Configuration configuration) {
-        ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+        AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
         Set<String> properties = configuration.getProperties();
         if(properties.isEmpty()) {
             return configuration;
         }
         //process simple types: String, int, long, boolean
         for (String property : properties) {
-            ConfigurationAnnotatedField annotatedField = annotatedFields.findByAnnotationValue(property);
+            AField annotatedField = annotatedFields.findByAnnotationValue(property);
             if(annotatedField == null) {
                 System.out.println("Unused property "+property+" @"+configuration.getName());
                 continue;
@@ -282,7 +282,7 @@ public class Configurator {
         }
         //process simple structures: List
         try {
-            for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
+            for (AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                 final Field field = element.getField();
                 String typeName = field.getType().getName();
                 if (typeName.equals("java.util.List")) {
@@ -572,8 +572,8 @@ public class Configurator {
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return; //UNDERSTAND: throw exception
         }
-        ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
-        ConfigurationAnnotatedField<?> annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
+        AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+        AField<?> annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
         if(annotatedField == null) {
             return; //UNDERSTAND: throw exception
         }
@@ -652,10 +652,10 @@ public class Configurator {
             serializer.startElement(qnConfig, null);
             boolean simple = true;
             //store field's values as attributes or elements depends on annotation
-            ConfigurationAnnotatedFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+            AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
             try {
                 //pass one - extract just attributes
-                for (ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attr : annotatedFields.getAttributes()) {
+                for (AField<ConfigurationFieldAsAttribute> attr : annotatedFields.getAttributes()) {
                     final Field field = attr.getField();
                     field.setAccessible(true);
                     //XXX: artifact? remove?
@@ -672,7 +672,7 @@ public class Configurator {
                     serializer.attribute(new QName(attr.getAnnotation().value(), null), value);
                 }
                 //pass two - just elements or text nodes
-                for (ConfigurationAnnotatedField<ConfigurationFieldAsElement> element :
+                for (AField<ConfigurationFieldAsElement> element :
                         annotatedFields.getElements()) {
                     simple = true;
                     final Field field = element.getField();
@@ -757,7 +757,7 @@ public class Configurator {
     }
 
     private static void serializeList(Configurable instance,
-            ConfigurationAnnotatedField<ConfigurationFieldAsElement> element,
+            AField<ConfigurationFieldAsElement> element,
             SAXSerializer serializer) throws ConfigurationException,
             IllegalArgumentException, IllegalAccessException, SAXException {
         final Field field = element.getField();
@@ -783,7 +783,7 @@ public class Configurator {
     }
 
     private static void serializeStringList(List<String> list,
-            ConfigurationAnnotatedField<ConfigurationFieldAsElement> element,
+            AField<ConfigurationFieldAsElement> element,
             SAXSerializer serializer) throws SAXException {
         final String fieldAsElementName = element.getAnnotation().value();
         final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
@@ -795,7 +795,7 @@ public class Configurator {
     }
 
     private static void serializeConfigurableList(List<Configurable> list,
-            Field field, ConfigurationAnnotatedField<ConfigurationFieldAsElement> element,
+            Field field, AField<ConfigurationFieldAsElement> element,
             SAXSerializer serializer) throws ConfigurationException, SAXException {
         String referenceBy = null;
         if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
@@ -1027,44 +1027,44 @@ public class Configurator {
         }
     }
 
-    private static class ConfigurationAnnotatedFields implements 
-            Iterable<ConfigurationAnnotatedField> {
-        private List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> attributes =
-            new ArrayList<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>>();
-        private List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> elements =
-            new ArrayList<ConfigurationAnnotatedField<ConfigurationFieldAsElement>>();
+    private static class AFields implements 
+            Iterable<AField> {
+        private List<AField<ConfigurationFieldAsAttribute>> attributes =
+            new ArrayList<AField<ConfigurationFieldAsAttribute>>();
+        private List<AField<ConfigurationFieldAsElement>> elements =
+            new ArrayList<AField<ConfigurationFieldAsElement>>();
 
-        public void addAttribute(ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attribute) {
+        public void addAttribute(AField<ConfigurationFieldAsAttribute> attribute) {
             this.attributes.add(attribute);
         }
 
-        public void addAllAttributes(List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> attributes) {
+        public void addAllAttributes(List<AField<ConfigurationFieldAsAttribute>> attributes) {
             this.attributes.addAll(attributes);
         }
 
-        public void addElement(ConfigurationAnnotatedField<ConfigurationFieldAsElement> element) {
+        public void addElement(AField<ConfigurationFieldAsElement> element) {
             this.elements.add(element);
         }
 
-        public void addAllElements(List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> elements) {
+        public void addAllElements(List<AField<ConfigurationFieldAsElement>> elements) {
             this.elements.addAll(elements);
         }
 
-        public List<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>> getAttributes() {
+        public List<AField<ConfigurationFieldAsAttribute>> getAttributes() {
             return attributes;
         }
 
-        public List<ConfigurationAnnotatedField<ConfigurationFieldAsElement>> getElements() {
+        public List<AField<ConfigurationFieldAsElement>> getElements() {
             return elements;
         }
 
-        public ConfigurationAnnotatedField findByAnnotationValue(String value) {
-            for(ConfigurationAnnotatedField<ConfigurationFieldAsAttribute> attr : attributes) {
+        public AField findByAnnotationValue(String value) {
+            for(AField<ConfigurationFieldAsAttribute> attr : attributes) {
                 if(attr.getAnnotation().value().equals(value)) {
                     return attr;
                 }
             }
-            for(ConfigurationAnnotatedField<ConfigurationFieldAsElement> element : elements) {
+            for(AField<ConfigurationFieldAsElement> element : elements) {
                 if(element.getAnnotation().value().equals(value)) {
                     return element;
                 }
@@ -1073,11 +1073,11 @@ public class Configurator {
         }
 
         @Override
-        public Iterator<ConfigurationAnnotatedField> iterator() {
-            return new Iterator<ConfigurationAnnotatedField>(){
-                private Iterator<ConfigurationAnnotatedField<ConfigurationFieldAsAttribute>>
+        public Iterator<AField> iterator() {
+            return new Iterator<AField>(){
+                private Iterator<AField<ConfigurationFieldAsAttribute>>
                     itAttributes = attributes.iterator();
-                private Iterator<ConfigurationAnnotatedField<ConfigurationFieldAsElement>>
+                private Iterator<AField<ConfigurationFieldAsElement>>
                     itElements = elements.iterator();
 
                 @Override
@@ -1086,7 +1086,7 @@ public class Configurator {
                 }
 
                 @Override
-                public ConfigurationAnnotatedField next() {
+                public AField next() {
                     if(itAttributes.hasNext()){
                         return itAttributes.next();
                     } else if(itElements.hasNext()){
@@ -1104,11 +1104,11 @@ public class Configurator {
         }
     }
 
-    private static class ConfigurationAnnotatedField<T> {
+    private static class AField<T> {
         private final T annotation;
         private final Field field;
 
-        public ConfigurationAnnotatedField(T annotation, Field field) {
+        public AField(T annotation, Field field) {
             this.annotation = annotation;
             this.field = field;
         }
