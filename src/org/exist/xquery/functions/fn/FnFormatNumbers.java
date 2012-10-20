@@ -78,8 +78,6 @@ public class FnFormatNumbers extends BasicFunction {
         
         NumericValue numericValue = (NumericValue)args[0].itemAt(0);
         
-        System.out.println(args[1].getStringValue());
-
         try {
         	Formatter[] formatters = prepare(args[1].getStringValue());
             String value = format(formatters[0], numericValue);
@@ -204,7 +202,7 @@ public class FnFormatNumbers extends BasicFunction {
 
 		public Formatter(String picture) throws XPathException {
 			if ( !(
-					picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN)) 
+					picture.contains(String.valueOf(OPTIONAL_DIGIT_SIGN)) 
 					|| picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN))
 					)
 				)

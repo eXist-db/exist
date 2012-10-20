@@ -15,7 +15,7 @@ function fd:simple-number($number as numeric) {
 
 declare
     %test:args("12345.6")
-    %test:assertEquals("12,345.00")
+    %test:assertEquals("12,345.60")
 function fd:simple-number($number as numeric) {
-    format-number($number, "#,###.00")
+    format-number($number, "#,###.##")
 };
