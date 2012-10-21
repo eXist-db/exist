@@ -25,7 +25,6 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.*;
-
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -36,6 +35,7 @@ import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
 import org.exist.dom.DocumentAtExist;
+import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -103,7 +103,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 					//if db corrupted it can lead to unrunnable issue
 					//throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
 				
-				collection.setPermissions(0770);
+				collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
 				broker.saveCollection(txn, collection);
 
 				transaction.commit(txn);

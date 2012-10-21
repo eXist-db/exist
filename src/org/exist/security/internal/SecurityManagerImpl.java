@@ -53,6 +53,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Session;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.Permission;
 import org.exist.security.Principal;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
@@ -174,7 +175,7 @@ public class SecurityManagerImpl implements SecurityManager {
                     systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
                     if (systemCollection == null)
                             return;
-                    systemCollection.setPermissions(0770);
+                    systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                     broker.saveCollection(txn, systemCollection);
 
                     transaction.commit(txn);
@@ -196,7 +197,7 @@ public class SecurityManagerImpl implements SecurityManager {
                 //if db corrupted it can lead to unrunnable issue
                 //throw new ConfigurationException("Collection '/db/system/security' can't be created.");
 
-                collection.setPermissions(0770);
+                collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                 broker.saveCollection(txn, collection);
 
                 transaction.commit(txn);
@@ -738,7 +739,7 @@ public class SecurityManagerImpl implements SecurityManager {
                 	CollectionConfiguration config = home.getConfiguration(broker);
                 	String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
                 	home.getPermissions().setGroup(group);
-                	home.getPermissions().setMode(0700);
+                	home.getPermissions().setMode(PermissionFactory.getDefaultCollectionPermission().getMode());
 
                 	broker.saveCollection(txn, home);
                 }
