@@ -1,23 +1,23 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2010 The eXist Project
+ *  Copyright (C) 2012 The eXist Project
  *  http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id: Format_number.java 12001 2010-07-19 20:28:48Z ixitar $
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
  */
 package org.exist.xquery.functions.fn;
 
@@ -37,28 +37,28 @@ import java.math.BigDecimal;
  */
 public class FnFormatNumbers extends BasicFunction {
 
-    private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("value", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number to format");
-    
-    private static final SequenceType PICTURE = new FunctionParameterSequenceType("picture", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
-    private static final String PICTURE_DESCRIPTION = "The formatting of a number is controlled by a picture string. The picture string is a sequence of ·characters·, in which the characters assigned to the variables decimal-separator-sign, grouping-sign, decimal-digit-family, optional-digit-sign and pattern-separator-sign are classified as active characters, and all other characters (including the percent-sign and per-mille-sign) are classified as passive characters.";
-    
-    private static final SequenceType DECIMAL_FORMAT = new FunctionParameterSequenceType("decimal-format-name", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
-    private static final String DECIMAL_FORMAT_DESCRIPTION = "";
-    
-    private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
-    
-    public final static FunctionSignature signatures[] = {
+	private static final SequenceType NUMBER_PARAMETER = new FunctionParameterSequenceType("value", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number to format");
+
+	private static final SequenceType PICTURE = new FunctionParameterSequenceType("picture", Type.STRING, Cardinality.EXACTLY_ONE, "The format pattern string.  Please see the JavaDoc for java.text.DecimalFormat to get the specifics of this format string.");
+	private static final String PICTURE_DESCRIPTION = "The formatting of a number is controlled by a picture string. The picture string is a sequence of ·characters·, in which the characters assigned to the variables decimal-separator-sign, grouping-sign, decimal-digit-family, optional-digit-sign and pattern-separator-sign are classified as active characters, and all other characters (including the percent-sign and per-mille-sign) are classified as passive characters.";
+
+	private static final SequenceType DECIMAL_FORMAT = new FunctionParameterSequenceType("decimal-format-name", Type.STRING, Cardinality.EXACTLY_ONE, "The decimal-format name must be a QName, which is expanded as described in [2.4 Qualified Names]. It is an error if the stylesheet does not contain a declaration of the decimal-format with the specified expanded-name.");
+	private static final String DECIMAL_FORMAT_DESCRIPTION = "";
+
+	private static final FunctionReturnSequenceType FUNCTION_RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the formatted string");
+
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-                PICTURE_DESCRIPTION,
+				PICTURE_DESCRIPTION,
 				new SequenceType[] {NUMBER_PARAMETER, PICTURE},
-                FUNCTION_RETURN_TYPE
+				FUNCTION_RETURN_TYPE
 		),
 		new FunctionSignature(
 				new QName("format-number", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
-                DECIMAL_FORMAT_DESCRIPTION,
+				DECIMAL_FORMAT_DESCRIPTION,
 				new SequenceType[] {NUMBER_PARAMETER, PICTURE, DECIMAL_FORMAT},
-                FUNCTION_RETURN_TYPE
+				FUNCTION_RETURN_TYPE
 		)
 	};
 	
@@ -73,42 +73,47 @@ public class FnFormatNumbers extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 
-        if (args[0].isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
-        
-        NumericValue numericValue = (NumericValue)args[0].itemAt(0);
-        
-        try {
-        	Formatter[] formatters = prepare(args[1].getStringValue());
-            String value = format(formatters[0], numericValue);
-            return new StringValue(value);
-        } catch (java.lang.IllegalArgumentException e) {
-        	e.printStackTrace();
-            throw new XPathException(e.getMessage());
-        }
+		if (args[0].isEmpty()) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
+		
+		NumericValue numericValue = (NumericValue)args[0].itemAt(0);
+		
+		try {
+			Formatter[] formatters = prepare(args[1].getStringValue());
+			String value = format(formatters[0], numericValue);
+			return new StringValue(value);
+		} catch (java.lang.IllegalArgumentException e) {
+			e.printStackTrace();
+			throw new XPathException(e.getMessage());
+		}
 	}
 	
 	private String format(Formatter f, NumericValue numericValue) throws XPathException {
-		if (numericValue.isNaN())
+		if (numericValue.isNaN()) {
 			return NaN;
+		}
 
 		String minuSign = numericValue.isNegative()? String.valueOf(MINUS_SIGN) : "";
-		if (numericValue.isInfinite())
+		if (numericValue.isInfinite()) {
 			return minuSign + f.prefix + INFINITY + f.suffix;
+		}
 		
 		NumericValue factor = null;
-		if (f.isPercent)
+		if (f.isPercent) {
 			factor = new IntegerValue(100);
-		else if (f.isPerMille)
+		} else if (f.isPerMille) {
 			factor = new IntegerValue(1000);
-			
-		if (factor != null)
+		}
+		
+		if (factor != null) {
 			try {
 				numericValue = (NumericValue) numericValue.mult(factor);
 			} catch (XPathException e) {
 				e.printStackTrace();
 				throw e;
 			}
+		}
 		
 		int pl = 0;
 		
@@ -201,13 +206,15 @@ public class FnFormatNumbers extends BasicFunction {
 		int mg = 0, fg = 0;
 
 		public Formatter(String picture) throws XPathException {
-			if ( !(
+			if ( ! ( 
 					picture.contains(String.valueOf(OPTIONAL_DIGIT_SIGN)) 
 					|| picture.contains(String.valueOf(MANDATORY_DIGIT_SIGN))
 					)
-				)
+				) {
+				
 				throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
 					"A sub-picture must contain at least one character that is an optional-digit-sign or a member of the decimal-digit-family.");
+			}
 			
 			int bmg = -1, bfg = -1;
 
