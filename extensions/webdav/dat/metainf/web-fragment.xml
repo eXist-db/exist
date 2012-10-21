@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
+    id="WebDAV" version="3.0">
+    
+    <name>WebDAV</name>
+
+    <!--
+        Milton provides the WebDAV interface
+    -->
+    <servlet>
+        <servlet-name>milton</servlet-name>
+        <servlet-class>org.exist.webdav.MiltonWebDAVServlet</servlet-class>
+
+        <!-- Don't change this value -->
+        <init-param>
+            <param-name>resource.factory.class</param-name>
+            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
+        </init-param>
+
+        <!-- 
+            Some WebDAV clients send a "Expect: 100-continue" header before 
+            uploading body data. Servlet containers (like tomcat and jetty) handle 
+            the header in a wrong way, making a client not work OK.
+            Set value to TRUE to restore old behavior (FALSE is the new default 
+            value, hardcoded in MiltonWebDAVServlet).       
+        -->
+        <!-- 
+        <init-param>
+            <param-name>enable.expect.continue</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        -->
+
+        <!-- Uncomment to enable debugging -->
+        <!--
+        <init-param>
+            <param-name>filter_0</param-name>
+            <param-value>com.bradmcevoy.http.DebugFilter</param-value>
+        </init-param>
+        -->
+    </servlet>
+
+</web-fragment>
