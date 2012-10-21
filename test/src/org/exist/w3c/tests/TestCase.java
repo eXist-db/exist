@@ -88,13 +88,20 @@ public abstract class TestCase {
 
 		public void run() {
 			try {
-				Thread.sleep(2 * 60 * 1000);
-
-				if (inUse == 0) {
-					database.shutdown();
-
-					System.out.println("database was shutdown");
-					database = null;
+				while (true) {
+					Thread.sleep(10 * 1000);
+	
+					if (inUse == 0) {
+						//double check
+						Thread.sleep(10 * 1000);
+						
+						if (inUse == 0) {
+							database.shutdown();
+		
+							System.out.println("database was shutdown");
+							database = null;
+						}
+					}
 				}
 			} catch (InterruptedException e) {
 			}
@@ -121,7 +128,9 @@ public abstract class TestCase {
 				pool = BrokerPool.getInstance();
 				System.out.println("Database ready.");
 			}
-			inUse++;
+			synchronized (database) {
+				inUse++;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -132,7 +141,9 @@ public abstract class TestCase {
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		inUse--;
+		synchronized (database) {
+			inUse--;
+		}
 		System.out.println("tearDownAfterClass PASSED");
 	}
 
