@@ -104,8 +104,10 @@ public abstract class TestCase {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		System.out.println("setUpBeforeClass ENTERED");
 		try {
 			if (database == null) {
+				System.out.println("Start up database...");
 				database = new org.exist.start.Main("jetty");
 				database.run(new String[] { "jetty" });
 
@@ -117,12 +119,13 @@ public abstract class TestCase {
 				}
 				
 				pool = BrokerPool.getInstance();
+				System.out.println("Database ready.");
 			}
 			inUse++;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-//		System.out.println("setUpBeforeClass PASSED");
+		System.out.println("setUpBeforeClass PASSED");
 	}
 
 	public abstract void loadTS() throws Exception;
@@ -130,7 +133,7 @@ public abstract class TestCase {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		inUse--;
-//		System.out.println("tearDownAfterClass PASSED");
+		System.out.println("tearDownAfterClass PASSED");
 	}
 
 	/**
