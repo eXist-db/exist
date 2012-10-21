@@ -176,6 +176,11 @@ public interface Account extends Principal, User {
      */
     public int getUserMask();
     
+    /**
+     * Set the umask of the user
+     */
+    public void setUserMask(final int umask);
+    
     public void setMetadataValue(SchemaType schemaType, String value);
 
     public String getMetadataValue(SchemaType schemaType);
