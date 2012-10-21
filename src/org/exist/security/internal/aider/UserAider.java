@@ -25,10 +25,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.exist.config.Configuration;
-import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
@@ -44,179 +43,177 @@ import org.exist.xmldb.XmldbURI;
  */
 public class UserAider implements Account {
     
-	private final String realmId;
-	private final String name;
-	private final int id;
-	
-	private Group defaultRole = null;
-	private Map<String, Group> roles = new LinkedHashMap<String, Group>();
-	
-	public UserAider(int id) {
-            this(id, null, null);
-	}
+    private final String realmId;
+    private final String name;
+    private final int id;
+    private XmldbURI homeCollection = null;
+    private Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
+    private String password = null;
+    private String passwordDigest = null;
+    private Group defaultRole = null;
+    private Map<String, Group> roles = new LinkedHashMap<String, Group>();
 
-	public UserAider(String name) {
-            this(RealmImpl.ID, name); //XXX:parse name for realm id
-	}
+    public UserAider(final int id) {
+        this(id, null, null);
+    }
 
-	public UserAider(String realmId, String name) {
-            this(UNDEFINED_ID, realmId, name);
-	}
-	
-	public UserAider(int id, String realmId, String name) {
-            this.realmId = realmId;
-            this.name = name;
-            this.id = id;
-	}
+    public UserAider(final String name) {
+        this(RealmImpl.ID, name); //XXX:parse name for realm id
+    }
 
-	public UserAider(String realmId, String name, Group group) {
-            this(realmId, name);
-            defaultRole = addGroup(group);
-	}
+    public UserAider(final String realmId, final String name) {
+        this(UNDEFINED_ID, realmId, name);
+    }
 
-	public UserAider(String name, Group group) {
-            this(name);
-            defaultRole = addGroup(group);
-	}
+    public UserAider(final int id, final String realmId, final String name) {
+        this.realmId = realmId;
+        this.name = name;
+        this.id = id;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.security.Principal#getName()
-	 */
-	@Override
-	public String getName() {
-		return name;
-	}
+    public UserAider(final String realmId, final String name, final Group group) {
+        this(realmId, name);
+        defaultRole = addGroup(group);
+    }
 
-	@Override
-	public String getRealmId() {
-		return realmId;
-	}
+    public UserAider(final String name, final Group group) {
+        this(name);
+        defaultRole = addGroup(group);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.Principal#getId()
-	 */
-	@Override
-	public int getId() {
-		return id;
-	}
+    /* (non-Javadoc)
+     * @see java.security.Principal#getName()
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#addGroup(java.lang.String)
-	 */
-	@Override
-	public Group addGroup(String name) {
-		Group role = new GroupAider(realmId, name);
-		
-		roles.put(name, role);
-		
-		return role;
-	}
+    @Override
+    public String getRealmId() {
+        return realmId;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
-	 */
-	@Override
-	public Group addGroup(Group group) {
-		if (group == null) return null;
-		
-		return addGroup(group.getName());
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.Principal#getId()
+     */
+    @Override
+    public int getId() {
+        return id;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#remGroup(java.lang.String)
-	 */
-	@Override
-	public void remGroup(String role) {
-		roles.remove(role);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#addGroup(java.lang.String)
+     */
+    @Override
+    public Group addGroup(final String name) {
+        final Group role = new GroupAider(realmId, name);	
+        roles.put(name, role);
+        return role;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setGroups(java.lang.String[])
-	 */
-	@Override
-	public void setGroups(String[] names) {
-		roles = new HashMap<String, Group>();
-		
-		for (int i = 0; i < names.length; i++) {
-			addGroup(names[i]);
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#addGroup(org.exist.security.Group)
+     */
+    @Override
+    public Group addGroup(final Group group) {
+        if (group == null) {
+            return null;
+        }
+        return addGroup(group.getName());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getGroups()
-	 */
-	@Override
-	public String[] getGroups() {
-		return roles.keySet().toArray(new String[0]);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#remGroup(java.lang.String)
+     */
+    @Override
+    public void remGroup(final String role) {
+        roles.remove(role);
+    }
 
-        @Override
-	public int[] getGroupIds() {
-            return new int[0];
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setGroups(java.lang.String[])
+     */
+    @Override
+    public void setGroups(final String[] names) {
+        roles = new HashMap<String, Group>();
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#hasDbaRole()
-	 */
-	@Override
-	public boolean hasDbaRole() {
-		return false;
-	}
+        for(int i = 0; i < names.length; i++) {
+            addGroup(names[i]);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getPrimaryGroup()
-	 */
-	@Override
-	public String getPrimaryGroup() {
-		if (defaultRole == null)
-			return null;
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getGroups()
+     */
+    @Override
+    public String[] getGroups() {
+        return roles.keySet().toArray(new String[0]);
+    }
 
-		return defaultRole.getName();
-	}
+    @Override
+    public int[] getGroupIds() {
+        return new int[0];
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#hasGroup(java.lang.String)
-	 */
-	@Override
-	public boolean hasGroup(String group) {
-		return roles.containsKey(group);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#hasDbaRole()
+     */
+    @Override
+    public boolean hasDbaRole() {
+        return false;
+    }
 
-	private XmldbURI homeCollection = null;
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getPrimaryGroup()
+     */
+    @Override
+    public String getPrimaryGroup() {
+        if(defaultRole == null) {
+            return null;
+        }
+        return defaultRole.getName();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
-	 */
-	@Override
-	public void setHome(XmldbURI homeCollection) {
-		this.homeCollection = homeCollection;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#hasGroup(java.lang.String)
+     */
+    @Override
+    public boolean hasGroup(final String group) {
+        return roles.containsKey(group);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getHome()
-	 */
-	@Override
-	public XmldbURI getHome() {
-		return homeCollection;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
+     */
+    @Override
+    public void setHome(final XmldbURI homeCollection) {
+        this.homeCollection = homeCollection;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getRealm()
-	 */
-	@Override
-	public Realm getRealm() {
-		return null;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getHome()
+     */
+    @Override
+    public XmldbURI getHome() {
+        return homeCollection;
+    }
 
-	private Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getRealm()
+     */
+    @Override
+    public Realm getRealm() {
+        return null;
+    }
 
-	@Override
-    public String getMetadataValue(SchemaType schemaType) {
+    @Override
+    public String getMetadataValue(final SchemaType schemaType) {
         return metadata.get(schemaType);
     }
 
     @Override
-    public void setMetadataValue(SchemaType schemaType, String value) {
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
         metadata.put(schemaType, value);
     }
 
@@ -229,114 +226,104 @@ public class UserAider implements Account {
     public void clearMetadata() {
         metadata.clear();
     }
-    
-    
 
-	@Override
-	public Group getDefaultGroup() {
-		return defaultRole;
-	}
+    @Override
+    public Group getDefaultGroup() {
+        return defaultRole;
+    }
 
-	private String password = null;
-	
-	public void setEncodedPassword(String passwd) {
-		password = passwd;
-	}
+    public void setEncodedPassword(final String passwd) {
+        password = passwd;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setPassword(java.lang.String)
-	 */
-	@Override
-	public void setPassword(String passwd) {
-		password = passwd;
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setPassword(java.lang.String)
+     */
+    @Override
+    public void setPassword(final String passwd) {
+        password = passwd;
+    }
 
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getPassword()
+     */
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getPassword()
-	 */
-	@Override
-	public String getPassword() {
-		return password;
-	}
+    public void setPasswordDigest(final String password) {
+        passwordDigest = password;
+    }
 
-	private String passwordDigest = null;
-	
-	public void setPasswordDigest(String password) {
-		passwordDigest = password;
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getDigestPassword()
+     */
+    @Override
+    public String getDigestPassword() {
+        return passwordDigest;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getDigestPassword()
-	 */
-	@Override
-	public String getDigestPassword() {
-		return passwordDigest;
-	}
+    @Override
+    public boolean isConfigured() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	@Override
-	public boolean isConfigured() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public Configuration getConfiguration() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public String getUsername() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public boolean isAccountNonExpired() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	@Override
-	public boolean isAccountNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean isAccountNonLocked() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	@Override
-	public boolean isAccountNonLocked() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean isCredentialsNonExpired() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
-	@Override
-	public boolean isCredentialsNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
     @Override
     public void save() throws PermissionDeniedException {
         //do nothing
     }
-    
+
     @Override
-    public void save(DBBroker broker) throws PermissionDeniedException {
+    public void save(final DBBroker broker) throws PermissionDeniedException {
         //do nothing
     }
 
     @Override
-    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+    public void assertCanModifyAccount(final Account user) throws PermissionDeniedException {
          //do nothing
         //TODO do we need to check any permissions?
     }
 
     @Override
     public int getUserMask() {
-        
         return Permission.DEFAULT_UMASK;
     }
-
-
 }
