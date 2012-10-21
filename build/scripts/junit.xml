@@ -541,7 +541,7 @@
         <get src="https://dl.dropbox.com/u/69715939/QT3-test-suite-121020.zip"
             dest="${junit.reports}/external/QT3-test-suite-121020.zip" verbose="true" usetimestamp="true"/>
 
-        <unzip src="${junit.reports}/external/QT3-test-suite-121020.zip" dest="${junit.reports}/external/QT3-test-suite"/>
+        <unzip src="${junit.reports}/external/QT3-test-suite-121020.zip" dest="${junit.reports}/external"/>
     </target>
 
     <available file="${junit.reports}/src/org/exist/xquery/xqts/qt3" property="qt3_junit.present"/>
