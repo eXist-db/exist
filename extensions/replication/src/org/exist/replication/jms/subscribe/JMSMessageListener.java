@@ -54,8 +54,8 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
 /**
- *  JMS listener for receiving JMS messages
- * 
+ * JMS listener for receiving JMS messages
+ *
  * @author Dannes Wessels
  */
 public class JMSMessageListener implements MessageListener {
@@ -107,7 +107,7 @@ public class JMSMessageListener implements MessageListener {
                     + ex.getErrorCode() + "):  " + ex.getMessage();
             LOG.error(errorMessage, ex);
             throw new MessageReceiveException(errorMessage);
-            
+
         } catch (IllegalArgumentException ex) {
             String errorMessage = "Unable to convert incoming message. " + ex.getMessage();
             LOG.error(errorMessage, ex);
@@ -122,26 +122,23 @@ public class JMSMessageListener implements MessageListener {
     public void onMessage(Message msg) {
 
         try {
-
             if (msg instanceof BytesMessage) {
 
                 // Prepare received message
                 eXistMessage em = convertMessage((BytesMessage) msg);
-                
+
+                Enumeration e = msg.getPropertyNames();
+                while (e.hasMoreElements()) {
+                    Object next = e.nextElement();
+                    if (next instanceof String) {
+                        em.getMetadata().put((String) next, msg.getObjectProperty((String) next));
+                    }
+                }
 
                 // Report some details into logging
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(em.getReport());
                 }
-
-                Enumeration e = msg.getPropertyNames();
-                while(e.hasMoreElements()){
-                    Object next = e.nextElement();
-                    if(next instanceof String){
-                        em.getMetadata().put( (String) next, msg.getObjectProperty( (String) next) );
-                    }
-                }
-                
 
                 // First step: distinct between update for documents and messsages
                 switch (em.getResourceType()) {
@@ -155,10 +152,9 @@ public class JMSMessageListener implements MessageListener {
                         String errorMessage = "Unknown resource type " + em.getResourceType();
                         LOG.error(errorMessage);
                         throw new MessageReceiveException(errorMessage);
-
                 }
-                
-                
+
+
 
             } else {
                 // Only ByteMessage objects supported. 
@@ -191,7 +187,7 @@ public class JMSMessageListener implements MessageListener {
             case UPDATE:
                 createDocument(em);
                 break;
-                
+
             case METADATA:
                 updateMetadataDocument(em);
                 break;
@@ -361,7 +357,7 @@ public class JMSMessageListener implements MessageListener {
                 InputStream byteInputStream = vt.getByteStream();
 
                 // DW: future improvement: determine compression based on property.
-                
+
                 GZIPInputStream gis = new GZIPInputStream(byteInputStream);
                 InputSource inputsource = new InputSource(gis);
 
@@ -421,16 +417,16 @@ public class JMSMessageListener implements MessageListener {
 
         }
     }
-    
+
     /**
-     *  Metadata is updated in database
+     * Metadata is updated in database
      */
     private void updateMetadataDocument(eXistMessage em) {
         // Permissions
         // Mimetype
         // owner/groupname
-        
-       XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
+
+        XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
         XmldbURI colURI = sourcePath.removeLastSegment();
         XmldbURI docURI = sourcePath.lastSegment();
 
@@ -466,7 +462,7 @@ public class JMSMessageListener implements MessageListener {
 
             DocumentMetadata metadata = resource.getMetadata();
             //DW: to do something
-            
+
 
             // Commit change
             txnManager.commit(txn);
@@ -486,7 +482,7 @@ public class JMSMessageListener implements MessageListener {
             brokerPool.release(broker);
 
         }
-        
+
     }
 
     /**
@@ -527,7 +523,7 @@ public class JMSMessageListener implements MessageListener {
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
-	    // This delete is based on mime-type /ljo 
+            // This delete is based on mime-type /ljo 
             if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                 collection.removeBinaryResource(txn, broker, resource.getFileURI());
 
@@ -616,10 +612,10 @@ public class JMSMessageListener implements MessageListener {
         XmldbURI sourcePath = XmldbURI.create(em.getResourcePath());
         //XmldbURI colURI = sourcePath.removeLastSegment();
         //XmldbURI docURI = sourcePath.lastSegment();
-        
+
         Map<String, Object> props = em.getMetadata();
-        
-        
+
+
         // Get OWNER
         String userName = null;
         Object prop = props.get(MessageHelper.EXIST_RESOURCE_OWNER);
@@ -640,7 +636,7 @@ public class JMSMessageListener implements MessageListener {
         if (prop != null && prop instanceof String) {
             groupName = (String) prop;
         }
-        
+
         // Get/Set permissions
         Integer mode = null;
         prop = props.get(MessageHelper.EXIST_RESOURCE_MODE);
@@ -670,7 +666,7 @@ public class JMSMessageListener implements MessageListener {
 
             // Create collection
             Collection newCollection = broker.getOrCreateCollection(txn, sourcePath);
-                        
+
             // Set owner,group and permissions
             Permission permission = newCollection.getPermissions();
             if (userName != null) {
@@ -682,8 +678,8 @@ public class JMSMessageListener implements MessageListener {
             if (mode != null) {
                 permission.setMode(mode);
             }
-            
-            
+
+
             broker.saveCollection(txn, newCollection);
             broker.flush();
 
