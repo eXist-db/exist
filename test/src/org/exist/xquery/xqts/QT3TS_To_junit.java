@@ -21,11 +21,7 @@
  */
 package org.exist.xquery.xqts;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 import junit.framework.Assert;
 
@@ -45,7 +41,6 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.junit.After;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -99,12 +94,12 @@ public class QT3TS_To_junit {
 		broker.saveCollection(null, collection);
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void shutdown() throws Exception {
+    public void release() throws Exception {
     	db.release(broker);
+    }
+    	
+    public void shutdown() throws Exception {
+    	release();
     	
     	db.shutdown();
         System.out.println("database was shutdown");

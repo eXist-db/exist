@@ -58,7 +58,11 @@ public class QT3TS_case extends TestCase {
     public void loadTS() throws Exception {
         QT3TS_To_junit convertor = new QT3TS_To_junit();
         convertor.init();
-    	convertor.load();
+        try {
+        	convertor.load();
+        } finally {
+        	convertor.release();
+        }
     }
 
     private Sequence enviroment(String file) throws Exception {
