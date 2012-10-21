@@ -72,14 +72,14 @@ restore_library_path() {
 
 set_client_java_options() {
     if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
-	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx4096m -Dfile.encoding=UTF-8";
+	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
     fi
     JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
 }
 
 set_java_options() {
     if [ -z "${JAVA_OPTIONS}" ]; then
-	JAVA_OPTIONS="-Xms128m -Xmx4096m -Dfile.encoding=UTF-8";
+	JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
     fi
     JAVA_OPTIONS="${JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
 }
