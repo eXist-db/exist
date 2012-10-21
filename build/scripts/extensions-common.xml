@@ -27,6 +27,8 @@ $Id$
    <!-- set global properties for this build -->
 
    <property name="src.dir" location="src"/>
+   <property name="dat.dir" location="dat"/>
+   <property name="metainf.dir" location="${dat.dir}/metainf"/>
 
    <property name="build.dir" location="build"/>
    <property name="build.classes.dir" location="${build.dir}/classes"/>
@@ -42,6 +44,7 @@ $Id$
 
    <property name="dist.dir" location="${existhome.dir}/lib/extensions"/>
    <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}.jar"/>
+   <property name="dist.webfragment.jar" value="${existhome.dir}/webapp/WEB-INF/lib/metainf-${extension.name}.jar"/>
 
    <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
 
@@ -62,6 +65,7 @@ $Id$
    <!-- global checks -->
    <available file="ivy.xml" property="ivyxml.present"/>
    <available file="${test.src.dir}" property="testsource.present"/>
+   <available file="${metainf.dir}" property="metainfjar.include"/>
 
    <!-- lib paths -->
    <path id="classpath.core">
@@ -212,12 +216,26 @@ $Id$
             <attribute name="Extension-Name" value="${extension.name}"/>
          </manifest>
       </jar>
+      
+<!--      <antcall target="jar-metainf"/>-->
+   </target>
+   
+   <target name="jar-metainf" description="Create jar fie with webfragment" if="${metainfjar.include}">
+      
+      <echo>Generating jar containing META-INF/web-fragment.xml</echo>
+      
+      <jar jarfile="${dist.webfragment.jar}"  compress="yes" includes="ALL">
+         <metainf erroronmissingdir="false" dir="${metainf.dir}">
+            <include name="**/*"/>
+         </metainf>
+      </jar>
    </target>
 
    <target name="clean" description="Clean generated files (classes, jars)">
       <echo>Cleaning '${extension.name}'</echo>
       <delete dir="${build.dir}"/>
       <delete file="${dist.extension.jar}"/>
+      <delete file="${dist.webfragment.jar}"/>
       <delete dir="${test.build.dir}"/>
       <antcall target="clean-3rd-party"/>
    </target>
@@ -300,13 +318,14 @@ $Id$
          <formatter type="plain"/>
          <formatter type="xml"/>
 
-	 <test fork="yes" name="${extension.smoke.tests.class}" todir="${junit.report.dir}" if="${extension.run.smoke.tests}"/>
+	     <test fork="yes" name="${extension.smoke.tests.class}" todir="${junit.report.dir}" if="${extension.run.smoke.tests}"/>
 
          <batchtest fork="yes" todir="${junit.report.dir}">
             <fileset dir="${test.classes.dir}">
                <include name="**/*Test.class"/>
             </fileset>
          </batchtest>
+         
       </junit>
 
    </target>
