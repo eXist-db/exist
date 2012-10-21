@@ -45,7 +45,6 @@ import org.junit.runners.Suite;
         OpNumericTest.class,
         DocumentUpdateTest.class,
         AnyURITest.class,
-        XQueryGroupByTest.class,
         ConstructedNodesTest.class,
         ConstructedNodesRecoveryTest.class,
         DuplicateAttributesTest.class,
