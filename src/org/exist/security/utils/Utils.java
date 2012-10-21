@@ -22,11 +22,10 @@
 package org.exist.security.utils;
 
 import java.io.IOException;
-
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -46,7 +45,7 @@ public class Utils {
             throw new IOException("Collection " + uri + " cannot be created.");
         }
 
-        collection.setPermissions(Realm.DEFAULT_REALM_STORE_MODE);
+        collection.setPermissions(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
         broker.saveCollection(txn, collection);
 
         return collection;

@@ -23,32 +23,31 @@ package org.exist.security.realm;
 
 import java.util.Collection;
 import java.util.List;
-
 import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.LifeCycle;
-import org.exist.security.Group;
 import org.exist.security.Account;
+import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
+import org.exist.storage.DBBroker;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsManagement, GroupsManagement, LifeCycle {
-    
-    public final static int DEFAULT_REALM_STORE_MODE = 0770;
 	
-	public String getId();
-	
-	public Collection<Account> getAccounts();
-	
-	public Collection<Group> getGroups();
-	@Deprecated //use getGroups (remove after 1.6)
-	public Collection<Group> getRoles();
+    public String getId();
 
-	public Database getDatabase();
+    public Collection<Account> getAccounts();
+
+    public Collection<Group> getGroups();
+    @Deprecated //use getGroups (remove after 1.6)
+    public Collection<Group> getRoles();
+
+    public Database getDatabase();
 
     public Group getExternalGroup(final String name);
 
