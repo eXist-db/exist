@@ -374,16 +374,15 @@ public class MetaDataImpl extends MetaData {
 	public void moveMetas(XmldbURI oldUri, XmldbURI newUri) {
 		MetasImpl ms = (MetasImpl)getMetas(oldUri);
 		
-		if(ms != null){
+		if (ms != null) {
 			ms.uri = newUri.toString();
 			
 			docByUUID.put(ms);
 
 			ms = (MetasImpl)getMetas(oldUri);
 			System.out.println(ms);
-		}else
-		{
-			throw new RuntimeException("Metas NULL for document: " + oldUri + " in moveMetas");
+		} else {
+			throw new RuntimeException("Metas NULL: " + oldUri + " in moveMetas");
 			//LOG.warn("Metas NULL for document: " + doc.getURI() + " in moveMetas");
 		}
 //		Map<String, String> map = new HashMap<String, String>();
@@ -417,8 +416,7 @@ public class MetaDataImpl extends MetaData {
 		
 		MetasImpl newMs = (MetasImpl) addMetas(newDoc);
 
-		if(ms != null)
-		{
+		if (ms != null) {
 			EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities();
 			try {
 				for (MetaImpl m : sub)
@@ -435,13 +433,12 @@ public class MetaDataImpl extends MetaData {
 		
 		MetasImpl newMs = (MetasImpl) addMetas(newCol);
 
-		if(ms != null)
-		{
+		if (ms != null) {
 			EntityCursor<MetaImpl> sub = metadata.subIndex(ms.getUUID()).entities();
 			try {
-				for (MetaImpl m : sub)
+				for (MetaImpl m : sub) {
 					newMs.put(m.getKey(), m.getValue());
-	
+				}
 			} finally {
 				sub.close();
 			}
