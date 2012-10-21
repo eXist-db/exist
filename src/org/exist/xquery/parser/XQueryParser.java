@@ -2064,10 +2064,10 @@ inputState.guessing--;
 			String name2;
 		
 		
-		boolean synPredMatched435 = false;
+		boolean synPredMatched433 = false;
 		if (((_tokenSet_1.member(LA(1))))) {
-			int _m435 = mark();
-			synPredMatched435 = true;
+			int _m433 = mark();
+			synPredMatched433 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -2077,12 +2077,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched435 = false;
+				synPredMatched433 = false;
 			}
-			rewind(_m435);
+			rewind(_m433);
 inputState.guessing--;
 		}
-		if ( synPredMatched435 ) {
+		if ( synPredMatched433 ) {
 			name=ncnameOrKeyword();
 			nc1_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 			astFactory.addASTChild(currentAST, returnAST);
@@ -4061,7 +4061,7 @@ inputState.guessing--;
 		quantifiedInVarBinding();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop235:
+		_loop233:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
@@ -4069,7 +4069,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop235;
+				break _loop233;
 			}
 			
 		} while (true);
@@ -4138,18 +4138,18 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		match(RPAREN);
 		{
-		int _cnt240=0;
-		_loop240:
+		int _cnt238=0;
+		_loop238:
 		do {
 			if ((LA(1)==LITERAL_case)) {
 				switchCaseClause();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt240>=1 ) { break _loop240; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt238>=1 ) { break _loop238; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt240++;
+			_cnt238++;
 		} while (true);
 		}
 		org.exist.xquery.parser.XQueryAST tmp187_AST = null;
@@ -4179,18 +4179,18 @@ inputState.guessing--;
 		astFactory.addASTChild(currentAST, returnAST);
 		match(RPAREN);
 		{
-		int _cnt246=0;
-		_loop246:
+		int _cnt244=0;
+		_loop244:
 		do {
 			if ((LA(1)==LITERAL_case)) {
 				caseClause();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt246>=1 ) { break _loop246; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt244>=1 ) { break _loop244; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt246++;
+			_cnt244++;
 		} while (true);
 		}
 		org.exist.xquery.parser.XQueryAST tmp192_AST = null;
@@ -4283,7 +4283,7 @@ inputState.guessing--;
 		andExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop256:
+		_loop254:
 		do {
 			if ((LA(1)==LITERAL_or)) {
 				org.exist.xquery.parser.XQueryAST tmp195_AST = null;
@@ -4294,7 +4294,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop256;
+				break _loop254;
 			}
 			
 		} while (true);
@@ -4561,10 +4561,10 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST nameTest_AST = null;
 		String name= null;
 		
-		boolean synPredMatched356 = false;
+		boolean synPredMatched354 = false;
 		if (((_tokenSet_6.member(LA(1))))) {
-			int _m356 = mark();
-			synPredMatched356 = true;
+			int _m354 = mark();
+			synPredMatched354 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -4688,12 +4688,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched356 = false;
+				synPredMatched354 = false;
 			}
-			rewind(_m356);
+			rewind(_m354);
 inputState.guessing--;
 		}
-		if ( synPredMatched356 ) {
+		if ( synPredMatched354 ) {
 			wildcard();
 			astFactory.addASTChild(currentAST, returnAST);
 			nameTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -4851,13 +4851,8 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST groupByClause_AST = null;
 		
 		match(LITERAL_group);
-		toGroupVarRef();
-		astFactory.addASTChild(currentAST, returnAST);
-		match(LITERAL_as);
-		groupVarBinding();
-		astFactory.addASTChild(currentAST, returnAST);
 		match(LITERAL_by);
-		groupSpecList();
+		groupingSpecList();
 		astFactory.addASTChild(currentAST, returnAST);
 		if ( inputState.guessing==0 ) {
 			groupByClause_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -5033,9 +5028,9 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST positionalVar_AST = null;
 		String varName;
 		
-		org.exist.xquery.parser.XQueryAST tmp235_AST = null;
-		tmp235_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp235_AST);
+		org.exist.xquery.parser.XQueryAST tmp234_AST = null;
+		tmp234_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp234_AST);
 		match(LITERAL_at);
 		match(DOLLAR);
 		varName=qName();
@@ -5102,17 +5097,17 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case LITERAL_ascending:
 		{
-			org.exist.xquery.parser.XQueryAST tmp238_AST = null;
-			tmp238_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp238_AST);
+			org.exist.xquery.parser.XQueryAST tmp237_AST = null;
+			tmp237_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp237_AST);
 			match(LITERAL_ascending);
 			break;
 		}
 		case LITERAL_descending:
 		{
-			org.exist.xquery.parser.XQueryAST tmp239_AST = null;
-			tmp239_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp239_AST);
+			org.exist.xquery.parser.XQueryAST tmp238_AST = null;
+			tmp238_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp238_AST);
 			match(LITERAL_descending);
 			break;
 		}
@@ -5133,25 +5128,25 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case LITERAL_empty:
 		{
-			org.exist.xquery.parser.XQueryAST tmp240_AST = null;
-			tmp240_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp240_AST);
+			org.exist.xquery.parser.XQueryAST tmp239_AST = null;
+			tmp239_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp239_AST);
 			match(LITERAL_empty);
 			{
 			switch ( LA(1)) {
 			case LITERAL_greatest:
 			{
-				org.exist.xquery.parser.XQueryAST tmp241_AST = null;
-				tmp241_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp241_AST);
+				org.exist.xquery.parser.XQueryAST tmp240_AST = null;
+				tmp240_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp240_AST);
 				match(LITERAL_greatest);
 				break;
 			}
 			case LITERAL_least:
 			{
-				org.exist.xquery.parser.XQueryAST tmp242_AST = null;
-				tmp242_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp242_AST);
+				org.exist.xquery.parser.XQueryAST tmp241_AST = null;
+				tmp241_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+				astFactory.addASTChild(currentAST, tmp241_AST);
 				match(LITERAL_least);
 				break;
 			}
@@ -5179,13 +5174,13 @@ inputState.guessing--;
 		switch ( LA(1)) {
 		case LITERAL_collation:
 		{
+			org.exist.xquery.parser.XQueryAST tmp242_AST = null;
+			tmp242_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp242_AST);
+			match(LITERAL_collation);
 			org.exist.xquery.parser.XQueryAST tmp243_AST = null;
 			tmp243_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp243_AST);
-			match(LITERAL_collation);
-			org.exist.xquery.parser.XQueryAST tmp244_AST = null;
-			tmp244_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp244_AST);
 			match(STRING_LITERAL);
 			break;
 		}
@@ -5204,116 +5199,102 @@ inputState.guessing--;
 		returnAST = orderModifier_AST;
 	}
 	
-	public final void toGroupVarRef() throws RecognitionException, TokenStreamException, XPathException {
+	public final void groupingSpecList() throws RecognitionException, TokenStreamException, XPathException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST toGroupVarRef_AST = null;
-		org.exist.xquery.parser.XQueryAST v_AST = null;
-		String toGroupVarName = null;
+		org.exist.xquery.parser.XQueryAST groupingSpecList_AST = null;
 		
-		match(DOLLAR);
-		toGroupVarName=qName();
-		v_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
-		astFactory.addASTChild(currentAST, returnAST);
-		if ( inputState.guessing==0 ) {
-			toGroupVarRef_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			
-			toGroupVarRef_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_REF,toGroupVarName); 
-			toGroupVarRef_AST.copyLexInfo(v_AST); 
-			
-			currentAST.root = toGroupVarRef_AST;
-			currentAST.child = toGroupVarRef_AST!=null &&toGroupVarRef_AST.getFirstChild()!=null ?
-				toGroupVarRef_AST.getFirstChild() : toGroupVarRef_AST;
-			currentAST.advanceChildToEnd();
-		}
-		toGroupVarRef_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		returnAST = toGroupVarRef_AST;
-	}
-	
-	public final void groupVarBinding() throws RecognitionException, TokenStreamException, XPathException {
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST groupVarBinding_AST = null;
-		String groupVarName;
-		
-		match(DOLLAR);
-		groupVarName=qName();
-		if ( inputState.guessing==0 ) {
-			groupVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			groupVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,groupVarName)).add(groupVarBinding_AST));
-			currentAST.root = groupVarBinding_AST;
-			currentAST.child = groupVarBinding_AST!=null &&groupVarBinding_AST.getFirstChild()!=null ?
-				groupVarBinding_AST.getFirstChild() : groupVarBinding_AST;
-			currentAST.advanceChildToEnd();
-		}
-		groupVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		returnAST = groupVarBinding_AST;
-	}
-	
-	public final void groupSpecList() throws RecognitionException, TokenStreamException, XPathException {
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST groupSpecList_AST = null;
-		
-		groupSpec();
+		groupingSpec();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop228:
+		_loop226:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
-				groupSpec();
+				groupingSpec();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop228;
+				break _loop226;
 			}
 			
 		} while (true);
 		}
-		groupSpecList_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		returnAST = groupSpecList_AST;
+		groupingSpecList_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		returnAST = groupingSpecList_AST;
 	}
 	
-	public final void groupSpec() throws RecognitionException, TokenStreamException, XPathException {
+	public final void groupingSpec() throws RecognitionException, TokenStreamException, XPathException {
 		
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST groupSpec_AST = null;
-		
-		exprSingle();
-		astFactory.addASTChild(currentAST, returnAST);
-		match(LITERAL_as);
-		{
-		groupKeyVarBinding();
-		astFactory.addASTChild(currentAST, returnAST);
-		}
-		groupSpec_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		returnAST = groupSpec_AST;
-	}
-	
-	public final void groupKeyVarBinding() throws RecognitionException, TokenStreamException, XPathException {
-		
-		returnAST = null;
-		ASTPair currentAST = new ASTPair();
-		org.exist.xquery.parser.XQueryAST groupKeyVarBinding_AST = null;
+		org.exist.xquery.parser.XQueryAST groupingSpec_AST = null;
 		String groupKeyVarName;
 		
 		match(DOLLAR);
 		groupKeyVarName=qName();
+		{
+		switch ( LA(1)) {
+		case COLON:
+		{
+			match(COLON);
+			match(EQ);
+			exprSingle();
+			astFactory.addASTChild(currentAST, returnAST);
+			break;
+		}
+		case LITERAL_collation:
+		case LITERAL_order:
+		case COMMA:
+		case LITERAL_return:
+		case LITERAL_stable:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
+		{
+		switch ( LA(1)) {
+		case LITERAL_collation:
+		{
+			org.exist.xquery.parser.XQueryAST tmp248_AST = null;
+			tmp248_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp248_AST);
+			match(LITERAL_collation);
+			org.exist.xquery.parser.XQueryAST tmp249_AST = null;
+			tmp249_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp249_AST);
+			match(STRING_LITERAL);
+			break;
+		}
+		case LITERAL_order:
+		case COMMA:
+		case LITERAL_return:
+		case LITERAL_stable:
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+		}
 		if ( inputState.guessing==0 ) {
-			groupKeyVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-			groupKeyVarBinding_AST= (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,groupKeyVarName)).add(groupKeyVarBinding_AST));
-			currentAST.root = groupKeyVarBinding_AST;
-			currentAST.child = groupKeyVarBinding_AST!=null &&groupKeyVarBinding_AST.getFirstChild()!=null ?
-				groupKeyVarBinding_AST.getFirstChild() : groupKeyVarBinding_AST;
+			groupingSpec_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			groupingSpec_AST = (org.exist.xquery.parser.XQueryAST)astFactory.make( (new ASTArray(2)).add((org.exist.xquery.parser.XQueryAST)astFactory.create(VARIABLE_BINDING,groupKeyVarName)).add(groupingSpec_AST));
+			currentAST.root = groupingSpec_AST;
+			currentAST.child = groupingSpec_AST!=null &&groupingSpec_AST.getFirstChild()!=null ?
+				groupingSpec_AST.getFirstChild() : groupingSpec_AST;
 			currentAST.advanceChildToEnd();
 		}
-		groupKeyVarBinding_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-		returnAST = groupKeyVarBinding_AST;
+		groupingSpec_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+		returnAST = groupingSpec_AST;
 	}
 	
 	public final void quantifiedInVarBinding() throws RecognitionException, TokenStreamException, XPathException {
@@ -5365,8 +5346,8 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST switchCaseClause_AST = null;
 		
 		{
-		int _cnt243=0;
-		_loop243:
+		int _cnt241=0;
+		_loop241:
 		do {
 			if ((LA(1)==LITERAL_case)) {
 				org.exist.xquery.parser.XQueryAST tmp252_AST = null;
@@ -5377,10 +5358,10 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt243>=1 ) { break _loop243; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt241>=1 ) { break _loop241; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt243++;
+			_cnt241++;
 		} while (true);
 		}
 		caseReturn();
@@ -5597,7 +5578,7 @@ inputState.guessing--;
 		comparisonExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop259:
+		_loop257:
 		do {
 			if ((LA(1)==LITERAL_and)) {
 				org.exist.xquery.parser.XQueryAST tmp258_AST = null;
@@ -5608,7 +5589,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop259;
+				break _loop257;
 			}
 			
 		} while (true);
@@ -5818,10 +5799,10 @@ inputState.guessing--;
 			break;
 		}
 		default:
-			boolean synPredMatched277 = false;
+			boolean synPredMatched275 = false;
 			if (((LA(1)==GT))) {
-				int _m277 = mark();
-				synPredMatched277 = true;
+				int _m275 = mark();
+				synPredMatched275 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -5830,12 +5811,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched277 = false;
+					synPredMatched275 = false;
 				}
-				rewind(_m277);
+				rewind(_m275);
 inputState.guessing--;
 			}
-			if ( synPredMatched277 ) {
+			if ( synPredMatched275 ) {
 				org.exist.xquery.parser.XQueryAST tmp271_AST = null;
 				tmp271_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 				astFactory.makeASTRoot(currentAST, tmp271_AST);
@@ -6478,7 +6459,7 @@ inputState.guessing--;
 		r1_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop286:
+		_loop284:
 		do {
 			if ((LA(1)==CONCAT)) {
 				org.exist.xquery.parser.XQueryAST tmp288_AST = null;
@@ -6492,7 +6473,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop286;
+				break _loop284;
 			}
 			
 		} while (true);
@@ -6601,7 +6582,7 @@ inputState.guessing--;
 		multiplicativeExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop292:
+		_loop290:
 		do {
 			if ((LA(1)==PLUS||LA(1)==MINUS)) {
 				{
@@ -6632,7 +6613,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop292;
+				break _loop290;
 			}
 			
 		} while (true);
@@ -6650,7 +6631,7 @@ inputState.guessing--;
 		unionExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop296:
+		_loop294:
 		do {
 			if ((_tokenSet_8.member(LA(1)))) {
 				{
@@ -6697,7 +6678,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop296;
+				break _loop294;
 			}
 			
 		} while (true);
@@ -7110,10 +7091,10 @@ inputState.guessing--;
 			break;
 		}
 		default:
-			boolean synPredMatched314 = false;
+			boolean synPredMatched312 = false;
 			if (((LA(1)==SLASH))) {
-				int _m314 = mark();
-				synPredMatched314 = true;
+				int _m312 = mark();
+				synPredMatched312 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -7122,12 +7103,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched314 = false;
+					synPredMatched312 = false;
 				}
-				rewind(_m314);
+				rewind(_m312);
 inputState.guessing--;
 			}
-			if ( synPredMatched314 ) {
+			if ( synPredMatched312 ) {
 				org.exist.xquery.parser.XQueryAST tmp299_AST = null;
 				tmp299_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 				astFactory.addASTChild(currentAST, tmp299_AST);
@@ -7174,18 +7155,18 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST extensionExpr_AST = null;
 		
 		{
-		int _cnt303=0;
-		_loop303:
+		int _cnt301=0;
+		_loop301:
 		do {
 			if ((LA(1)==PRAGMA_START)) {
 				pragma();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt303>=1 ) { break _loop303; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt301>=1 ) { break _loop301; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt303++;
+			_cnt301++;
 		} while (true);
 		}
 		match(LCURLY);
@@ -7245,7 +7226,7 @@ inputState.guessing--;
 		instanceofExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop311:
+		_loop309:
 		do {
 			if ((LA(1)==LITERAL_intersect||LA(1)==LITERAL_except)) {
 				{
@@ -7276,7 +7257,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop311;
+				break _loop309;
 			}
 			
 		} while (true);
@@ -7294,7 +7275,7 @@ inputState.guessing--;
 		stepExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop318:
+		_loop316:
 		do {
 			if (((LA(1) >= SLASH && LA(1) <= BANG))) {
 				{
@@ -7333,7 +7314,7 @@ inputState.guessing--;
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop318;
+				break _loop316;
 			}
 			
 		} while (true);
@@ -7348,10 +7329,10 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST stepExpr_AST = null;
 		
-		boolean synPredMatched322 = false;
+		boolean synPredMatched320 = false;
 		if (((_tokenSet_9.member(LA(1))))) {
-			int _m322 = mark();
-			synPredMatched322 = true;
+			int _m320 = mark();
+			synPredMatched320 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -7402,21 +7383,21 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched322 = false;
+				synPredMatched320 = false;
 			}
-			rewind(_m322);
+			rewind(_m320);
 inputState.guessing--;
 		}
-		if ( synPredMatched322 ) {
+		if ( synPredMatched320 ) {
 			axisStep();
 			astFactory.addASTChild(currentAST, returnAST);
 			stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched325 = false;
+			boolean synPredMatched323 = false;
 			if (((_tokenSet_10.member(LA(1))))) {
-				int _m325 = mark();
-				synPredMatched325 = true;
+				int _m323 = mark();
+				synPredMatched323 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -7477,21 +7458,21 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched325 = false;
+					synPredMatched323 = false;
 				}
-				rewind(_m325);
+				rewind(_m323);
 inputState.guessing--;
 			}
-			if ( synPredMatched325 ) {
+			if ( synPredMatched323 ) {
 				postfixExpr();
 				astFactory.addASTChild(currentAST, returnAST);
 				stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else {
-				boolean synPredMatched328 = false;
+				boolean synPredMatched326 = false;
 				if (((_tokenSet_10.member(LA(1))))) {
-					int _m328 = mark();
-					synPredMatched328 = true;
+					int _m326 = mark();
+					synPredMatched326 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -7528,21 +7509,21 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched328 = false;
+						synPredMatched326 = false;
 					}
-					rewind(_m328);
+					rewind(_m326);
 inputState.guessing--;
 				}
-				if ( synPredMatched328 ) {
+				if ( synPredMatched326 ) {
 					postfixExpr();
 					astFactory.addASTChild(currentAST, returnAST);
 					stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
 				else {
-					boolean synPredMatched332 = false;
+					boolean synPredMatched330 = false;
 					if (((_tokenSet_10.member(LA(1))))) {
-						int _m332 = mark();
-						synPredMatched332 = true;
+						int _m330 = mark();
+						synPredMatched330 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -7720,12 +7701,12 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched332 = false;
+							synPredMatched330 = false;
 						}
-						rewind(_m332);
+						rewind(_m330);
 inputState.guessing--;
 					}
-					if ( synPredMatched332 ) {
+					if ( synPredMatched330 ) {
 						postfixExpr();
 						astFactory.addASTChild(currentAST, returnAST);
 						stepExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -7767,7 +7748,7 @@ inputState.guessing--;
 		primaryExpr();
 		astFactory.addASTChild(currentAST, returnAST);
 		{
-		_loop366:
+		_loop364:
 		do {
 			switch ( LA(1)) {
 			case LPPAREN:
@@ -7784,7 +7765,7 @@ inputState.guessing--;
 			}
 			default:
 			{
-				break _loop366;
+				break _loop364;
 			}
 			}
 		} while (true);
@@ -7799,10 +7780,10 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST forwardOrReverseStep_AST = null;
 		
-		boolean synPredMatched341 = false;
+		boolean synPredMatched339 = false;
 		if (((_tokenSet_11.member(LA(1))))) {
-			int _m341 = mark();
-			synPredMatched341 = true;
+			int _m339 = mark();
+			synPredMatched339 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -7811,12 +7792,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched341 = false;
+				synPredMatched339 = false;
 			}
-			rewind(_m341);
+			rewind(_m339);
 inputState.guessing--;
 		}
-		if ( synPredMatched341 ) {
+		if ( synPredMatched339 ) {
 			forwardAxis();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest();
@@ -7824,10 +7805,10 @@ inputState.guessing--;
 			forwardOrReverseStep_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 		}
 		else {
-			boolean synPredMatched343 = false;
+			boolean synPredMatched341 = false;
 			if (((_tokenSet_12.member(LA(1))))) {
-				int _m343 = mark();
-				synPredMatched343 = true;
+				int _m341 = mark();
+				synPredMatched341 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -7836,12 +7817,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched343 = false;
+					synPredMatched341 = false;
 				}
-				rewind(_m343);
+				rewind(_m341);
 inputState.guessing--;
 			}
-			if ( synPredMatched343 ) {
+			if ( synPredMatched341 ) {
 				reverseAxis();
 				astFactory.addASTChild(currentAST, returnAST);
 				nodeTest();
@@ -7867,14 +7848,14 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST predicates_AST = null;
 		
 		{
-		_loop337:
+		_loop335:
 		do {
 			if ((LA(1)==LPPAREN)) {
 				predicate();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop337;
+				break _loop335;
 			}
 			
 		} while (true);
@@ -8005,10 +7986,10 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST nodeTest_AST = null;
 		
-		boolean synPredMatched352 = false;
+		boolean synPredMatched350 = false;
 		if (((_tokenSet_4.member(LA(1))))) {
-			int _m352 = mark();
-			synPredMatched352 = true;
+			int _m350 = mark();
+			synPredMatched350 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -8017,12 +7998,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched352 = false;
+				synPredMatched350 = false;
 			}
-			rewind(_m352);
+			rewind(_m350);
 inputState.guessing--;
 		}
-		if ( synPredMatched352 ) {
+		if ( synPredMatched350 ) {
 			kindTest();
 			astFactory.addASTChild(currentAST, returnAST);
 			nodeTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8370,10 +8351,10 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST wildcard_AST = null;
 		String name= null;
 		
-		boolean synPredMatched359 = false;
+		boolean synPredMatched357 = false;
 		if (((LA(1)==STAR))) {
-			int _m359 = mark();
-			synPredMatched359 = true;
+			int _m357 = mark();
+			synPredMatched357 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -8382,12 +8363,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched359 = false;
+				synPredMatched357 = false;
 			}
-			rewind(_m359);
+			rewind(_m357);
 inputState.guessing--;
 		}
-		if ( synPredMatched359 ) {
+		if ( synPredMatched357 ) {
 			match(STAR);
 			match(COLON);
 			name=ncnameOrKeyword();
@@ -8481,10 +8462,10 @@ inputState.guessing--;
 			break;
 		}
 		default:
-			boolean synPredMatched371 = false;
+			boolean synPredMatched369 = false;
 			if (((_tokenSet_13.member(LA(1))))) {
-				int _m371 = mark();
-				synPredMatched371 = true;
+				int _m369 = mark();
+				synPredMatched369 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -8530,21 +8511,21 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched371 = false;
+					synPredMatched369 = false;
 				}
-				rewind(_m371);
+				rewind(_m369);
 inputState.guessing--;
 			}
-			if ( synPredMatched371 ) {
+			if ( synPredMatched369 ) {
 				computedConstructor();
 				astFactory.addASTChild(currentAST, returnAST);
 				primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			}
 			else {
-				boolean synPredMatched374 = false;
+				boolean synPredMatched372 = false;
 				if (((_tokenSet_13.member(LA(1))))) {
-					int _m374 = mark();
-					synPredMatched374 = true;
+					int _m372 = mark();
+					synPredMatched372 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -8581,21 +8562,21 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched374 = false;
+						synPredMatched372 = false;
 					}
-					rewind(_m374);
+					rewind(_m372);
 inputState.guessing--;
 				}
-				if ( synPredMatched374 ) {
+				if ( synPredMatched372 ) {
 					computedConstructor();
 					astFactory.addASTChild(currentAST, returnAST);
 					primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				}
 				else {
-					boolean synPredMatched376 = false;
+					boolean synPredMatched374 = false;
 					if (((LA(1)==LITERAL_ordered))) {
-						int _m376 = mark();
-						synPredMatched376 = true;
+						int _m374 = mark();
+						synPredMatched374 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -8604,21 +8585,21 @@ inputState.guessing--;
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched376 = false;
+							synPredMatched374 = false;
 						}
-						rewind(_m376);
+						rewind(_m374);
 inputState.guessing--;
 					}
-					if ( synPredMatched376 ) {
+					if ( synPredMatched374 ) {
 						orderedExpr();
 						astFactory.addASTChild(currentAST, returnAST);
 						primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 					}
 					else {
-						boolean synPredMatched378 = false;
+						boolean synPredMatched376 = false;
 						if (((LA(1)==LITERAL_unordered))) {
-							int _m378 = mark();
-							synPredMatched378 = true;
+							int _m376 = mark();
+							synPredMatched376 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -8627,21 +8608,21 @@ inputState.guessing--;
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched378 = false;
+								synPredMatched376 = false;
 							}
-							rewind(_m378);
+							rewind(_m376);
 inputState.guessing--;
 						}
-						if ( synPredMatched378 ) {
+						if ( synPredMatched376 ) {
 							unorderedExpr();
 							astFactory.addASTChild(currentAST, returnAST);
 							primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 						}
 						else {
-							boolean synPredMatched380 = false;
+							boolean synPredMatched378 = false;
 							if (((LA(1)==LITERAL_map))) {
-								int _m380 = mark();
-								synPredMatched380 = true;
+								int _m378 = mark();
+								synPredMatched378 = true;
 								inputState.guessing++;
 								try {
 									{
@@ -8650,21 +8631,21 @@ inputState.guessing--;
 									}
 								}
 								catch (RecognitionException pe) {
-									synPredMatched380 = false;
+									synPredMatched378 = false;
 								}
-								rewind(_m380);
+								rewind(_m378);
 inputState.guessing--;
 							}
-							if ( synPredMatched380 ) {
+							if ( synPredMatched378 ) {
 								mapExpr();
 								astFactory.addASTChild(currentAST, returnAST);
 								primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 							}
 							else {
-								boolean synPredMatched382 = false;
+								boolean synPredMatched380 = false;
 								if (((_tokenSet_14.member(LA(1))))) {
-									int _m382 = mark();
-									synPredMatched382 = true;
+									int _m380 = mark();
+									synPredMatched380 = true;
 									inputState.guessing++;
 									try {
 										{
@@ -8686,21 +8667,21 @@ inputState.guessing--;
 										}
 									}
 									catch (RecognitionException pe) {
-										synPredMatched382 = false;
+										synPredMatched380 = false;
 									}
-									rewind(_m382);
+									rewind(_m380);
 inputState.guessing--;
 								}
-								if ( synPredMatched382 ) {
+								if ( synPredMatched380 ) {
 									functionItemExpr();
 									astFactory.addASTChild(currentAST, returnAST);
 									primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 								}
 								else {
-									boolean synPredMatched384 = false;
+									boolean synPredMatched382 = false;
 									if (((_tokenSet_1.member(LA(1))))) {
-										int _m384 = mark();
-										synPredMatched384 = true;
+										int _m382 = mark();
+										synPredMatched382 = true;
 										inputState.guessing++;
 										try {
 											{
@@ -8709,12 +8690,12 @@ inputState.guessing--;
 											}
 										}
 										catch (RecognitionException pe) {
-											synPredMatched384 = false;
+											synPredMatched382 = false;
 										}
-										rewind(_m384);
+										rewind(_m382);
 inputState.guessing--;
 									}
-									if ( synPredMatched384 ) {
+									if ( synPredMatched382 ) {
 										functionCall();
 										astFactory.addASTChild(currentAST, returnAST);
 										primaryExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -8887,7 +8868,7 @@ inputState.guessing--;
 			argument();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop409:
+			_loop407:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -8895,7 +8876,7 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop409;
+					break _loop407;
 				}
 				
 			} while (true);
@@ -9139,7 +9120,7 @@ inputState.guessing--;
 			mapAssignment();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop388:
+			_loop386:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -9147,7 +9128,7 @@ inputState.guessing--;
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop388;
+					break _loop386;
 				}
 				
 			} while (true);
@@ -9211,10 +9192,10 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST functionItemExpr_AST = null;
 		
-		boolean synPredMatched399 = false;
+		boolean synPredMatched397 = false;
 		if (((LA(1)==LITERAL_function||LA(1)==MOD))) {
-			int _m399 = mark();
-			synPredMatched399 = true;
+			int _m397 = mark();
+			synPredMatched397 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -9237,12 +9218,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched399 = false;
+				synPredMatched397 = false;
 			}
-			rewind(_m399);
+			rewind(_m397);
 inputState.guessing--;
 		}
-		if ( synPredMatched399 ) {
+		if ( synPredMatched397 ) {
 			inlineFunctionExpr();
 			astFactory.addASTChild(currentAST, returnAST);
 			functionItemExpr_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -10666,10 +10647,10 @@ inputState.guessing--;
 		//lexer.wsExplicit = true;
 		
 		
-		boolean synPredMatched467 = false;
+		boolean synPredMatched465 = false;
 		if (((LA(1)==LT))) {
-			int _m467 = mark();
-			synPredMatched467 = true;
+			int _m465 = mark();
+			synPredMatched465 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -10681,12 +10662,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched467 = false;
+				synPredMatched465 = false;
 			}
-			rewind(_m467);
+			rewind(_m465);
 inputState.guessing--;
 		}
-		if ( synPredMatched467 ) {
+		if ( synPredMatched465 ) {
 			elementWithAttributes();
 			astFactory.addASTChild(currentAST, returnAST);
 			elementConstructor_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -10743,10 +10724,10 @@ inputState.guessing--;
 			String qn;
 		
 		
-		boolean synPredMatched440 = false;
+		boolean synPredMatched438 = false;
 		if (((LA(1)==LITERAL_element))) {
-			int _m440 = mark();
-			synPredMatched440 = true;
+			int _m438 = mark();
+			synPredMatched438 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -10755,12 +10736,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched440 = false;
+				synPredMatched438 = false;
 			}
-			rewind(_m440);
+			rewind(_m438);
 inputState.guessing--;
 		}
-		if ( synPredMatched440 ) {
+		if ( synPredMatched438 ) {
 			match(LITERAL_element);
 			match(LCURLY);
 			expr();
@@ -11084,10 +11065,10 @@ inputState.guessing--;
 			String qn;
 		
 		
-		boolean synPredMatched454 = false;
+		boolean synPredMatched452 = false;
 		if (((LA(1)==LITERAL_attribute))) {
-			int _m454 = mark();
-			synPredMatched454 = true;
+			int _m452 = mark();
+			synPredMatched452 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -11096,12 +11077,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched454 = false;
+				synPredMatched452 = false;
 			}
-			rewind(_m454);
+			rewind(_m452);
 inputState.guessing--;
 		}
-		if ( synPredMatched454 ) {
+		if ( synPredMatched452 ) {
 			match(LITERAL_attribute);
 			match(LCURLY);
 			expr();
@@ -11213,10 +11194,10 @@ inputState.guessing--;
 			String qn;
 		
 		
-		boolean synPredMatched461 = false;
+		boolean synPredMatched459 = false;
 		if (((LA(1)==185))) {
-			int _m461 = mark();
-			synPredMatched461 = true;
+			int _m459 = mark();
+			synPredMatched459 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -11225,12 +11206,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched461 = false;
+				synPredMatched459 = false;
 			}
-			rewind(_m461);
+			rewind(_m459);
 inputState.guessing--;
 		}
-		if ( synPredMatched461 ) {
+		if ( synPredMatched459 ) {
 			match(185);
 			match(LCURLY);
 			expr();
@@ -11309,10 +11290,10 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST compElemBody_AST = null;
 		
 		{
-		boolean synPredMatched446 = false;
+		boolean synPredMatched444 = false;
 		if (((LA(1)==LITERAL_namespace))) {
-			int _m446 = mark();
-			synPredMatched446 = true;
+			int _m444 = mark();
+			synPredMatched444 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -11322,12 +11303,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched446 = false;
+				synPredMatched444 = false;
 			}
-			rewind(_m446);
+			rewind(_m444);
 inputState.guessing--;
 		}
-		if ( synPredMatched446 ) {
+		if ( synPredMatched444 ) {
 			localNamespaceDecl();
 			astFactory.addASTChild(currentAST, returnAST);
 		}
@@ -11341,15 +11322,15 @@ inputState.guessing--;
 		
 		}
 		{
-		_loop451:
+		_loop449:
 		do {
 			if ((LA(1)==COMMA)) {
 				match(COMMA);
 				{
-				boolean synPredMatched450 = false;
+				boolean synPredMatched448 = false;
 				if (((LA(1)==LITERAL_namespace))) {
-					int _m450 = mark();
-					synPredMatched450 = true;
+					int _m448 = mark();
+					synPredMatched448 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -11359,12 +11340,12 @@ inputState.guessing--;
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched450 = false;
+						synPredMatched448 = false;
 					}
-					rewind(_m450);
+					rewind(_m448);
 inputState.guessing--;
 				}
-				if ( synPredMatched450 ) {
+				if ( synPredMatched448 ) {
 					localNamespaceDecl();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -11379,7 +11360,7 @@ inputState.guessing--;
 				}
 			}
 			else {
-				break _loop451;
+				break _loop449;
 			}
 			
 		} while (true);
@@ -11788,14 +11769,14 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST mixedElementContent_AST = null;
 		
 		{
-		_loop492:
+		_loop490:
 		do {
 			if ((_tokenSet_19.member(LA(1)))) {
 				elementContent();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				break _loop492;
+				break _loop490;
 			}
 			
 		} while (true);
@@ -11811,18 +11792,18 @@ inputState.guessing--;
 		org.exist.xquery.parser.XQueryAST attributeList_AST = null;
 		
 		{
-		int _cnt478=0;
-		_loop478:
+		int _cnt476=0;
+		_loop476:
 		do {
 			if ((_tokenSet_1.member(LA(1)))) {
 				attributeDef();
 				astFactory.addASTChild(currentAST, returnAST);
 			}
 			else {
-				if ( _cnt478>=1 ) { break _loop478; } else {throw new NoViableAltException(LT(1), getFilename());}
+				if ( _cnt476>=1 ) { break _loop476; } else {throw new NoViableAltException(LT(1), getFilename());}
 			}
 			
-			_cnt478++;
+			_cnt476++;
 		} while (true);
 		}
 		attributeList_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
@@ -11877,14 +11858,14 @@ inputState.guessing--;
 					
 			}
 			{
-			_loop482:
+			_loop480:
 			do {
 				if ((_tokenSet_20.member(LA(1)))) {
 					quotAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop482;
+					break _loop480;
 				}
 				
 			} while (true);
@@ -11909,14 +11890,14 @@ inputState.guessing--;
 					
 			}
 			{
-			_loop484:
+			_loop482:
 			do {
 				if ((_tokenSet_21.member(LA(1)))) {
 					aposAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop484;
+					break _loop482;
 				}
 				
 			} while (true);
@@ -12067,10 +12048,10 @@ inputState.guessing--;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST attrCommonContent_AST = null;
 		
-		boolean synPredMatched489 = false;
+		boolean synPredMatched487 = false;
 		if (((LA(1)==LCURLY))) {
-			int _m489 = mark();
-			synPredMatched489 = true;
+			int _m487 = mark();
+			synPredMatched487 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -12079,12 +12060,12 @@ inputState.guessing--;
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched489 = false;
+				synPredMatched487 = false;
 			}
-			rewind(_m489);
+			rewind(_m487);
 inputState.guessing--;
 		}
-		if ( synPredMatched489 ) {
+		if ( synPredMatched487 ) {
 			org.exist.xquery.parser.XQueryAST tmp445_AST = null;
 			tmp445_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 			astFactory.addASTChild(currentAST, tmp445_AST);
@@ -12243,10 +12224,10 @@ inputState.guessing--;
 			break;
 		}
 		default:
-			boolean synPredMatched495 = false;
+			boolean synPredMatched493 = false;
 			if (((LA(1)==LCURLY))) {
-				int _m495 = mark();
-				synPredMatched495 = true;
+				int _m493 = mark();
+				synPredMatched493 = true;
 				inputState.guessing++;
 				try {
 					{
@@ -12255,12 +12236,12 @@ inputState.guessing--;
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched495 = false;
+					synPredMatched493 = false;
 				}
-				rewind(_m495);
+				rewind(_m493);
 inputState.guessing--;
 			}
-			if ( synPredMatched495 ) {
+			if ( synPredMatched493 ) {
 				org.exist.xquery.parser.XQueryAST tmp453_AST = null;
 				tmp453_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
 				astFactory.addASTChild(currentAST, tmp453_AST);

@@ -1281,11 +1281,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			action.setASTNode(r);
 			PathExpr whereExpr= null;
 			List orderBy= null;
-            //bv : variables for groupBy 
-            List groupBy= null; 
-            String toGroupVar = null; 
-            String groupVar = null; 
-            String groupKeyVar = null; 			
+            List<GroupSpec> groupSpecs = null;
 		}
 		(
 			#(
@@ -1355,33 +1351,35 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			step=expr [whereExpr]
 		)?
-        //bv : group by clause 
+        // XQuery 3.0 group by clause 
 		(
 			#(
-                GROUP_BY { groupBy= new ArrayList(3); } 
-                ( 
-                    #( toGroupVarName:VARIABLE_REF 
-                      { toGroupVar= toGroupVarName.getText(); } 
-                    ) 
-                )!                 
-                ( 
-                    #( groupVarName:VARIABLE_BINDING 
-                      { groupVar= groupVarName.getText(); } 
-                    ) 
-                )! 
-                (             
-                    { PathExpr groupSpecExpr= new PathExpr(context); } 
-                    step=expr [groupSpecExpr] 
-                    { 
-                    } 
-                    #( groupKeyVarName:VARIABLE_BINDING 
-                      { groupKeyVar = groupKeyVarName.getText(); 
-                        GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar); 
-                        groupBy.add(groupSpec); 
-                      } 
-                    ) 
-                )+ 
-            ) 
+                GROUP_BY
+                { groupSpecs = new ArrayList<GroupSpec>(4); }
+                (
+	                #(
+	                	groupVarName:VARIABLE_BINDING
+	                	
+	                	// optional := exprSingle
+	                	{ PathExpr groupSpecExpr= null; }
+	                	(
+	                		{ groupSpecExpr = new PathExpr(context); }
+	                    	step=expr [groupSpecExpr]
+	                    )?
+	                    {
+	                    	String groupKeyVar = groupVarName.getText();
+	                    	GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);  
+	                    	groupSpecs.add(groupSpec);
+	                    }
+	                    (
+							"collation" groupCollURI:STRING_LITERAL
+							{
+								groupSpec.setCollation(groupCollURI.getText());
+							}
+						)?
+	                )
+	            )+
+            )
         )? 
          
         ( 
@@ -1479,17 +1477,14 @@ throws PermissionDeniedException, EXistException, XPathException
 				((BindingExpression)action).setOrderSpecs(orderSpecs);
 			}
             // bv : group by initialisation 
-            if (groupBy != null) { 
-                GroupSpec groupSpecs[]= new GroupSpec[groupBy.size()]; 
-                int k= 0; 
-                for (Iterator j= groupBy.iterator(); j.hasNext(); k++) { 
-                    GroupSpec groupSpec= (GroupSpec) j.next(); 
-                    groupSpecs[k]= groupSpec; 
+            if (groupSpecs != null) {
+                GroupSpec specs[]= new GroupSpec[groupSpecs.size()]; 
+                int k= 0;
+                for (GroupSpec groupSpec : groupSpecs) {
+                    specs[k++]= groupSpec; 
                 } 
-                ((BindingExpression)action).setGroupSpecs(groupSpecs); 
-                ((BindingExpression)action).setGroupVariable(groupVar); 
-                ((BindingExpression)action).setGroupReturnExpr(groupReturnExpr); 
-                ((BindingExpression)action).setToGroupVariable(toGroupVar); 
+                ((BindingExpression)action).setGroupSpecs(specs); 
+                ((BindingExpression)action).setGroupReturnExpr(groupReturnExpr);
             } 
          
 			path.add(action);

@@ -763,43 +763,30 @@ orderModifier
 
 groupByClause throws XPathException 
 : 
-    "group"! toGroupVarRef "as"! groupVarBinding "by"! groupSpecList 
+	"group"! "by"! groupingSpecList
+    // "group"! toGroupVarRef "as"! groupVarBinding "by"! groupSpecList 
     { #groupByClause= #([GROUP_BY, "group by"], #groupByClause); } 
     ; 
- 
-toGroupVarRef throws XPathException 
-{ String toGroupVarName = null; } 
+
+groupingSpecList throws XPathException 
 : 
-    DOLLAR! toGroupVarName=v:qName 
-    {  
-        #toGroupVarRef= #[VARIABLE_REF, toGroupVarName]; 
-        #toGroupVarRef.copyLexInfo(#v); 
-    } 
+    groupingSpec ( COMMA! groupingSpec )* 
     ; 
  
-groupVarBinding throws XPathException 
-{ String groupVarName; } 
-: 
-    DOLLAR! groupVarName=qName! 
-    { #groupVarBinding= #(#[VARIABLE_BINDING, groupVarName], #groupVarBinding); } 
-    ; 
-     
-groupSpecList throws XPathException 
-: 
-    groupSpec ( COMMA! groupSpec )* 
+groupingSpec throws XPathException
+	{ String groupKeyVarName; }
+	:
+	DOLLAR! groupKeyVarName=qName! ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
+    { #groupingSpec = #(#[VARIABLE_BINDING, groupKeyVarName], #groupingSpec); }
     ; 
  
-groupSpec throws XPathException:  
-    exprSingle "as"! (groupKeyVarBinding)! 
-    ; 
- 
-groupKeyVarBinding throws XPathException 
+/*groupKeyVarBinding throws XPathException 
 { String groupKeyVarName; } 
 : 
     DOLLAR! groupKeyVarName=qName! 
     { #groupKeyVarBinding= #(#[VARIABLE_BINDING, groupKeyVarName], #groupKeyVarBinding); } 
     ; 
- 	
+*/	
 
 quantifiedExpr throws XPathException:
 	( "some"^ | "every"^ ) quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
