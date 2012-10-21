@@ -366,6 +366,8 @@ declare %private function test:check-assertions($assertions as element(annotatio
         switch ($assert)
             case "assertEquals" return
                 test:assertEquals($annotation/value/string(), $result)
+            case "assertEqualsPermutation" return
+                test:assertEqualsPermutation($annotation/value/string(), $result)
             case "assertEmpty" return
                 test:assertEmpty($result)
             case "assertExists" return
@@ -390,6 +392,41 @@ declare %private function test:assertEquals($values as item()*, $result as item(
     if (exists($values)) then
         if (count($values) eq count($result)) then
             let $tests := map-pairs(test:equals#2, $values, $result)
+            let $equal := every $test in $tests satisfies $test
+            return
+                if ($equal) then
+                    ()
+                else
+                   <report>
+                        <failure message="assertEquals failed."
+                            type="failure-error-code-1">
+                        { $values }
+                        </failure>
+                        <output>{ $result }</output>
+                    </report>
+        else
+            <report>
+                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
+                    type="failure-error-code-1">
+                { $values }
+                </failure>
+                <output>{ $result }</output>
+            </report>
+    else
+        ()
+};
+
+(:~
+ : Check for equality of the function's result with the value in the annotation.
+ : This function transforms the result to a string before checking for equality.
+ :)
+declare %private function test:assertEqualsPermutation($values as item()*, $result as item()*) as element(report)? {
+    if (exists($values)) then
+        if (count($values) eq count($result)) then
+            let $tests :=
+                for $item in $result
+                return
+                    some $value in $values satisfies test:equals($item, $value)
             let $equal := every $test in $tests satisfies $test
             return
                 if ($equal) then
