@@ -49,8 +49,7 @@ public class GroupedValueSequenceTable extends
 	private String toGroupVarName;
 	private XQueryContext context;
 
-	public GroupedValueSequenceTable(GroupSpec groupSpecs[], String varName,
-			XQueryContext aContext) {
+	public GroupedValueSequenceTable(GroupSpec groupSpecs[], String varName, XQueryContext aContext) {
 		super(11, (float) 0.75); // Hashtable parameters
 		this.groupSpecs = groupSpecs;
 		this.toGroupVarName = varName;
@@ -66,8 +65,7 @@ public class GroupedValueSequenceTable extends
 	}
 
 	public Iterator<String> iterate() {
-		Iterator<String> it = this.keySet().iterator();
-		return it;
+        return this.keySet().iterator();
 	}
 
 	/**
@@ -96,8 +94,7 @@ public class GroupedValueSequenceTable extends
 		String hashKey = keySequence.getHashKey();
 
 		if (this.containsKey(hashKey)) {
-			GroupedValueSequence currentGroup = (GroupedValueSequence) super
-					.get(hashKey);
+			GroupedValueSequence currentGroup = super.get(hashKey);
 			currentGroup.add(item);
 		} else {
 			// this group doesn't exists, then creates this group

@@ -49,19 +49,11 @@ public class LetExpr extends BindingExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
-    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[],
-            GroupSpec groupBy[]) throws XPathException {
-        // bv : Declare the grouping variable 
-        if (groupVarName != null){ 
-            LocalVariable groupVar = new LocalVariable(QName.parse(context, groupVarName, null));
-            groupVar.setSequenceType(sequenceType); 
-            context.declareVariableBinding(groupVar); 
-        }
+    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException {
         // bv : Declare grouping key variable(s) 
         if (groupBy != null) {
-            for (int i=0 ; i<groupBy.length ; i++){
-                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context,
-                    groupBy[i].getKeyVarName(),null)); 
+            for (int i = 0 ; i < groupBy.length ; i++) {
+                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, groupBy[i].getKeyVarName(),null));
                 groupKeyVar.setSequenceType(sequenceType);
                 context.declareVariableBinding(groupKeyVar);
             }
@@ -128,14 +120,10 @@ public class LetExpr extends BindingExpression {
         context.expressionStart(this);
         context.pushDocumentContext();
         try {
-            //bv : Declare grouping variables and initiate grouped sequence 
-            LocalVariable groupVar = null;
+            //bv : Declare grouping variables and initiate grouped sequence
             LocalVariable groupKeyVar[] = null;
             if (groupSpecs != null) {
-                groupedSequence = new GroupedValueSequenceTable(groupSpecs,toGroupVarName,context);
-                groupVar = new LocalVariable(QName.parse(context, groupVarName, null));
-                groupVar.setSequenceType(sequenceType);
-                context.declareVariableBinding(groupVar);
+                groupedSequence = new GroupedValueSequenceTable(groupSpecs, varName, context);
                 groupKeyVar = new LocalVariable[groupSpecs.length];
                 for (int i = 0 ; i < groupSpecs.length ; i++) {
                     groupKeyVar[i] = new LocalVariable(QName.parse(context,
@@ -148,12 +136,13 @@ public class LetExpr extends BindingExpression {
             LocalVariable mark = context.markLocalVariables(false);
             Sequence in;
             boolean fastOrderBy;
+            LocalVariable var;
             try {
                 // evaluate input sequence
                 in = inputSequence.eval(contextSequence, null);
                 clearContext(getExpressionId(), in);
                 // Declare the iteration variable
-                LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+                var = new LocalVariable(QName.parse(context, varName, null));
                 var.setSequenceType(sequenceType);
                 context.declareVariableBinding(var);
                 var.setValue(in);
@@ -214,10 +203,9 @@ public class LetExpr extends BindingExpression {
                             resultSequence = new ValueSequence();
                             ((ValueSequence)resultSequence).keepUnOrdered(unordered);
                         }
-                        ((BindingExpression)returnExpr).eval(null, null, resultSequence,groupedSequence);
+                        ((BindingExpression)returnExpr).eval(null, null, resultSequence, groupedSequence);
                     } else{
-                      Sequence toGroupSequence = context.resolveVariable(groupedSequence
-                          .getToGroupVarName()).getValue();
+                      Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue();
                       groupedSequence.addAll(toGroupSequence);
                     }
                 }
@@ -257,14 +245,16 @@ public class LetExpr extends BindingExpression {
                 context.popLocalVariables(mark, resultSequence);
             }
             //Special processing for groupBy : one return per group in groupedSequence 
-            if (groupSpecs!=null){ 
+            if (groupSpecs!=null) {
+                mark = context.markLocalVariables(false);
+                context.declareVariableBinding(var);
                 for (Iterator<String> it = groupedSequence.iterate(); it.hasNext();){ 
                     GroupedValueSequence currentGroup = groupedSequence.get(it.next()); 
                     context.proceed(this);
-                    //Set the grouping variable to current group nodes
-                    groupVar.setValue(currentGroup);
-                    groupVar.checkType();
-                    //Set value of grouping keys for the current group
+                    // set binding variable to current group
+                    var.setValue(currentGroup);
+                    var.checkType();
+                    // Set value of grouping keys for the current group
                     for (int i=0 ; i< groupKeyVar.length ; i ++) {
                         groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence());
                     }
@@ -272,6 +262,7 @@ public class LetExpr extends BindingExpression {
                     Sequence val = groupReturnExpr.eval(null); 
                     resultSequence.addAll(val);
                 }
+                context.popLocalVariables(mark);
            }
            if (orderSpecs != null && !fastOrderBy)
                 ((OrderedValueSequence)resultSequence).sort();

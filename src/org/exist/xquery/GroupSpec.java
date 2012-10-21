@@ -22,6 +22,7 @@
  */ 
 package org.exist.xquery; 
  
+import org.exist.util.Collations;
 import org.exist.xquery.util.ExpressionDumper;
  
 /** 
@@ -29,8 +30,9 @@ import org.exist.xquery.util.ExpressionDumper;
  * {@link org.exist.xquery.OrderSpec}). 
  *  
  * Used by {@link org.exist.xquery.BindingExpression}.  
- *  *   
- * @author boris 
+ *
+ * @author boris
+ * @author Wolfgang
  */ 
  
 public class GroupSpec { 
@@ -38,18 +40,29 @@ public class GroupSpec {
     @SuppressWarnings("unused")
 	private final XQueryContext context; 
     private final Expression expression; 
-    private String keyVarName = null; 
+    private String keyVarName = null;
+    private String collation = Collations.CODEPOINT;
      
-    public GroupSpec(XQueryContext context, Expression groupExpr, String keyVarName) { 
-        this.expression = groupExpr; 
+    public GroupSpec(XQueryContext context, Expression groupExpr, String keyVarName) {
+        if (groupExpr == null) {
+            // Spec: "If the GroupingSpec does not contain an ExprSingle, an implicit
+            // expression is created, consisting of a variable reference with the
+            // same name as the grouping variable."
+            groupExpr = new VariableReference(context, keyVarName);
+        }
+        this.expression = groupExpr;
         this.context = context; 
         this.keyVarName = keyVarName; 
     } 
-     
+
+    public void setCollation(String collation) {
+        this.collation = collation;
+    }
+
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException { 
         expression.analyze(contextInfo); 
-    } 
-     
+    }
+
     public Expression getGroupExpression() { 
         return expression; 
     } 
