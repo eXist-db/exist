@@ -152,15 +152,19 @@ public abstract class TestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		System.out.println("setUp ENTERED");
 		synchronized (database) {
 			if (testCollection == null) {
+				System.out.println("setUp no TS data");
 				loadTS();
+				System.out.println("setUp checking TS data");
 				testCollection = DatabaseManager.getCollection("xmldb:exist://"+getCollection(), "admin", "");
 				if (testCollection == null) {
 					Assert.fail("There is no Test Suite data at database");
 				}
 			}
 		}
+		System.out.println("setUp PASSED");
 	}
 	
 	protected abstract String getCollection();
