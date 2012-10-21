@@ -108,6 +108,15 @@
         </layout>
     </appender>
     
+    <appender name="exist.mdStorage" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/mdStorage.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
     <!--
     <appender name="exist.statistics" class="org.apache.log4j.RollingFileAppender">
         <param  name="File" value="${exist.home}/webapp/WEB-INF/logs/statistics.log"/>
@@ -243,7 +252,15 @@
         -->
     </category>
 
-
+    <!-- Metadata Storage extension -->
+    <category name="mdStrage" additivity="false">
+        <priority value="warn"/>
+        <appender-ref ref="exist.mdStorage"/>
+        <!--
+        <appender-ref ref="console"/>
+        -->
+    </category>
+    
     <!-- ========[ROOT logger]======== -->
     <root>
         <priority value="info"/>

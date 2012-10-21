@@ -24,6 +24,7 @@ package org.exist.storage.md;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
@@ -48,7 +49,9 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	
-	public final static String PREFIX = "md";
+    protected final static Logger LOG = Logger.getLogger(MDStorageManager.class);
+
+    public final static String PREFIX = "md";
 	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";
 
 	public final static String UUID = "uuid";
@@ -75,6 +78,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			Constructor<? extends MetaData> ctor = backend.getConstructor(Database.class);
 			md = ctor.newInstance(manager.getDatabase());
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new PermissionDeniedException(e);
 		}
 
