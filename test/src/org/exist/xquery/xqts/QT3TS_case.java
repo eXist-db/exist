@@ -56,10 +56,12 @@ public class QT3TS_case extends TestCase {
 
     @Override
     public void loadTS() throws Exception {
+    	System.out.println("loading QT3...");
         QT3TS_To_junit convertor = new QT3TS_To_junit();
         convertor.init();
         try {
         	convertor.load();
+        	System.out.println("loaded QT3.");
         } finally {
         	convertor.release();
         }
@@ -136,14 +138,14 @@ public class QT3TS_case extends TestCase {
     }
 
     protected void testCase(String file, String tcName) {
+    	System.out.println("test "+tcName);
     	
         DBBroker broker = null;
         Sequence result = null;
         XQuery xquery = null;
 
     	try {
-            XQueryService service = (XQueryService) testCollection.getService(
-                    "XQueryService", "1.0");
+            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
             String query = "declare namespace qt='"+QT_NS+"';\n"+
             "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
