@@ -23,6 +23,7 @@ package org.exist.replication.shared;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Container class for clustering messages.
@@ -151,16 +152,20 @@ public class eXistMessage {
             sb.append("DestinationPath='").append(resourceType.toString()).append("'  ");
         }
         
-        if(payload!=null){
+        if(payload!=null && payload.length>0){
             sb.append("PayloadSize='").append(payload.length).append("'  ");
         }
         
-        sb.append("###  ");
-                
-        for(String key : metaData.keySet()){
-            Object val=metaData.get(key);
-            if(val != null){
-                sb.append(key).append("='").append(val.toString()).append("'  ");
+        // Iterate over properties if present
+        Set<String> keys = metaData.keySet();
+        if(!keys.isEmpty()){
+            sb.append("###  ");
+
+            for(String key : keys){
+                Object val=metaData.get(key);
+                if(val != null){
+                    sb.append(key).append("='").append(val.toString()).append("'  ");
+                }
             }
         }
         
