@@ -561,6 +561,7 @@
             <classpath refid="classpath.aspectj"/>
             <classpath refid="classpath.jetty"/>
             <classpath refid="classpath.junit"/>
+            <classpath refid="classpath.test-libs"/>
         </java>
         <echo>JUnit tests generated.</echo>
     </target>
