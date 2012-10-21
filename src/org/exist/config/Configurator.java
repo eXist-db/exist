@@ -47,11 +47,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -59,6 +57,7 @@ import org.exist.LifeCycle;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.*;
+import org.exist.config.annotation.ConfigurationFieldSettings.SettingKey;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
@@ -229,12 +228,17 @@ public class Configurator {
                     value = configuration.getProperty(property);
                 } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
                     if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
-                        String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
-                        int radix = 10;
-                        if (settings.startsWith("radix=")) {
-                            radix = Integer.valueOf(settings.substring(6));
+                        final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+                        final SettingKey settingKey = SettingKey.forSettings(settings);
+                        
+                        if (settingKey == SettingKey.RADIX) {
+                            final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
+                            value = Integer.valueOf(configuration.getProperty(property), radix);
+                        } else if(settingKey == SettingKey.OCTAL_STRING) {
+                            value = Integer.valueOf(configuration.getProperty(property), 8);
+                        } else {
+                            value = Integer.valueOf(configuration.getProperty(property));
                         }
-                        value = Integer.valueOf( configuration.getProperty(property), radix );
                     } else {
                         value = configuration.getPropertyInteger(property);
                     }
@@ -617,17 +621,21 @@ public class Configurator {
             return field.get(instance).toString();
         } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
             if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
-                String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
-                int radix = 10;
-                if (settings.startsWith("radix=")) {
+                final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
+                final SettingKey settingKey = SettingKey.forSettings(settings);
+                
+                if(settingKey == SettingKey.RADIX) {
                     try {
-                        radix = Integer.valueOf(settings.substring(6));
+                        final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
+                        return Integer.toString((Integer)field.get(instance), radix);
                     } catch (Exception e) {
                         //UNDERSTAND: ignore, set back to default or throw error?
-                        radix = 10;
                     }
+                } else if(settingKey == SettingKey.OCTAL_STRING) {
+                    return "0" + Integer.toString((Integer)field.get(instance), 8);
+                } else {
+                    return Integer.toString((Integer)field.get(instance));
                 }
-                return Integer.toString((Integer)field.get(instance), radix);
             } else {
                 return field.get(instance).toString();
             }

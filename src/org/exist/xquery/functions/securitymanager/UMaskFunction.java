@@ -1,0 +1,100 @@
+package org.exist.xquery.functions.securitymanager;
+
+import org.exist.EXistException;
+import org.exist.dom.QName;
+import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
+import org.exist.storage.DBBroker;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+
+/**
+ *
+ * @author Adam Retter <adam.retter@googlemail.com>
+ */
+public class UMaskFunction extends BasicFunction {
+    
+    private final static QName qnGetUMask = new QName("get-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnSetUMask = new QName("set-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            qnGetUMask,
+            "Gets the umask of a Users Account.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve the umask for.")
+            },
+            new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_MORE, "The umask of the users account expressed as an interger")
+        ),
+        new FunctionSignature(
+            qnSetUMask,
+            "Sets the umask of a Users Account.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to set the umask for."),
+                new FunctionParameterSequenceType("umask", Type.INT, Cardinality.EXACTLY_ONE, "The umask to set as an integer.")
+            },
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        )
+    };
+    
+     public UMaskFunction(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        final DBBroker broker = getContext().getBroker();
+        final Subject currentUser = broker.getSubject();
+        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+            throw new XPathException("You must be an authenticated user");
+        }
+        
+        final String username = args[0].getStringValue();
+        
+        if(isCalledAs(qnGetUMask.getLocalName())) {
+            return getUMask(broker, username);
+        } else if(isCalledAs(qnSetUMask.getLocalName())) {
+            final int umask = ((IntegerValue)args[1].itemAt(0)).getInt();
+            setUMask(broker, currentUser, username, umask);
+            return Sequence.EMPTY_SEQUENCE;
+        } else {
+            throw new XPathException("Unknown function");
+        }
+    }
+    
+    private IntegerValue getUMask(final DBBroker broker, final String username) {
+       final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
+       final Account account = securityManager.getAccount(username);
+       return new IntegerValue(account.getUserMask());
+    }
+    
+    private void setUMask(final DBBroker broker, final Subject currentUser, final String username, final int umask) throws XPathException {
+        if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(username)) {
+            throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to set the users umask."));
+        }
+        
+        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
+        final Account account = securityManager.getAccount(username);
+        
+        account.setUserMask(umask);
+        
+        try {
+            securityManager.updateAccount(account);
+        } catch(PermissionDeniedException pde) {
+            throw new XPathException(this, pde);
+        } catch(EXistException ee) {
+            throw new XPathException(this, ee);
+        }
+    }
+}

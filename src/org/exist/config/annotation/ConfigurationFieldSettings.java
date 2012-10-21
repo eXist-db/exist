@@ -31,6 +31,46 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 public @interface ConfigurationFieldSettings {
 
-	String value();
-	
+    public final static String OCTAL_STRING_KEY = "octalString";
+    public final static String RADIX_KEY = "radix";
+
+    public final static String KEY_VALUE_SEP = "=";
+
+    String value();
+
+    public enum SettingKey {
+        OCTAL_STRING(OCTAL_STRING_KEY),
+        RADIX(RADIX_KEY);
+
+        private final String key;
+        SettingKey(final String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String extractValueFromSettings(final String settings) {
+              return settings.substring(getKey().length() + KEY_VALUE_SEP.length());
+        }
+
+        public static SettingKey forSettings(final String settings) {
+            if(settings.contains(KEY_VALUE_SEP)) {
+                return forKey(settings.substring(0, settings.indexOf(KEY_VALUE_SEP)));
+            } else {
+                return forKey(settings);
+            }
+        }
+
+        public static SettingKey forKey(final String key) {
+            for(final SettingKey settingKey : SettingKey.values()) {
+                if(settingKey.getKey().equals(key)) {
+                    return settingKey;
+                }
+            } 
+
+            throw new IllegalArgumentException("No such Setting for key: " + key);
+        }
+    }
 }

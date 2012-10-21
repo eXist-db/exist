@@ -27,11 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.config.annotation.ConfigurationFieldSettings;
+import static org.exist.config.annotation.ConfigurationFieldSettings.OCTAL_STRING_KEY;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
@@ -52,15 +53,18 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	@ConfigurationFieldAsElement("expired")
 	private boolean accountExpired = false;
 	
-//	@ConfigurationFieldAsElement("credentials-expired")
-    private boolean credentialsExpired = false;
+        //@ConfigurationFieldAsElement("credentials-expired")
+        private boolean credentialsExpired = false;
 	
-    @ConfigurationFieldAsElement("enabled")
-    private boolean enabled = true;
+        @ConfigurationFieldAsElement("enabled")
+        private boolean enabled = true;
+        
+        @ConfigurationFieldAsElement("umask")
+        @ConfigurationFieldSettings(OCTAL_STRING_KEY)
+        private int umask = Permission.DEFAULT_UMASK;
 
-
-    @ConfigurationFieldAsElement("metadata")
-    private Map<String, String> metadata = new HashMap<String, String>();
+        @ConfigurationFieldAsElement("metadata")
+        private Map<String, String> metadata = new HashMap<String, String>();
     
 	protected Credential _cred = null;
 
@@ -336,12 +340,14 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             throw new PermissionDeniedException("User '" + user.getName() + "' is not allowed to modify account '" + getName() + "'");
         }
     }
+    
+    @Override
+    public void setUserMask(final int umask) {
+        this.umask = umask;
+    }
 
     @Override
     public int getUserMask() {
-        
-        //TODO make this configurable
-        
-        return Permission.DEFAULT_UMASK;
+        return umask;
     }
 }

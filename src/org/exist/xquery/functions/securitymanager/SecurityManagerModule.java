@@ -46,6 +46,9 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
         new FunctionDef(FindUserFunction.signatures[2], FindUserFunction.class),
 
+        new FunctionDef(UMaskFunction.signatures[0], UMaskFunction.class),
+        new FunctionDef(UMaskFunction.signatures[1], UMaskFunction.class),
+        
         new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
         new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
         new FunctionDef(SetAccountMetadataFunction.signatures[0], SetAccountMetadataFunction.class),

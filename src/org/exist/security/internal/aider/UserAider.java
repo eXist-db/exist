@@ -52,6 +52,7 @@ public class UserAider implements Account {
     private String passwordDigest = null;
     private Group defaultRole = null;
     private Map<String, Group> roles = new LinkedHashMap<String, Group>();
+    private int umask = Permission.DEFAULT_UMASK;
 
     public UserAider(final int id) {
         this(id, null, null);
@@ -324,6 +325,11 @@ public class UserAider implements Account {
 
     @Override
     public int getUserMask() {
-        return Permission.DEFAULT_UMASK;
+        return umask;
+    }
+    
+    @Override
+    public void setUserMask(final int umask) {
+        this.umask = umask;
     }
 }
