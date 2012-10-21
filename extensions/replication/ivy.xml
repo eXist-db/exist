@@ -4,7 +4,7 @@
     $Id$
 -->
 <ivy-module version="2.0">
-    <info organisation="org.exist" module="tika"/>
+    <info organisation="org.exist" module="replication"/>
     <dependencies>
         <!--<dependency org="org.apache.activemq" name="activemq-core" rev="5.6.0"  conf="*->*,!sources,!javadoc">
             
@@ -47,7 +47,7 @@
             <exclude module="geronimo-annotation_1.0_spec"/>
  
         </dependency>-->
-        <dependency org="org.apache.activemq" name="activemq-all" rev="5.6.0" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.activemq" name="activemq-all" rev="5.7.0" conf="*->*,!sources,!javadoc"/>
         
     </dependencies>
 </ivy-module>
