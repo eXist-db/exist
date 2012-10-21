@@ -136,6 +136,63 @@ public class QT3TS_case extends TestCase {
 		}
 	    return enviroments;
     }
+    
+    private Sequence getEnviroment(String file, String name) {
+    	Sequence enviroment = null;
+    	
+		DBBroker broker = null;
+	    try {
+	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
+	        XQuery xquery = broker.getXQueryService();
+	
+	        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+	        
+	        String query = "declare namespace qt='"+QT_NS+"';\n"+
+	        "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
+	        "let $tc := $testCases//qt:environment[@name eq '"+name+"']\n"+
+	        "let $catalog := xmldb:document('/db/QT3/catalog.xml')\n"+
+	        "let $cat := $catalog//qt:environment[@name eq '"+name+"']\n"+
+	        "return ($tc, $cat)";
+
+	        Sequence result = xquery.execute(query, null, AccessContext.TEST);
+	        
+	        String col = XmldbURI.create("/db/QT3/"+file).removeLastSegment().toString();
+	
+	        for (NodeProxy node : result.toNodeSet()) {
+	        	ElementImpl el = (ElementImpl) node.getNode();
+
+                String _name = el.getAttribute("name");
+                if (_name == null)
+                	continue;
+                
+                col = el.getDocument().getURI().removeLastSegment().toString();
+                
+                NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
+                for (int j = 0; j < sources.getLength(); j++) {
+                	ElementImpl source = (ElementImpl) sources.item(j);
+                	
+                	String role = source.getAttribute("role");
+                    Assert.assertEquals(".", role);
+
+                	String url = source.getAttribute("file");
+                    Assert.assertFalse("".equals(url));
+//                    Assert.assertFalse(enviroments.containsKey(name));
+                    Assert.assertNull(enviroment);
+                    try {
+                    	enviroment = enviroment(col+"/"+url);
+					} catch (Exception e) {
+		                Assert.fail(e.getMessage());
+					}
+                }
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.release(broker);
+		}
+	    return enviroment;
+    }
+
 
     protected void testCase(String file, String tcName) {
     	System.out.println("test "+tcName);
@@ -190,7 +247,7 @@ public class QT3TS_case extends TestCase {
                             	continue;
                             
                             Assert.assertNull(contextSequence);
-							contextSequence = enviroments(file).get(ref);
+							contextSequence = getEnviroment(file, ref);
                             
                         } else if (nodeName.equals("result")) {
                             ElementImpl el = ((ElementImpl) child);
@@ -288,7 +345,7 @@ public class QT3TS_case extends TestCase {
 	        for (int i = 0; i < expected.getLength(); i++) {
 	        	final Node node = expected.item(i);
 	        	String expect = node.getNodeValue();
-	        	if (expect.startsWith("\"") && expect.endsWith("\""))
+	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'")))
 	        		//? check is it xs:string ?
 		        	Assert.assertEquals(
 	        			expect.substring(1, expect.length()-1), 
