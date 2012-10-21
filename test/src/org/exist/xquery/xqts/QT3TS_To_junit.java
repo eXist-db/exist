@@ -85,6 +85,10 @@ public class QT3TS_To_junit {
     public void startup() throws Exception {
 		Configuration configuration = new Configuration();
 		BrokerPool.configure(1, 10, configuration);
+		init();
+    }
+
+    public void init() throws Exception {
 		db = BrokerPool.getInstance();
 		
 		broker = db.get(db.getSecurityManager().getSystemSubject());
@@ -106,7 +110,7 @@ public class QT3TS_To_junit {
         System.out.println("database was shutdown");
     }
 
-    private void load() throws Exception {
+    public void load() throws Exception {
         File folder = new File(QT3TS_case.FOLDER);
         
         File[] files = folder.listFiles();
@@ -128,7 +132,7 @@ public class QT3TS_To_junit {
     }
 
     private void loadDirectory(File folder, Collection col) throws Exception {
-    	System.out.println("******* loadDirectory "+folder.getName());
+    	//System.out.println("******* loadDirectory "+folder.getName());
     	if (!(folder.exists() && folder.canRead()))
     		return;
     	
@@ -149,7 +153,7 @@ public class QT3TS_To_junit {
     }
 
     private void loadFile(File file, Collection col) throws Exception {
-    	System.out.println("******* loadFile "+file.getName());
+    	//System.out.println("******* loadFile "+file.getName());
     	
     	if (file.getName().endsWith(".html") 
     			|| file.getName().endsWith(".xsd")
@@ -183,7 +187,7 @@ public class QT3TS_To_junit {
 
 			txManager.commit(txn);
         }
-    	System.out.println(file);
+    	//System.out.println(file);
     }
 
     private MimeTable mtable = null;
