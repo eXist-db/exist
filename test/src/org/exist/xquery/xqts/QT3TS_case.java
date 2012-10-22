@@ -45,6 +45,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -300,6 +301,7 @@ public class QT3TS_case extends TestCase {
             	
                 Assert.fail("expected error code '"+extectedError+"' get '"+e.getMessage()+"'");
             } catch (Exception e) {
+            	e.printStackTrace();
                 Assert.fail(e.getMessage());
             } finally {
             	pool.release(broker);
@@ -325,6 +327,7 @@ public class QT3TS_case extends TestCase {
 	        		checkResults(node.getLocalName(), node.getChildNodes(), result);
 	        		return;
 	        	} catch (Throwable e) {
+	        		e.printStackTrace();
 	        		sb.append(e.getMessage()).append("\n");
 				}
 	        }
@@ -370,19 +373,25 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("not implemented 'assert-deep-eq'", false);
 		
 		} else if ("assert-true".equals(type)) {
-			Assert.assertTrue(result.effectiveBooleanValue());
+			Assert.assertTrue("expecting true get false", result.effectiveBooleanValue());
 
 		} else if ("assert-false".equals(type)) {
-			Assert.assertFalse(result.effectiveBooleanValue());
+			Assert.assertFalse("expecting false get true", result.effectiveBooleanValue());
 
 		} else if ("assert-string-value".equals(type)) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < result.getItemCount(); i++) {
+				sb.append(result.itemAt(i).getStringValue());
+				if (i+1 !=  result.getItemCount())
+					sb.append(" ");
+			}
 	        for (int i = 0; i < expected.getLength(); i++) {
 	        	final Node node = expected.item(i);
 	        	String expect = node.getNodeValue();
 
 	        	Assert.assertEquals(
         			expect, 
-        			result.itemAt(i).getStringValue()
+        			sb.toString()
     			); 
 	        }
 
@@ -404,9 +413,29 @@ public class QT3TS_case extends TestCase {
 		} else if ("assert-xml".equals(type)) {
 	        for (int i = 0; i < expected.getLength(); i++) {
 	        	final Node exNode = expected.item(i);
+	        	String exString;
+	        	if (exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+	        		Attr attr = (Attr)exNode;
+	        		if (attr.getName().equals("file")) {
+                    	Sequence seq = enviroment(
+                    			XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue()
+                			);
+                    	StringBuilder sb = new StringBuilder();
+                    	for (int j = 0; j < seq.getItemCount(); j++) {
+                    		sb.append(toString(seq.itemAt(j)));
+                    	}
+                    	exString = sb.toString();
+
+	        		} else {
+	        			Assert.assertTrue("unknown attribute '"+attr.getName()+"'", false);
+	        			return;
+	        		}
+	        	} else {
+	        		exString = exNode.getNodeValue();
+	        	}
 	        	final Item acNode = result.itemAt(i);
 	        	Assert.assertTrue(
-        			diffXML(exNode.getNodeValue(), toString(acNode))
+        			diffXML(exString, toString(acNode))
     			);
 	        }
 
@@ -431,11 +460,14 @@ public class QT3TS_case extends TestCase {
     
 
 	private boolean diffXML(String expResult, String res) throws SAXException, IOException {
-		res = res.replaceAll("\n", "");
-		res = res.replaceAll("\t", "");
-		expResult = expResult.replaceAll("\n", "");
-		expResult = expResult.replaceAll("\t", "");
+//		res = res.replaceAll("\n", "");
+//		res = res.replaceAll("\t", "");
+//		expResult = expResult.replaceAll("\n", "");
+//		expResult = expResult.replaceAll("\t", "");
 		
+//		System.out.println(expResult);
+//		System.out.println(res);
+
 		Diff diff = new Diff(expResult.trim(), res);
         if (!diff.identical()) {
         	System.out.println("expected:");
