@@ -273,6 +273,7 @@ public class QT3TS_To_junit {
         		"    /* "+testName+" */\n" +
                 "    @Test\n");
             if (adoptTestName.contains("fold_left_008") 
+        		||adoptTestName.contains("fold_left_020")
         		||adoptTestName.contains("fn_deep_equal_node_args_3")
         		||adoptTestName.contains("fn_deep_equal_node_args_4")
         		||adoptTestName.contains("fn_deep_equal_node_args_5")
