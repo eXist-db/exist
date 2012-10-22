@@ -37,7 +37,6 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xqj.Marshaller;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -62,6 +61,8 @@ public class QT3TS_case extends TestCase {
 	protected static final String FOLDER = "test/external/QT3-test-suite/";
 	protected static final String QT_NS = "http://www.w3.org/2010/09/qt-fots-catalog";
     protected static final XmldbURI QT3_URI = XmldbURI.DB.append("QT3");
+    
+    protected static final String xquery3declaration = "xquery version \"3.0\";\n";
 
     @Override
     public void loadTS() throws Exception {
@@ -288,7 +289,7 @@ public class QT3TS_case extends TestCase {
 
                 broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
                 
-                result = xquery.execute(caseScript, contextSequence, AccessContext.TEST);
+                result = xquery.execute(xquery3declaration+caseScript, contextSequence, AccessContext.TEST);
 
                 for (int i = 0; i < expected.getLength(); i++) {
                 	Node node = expected.item(i);
