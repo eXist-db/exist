@@ -276,6 +276,7 @@ public class QT3TS_To_junit {
         		||adoptTestName.contains("fn_deep_equal_node_args_3")
         		||adoptTestName.contains("fn_deep_equal_node_args_4")
         		||adoptTestName.contains("fn_deep_equal_node_args_5")
+        		||adoptTestName.contains("fold_right_013")
             		) {
                 out.write("    @Ignore\n");
             }
