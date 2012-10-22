@@ -21,25 +21,33 @@
  */
 package org.exist.xquery.xqts;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Properties;
 
 import junit.framework.Assert;
 
+import org.custommonkey.xmlunit.Diff;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xqj.Marshaller;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
@@ -394,7 +402,13 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("not implemented 'assert-empty'", false);
 
 		} else if ("assert-xml".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-xml'", false);
+	        for (int i = 0; i < expected.getLength(); i++) {
+	        	final Node exNode = expected.item(i);
+	        	final Item acNode = result.itemAt(i);
+	        	Assert.assertTrue(
+        			diffXML(exNode.getNodeValue(), toString(acNode))
+    			);
+	        }
 
 		} else if ("error".equals(type)) {
 			Assert.assertTrue("not implemented 'error'", false);
@@ -403,6 +417,42 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("unknown '"+type+"'", false);
 		}
     }
+    
+	private static final Properties properties = new Properties();
+
+	private String toString(Item item) throws SAXException {
+        StringWriter writer = new StringWriter();
+        SAXSerializer serializer = new SAXSerializer(writer, properties);
+        item.toSAX(pool.getActiveBroker(), serializer, properties);
+        String serialized = writer.toString();
+        //System.out.println(serialized);
+        return serialized;
+    }
+    
+
+	private boolean diffXML(String expResult, String res) throws SAXException, IOException {
+		res = res.replaceAll("\n", "");
+		res = res.replaceAll("\t", "");
+		expResult = expResult.replaceAll("\n", "");
+		expResult = expResult.replaceAll("\t", "");
+		
+		Diff diff = new Diff(expResult.trim(), res);
+        if (!diff.identical()) {
+        	System.out.println("expected:");
+        	System.out.println(expResult);
+        	System.out.println("get:");
+        	System.out.println(res);
+        	System.out.println(diff.toString());
+            return false;
+        }
+        
+        return true;
+	}
+    
+	private void diffXML(Node exNode, Node acNode) {
+		Assert.assertTrue("expected: "+exNode+" actual:"+acNode, exNode.isEqualNode(acNode));
+	}
+
 
     @Override
 	protected String getCollection() {
