@@ -46,25 +46,39 @@ import org.exist.xquery.value.Type;
  */
 public class FunStringJoin extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("string-join", Function.BUILTIN_FUNCTION_NS),
+            "Returns a xs:string created by concatenating the members of the " +
+            "$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
+            "string, then the members of the sequence are concatenated without a separator. " +
+            "The effect of calling the single-argument version of this function is the same as calling the " +
+            "two-argument version with $separator set to a zero-length string.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE,
+                        "The sequence to be joined to form the string. If it is empty, " +
+                                "a zero-length string is returned.")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string")),
 		new FunctionSignature(
-				new QName("string-join", Function.BUILTIN_FUNCTION_NS),
-				"Returns a xs:string created by concatenating the members of the " +
-				"$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
-				"string, then the members of the sequence are concatenated without a separator.",
-				new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE,
-                            "The sequence to be joined to form the string. If it is empty, " +
-                            "a zero-length string is returned."),
-						new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "The separator to be placed in the string between the items of $arg")
-				},
-				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"));
+            new QName("string-join", Function.BUILTIN_FUNCTION_NS),
+            "Returns a xs:string created by concatenating the members of the " +
+            "$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
+            "string, then the members of the sequence are concatenated without a separator.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_MORE,
+                    "The sequence to be joined to form the string. If it is empty, " +
+                    "a zero-length string is returned."),
+                new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "The separator to be placed in the string between the items of $arg")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"))
+    };
 	
 	/**
 	 *
 	 */
 
-	public FunStringJoin(XQueryContext context) {
+	public FunStringJoin(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -77,11 +91,14 @@ public class FunStringJoin extends BasicFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-         }      
+        }
         
-		String sep = args[1].getStringValue();
-		if(sep.length() == 0)
-			sep = null;
+		String sep = null;
+        if (getArgumentCount() == 2) {
+            sep = args[1].getStringValue();
+            if(sep.length() == 0)
+                sep = null;
+        }
 		StringBuilder out = new StringBuilder();
 		Item next;
 		boolean gotOne = false;
@@ -97,7 +114,7 @@ public class FunStringJoin extends BasicFunction {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         
-        return result;         
+        return result;
 	}
 
 }
