@@ -268,14 +268,19 @@ public class QT3TS_To_junit {
         	
         	String testName = attrs.getNamedItem("name").getNodeValue();
         	
+        	String adoptTestName = adoptString(testName);
             out.write(
         		"    /* "+testName+" */\n" +
                 "    @Test\n");
-            if (adoptString(testName).contains("fold_left_008")) {
+            if (adoptTestName.contains("fold_left_008") 
+        		||adoptTestName.contains("fn_deep_equal_node_args_3")
+        		||adoptTestName.contains("fn_deep_equal_node_args_4")
+        		||adoptTestName.contains("fn_deep_equal_node_args_5")
+            		) {
                 out.write("    @Ignore\n");
             }
             out.write(
-        		"    public void test_"+adoptString(testName)+"() {\n" +
+        		"    public void test_"+adoptTestName+"() {\n" +
                 "        testCase(file, \""+testName+"\");\n"+
                 "    }\n\n");
         }
