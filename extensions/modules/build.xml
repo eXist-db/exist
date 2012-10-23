@@ -274,6 +274,7 @@
             <exclude name="org/exist/xquery/modules/xslfo/**" unless="${include.module.xslfo}"/>
             <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="${include.module.xmlcalabash}"/>
             <exclude name="org/exist/xquery/modules/expathrepo/**" unless="${include.module.expathrepo}"/>
+            <exclude name="org/exist/xquery/modules/process/**" unless="${include.module.process}"/>
         </javac>
     </target>
 
