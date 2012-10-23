@@ -348,10 +348,21 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                 builder.addAttribute( new QName( "type", null, null ), "xml" );
                 responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );
             } catch(SAXException se) {
-                //could not parse to xml
-                logger.info("Request for URI '" + method.getURI().toString() + "' Could not parse http response content as XML: " + se.getMessage(), se);
+                // could not parse to xml
+                // not an error in itself, it will be treated either as HTML,
+                // text or binary here below
+                String msg = "Request for URI '"
+                    + method.getURI().toString()
+                    + "' Could not parse http response content as XML (will try html, text or fallback to binary): "
+                    + se.getMessage();
+                if ( logger.isDebugEnabled() ) {
+                    logger.debug(msg, se);
+                }
+                else {
+                    logger.info(msg);
+                }
             } catch(IOException ioe) {
-                String msg = "Request for URI '" + method.getURI().toString() + "' Could not parse http response content as XML: " + ioe.getMessage();
+                String msg = "Request for URI '" + method.getURI().toString() + "' Could not read http response content: " + ioe.getMessage();
                 logger.error(msg, ioe);
                 throw new XPathException(msg, ioe);
             }
