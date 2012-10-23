@@ -226,7 +226,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         for( int i = 0; i < attrCount; i++ ) {
             org.exist.dom.QName qname = doc.attrName[attrStart + i];
 
-            if( namespaceURI.equals( qname.getNamespaceURI() ) && localName.equals( qname.getLocalName() ) ) {
+            if( (namespaceURI == null || namespaceURI.equals( qname.getNamespaceURI() )) && localName.equals( qname.getLocalName() ) ) {
                 return( doc.attrValue[attrStart + i] );
             }
         }
