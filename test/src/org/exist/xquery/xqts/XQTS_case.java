@@ -43,6 +43,7 @@ import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -67,6 +68,8 @@ public class XQTS_case extends TestCase {
 
     private static Map<String, String> sources = null;
     private static Map<String, String> moduleSources = null;
+    
+    protected static final XmldbURI XQTS_URI = XmldbURI.DB.append("XQTS");    
 
     @Override
     public void loadTS() throws Exception {
@@ -477,6 +480,6 @@ public class XQTS_case extends TestCase {
 
 	@Override
 	protected String getCollection() {
-		return "XQTS";
+		return XQTS_URI.toString();
 	}
 }
