@@ -24,6 +24,8 @@ package org.exist.protocolhandler.embedded;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 
 import org.apache.log4j.Logger;
@@ -42,8 +44,8 @@ public class EmbeddedInputStream extends InputStream {
     
     private final static Logger logger = Logger.getLogger(EmbeddedInputStream.class);
     
-    private BlockingInputStream  bis;
-    private BlockingOutputStream bos;
+    private PipedInputStream bis;
+    private PipedOutputStream bos;
     private EmbeddedDownloadThread rt;
     
     /**
@@ -52,8 +54,7 @@ public class EmbeddedInputStream extends InputStream {
      * @param xmldbURL Location of document in database.
      * @throws MalformedURLException Thrown for illegalillegal URLs.
      */
-    public EmbeddedInputStream(XmldbURL xmldbURL) throws MalformedURLException {
-        
+    public EmbeddedInputStream(XmldbURL xmldbURL) throws IOException {
         this(null, xmldbURL);
     }
 
@@ -63,12 +64,12 @@ public class EmbeddedInputStream extends InputStream {
      * @param xmldbURL Location of document in database.
      * @throws MalformedURLException Thrown for illegalillegal URLs.
      */
-    public EmbeddedInputStream(BrokerPool brokerPool, XmldbURL xmldbURL) throws MalformedURLException {
+    public EmbeddedInputStream(BrokerPool brokerPool, XmldbURL xmldbURL) throws IOException {
 
         logger.debug("Initializing EmbeddedInputStream");
 
-        bis = new BlockingInputStream();
-        bos = bis.getOutputStream();
+        bis = new PipedInputStream(2048);
+        bos = new PipedOutputStream(bis);
 
         rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
 
