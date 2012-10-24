@@ -586,7 +586,7 @@
 
             <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${junit.reports}/src">
-                    <include name="org/exist/xquery/xqts/qt3/*.java"/>
+                    <include name="org/exist/xquery/xqts/qt3/**/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
