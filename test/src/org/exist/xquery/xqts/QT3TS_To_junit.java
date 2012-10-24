@@ -247,13 +247,22 @@ public class QT3TS_To_junit {
 //</result>
 //</test-case>
     private void testCases(File src, String file, String group, Sequence results) throws Exception {
-    	String className = "InMemory_"+adoptString(group);
-        File jTest = new File(src.getAbsolutePath()+sep+className+".java");
+    	String className = adoptString(group);
+    	
+    	StringBuilder subPath = new StringBuilder(src.getAbsolutePath());
+    	StringBuilder _package_ = new StringBuilder();//adoptString(group);
+    	String[] strs = file.split("/");
+    	for (int i = 0; i < strs.length - 1; i++) {
+    		subPath.append(sep).append(strs[i]);
+    		_package_.append(".").append(strs[i]);
+    	}
+    	File folder = new File(subPath.toString());
+    	folder.mkdirs();
+    	
+        File jTest = new File(folder, className+".java");
         FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
         BufferedWriter out = new BufferedWriter(fstream);
         
-        String _package_ = "";//adoptString(group);
-
         out.write("package org.exist.xquery.xqts.qt3"+_package_+";\n\n"+
             "import org.exist.xquery.xqts.QT3TS_case;\n" +
             "import org.junit.*;\n\n" +
