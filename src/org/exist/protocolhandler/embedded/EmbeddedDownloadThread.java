@@ -23,6 +23,7 @@
 package org.exist.protocolhandler.embedded;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
 
@@ -40,7 +41,7 @@ public class EmbeddedDownloadThread extends Thread {
     private final static Logger logger = Logger.getLogger(EmbeddedDownloadThread.class);
     
     private XmldbURL xmldbURL;
-    private BlockingOutputStream bos;
+    private OutputStream bos;
     private BrokerPool brokerPool;
     
     /**
@@ -49,7 +50,7 @@ public class EmbeddedDownloadThread extends Thread {
      * @param url Document location in database.
      * @param bos Stream to which the document is written.
      */
-    public EmbeddedDownloadThread(XmldbURL url, BlockingOutputStream bos) {
+    public EmbeddedDownloadThread(XmldbURL url, OutputStream bos) {
         xmldbURL = url;
         this.bos = bos;
     }
@@ -60,7 +61,7 @@ public class EmbeddedDownloadThread extends Thread {
      * @param url Document location in database.
      * @param bos Stream to which the document is written.
      */
-    public EmbeddedDownloadThread(BrokerPool brokerPool, XmldbURL url, BlockingOutputStream bos) {
+    public EmbeddedDownloadThread(BrokerPool brokerPool, XmldbURL url, OutputStream bos) {
         xmldbURL = url;
         this.bos = bos;
         this.brokerPool=brokerPool;
@@ -83,7 +84,7 @@ public class EmbeddedDownloadThread extends Thread {
             
         } finally {
             try { // NEEDED!
-                bos.close(exception);
+                bos.close();
             } catch (IOException ex) {
                 logger.debug(ex);
             }
