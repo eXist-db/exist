@@ -24,7 +24,9 @@ package org.exist.xquery.xqts;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -218,7 +220,7 @@ public class QT3TS_case extends TestCase {
     	try {
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
-            String extectedError = null;
+            Set<String> extectedError = new HashSet<String>();
             try {
                 broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 xquery = broker.getXQueryService();
@@ -297,18 +299,13 @@ public class QT3TS_case extends TestCase {
 	                            
 	                        } else if (nodeName.equals("result")) {
 	                            ElementImpl el = ((ElementImpl) child);
+	                            
+	                            possibleErrors(el, extectedError);
 	
-	                            //check for 'error' element
-	                            NodeList errors = el.getElementsByTagNameNS(QT_NS, "error");
-	                            for (int j = 0; j < errors.getLength(); j++) {
-	                            	ElementImpl error = (ElementImpl) errors.item(j);
-	
-	                                //check error for 'code' attribute
-	                            	String code = error.getAttribute("code");
-	                            	if (code != null && !code.isEmpty()) {
-	                                	Assert.assertNull(extectedError);
-	                                	extectedError = code;
-	                                }
+	                            NodeList anyOf = el.getElementsByTagNameNS(QT_NS, "any-of");
+	                            for (int j = 0; j < anyOf.getLength(); j++) {
+	                            	el = (ElementImpl) anyOf.item(j);
+		                            possibleErrors(el, extectedError);
 	                            }
 	
 	                            expected = el.getChildNodes();
@@ -328,7 +325,7 @@ public class QT3TS_case extends TestCase {
                 }
             } catch (XPathException e) {
             	ErrorCode errorCode = e.getErrorCode();
-            	if (errorCode != null && errorCode.getErrorQName().getLocalName().equals(extectedError))
+            	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
             		return;
             	
                 Assert.fail("expected error code '"+extectedError+"' get '"+e.getMessage()+"'");
@@ -341,6 +338,19 @@ public class QT3TS_case extends TestCase {
         } catch (XMLDBException e) {
             Assert.fail(e.toString());
 		} 
+    }
+    
+    private void possibleErrors(ElementImpl el, Set<String> extectedError) {
+        NodeList errors = el.getElementsByTagNameNS(QT_NS, "error");
+        for (int j = 0; j < errors.getLength(); j++) {
+        	ElementImpl error = (ElementImpl) errors.item(j);
+
+            //check error for 'code' attribute
+        	String code = error.getAttribute("code");
+        	if (code != null && !code.isEmpty()) {
+            	extectedError.add(code);
+            }
+        }
     }
     
     private void checkResults(String type, NodeList expected, Sequence result) throws Exception {
