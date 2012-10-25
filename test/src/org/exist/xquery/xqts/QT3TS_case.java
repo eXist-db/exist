@@ -31,6 +31,7 @@ import junit.framework.Assert;
 import org.custommonkey.xmlunit.Diff;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
@@ -38,6 +39,9 @@ import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.Variable;
+import org.exist.xquery.VariableImpl;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -214,82 +218,109 @@ public class QT3TS_case extends TestCase {
     	try {
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
-            String query = "declare namespace qt='"+QT_NS+"';\n"+
-            "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
-            "let $tc := $testCases//qt:test-case[@name eq \""+tcName+"\"]\n"+
-            "return $tc";
-
-            ResourceSet results = service.query(query);
-            
-            Assert.assertFalse("", results.getSize() != 1);
-
-            ElementImpl TC = (ElementImpl) ((XMLResource) results.getResource(0)).getContentAsDOM();
-
-            Sequence contextSequence = null;
-            
-            NodeList expected = null;
             String extectedError = null;
-            String nodeName = "";
-
-            //compile & evaluate
-            String caseScript = null;
-
-            NodeList childNodes = TC.getChildNodes();
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node child = childNodes.item(i);
-                switch (child.getNodeType()) {
-                    case Node.ATTRIBUTE_NODE:
-//                        String name = ((Attr)child).getName();
-//                        if (name.equals("scenario"))
-//                            scenario = ((Attr)child).getValue();
-                        break;
-                    case Node.ELEMENT_NODE:
-                    	nodeName = ((ElementImpl) child).getLocalName();
-                        if (nodeName.equals("test")) {
-                            ElementImpl el = ((ElementImpl) child);
-                            caseScript = el.getNodeValue();
-                        
-                        } else if (nodeName.equals("environment")) {
-                            ElementImpl el = ((ElementImpl) child);
-                            
-                            String ref = el.getAttribute("ref");
-                            if (ref == null || "empty".equals(ref))
-                            	continue;
-                            
-                            Assert.assertNull(contextSequence);
-							contextSequence = getEnviroment(file, ref);
-                            
-                        } else if (nodeName.equals("result")) {
-                            ElementImpl el = ((ElementImpl) child);
-
-                            //check for 'error' element
-                            NodeList errors = el.getElementsByTagNameNS(QT_NS, "error");
-                            for (int j = 0; j < errors.getLength(); j++) {
-                            	ElementImpl error = (ElementImpl) errors.item(j);
-
-                                //check error for 'code' attribute
-                            	String code = error.getAttribute("code");
-                            	if (code != null && !code.isEmpty()) {
-                                	Assert.assertNull(extectedError);
-                                	extectedError = code;
-                                }
-                            }
-
-                            expected = el.getChildNodes();
-                        }
-                        break;
-                    default :
-                        ;
-                }
-            }
-
             try {
                 broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 xquery = broker.getXQueryService();
 
+                final XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+
                 broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+
+	            String query = "declare namespace qt='"+QT_NS+"';\n"+
+	            "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
+	            "let $tc := $testCases//qt:test-case[@name eq \""+tcName+"\"]\n"+
+	            "return $tc";
+	
+	            ResourceSet results = service.query(query);
+	            
+	            Assert.assertFalse("", results.getSize() != 1);
+	
+	            ElementImpl TC = (ElementImpl) ((XMLResource) results.getResource(0)).getContentAsDOM();
+	
+	            Sequence contextSequence = null;
+	            
+	            NodeList expected = null;
+	            String nodeName = "";
+	
+	            //compile & evaluate
+	            String caseScript = null;
+	
+	            NodeList childNodes = TC.getChildNodes();
+	            for (int i = 0; i < childNodes.getLength(); i++) {
+	                Node child = childNodes.item(i);
+	                switch (child.getNodeType()) {
+	                    case Node.ATTRIBUTE_NODE:
+	//                        String name = ((Attr)child).getName();
+	//                        if (name.equals("scenario"))
+	//                            scenario = ((Attr)child).getValue();
+	                        break;
+	                    case Node.ELEMENT_NODE:
+	                    	nodeName = ((ElementImpl) child).getLocalName();
+	                        if (nodeName.equals("test")) {
+	                            ElementImpl el = ((ElementImpl) child);
+	                            caseScript = el.getNodeValue();
+	                        
+	                        } else if (nodeName.equals("environment")) {
+	                            ElementImpl el = ((ElementImpl) child);
+	                            
+	                            String ref = el.getAttribute("ref");
+	                            if (!(ref == null || "empty".equals(ref) || ref.isEmpty())) {
+	                            	Assert.assertNull(contextSequence);
+	                            	contextSequence = getEnviroment(file, ref);
+	                            } else {
+	                                NodeList _childNodes = el.getChildNodes();
+	                                for (int j = 0; j < _childNodes.getLength(); j++) {
+	                                    Node _child = _childNodes.item(j);
+	                                    switch (_child.getNodeType()) {
+	                                    case Node.ELEMENT_NODE:
+	                                    	nodeName = ((ElementImpl) _child).getLocalName();
+	                                        if (nodeName.equals("param")) {
+	                                            el = ((ElementImpl) _child);
+	                                        	Variable var = new VariableImpl(QName.parse(context, el.getAttribute("name")));
+	                                        	
+	                                        	String type = el.getAttribute("as");
+	                                        	if ("xs:date".equals(type)) {
+	                                            	var.setStaticType(Type.DATE);
+	                                            	
+	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+	                                            	Assert.assertEquals(1, res.getItemCount());
+	                                            	var.setValue(res);
+	                                        	} else {
+	                                        		Assert.fail("unknown type '"+type+"'");
+	                                        	}
+	                                        	context.declareGlobalVariable(var);
+	                                        }
+	                                    }
+	                                }
+	                            }
+	                            
+	                        } else if (nodeName.equals("result")) {
+	                            ElementImpl el = ((ElementImpl) child);
+	
+	                            //check for 'error' element
+	                            NodeList errors = el.getElementsByTagNameNS(QT_NS, "error");
+	                            for (int j = 0; j < errors.getLength(); j++) {
+	                            	ElementImpl error = (ElementImpl) errors.item(j);
+	
+	                                //check error for 'code' attribute
+	                            	String code = error.getAttribute("code");
+	                            	if (code != null && !code.isEmpty()) {
+	                                	Assert.assertNull(extectedError);
+	                                	extectedError = code;
+	                                }
+	                            }
+	
+	                            expected = el.getChildNodes();
+	                        }
+	                        break;
+	                    default :
+	                        ;
+	                }
+	            }
                 
-                result = xquery.execute(xquery3declaration+caseScript, contextSequence, AccessContext.TEST);
+                final CompiledXQuery compiled = xquery.compile(context, xquery3declaration+caseScript);
+                result = xquery.execute(compiled, contextSequence);
 
                 for (int i = 0; i < expected.getLength(); i++) {
                 	Node node = expected.item(i);
@@ -309,7 +340,7 @@ public class QT3TS_case extends TestCase {
             }
         } catch (XMLDBException e) {
             Assert.fail(e.toString());
-        } 
+		} 
     }
     
     private void checkResults(String type, NodeList expected, Sequence result) throws Exception {
