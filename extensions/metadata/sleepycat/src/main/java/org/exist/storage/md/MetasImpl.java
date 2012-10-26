@@ -24,6 +24,7 @@ package org.exist.storage.md;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.xmldb.XmldbURI;
 
@@ -61,8 +62,14 @@ public class MetasImpl implements Metas {
 			uuid = doc.getUUID().toString();
 	}
 	
+	protected MetasImpl(Collection col) {
+		update(col);
+		uuid = (new UUID()).toString();
+	}
+
 	protected MetasImpl(XmldbURI uri) {
 		this.uri = uri.toString();
+		uuid = (new UUID()).toString();
 	}
 
 	protected MetasImpl(String uri, String uuid) {
@@ -96,6 +103,10 @@ public class MetasImpl implements Metas {
 		uri = doc.getURI().toString();
 	}
 	
+	protected void update(Collection col) {
+		uri = col.getURI().toString();
+	}
+
 	public List<Meta> metas() {
 		List<Meta> metas = new ArrayList<Meta>();
 		
