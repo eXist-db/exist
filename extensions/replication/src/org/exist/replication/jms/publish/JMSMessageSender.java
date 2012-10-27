@@ -24,6 +24,7 @@ package org.exist.replication.jms.publish;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -50,8 +51,33 @@ public class JMSMessageSender implements MessageSender {
      * instructions, like java.naming.* , destination and connection factory.
      */
     JMSMessageSender(Map<String, List<?>> params) {
-
         parameters.setMultiValueParameters(params);
+    }
+    
+    private void closeSilent(Context context, Connection connection, Session session) {
+        if (session != null) {
+            try {
+                session.close();
+            } catch (JMSException ex) {
+                LOG.debug(ex);
+            }
+        }
+        
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (JMSException ex) {
+                LOG.debug(ex);
+            }
+        }
+        
+        if (context != null) {
+            try {
+                context.close();
+            } catch (NamingException ex) {
+                LOG.debug(ex);
+            }
+        }
     }
 
     /**
@@ -71,22 +97,26 @@ public class JMSMessageSender implements MessageSender {
         Properties contextProps = parameters.getInitialContextProps();
 
         LOG.debug(parameters.getReport());
+        
+        Context context = null;
+        Connection connection = null;
+        Session session = null;
 
         try {
             // Setup context
-            Context context = new InitialContext(contextProps);
+            context = new InitialContext(contextProps);
 
             // Lookup connection factory        
             ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
 
             // Setup connection
-            Connection connection = cf.createConnection();
+            connection = cf.createConnection();
 
             // Set clientId
             connection.setClientID(parameters.getClientId());
 
             // TODO DW: should this be configurable?
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             
             // Lookup topic
             Destination destination = (Destination) context.lookup(parameters.getTopic());
@@ -154,11 +184,11 @@ public class JMSMessageSender implements MessageSender {
 
             // Close connection
             // DW: connection could be re-used?
-            connection.close();
+            //connection.close();
 
             LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
 
-        } catch (JMSException ex) {
+        } catch (JMSException ex) {           
             LOG.error(ex.getMessage(), ex);
             throw new TransportException("Problem during communcation: " + ex.getMessage(), ex);
 
@@ -170,6 +200,10 @@ public class JMSMessageSender implements MessageSender {
             // I know, bad coding practice, really need it
             LOG.error(ex.getMessage(), ex);
             throw new TransportException(ex.getMessage(), ex);
+            
+        } finally {
+            // Close all that has been opened. Always.
+            closeSilent(context, connection, session);
         }
     }
 }
