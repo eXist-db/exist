@@ -24,7 +24,6 @@ package org.exist.replication.jms.publish;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -54,6 +53,9 @@ public class JMSMessageSender implements MessageSender {
         parameters.setMultiValueParameters(params);
     }
     
+    /**
+     * Helper method to give resources back
+     */
     private void closeSilent(Context context, Connection connection, Session session) {
         if (session != null) {
             try {
