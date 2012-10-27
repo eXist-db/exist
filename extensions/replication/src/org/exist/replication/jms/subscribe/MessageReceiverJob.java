@@ -26,6 +26,7 @@ import java.util.Properties;
 import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.exist.replication.shared.JmsConnectionExceptionListener;
 import org.exist.scheduler.JobException;
@@ -43,6 +44,35 @@ public class MessageReceiverJob extends UserJavaJob {
     private final static Logger LOG = Logger.getLogger(MessageReceiverJob.class);
     private final static String JOB_NAME = "MessageReceiverJob";
     private String jobName = JOB_NAME;
+    
+    /**
+     * Helper method to give resources back
+     */
+    private void closeSilent(Context context, Connection connection, Session session) {
+        if (session != null) {
+            try {
+                session.close();
+            } catch (JMSException ex) {
+                LOG.debug(ex);
+            }
+        }
+        
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (JMSException ex) {
+                LOG.debug(ex);
+            }
+        }
+        
+        if (context != null) {
+            try {
+                context.close();
+            } catch (NamingException ex) {
+                LOG.debug(ex);
+            }
+        }
+    }
 
     @Override
     public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
@@ -63,11 +93,15 @@ public class MessageReceiverJob extends UserJavaJob {
         // Setup listeners
         JMSMessageListener jmsListener = new JMSMessageListener(brokerpool);
         ExceptionListener exceptionListener = new JmsConnectionExceptionListener();
+        
+        Context context = null;
+        Connection connection = null;
+        Session session = null;
 
         try {
             // Setup context
             Properties contextProps = parameters.getInitialContextProps();
-            Context context = new InitialContext(contextProps);
+            context = new InitialContext(contextProps);
 
             // Lookup topic
             Destination destination = (Destination) context.lookup(parameters.getTopic());
@@ -81,13 +115,13 @@ public class MessageReceiverJob extends UserJavaJob {
             ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
 
             // Setup connection
-            Connection connection = cf.createConnection();
+            connection = cf.createConnection();
 
             // Set clientId
             connection.setClientID(parameters.getClientId());
 
             // TODO DW: should this be configurable?
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
             // Set durable messaging, when required
             if (parameters.isDurable()) {
@@ -120,6 +154,9 @@ public class MessageReceiverJob extends UserJavaJob {
             LOG.info("Subscription was successful.");
 
         } catch (Throwable t) {
+            // Close all that has been opened. Always.
+            closeSilent(context, connection, session);
+            
             LOG.error("Unable to start subscription: " + t.getMessage() + ";  " + parameters.getReport(), t);
             throw new JobException(JobException.JOB_ABORT_THIS, t.getMessage());
         }
