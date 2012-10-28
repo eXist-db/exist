@@ -299,28 +299,36 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     }
 
     @Override
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    @Override
     public boolean isEnabled() {
     	return enabled;
     }
 
     @Override
-    public String getMetadataValue(SchemaType schemaType) {
+    public String getMetadataValue(final SchemaType schemaType) {
         return metadata.get(schemaType.getNamespace());
     }
 
     @Override
-    public void setMetadataValue(SchemaType schemaType, String value) {
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
         metadata.put(schemaType.getNamespace(), value);
     }
 
     @Override
     public Set<SchemaType> getMetadataKeys() {
-        Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
-        for(String key : metadata.keySet()) {
-        	//XXX: other types?
-        	AXSchemaType axKey = AXSchemaType.valueOfNamespace(key);
-        	if (axKey != null)
-        		metadataKeys.add(axKey);
+        final Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
+        
+        for(final String key : metadata.keySet()) {
+            //XXX: other types?
+            if(AXSchemaType.valueOfNamespace(key) != null) {
+                metadataKeys.add(AXSchemaType.valueOfNamespace(key));
+            } else if(EXistSchemaType.valueOfNamespace(key) != null){
+                metadataKeys.add(EXistSchemaType.valueOfNamespace(key));
+            }
         }
         return metadataKeys;
     }

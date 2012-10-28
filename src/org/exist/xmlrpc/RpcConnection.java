@@ -82,7 +82,10 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
+import org.exist.security.AXSchemaType;
+import org.exist.security.EXistSchemaType;
 import org.exist.security.PermissionFactory.PermissionModifier;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.ACEAider;
 
 /**
@@ -1879,21 +1882,34 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public Vector<HashMap<String, Object>> getAccounts() throws EXistException,
-            PermissionDeniedException {
-    	java.util.Collection<Account> users = factory.getBrokerPool().getSecurityManager().getUsers();
-        Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
-        for (Account user : users) {
+    public Vector<HashMap<String, Object>> getAccounts() throws EXistException, PermissionDeniedException {
+        
+        java.util.Collection<Account> users = factory.getBrokerPool().getSecurityManager().getUsers();
+        final Vector<HashMap<String, Object>> r = new Vector<HashMap<String, Object>>();
+        for(final Account user : users) {
             final HashMap<String, Object> tab = new HashMap<String, Object>();
             tab.put("uid", user.getId());
+            
             tab.put("name", user.getName());
-            Vector<String> groups = new Vector<String>();
+            
+            final Vector<String> groups = new Vector<String>();
             String[] gl = user.getGroups();
-    		for (int j = 0; j < gl.length; j++)
+            for(int j = 0; j < gl.length; j++) {
                 groups.addElement(gl[j]);
+            }
             tab.put("groups", groups);
-            if (user.getHome() != null)
+            
+            if(user.getHome() != null) {
                 tab.put("home", user.getHome().toString());
+            }
+            
+            tab.put("enabled", Boolean.toString(user.isEnabled()));
+            
+            final Map<String, String> metadata = new HashMap<String, String>();
+            for(final SchemaType key : user.getMetadataKeys()) {
+                metadata.put(key.getNamespace(), user.getMetadataValue(key));
+            }
+            tab.put("metadata", metadata);
             r.addElement(tab);
         }
         return r;
@@ -1922,15 +1938,22 @@ public class RpcConnection implements RpcAPI {
             return executeWithBroker(new BrokerOperation<HashMap<String, Object>>() {
                 @Override
                 public HashMap<String, Object> withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
-			        Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
-			        if(group != null){
-			            HashMap<String, Object> map = new HashMap<String, Object>();
-			            map.put("id", group.getId());
-			            map.put("realmId", group.getRealmId());
-			            map.put("name", name);
-			            return map;
-			        }
-			        return null;
+                    Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
+                    if(group != null){
+                        final HashMap<String, Object> map = new HashMap<String, Object>();
+                        map.put("id", group.getId());
+                        map.put("realmId", group.getRealmId());
+                        map.put("name", name);
+
+                        final Map<String, String> metadata = new HashMap<String, String>();
+                        for(final SchemaType key : group.getMetadataKeys()) {
+                            metadata.put(key.getNamespace(), group.getMetadataValue(key));
+                        }
+                        map.put("metadata", metadata);
+
+                        return map;
+                    }
+                    return null;
                 }
             });
         } catch (URISyntaxException use) {
@@ -3746,8 +3769,7 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public boolean addAccount(String name, String passwd, String passwdDigest,
-            Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
+    public boolean addAccount(String name, String passwd, String passwdDigest, Vector<String> groups, String home, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         
     	if (passwd.length() == 0) {
             passwd = null;
@@ -3772,6 +3794,7 @@ public class RpcConnection implements RpcAPI {
                 u.addGroup(g);
             }
         }
+        
         if (home != null) {
         	try {
                 u.setHome(XmldbURI.xmldbUriFor(home));
@@ -3780,6 +3803,15 @@ public class RpcConnection implements RpcAPI {
         	}
         }
         
+        u.setEnabled(enabled);
+        
+        for(final String key : metadata.keySet()) {
+            if(AXSchemaType.valueOfNamespace(key) != null) {
+                u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+            } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+            }
+        }
         
         try {
             executeWithBroker(new BrokerOperation<Void>() {
@@ -3836,7 +3868,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public boolean addGroup(String name) throws EXistException, PermissionDeniedException {
+    public boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         
     	final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
@@ -3847,6 +3879,16 @@ public class RpcConnection implements RpcAPI {
             }
             
             final Group role = new GroupAider(name);
+            
+            for(final String key : metadata.keySet()) {
+                if(AXSchemaType.valueOfNamespace(key) != null) {
+                    role.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                    role.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                }
+            }
+            
+            
             try {
                 executeWithBroker(new BrokerOperation<Void>() {
                     @Override
@@ -5037,8 +5079,8 @@ public class RpcConnection implements RpcAPI {
     }
     
     @Override
-    public boolean addAccount(String name, String passwd, String digestPassword, Vector<String> groups) throws EXistException, PermissionDeniedException {
-        return addAccount(name, passwd, digestPassword,groups, null);
+    public boolean addAccount(String name, String passwd, String digestPassword, Vector<String> groups, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+        return addAccount(name, passwd, digestPassword,groups, null, enabled, metadata);
     }
 
     @Override

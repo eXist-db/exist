@@ -141,5 +141,11 @@ public interface User extends Principal {
      * @return <code>true</code> if the account is enabled, <code>false</code> otherwise
      */
     boolean isEnabled();
-
+    
+    /**
+     * Sets whether the account is enabled or disabled. Authentication on a disabled account is not possible.
+     *
+     * @param <code>true</code> if the account is enabled, <code>false</code> otherwise
+     */
+    void setEnabled(boolean enabled);
 }

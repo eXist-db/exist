@@ -327,7 +327,11 @@ public class InteractiveClient {
         return current;
     }
     
-    protected void reloadCollection() throws XMLDBException {
+    public Properties getProperties() {
+        return properties;
+    }
+    
+    public void reloadCollection() throws XMLDBException {
         current = DatabaseManager.getCollection(properties.getProperty("uri")
         + path, properties.getProperty("user"),
                 properties.getProperty("password"));
