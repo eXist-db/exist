@@ -22,7 +22,6 @@
 package org.exist.security;
 
 import java.util.Set;
-
 import org.exist.security.realm.Realm;
 import org.exist.xmldb.XmldbURI;
 

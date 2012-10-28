@@ -14,7 +14,10 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import org.exist.security.ACLPermission;
+import org.exist.security.AXSchemaType;
+import org.exist.security.EXistSchemaType;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 
@@ -37,30 +40,47 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                The user to be added
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void addAccount(Account user) throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(12);
-			params.add(user.getName());
-			params.add(user.getPassword() == null ? "" : user.getPassword());
-			params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
-			String[] gl = user.getGroups();
-			params.add(gl);
-			if (user.getHome() != null)
-				params.add(user.getHome().toString());
-			parent.getClient().execute("addAccount", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    @Override
+    public void addAccount(final Account user) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(12);
+            params.add(user.getName());
+            params.add(user.getPassword() == null ? "" : user.getPassword());
+            params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
+            String[] gl = user.getGroups();
+            params.add(gl);
+            if(user.getHome() != null) {
+                params.add(user.getHome().toString());
+            }
+            params.add(user.isEnabled());
+            final Map<String, String> metadata = new HashMap<String, String>();
+            for(final SchemaType key : user.getMetadataKeys()) {
+                metadata.put(key.getNamespace(), user.getMetadataValue(key));
+            }
+            params.add(metadata);
+
+            parent.getClient().execute("addAccount", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
-	public void addGroup(Group role) throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(12);
-			params.add(role.getName());
-			parent.getClient().execute("addGroup", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+    @Override
+    public void addGroup(final Group role) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(12);
+            params.add(role.getName());
+            
+            final Map<String, String> metadata = new HashMap<String, String>();
+            for(final SchemaType key : role.getMetadataKeys()) {
+                metadata.put(key.getNamespace(), role.getMetadataValue(key));
+            }
+            params.add(metadata);
+            
+            parent.getClient().execute("addGroup", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
     private List<ACEAider> getACEs(Permission perm) {
@@ -650,36 +670,52 @@ public class RemoteUserManagementService implements UserManagementService {
         }
     }
 
-	/**
-	 *  Get a list of all users currently defined
-	 *
-	 *@return                     The users value
-	 *@exception  XMLDBException  Description of the Exception
-	 */
-	public Account[] getAccounts() throws XMLDBException {
-		try {
-			Object[] users = (Object[]) parent.getClient().execute("getAccounts", new ArrayList<Object>());
-			UserAider[] u = new UserAider[users.length];
-			for (int i = 0; i < u.length; i++) {
-				final HashMap<?,?> tab = (HashMap<?,?>) users[i];
-				
-				int uid = -1;
-				try {
-					uid = (Integer)tab.get("uid");
-				} catch (java.lang.NumberFormatException e) {
-				}
+    /**
+     * Get a list of all users currently defined
+     *
+     * @return The user accounts
+     * @exception XMLDBException Description of the Exception
+     */
+    @Override
+    public Account[] getAccounts() throws XMLDBException {
+        try {
+            final Object[] users = (Object[]) parent.getClient().execute("getAccounts", new ArrayList<Object>());
+            
+            final UserAider[] u = new UserAider[users.length];
+            for (int i = 0; i < u.length; i++) {
+                final HashMap<?,?> tab = (HashMap<?,?>) users[i];
+
+                int uid = -1;
+                try {
+                    uid = (Integer)tab.get("uid");
+                } catch (java.lang.NumberFormatException e) {
+                    
+                }
 					
-				u[i] = new UserAider(uid, (String) tab.get("realmId"), (String) tab.get("name"));
-				Object[] groups = (Object[]) tab.get("groups");
-                for (int j = 0; j < groups.length; j++)
-					u[i].addGroup((String) groups[j]);
-				String home = (String) tab.get("home");
-				u[i].setHome(home==null?null:XmldbURI.create(home));
-			}
-			return u;
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+                u[i] = new UserAider(uid, (String) tab.get("realmId"), (String) tab.get("name"));
+                Object[] groups = (Object[]) tab.get("groups");
+                for (int j = 0; j < groups.length; j++) {
+                    u[i].addGroup((String) groups[j]);
+                }
+                
+                String home = (String) tab.get("home");
+                u[i].setHome(home==null?null:XmldbURI.create(home));
+                
+                u[i].setEnabled(Boolean.valueOf((String)tab.get("enabled")));
+                
+                final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
+                for(final String key : metadata.keySet()) {
+                    if(AXSchemaType.valueOfNamespace(key) != null) {
+                        u[i].setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                    } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                        u[i].setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                    }
+                }
+            }
+            return u;
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
         @Override
@@ -689,7 +725,17 @@ public class RemoteUserManagementService implements UserManagementService {
                 params.add(name);
                 HashMap<String,Object> tab = (HashMap<String,Object>) parent.getClient().execute("getGroup", params);
                 if(tab != null && !tab.isEmpty()) {
-                    Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
+                    final Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
+                    
+                    final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
+                    for(final String key : metadata.keySet()) {
+                        if(AXSchemaType.valueOfNamespace(key) != null) {
+                            role.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                        } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                            role.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                        }
+                    }
+                    
                     return role;
                 }
                 return null;

@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.exist.EXistException;
@@ -729,10 +730,10 @@ public interface RpcAPI {
 	HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home)
+	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home, boolean isEnabled, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups)
+	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, boolean isEnabled, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
 
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups)
@@ -741,7 +742,7 @@ public interface RpcAPI {
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addGroup(String name) throws EXistException, PermissionDeniedException;
+	boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException;
 
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;

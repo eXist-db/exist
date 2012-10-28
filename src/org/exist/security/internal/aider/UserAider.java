@@ -53,6 +53,7 @@ public class UserAider implements Account {
     private Group defaultRole = null;
     private Map<String, Group> roles = new LinkedHashMap<String, Group>();
     private int umask = Permission.DEFAULT_UMASK;
+    private boolean enabled = true;
 
     public UserAider(final int id) {
         this(id, null, null);
@@ -302,9 +303,13 @@ public class UserAider implements Account {
     }
 
     @Override
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    @Override
     public boolean isEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+        return enabled;
     }
 
     @Override

@@ -22,12 +22,15 @@
 package org.exist.security.internal.aider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
@@ -44,6 +47,7 @@ public class GroupAider implements Group {
 	private final int id;
 	
 	private final List<Account> managers = new ArrayList<Account>();
+        private final Map<SchemaType, String> metadataValues = new HashMap<SchemaType, String>();
 	
 	public GroupAider(int id) {
             this(id, null, null);
@@ -155,4 +159,21 @@ public class GroupAider implements Group {
     public Realm getRealm() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
+        metadataValues.put(schemaType, value);
+    }
+
+    @Override
+    public String getMetadataValue(final SchemaType schemaType) {
+        return metadataValues.get(schemaType);
+    }
+
+    @Override
+    public Set<SchemaType> getMetadataKeys() {
+        return metadataValues.keySet();
+    }
+    
+    
 }

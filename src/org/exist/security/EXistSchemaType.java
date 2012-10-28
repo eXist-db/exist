@@ -25,21 +25,13 @@ package org.exist.security;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public enum AXSchemaType implements SchemaType {
-
-    ALIAS_USERNAME("http://axschema.org/namePerson/friendly", "Alias"),
-    FIRSTNAME("http://axschema.org/namePerson/first", "FirstName"),
-    LASTNAME("http://axschema.org/namePerson/last", "LastName"),
-    FULLNAME("http://axschema.org/namePerson", "FullName"),
-    EMAIL("http://axschema.org/contact/email", "Email"),
-    COUNTRY("http://axschema.org/contact/country/home", "Country"),
-    LANGUAGE("http://axschema.org/pref/language", "Language"),
-    TIMEZONE("http://axschema.org/pref/timezone", "Timezone");
-
+public enum EXistSchemaType implements SchemaType {
+    DESCRIPTION("http://exist-db.org/security/description", "Description");
+    
     private final String namespace;
     private final String alias;
-
-    AXSchemaType(final String namespace, final String alias) {
+    
+    EXistSchemaType(final String namespace, final String alias) {
         this.namespace = namespace;
         this.alias = alias;
     }
@@ -54,19 +46,19 @@ public enum AXSchemaType implements SchemaType {
         return alias;
     }
     
-    public static AXSchemaType valueOfNamespace(final String namespace) {
-        for(final AXSchemaType axSchemaType : AXSchemaType.values()) {
-            if(axSchemaType.getNamespace().equals(namespace)) {
-                return axSchemaType;
+    public static EXistSchemaType valueOfNamespace(final String namespace) {
+        for(final EXistSchemaType existSchemaType : EXistSchemaType.values()) {
+            if(existSchemaType.getNamespace().equals(namespace)) {
+                return existSchemaType;
             }
         }
         return null;
     }
 
-    public static AXSchemaType valueOfAlias(final String alias) {
-        for(final AXSchemaType axSchemaType : AXSchemaType.values()) {
-            if(axSchemaType.getAlias().equals(alias)) {
-                return axSchemaType;
+    public static EXistSchemaType valueOfAlias(final String alias) {
+        for(final EXistSchemaType existSchemaType : EXistSchemaType.values()) {
+            if(existSchemaType.getAlias().equals(alias)) {
+                return existSchemaType;
             }
         }
         return null;

@@ -33,214 +33,220 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractSubject implements Subject {
 
-	protected final AbstractAccount account;
-	protected final Session session;
-	
-	public AbstractSubject(AbstractAccount account) {
-		this.account = account;
-		this.session = new Session(this);
-	}
+    protected final AbstractAccount account;
+    protected final Session session;
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#addGroup(java.lang.String)
-	 */
-	@Override
-	public Group addGroup(String name) throws PermissionDeniedException {
-		return account.addGroup(name);
-	}
+    public AbstractSubject(AbstractAccount account) {
+        this.account = account;
+        this.session = new Session(this);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#addGroup(org.exist.security.Group)
-	 */
-	@Override
-	public Group addGroup(Group group) throws PermissionDeniedException {
-		return account.addGroup(group);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#addGroup(java.lang.String)
+     */
+    @Override
+    public Group addGroup(String name) throws PermissionDeniedException {
+        return account.addGroup(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#remGroup(java.lang.String)
-	 */
-	@Override
-	public void remGroup(String group) throws PermissionDeniedException {
-		account.remGroup(group);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#addGroup(org.exist.security.Group)
+     */
+    @Override
+    public Group addGroup(Group group) throws PermissionDeniedException {
+        return account.addGroup(group);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getGroups()
-	 */
-	@Override
-	public String[] getGroups() {
-		return account.getGroups();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#remGroup(java.lang.String)
+     */
+    @Override
+    public void remGroup(String group) throws PermissionDeniedException {
+        account.remGroup(group);
+    }
 
-        @Override
-	public int[] getGroupIds() {
-		return account.getGroupIds();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getGroups()
+     */
+    @Override
+    public String[] getGroups() {
+        return account.getGroups();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#hasDbaRole()
-	 */
-	@Override
-	public boolean hasDbaRole() {
-		return account.hasDbaRole();
-	}
+    @Override
+    public int[] getGroupIds() {
+        return account.getGroupIds();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getPrimaryGroup()
-	 */
-	@Override
-	public String getPrimaryGroup() {
-		return account.getPrimaryGroup();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#hasDbaRole()
+     */
+    @Override
+    public boolean hasDbaRole() {
+        return account.hasDbaRole();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getDefaultGroup()
-	 */
-	@Override
-	public Group getDefaultGroup() {
-		return account.getDefaultGroup();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getPrimaryGroup()
+     */
+    @Override
+    public String getPrimaryGroup() {
+        return account.getPrimaryGroup();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#hasGroup(java.lang.String)
-	 */
-	@Override
-	public boolean hasGroup(String group) {
-		return account.hasGroup(group);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getDefaultGroup()
+     */
+    @Override
+    public Group getDefaultGroup() {
+        return account.getDefaultGroup();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setPassword(java.lang.String)
-	 */
-	@Override
-	public void setPassword(String passwd) {
-		account.setPassword(passwd);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#hasGroup(java.lang.String)
+     */
+    @Override
+    public boolean hasGroup(String group) {
+        return account.hasGroup(group);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
-	 */
-	@Override
-	public void setHome(XmldbURI homeCollection) {
-		account.setHome(homeCollection);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setPassword(java.lang.String)
+     */
+    @Override
+    public void setPassword(String passwd) {
+        account.setPassword(passwd);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getHome()
-	 */
-	@Override
-	public XmldbURI getHome() {
-		return account.getHome();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
+     */
+    @Override
+    public void setHome(XmldbURI homeCollection) {
+        account.setHome(homeCollection);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getRealm()
-	 */
-	@Override
-	public Realm getRealm() {
-		return account.getRealm();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getHome()
+     */
+    @Override
+    public XmldbURI getHome() {
+        return account.getHome();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getPassword()
-	 */
-	@Override
-	public String getPassword() {
-		return account.getPassword();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getRealm()
+     */
+    @Override
+    public Realm getRealm() {
+        return account.getRealm();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#getDigestPassword()
-	 */
-	@Override
-	public String getDigestPassword() {
-		return account.getDigestPassword();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getPassword()
+     */
+    @Override
+    public String getPassword() {
+        return account.getPassword();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.User#setGroups(java.lang.String[])
-	 */
-	@Override
-	public void setGroups(String[] groups) {
-		account.setGroups(groups);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#getDigestPassword()
+     */
+    @Override
+    public String getDigestPassword() {
+        return account.getDigestPassword();
+    }
 
-	@Override
-	public String getRealmId() {
-		return account.getRealmId();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.User#setGroups(java.lang.String[])
+     */
+    @Override
+    public void setGroups(String[] groups) {
+        account.setGroups(groups);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.security.Principal#getId()
-	 */
-	@Override
-	public int getId() {
-		return account.getId();
-	}
+    @Override
+    public String getRealmId() {
+        return account.getRealmId();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.security.Principal#getName()
-	 */
-	@Override
-	public String getName() {
-		return account.getName();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.security.Principal#getId()
+     */
+    @Override
+    public int getId() {
+        return account.getId();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.config.Configurable#isConfigured()
-	 */
-	@Override
-	public boolean isConfigured() {
-		return account.isConfigured();
-	}
+    /* (non-Javadoc)
+     * @see java.security.Principal#getName()
+     */
+    @Override
+    public String getName() {
+        return account.getName();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.config.Configurable#getConfiguration()
-	 */
-	@Override
-	public Configuration getConfiguration() {
-		return account.getConfiguration();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.config.Configurable#isConfigured()
+     */
+    @Override
+    public boolean isConfigured() {
+        return account.isConfigured();
+    }
 
-	@Override
-	public String getUsername() {
-		return account.getUsername();
-	}
+    /* (non-Javadoc)
+     * @see org.exist.config.Configurable#getConfiguration()
+     */
+    @Override
+    public Configuration getConfiguration() {
+        return account.getConfiguration();
+    }
 
-	@Override
-	public boolean isAccountNonExpired() {
-		return account.isAccountNonExpired();
-	}
+    @Override
+    public String getUsername() {
+        return account.getUsername();
+    }
 
-	@Override
-	public boolean isAccountNonLocked() {
-		return account.isAccountNonLocked();
-	}
+    @Override
+    public boolean isAccountNonExpired() {
+        return account.isAccountNonExpired();
+    }
 
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return account.isCredentialsNonExpired();
-	}
+    @Override
+    public boolean isAccountNonLocked() {
+        return account.isAccountNonLocked();
+    }
 
-	@Override
-	public boolean isEnabled() {
-		return account.isEnabled();
-	}
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return account.isCredentialsNonExpired();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		return account.equals(obj);
-	}
+    @Override
+    public void setEnabled(final boolean enabled) {
+        account.setEnabled(enabled);
+    }
 
-	@Override
-	public String getSessionId() {
-		return session.getId();
-	}
+    @Override
+    public boolean isEnabled() {
+        return account.isEnabled();
+    }
 
-	public Session getSession() {
-		return session;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        return account.equals(obj);
+    }
+
+    @Override
+    public String getSessionId() {
+        return session.getId();
+    }
+
+    @Override
+    public Session getSession() {
+        return session;
+    }
 
     @Override
     public void save() throws PermissionDeniedException {

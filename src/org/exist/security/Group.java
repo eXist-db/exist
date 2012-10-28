@@ -22,6 +22,7 @@
 package org.exist.security;
 
 import java.util.List;
+import java.util.Set;
 
 public interface Group extends Principal {
 
@@ -38,4 +39,10 @@ public interface Group extends Principal {
     public void removeManager(Account account) throws PermissionDeniedException;
 
     public void assertCanModifyGroup(Account account) throws PermissionDeniedException;
+    
+    public void setMetadataValue(SchemaType schemaType, String value);
+
+    public String getMetadataValue(SchemaType schemaType);
+
+    public Set<SchemaType> getMetadataKeys();
 }

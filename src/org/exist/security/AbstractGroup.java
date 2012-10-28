@@ -23,8 +23,11 @@
 package org.exist.security;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
@@ -40,16 +43,19 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
 
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")
-    private List<Reference<SecurityManager, Account>> managers = 
-    	new ArrayList<Reference<SecurityManager, Account>>();
+    private List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
+    
+    @ConfigurationFieldAsElement("metadata")
+    private Map<String, String> metadata = new HashMap<String, String>();
 
     public AbstractGroup(AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
         super(realm, realm.collectionGroups, id, name);
         
-        if (managers != null)
-	    	for (Account manager : managers) {
-	    		_addManager(manager);
-	    	}
+        if(managers != null) {
+            for(Account manager : managers) {
+                _addManager(manager);
+            }
+        }
     }
 
     public AbstractGroup(AbstractRealm realm, String name) throws ConfigurationException {
@@ -187,5 +193,30 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     
     protected void setManagers(List<Reference<SecurityManager, Account>> managers) {
         this.managers = managers;
+    }
+    
+    @Override
+    public String getMetadataValue(final SchemaType schemaType) {
+        return metadata.get(schemaType.getNamespace());
+    }
+
+    @Override
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
+        metadata.put(schemaType.getNamespace(), value);
+    }
+
+    @Override
+    public Set<SchemaType> getMetadataKeys() {
+        final Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
+        
+        for(final String key : metadata.keySet()) {
+            //XXX: other types?
+            if(AXSchemaType.valueOfNamespace(key) != null) {
+                metadataKeys.add(AXSchemaType.valueOfNamespace(key));
+            } else if(EXistSchemaType.valueOfNamespace(key) != null){
+                metadataKeys.add(EXistSchemaType.valueOfNamespace(key));
+            }
+        }
+        return metadataKeys;
     }
 }
