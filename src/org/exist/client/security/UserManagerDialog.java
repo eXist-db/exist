@@ -200,10 +200,9 @@ public class UserManagerDialog extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("User Manager");
 
-        tblUsers.setModel(getUsersTableModel());
         tblUsers.setAutoCreateRowSorter(true);
+        tblUsers.setModel(getUsersTableModel());
         tblUsers.setComponentPopupMenu(pmUsers);
-        tblUsers.setShowGrid(true);
         tblUsers.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblUsersMouseClicked(evt);
@@ -213,10 +212,9 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
         tpUserManager.addTab("Users", spUsers);
 
-        tblGroups.setModel(getGroupsTableModel());
         tblGroups.setAutoCreateRowSorter(true);
+        tblGroups.setModel(getGroupsTableModel());
         tblGroups.setComponentPopupMenu(pmGroups);
-        tblGroups.setShowGrid(true);
         tblGroups.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblGroupsMouseClicked(evt);
@@ -241,38 +239,38 @@ public class UserManagerDialog extends javax.swing.JFrame {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(211, Short.MAX_VALUE)
-                .add(btnClose)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(btnCreate)
-                .add(20, 20, 20))
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(250, Short.MAX_VALUE)
+                .addComponent(btnClose)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnCreate)
+                .addGap(20, 20, 20))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jSeparator1)
+                .addComponent(jSeparator1)
                 .addContainerGap())
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(tpUserManager, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(tpUserManager, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(0, 290, Short.MAX_VALUE)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnCreate)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(btnClose)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 291, Short.MAX_VALUE)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnCreate)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnClose)
                         .addContainerGap())))
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(tpUserManager, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 291, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(0, 50, Short.MAX_VALUE)))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(tpUserManager, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 50, Short.MAX_VALUE)))
         );
 
         tpUserManager.getAccessibleContext().setAccessibleName("Users");
