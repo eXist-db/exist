@@ -127,7 +127,7 @@ public class SystemExport
         this.monitor      = monitor;
         this.directAccess = direct;
         
-    	bh = broker.getDatabase().getPluginsManager().getBackupHandler();
+    	bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
     }
 
     public File export( String targetDir, boolean incremental, boolean zip, List<ErrorReport> errorList )
@@ -238,6 +238,8 @@ public class SystemExport
         if( callback != null ) {
             callback.error( "EXPORT: " + message, e );
         }
+        
+        LOG.error("EXPORT: " + message, e);
     }
 
 
