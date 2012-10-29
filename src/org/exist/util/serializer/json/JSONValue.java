@@ -29,10 +29,17 @@ public class JSONValue extends JSONNode {
 	public final static String NAME_VALUE = "#text";
 	
 	private String content = null;
-	
-	public JSONValue(String content) {
+
+    public JSONValue(String content) {
+        this(content, true);
+    }
+
+	public JSONValue(String content, boolean escape) {
 		super(Type.VALUE_TYPE, NAME_VALUE);
-		this.content = escape(content);
+        if (escape)
+            this.content =  escape(content);
+        else
+            this.content = content;
 	}
 
 	public JSONValue() {

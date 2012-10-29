@@ -96,6 +96,7 @@ import org.exist.util.VirtualTempFile;
 import org.exist.util.VirtualTempFileInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.json.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqj.Marshaller;
 import org.exist.xquery.CompiledXQuery;
@@ -107,12 +108,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -138,6 +134,8 @@ import org.xml.sax.helpers.XMLFilterImpl;
 public class RESTServer {
 
 	protected final static Logger LOG = Logger.getLogger(RESTServer.class);
+
+    public final static String SERIALIZATION_METHOD_PROPERTY = "output-as";
 
 	// Should we not obey the instance's defaults? /ljo
 	protected final static Properties defaultProperties = new Properties();
@@ -728,6 +726,11 @@ public class RESTServer {
                                                                 enclose = false;
                                                     }
                                                 }
+
+                        option = root.getAttribute("method");
+                        if ((option != null) && (!option.equals(""))) {
+                            outputProperties.setProperty(SERIALIZATION_METHOD_PROPERTY, option);
+                        }
 
 						option = root.getAttribute("typed");
 						if (option != null) {
@@ -1902,7 +1905,7 @@ public class RESTServer {
 					try {
 						DateTimeValue dtLastModified = new DateTimeValue(
 								new Date(metadata.getLastModified()));
-						attrs.addAttribute("", "last-mofified",
+						attrs.addAttribute("", "last-modified",
 							"last-modified", "CDATA", dtLastModified.getStringValue());
 					} catch (XPathException e) {
 						// fallback to long value
@@ -1963,60 +1966,136 @@ public class RESTServer {
 		} else {
 			howmany = 0;
 		}
+        String method =outputProperties.getProperty(SERIALIZATION_METHOD_PROPERTY, "xml");
 
-		// serialize the results to the response output stream
-		Serializer serializer = broker.getSerializer();
-		serializer.reset();
-		outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-		SAXSerializer sax = null;
-		try {
-			sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
-					SAXSerializer.class);
+        if ("json".equals(method)) {
+            writeResultJSON(response, broker, results, howmany, start, outputProperties, wrap);
+        } else {
+            writeResultXML(response, broker, results, howmany, start, typed, outputProperties, wrap);
+        }
 
-			// set output headers
-			String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
-			if (!response.containsHeader("Content-Type")){
-				String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
-				if (mimeType != null) {
-					int semicolon = mimeType.indexOf(';');
-					if (semicolon != Constants.STRING_NOT_FOUND) {
-						mimeType = mimeType.substring(0, semicolon);
-					}
-	                if (wrap) {
-	                    mimeType = "application/xml";
-	                }
-					response.setContentType(mimeType + "; charset=" + encoding);
-				}
-			}
+    }
+
+    private void writeResultXML(HttpServletResponse response, DBBroker broker, Sequence results, int howmany, int start, boolean typed, Properties outputProperties, boolean wrap) throws BadRequestException {
+        // serialize the results to the response output stream
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+        SAXSerializer sax = null;
+        try {
+            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
+                    SAXSerializer.class);
+
+            // set output headers
+            String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+            if (!response.containsHeader("Content-Type")){
+                String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
+                if (mimeType != null) {
+                    int semicolon = mimeType.indexOf(';');
+                    if (semicolon != Constants.STRING_NOT_FOUND) {
+                        mimeType = mimeType.substring(0, semicolon);
+                    }
+                    if (wrap) {
+                        mimeType = "application/xml";
+                    }
+                    response.setContentType(mimeType + "; charset=" + encoding);
+                }
+            }
             if (wrap)
                 outputProperties.setProperty("method", "xml");
-			Writer writer = new OutputStreamWriter(response.getOutputStream(),
-					encoding);
-			sax.setOutput(writer, outputProperties);
+            Writer writer = new OutputStreamWriter(response.getOutputStream(), encoding);
+            sax.setOutput(writer, outputProperties);
 
-			serializer.setProperties(outputProperties);
-			serializer.setSAXHandlers(sax, sax);
+            serializer.setProperties(outputProperties);
+            serializer.setSAXHandlers(sax, sax);
 
-                        //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
-                        serializer.toSAX(results, start, howmany, wrap, typed);
+            //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
+            serializer.toSAX(results, start, howmany, wrap, typed);
 
-			writer.flush();
-			writer.close();
+            writer.flush();
+            writer.close();
 
-		} catch (SAXException e) {
-			LOG.warn(e);
-			throw new BadRequestException("Error while serializing xml: "
-					+ e.toString(), e);
-		} catch (Exception e) {
-			LOG.warn(e.getMessage(), e);
-			throw new BadRequestException("Error while serializing xml: "
-					+ e.toString(), e);
-		} finally {
-			if (sax != null) {
-				SerializerPool.getInstance().returnObject(sax);
-			}
-		}
-	}
+        } catch (SAXException e) {
+            LOG.warn(e);
+            throw new BadRequestException("Error while serializing xml: "
+                    + e.toString(), e);
+        } catch (Exception e) {
+            LOG.warn(e.getMessage(), e);
+            throw new BadRequestException("Error while serializing xml: "
+                    + e.toString(), e);
+        } finally {
+            if (sax != null) {
+                SerializerPool.getInstance().returnObject(sax);
+            }
+        }
+    }
+
+    private void writeResultJSON(HttpServletResponse response, DBBroker broker,
+                                 Sequence results, int howmany, int start,
+                                 Properties outputProperties, boolean wrap) throws BadRequestException {
+        // calculate number of results to return
+        int rlen = results.getItemCount();
+        if (!results.isEmpty()) {
+            if ((start < 1) || (start > rlen))
+                throw new BadRequestException("Start parameter out of range");
+            // FD : correct bound evaluation
+            if (((howmany + start) > rlen) || (howmany <= 0))
+                howmany = rlen - start + 1;
+        } else {
+            howmany = 0;
+        }
+
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+        try {
+            serializer.setProperties(outputProperties);
+            Writer writer = new OutputStreamWriter(response.getOutputStream(), outputProperties.getProperty(OutputKeys.ENCODING));
+            JSONObject root = new JSONObject();
+            root.addObject(new JSONSimpleProperty("start", Integer.toString(start), true));
+            root.addObject(new JSONSimpleProperty("count", Integer.toString(howmany), true));
+            root.addObject(new JSONSimpleProperty("hits", Integer.toString(results.getItemCount()), true));
+            if (outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID) != null) {
+                root.addObject(new JSONSimpleProperty("session",
+                        outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID)));
+            }
+
+            JSONObject data = new JSONObject("data");
+            root.addObject(data);
+
+            Item item;
+            for(int i = --start; i < start + howmany; i++) {
+                item = results.itemAt(i);
+                if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                    NodeValue value = (NodeValue) item;
+                    JSONValue json;
+                    if (outputProperties.getProperty("method", "xml").equals("json")) {
+                        json = new JSONValue(serializer.serialize(value), false);
+                        json.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
+                    } else {
+                        json = new JSONValue(serializer.serialize(value));
+                        json.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
+                    }
+                    data.addObject(json);
+                } else {
+                    JSONValue json = new JSONValue(item.getStringValue());
+                    json.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
+                    data.addObject(json);
+                }
+            }
+
+            root.serialize(writer, true);
+
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
+        } catch (SAXException e) {
+            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
+        } catch (XPathException e) {
+            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
+        }
+    }
 
     private boolean isExecutableType(DocumentImpl resource) {
 	if (resource != null
