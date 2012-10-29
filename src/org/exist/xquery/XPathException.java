@@ -19,8 +19,6 @@ public class XPathException extends Exception {
     private Sequence errorVal;
     private List<FunctionStackElement> callStack = null;
 
-
-    
     private XACMLSource source = null;
 
     /**
@@ -228,6 +226,11 @@ public class XPathException extends Exception {
     }
 
     public void prependMessage(String msg) {
+        message = msg + message;
+    }
+
+    public void prependMessage(ErrorCode errorCode, String msg) {
+    	this.errorCode = errorCode;
         message = msg + message;
     }
 
