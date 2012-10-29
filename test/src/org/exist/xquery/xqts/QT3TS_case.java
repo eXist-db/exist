@@ -288,6 +288,12 @@ public class QT3TS_case extends TestCase {
 	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
 	                                            	Assert.assertEquals(1, res.getItemCount());
 	                                            	var.setValue(res);
+	                                        	} else if ("xs:dateTime".equals(type)) {
+	                                            	var.setStaticType(Type.DATE_TIME);
+	                                            	
+	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+	                                            	Assert.assertEquals(1, res.getItemCount());
+	                                            	var.setValue(res);
 	                                        	} else {
 	                                        		Assert.fail("unknown type '"+type+"'");
 	                                        	}
