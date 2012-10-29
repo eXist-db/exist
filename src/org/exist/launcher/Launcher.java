@@ -26,12 +26,14 @@ import org.exist.jetty.JettyStart;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -81,17 +83,42 @@ public class Launcher {
     private JettyStart jetty;
 
     public Launcher(final String[] args) {
-        SystemTray tray = null;
-        try {
-            tray = SystemTray.getSystemTray();
-        } catch (Exception e) {
-            showMessageAndExit("Not supported", "Running eXist-db via the launcher is not supported on your platform. " +
-                "Please run it using startup.sh/startup.bat.");
+        if (!SystemTray.isSupported()) {
+            showMessageAndExit("Not supported", "Running eXist-db via the launcher does not appear to be supported on your platform. " +
+                    "Please run it using startup.sh/startup.bat.", false);
             return;
         }
 
+        SystemTray tray = SystemTray.getSystemTray();
+
         final String home = getJettyHome();
         captureConsole();
+
+        Dimension iconDim = tray.getTrayIconSize();
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(getClass().getResource("icon32.png"));
+        } catch (IOException e) {
+            showMessageAndExit("Launcher failed", "Failed to read system tray icon.", false);
+        }
+        trayIcon = new TrayIcon(image.getScaledInstance(iconDim.width, iconDim.height, Image.SCALE_SMOOTH), "eXist-db Launcher");
+
+        PopupMenu popup = createMenu(home, tray);
+        trayIcon.setPopupMenu(popup);
+        try {
+            tray.add(trayIcon);
+        } catch (AWTException e) {
+            e.printStackTrace();
+            showMessageAndExit("Not supported", "Running eXist-db via the launcher is not supported on your platform. " +
+                    "Please run it using bin/startup.sh or bin\\startup.bat.", false);
+            return;
+        }
+        trayIcon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
+            }
+        });
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
@@ -105,39 +132,10 @@ public class Launcher {
                             jetty.addObserver(splash);
                             jetty.run(new String[]{home}, splash);
                         } catch (Exception e) {
-                            showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.");
+                            showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.", true);
                         }
                     }
                 }.start();
-            }
-        });
-
-        Dimension iconDim = tray.getTrayIconSize();
-        LOG.debug("Icon size: " + iconDim.getWidth() + "x" + iconDim.getHeight());
-        String iconFile;
-        if (iconDim.getWidth() <= 16.0)
-            iconFile = "icon16.png";
-        else if (iconDim.getWidth() <= 24.0)
-            iconFile = "icon24.png";
-        else
-            iconFile = "icon32.png";
-        LOG.debug("Using icon: " + iconFile);
-        Image image = Toolkit.getDefaultToolkit().getImage(Launcher.class.getResource(iconFile));
-        trayIcon = new TrayIcon(image, "eXist-db Launcher");
-        trayIcon.setImageAutoSize(true);
-
-        PopupMenu popup = createMenu(home, tray);
-        trayIcon.setPopupMenu(popup);
-        try {
-            tray.add(trayIcon);
-        } catch (AWTException e) {
-            showMessageAndExit("Launcher failed", "Tray icon could not be added");
-            return;
-        }
-        trayIcon.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
             }
         });
     }
@@ -267,17 +265,19 @@ public class Launcher {
         return standaloneFile.getAbsolutePath();
     }
 
-    protected void showMessageAndExit(String title, String message) {
+    protected void showMessageAndExit(String title, String message, boolean logs) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
         JLabel label = new JLabel(message);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(label, BorderLayout.CENTER);
-        JButton displayLogs = new JButton("View Log");
-        displayLogs.addActionListener(new LogActionListener());
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        panel.add(displayLogs, BorderLayout.SOUTH);
+        if (logs) {
+            JButton displayLogs = new JButton("View Log");
+            displayLogs.addActionListener(new LogActionListener());
+            label.setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(displayLogs, BorderLayout.SOUTH);
+        }
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
         System.exit(1);
     }
