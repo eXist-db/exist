@@ -248,20 +248,27 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		return configuration;
 	}
 	
-	private BackupHandler bh = new BH();
-
 	@Override
-	public BackupHandler getBackupHandler() {
-		return bh;
+	public BackupHandler getBackupHandler(Logger logger) {
+		return new BH(logger);
 	}
 	
 	class BH implements BackupHandler {
+		Logger LOG;
+		
+		public BH(Logger logger) {
+			LOG = logger;
+		}
 
 		@Override
 		public void backup(Collection colection, AttributesImpl attrs) {
 			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
-					((BackupHandler) plugin).backup(colection, attrs);
+					try {
+						((BackupHandler) plugin).backup(colection, attrs);
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
 				}
 			}
 		}
@@ -270,7 +277,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
 			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
-					((BackupHandler) plugin).backup(colection, serializer);
+					try {
+						((BackupHandler) plugin).backup(colection, serializer);
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
 				}
 			}
 		}
@@ -279,7 +290,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		public void backup(DocumentAtExist document, AttributesImpl attrs) {
 			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
-					((BackupHandler) plugin).backup(document, attrs);
+					try {
+						((BackupHandler) plugin).backup(document, attrs);
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
 				}
 			}
 		}
@@ -288,7 +303,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
 			for (Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
-					((BackupHandler) plugin).backup(document, serializer);
+					try {
+						((BackupHandler) plugin).backup(document, serializer);
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
 				}
 			}
 		}

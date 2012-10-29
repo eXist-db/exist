@@ -21,6 +21,7 @@
  */
 package org.exist.plugin;
 
+import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
@@ -37,7 +38,7 @@ public interface PluginsManager {
 
 	public void addPlugin(String className);
 	
-	public BackupHandler getBackupHandler();
+	public BackupHandler getBackupHandler(Logger logger);
 
 	public RestoreHandler getRestoreHandler();
 }
