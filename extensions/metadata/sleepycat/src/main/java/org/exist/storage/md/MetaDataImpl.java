@@ -125,6 +125,17 @@ public class MetaDataImpl extends MetaData {
 				db.release(broker);
 		}
 	}
+	
+	/**
+	 * Given the supplied UUID, return the corresponding URI to the resource in eXist 
+	 */
+	public XmldbURI UUIDtoURI(String uuid) throws EXistException, PermissionDeniedException {
+		MetasImpl ms = docByUUID.get(uuid);
+		if (ms == null) return null;
+		
+		return XmldbURI.create(ms.uri);
+	
+	}
 
     private Metas _addMetas(DocumentAtExist doc) {
 		MetasImpl d = new MetasImpl(doc);
