@@ -141,12 +141,12 @@ public class OrderedValueSequence extends AbstractSequence {
 	}
 
 	private void checkItemType(int type) {
-        if(itemType == Type.NODE || itemType == type)
+        if (itemType == type)
             return;
-        if(itemType == Type.ANY_TYPE)
+        else if (itemType == Type.ANY_TYPE)
             itemType = type;
         else
-            itemType = Type.NODE;
+            itemType = Type.getCommonSuperType(type, itemType);
     }
     
     /* (non-Javadoc)
