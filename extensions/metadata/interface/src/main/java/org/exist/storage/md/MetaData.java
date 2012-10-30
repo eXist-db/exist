@@ -71,4 +71,6 @@ public abstract class MetaData {
 
 	public abstract void sync();
 	public abstract void close();
+
+	public abstract XmldbURI UUIDtoURI(String uuid) throws EXistException, PermissionDeniedException;
 }
