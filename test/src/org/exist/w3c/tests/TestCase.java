@@ -111,7 +111,7 @@ public abstract class TestCase {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		System.out.println("setUpBeforeClass ENTERED");
+//		System.out.println("setUpBeforeClass ENTERED");
 		try {
 			if (database == null) {
 				System.out.println("Start up database...");
@@ -134,7 +134,7 @@ public abstract class TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("setUpBeforeClass PASSED");
+//		System.out.println("setUpBeforeClass PASSED");
 	}
 
 	public abstract void loadTS() throws Exception;
@@ -144,7 +144,7 @@ public abstract class TestCase {
 		synchronized (database) {
 			inUse--;
 		}
-		System.out.println("tearDownAfterClass PASSED");
+//		System.out.println("tearDownAfterClass PASSED");
 	}
 
 	/**
@@ -152,7 +152,7 @@ public abstract class TestCase {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		System.out.println("setUp ENTERED");
+//		System.out.println("setUp ENTERED");
 		if (testCollection == null) {
 			synchronized (database) {
 				if (testCollection == null) {
@@ -169,7 +169,7 @@ public abstract class TestCase {
 				}
 			}
 		}
-		System.out.println("setUp PASSED");
+//		System.out.println("setUp PASSED");
 	}
 	
 	protected abstract String getCollection();
