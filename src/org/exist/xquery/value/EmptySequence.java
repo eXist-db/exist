@@ -70,7 +70,6 @@ public class EmptySequence extends AbstractSequence {
 	}
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
-		System.out.println("hello");
 		switch(requiredType) {
 			case Type.BOOLEAN:
 				return new BooleanValue(false);
