@@ -133,8 +133,12 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public final boolean match(NodePath other) {
+    	return match(other, 0);
+    }
+
+    public final boolean match(NodePath other, int j) {
         boolean skip = false;
-        int i = 0, j = 0;
+        int i = 0;
         for( ; j < other.pos; j++) {
             if(i == pos) {
                 if(includeDescendants)
