@@ -33,6 +33,10 @@ public abstract class AbstractIndex implements Index {
      * Holds an id which uniquely identifies this index. This is usually the class name. 
      */
     protected static String ID = "Give me an ID !";
+    
+    public static String getID() {
+    	return ID;
+    }
 
     protected BrokerPool pool;    
     //Probably not useful for every kind of index. Anyway...
