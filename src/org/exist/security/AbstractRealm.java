@@ -392,7 +392,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
+    public boolean updateAccount(final Account account) throws PermissionDeniedException, EXistException {
         
         //make sure we have permission to modify this account
         Account user = getDatabase().getSubject();
@@ -422,6 +422,14 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
         updatingAccount.setPassword(account.getPassword());
         updatingAccount.setHome(account.getHome());
+        updatingAccount.setUserMask(account.getUserMask());
+        
+        //update the metadata
+        updatingAccount.clearMetadata();
+        for(final SchemaType key : account.getMetadataKeys()) {
+            updatingAccount.setMetadataValue(key, account.getMetadataValue(key));
+        }
+        
 
         ((AbstractPrincipal)updatingAccount).save();
 
@@ -429,7 +437,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
+    public boolean updateGroup(final Group group) throws PermissionDeniedException, EXistException {
 
         //make sure we have permission to modify this account
         Account user = getDatabase().getSubject();
@@ -437,7 +445,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
         
         //modify the group
-        Group updatingGroup = getGroup(group.getName());
+        final Group updatingGroup = getGroup(group.getName());
         if(updatingGroup == null) {
             throw new PermissionDeniedException("group " + group.getName() + " does not exist");
         }
@@ -454,6 +462,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
             if(!group.isManager(manager)) {
                 updatingGroup.removeManager(manager);
             }
+        }
+        
+        //update the metadata
+        updatingGroup.clearMetadata();
+        for(final SchemaType key : group.getMetadataKeys()) {
+            updatingGroup.setMetadataValue(key, group.getMetadataValue(key));
         }
 
         group.save();
