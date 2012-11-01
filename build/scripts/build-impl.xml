@@ -335,6 +335,13 @@
         </copy>
     	<copy file="${src}/org/exist/launcher/logo.jpg"
             todir="${build.classes}/org/exist/launcher"/>
+        <copy todir="${build.classes}/org/exist/webstart/resources">
+            <fileset dir="${src}/org/exist/webstart/resources">
+                <include name="*.jpg"/>
+                <include name="*.gif"/>
+                <include name="*.png"/>
+            </fileset>
+        </copy>
         <!-- Convert native to ascii-->
         <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
             encoding="UTF-8" includes="messages*.properties"/>

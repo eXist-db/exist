@@ -21,20 +21,24 @@
  */
 package org.exist.webstart;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+import org.apache.commons.io.IOUtils;
 
 import org.apache.log4j.Logger;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
- *  Class for writing JNLP file, jar files and image files.
+ * Class for writing JNLP file, jar files and image files.
  *
  * @author Dannes Wessels
  */
@@ -46,12 +50,12 @@ public class JnlpWriter {
     public static final String CONTENT_TYPE = "content-type";
     public static final String CONTENT_ENCODING = "content-encoding";
     public static final String PACK200_GZIP_ENCODING = "pack200-gzip";
-    
     private static Logger logger = Logger.getLogger(JnlpWriter.class);
 
     /**
-     *  Write JNLP xml file to browser.
-     * @param response  Object for writing to end user.
+     * Write JNLP xml file to browser.
+     *
+     * @param response Object for writing to end user.
      * @throws java.io.IOException
      */
     void writeJnlpXML(JnlpJarFiles jnlpFiles, HttpServletRequest request,
@@ -190,7 +194,7 @@ public class JnlpWriter {
             writer.writeEndElement(); // jnlp
 
             writer.writeEndDocument();
-            
+
             writer.flush();
             writer.close();
 
@@ -202,10 +206,10 @@ public class JnlpWriter {
     }
 
     /**
-     *  Send JAR or JAR.PACK.GZ file to end user.
+     * Send JAR or JAR.PACK.GZ file to end user.
      *
-     * @param filename  Name of JAR file
-     * @param response  Object for writing to end user.
+     * @param filename Name of JAR file
+     * @param response Object for writing to end user.
      * @throws java.io.IOException
      */
     void sendJar(JnlpJarFiles jnlpFiles, String filename,
@@ -230,11 +234,11 @@ public class JnlpWriter {
             response.setHeader(CONTENT_ENCODING, PACK200_GZIP_ENCODING);
             response.setContentType(PACK_MIME_TYPE);
         }
-	
-	// It is very improbable that a 64 bit jar is needed, but
-	// it is better to be ready
+
+        // It is very improbable that a 64 bit jar is needed, but
+        // it is better to be ready
         // response.setContentLength(Integer.parseInt(Long.toString(localFile.length())));
-	response.setHeader("Content-Length",Long.toString(localFile.length()));
+        response.setHeader("Content-Length", Long.toString(localFile.length()));
         response.setDateHeader("Last-Modified", localFile.lastModified());
 
         FileInputStream fis = new FileInputStream(localFile);
@@ -263,8 +267,6 @@ public class JnlpWriter {
     void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
         logger.debug("Send image " + filename);
 
-        File imagesFolder = new File(jh.getWebappFolder(), "resources");
-
         String type = null;
         if (filename.endsWith(".gif")) {
             type = "image/gif";
@@ -272,42 +274,40 @@ public class JnlpWriter {
             type = "image/jpeg";
         }
 
-        response.setContentType(type);
-
-        File imageFile = new File(imagesFolder, filename);
-        if (imageFile == null || !imageFile.exists()) {
+        
+        
+        InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
+        if (is == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
                     "Image file '" + filename + "' not found.");
             return;
         }
+        
+        // Copy data
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        IOUtils.copy(is, baos);
+        IOUtils.closeQuietly(is);
+        
+        // It is very improbable that a 64 bit jar is needed, but
+        // it is better to be ready
+        response.setContentType(type);
+        response.setContentLength(baos.size());
+        //response.setHeader("Content-Length", ""+baos.size());
 
-	// It is very improbable that a 64 bit jar is needed, but
-	// it is better to be ready
-        // response.setContentLength(Integer.parseInt(Long.toString(imageFile.length())));
-	response.setHeader("Content-Length",Long.toString(imageFile.length()));
-        response.setDateHeader("Last-Modified", imageFile.lastModified());
-
-        FileInputStream fis = new FileInputStream(imageFile);
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         ServletOutputStream os = response.getOutputStream();
 
         try {
-            // Transfer bytes from in to out
-            byte[] buf = new byte[8096];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
-
+            IOUtils.copy(bais, os);
         } catch (IllegalStateException ex) {
             logger.debug(ex.getMessage());
-
         } catch (IOException ex) {
-            logger.debug("Ignore IOException for '" + filename + "'");
+            logger.debug("Ignored IOException for '" + filename + "' " + ex.getMessage());
         }
 
+        // Release resources
         os.flush();
         os.close();
-        fis.close();
+        bais.close();
     }
-
 }

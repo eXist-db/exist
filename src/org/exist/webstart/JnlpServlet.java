@@ -47,7 +47,7 @@ public class JnlpServlet extends HttpServlet {
     private JnlpHelper jh=null;
     
     /**
-     * Initialize servlet.cd
+     * Initialize servlet.
      */
     public void init() {
         logger.info("Initializing JNLP servlet");
