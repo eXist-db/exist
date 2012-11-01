@@ -425,9 +425,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
         updatingAccount.setUserMask(account.getUserMask());
         
         //update the metadata
-        updatingAccount.clearMetadata();
-        for(final SchemaType key : account.getMetadataKeys()) {
-            updatingAccount.setMetadataValue(key, account.getMetadataValue(key));
+        if(account.hashCode() != updatingAccount.hashCode()) {
+            updatingAccount.clearMetadata();
+            for(final SchemaType key : account.getMetadataKeys()) {
+                updatingAccount.setMetadataValue(key, account.getMetadataValue(key));
+            }
         }
         
 
@@ -465,10 +467,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
         
         //update the metadata
-        updatingGroup.clearMetadata();
-        for(final SchemaType key : group.getMetadataKeys()) {
-            updatingGroup.setMetadataValue(key, group.getMetadataValue(key));
-        }
+        if(group.hashCode() != updatingGroup.hashCode()) {
+            updatingGroup.clearMetadata();
+            for(final SchemaType key : group.getMetadataKeys()) {
+                updatingGroup.setMetadataValue(key, group.getMetadataValue(key));
+            }
+        }    
 
         updatingGroup.save();
 
