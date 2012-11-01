@@ -200,9 +200,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("User Manager");
 
-        tblUsers.setAutoCreateRowSorter(true);
         tblUsers.setModel(getUsersTableModel());
+        tblUsers.setAutoCreateRowSorter(true);
         tblUsers.setComponentPopupMenu(pmUsers);
+        tblUsers.setShowGrid(true);
         tblUsers.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblUsersMouseClicked(evt);
@@ -212,9 +213,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
         tpUserManager.addTab("Users", spUsers);
 
-        tblGroups.setAutoCreateRowSorter(true);
         tblGroups.setModel(getGroupsTableModel());
+        tblGroups.setAutoCreateRowSorter(true);
         tblGroups.setComponentPopupMenu(pmGroups);
+        tblGroups.setShowGrid(true);
         tblGroups.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblGroupsMouseClicked(evt);
@@ -254,7 +256,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
                 .addComponent(jSeparator1)
                 .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(tpUserManager, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+                .addComponent(tpUserManager, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -270,7 +272,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addComponent(tpUserManager, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 50, Short.MAX_VALUE)))
+                    .addGap(0, 51, Short.MAX_VALUE)))
         );
 
         tpUserManager.getAccessibleContext().setAccessibleName("Users");
@@ -287,13 +289,16 @@ public class UserManagerDialog extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnCloseActionPerformed
 
+    private String getSelectedUsername() {
+        return (String)tblUsers.getValueAt(tblUsers.getSelectedRow(), 0);
+    }
+    
     private void miRemoveUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveUserActionPerformed
-        
-        final String selectedUsername = (String)tblUsers.getValueAt(tblUsers.getSelectedRow(), 0);
-        
+
+        final String selectedUsername = getSelectedUsername();
         try {
-            final Account acct = userManagementService.getAccount(selectedUsername);
-            userManagementService.removeAccount(acct);
+            final Account account = userManagementService.getAccount(selectedUsername);
+            userManagementService.removeAccount(account);
         
             usersTableModel.removeRow(tblUsers.getSelectedRow());
         } catch(final XMLDBException xmldbe) {
@@ -302,9 +307,29 @@ public class UserManagerDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miRemoveUserActionPerformed
 
     private void miEditUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditUserActionPerformed
-        // TODO add your handling code here:
+        
+        final String selectedUsername = getSelectedUsername();
+        try {
+            final Account account = userManagementService.getAccount(getSelectedUsername());
+            showEditUserDialog(account);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not remove user '" + selectedUsername + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_miEditUserActionPerformed
 
+    private void showEditUserDialog(final Account account) {
+        final EditUserDialog userDialog = new EditUserDialog(userManagementService, account);
+        
+        userDialog.addWindowListener(new WindowAdapter(){           
+            @Override
+            public void windowClosed(final WindowEvent e) {
+                refreshUsersTableModel();
+            }
+        });
+        
+        userDialog.setVisible(true);
+    }
+    
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
         switch(tpUserManager.getSelectedIndex()) {
             case 0:

@@ -1,7 +1,6 @@
 package org.exist.client.security;
 
 import javax.swing.AbstractSpinnerModel;
-import org.exist.security.Permission;
 
 /**
  *
@@ -74,11 +73,11 @@ public class UmaskSpinnerModel extends AbstractSpinnerModel {
         }
     }
     
-    private int octalUmaskToInt(final String octalUmask) {
+    public static int octalUmaskToInt(final String octalUmask) {
         return Integer.parseInt(octalUmask, OCTAL_RADIX);
     }
     
-    private String intToOctalUmask(final int umask) {
+    public static String intToOctalUmask(final int umask) {
         return String.format("%4s", Integer.toString(umask, OCTAL_RADIX)).replace(' ', '0');
     }
 }
