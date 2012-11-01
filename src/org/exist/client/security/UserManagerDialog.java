@@ -64,7 +64,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
     public void refreshUsersTableModel() {
         final int rowCount = usersTableModel.getRowCount();
         for(int i = 0; i < rowCount; i++) {
-            usersTableModel.removeRow(i);
+            usersTableModel.removeRow(0);
         }
         
         try {
