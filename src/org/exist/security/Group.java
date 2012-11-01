@@ -45,4 +45,6 @@ public interface Group extends Principal {
     public String getMetadataValue(SchemaType schemaType);
 
     public Set<SchemaType> getMetadataKeys();
+    
+    public void clearMetadata();
 }
