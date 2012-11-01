@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
@@ -79,27 +78,10 @@ public class UserDialog extends javax.swing.JFrame {
         lblUsername.setText("User name:");
 
         txtUsername.setInputVerifier(getUsernameInputVerifier());
-        txtUsername.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtUsernameActionPerformed(evt);
-            }
-        });
 
         lblFullName.setText("Full name:");
 
-        txtFullName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFullNameActionPerformed(evt);
-            }
-        });
-
         lblDescription.setText("Description:");
-
-        txtDescription.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtDescriptionActionPerformed(evt);
-            }
-        });
 
         lblPassword.setText("Password:");
 
@@ -110,11 +92,6 @@ public class UserDialog extends javax.swing.JFrame {
         txtPasswordConfirm.setInputVerifier(getPasswordInputVerifier());
 
         cbDisabled.setText("Account is disabled");
-        cbDisabled.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbDisabledActionPerformed(evt);
-            }
-        });
 
         spnUmask.setModel(new UmaskSpinnerModel());
         spnUmask.setEditor(new UmaskEditor(spnUmask));
@@ -138,11 +115,6 @@ public class UserDialog extends javax.swing.JFrame {
 
         cbPersonalGroup.setSelected(true);
         cbPersonalGroup.setText("Create personal user group");
-        cbPersonalGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbPersonalGroupActionPerformed(evt);
-            }
-        });
 
         lstMemberOfGroups.setModel(getMemberOfGroupsListModel());
         jScrollPane1.setViewportView(lstMemberOfGroups);
@@ -317,22 +289,6 @@ public class UserDialog extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsernameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtUsernameActionPerformed
-
-    private void txtFullNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFullNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtFullNameActionPerformed
-
-    private void txtDescriptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDescriptionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtDescriptionActionPerformed
-
-    private void cbDisabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDisabledActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbDisabledActionPerformed
-
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         setVisible(false);
         dispose();
@@ -371,7 +327,7 @@ public class UserDialog extends javax.swing.JFrame {
         userAider.setMetadataValue(EXistSchemaType.DESCRIPTION, txtDescription.getText());
         userAider.setPassword(txtPassword.getText());
         userAider.setEnabled(!cbDisabled.isSelected());
-        userAider.setUserMask((Integer)spnUmask.getValue());
+        userAider.setUserMask(UmaskSpinnerModel.octalUmaskToInt((String)spnUmask.getValue()));
         
         //add the personal group to the user
         if(cbPersonalGroup.isSelected()) {
@@ -405,10 +361,6 @@ public class UserDialog extends javax.swing.JFrame {
         }
     }
     
-    private void cbPersonalGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPersonalGroupActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbPersonalGroupActionPerformed
-
     private void btnAddGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddGroupActionPerformed
         for(final Object value: lstAvailableGroups.getSelectedValues()) {
             memberOfGroupsModel.add(value.toString());
