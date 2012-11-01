@@ -54,7 +54,7 @@ public class PermissionFactory {
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
        
         final Subject currentSubject = sm.getDatabase().getSubject();
-        final int mode = Permission.DEFAULT_RESOURCE_PERM - currentSubject.getUserMask();
+        final int mode = Permission.DEFAULT_RESOURCE_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
@@ -68,7 +68,7 @@ public class PermissionFactory {
         //TODO consider loading Permission.DEFAULT_PERM from conf.xml instead
         
         final Subject currentSubject = sm.getDatabase().getSubject();
-        final int mode = Permission.DEFAULT_COLLECTION_PERM - currentSubject.getUserMask();
+        final int mode = Permission.DEFAULT_COLLECTION_PERM & ~ currentSubject.getUserMask();
         
         return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
     }
