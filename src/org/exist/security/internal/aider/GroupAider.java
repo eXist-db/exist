@@ -174,6 +174,11 @@ public class GroupAider implements Group {
     public Set<SchemaType> getMetadataKeys() {
         return metadataValues.keySet();
     }
+
+    @Override
+    public void clearMetadata() {
+        metadataValues.clear();
+    }
     
     
 }

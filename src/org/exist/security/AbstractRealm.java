@@ -395,11 +395,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public boolean updateAccount(final Account account) throws PermissionDeniedException, EXistException {
         
         //make sure we have permission to modify this account
-        Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getSubject();
         account.assertCanModifyAccount(user);
         
         //modify the account
-        Account updatingAccount = getAccount(account.getName());
+        final Account updatingAccount = getAccount(account.getName());
         if(updatingAccount == null) {
             throw new PermissionDeniedException("account " + account.getName() + " does not exist");
         }
@@ -440,7 +440,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public boolean updateGroup(final Group group) throws PermissionDeniedException, EXistException {
 
         //make sure we have permission to modify this account
-        Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getSubject();
         group.assertCanModifyGroup(user);
 
         
@@ -470,7 +470,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             updatingGroup.setMetadataValue(key, group.getMetadataValue(key));
         }
 
-        group.save();
+        updatingGroup.save();
 
         return true;
     }
