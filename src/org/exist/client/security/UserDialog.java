@@ -343,15 +343,22 @@ public class UserDialog extends javax.swing.JFrame {
             return;
         }
         
+        //create the user
+        createUser();
         
-        
+        //close the dialog
+        setVisible(false);
+        dispose();
+    }//GEN-LAST:event_btnCreateActionPerformed
+
+    protected void createUser() {
         //1 - create personal group
         if(cbPersonalGroup.isSelected()) {
             final GroupAider groupAider = new GroupAider(txtUsername.getText());
             groupAider.setMetadataValue(EXistSchemaType.DESCRIPTION, "Personal group for " + txtUsername.getText());
             
             try {
-                userManagementService.addGroup(groupAider);
+                getUserManagementService().addGroup(groupAider);
             } catch(final XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not create personal group '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -364,6 +371,7 @@ public class UserDialog extends javax.swing.JFrame {
         userAider.setMetadataValue(EXistSchemaType.DESCRIPTION, txtDescription.getText());
         userAider.setPassword(txtPassword.getText());
         userAider.setEnabled(!cbDisabled.isSelected());
+        userAider.setUserMask((Integer)spnUmask.getValue());
         
         //add the personal group to the user
         if(cbPersonalGroup.isSelected()) {
@@ -378,7 +386,7 @@ public class UserDialog extends javax.swing.JFrame {
         }
         
         try {
-            userManagementService.addAccount(userAider);
+            getUserManagementService().addAccount(userAider);
         } catch(XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not create user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -387,7 +395,7 @@ public class UserDialog extends javax.swing.JFrame {
         //3 - if created personal group, then add us as the manager
         if(cbPersonalGroup.isSelected()) {
             try {
-                final Group group = userManagementService.getGroup(txtUsername.getText());
+                final Group group = getUserManagementService().getGroup(txtUsername.getText());
                 group.addManager(userAider); 
             } catch(XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
@@ -395,13 +403,8 @@ public class UserDialog extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
             }
         }
-        
-        //4 - close the dialog
-        setVisible(false);
-        dispose();
-        
-    }//GEN-LAST:event_btnCreateActionPerformed
-
+    }
+    
     private void cbPersonalGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPersonalGroupActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cbPersonalGroupActionPerformed
@@ -463,33 +466,37 @@ public class UserDialog extends javax.swing.JFrame {
         return String.format("%4s", Integer.toString(Permission.DEFAULT_UMASK, UmaskSpinnerModel.OCTAL_RADIX)).replace(' ', '0');
     }
     
-    private ListModel getAvailableGroupsListModel() {
+    protected SortedListModel getAvailableGroupsListModel() {
         if(availableGroupsModel == null) {
             try {
-                final String groupNames[] = userManagementService.getGroups();
+                final String groupNames[] = getUserManagementService().getGroups();
                 availableGroupsModel = new SortedListModel<String>();
                 availableGroupsModel.addAll(groupNames);
             } catch (final XMLDBException xmldbe) {
-                //TODO log?
+                JOptionPane.showMessageDialog(this, "Could not get available groups: " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         return availableGroupsModel;
     }
     
-    private ListModel getMemberOfGroupsListModel() {
+    protected SortedListModel getMemberOfGroupsListModel() {
         if(memberOfGroupsModel == null) {
             memberOfGroupsModel = new SortedListModel<String>();
         }
         return memberOfGroupsModel;
     }
+
+    protected UserManagementService getUserManagementService() {
+        return userManagementService;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGroup;
     private javax.swing.JButton btnClose;
-    private javax.swing.JButton btnCreate;
+    protected javax.swing.JButton btnCreate;
     private javax.swing.JButton btnRemoveGroup;
-    private javax.swing.JCheckBox cbDisabled;
-    private javax.swing.JCheckBox cbPersonalGroup;
+    protected javax.swing.JCheckBox cbDisabled;
+    protected javax.swing.JCheckBox cbPersonalGroup;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
@@ -506,11 +513,11 @@ public class UserDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblUsername;
     private javax.swing.JList lstAvailableGroups;
     private javax.swing.JList lstMemberOfGroups;
-    private javax.swing.JSpinner spnUmask;
-    private javax.swing.JTextField txtDescription;
-    private javax.swing.JTextField txtFullName;
-    private javax.swing.JPasswordField txtPassword;
-    private javax.swing.JPasswordField txtPasswordConfirm;
-    private javax.swing.JTextField txtUsername;
+    protected javax.swing.JSpinner spnUmask;
+    protected javax.swing.JTextField txtDescription;
+    protected javax.swing.JTextField txtFullName;
+    protected javax.swing.JPasswordField txtPassword;
+    protected javax.swing.JPasswordField txtPasswordConfirm;
+    protected javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 }
