@@ -219,4 +219,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         }
         return metadataKeys;
     }
+    
+    public void clearMetadata() {
+    	metadata.clear();
+    }
 }
