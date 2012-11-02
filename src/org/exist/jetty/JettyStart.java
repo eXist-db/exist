@@ -120,7 +120,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
                 System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
                 System.getProperty("java.home", "(unknown java.home)") +"]");
-        logger.info("");
+        
+        logger.info("Running as user '" + System.getProperty("user.name", "(unknown user.name)") + "'");
 
         String msg;
         msg = "[eXist Version : " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]";
