@@ -399,7 +399,6 @@
             <include name="org/exist/jetty/**"/>
             <include name="org/exist/jsp/**"/>
             <include name="org/exist/soap/**"/>
-            <include name="org/exist/start/**"/>
             <include name="org/exist/webstart/**"/>
             <include name="org/exist/xquery/functions/request/**"/>
             <include name="org/exist/xquery/functions/response/**"/>
