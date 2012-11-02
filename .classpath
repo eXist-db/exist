@@ -61,7 +61,7 @@
 	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-2.4.0.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-junit4-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-pool-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-pool-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/core/ws-commons-util-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-client-3.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmlrpc-common-3.1.3.jar"/>
@@ -84,7 +84,7 @@
 	<classpathentry kind="lib" path="lib/core/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant-1.4.jar"/>
@@ -92,7 +92,7 @@
 	<classpathentry kind="lib" path="lib/optional/axis-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
@@ -132,7 +132,7 @@
 	<classpathentry kind="lib" path="lib/user/calabash.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/jdom-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/webdav/lib/mime-util-2.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-compress-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-compress-1.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.2.jar"/>
@@ -148,7 +148,7 @@
 	<classpathentry kind="lib" path="lib/optional/xqjapi-1.0-fr.jar"/>
 	<classpathentry kind="lib" path="extensions/security/oauth/lib/scribe-1.3.0.jar"/>
 	<classpathentry kind="lib" path="extensions/security/oauth/lib/org.json.jar"/>
-	<classpathentry kind="lib" path="lib/core/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-codec-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1-min.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-net-2.2.jar"/>
