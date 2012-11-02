@@ -191,6 +191,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         }
     }
     
+    //this method used only at tests, don't use it other places
     protected void setManagers(List<Reference<SecurityManager, Account>> managers) {
         this.managers = managers;
     }
