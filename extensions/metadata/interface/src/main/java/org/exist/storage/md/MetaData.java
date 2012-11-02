@@ -46,6 +46,7 @@ public abstract class MetaData {
 	protected final static Logger LOG = Logger.getLogger(MetaData.class);
 
 	public abstract DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException;
+	public abstract Collection getCollection(String uuid) throws EXistException, PermissionDeniedException;
 
 	public abstract List<DocumentImpl> matchDocuments(String key, String value) throws EXistException, PermissionDeniedException;
 
@@ -72,5 +73,6 @@ public abstract class MetaData {
 	public abstract void sync();
 	public abstract void close();
 
-	public abstract XmldbURI UUIDtoURI(String uuid) throws EXistException, PermissionDeniedException;
+	public abstract XmldbURI UUIDtoURI(String uuid);
+	public abstract String URItoUUID(XmldbURI uri);
 }

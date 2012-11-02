@@ -125,19 +125,26 @@ public class MetaDataImpl extends MetaData {
 				db.release(broker);
 		}
 	}
-	
-	/**
-	 * Given the supplied UUID, return the corresponding URI to the resource in eXist 
-	 */
-	public XmldbURI UUIDtoURI(String uuid) throws EXistException, PermissionDeniedException {
+
+	public Collection getCollection(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
 		if (ms == null) return null;
 		
-		return XmldbURI.create(ms.uri);
-	
+		BrokerPool db = null;
+		DBBroker broker = null;
+		try {
+			db = BrokerPool.getInstance();
+			broker = db.get(null);
+			
+			XmldbURI uri = XmldbURI.create(ms.uri);
+			return broker.getCollection(uri);
+		} finally {
+			if (db != null)
+				db.release(broker);
+		}
 	}
 
-    private Metas _addMetas(DocumentAtExist doc) {
+	private Metas _addMetas(DocumentAtExist doc) {
 		MetasImpl d = new MetasImpl(doc);
 		docByUUID.put(d);
 		
@@ -458,5 +465,22 @@ public class MetaDataImpl extends MetaData {
 
 	public EntityCursor<MetaImpl> getMetaKeys(Metas doc) {
 		return metadata.subIndex(doc.getUUID()).entities();
+	}
+
+	@Override
+	public XmldbURI UUIDtoURI(String uuid) {
+		MetasImpl ms = docByUUID.get(uuid);
+		if (ms == null) return null;
+		
+		return XmldbURI.create(ms.uri);
+	}
+
+	@Override
+	public String URItoUUID(XmldbURI uri) {
+		Metas d = getMetas(uri, false);
+		
+		if (d == null) return null;
+		
+		return d.getUUID();
 	}
 }
