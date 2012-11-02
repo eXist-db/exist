@@ -3,6 +3,8 @@ xquery version "1.0";
 (:
     Module: Browse Indexes: See an overview of .xconf files stored in /db/system/config, 
     and browse the associated index keys.
+    
+    TODO: remove legacy fulltext code when it has been cut out of eXist-db 2.0
 :)
 
 module namespace indexes="http://exist-db.org/xquery/admin-interface/indexes";
@@ -67,7 +69,7 @@ declare variable $indexes:index-names :=
 :)
 declare function indexes:main() {
     let $xconfs := 
-        for $xconf in collection('/db/system/config/')/cc:collection 
+        for $xconf in collection('/db/system/config/')/cc:collection[cc:index]
         order by util:collection-name($xconf) 
         return $xconf
     return
@@ -98,7 +100,7 @@ declare function indexes:list-indexes($xconfs) {
         <div class="panel-head">Browse Indexes</div>
         <p>This is an overview of the index definitions applied in the database, 
             as well as the "index keys" (the actual items stored in the index).</p>
-        <p>Browsing {count($xconfs)} indexes:</p>
+        <p>Browsing indexes on {count($xconfs)} collections:</p>
         { indexes:xconf-to-table($xconfs) }
     </div>
 };
@@ -115,7 +117,7 @@ declare function indexes:xconf-to-table($xconfs as node()*) as item()* {
         return
             <tr>
                 <th>{$count}. {$data-collection-name} {if (xmldb:collection-available($data-collection-name)) then () else ' (no data)'}
-                    (<a href="{concat(request:get-context-path(), '/eXide/index.html?open=', $xconf-collection-name, '/', xmldb:get-child-resources($xconf-collection-name)[ends-with(., '.xconf')])}">View xconf file</a>)
+                    (<a href="{concat(request:get-context-path(), '/apps/eXide/index.html?open=', $xconf-collection-name, '/', xmldb:get-child-resources($xconf-collection-name)[ends-with(., '.xconf')])}">Open .xconf file in eXide</a>)
                 </th>
                 <tr><td><table class="browse" cellpadding="2">
                     <tr>
@@ -349,7 +351,13 @@ declare function indexes:analyze-legacy-fulltext-indexes($xconf) {
     
     let $no-fulltext := if ( not($fulltext) or ($default-none and $attributes-none and not($creates)) ) then '(disabled)' else ()
     return 
-        if ($no-fulltext) then ()
+        if ($no-fulltext) then
+            <tr>
+                <td>-</td>
+                <td>{concat($index-label, ' ', $no-fulltext)}</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
         else if (not($default-none) and not($attributes-none)) then
             <tr>
                 <td>All Elements and Attributes!</td>
@@ -383,14 +391,14 @@ declare function indexes:analyze-legacy-fulltext-indexes($xconf) {
             return
             if ($only-elements-disabled) then
                 <tr>
-                    <td>All Attributes!</td>
+                    <td>All Attributes! {$only-elements-disabled}</td>
                     <td>{$index-label}</td>
                     <td>{count(collection($collection)//@*)} attributes</td>
                     <td>(Too many to display)</td>
                 </tr>(: is it feasible to display all qnames/nodes here? :)
             else if ($only-attribs-disabled) then 
                 <tr>
-                    <td>All Elements!</td>
+                    <td>All Elements! {$only-attribs-disabled}</td>
                     <td>{$index-label}</td>
                     <td>{count(collection($collection)//*)} elements</td>
                     <td>(Too many to display)</td>
