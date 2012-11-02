@@ -87,9 +87,13 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         buf.append("\" id=\"");
         buf.append(Integer.toString(id));
         buf.append("\">");
-        for(Account manager : getManagers()) {
-            buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
-        }
+        try {
+	        for(Account manager : getManagers()) {
+	            buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
+	        }
+        } catch (Throwable e) {
+            buf.append("<manager error=\"" + e.getMessage() + "\"/>");
+		}
         buf.append("</group>");
         return buf.toString();
     }
