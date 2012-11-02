@@ -545,6 +545,20 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "No permission to execute XQuery for: " + path + " denied.");
 			}
 			return;
+           
+        } catch (XPathException e){
+            
+            Logger logger = getLog();            
+            if(logger.isDebugEnabled()) {
+                logger.debug(e.getMessage(),e);
+            }          
+            
+            if (reportErrors)
+            	writeError(output, e);
+            else {
+            	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            	sendError(output, "Error", e.getMessage());
+            }
             
         } catch (Throwable e){
             getLog().error(e.getMessage(), e);
