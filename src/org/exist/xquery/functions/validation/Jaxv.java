@@ -69,6 +69,13 @@ public class Jaxv extends BasicFunction  {
             "One of more XML Schema documents (.xsd), " +
             "referenced as xs:anyURI, a node (element or returned by fn:doc()) " +
             "or as Java file objects.";
+    
+    private static final String languageText=
+            "The namespace URI to designate a schema language. Depending on the " +
+            "jaxv.SchemaFactory implementation the following values are valid:" +
+            "(XSD 1.0) http://www.w3.org/2001/XMLSchema http://www.w3.org/XML/XMLSchema/v1.0, " +
+            "(XSD 1.1) http://www.w3.org/XML/XMLSchema/v1.1, " + 
+            "(RELAX NG 1.0) http://relaxng.org/ns/structure/1.0";
 
     // Setup function signature
     public final static FunctionSignature signatures[] = {        
@@ -80,7 +87,23 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        grammarText)
+                        languageText)
+                },
+                new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                    Shared.simplereportText)
+            ),
+        
+        new FunctionSignature(
+                new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt,
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        instanceText),
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
+                        grammarText),
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.ONE,
+                        languageText),
+                    
                 },
                 new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                     Shared.simplereportText)
@@ -94,7 +117,22 @@ public class Jaxv extends BasicFunction  {
                     new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
-                        grammarText)
+                        grammarText),
+                   },
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
+                    Shared.xmlreportText)
+            ),
+            
+        new FunctionSignature(
+                new QName("jaxv-report", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
+                extendedFunctionTxt+" An XML report is returned.",
+                new SequenceType[]{
+                    new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
+                        instanceText),
+                    new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
+                        grammarText),
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.ONE,
+                        languageText),
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText)
@@ -115,7 +153,7 @@ public class Jaxv extends BasicFunction  {
             throws XPathException {
 
         // Check input parameters
-        if (args.length != 2) {
+        if (args.length != 2  && args.length != 3) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
@@ -123,6 +161,7 @@ public class Jaxv extends BasicFunction  {
         ValidationReport report = new ValidationReport();
         StreamSource instance = null;
         StreamSource grammars[] =null;
+        String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
         try {
             report.start();
@@ -133,23 +172,38 @@ public class Jaxv extends BasicFunction  {
             // Validate using resource speciefied in second parameter
             grammars = Shared.getStreamSource(args[1], context);
            
-            for(StreamSource grammar: grammars){
+            // Check input
+            for (StreamSource grammar : grammars) {
                 String grammarUrl = grammar.getSystemId();
-                if(grammarUrl != null && !grammarUrl.endsWith(".xsd")){
-                    throw new XPathException("Only XML schemas (.xsd) are supported.");
+                if (grammarUrl != null && !grammarUrl.endsWith(".xsd") && !grammarUrl.endsWith(".rng")) {
+                    throw new XPathException("Only XML schemas (.xsd) and RELAXNG grammars (.rng) are supported"
+                            + ", depending on the used XML parser.");
                 }
             }
 
-            // Prepare
-            String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
-            SchemaFactory factory = SchemaFactory.newInstance(schemaLang);
-
+            // Fetch third argument if available, and override defailt value
+            if (args.length == 3) {
+                schemaLang = args[2].getStringValue();
+            }
+            
+            // Get language specific factory
+            SchemaFactory factory = null;
+            try {
+                factory = SchemaFactory.newInstance(schemaLang);
+                
+            } catch (IllegalArgumentException ex) {
+                String msg = "Schema language '" + schemaLang + "' is not supported. " + ex.getMessage();
+                LOG.error(msg);
+                throw new XPathException(msg);
+            }
+            
+            
             // Create grammar
             Schema schema = factory.newSchema(grammars);
- 
+
             // Setup validator
             Validator validator = schema.newValidator();
-            validator.setErrorHandler(report);      
+            validator.setErrorHandler(report);
 
             // Perform validation
             validator.validate(instance);
@@ -157,10 +211,6 @@ public class Jaxv extends BasicFunction  {
 
         } catch (MalformedURLException ex) {
             LOG.error(ex.getMessage());
-            report.setException(ex);
-
-        } catch (IOException ex) {
-            LOG.error(ex);
             report.setException(ex);
 
         } catch (Throwable ex) {
