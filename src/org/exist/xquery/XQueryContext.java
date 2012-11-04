@@ -2687,7 +2687,11 @@ public class XQueryContext implements BinaryValueManager, Context
             // Set locally to remember the dependency in case it was inherited.
             setModule( namespaceURI, module );
         } else {
-            module = resolveInEXPathRepository(namespaceURI, prefix);
+            // if location is not specified, try to resolve in expath repo
+            if (location == null) {
+                module = resolveInEXPathRepository(namespaceURI, prefix);
+            }
+
             if ( module == null ) {
 
             if( location == null ) {
