@@ -23,7 +23,6 @@ import module namespace backup="http://exist-db.org/xquery/admin-interface/backu
 import module namespace prof="http://exist-db.org/xquery/profiling" at "trace.xqm";
 import module namespace grammar="http://exist-db.org/xquery/admin-interface/grammar" at "grammar.xqm";
 import module namespace install="http://exist-db.org/xquery/install-tools" at "install.xqm";
-import module namespace fundocs="http://exist-db.org/xquery/admin/fundocs" at "fundocs.xqm";
 import module namespace repomanager="http://exist-db.org/xquery/admin-interface/repo" at "repo.xqm";
 import module namespace indexes="http://exist-db.org/xquery/admin-interface/indexes" at "indexes.xqm";
 
@@ -63,7 +62,6 @@ declare function admin:menu-panel() as element()
               </li>
               <li>Install
                   <ul>
-                      <li><a href="{$link}?panel=fundocs">Documentation</a></li>
                       <li><a href="{$link}?panel=setup">betterFORM Examples</a></li>
                       <!--li><a href="{$link}?panel=install">Tools</a></li-->
                   </ul>
@@ -112,7 +110,6 @@ declare function admin:panel() as element()
             case "xqueries"  return  xqueries:main()
             case "shutdown"  return  shut:main()
             case "setup"     return  setup:main()
-            case "fundocs"   return  fundocs:main()
     		case "repo"      return  repomanager:main()
     		case "revisions" return  rev:main()
     		case "backup"    return  backup:main()
