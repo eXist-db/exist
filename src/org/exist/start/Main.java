@@ -8,8 +8,6 @@
  */
 package org.exist.start;
 
-import org.exist.storage.BrokerPool;
-
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.exist.storage.BrokerPool;
 
 /**
  * @author Jan Hlavaty (hlavac@code.cz)
@@ -116,14 +115,12 @@ public class Main {
             throws IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, ClassNotFoundException {
 
-        Class<?> invoked_class = null;
-        invoked_class = classloader.loadClass(classname);
+        Class<?> invoked_class = classloader.loadClass(classname);
 
         Class<?>[] method_param_types = new Class[1];
         method_param_types[0] = args.getClass();
 
-        Method main = null;
-        main = invoked_class.getDeclaredMethod("main", method_param_types);
+        Method main = invoked_class.getDeclaredMethod("main", method_param_types);
 
         Object[] method_params = new Object[1];
         method_params[0] = args;
@@ -217,14 +214,8 @@ public class Main {
                                 : home + File.separatorChar + subject.replace('/', File.separatorChar);
 
                         if (_debug) {
-                            System.err.println("subject="
-                                    + subject
-                                    + " file="
-                                    + file
-                                    + " condition="
-                                    + condition
-                                    + " include_subject="
-                                    + include_subject);
+                            System.err.println("subject=" + subject + " file=" + file
+                                    + " condition=" + condition + " include_subject=" + include_subject);
                         }
 
                         // ok, should we include?
@@ -232,11 +223,9 @@ public class Main {
                             // directory of JAR files
                             File extdir = new File(file.substring(0, file.length() - 1));
                             File[] jars = extdir.listFiles(new FilenameFilter() {
-
                                 public boolean accept(File dir, String name) {
                                     String namelc = name.toLowerCase();
                                     return namelc.endsWith(".jar") || name.endsWith(".zip");
-
                                 }
                             });
 
@@ -488,16 +477,11 @@ public class Main {
             }
 
             if (webinf.exists()) {
-                File jar =
-                        new File(webinf.getPath()
-                        + File.separatorChar
-                        + "lib"
-                        + File.separatorChar
-                        + "exist.jar");
+                File jar = new File(webinf.getPath() + File.separatorChar + "lib"
+                        + File.separatorChar + "exist.jar");
                 if (jar.exists()) {
                     try {
                         _home_dir = webinf.getCanonicalFile();
-
                     } catch (IOException e) {
                         // ignore
                     }
@@ -515,7 +499,6 @@ public class Main {
             if (jar.canRead()) {
                 try {
                     _home_dir = new File(".").getCanonicalFile();
-
                 } catch (IOException e) {
                     // ignore
                 }
@@ -537,8 +520,7 @@ public class Main {
             }
         }
 
-        // searching exist.jar failed, try conf.xml to have the configuration
-        // at least
+        // searching exist.jar failed, try conf.xml to have the configuration at least
         if (_home_dir == null) {
             // try conf.xml in current dir
             File jar = new File("conf.xml");
@@ -596,8 +578,7 @@ public class Main {
             String configFilePath1 = "";
             String configFilePath2 = "";
             try {
-                configFilePath1 = homeDir.getPath() + File.separatorChar
-                        + "start.config";
+                configFilePath1 = homeDir.getPath() + File.separatorChar + "start.config";
                 cpcfg = new java.io.FileInputStream(configFilePath1);
                 startConfigFileName = configFilePath1;
 
@@ -617,14 +598,12 @@ public class Main {
 
             if (cpcfg == null) {
                 throw new RuntimeException(
-                        "start.config not found at "
-                        + configFilePath1 + " or "
+                        "start.config not found at " + configFilePath1 + " or "
                         + configFilePath2 + ", Bailing out.");
             }
 
             if (_debug) {
-                System.err.println(
-                        "Configuring classpath from: " + startConfigFileName);
+                System.err.println("Configuring classpath from: " + startConfigFileName);
             }
 
             configureClasspath(homeDir.getPath(), _classpath, cpcfg, args, _mode);
@@ -648,8 +627,7 @@ public class Main {
             if (jdk_home != null) {
                 File tools_jar_file = null;
                 try {
-                    tools_jar_file =
-                            new File(jdk_home, "lib" + File.separator + "tools.jar").getCanonicalFile();
+                    tools_jar_file = new File(jdk_home, "lib" + File.separator + "tools.jar").getCanonicalFile();
                     
                 } catch (IOException e) {
                     // ignore
