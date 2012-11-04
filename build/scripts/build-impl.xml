@@ -151,7 +151,6 @@
 		</copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
             filtering="true"/>
-        <copy file="${basedir}/server.xml.tmpl" tofile="${basedir}/server.xml" filtering="true"/>
         <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml"
             filtering="true"/>
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml"
@@ -651,7 +650,6 @@
         <delete failonerror="no" file="conf.xml"/>
         <delete failonerror="no" file="descriptor.xml"/>
         <delete failonerror="no" file="mime-types.xml"/>
-        <delete failonerror="no" file="server.xml"/>
         <delete failonerror="no" file="${src.webapp}/WEB-INF/web.xml"/>
 
         <delete>
