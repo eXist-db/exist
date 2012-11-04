@@ -23,12 +23,13 @@
 package org.exist.xquery.functions.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;

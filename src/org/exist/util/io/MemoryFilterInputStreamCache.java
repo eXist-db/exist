@@ -26,8 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.util.io;
 
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Cache implementation for CachingFilterInputStream

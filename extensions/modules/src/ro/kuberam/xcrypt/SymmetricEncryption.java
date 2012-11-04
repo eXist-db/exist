@@ -5,7 +5,7 @@
 
 package ro.kuberam.xcrypt;
 
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import java.security.*;
 import java.util.StringTokenizer;
 import javax.crypto.*;
