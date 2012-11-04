@@ -21,23 +21,24 @@
  */
 package org.exist.management.impl;
 
+import java.io.StringWriter;
+import java.util.Map;
+import javax.management.openmbean.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 
-import javax.management.openmbean.*;
-
-import java.io.StringWriter;
-import java.util.Map;
-
 public class Database implements DatabaseMBean {
 
-    private static String[] itemNames = { "owner", "referenceCount", "stack", "stackAcquired" };
+    private static String[] itemNames = {
+        "owner", "referenceCount", "stack", "stackAcquired"};
+    
     private static String[] itemDescriptions = {
-            "Name of the thread owning the broker",
-            "Number of references held by the thread",
-            "Stack trace",
-            "Broker acquired"
+        "Name of the thread owning the broker",
+        "Number of references held by the thread",
+        "Stack trace",
+        "Broker acquired"
     };
+    
     private static String[] indexNames = { "owner" };
 
     private final BrokerPool pool;

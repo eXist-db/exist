@@ -76,31 +76,31 @@ public class JMXtoXML {
 	
 	private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<String, ObjectName[]>();
 
-	static {
-		try {
-                        final ObjectName onMemory = new ObjectName("java.lang:type=Memory");
-                        final ObjectName onRuntime = new ObjectName("java.lang:type=Runtime");
+    static {
+        try {
+            final ObjectName onMemory = new ObjectName("java.lang:type=Memory");
+            final ObjectName onRuntime = new ObjectName("java.lang:type=Runtime");
 
-			CATEGORIES.put("memory", new ObjectName[] { new ObjectName("java.lang:type=Memory") });
-                        CATEGORIES.put("runtime", new ObjectName[] { new ObjectName("java.lang:type=Runtime") });
-			CATEGORIES.put("instances", new ObjectName[] { new ObjectName("org.exist.management.*:type=Database") });
-			CATEGORIES.put("disk", new ObjectName[] { new ObjectName("org.exist.management.*:type=DiskUsage") });
-			CATEGORIES.put("system", new ObjectName[] { new ObjectName("org.exist.management:type=SystemInfo") });
-			CATEGORIES.put("caches", new ObjectName[] { 
-					new ObjectName("org.exist.management.exist:type=CacheManager"),
-					new ObjectName("org.exist.management.exist:type=CollectionCacheManager"),
-					new ObjectName("org.exist.management.exist:type=CacheManager.Cache,*")
-			});
-			CATEGORIES.put("locking", new ObjectName[] { new ObjectName("org.exist.management:type=LockManager") });
-			CATEGORIES.put("processes", new ObjectName[] { new ObjectName("org.exist.management.*:type=ProcessReport") });
-			CATEGORIES.put("sanity", new ObjectName[] { new ObjectName("org.exist.management.*.tasks:type=SanityReport") });
-			CATEGORIES.put("all", new ObjectName[] { new ObjectName("org.exist.*:*"), onMemory, onRuntime });
-		} catch (MalformedObjectNameException e) {
-			LOG.warn("Error in initialization: " + e.getMessage(), e);
-		} catch (NullPointerException e) {
-			LOG.warn("Error in initialization: " + e.getMessage(), e);
-		}
-	}
+            CATEGORIES.put("memory", new ObjectName[]{new ObjectName("java.lang:type=Memory")});
+            CATEGORIES.put("runtime", new ObjectName[]{new ObjectName("java.lang:type=Runtime")});
+            CATEGORIES.put("instances", new ObjectName[]{new ObjectName("org.exist.management.*:type=Database")});
+            CATEGORIES.put("disk", new ObjectName[]{new ObjectName("org.exist.management.*:type=DiskUsage")});
+            CATEGORIES.put("system", new ObjectName[]{new ObjectName("org.exist.management:type=SystemInfo")});
+            CATEGORIES.put("caches", new ObjectName[]{
+                        new ObjectName("org.exist.management.exist:type=CacheManager"),
+                        new ObjectName("org.exist.management.exist:type=CollectionCacheManager"),
+                        new ObjectName("org.exist.management.exist:type=CacheManager.Cache,*")
+                    });
+            CATEGORIES.put("locking", new ObjectName[]{new ObjectName("org.exist.management:type=LockManager")});
+            CATEGORIES.put("processes", new ObjectName[]{new ObjectName("org.exist.management.*:type=ProcessReport")});
+            CATEGORIES.put("sanity", new ObjectName[]{new ObjectName("org.exist.management.*.tasks:type=SanityReport")});
+            CATEGORIES.put("all", new ObjectName[]{new ObjectName("org.exist.*:*"), onMemory, onRuntime});
+        } catch (MalformedObjectNameException e) {
+            LOG.warn("Error in initialization: " + e.getMessage(), e);
+        } catch (NullPointerException e) {
+            LOG.warn("Error in initialization: " + e.getMessage(), e);
+        }
+    }
 	
 	private final static Properties defaultProperties = new Properties();
 	static {
@@ -136,8 +136,9 @@ public class JMXtoXML {
 	 */
 	public void connect() {
 		ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
-		if (servers.size() > 0)
-			connection = servers.get(0);
+		if (servers.size() > 0) {
+            connection = servers.get(0);
+        }
 	}
 	
 	/**
@@ -217,6 +218,7 @@ public class JMXtoXML {
 			this.instance = instance;
 		}
 		
+        @Override
 		public void run() {
 			try {
 				ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
@@ -248,8 +250,9 @@ public class JMXtoXML {
 			builder.startDocument();
 			
 			builder.startElement(JMX_ELEMENT, null);
-			if (url != null)
-				builder.addAttribute(JMX_CONNECTION_ATTR, url.toString());
+			if (url != null) {
+                builder.addAttribute(JMX_CONNECTION_ATTR, url.toString());
+            }
 			
 			if (errcode != null) {
 				builder.startElement(JMX_ERROR, null);
@@ -293,8 +296,9 @@ public class JMXtoXML {
 
 			String className = info.getClassName();
 			int p = className.lastIndexOf('.');
-			if (p > -1 && p + 1 < className.length())
-				className = className.substring(p + 1);
+			if (p > -1 && p + 1 < className.length()) {
+                className = className.substring(p + 1);
+            }
 
 			QName qname = new QName(className, JMX_NAMESPACE, JMX_PREFIX);
 			builder.startElement(qname, null);
@@ -320,16 +324,22 @@ public class JMXtoXML {
 	}
 	
 	private void serializeObject(MemTreeBuilder builder, Object object) throws SAXException {
-		if (object == null)
-			return;
-		if (object instanceof TabularData)
-			serialize(builder, (TabularData) object);
-		else if (object instanceof CompositeData)
-			serialize(builder, (CompositeData) object);
-		else if (object instanceof Object[])
-			serialize(builder, (Object[]) object);
-		else
-			builder.characters(object.toString());
+		if (object == null) {
+            return;
+        }
+        
+        if (object instanceof TabularData) {
+            serialize(builder, (TabularData) object);
+            
+        } else if (object instanceof CompositeData) {
+            serialize(builder, (CompositeData) object);
+            
+        } else if (object instanceof Object[]) {
+            serialize(builder, (Object[]) object);
+            
+        } else {
+            builder.characters(object.toString());
+        }
 	}
 	
 	private void serialize(MemTreeBuilder builder, Object[] data) throws SAXException {

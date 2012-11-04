@@ -27,17 +27,12 @@ import java.io.InputStream;
 import java.net.SocketException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import org.exist.storage.BrokerPool;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.SingleInstanceConfiguration;
-import org.exist.validation.XmlLibraryChecker;
-import org.exist.xmldb.DatabaseImpl;
-import org.exist.xmldb.ShutdownListener;
+import javax.servlet.Servlet;
 
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
+import org.apache.log4j.Logger;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -46,15 +41,20 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.MultiException;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import javax.servlet.Servlet;
-import org.apache.log4j.Logger;
 import org.exist.SystemProperties;
+import org.exist.storage.BrokerPool;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.SingleInstanceConfiguration;
+import org.exist.validation.XmlLibraryChecker;
+import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.ShutdownListener;
+
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Database;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -109,42 +109,40 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         String shutdownHookOption = System.getProperty("exist.register-shutdown-hook", "true");
         boolean registerShutdownHook = shutdownHookOption.equals("true");
 
-        if (observer != null)
+        if (observer != null) {
             addObserver(observer);
+        }
 
         // configure database
         logger.info("Configuring eXist from " + SingleInstanceConfiguration.getPath());
-        logger.info("");
-        logger.info("Running with Java "+
-                System.getProperty("java.version", "(unknown java.version)") + " [" +
-                System.getProperty("java.vendor", "(unknown java.vendor)") + " (" +
-                System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in " +
-                System.getProperty("java.home", "(unknown java.home)") +"]");
+
+        logger.info("Running with Java "
+                + System.getProperty("java.version", "(unknown java.version)") + " ["
+                + System.getProperty("java.vendor", "(unknown java.vendor)") + " ("
+                + System.getProperty("java.vm.name", "(unknown java.vm.name)") + ") in "
+                + System.getProperty("java.home", "(unknown java.home)") + "]");
+
+        logger.info("Running as user '" 
+                + System.getProperty("user.name", "(unknown user.name)") + "'");
+
+        logger.info("[eXist Version : " 
+                + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]");
+        logger.info("[eXist Build : " 
+                + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
+        logger.info("[eXist Home : " 
+                + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]");
+        logger.info("[SVN Revision : " 
+                + SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown") + "]");
         
-        logger.info("Running as user '" + System.getProperty("user.name", "(unknown user.name)") + "'");
-
-        String msg;
-        msg = "[eXist Version : " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + "]";
-        logger.info(msg);
-        msg = "[eXist Build : " + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]";
-        logger.info(msg);
-        msg = "[eXist Home : " + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]";
-        logger.info(msg);
-        msg = "[SVN Revision : " + SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown") + "]";
-        logger.info(msg);
-        msg = "[Operating System : " +
-        		System.getProperty("os.name") +
-        		" " +
-        		System.getProperty("os.version") +
-                " " +
-                System.getProperty("os.arch") +
-                "]";
-        logger.info(msg);
-
-        msg = "[jetty.home : " + System.getProperty("jetty.home") + "]";
-        logger.info(msg);
-        msg = "[log4j.configuration : " + System.getProperty("log4j.configuration") + "]";
-        logger.info(msg);
+        logger.info("[Operating System : " 
+                + System.getProperty("os.name") + " " 
+                + System.getProperty("os.version") + " "
+                + System.getProperty("os.arch") + "]");
+        
+        logger.info("[jetty.home : " 
+                + System.getProperty("jetty.home") + "]");
+        logger.info("[log4j.configuration : " 
+                + System.getProperty("log4j.configuration") + "]");
 
         try {
             // we register our own shutdown hook
@@ -211,12 +209,16 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             try {
             	openid = Class.forName("org.exist.security.realm.openid.AuthenticatorOpenIdServlet");
             } catch (ClassNotFoundException e) {
+                // ignore
 			}
+            
             Class<?> oauth = null;
             try {
             	oauth = Class.forName("org.exist.security.realm.oauth.OAuthServlet");
             } catch (ClassNotFoundException e) {
+                // ignore
 			}
+            
             //*************************************************************
 
             logger.info("-----------------------------------------------------");
@@ -224,37 +226,46 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             HandlerCollection rootHandler = (HandlerCollection)server.getHandler();
             Handler[] handlers = rootHandler.getHandlers();
+            
             for (Handler handler: handlers) {
-            	if (handler instanceof ContextHandler) {
-					ContextHandler contextHandler = (ContextHandler) handler;
-	            	logger.info("'"+contextHandler.getContextPath()+"'");
-            	}
+                
+                if (handler instanceof ContextHandler) {
+                    ContextHandler contextHandler = (ContextHandler) handler;
+                    logger.info("'" + contextHandler.getContextPath() + "'");
+                }
             	
-            	//TODO: pluggable in future
-            	if (openid != null)
-            		if (handler instanceof ServletContextHandler) {
-            			ServletContextHandler contextHandler = (ServletContextHandler) handler;
-            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)openid), "/openid");
+                //TODO: pluggable in future
+                if (openid != null) {
+                    if (handler instanceof ServletContextHandler) {
+                        ServletContextHandler contextHandler = (ServletContextHandler) handler;
+                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) openid), "/openid");
 
-            			String suffix;
-            			if (contextHandler.getContextPath().endsWith("/"))
-            				suffix = "openid";
-           				else 
-               				suffix = "/openid";
-            			logger.info("'"+contextHandler.getContextPath() + suffix+"'");
-            		}
-            	if (oauth != null)
-            		if (handler instanceof ServletContextHandler) {
-            			ServletContextHandler contextHandler = (ServletContextHandler) handler;
-            			contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>)oauth), "/oauth/*");
+                        String suffix;
+                        if (contextHandler.getContextPath().endsWith("/")) {
+                            suffix = "openid";
+                        } else {
+                            suffix = "/openid";
+                        }
 
-            			String suffix;
-            			if (contextHandler.getContextPath().endsWith("/"))
-            				suffix = "oauth";
-           				else 
-               				suffix = "/oauth";
-            			logger.info("'"+contextHandler.getContextPath() + suffix+"'");
-            		}
+                        logger.info("'" + contextHandler.getContextPath() + suffix + "'");
+                    }
+                }
+
+                if (oauth != null) {
+                    if (handler instanceof ServletContextHandler) {
+                        ServletContextHandler contextHandler = (ServletContextHandler) handler;
+                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) oauth), "/oauth/*");
+
+                        String suffix;
+                        if (contextHandler.getContextPath().endsWith("/")) {
+                            suffix = "oauth";
+                        } else {
+                            suffix = "/oauth";
+                        }
+
+                        logger.info("'" + contextHandler.getContextPath() + suffix + "'");
+                    }
+                }
                 //*************************************************************
             }
 
@@ -268,17 +279,16 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     public void run() {
                         setName("Shutdown");
                         BrokerPool.stopAll(true);
-                        if (server.isStopping() || server.isStopped())
+                        if (server.isStopping() || server.isStopped()) {
                             return;
+                        }
+                        
                         try {
                             server.stop();
                         } catch (Exception e) {
+                            // ignore
                         }
-//                        try {
-//                            Thread.sleep(1000);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
+                        
                     }
                 };
                 Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -286,6 +296,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             setChanged();
             notifyObservers(SIGNAL_STARTED);
+            
         } catch (MultiException e) {
 
             // Mute the BindExceptions
@@ -295,8 +306,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 if (t instanceof java.net.BindException) {
                     hasBindException = true;
                     logger.info("----------------------------------------------------------");
-                    logger.info("ERROR: Could not bind to port because " +
-                        ((Exception) t).getMessage());
+                    logger.info("ERROR: Could not bind to port because " + ((Exception) t).getMessage());
                     logger.info(t.toString());
                     logger.info("----------------------------------------------------------");
                 }
@@ -308,14 +318,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
             setChanged();
             notifyObservers(SIGNAL_ERROR);
+            
         } catch (SocketException e) {
             logger.info("----------------------------------------------------------");
-            logger.info("ERROR: Could not bind to port because " +
-                        e.getMessage());
+            logger.info("ERROR: Could not bind to port because " + e.getMessage());
             logger.info(e.toString());
             logger.info("----------------------------------------------------------");
             setChanged();
             notifyObservers(SIGNAL_ERROR);
+            
         } catch (Exception e) {
             e.printStackTrace();
             setChanged();
@@ -324,13 +335,17 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public synchronized void shutdown() {
-        if (shutdownHook != null)
+        if (shutdownHook != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        }
+        
         BrokerPool.stopAll(false);
+        
         while (status != STATUS_STOPPED) {
             try {
                 wait();
             } catch (InterruptedException e) {
+                // ignore
             }
         }
     }
@@ -354,7 +369,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 // give the webserver a 1s chance to complete open requests
                 Timer timer = new Timer("jetty shutdown schedule", true);
                 timer.schedule(new TimerTask() {
-
                     public void run() {
                         try {
                             // stop the server
@@ -364,17 +378,19 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             e.printStackTrace();
                         }
                     }
-                }, 1000);
+                }, 1000); // timer.schedule
             }
         }
     }
 
 
     public synchronized boolean isStarted() {
-        if (status == STATUS_STARTED || status == STATUS_STARTING)
+        if (status == STATUS_STARTED || status == STATUS_STARTING) {
             return true;
-        if (status == STATUS_STOPPED)
+        }
+        if (status == STATUS_STOPPED) {
             return false;
+        }
         while (status != STATUS_STOPPED) {
             try {
                 wait();
