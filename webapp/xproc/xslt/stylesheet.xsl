@@ -1,1 +1,0 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"><xsl:template match="/"><success vendor="{system-property('xsl:vendor')}" version="{system-property('xsl:product-version')}"><xsl:copy-of select="."/></success></xsl:template></xsl:stylesheet>

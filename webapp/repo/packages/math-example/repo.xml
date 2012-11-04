@@ -1,9 +1,0 @@
-<meta xmlns="http://exist-db.org/xquery/repo">
-  <author>Dannes Wessels</author>
-  <website>http://exist.sourceforge.net</website>
-  <license>GNU-LGPL</license>
-  <copyright>true</copyright>
-  <description>XQuery math functons.</description>
-  <type>library</type>    
-  <status>experimental</status>
-</meta>
