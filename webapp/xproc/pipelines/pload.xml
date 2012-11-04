@@ -1,5 +1,0 @@
-<p:pipeline name="pipeline"
-                                xmlns:p="http://www.w3.org/ns/xproc"
-                                xmlns:c="http://www.w3.org/ns/xproc-step">
-                        <p:load name="read-from-home" href="{$local:XPROCXQ_EXAMPLES}/storetest.xml"/>
-                    </p:pipeline>

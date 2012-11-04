@@ -1,5 +1,0 @@
-<p:pipeline name="pipeline"
-                                xmlns:p="http://www.w3.org/ns/xproc"
-                                xmlns:c="http://www.w3.org/ns/xproc-step">
-						<p:add-attribute attribute-name="attr-name" attribute-value="attr-val" match="//c"/>
-	             	</p:pipeline>
