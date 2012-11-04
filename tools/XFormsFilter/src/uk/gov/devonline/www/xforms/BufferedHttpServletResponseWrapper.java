@@ -20,7 +20,7 @@
  */
 package uk.gov.devonline.www.xforms;
 
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletOutputStream;

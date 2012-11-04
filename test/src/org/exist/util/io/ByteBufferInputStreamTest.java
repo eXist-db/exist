@@ -1,15 +1,15 @@
 package org.exist.util.io;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Random;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import org.junit.Test;
+import java.util.Random;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * @author Adam Retter <adam.retter@googlemail.com>

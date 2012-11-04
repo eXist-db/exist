@@ -1,6 +1,6 @@
 package org.exist.xquery.value;
 
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

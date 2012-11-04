@@ -1,6 +1,6 @@
 package org.exist.xqdoc.ant;
 
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

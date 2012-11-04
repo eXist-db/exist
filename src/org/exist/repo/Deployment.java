@@ -1,6 +1,15 @@
 package org.exist.repo;
 
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+
+import java.io.*;
+import java.util.Date;
+import java.util.Stack;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -36,12 +45,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import java.io.*;
-import java.util.Date;
-import java.util.Stack;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 
 /**
  * Deploy a .xar package into the database using the information provided

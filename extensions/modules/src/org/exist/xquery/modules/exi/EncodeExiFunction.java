@@ -20,7 +20,7 @@
 package org.exist.xquery.modules.exi;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
