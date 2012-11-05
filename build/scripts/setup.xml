@@ -43,11 +43,16 @@
   <!-- 
     Download xar files from the package website.
   -->
-  <target name="setup" depends="prepare" description="Download standard xar packages." if="autostart-empty">
-    <foreach list="${autodeploy}" target="download-xar" param="xar"></foreach>
+  <target name="setup" depends="prepare" description="Download standard xar packages.">
+    <foreach list="${autodeploy}" target="download" param="xar"></foreach>
   </target>
   
-  <target name="download-xar">
+  <target name="download">
+    <available file="${autostart-dir}/${xar}" property="xar-installed"/>
+    <antcall target="download-xar"/>
+  </target>
+
+  <target name="download-xar" unless="xar-installed">
       
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
         <classpath>
