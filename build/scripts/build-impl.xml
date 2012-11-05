@@ -612,7 +612,6 @@
         <ant antfile="build.xml" dir="extensions/security/activedirectory"  target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="extensions/xprocxq" target="clean" inheritall="false"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean" inheritall="false"/>
-        <ant antfile="build.xml" dir="webapp/repo" target="clean" inheritall="false"/>
         
         <ant antfile="${build.scripts}/extensions-build.xml" target="clean" inheritAll="false"/>
         
