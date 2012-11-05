@@ -26,6 +26,7 @@
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="build.examples" value="${build}/examples"/>
+    <property name="build.javadoc" value="${build}/javadoc"/>
     <property name="build.extensions" value="./extensions"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
@@ -429,10 +430,11 @@
     <target name="javadocs" description="Create javadoc">
         <mkdir dir="${build.src}"/>
 
-        <!--delete dir="webapp/api"/>
-        <mkdir dir="webapp/api"/-->
+        <delete dir="${build.javadoc}"/>
+        <mkdir dir="${build.javadoc}"/>
+        
         <echo message="Generating Javadocs ..."/>
-        <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="webapp/api"
+        <javadoc bottom="Copyright (C) The eXist-db Project. All rights reserved." destdir="${build.javadoc}"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
@@ -576,6 +578,7 @@
         <echo message="-------------------------"/>
         <delete dir="${build.classes}"/>
         <delete dir="${build.examples}"/>
+        <delete dir="${build.javadoc}"/>
         <delete dir="${dist.dir}"/>
         <delete quiet="true" failonerror="false">
             <fileset dir="log" includes="*" />
