@@ -23,6 +23,7 @@ package org.exist.util;
 
 import org.apache.log4j.Logger;
 
+import org.exist.repo.Deployment;
 import org.quartz.SimpleTrigger;
 
 import org.w3c.dom.Document;
@@ -222,6 +223,11 @@ public class Configuration implements ErrorHandler
                 configureBackend( existHomeDirname, (Element)dbcon.item( 0 ) );
             }
 
+            NodeList repository = doc.getElementsByTagName("repository");
+            if (repository.getLength() > 0) {
+                configureRepository((Element) repository.item(0));
+            }
+
             NodeList binaryManager = doc.getElementsByTagName("binary-manager");
             if(binaryManager.getLength() > 0) {
                 configureBinaryManager((Element)binaryManager.item(0));
@@ -285,7 +291,16 @@ public class Configuration implements ErrorHandler
         }
     }
 
-   
+    private void configureRepository(Element element) {
+        String root = element.getAttribute("root");
+        if (root != null && root.length() > 0) {
+            if (!root.endsWith("/"))
+                root += "/";
+            config.put(Deployment.PROPERTY_APP_ROOT, root);
+        }
+    }
+
+
     private void configureBinaryManager(Element binaryManager) throws DatabaseConfigurationException {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
         if(nlCache.getLength() > 0) {

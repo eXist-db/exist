@@ -55,7 +55,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
         new FunctionDef(InstallFunction.signatureInstall, InstallFunction.class),
         new FunctionDef(InstallFunction.signatureInstallFromDB, InstallFunction.class),
         new FunctionDef(RemoveFunction.signature, RemoveFunction.class),
-        new FunctionDef(GetResource.signature, GetResource.class)
+        new FunctionDef(GetResource.signature, GetResource.class),
+        new FunctionDef(GetAppRoot.signature, GetAppRoot.class)
     };
 
     public ExpathPackageModule(Map<String, List<? extends Object>> parameters) throws XPathException {

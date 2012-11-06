@@ -52,6 +52,8 @@ import org.xml.sax.SAXException;
  */
 public class Deployment {
 
+    public final static String PROPERTY_APP_ROOT = "repo.root-collection";
+
     private final static Logger LOG = Logger.getLogger(Deployment.class);
 
     private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
@@ -153,7 +155,7 @@ public class Deployment {
                     if (target != null) {
                         // determine target collection
                         try {
-                            targetCollection = XmldbURI.create(target.getStringValue());
+                            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
                         } catch (Exception e) {
                             throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
                         }
@@ -205,6 +207,21 @@ public class Deployment {
             }
         } catch (XPathException e) {
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
+        }
+    }
+
+    private String getTargetCollection(String targetFromRepo) {
+        String appRoot = (String) broker.getConfiguration().getProperty(PROPERTY_APP_ROOT);
+        if (appRoot != null) {
+            if (targetFromRepo.startsWith("/db/")) {
+                targetFromRepo = targetFromRepo.substring(4);
+            }
+            return appRoot + targetFromRepo;
+        }
+        if (targetFromRepo.startsWith("/db")) {
+            return targetFromRepo;
+        } else {
+            return "/db/" + targetFromRepo;
         }
     }
 
