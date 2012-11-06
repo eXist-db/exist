@@ -442,12 +442,21 @@ public class Backup
     }
 
     public static void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
-        attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
-        attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
-        attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode())); 
+        if (permission == null)
+            return;
+
+        try {
+            attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
+            attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
+            attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode()));
+        } catch (Exception e) {
+
+        }
     }
 
     public static void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
+        if (acl == null)
+            return;
         AttributesImpl attr = new AttributesImpl();
         attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
         attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));

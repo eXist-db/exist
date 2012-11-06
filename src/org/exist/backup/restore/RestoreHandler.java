@@ -147,7 +147,14 @@ public class RestoreHandler extends DefaultHandler {
 
         super.endElement(namespaceURI, localName, qName);
     }
-    
+
+    private String getAttr(Attributes atts, String name, String fallback) {
+        String value = atts.getValue(name);
+        if (value == null)
+            return fallback;
+        return value;
+    }
+
     private DeferredPermission restoreCollectionEntry(Attributes atts) throws SAXException {
         
         final String name = atts.getValue("name");
@@ -156,9 +163,9 @@ public class RestoreHandler extends DefaultHandler {
             throw new SAXException("Collection requires a name attribute");
         }
         
-        final String owner = atts.getValue("owner");
-        final String group = atts.getValue("group");
-        final String mode = atts.getValue("mode");
+        final String owner = getAttr(atts, "owner", SecurityManager.SYSTEM);
+        final String group = getAttr(atts, "group", SecurityManager.DBA_GROUP);
+        final String mode = getAttr(atts, "mode", "644");
         final String created = atts.getValue("created");
         final String strVersion = atts.getValue("version");
 
@@ -196,7 +203,7 @@ public class RestoreHandler extends DefaultHandler {
             if(currentCollection == null) {
                 throw new SAXException("Collection not found: " + collUri);
             }
-            
+
             final DeferredPermission deferredPermission;
             if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                 //prevents restore of a backup from changing System collection ownership
@@ -296,9 +303,9 @@ public class RestoreHandler extends DefaultHandler {
             type = "XMLResource";
         }
         
-        final String owner = atts.getValue("owner");
-        final String group = atts.getValue("group");
-        final String perms = atts.getValue("mode");
+        final String owner = getAttr(atts, "owner", SecurityManager.SYSTEM);
+        final String group = getAttr(atts, "group", SecurityManager.DBA_GROUP);
+        final String perms = getAttr(atts, "mode", "644");
 
         final String filename;
         if(atts.getValue("filename") != null) {
