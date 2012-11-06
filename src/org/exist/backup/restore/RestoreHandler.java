@@ -258,9 +258,9 @@ public class RestoreHandler extends DefaultHandler {
                 reader.setContentHandler(handler);
                 reader.parse(is);
             } catch(ParserConfigurationException pce) {
-                throw new SAXException("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false), pce);
+                listener.error("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false));
             } catch(IOException ioe) {
-                throw new SAXException("Could not read sub-collection for processing: " + ioe.getMessage(), ioe);
+                listener.error("Could not read sub-collection for processing: " + ioe.getMessage());
             }
         } else {
             listener.error("Collection " + descriptor.getSymbolicPath(name, false) + " does not exist or is not readable.");
@@ -342,7 +342,7 @@ public class RestoreHandler extends DefaultHandler {
         if(is == null) {
             String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
             listener.warn(msg);
-            throw new RuntimeException(msg);
+            return new SkippedEntryDeferredPermission();
         }
 
         try {
