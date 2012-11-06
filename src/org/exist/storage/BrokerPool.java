@@ -926,11 +926,14 @@ public class BrokerPool extends Observable implements Database {
 		
             //If necessary, launch a task to repair the DB
             //TODO : merge this with the recovery process ?
+            //XXX: don't do if READONLY mode
             if(recovered) {
-                try {
-                    broker.repair();
-                } catch (PermissionDeniedException e) {
-                    LOG.warn("Error during recovery: " + e.getMessage(), e);
+                if(!exportOnly) {
+                	try {
+                    	broker.repair();
+	                } catch (PermissionDeniedException e) {
+	                    LOG.warn("Error during recovery: " + e.getMessage(), e);
+	                }
                 }
                 
                 if(((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
@@ -947,11 +950,13 @@ public class BrokerPool extends Observable implements Database {
             statusReporter.setStatus(SIGNAL_WRITABLE);
 
             //initialize configurations watcher trigger
-            try {
-        	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
-            } catch(PermissionDeniedException pde) {
-                //XXX: do not catch exception!
-                LOG.error(pde.getMessage(), pde);
+            if(!exportOnly) {
+            	try {
+                	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
+	            } catch(PermissionDeniedException pde) {
+	                //XXX: do not catch exception!
+	                LOG.error(pde.getMessage(), pde);
+	            }
             }
 
             // remove temporary docs
