@@ -41,6 +41,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.Realm;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -124,7 +125,9 @@ public class RealmImpl extends AbstractRealm {
         try {
             createAdminAndGuestIfNotExist(broker);
         } catch(PermissionDeniedException pde) {
-            throw new EXistException(pde.getMessage(), pde);
+            final boolean exportOnly =  (Boolean) broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
+            if (!exportOnly)
+            	throw new EXistException(pde.getMessage(), pde);
         }
     }
     
