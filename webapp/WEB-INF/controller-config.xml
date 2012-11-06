@@ -53,10 +53,10 @@
     ++ Default configuration: main web application is served from the
     ++ webapp directory. 
   -->
-  <root pattern="/apps/library" path="xmldb:exist:///db/tamboti"/>
-  <root pattern="/apps/tamboti" path="xmldb:exist:///db/tamboti"/>
+  <root pattern="/apps/library" path="xmldb:exist:///db/apps/tamboti"/>
+  <root pattern="/apps/tamboti" path="xmldb:exist:///db/apps/tamboti"/>
   
-  <root pattern="/apps" path="xmldb:exist:///db"/>
+  <root pattern="/apps" path="xmldb:exist:///db/apps"/>
   
   <root pattern="/solutions" path="xmldb:exist:///db/solutions/"/>
   
