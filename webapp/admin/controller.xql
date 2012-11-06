@@ -42,10 +42,10 @@ else if ($exist:resource eq "admin.xql") then
                 ()
         }
         </dispatch>
-(: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
-else if (starts-with($exist:path, "/libs/")) then
+
+else if (contains($exist:path, "$shared/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{substring-after($exist:path, 'libs/')}" absolute="yes"/>
+        <forward url="/rest/apps/shared-resources/{substring-after($exist:path, '/$shared/')}"/>
     </dispatch>
     
 else
