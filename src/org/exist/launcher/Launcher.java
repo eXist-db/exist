@@ -29,10 +29,7 @@ import org.exist.util.ConfigurationHelper;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -103,9 +100,23 @@ public class Launcher {
         }
         trayIcon = new TrayIcon(image.getScaledInstance(iconDim.width, iconDim.height, Image.SCALE_SMOOTH), "eXist-db Launcher");
 
-        PopupMenu popup = createMenu(home, tray);
+        final JDialog hiddenFrame = new JDialog();
+        hiddenFrame.setUndecorated(true);
+
+        final PopupMenu popup = createMenu(home, tray);
         trayIcon.setPopupMenu(popup);
+        trayIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+                    hiddenFrame.add(popup);
+                    popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
+                }
+            }
+        });
         try {
+            hiddenFrame.setResizable(false);
+            hiddenFrame.setVisible(true);
             tray.add(trayIcon);
         } catch (AWTException e) {
             e.printStackTrace();
