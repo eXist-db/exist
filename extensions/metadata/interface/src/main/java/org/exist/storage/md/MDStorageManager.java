@@ -23,6 +23,7 @@ package org.exist.storage.md;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.Database;
@@ -36,8 +37,11 @@ import org.exist.dom.DocumentImpl;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.md.xquery.MetadataModule;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xquery.XQueryContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -86,6 +90,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 		manager.getDatabase().getDocumentTriggers().add(new DocumentEvents());
 		manager.getDatabase().getCollectionTriggers().add(new CollectionEvents());
+		
+		Map<String, Class<?>> map = (Map) manager.getDatabase().getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
+        map.put(
+    		NAMESPACE_URI, 
+    		MetadataModule.class);
 	}
 	
 
