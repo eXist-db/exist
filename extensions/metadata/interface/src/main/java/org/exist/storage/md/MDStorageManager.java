@@ -37,7 +37,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.md.xquery.MetadataModule;
 import org.exist.util.serializer.SAXSerializer;
@@ -223,13 +222,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 	@Override
 	public boolean isConfigured() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public Configuration getConfiguration() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
