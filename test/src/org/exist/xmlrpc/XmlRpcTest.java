@@ -52,7 +52,7 @@ public class XmlRpcTest {
 	
     private static JettyStart server = null;
     // jetty.port.standalone
-    private final static String URI = "http://localhost:" + System.getProperty("jetty.port") + "/xmlrpc";
+    private final static String URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc";
         
     private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
     
@@ -447,7 +447,10 @@ public class XmlRpcTest {
 			params.add(simpleMd5);
 			params.add(digest);
 			params.add(new String[] { "guest" });
-            XmlRpcClient xmlrpc = getClient();
+			params.add(true);
+			params.add(new HashMap<String, String>());
+            
+			XmlRpcClient xmlrpc = getClient();
 			xmlrpc.execute("addAccount", params);
 
             XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) xmlrpc.getClientConfig();
@@ -603,6 +606,7 @@ public class XmlRpcTest {
             client.setConfig(config);
             return client;
         } catch (MalformedURLException e) {
+        	e.printStackTrace();
             return null;
         }
     }
