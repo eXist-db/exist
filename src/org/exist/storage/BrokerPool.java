@@ -1041,7 +1041,9 @@ public class BrokerPool extends Observable implements Database {
     }*/
 
     private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker sysBroker) {
-        
+        if (startupTriggerClasses == null)
+        	return;
+    	
         for(final String startupTriggerClass : startupTriggerClasses) {
             try {
                 final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerClass);
