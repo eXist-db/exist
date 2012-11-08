@@ -74,10 +74,12 @@
         <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
+        <delete file="${exist.rootdir}/webapp/WEB-INF/classes/ehcache.xml"/>
 
         <!-- restore web.xml -->
         <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
         <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
+
     </target>
 
     <target name="patchWebXml">
@@ -101,6 +103,8 @@
         <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
         <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
         <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
+        <mkdir dir="${exist.rootdir}/webapp/WEB-INF/classes"/>
+        <copy file="${betterform.webapp}/WEB-INF/classes/ehcache.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes"/>
 
         <echo>
             Copying betterFORM error page and dashboard to webapp.

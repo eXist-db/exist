@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Copyright (c) 2012. betterFORM Project - http://www.betterform.de
+  ~ Licensed under the terms of BSD License
+  -->
+
 <!-- $Id: betterform-config.xml 3274 2008-07-16 17:01:30Z lasse $ -->
 <betterform-config>
 
@@ -19,7 +24,7 @@
         <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
 
         <property name="error.page" value="error/error.page" description="location of error-page relative to context"/>
-        
+
 		<!-- DEPRECATED -->
 <!--
         <property name="defaultProcessorBase" value="remote"
@@ -40,7 +45,7 @@
                    [4] if above not present use accept-language header sent by browser
                -->
         <property name="preselect-language" value="en"/>
-        <property name="enable.l10n" value="true"/>
+        <property name="enable.l10n" value="false"/>
 
         <!--
            Property the XForms filter listens on, only if the pattern is present on the accept header
@@ -96,7 +101,10 @@
         -->
         <property name="betterform.ui.defaultAlertText" value="The specified value is invalid"/>
 
-        <property name="betterform.debug-allowed" value="true" description="if true enables debug bar and event log viewer"/>
+        <property name="betterform.debug-allowed" value="false" description="if true enables debug bar and event log viewer"/>
+
+        <property name="betterform.unloading-message" value="You are about to leave this XForms application" description="Set message which is shown to user if unsaved form is left."/>
+
         <!-- WARNING: not ready for production use -->
         <property name="betterform.event-optimization-enabled" value="true" description="TBD: if event optimization is enabled, only events present within the current form will be processed"/>
 
@@ -105,7 +113,7 @@
 
         <!--
              Full classpath of SSLProtocolSocketFactory which should be used by httpclient.
-             For now there is only one implementing Class in betterFORM, which allows verification of a server cert (KeyStoreSSLProtocolSocketFactory).
+             For now there is only one implementing Class in betterFORM, which allows verification of a server cert (KeyStoreSSLContext).
              SSLProtocolSocketFactory-Handling will be activated if the property is specified.
              ! You have to uncomment this if you would like to use betterFORM with custom SSL-Certificates. !
         -->
@@ -117,9 +125,7 @@
             Port 443,8443 are the default ports.
             See: http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/Protocol.html
         -->
-        <property name="httpclient.ssl.factory.defaultPort" value="DEFAULT-SSL-PORT" description="Specify defaultPort for SSLProtocolSocketFactory for httpclient. 443 if not specified."/>
-
-        <!--
+<!--
         <property name="httpclient.ssl.context.customPort" value="CUSTOM-SSL-PORT" description="Specify custom Port for SSLProtocolSocketFactory for httpclient. 443,8443 if not specified."/>
 -->
         <!--
@@ -166,8 +172,9 @@
     </useragents>
 
     <ui-generators>
-        <ui-generator useragent="dojo" stylesheet="dojo.xsl"/>
-        <ui-generator useragent="dojodev" stylesheet="dojo-dev.xsl"/>
+        <!-- todo: deprecate unscripted processing?-->
+        <!-- todo: we probably shouldn't use the term 'useragent' here to avoid confusion with other meanings throughout betterform -->
+        <ui-generator useragent="dojo" stylesheet="xhtml.xsl"/>
         <ui-generator useragent="html" stylesheet="html4.xsl"/>
     </ui-generators>
 
