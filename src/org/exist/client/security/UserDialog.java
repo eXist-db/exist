@@ -309,10 +309,10 @@ public class UserDialog extends javax.swing.JFrame {
 
     protected void createUser() {
         //1 - create personal group
+        GroupAider groupAider = null;
         if(cbPersonalGroup.isSelected()) {
-            final GroupAider groupAider = new GroupAider(txtUsername.getText());
+            groupAider = new GroupAider(txtUsername.getText());
             groupAider.setMetadataValue(EXistSchemaType.DESCRIPTION, "Personal group for " + txtUsername.getText());
-            
             try {
                 getUserManagementService().addGroup(groupAider);
             } catch(final XMLDBException xmldbe) {
@@ -351,12 +351,14 @@ public class UserDialog extends javax.swing.JFrame {
         //3 - if created personal group, then add us as the manager
         if(cbPersonalGroup.isSelected()) {
             try {
-                final Group group = getUserManagementService().getGroup(txtUsername.getText());
-                group.addManager(userAider); 
+                groupAider.addManager(userAider);
+                getUserManagementService().updateGroup(groupAider);
             } catch(XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
+                return;
             } catch(PermissionDeniedException pde) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
         }
     }

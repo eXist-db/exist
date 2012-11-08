@@ -452,15 +452,15 @@ public abstract class AbstractRealm implements Realm, Configurable {
             throw new PermissionDeniedException("group " + group.getName() + " does not exist");
         }
 
-        //check: add account to group
-        for(Account manager : group.getManagers()) {
+        //check: add account to group managers
+        for(final Account manager : group.getManagers()) {
             if(!updatingGroup.isManager(manager)) {
                 updatingGroup.addManager(manager);
             }
         }
 
-        //check: remove account from group
-        for(Account manager : updatingGroup.getManagers()){
+        //check: remove account from group managers
+        for(final Account manager : updatingGroup.getManagers()){
             if(!group.isManager(manager)) {
                 updatingGroup.removeManager(manager);
             }

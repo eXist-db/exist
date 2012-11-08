@@ -173,12 +173,21 @@ public interface UserManagementService extends Service {
 
 
     /**
-     *  Update existing account information
+     * Update existing account information
      *
-     *@param  account             Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
+     * @param  account             Description of the Parameter
+     * @exception  XMLDBException  Description of the Exception
      */
     public void updateAccount( Account account ) throws XMLDBException;
+    
+    
+    /**
+     * Update existing group information
+     *
+     * @param  group The group to update
+     * @throws XMLDBException if the group could not be updated
+     */
+    public void updateGroup(Group group) throws XMLDBException;
 
 
     /**

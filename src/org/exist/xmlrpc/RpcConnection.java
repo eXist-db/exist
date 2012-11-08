@@ -3922,6 +3922,47 @@ public class RpcConnection implements RpcAPI {
         
     	return false;
     }
+    
+    @Override
+    public boolean updateGroup(final String name, final Vector<String> managers, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+       
+        final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+
+    	if(manager.hasGroup(name)) {
+        
+            final GroupAider group = new GroupAider(name);
+        
+            for(final String groupManager : managers) {
+                group.addManager(new UserAider(groupManager));
+            }
+
+            if(metadata != null) {
+                for(final String key : metadata.keySet()) {
+                    if(AXSchemaType.valueOfNamespace(key) != null) {
+                        group.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                    } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                        group.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                    }
+                }
+            }
+            
+            try {
+                executeWithBroker(new BrokerOperation<Void>() {
+                    @Override
+                    public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                        manager.updateGroup(group);
+                        return null;
+                    }
+                });
+                return true;
+            } catch (URISyntaxException use) {
+                throw new EXistException(use.getMessage(), use);
+            }
+            
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
