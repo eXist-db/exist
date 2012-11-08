@@ -3805,11 +3805,13 @@ public class RpcConnection implements RpcAPI {
         
         u.setEnabled(enabled);
         
-        for(final String key : metadata.keySet()) {
-            if(AXSchemaType.valueOfNamespace(key) != null) {
-                u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
-            } else if(EXistSchemaType.valueOfNamespace(key) != null) {
-                u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+        if(metadata != null) {
+            for(final String key : metadata.keySet()) {
+                if(AXSchemaType.valueOfNamespace(key) != null) {
+                    u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                }
             }
         }
         
@@ -3829,31 +3831,46 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public boolean updateAccount(String name, String passwd, String passwdDigest,
-            Vector<String> groups) throws EXistException, PermissionDeniedException {
-    	return updateAccount(name, passwd, passwdDigest, groups, null);
+    public boolean updateAccount(final String name, final String passwd, final String passwdDigest, final Vector<String> groups) throws EXistException, PermissionDeniedException {
+    	return updateAccount(name, passwd, passwdDigest, groups, null, null, null);
     }
 
     @Override
-    public boolean updateAccount(String name, String passwd, String passwdDigest,
-            Vector<String> groups, String home) throws EXistException, PermissionDeniedException {
-        if (passwd.length() == 0)
+    public boolean updateAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final String home, final Boolean enabled, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+        if(passwd.length() == 0) {
             passwd = null;
+        }
         
         final UserAider account = new UserAider(name);
         account.setEncodedPassword(passwd);
         account.setPasswordDigest(passwdDigest);
 
-        for (String g : groups) {
-        	account.addGroup(g);
+        for(String g : groups) {
+            account.addGroup(g);
         }
-        if (home != null) {
-        	try {
-        		account.setHome(XmldbURI.xmldbUriFor(home));
-        	} catch(URISyntaxException e) {
-        		throw new EXistException("Invalid home URI",e);
-        	}
+        
+        if(home != null) {
+            try {
+                account.setHome(XmldbURI.xmldbUriFor(home));
+            } catch(URISyntaxException e) {
+                throw new EXistException("Invalid home URI",e);
+            }
         }
+        
+        if(enabled != null) {
+            account.setEnabled(enabled);
+        }
+        
+        if(metadata != null) {
+            for(final String key : metadata.keySet()) {
+                if(AXSchemaType.valueOfNamespace(key) != null) {
+                    account.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                    account.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                }
+            }
+        }
+        
         final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
         try {
             return executeWithBroker(new BrokerOperation<Boolean>() {
