@@ -6,7 +6,6 @@ import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
-import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;

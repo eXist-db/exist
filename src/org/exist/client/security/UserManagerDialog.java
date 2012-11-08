@@ -6,6 +6,7 @@ import java.util.Arrays;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.AccountComparator;
@@ -31,6 +32,8 @@ public class UserManagerDialog extends javax.swing.JFrame {
     public UserManagerDialog(final UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
         initComponents();
+        tblUsers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
+        tblGroups.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
     }
     
     private TableModel getUsersTableModel() {
@@ -48,7 +51,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
                     tableData[i][1] = accounts[i].getMetadataValue(EXistSchemaType.DESCRIPTION);
                 }
 
-                usersTableModel = new javax.swing.table.DefaultTableModel(
+                usersTableModel = new ReadOnlyDefaultTableModel(
                     tableData,
                     new String [] {
                         "User", "Full Name", "Description"
@@ -59,6 +62,33 @@ public class UserManagerDialog extends javax.swing.JFrame {
             }
         }
         return usersTableModel;
+    }
+    
+    private TableModel getGroupsTableModel() {
+        if(groupsTableModel == null) {
+            
+            try {
+                final String groupNames[] = userManagementService.getGroups();
+
+                Arrays.sort(groupNames);
+                
+                final String tableData[][] = new String[groupNames.length][2];
+                for(int i = 0; i < groupNames.length; i++) {
+                    tableData[i][0] = groupNames[i];
+                    tableData[i][1] = userManagementService.getGroup(groupNames[i]).getMetadataValue(EXistSchemaType.DESCRIPTION);
+                }
+
+                groupsTableModel = new ReadOnlyDefaultTableModel(
+                    tableData,
+                    new String [] {
+                        "Group", "Description"
+                    }
+                );
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(this, "Could not get groups list: " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        return groupsTableModel;
     }
     
     public void refreshUsersTableModel() {
@@ -84,31 +114,26 @@ public class UserManagerDialog extends javax.swing.JFrame {
         }
     }
     
-    private TableModel getGroupsTableModel() {
-        if(groupsTableModel == null) {
-            
-            try {
-                final String groupNames[] = userManagementService.getGroups();
-
-                Arrays.sort(groupNames);
-                
-                final String tableData[][] = new String[groupNames.length][2];
-                for(int i = 0; i < groupNames.length; i++) {
-                    tableData[i][0] = groupNames[i];
-                    tableData[i][1] = userManagementService.getGroup(groupNames[i]).getMetadataValue(EXistSchemaType.DESCRIPTION);
-                }
-
-                groupsTableModel = new javax.swing.table.DefaultTableModel(
-                    tableData,
-                    new String [] {
-                        "Group", "Description"
-                    }
-                );
-            } catch(final XMLDBException xmldbe) {
-                JOptionPane.showMessageDialog(this, "Could not get groups list: " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
-            }
+    public void refreshGroupsTableModel() {
+        final int rowCount = groupsTableModel.getRowCount();
+        for(int i = 0; i < rowCount; i++) {
+            groupsTableModel.removeRow(0);
         }
-        return groupsTableModel;
+        
+        try {
+            final String groupNames[] = userManagementService.getGroups();
+
+            Arrays.sort(groupNames);
+
+            for(int i = 0; i < groupNames.length; i++) {
+                groupsTableModel.addRow(new String[]{
+                    groupNames[i],
+                    userManagementService.getGroup(groupNames[i]).getMetadataValue(EXistSchemaType.DESCRIPTION)
+                });
+            }
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get groups list: " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void showUserDialog() {
@@ -122,6 +147,19 @@ public class UserManagerDialog extends javax.swing.JFrame {
         });
         
         userDialog.setVisible(true);
+    }
+    
+    private void showGroupDialog() {
+        final GroupDialog groupDialog = new GroupDialog(userManagementService);
+        
+        groupDialog.addWindowListener(new WindowAdapter(){           
+            @Override
+            public void windowClosed(final WindowEvent e) {
+                refreshGroupsTableModel();
+            }
+        });
+        
+        groupDialog.setVisible(true);
     }
 
     /**
@@ -293,6 +331,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
         return (String)tblUsers.getValueAt(tblUsers.getSelectedRow(), 0);
     }
     
+    private String getSelectedGroup() {
+        return (String)tblGroups.getValueAt(tblGroups.getSelectedRow(), 0);
+    }
+    
     private void miRemoveUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveUserActionPerformed
 
         final String selectedUsername = getSelectedUsername();
@@ -310,10 +352,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
         
         final String selectedUsername = getSelectedUsername();
         try {
-            final Account account = userManagementService.getAccount(getSelectedUsername());
+            final Account account = userManagementService.getAccount(selectedUsername);
             showEditUserDialog(account);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not remove user '" + selectedUsername + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not edit user '" + selectedUsername + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miEditUserActionPerformed
 
@@ -330,6 +372,19 @@ public class UserManagerDialog extends javax.swing.JFrame {
         userDialog.setVisible(true);
     }
     
+    private void showEditGroupDialog(final Group group) {
+        final EditGroupDialog groupDialog = new EditGroupDialog(userManagementService, group);
+        
+        groupDialog.addWindowListener(new WindowAdapter(){           
+            @Override
+            public void windowClosed(final WindowEvent e) {
+                refreshGroupsTableModel();
+            }
+        });
+        
+        groupDialog.setVisible(true);
+    }
+    
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
         switch(tpUserManager.getSelectedIndex()) {
             case 0:
@@ -337,7 +392,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
                 break;
             
             case 1:
-                //new GroupDialog(userManagementService).setVisible(true); //TODO
+                showGroupDialog();
                 break;
             
             default:
@@ -347,17 +402,35 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
     private void tblUsersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUsersMouseClicked
         final boolean userSelected = tblUsers.getSelectedRow() > -1;
+        final String selectedUsername = getSelectedUsername();
         
-        miEditUser.setEnabled(userSelected);
-        miRemoveUser.setEnabled(userSelected);
+        boolean canModify = userSelected && !(selectedUsername.equals("SYSTEM") || selectedUsername.equals("admin") || selectedUsername.equals("guest"));
+        miEditUser.setEnabled(canModify);
+        miRemoveUser.setEnabled(canModify);
+        
+        if(evt.getClickCount() == 2) {
+            
+            try {
+                final Account account = userManagementService.getAccount(selectedUsername);
+                showEditUserDialog(account);
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(this, "Could not edit user '" + selectedUsername + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_tblUsersMouseClicked
 
     private void miEditGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditGroupActionPerformed
-        // TODO add your handling code here:
+        final String selectedGroup = getSelectedGroup();
+            try {
+                final Group group = userManagementService.getGroup(selectedGroup);
+                showEditGroupDialog(group);
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(this, "Could not edit group '" + selectedGroup + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+            }
     }//GEN-LAST:event_miEditGroupActionPerformed
-
+    
     private void miRemoveGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveGroupActionPerformed
-        final String selectedGroup = (String)tblGroups.getValueAt(tblGroups.getSelectedRow(), 0);
+        final String selectedGroup = getSelectedGroup();
         
         try {
             final Group group = userManagementService.getGroup(selectedGroup);
@@ -370,10 +443,22 @@ public class UserManagerDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miRemoveGroupActionPerformed
 
     private void tblGroupsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblGroupsMouseClicked
-        final boolean userSelected = tblGroups.getSelectedRow() > -1;
+        final boolean groupSelected = tblGroups.getSelectedRow() > -1;
+        final String selectedGroup = getSelectedGroup();
         
-        miEditGroup.setEnabled(userSelected);
-        miRemoveGroup.setEnabled(userSelected);
+        boolean canModify = groupSelected && !(selectedGroup.equals("dba") || selectedGroup.equals("guest"));
+        
+        miEditGroup.setEnabled(canModify);
+        miRemoveGroup.setEnabled(canModify);
+        
+         if(evt.getClickCount() == 2) {
+            try {
+                final Group group = userManagementService.getGroup(selectedGroup);
+                showEditGroupDialog(group);
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(this, "Could not edit group '" + selectedGroup + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_tblGroupsMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
