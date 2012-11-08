@@ -68,7 +68,7 @@
                                     <xs:attribute name="enabled" type="yes_no" default="yes"/>
                                     <xs:attribute name="group-commit" type="yes_no" default="no"/>
                                     <xs:attribute name="journal-dir" type="xs:string"
-                                        default="webapp/WEB-INF/data"/>
+                                        default="webapps/exist/WEB-INF/data"/>
                                     <xs:attribute name="size" type="xs:string" default="100M"/>
                                     <xs:attribute name="sync-on-commit" type="yes_no" default="no"/>
                                     <xs:attribute name="force-restart" type="yes_no" default="no"/>
@@ -107,7 +107,7 @@
                         <xs:attribute name="collectionCache" type="xs:string" default="24M"/>
                         <xs:attribute name="database" type="xs:string" default="@database@"/>
                         <xs:attribute name="doc-ids" type="xs:string" default="default"/>
-                        <xs:attribute name="files" type="xs:string" default="webapp/WEB-INF/data"/>
+                        <xs:attribute name="files" type="xs:string" default="webapps/exist/WEB-INF/data"/>
                         <xs:attribute name="free_mem_min" type="xs:integer" default="5"/>
                         <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
                         <xs:attribute name="nodesBuffer" type="xs:integer" default="-1"/>
@@ -310,7 +310,7 @@
                                             maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:attribute name="uri" type="xs:string"
-                                                  default="webapp/WEB-INF/catalog.xml"/>
+                                                  default="webapps/exist/WEB-INF/catalog.xml"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>

@@ -41,7 +41,7 @@ public class ExistRepository {
 
     public final static String EXPATH_REPO_DIR = "expathrepo";
 
-    public final static String EXPATH_REPO_DEFAULT = "webapp/WEB-INF/" + EXPATH_REPO_DIR;
+    public final static String EXPATH_REPO_DEFAULT = "webapps/exist/WEB-INF/" + EXPATH_REPO_DIR;
 
     public ExistRepository(FileSystemStorage storage) throws PackageException {
         myParent = new Repository(storage);

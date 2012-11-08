@@ -6,7 +6,7 @@
 
 <project name="betterFORM extension for eXist" default="install" basedir=".">
     <property name="exist.rootdir" value="${basedir}/../.."/>
-    <property name="exist.web.xml" value="${exist.rootdir}/webapp/WEB-INF/web.xml"/>
+    <property name="exist.web.xml" value="${exist.rootdir}/webapps/exist/WEB-INF/web.xml"/>
 
     <property file="../local.build.properties"/>
     <property file="../build.properties"/>
@@ -55,7 +55,7 @@
         <antcall target="patchWebXml"/>
 
         <echo>
-            Deploy betterFORM resources to eXist webapp (${exist.rootdir}/webapp/WEB-INF/)
+            Deploy betterFORM resources to eXist webapp (${exist.rootdir}/webapps/exist/WEB-INF/)
         </echo>
 
         <antcall target="deployBFResources"/>
@@ -67,17 +67,17 @@
             Uninstalling betterFORM.
         </echo>
 
-        <delete dir="${exist.rootdir}/webapp/betterform"/>
-        <delete file="${exist.rootdir}/webapp/dashboard.html"/>
+        <delete dir="${exist.rootdir}/webapps/exist/betterform"/>
+        <delete file="${exist.rootdir}/webapps/exist/dashboard.html"/>
 
         <!--delete files from WEB-INF-->
-        <delete file="${exist.rootdir}/webapp/WEB-INF/betterform-config.xml" />
-        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr.xml" />
-        <delete file="${exist.rootdir}/webapp/WEB-INF/dwr20.dtd" />
+        <delete file="${exist.rootdir}/webapps/exist/WEB-INF/betterform-config.xml" />
+        <delete file="${exist.rootdir}/webapps/exist/WEB-INF/dwr.xml" />
+        <delete file="${exist.rootdir}/webapps/exist/WEB-INF/dwr20.dtd" />
         <delete file="${exist.rootdir}/webapp/WEB-INF/classes/ehcache.xml"/>
 
         <!-- restore web.xml -->
-        <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapp/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
+        <move file="${betterform.home}/uninstall/web.xml" tofile="${exist.rootdir}/webapps/exist/WEB-INF/web.xml" overwrite="true" failonerror="false"/>
         <delete dir="${betterform.home}/uninstall" includeemptydirs="true"/>
 
     </target>
@@ -100,16 +100,16 @@
         <echo>
             Copying betterFORM configuration files to WEB-INF dir.
         </echo>
-        <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
-        <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapp/WEB-INF"/>
-        <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapp/WEB-INF"/>
+        <copy file="${betterform.webapp}/WEB-INF/betterform-config.xml" todir="${exist.rootdir}/webapps/exist/WEB-INF"/>
+        <copy file="${betterform.webapp}/WEB-INF/dwr.xml" todir="${exist.rootdir}/webapps/exist/WEB-INF"/>
+        <copy file="${betterform.webapp}/WEB-INF/dwr20.dtd" todir="${exist.rootdir}/webapps/exist/WEB-INF"/>
         <mkdir dir="${exist.rootdir}/webapp/WEB-INF/classes"/>
         <copy file="${betterform.webapp}/WEB-INF/classes/ehcache.xml" todir="${exist.rootdir}/webapp/WEB-INF/classes"/>
 
         <echo>
             Copying betterFORM error page and dashboard to webapp.
         </echo>
-         <copy todir="${exist.rootdir}/webapp/">
+         <copy todir="${exist.rootdir}/webapps/exist/">
             <fileset file="${betterform.webapp}/dashboard.html"/>
         </copy>
     </target>

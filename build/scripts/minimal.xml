@@ -10,7 +10,7 @@
 
 <target name="dist-minimal" depends="all">
   <mkdir dir="${dist.minimal}"/>
-  <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/webapps/exist/WEB-INF/catalog.xml" todir="${dist.minimal}"/>
   <echo file="${dist.minimal}/client.properties">
 driver=org.exist.xmldb.DatabaseImpl
 

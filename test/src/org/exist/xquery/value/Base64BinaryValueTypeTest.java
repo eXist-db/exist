@@ -50,7 +50,7 @@ public class Base64BinaryValueTypeTest {
     @Test
     public void verify_validBase64_passes_large_string() throws XPathException, IOException {
         File home = ConfigurationHelper.getExistHome();
-        File binaryFile = new File(home, "webapp/logo.jpg");
+        File binaryFile = new File(home, "webapps/exist/logo.jpg");
 
         InputStream is = null;
         ByteArrayOutputStream baos = null;

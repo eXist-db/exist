@@ -320,7 +320,7 @@ public class Launcher {
                 return;
             Desktop desktop = Desktop.getDesktop();
             File home = ConfigurationHelper.getExistHome();
-            File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
+            File logFile = new File(home, "webapps/exist/WEB-INF/logs/exist.log");
             if (!logFile.canRead()) {
                 trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
             } else {

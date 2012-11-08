@@ -201,7 +201,7 @@ public class CreateCollectionsTest  {
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         ums.chmod("rwxr-xr-x");
 
-        byte[] data = storeBinaryResourceFromFile(new File( getExistDir(),"webapp/logo.jpg"), testCollection);
+        byte[] data = storeBinaryResourceFromFile(new File( getExistDir(),"webapps/exist/logo.jpg"), testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();
         byte[] dataStored = (byte[])content;
         assertArrayEquals("After storing binary resource, data out==data in", data, dataStored);
