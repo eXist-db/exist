@@ -739,7 +739,7 @@ public interface RpcAPI {
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
-	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home)
+	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home, Boolean enabled, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
 
 	boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException;

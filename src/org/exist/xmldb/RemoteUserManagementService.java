@@ -47,7 +47,7 @@ public class RemoteUserManagementService implements UserManagementService {
             params.add(user.getName());
             params.add(user.getPassword() == null ? "" : user.getPassword());
             params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
-            String[] gl = user.getGroups();
+            final String[] gl = user.getGroups();
             params.add(gl);
             if(user.getHome() != null) {
                 params.add(user.getHome().toString());
@@ -805,44 +805,47 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void updateAccount(Account user) throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(12);
-			params.add(user.getName());
-			params.add(user.getPassword() == null ? "" : user.getPassword());
-			params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
-			String[] gl = user.getGroups();
-			params.add(gl);
-			if (user.getHome() != null)
-				params.add(user.getHome().toString());
-			parent.getClient().execute("updateAccount", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
-    }
+	@Override
+        public void updateAccount(Account user) throws XMLDBException {
+            try {
+                final List<Object> params = new ArrayList<Object>(12);
+                params.add(user.getName());
+                params.add(user.getPassword() == null ? "" : user.getPassword());
+                params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
+                final String[] gl = user.getGroups();
+                params.add(gl);
+                if(user.getHome() != null) {
+                    params.add(user.getHome().toString());
+                }
+                params.add(user.isEnabled());
+                final Map<String, String> metadata = new HashMap<String, String>();
+                for(final SchemaType key : user.getMetadataKeys()) {
+                    metadata.put(key.getNamespace(), user.getMetadataValue(key));
+                }
+                params.add(metadata);
+                parent.getClient().execute("updateAccount", params);
+            } catch (final XmlRpcException e) {
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            }
+        }
 	
 	/**
-	 * Update the specified account without update user's password
-	 * Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-	 * 
-	 * modified by Chris Tomlinson to remove handling of home which
-	 * breaks the call on updateAccount in RpcConnection since there is
-	 * no parameter to receive it
+	 * Update the specified accounts groups 
 	 *
 	 *@param  user                Description of the Parameter
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void addUserGroup(Account user) throws XMLDBException {
-		try {
-            List<Object> params = new ArrayList<Object>(3);
-			params.add(user.getName());
-			String[] gl = user.getGroups();
-			params.add(gl);
-			parent.getClient().execute("updateAccount", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
-    }
+            try {
+                final List<Object> params = new ArrayList<Object>(3);
+                params.add(user.getName());
+                final String[] gl = user.getGroups();
+                params.add(gl);
+                parent.getClient().execute("updateAccount", params);
+            } catch (XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            }
+        }
 	
 	/**
 	 *  Update the specified user removing a group from user's group
