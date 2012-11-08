@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2012. betterFORM Project - http://www.betterform.de
+  ~ Licensed under the terms of BSD License
+  -->
+
+<ehcache>
+    <diskStore path="java.io.tmpdir"/>
+    <cacheManagerEventListenerFactory class="" properties=""/>
+
+    <cache name="xfFileCache"
+            maxElementsInMemory="100"
+            eternal="false"
+            timeToIdleSeconds="3000"
+            timeToLiveSeconds="3000"
+            diskSpoolBufferSizeMB="30"
+            maxElementsOnDisk="10"
+            diskPersistent="false"
+            diskExpiryThreadIntervalSeconds="3000"
+            memoryStoreEvictionPolicy="LRU"
+            />
+
+    <cache name="xfSessionCache"
+        eternal="false"
+        timeToIdleSeconds="600"
+        timeToLiveSeconds="1800"
+        maxElementsInMemory="200"
+        memoryStoreEvictionPolicy="LRU"
+        maxElementsOnDisk="1"
+        overflowToDisk="false">
+        <!--
+            <cacheEventListenerFactory class="de.betterform.agent.web.cache.BFCacheManagerEventListenerFactory" properties=""/>
+        -->
+    </cache>
+
+    <cache name="xfTestConfigOneElementInMemory"
+           maxElementsOnDisk="100"
+           maxElementsInMemory="1"
+           eternal="true"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="300"
+           diskSpoolBufferSizeMB="30"
+           diskPersistent="true"
+           overflowToDisk="true"
+            diskExpiryThreadIntervalSeconds="300"
+            memoryStoreEvictionPolicy="LRU"
+            />
+
+    <defaultCache
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"
+            diskSpoolBufferSizeMB="30"
+            maxElementsOnDisk="10000000"
+            diskPersistent="false"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU"
+            />
+</ehcache>
