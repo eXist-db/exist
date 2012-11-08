@@ -61,7 +61,7 @@
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/GMLIndexTest.java" />
       <file url="file://$PROJECT_DIR$/extensions/indexes/spatial/test/src/org/exist/indexing/spatial/AllIndexTests.java" />
-      <file url="file://$PROJECT_DIR$/webapps/exist/WEB-INF/web.xml" />
+      <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
       <file url="file://$PROJECT_DIR$/tools/XFormsFilter/web.xml" />
       <file url="file://$PROJECT_DIR$/build/docs/source/WEB-INF/web.xml" />
     </excludeFromCompile>
@@ -123,7 +123,7 @@
           <module name="eXist">
             <files>
               <file url="file://$PROJECT_DIR$/tools/jetty/etc/standalone/WEB-INF/web.xml" />
-              <file url="file://$PROJECT_DIR$/webapps/exist/WEB-INF/web.xml" />
+              <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
             </files>
           </module>
         </modules>

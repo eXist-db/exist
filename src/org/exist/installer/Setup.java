@@ -140,7 +140,7 @@ public class Setup {
     private static ExistRepository getRepository(File home) throws EXistException {
         try {
             if (home != null){
-                File repo_dir = new File(home, "webapps/exist/WEB-INF/expathrepo");
+                File repo_dir = new File(home, "webapp/WEB-INF/expathrepo");
                 // ensure the dir exists
                 repo_dir.mkdir();
                 FileSystemStorage storage = new FileSystemStorage(repo_dir);

@@ -114,8 +114,8 @@ public class XQTS_To_junit {
     }
 
     private void loadXQTS() {
-        File buildFile = new File("webapps/exist/xqts/build.xml");
-        //File xqtsFile = new File("webapps/exist/xqts/build.xml");
+        File buildFile = new File("webapp/xqts/build.xml");
+        //File xqtsFile = new File("webapp/xqts/build.xml");
         Project p = new Project();
         p.setUserProperty("ant.file", buildFile.getAbsolutePath());
         p.setUserProperty("config.basedir", "../../"+XQTS_case.XQTS_folder);

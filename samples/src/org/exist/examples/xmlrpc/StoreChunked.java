@@ -56,7 +56,7 @@ public class StoreChunked {
         String path =uri.getCollectionPath();
         
         // TODO: Filename hardcoded
-        String filename="webapps/exist/resources/admin2.png";
+        String filename="webapp/resources/admin2.png";
         try {
             InputStream fis = new FileInputStream(filename);
             

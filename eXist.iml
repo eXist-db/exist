@@ -28,8 +28,8 @@
       <excludeFolder url="file://$MODULE_DIR$/test/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/logs" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/work" />
-      <excludeFolder url="file://$MODULE_DIR$/webapps/exist/WEB-INF/data" />
-      <excludeFolder url="file://$MODULE_DIR$/webapps/exist/WEB-INF/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/WEB-INF/data" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/WEB-INF/logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

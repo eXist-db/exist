@@ -322,7 +322,7 @@ public class XQueryContext implements BinaryValueManager, Context
             try {
                 String existHome = System.getProperty("exist.home");
                 if (existHome != null){
-                    File repo_dir = new File(existHome + "/webapps/exist/WEB-INF/expathrepo");
+                    File repo_dir = new File(existHome + "/webapp/WEB-INF/expathrepo");
                     // ensure the dir exists
                     repo_dir.mkdir();
                     FileSystemStorage storage = new FileSystemStorage(repo_dir);

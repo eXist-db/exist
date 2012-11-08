@@ -13,7 +13,7 @@
 
     <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
-    <property name="src.webapp" value="./webapps/exist"/>
+    <property name="src.webapp" value="./webapp"/>
     <property name="samples" value="./samples/src"/>
     <property name="bin" value="./bin"/>
 
@@ -29,7 +29,7 @@
     <property name="build.javadoc" value="${build}/javadoc"/>
     <property name="build.extensions" value="./extensions"/>
     <property name="dist" value="./dist"/>
-    <property name="webapp.dir" value="${dist}/webapps/exist"/>
+    <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
     <property name="build.compiler.source" value="1.5"/>
     <property name="build.compiler.target" value="1.5"/>
@@ -142,7 +142,7 @@
 
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
 			<filterset>
-				<filter token="dataDir" value="webapps/exist/WEB-INF/data"/>
+				<filter token="dataDir" value="webapp/WEB-INF/data"/>
 			</filterset>
 		</copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
@@ -506,10 +506,10 @@
         <mkdir dir="${build.src}"/>
         <antcall target="copy-xapi"/>
 
-        <!--delete dir="webapps/exist/api"/>
-        <mkdir dir="webapps/exist/api"/-->
+        <!--delete dir="webapp/api"/>
+        <mkdir dir="webapp/api"/-->
         <echo message="Generating Javadocs ..."/>
-        <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapps/exist/api"
+        <javadoc bottom="Copyright (C) Wolfgang Meier. All rights reserved." destdir="webapp/api"
             doctitle="eXist Javadocs" noindex="true" notree="true" access="public" maxmemory="1024M"
             source="${build.compiler.source}">
             <packageset dir="${src}">
@@ -657,7 +657,7 @@
         <delete>
             <fileset dir="installer" includes="install.xml"/>
             <fileset dir="webapp" includes="header.xml"/>
-            <fileset dir="webapps/exist/xqts" includes="config.xml"/>
+            <fileset dir="webapp/xqts" includes="config.xml"/>
         </delete>
 
         <!-- more files -->
