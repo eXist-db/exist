@@ -744,6 +744,8 @@ public interface RpcAPI {
 
 	boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException;
 
+        boolean updateGroup(final String name, final Vector<String> managers, final Map<String, String> metadata) throws EXistException, PermissionDeniedException;
+        
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 

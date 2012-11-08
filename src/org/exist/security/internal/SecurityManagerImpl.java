@@ -236,8 +236,9 @@ public class SecurityManagerImpl implements SecurityManager {
 	
     @Override
     public boolean updateAccount(Account account) throws PermissionDeniedException, EXistException {
-        if (account == null)
+        if (account == null) {
             return false;
+        }
 
         if (account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
@@ -253,8 +254,9 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public boolean updateGroup(Group group) throws PermissionDeniedException, EXistException {
-        if (group == null)
+        if (group == null) {
             return false;
+        }
 
         if (group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");

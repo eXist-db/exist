@@ -71,6 +71,8 @@ public class RemoteUserManagementService implements UserManagementService {
             final List<Object> params = new ArrayList<Object>(12);
             params.add(role.getName());
             
+            //TODO what about group managers?
+            
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : role.getMetadataKeys()) {
                 metadata.put(key.getNamespace(), role.getMetadataValue(key));
@@ -806,7 +808,7 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	@Override
-        public void updateAccount(Account user) throws XMLDBException {
+        public void updateAccount(final Account user) throws XMLDBException {
             try {
                 final List<Object> params = new ArrayList<Object>(12);
                 params.add(user.getName());
@@ -825,9 +827,37 @@ public class RemoteUserManagementService implements UserManagementService {
                 params.add(metadata);
                 parent.getClient().execute("updateAccount", params);
             } catch (final XmlRpcException e) {
-                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
         }
+
+        @Override
+        public void updateGroup(final Group group) throws XMLDBException {
+            try {
+                final List<Object> params = new ArrayList<Object>(12);
+                params.add(group.getName());
+
+                final String managers[] = new String[group.getManagers().size()];
+                for(int i = 0; i < managers.length; i++) {
+                    managers[i] = group.getManagers().get(i).getName();
+                }
+                params.add(managers);
+
+                final Map<String, String> metadata = new HashMap<String, String>();
+                for(final SchemaType key : group.getMetadataKeys()) {
+                    metadata.put(key.getNamespace(), group.getMetadataValue(key));
+                }
+                params.add(metadata);
+
+                parent.getClient().execute("updateGroup", params);
+            } catch (final XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);   
+            } catch(final PermissionDeniedException pde) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);   
+            }
+        }
+        
+        
 	
 	/**
 	 * Update the specified accounts groups 
