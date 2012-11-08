@@ -27,7 +27,6 @@ import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
