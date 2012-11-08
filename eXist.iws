@@ -211,7 +211,7 @@
     </favorites_list>
     <favorites_list name="xprocxq">
       <favorite_root url="file://$PROJECT_DIR$/extensions/xprocxq/main" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      <favorite_root url="file://$PROJECT_DIR$/webapp/xproc" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+      <favorite_root url="file://$PROJECT_DIR$/webapps/exist/xproc" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
     </favorites_list>
     <favorites_list name="Unnamed">
       <favorite_root url="file://$PROJECT_DIR$/src" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
@@ -251,21 +251,21 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/functx-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/json-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/math-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/setup.xql" />
-        <option value="$PROJECT_DIR$/webapp/documentation.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/all.xqy" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/lib/util.xqm" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/test.xql" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/data/contact.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/index.html" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/test.xq" />
-        <option value="$PROJECT_DIR$/webapp/admin/repo.xqm" />
-        <option value="$PROJECT_DIR$/webapp/repo/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/index.xqy" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/repo.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/functx-example/repo.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/json-example/repo.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/math-example/repo.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/public/setup.xql" />
+        <option value="$PROJECT_DIR$/webapps/exist/documentation.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/public/all.xqy" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp/lib/util.xqm" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp/test.xql" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp/data/contact.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp/index.html" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp/test.xq" />
+        <option value="$PROJECT_DIR$/webapps/exist/admin/repo.xqm" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/repo.xml" />
+        <option value="$PROJECT_DIR$/webapps/exist/repo/public/index.xqy" />
         <option value="$PROJECT_DIR$/src/org/exist/start/Main.java" />
       </list>
     </option>
@@ -803,15 +803,15 @@
       <recent name="org.exist.xquery.functions.text" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/webapp/repo/public/packages" />
+      <recent name="$PROJECT_DIR$/webapps/exist/repo/public/packages" />
       <recent name="$PROJECT_DIR$/extensions/betterform/src/main/lib" />
       <recent name="$PROJECT_DIR$/lib/user" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp" />
-      <recent name="$PROJECT_DIR$/webapp/repo/packages/app-example/myApp/lib" />
-      <recent name="$PROJECT_DIR$/webapp/repo/packages/json-example" />
-      <recent name="$PROJECT_DIR$/webapp/repo/packages/functx-example" />
+      <recent name="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myapp" />
+      <recent name="$PROJECT_DIR$/webapps/exist/repo/packages/app-example/myApp/lib" />
+      <recent name="$PROJECT_DIR$/webapps/exist/repo/packages/json-example" />
+      <recent name="$PROJECT_DIR$/webapps/exist/repo/packages/functx-example" />
     </key>
   </component>
   <component name="RunManager" selected="Application.Server">
@@ -1890,42 +1890,42 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/math-example/repo.xml">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/packages/math-example/repo.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="7" column="2" selection-start="271" selection-end="271" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/documentation.xml">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/documentation.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="119" column="76" selection-start="6340" selection-end="6340" vertical-scroll-proportion="0.7158556" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/public/all.xqy">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/public/all.xqy">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="13" selection-start="0" selection-end="22" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/functx-example/functx/functx.xql">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/packages/functx-example/functx/functx.xql">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/admin/repo.xqm">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/admin/repo.xqm">
       <provider selected="true" editor-type-id="text-editor">
         <state line="136" column="27" selection-start="5145" selection-end="5145" vertical-scroll-proportion="0.38263667" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/repo.xml">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/repo.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="238" column="19" selection-start="10281" selection-end="10281" vertical-scroll-proportion="0.073954985" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/public/index.xqy">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/public/index.xqy">
       <provider selected="true" editor-type-id="text-editor">
         <state line="164" column="38" selection-start="6513" selection-end="6513" vertical-scroll-proportion="1.5819936" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/functx-example/repo.xml">
+    <entry file="file://$PROJECT_DIR$/webapps/exist/repo/packages/functx-example/repo.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="0" selection-start="498" selection-end="498" vertical-scroll-proportion="0.19292605" />
       </provider>

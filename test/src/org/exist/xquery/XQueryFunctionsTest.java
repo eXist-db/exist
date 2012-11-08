@@ -1070,9 +1070,9 @@ public class XQueryFunctionsTest extends TestCase {
 			File home = ConfigurationHelper.getExistHome();
             File fLogo;
             if (home != null)
-                fLogo = new File(home, "webapp/" + BINARY_RESOURCE_FILENAME);
+                fLogo = new File(home, "webapps/exist/" + BINARY_RESOURCE_FILENAME);
             else
-                fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
+                fLogo = new File("webapps/exist/" + BINARY_RESOURCE_FILENAME);
             //store the eXist logo in the test collection
 			BinaryResource br = (BinaryResource)testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
 			br.setContent(fLogo);

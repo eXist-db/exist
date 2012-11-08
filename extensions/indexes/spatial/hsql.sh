@@ -14,7 +14,7 @@ fi
 HSQL_LIB="${EXIST_HOME}/extensions/indexes/spatial/lib"
 
 if [ "x$1" = "x" ]; then
-    HSQL_DATA="${EXIST_HOME}/webapp/WEB-INF/data/spatial_index"
+    HSQL_DATA="${EXIST_HOME}/webapps/exist/WEB-INF/data/spatial_index"
 else
     HSQL_DATA="${EXIST_HOME}/$1"
 fi

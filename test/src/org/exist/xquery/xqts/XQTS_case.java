@@ -75,7 +75,7 @@ public class XQTS_case extends TestCase {
     public void loadTS() throws Exception {
         testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
         if (testCollection == null) {
-            File buildFile = new File("webapp/xqts/build.xml");
+            File buildFile = new File("webapps/exist/xqts/build.xml");
             Project p = new Project();
             p.setUserProperty("ant.file", buildFile.getAbsolutePath());
             p.setUserProperty("config.basedir", "../../"+XQTS_folder);

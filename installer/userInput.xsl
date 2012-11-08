@@ -9,7 +9,7 @@
                 <field type="title" align="left" txt="Set Data Directory and Admin Password" bold="false" size="1.33"/>
                 <field type="staticText" align="left" txt="Please select a directory where eXist will keep its data files. On Vista and Windows 7, this should be outside the usual 'Program Files' directory:"/>
                 <field type="dir" align="center" variable="dataDir">
-                    <spec txt="Data dir: " size="20" set="$INSTALL_PATH/webapp/WEB-INF/data" mustExist="false" create="true"/>
+                    <spec txt="Data dir: " size="20" set="$INSTALL_PATH/webapps/exist/WEB-INF/data" mustExist="false" create="true"/>
                 </field>
                 <field type="divider" align="bottom"/>
                 <field type="space"/>

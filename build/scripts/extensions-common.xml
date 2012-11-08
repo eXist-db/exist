@@ -44,7 +44,7 @@ $Id$
 
    <property name="dist.dir" location="${existhome.dir}/lib/extensions"/>
    <property name="dist.extension.jar" value="${dist.dir}/exist-${extension.name}.jar"/>
-   <property name="dist.webfragment.jar" value="${existhome.dir}/webapp/WEB-INF/lib/metainf-${extension.name}.jar"/>
+   <property name="dist.webfragment.jar" value="${existhome.dir}/webapps/exist/WEB-INF/lib/metainf-${extension.name}.jar"/>
 
    <property name="junit.report.dir" value="${existhome.dir}/test/junit/data"/>
 
