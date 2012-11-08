@@ -24,7 +24,6 @@ package org.exist.xquery;
 
 import java.util.*;
 
-import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;

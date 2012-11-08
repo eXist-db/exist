@@ -25,7 +25,6 @@ import org.exist.xquery.pragmas.Optimize;
 import org.apache.log4j.Logger;
 import org.exist.xquery.functions.fn.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
