@@ -49,7 +49,7 @@ public class RecoverBinaryTest2 extends TestCase {
         TestRunner.run(RecoverBinaryTest2.class);
     }
     
-    private static String directory = "webapps/exist/resources";
+    private static String directory = "webapp/resources";
     
     //private static File dir = new File(directory);
     

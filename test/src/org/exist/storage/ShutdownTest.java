@@ -113,7 +113,7 @@ public class ShutdownTest extends TestCase {
         
         // try to remove the database files
 //        try {
-//	        File dataDir = new File("webapps/exist/WEB-INF/data");
+//	        File dataDir = new File("webapp/WEB-INF/data");
 //	        File files[] = dataDir.listFiles(new FilenameFilter() {
 //	        	public boolean accept(File dir, String name) {
 //	        		if (name.endsWith(".dbx") || name.endsWith(".log"))

@@ -49,7 +49,7 @@
         <jar basedir="${classes}" compress="true" jarfile="${dist}/xbot.jar">
             <include name="org/exist/**"/>
         </jar>
-        <war destfile="${dist}/irc.war" webxml="webapps/exist/WEB-INF/web.xml">
+        <war destfile="${dist}/irc.war" webxml="webapp/WEB-INF/web.xml">
             <lib dir="${dist}">
                 <include name="*.jar"/>
             </lib>

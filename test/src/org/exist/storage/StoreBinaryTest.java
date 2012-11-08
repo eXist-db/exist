@@ -28,7 +28,7 @@ public class StoreBinaryTest {
     @BeforeClass
     public static void ensureCleanDatabase() throws IOException {
         File home = ConfigurationHelper.getExistHome();
-        File data = new File(home, "webapps/exist/WEB-INF/data");
+        File data = new File(home, "webapp/WEB-INF/data");
 
         File dataFiles[] = data.listFiles(new FilenameFilter(){
             @Override

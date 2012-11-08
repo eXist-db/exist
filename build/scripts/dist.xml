@@ -15,16 +15,16 @@
         <mkdir dir="dist"/>
         
         <!-- When there are no java docs, create empty file -->
-        <mkdir dir="webapps/exist/api"/>
-        <touch file="webapps/exist/api/index.html"/>
+        <mkdir dir="webapp/api"/>
+        <touch file="webapp/api/index.html"/>
 
-        <mkdir dir="webapps/exist/WEB-INF/data"/>
-        <mkdir dir="webapps/exist/WEB-INF/loggerdir"/>
-        <mkdir dir="webapps/exist/WEB-INF/logs"/>
+        <mkdir dir="webapp/WEB-INF/data"/>
+        <mkdir dir="webapp/WEB-INF/loggerdir"/>
+        <mkdir dir="webapp/WEB-INF/logs"/>
 
         <!-- create war specific configuration files -->
-        <xslt in="conf.xml"  out="webapps/exist/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
-        <xslt in="log4j.xml" out="webapps/exist/WEB-INF/log4j.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
+        <xslt in="conf.xml"  out="webapp/WEB-INF/conf.xml"  style="${build.scripts}/dist-war-conf.xsl"/>
+        <xslt in="log4j.xml" out="webapp/WEB-INF/log4j.xml" style="${build.scripts}/dist-war-log4j.xsl"/>
         
     </target>
 
@@ -32,7 +32,7 @@
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
     <target name="dist-war" depends="webapps,svn-prepare" description="Create war file">
-        <war destfile="${dist}/exist-${project.version}-rev${svn.revision}.war" webxml="webapps/exist/WEB-INF/web.xml">
+        <war destfile="${dist}/exist-${project.version}-rev${svn.revision}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
@@ -162,7 +162,7 @@
     <target depends="jar,samples,extension-modules,wrapper" name="dist">
         <delete dir="dist"/>
         <delete failonerror="false">
-            <fileset dir="webapps/exist/WEB-INF/logs" includes="*.log"/>
+            <fileset dir="webapp/WEB-INF/logs" includes="*.log"/>
         </delete>
         <mkdir dir="${dist}"/>
         <mkdir dir="${dist.dir}"/>
@@ -181,15 +181,15 @@
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
         <mkdir dir="${dist.dir}/webapp"/>
-        <mkdir dir="${dist.dir}/webapps/exist/WEB-INF/logs"/>
-        <mkdir dir="${dist.dir}/webapps/exist/WEB-INF/data"/>
+        <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
+        <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
         <mkdir dir="${dist.dir}/thirdparty"/>
         <mkdir dir="${dist.dir}/extensions"/>
         <mkdir dir="${dist.dir}/extensions/modules"/>
-        <touch file="${dist.dir}/webapps/exist/WEB-INF/data/.DO_NOT_DELETE"/>
-        <touch file="${dist.dir}/webapps/exist/WEB-INF/logs/.DO_NOT_DELETE"/>
+        <touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
+        <touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
 
         <filter token="database" value="native"/>

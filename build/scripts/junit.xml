@@ -73,7 +73,7 @@
     <!-- Seperate target for creating folders -->
     <target name="test-prepare" depends="jar,test-compile">
         <delete failonerror="false">
-            <fileset dir="webapps/exist/WEB-INF/data" includes="*.dbx,*.log"/>
+            <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
 
         <delete dir="${junit.reports.temp}"/>
@@ -202,7 +202,7 @@
     <!-- Test set 3 : concurrent tests -->
     <target name="test-concurrent">
         <delete failonerror="false">
-            <fileset dir="webapps/exist/WEB-INF/data" includes="*.dbx"/>
+            <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <echo message="-----------------"/>
         <echo message="Concurrency tests on local database"/>
@@ -257,7 +257,7 @@
         <echo message="Starting remote Standalone Server..."/>
         <echo message="---------------------------------------"/>
         <delete failonerror="false">
-            <fileset dir="webapps/exist/WEB-INF/data" includes="*.dbx"/>
+            <fileset dir="webapp/WEB-INF/data" includes="*.dbx"/>
         </delete>
         <java classname="org.exist.jetty.StandaloneServer">
             <sysproperty key="exist.home" value="${basedir}" />

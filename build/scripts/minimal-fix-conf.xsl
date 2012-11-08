@@ -5,11 +5,11 @@
 <xsl:output method="xml"/>
 
 <xsl:template match="db-connection/@files">
-<xsl:attribute name="files"><xsl:value-of select="substring-after(.,'webapps/exist/WEB-INF/')"/></xsl:attribute>
+<xsl:attribute name="files"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
 </xsl:template>
 
 <xsl:template match="recovery/@journal-dir">
-<xsl:attribute name="journal-dir"><xsl:value-of select="substring-after(.,'webapps/exist/WEB-INF/')"/></xsl:attribute>
+<xsl:attribute name="journal-dir"><xsl:value-of select="substring-after(.,'webapp/WEB-INF/')"/></xsl:attribute>
 </xsl:template>
 
 <xsl:template match="catalog/@uri">

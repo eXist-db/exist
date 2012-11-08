@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns="http://xml.apache.org/axis/wsdd/" xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+ <globalConfiguration>
+  <parameter name="sendMultiRefs" value="true"/>
+  <parameter name="disablePrettyXML" value="true"/>
+  <parameter name="adminPassword" value="admin"/>
+  <!-- parameter name="attachments.Directory" value="/home/wolf/download/eclipse/workspace/eXist-0.8/webapp/WEB-INF/attachments"/-->
+  <parameter name="axis.sendMinimizedElements" value="true"/>
+  <parameter name="enableNamespacePrefixOptimization" value="true"/>
+  <parameter name="sendXMLDeclaration" value="true"/>
+  <parameter name="attachments.implementation" value="org.apache.axis.attachments.AttachmentsImpl"/>
+  <parameter name="sendXsiTypes" value="true"/>
+  <requestFlow>
+   <handler type="java:org.apache.axis.handlers.JWSHandler">
+    <parameter name="scope" value="session"/>
+   </handler>
+   <handler type="java:org.apache.axis.handlers.JWSHandler">
+    <parameter name="scope" value="request"/>
+    <parameter name="extension" value=".jwr"/>
+   </handler>
+  </requestFlow>
+ </globalConfiguration>
+ <handler name="LocalResponder" type="java:org.apache.axis.transport.local.LocalResponder"/>
+ <handler name="URLMapper" type="java:org.apache.axis.handlers.http.URLMapper"/>
+ <handler name="RPCDispatcher" type="java:org.apache.axis.providers.java.RPCProvider"/>
+ <handler name="Authenticate" type="java:org.apache.axis.handlers.SimpleAuthenticationHandler"/>
+ <handler name="MsgDispatcher" type="java:org.apache.axis.providers.java.MsgProvider"/>
+ <service name="Query" provider="java:RPC" style="wrapped" use="literal">
+  <parameter name="wsdlServicePort" value="Query"/>
+  <parameter name="schemaQualified" value="urn:exist"/>
+  <parameter name="className" value="org.exist.soap.QuerySoapBindingSkeleton"/>
+  <parameter name="typeMappingVersion" value="1.2"/>
+  <parameter name="allowedMethods" value="*"/>
+  <parameter name="wsdlServiceElement" value="QueryService"/>
+  <parameter name="wsdlTargetNamespace" value="urn:exist"/>
+  <parameter name="wsdlPortType" value="Query"/>
+  <parameter name="scope" value="application"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns1:Collection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Collection" xmlns:ns1="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns2:QueryResponseDocument" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseDocument" xmlns:ns2="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns3:QueryResponseCollection" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseCollection" xmlns:ns3="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns4:StringArray" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.StringArray" xmlns:ns4="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns5:QueryResponseCollections" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseCollections" xmlns:ns5="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns6:QueryResponseDocuments" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponseDocuments" xmlns:ns6="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns7:QueryResponse" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.QueryResponse" xmlns:ns7="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns8:Base64BinaryArray" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Base64BinaryArray" xmlns:ns8="urn:exist"/>
+ </service>
+ <service name="AdminService" provider="java:MSG">
+  <parameter name="allowedMethods" value="AdminService"/>
+  <parameter name="enableRemoteAdmin" value="false"/>
+  <parameter name="className" value="org.apache.axis.utils.Admin"/>
+  <namespace>http://xml.apache.org/axis/wsdd/</namespace>
+ </service>
+ <service name="Version" provider="java:RPC">
+  <parameter name="allowedMethods" value="getVersion"/>
+  <parameter name="className" value="org.apache.axis.Version"/>
+ </service>
+ <service name="Admin" provider="java:RPC" style="wrapped" use="literal">
+  <parameter name="wsdlServicePort" value="Admin"/>
+  <parameter name="schemaQualified" value="urn:exist"/>
+  <parameter name="className" value="org.exist.soap.AdminSoapBindingSkeleton"/>
+  <parameter name="typeMappingVersion" value="1.2"/>
+  <parameter name="allowedMethods" value="*"/>
+  <parameter name="wsdlServiceElement" value="AdminService"/>
+  <parameter name="wsdlTargetNamespace" value="urn:exist"/>
+  <parameter name="wsdlPortType" value="Admin"/>
+  <parameter name="scope" value="application"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns9:Strings" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Strings" xmlns:ns9="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns10:UserDescs" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.UserDescs" xmlns:ns10="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns11:UserDesc" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.UserDesc" xmlns:ns11="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns12:CollectionDesc" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.CollectionDesc" xmlns:ns12="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns13:IndexedElements" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.IndexedElements" xmlns:ns13="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns14:IndexedElement" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.IndexedElement" xmlns:ns14="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns15:DocumentDesc" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.DocumentDesc" xmlns:ns15="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns16:DocumentDescs" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.DocumentDescs" xmlns:ns16="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns17:Permissions" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.Permissions" xmlns:ns17="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns18:EntityPermissions" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.EntityPermissions" xmlns:ns18="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.BeanDeserializerFactory" encodingStyle="" qname="ns19:EntityPermissionsList" serializer="org.apache.axis.encoding.ser.BeanSerializerFactory" type="java:org.exist.soap.EntityPermissionsList" xmlns:ns19="urn:exist"/>
+  <typeMapping deserializer="org.apache.axis.encoding.ser.EnumDeserializerFactory" encodingStyle="" qname="ns20:DocumentType" serializer="org.apache.axis.encoding.ser.EnumSerializerFactory" type="java:org.exist.soap.DocumentType" xmlns:ns20="urn:exist"/>
+ </service>
+ <transport name="http">
+  <requestFlow>
+   <handler type="URLMapper"/>
+   <handler type="java:org.apache.axis.handlers.http.HTTPAuthHandler"/>
+  </requestFlow>
+  <parameter name="qs.list" value="org.apache.axis.transport.http.QSListHandler"/>
+  <parameter name="qs.method" value="org.apache.axis.transport.http.QSMethodHandler"/>
+  <parameter name="qs.wsdl" value="org.apache.axis.transport.http.QSWSDLHandler"/>
+ </transport>
+ <transport name="local">
+  <responseFlow>
+   <handler type="java:org.apache.axis.transport.local.LocalResponder"/>
+  </responseFlow>
+ </transport>
+</deployment>
