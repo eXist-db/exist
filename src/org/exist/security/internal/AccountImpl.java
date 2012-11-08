@@ -195,8 +195,8 @@ public class AccountImpl extends AbstractAccount {
         home = from_user.getHome();
 
         //copy metadata
-        for(SchemaType metadataKey : from_user.getMetadataKeys()) {
-            String metadataValue = from_user.getMetadataValue(metadataKey);
+        for(final SchemaType metadataKey : from_user.getMetadataKeys()) {
+            final String metadataValue = from_user.getMetadataValue(metadataKey);
             setMetadataValue(metadataKey, metadataValue);
         }
 
