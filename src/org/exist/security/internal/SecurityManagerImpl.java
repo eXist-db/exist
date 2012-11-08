@@ -55,6 +55,7 @@ import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.Principal;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.security.xacml.ExistPDP;
@@ -569,10 +570,15 @@ public class SecurityManagerImpl implements SecurityManager {
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
-        if (registeredRealm.hasGroup(group.getName()))
+        if (registeredRealm.hasGroup(group.getName())) {
             throw new ConfigurationException("The group '"+group.getName()+"' at realm '" + group.getRealmId() + "' already exist.");
+        }
         
         final GroupImpl newGroup = new GroupImpl(registeredRealm, id, group.getName(), group.getManagers());
+        for(final SchemaType metadataKey : group.getMetadataKeys()) {
+            final String metadataValue = group.getMetadataValue(metadataKey);
+            newGroup.setMetadataValue(metadataKey, metadataValue);
+        }
         
         groupLocks.getWriteLock(newGroup).lock();
         try {
