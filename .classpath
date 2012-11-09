@@ -148,7 +148,6 @@
 	<classpathentry kind="lib" path="extensions/security/oauth/lib/org.json.jar"/>
 	<classpathentry kind="lib" path="lib/core/commons-codec-1.7.jar"/>
 	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1-min.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-net-2.2.jar"/>
 	<classpathentry kind="lib" path="extensions/contentextraction/lib/metadata-extractor-2.4.0-beta-1.jar"/>
 	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-3.6.0.jar"/>
@@ -178,5 +177,6 @@
 	<classpathentry kind="lib" path="extensions/security/openid/lib/guice-2.0.jar"/>
 	<classpathentry kind="lib" path="extensions/security/openid/lib/openid4java-0.9.6.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
