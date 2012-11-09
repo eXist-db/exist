@@ -108,6 +108,12 @@
                 <include name="log4j.dtd"/>
                 <include name="atom-services.xml"/>
             </webinf>
+        	
+        	<!-- Add autodeploy directory to war WEB-INF -->
+        	<webinf dir="." includes="autodeploy/*"/>
+        	
+        	<!-- Add webapp/WEB-INF/expathrepo path for AutoDeploymentTrigger -->
+        	<webinf dir="." includes="webapp/WEB-INF/expathrepo"/>
             
             <!-- Add files context root ('/') -->
             <fileset dir="webapp">
