@@ -76,7 +76,7 @@
         <and>
             <available file="${top.dir}/${lib.user}/fop.jar"/>
             <available file="${top.dir}/${lib.user}/batik-all-1.7.jar"/>
-            <available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.4.jar"/>
+            <available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.5.jar"/>
             <available file="${top.dir}/${lib.user}/avalon-framework-4.2.0.jar"/>
         </and>
     </condition>
