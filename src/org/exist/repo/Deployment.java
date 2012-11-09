@@ -121,7 +121,7 @@ public class Deployment {
             if (target != null) {
                 uninstall(target);
             }
-            return target.getStringValue();
+            return target == null ? null : target.getStringValue();
         } catch (XPathException e) {
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
         } catch (IOException e) {
@@ -143,7 +143,7 @@ public class Deployment {
                 return null;
             } else {
                 // otherwise copy all child directories to the target collection
-                XmldbURI targetCollection = XmldbURI.ROOT_COLLECTION_URI;
+                XmldbURI targetCollection = null;
                 if (userTarget != null) {
                     try {
                         targetCollection = XmldbURI.create(userTarget);
@@ -161,7 +161,10 @@ public class Deployment {
                         }
                     }
                 }
-
+                if (targetCollection == null) {
+                    // no target means: package does not need to be deployed into database
+                    return null;
+                }
                 ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
                 if (permissions != null) {
                     // get user, group and default permissions
