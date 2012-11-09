@@ -43,7 +43,15 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     return file.getName().endsWith(".xar");
                 }
             });
-            LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
+            
+            if (xars == null) {
+                LOG.error(autodeployDir.getAbsolutePath() + " does not exist.");
+                return;
+
+            } else {
+                LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
+            }
+            
             for (File xar : xars) {
                 Deployment deployment = new Deployment(broker);
                 try {
