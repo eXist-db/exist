@@ -852,6 +852,7 @@ public class Configurator {
         conf = hotConfigs.get( key );
         if (conf != null)
             return conf;
+        
         //XXX: locking required
         DocumentAtExist document = null;
         try {
@@ -890,9 +891,11 @@ public class Configurator {
         }
         if (document == null)
             return null; //possibly on corrupted database, find better solution (recovery flag?)
+        
         ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
         if (confElement == null)
             return null; //possibly on corrupted database, find better solution (recovery flag?)
+        
         conf = new ConfigurationImpl(confElement);
         hotConfigs.put(key, conf);
         return conf;
@@ -967,7 +970,7 @@ public class Configurator {
         BrokerPool pool = broker.getBrokerPool();
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
-        LOG.info("STORING CONFIGURATION collection = " + collection.getURI() + " document = " + uri);
+        LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
         Subject currentUser = broker.getSubject();
         try {
             broker.setSubject(pool.getSecurityManager().getSystemSubject());
