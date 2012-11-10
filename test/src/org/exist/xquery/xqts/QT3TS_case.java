@@ -334,8 +334,8 @@ public class QT3TS_case extends TestCase {
             	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
             		return;
             	
-                Assert.fail("expected error code '"+extectedError+"' get '"+e.getMessage()+"'");
-            } catch (Exception e) {
+                Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
+            } catch (Exception e) { 
             	e.printStackTrace();
                 Assert.fail(e.getMessage());
             } finally {
