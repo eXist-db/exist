@@ -22,12 +22,15 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.net.URI;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -210,10 +213,14 @@ public class ModuleInfo extends BasicFunction {
 			}
 		} else {
 			ValueSequence resultSeq = new ValueSequence();
-			for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
+            XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+			for(Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
 				Module module = i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}
+            for (URI uri : tempContext.getRepository().getJavaModules()) {
+                resultSeq.add(new StringValue(uri.toString()));
+            }
 			return resultSeq;
 		}
 	}

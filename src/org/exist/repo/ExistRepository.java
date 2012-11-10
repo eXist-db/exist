@@ -14,6 +14,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +160,18 @@ public class ExistRepository {
             }
         }
         return null;
+    }
+
+    public List<URI> getJavaModules() {
+        List<URI> modules = new ArrayList<URI>(13);
+        for (Packages pp : myParent.listPackages()) {
+            Package pkg = pp.latest();
+            ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+            if (info != null) {
+                modules.addAll(info.getJavaModules());
+            }
+        }
+        return modules;
     }
 
     public static ExistRepository getRepository(File home) throws PackageException {
