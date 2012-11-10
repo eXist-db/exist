@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class InspectModule extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("inspect-module", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
             "Compiles a module from source (without importing it) and returns an XML fragment describing the " +
@@ -34,20 +34,36 @@ public class InspectModule extends BasicFunction {
                         "The location URI of the module to inspect"),
             },
             new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                "An XML fragment describing the module and all functions contained in it."));
+                "An XML fragment describing the module and all functions contained in it.")),
+        new FunctionSignature(
+            new QName("inspect-module-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+            "Compiles a module from source (without importing it) and returns an XML fragment describing the " +
+                    "module and the functions/variables contained in it.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                    "The location URI of the module to inspect"),
+            },
+            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                "An XML fragment describing the module and all functions contained in it.")),
+    };
 
     private static final QName MODULE_QNAME = new QName("module");
     private static final QName VARIABLE_QNAME = new QName("variable");
 
-    public InspectModule(XQueryContext context) {
+    public InspectModule(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        Module module;
         XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
-        Module module = tempContext.importModule(null, null, args[0].getStringValue());
+        if (isCalledAs("inspect-module")) {
+            module = tempContext.importModule(null, null, args[0].getStringValue());
+        } else {
+            module = tempContext.importModule(args[0].getStringValue(), null, null);
+        }
 
         if (module == null)
             return Sequence.EMPTY_SEQUENCE;
@@ -55,6 +71,10 @@ public class InspectModule extends BasicFunction {
         AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
         attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
+        if (isCalledAs("inspect-module"))
+            attribs.addAttribute("", "location", "location", "CDATA", args[0].getStringValue());
+        else
+            attribs.addAttribute("", "location", "location", "CDATA", module.getClass().getName());
         int nodeNr = builder.startElement(MODULE_QNAME, attribs);
         if (!module.isInternalModule())
             XQDocHelper.parse((ExternalModule) module);

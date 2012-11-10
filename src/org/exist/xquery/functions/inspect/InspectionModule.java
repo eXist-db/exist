@@ -16,7 +16,8 @@ public class InspectionModule extends AbstractInternalModule {
 
     public final static FunctionDef[] functions = {
         new FunctionDef(InspectFunction.SIGNATURE, InspectFunction.class),
-        new FunctionDef(InspectModule.signature, InspectModule.class),
+        new FunctionDef(InspectModule.signatures[0], InspectModule.class),
+        new FunctionDef(InspectModule.signatures[1], InspectModule.class),
         new FunctionDef(ModuleFunctions.signatures[0], ModuleFunctions.class),
         new FunctionDef(ModuleFunctions.signatures[1], ModuleFunctions.class)
     };

@@ -52,6 +52,10 @@ public class ExistPkgInfo
         return myXquery.get(namespace);
     }
 
+    public Set<URI> getJavaModules() {
+        return myJava.keySet();
+    }
+
     public void addJar(String jar) {
         myJars.add(jar);
     }
