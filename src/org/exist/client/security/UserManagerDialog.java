@@ -22,6 +22,7 @@ import org.xmldb.api.base.XMLDBException;
 public class UserManagerDialog extends javax.swing.JFrame {
 
     private final UserManagementService userManagementService;
+    private final String currentUser;
     
     private DefaultTableModel usersTableModel = null;
     private DefaultTableModel groupsTableModel = null;
@@ -29,8 +30,9 @@ public class UserManagerDialog extends javax.swing.JFrame {
     /**
      * Creates new form UserManagerDialog
      */
-    public UserManagerDialog(final UserManagementService userManagementService) {
+    public UserManagerDialog(final UserManagementService userManagementService, final String currentUser) {
         this.userManagementService = userManagementService;
+        this.currentUser = currentUser;
         initComponents();
         tblUsers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
         tblGroups.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
@@ -215,6 +217,11 @@ public class UserManagerDialog extends javax.swing.JFrame {
         pmUsers.add(miRemoveUser);
 
         miNewGroup.setText("New Group...");
+        miNewGroup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miNewGroupActionPerformed(evt);
+            }
+        });
         pmGroups.add(miNewGroup);
         miNewGroup.getAccessibleContext().setAccessibleName("New Group");
 
@@ -373,7 +380,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
     }
     
     private void showEditGroupDialog(final Group group) {
-        final EditGroupDialog groupDialog = new EditGroupDialog(userManagementService, group);
+        final EditGroupDialog groupDialog = new EditGroupDialog(userManagementService, currentUser, group);
         
         groupDialog.addWindowListener(new WindowAdapter(){           
             @Override
@@ -436,7 +443,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
             final Group group = userManagementService.getGroup(selectedGroup);
             userManagementService.removeGroup(group);
         
-            usersTableModel.removeRow(tblGroups.getSelectedRow());
+            groupsTableModel.removeRow(tblGroups.getSelectedRow());
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not remove group '" + selectedGroup + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -460,6 +467,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_tblGroupsMouseClicked
+
+    private void miNewGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miNewGroupActionPerformed
+       showGroupDialog();
+    }//GEN-LAST:event_miNewGroupActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;

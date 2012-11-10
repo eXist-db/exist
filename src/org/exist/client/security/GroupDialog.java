@@ -4,7 +4,6 @@ import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.xmldb.UserManagementService;
 
@@ -33,11 +32,21 @@ public class GroupDialog extends javax.swing.JFrame {
         return userManagementService;
     }
     
-    private TableModel getGroupMembersTableModel() {
+    protected DefaultTableModel getGroupMembersTableModel() {
         if(groupMembersTableModel == null) {
             groupMembersTableModel = new ReadOnlyDefaultTableModel(null, new String[] {
                 "Username", "Group Manager"
-            });
+            }){
+                @Override
+                public Class<?> getColumnClass(int columnIndex) {
+                    if(columnIndex == 1) {
+                        return Boolean.class;
+                    } else {
+                        return super.getColumnClass(columnIndex);
+                    }
+                }
+                
+            };
         }
         
         return groupMembersTableModel;
@@ -52,6 +61,10 @@ public class GroupDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        pmGroupMembers = new javax.swing.JPopupMenu();
+        miAddGroupMember = new javax.swing.JMenuItem();
+        miCbGroupMemberManager = new javax.swing.JCheckBoxMenuItem();
+        miRemoveGroupMember = new javax.swing.JMenuItem();
         lblGroupName = new javax.swing.JLabel();
         txtGroupName = new javax.swing.JTextField();
         lblDescription = new javax.swing.JLabel();
@@ -63,10 +76,31 @@ public class GroupDialog extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         btnCreate = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
+        btnAddMember = new javax.swing.JButton();
+
+        miAddGroupMember.setText("Add Group Member...");
+        pmGroupMembers.add(miAddGroupMember);
+
+        miCbGroupMemberManager.setSelected(true);
+        miCbGroupMemberManager.setText("Group Manager");
+        miCbGroupMemberManager.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCbGroupMemberManagerActionPerformed(evt);
+            }
+        });
+        pmGroupMembers.add(miCbGroupMemberManager);
+
+        miRemoveGroupMember.setText("Remove Group Member");
+        miRemoveGroupMember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRemoveGroupMemberActionPerformed(evt);
+            }
+        });
+        pmGroupMembers.add(miRemoveGroupMember);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New Group");
-        setPreferredSize(new java.awt.Dimension(446, 300));
+        setPreferredSize(new java.awt.Dimension(446, 385));
 
         lblGroupName.setText("Group name:");
 
@@ -75,6 +109,13 @@ public class GroupDialog extends javax.swing.JFrame {
         lblDescription.setText("Description:");
 
         tblGroupMembers.setModel(getGroupMembersTableModel());
+        tblGroupMembers.setAutoCreateRowSorter(true);
+        tblGroupMembers.setComponentPopupMenu(pmGroupMembers);
+        tblGroupMembers.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblGroupMembersMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblGroupMembers);
 
         lblGroupMembers.setText("Group Members:");
@@ -93,16 +134,15 @@ public class GroupDialog extends javax.swing.JFrame {
             }
         });
 
+        btnAddMember.setText("Add Group Member...");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jSeparator2))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(26, 26, 26)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -115,22 +155,27 @@ public class GroupDialog extends javax.swing.JFrame {
                             .addComponent(txtDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
                             .addComponent(txtGroupName))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addComponent(jSeparator1)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 407, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblGroupMembers))
-                                .addGap(0, 9, Short.MAX_VALUE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnClose)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCreate)))
+                                .addComponent(lblGroupMembers)
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(btnClose)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnCreate)
+                .addGap(16, 16, 16))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnAddMember)
+                .addContainerGap(251, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -149,13 +194,15 @@ public class GroupDialog extends javax.swing.JFrame {
                 .addComponent(lblGroupMembers)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(btnAddMember)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCreate)
-                    .addComponent(btnClose))
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnClose)
+                    .addComponent(btnCreate))
+                .addContainerGap())
         );
 
         pack();
@@ -200,7 +247,33 @@ public class GroupDialog extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnCloseActionPerformed
 
+    protected boolean canModifyGroupMembers() {
+        return true;
+    }
+    
+    private void tblGroupMembersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblGroupMembersMouseClicked
+        final boolean groupMemberSelected = tblGroupMembers.getSelectedRow() > -1;
+        
+        boolean canModify = groupMemberSelected && canModifyGroupMembers();
+        
+        miAddGroupMember.setEnabled(canModify);
+        miCbGroupMemberManager.setEnabled(canModify);
+        miRemoveGroupMember.setEnabled(canModify);
+    }//GEN-LAST:event_tblGroupMembersMouseClicked
+
+    private void miCbGroupMemberManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCbGroupMemberManagerActionPerformed
+        final int row = tblGroupMembers.getSelectedRow();
+        final Boolean val = (Boolean)getGroupMembersTableModel().getValueAt(row, 1);
+        getGroupMembersTableModel().setValueAt(!val.booleanValue(), row, 1);
+    }//GEN-LAST:event_miCbGroupMemberManagerActionPerformed
+
+    private void miRemoveGroupMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveGroupMemberActionPerformed
+        final int row = tblGroupMembers.getSelectedRow();
+        getGroupMembersTableModel().removeRow(row);
+    }//GEN-LAST:event_miRemoveGroupMemberActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddMember;
     private javax.swing.JButton btnClose;
     protected javax.swing.JButton btnCreate;
     private javax.swing.JScrollPane jScrollPane1;
@@ -209,6 +282,10 @@ public class GroupDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblDescription;
     private javax.swing.JLabel lblGroupMembers;
     private javax.swing.JLabel lblGroupName;
+    private javax.swing.JMenuItem miAddGroupMember;
+    private javax.swing.JCheckBoxMenuItem miCbGroupMemberManager;
+    private javax.swing.JMenuItem miRemoveGroupMember;
+    private javax.swing.JPopupMenu pmGroupMembers;
     private javax.swing.JTable tblGroupMembers;
     protected javax.swing.JTextField txtDescription;
     protected javax.swing.JTextField txtGroupName;

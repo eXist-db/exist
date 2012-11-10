@@ -2,23 +2,21 @@ package org.exist.client;
 
 import java.awt.Color;
 import java.awt.Component;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import org.exist.client.ClientFrame.ResourceTableModel;
 import org.exist.xmldb.XmldbURI;
 
-public class HighlightedTableCellRenderer<T extends AbstractTableModel> implements TableCellRenderer {
-        
+public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends DefaultTableCellRenderer {
+    
     private final static Color collectionBackground = new Color(225, 235, 224);
     private final static Color collectionForeground = Color.black;
     private final static Color highBackground = new Color(115, 130, 189);
     private final static Color highForeground = Color.white;
     private final static Color altBackground = new Color(235, 235, 235);
-        
-    final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
         
     /*
      * (non-Javadoc)
@@ -32,11 +30,16 @@ public class HighlightedTableCellRenderer<T extends AbstractTableModel> implemen
             value = new PrettyXmldbURI((XmldbURI)value);
         }
         
-        final Component renderer = DEFAULT_RENDERER.getTableCellRendererComponent(table, value, isSelected,hasFocus, row, column);
-        ((JLabel) renderer).setOpaque(true);
-        final Color foreground, background;
+        final Component renderer = super.getTableCellRendererComponent(table, value, isSelected,hasFocus, row, column);
+        
+        if(renderer instanceof JCheckBox) {
+            ((JCheckBox)renderer).setOpaque(true);
+        } else if(renderer instanceof JLabel) {
+            ((JLabel)renderer).setOpaque(true);
+        }
 
-        final T resources = (T) table.getModel();
+        final Color foreground, background;
+        final T resources = (T)table.getModel();
         if (isSelected) {
             foreground = highForeground;
             background = highBackground;
