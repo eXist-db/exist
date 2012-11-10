@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.http;
+package org.exist.jetty;
 
 import org.exist.storage.BrokerPool;
 
@@ -29,10 +29,12 @@ import org.exist.storage.BrokerPool;
  */
 public class WebAppContext extends org.eclipse.jetty.webapp.WebAppContext {
 	
+    @Override
 	public String toString() {
-		return "eXist XML Database";
+		return "eXist-db Open Source Native XML Database";
 	}
 	
+    @Override
 	protected void doStop() throws Exception {
 		super.doStop();
 		

@@ -108,7 +108,7 @@
       <Set name="handlers">
         <Array type="org.eclipse.jetty.server.Handler">
           <Item>
-            <New id="webapp" class="org.exist.http.WebAppContext">
+            <New id="webapp" class="org.exist.jetty.WebAppContext">
               <!-- can either be '/exist' or '/' -->
               <Set name="contextPath">/exist</Set>
               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
