@@ -108,7 +108,9 @@ public class ModuleInfo extends BasicFunction {
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"),
+            "Use inspect:inspect-module-uri instead."
+        );
 	
 	public final static FunctionSignature moduleInfoSig =
 		new FunctionSignature(
@@ -117,7 +119,8 @@ public class ModuleInfo extends BasicFunction {
 			"namespace URI.",
 			null,
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
-					"the description of the active function module identified by the namespace URI"));
+					"the description of the active function module identified by the namespace URI")
+        );
 	
 	public final static FunctionSignature moduleInfoWithURISig =
 		new FunctionSignature(
@@ -126,7 +129,9 @@ public class ModuleInfo extends BasicFunction {
 			"namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
-					"the description of the active function module identified by the namespace URI"));
+                "the description of the active function module identified by the namespace URI"),
+            "Use inspect:inspect-module-uri instead."
+        );
 	
 	private static final QName MODULE_QNAME = new QName("module");
 	private static final QName MODULE_URI_ATTR = new QName("uri");
