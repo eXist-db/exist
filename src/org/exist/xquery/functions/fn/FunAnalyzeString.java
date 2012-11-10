@@ -1,32 +1,40 @@
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Type;
+import org.xml.sax.helpers.AttributesImpl;
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
  * 
  * @author Adam Retter <adam@exist-db.org>
- * @serial 201107071502
+ * @serial 201211101626
+ * 
+ * Corrections were made by to the previous buggy version
+ * by taking inspiration from the BaseX 7.3 version.
  */
 
 public class FunAnalyzeString extends BasicFunction {
 
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
 
+    private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
+    private final static QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
+    private final static QName QN_NR = new QName("nr");
+    private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
+    
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             fnAnalyzeString,
@@ -64,12 +72,12 @@ public class FunAnalyzeString extends BasicFunction {
         )
     };
 
-    public FunAnalyzeString(XQueryContext context, FunctionSignature signature) {
+    public FunAnalyzeString(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         MemTreeBuilder builder = new MemTreeBuilder(context);
         builder.startDocument();
         builder.startElement(new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS), null);
@@ -90,8 +98,7 @@ public class FunAnalyzeString extends BasicFunction {
         return builder.getDocument();
     }
 
-    private void analyzeString(MemTreeBuilder builder, String input,
-            String pattern, String flags) throws XPathException {
+    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
         final Pattern ptn;
         if (flags != null) {
             int iFlags = parseStringFlags(flags);
@@ -99,57 +106,80 @@ public class FunAnalyzeString extends BasicFunction {
         } else {
             ptn = Pattern.compile(pattern);
         }
-        Matcher matcher = ptn.matcher(input);
+        
+        final Matcher matcher = ptn.matcher(input);
+        
         int offset = 0;
-        while (matcher.find()) {
-            MatchResult matchResult = matcher.toMatchResult();
-            if (matchResult.start() != offset) {
-                nonMatch(builder, input.substring(offset, matchResult.start()));
-                offset = matchResult.start();
+        while(matcher.find()) {
+            if(matcher.start() != offset) {
+                nonMatch(builder, input.substring(offset, matcher.start()));
             }
-            builder.startElement(new QName("match", Function.BUILTIN_FUNCTION_NS), null);
-            for (int i = 1; i <= matchResult.groupCount(); i++) {
-            	if (matchResult.start(i) < 0) continue;
-                if (matchResult.start(i) != offset) {
-                    String chars = input.substring(offset, matchResult.start(i));
-                    if (matchResult.start(i) >= matchResult.start() &&
-                            matchResult.start(i) <= matchResult.end()) {
-                        builder.characters(chars);
-                    } else {
-                        builder.endElement();
-                        nonMatch(builder, chars);
-                        builder.startElement(new QName("match",
-                            Function.BUILTIN_FUNCTION_NS), null);
-                    }
-                    offset = matchResult.start(i);
-                }
-                builder.startElement(new QName("group", Function.BUILTIN_FUNCTION_NS), null);
-                builder.addAttribute(new QName("nr"), Integer.toString(i));
-                builder.characters(input.substring(matchResult.start(i), matchResult.end(i)));
-                builder.endElement();
-                offset = matchResult.end(i);
-            }
-            if (offset!= matchResult.end()) {
-                String matchedInput = input.substring(offset, matchResult.end());
-                builder.characters(matchedInput);
-            }
-            builder.endElement();
-            offset = matchResult.end();
+            match(builder, matcher, input, 0);
+            
+            offset = matcher.end();
         }
-        if (offset != input.length()) {
+        
+        if(offset != input.length()) {
             nonMatch(builder, input.substring(offset));
         }
     }
+    
+    private class GroupPosition {
 
-    private void nonMatch(MemTreeBuilder builder, String nonMatch) {
-        builder.startElement(new QName("non-match", Function.BUILTIN_FUNCTION_NS), null);
+        public GroupPosition(final int groupNumber, final int position) {
+            this.groupNumber = groupNumber;
+            this.position = position;
+        }
+        
+        public int groupNumber;
+        public int position;
+    }
+    
+    private GroupPosition match(final MemTreeBuilder builder, final Matcher matcher, final String input, final int group) {
+        if(group == 0) {
+            builder.startElement(QN_MATCH, null);
+        } else {
+            final AttributesImpl attributes = new AttributesImpl();
+            attributes.addAttribute("", QN_NR.getLocalName(), QN_NR.getLocalName(), "int", Integer.toString(group));
+            builder.startElement(QN_GROUP, attributes);
+        }
+        
+        final int groupStart = matcher.start(group);
+        final int groupEnd = matcher.end(group);
+        final int groupCount = matcher.groupCount();
+        
+        GroupPosition groupAndPosition = new GroupPosition(group + 1, groupStart);
+        while(groupAndPosition.groupNumber <= groupCount && matcher.end(groupAndPosition.groupNumber) <= groupEnd) {
+            final int start = matcher.start(groupAndPosition.groupNumber);
+            if(start >= 0) { //group matched
+                if(groupAndPosition.position < start) {
+                    builder.characters(input.substring(groupAndPosition.position, start));
+                }
+                groupAndPosition = match(builder, matcher, input, groupAndPosition.groupNumber);
+            } else {
+                groupAndPosition.groupNumber++; //skip to next group
+            }
+        }
+        
+        if(groupAndPosition.position < groupEnd) {
+            builder.characters(input.substring(groupAndPosition.position, groupEnd));
+            groupAndPosition.position = groupEnd;
+        }
+        
+        builder.endElement();
+        
+        return groupAndPosition;
+    }
+
+    private void nonMatch(final MemTreeBuilder builder, final String nonMatch) {
+        builder.startElement(QN_NON_MATCH, null);
         builder.characters(nonMatch);
         builder.endElement();
     }
 
-    private int parseStringFlags(String flags) {
+    private int parseStringFlags(final String flags) {
         int iFlags = 0;
-        for (char c : flags.toCharArray()) {
+        for (final char c : flags.toCharArray()) {
             switch(c) {
             case 's':
                 iFlags |= Pattern.DOTALL;
