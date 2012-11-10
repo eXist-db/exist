@@ -459,33 +459,36 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("not implemented 'assert-empty'", false);
 
 		} else if ("assert-xml".equals(type)) {
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node exNode = expected.item(i);
-	        	String exString;
-	        	if (exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-	        		Attr attr = (Attr)exNode;
-	        		if (attr.getName().equals("file")) {
-                    	Sequence seq = enviroment(
-                    			XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue()
-                			);
-                    	StringBuilder sb = new StringBuilder();
-                    	for (int j = 0; j < seq.getItemCount(); j++) {
-                    		sb.append(toString(seq.itemAt(j)));
-                    	}
-                    	exString = sb.toString();
+                    for(int i = 0; i < expected.getLength(); i++) {
+                        final int ic = i;
+                        boolean ignorePrefixes = false;
+                        final Node exNode = expected.item(i);
+                        String exString = null;
+                        if(exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+                            final Attr attr = (Attr)exNode;
+                            if(attr.getName().equals("file")) {
+                                final Sequence seq = enviroment(XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue());
+                                StringBuilder sb = new StringBuilder();
+                                for(int j = 0; j < seq.getItemCount(); j++) {
+                                    sb.append(toString(seq.itemAt(j)));
+                                }
+                                exString = sb.toString();
+                            } else if(attr.getName().equals("ignore-prefixes")) {
+                                ignorePrefixes = Boolean.parseBoolean(attr.getValue());
+                                exString = expected.item(++i).getNodeValue();
+                            } else {
+                                Assert.fail("eXist XQTS3 Test Suite Error: Unknown Attribute '" +attr.getName() + "'");
+                                return;
+                            }
+                        } else {
+                            exString = exNode.getNodeValue();
+                        }
 
-	        		} else {
-	        			Assert.assertTrue("unknown attribute '"+attr.getName()+"'", false);
-	        			return;
-	        		}
-	        	} else {
-	        		exString = exNode.getNodeValue();
-	        	}
-	        	final Item acNode = result.itemAt(i);
-	        	Assert.assertTrue(
-        			diffXML(exString, toString(acNode))
-    			);
-	        }
+                        final Item acNode = result.itemAt(ic);
+                        Assert.assertTrue(
+                            diffXML(exString, toString(acNode), ignorePrefixes)
+                        );
+                    }
 
 		} else if ("error".equals(type)) {
 			Assert.assertTrue("not implemented 'error'", false);
@@ -495,9 +498,9 @@ public class QT3TS_case extends TestCase {
 		}
     }
     
-	private static final Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
-	private String toString(Item item) throws SAXException {
+    private String toString(Item item) throws SAXException {
         StringWriter writer = new StringWriter();
         SAXSerializer serializer = new SAXSerializer(writer, properties);
         item.toSAX(pool.getActiveBroker(), serializer, properties);
@@ -506,36 +509,49 @@ public class QT3TS_case extends TestCase {
         return serialized;
     }
     
+        
+    private boolean diffXML(final String expectedResult, final String result) throws SAXException, IOException {
+        return diffXML(expectedResult, result, false);
+    }
 
-	private boolean diffXML(String expResult, String res) throws SAXException, IOException {
-//		res = res.replaceAll("\n", "");
-//		res = res.replaceAll("\t", "");
-//		expResult = expResult.replaceAll("\n", "");
-//		expResult = expResult.replaceAll("\t", "");
-		
-//		System.out.println(expResult);
-//		System.out.println(res);
+    /**
+     * @param expectedResult
+     * @param result
+     * @param lax When set to false, expectedResult and result must be 'identical', when set to true it is acceptable if they are 'similar'
+     */
+    private boolean diffXML(final String expectedResult, final String result, final boolean lax) throws SAXException, IOException {
 
-		Diff diff = new Diff(expResult.trim(), res);
-        if (!diff.identical()) {
-        	System.out.println("expected:");
-        	System.out.println(expResult);
-        	System.out.println("get:");
-        	System.out.println(res);
-        	System.out.println(diff.toString());
-            return false;
+        final Diff diff = new Diff(expectedResult.trim(), result);
+        
+        boolean match = false;
+        if(lax) {
+            match = diff.similar();
+        } else {
+            match = diff.identical();
         }
         
-        return true;
-	}
-    
-	private void diffXML(Node exNode, Node acNode) {
-		Assert.assertTrue("expected: "+exNode+" actual:"+acNode, exNode.isEqualNode(acNode));
-	}
+        if(match) {
+            //pass
+            return true;
+        }
+        
+        //fail
+        System.out.println("expected:");
+        System.out.println(expectedResult);
+        System.out.println("but got:");
+        System.out.println(result);
+        System.out.println(diff.toString());
+        
+        return false;
+    }
+
+    private void diffXML(final Node expectedNode, final Node actualNode) {
+        Assert.assertTrue("expected: " + expectedNode+ "  but got: " +actualNode, expectedNode.isEqualNode(actualNode));
+    }
 
 
     @Override
-	protected String getCollection() {
-		return QT3_URI.toString();
-	}
+    protected String getCollection() {
+        return QT3_URI.toString();
+    }
 }
