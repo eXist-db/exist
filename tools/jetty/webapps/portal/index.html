@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>eXist-db Open Source Native XML Database</title>
+        <link rel="shortcut icon" href="resources/exist_icon_16x16.ico"/>
+        <link rel="icon" href="resources/exist_icon_16x16.png" type="image/png"/>
+        <script type="text/javascript" src="resources/jquery-1.7.1.min.js"></script>
+     
+        <style type="text/css">
+            body { 
+                margin: 80px 80px;
+            }
+
+            #content {
+                width: 480px;
+                margin: 60px auto;
+                padding: 20px;
+                border: 1px solid #606060;
+                -moz-border-radius: 35px;
+                border-radius: 35px;
+            }
+            
+            img.theimage {
+                display: block;   margin-left: auto;   margin-right: auto;
+            }
+            h2 {
+                color: rgb(0, 131, 203);
+                padding: 10px 0px 5px;
+                text-align: center;
+            }
+
+            h2 {
+                font-family: "QuicksandBook","Arial",Helvetica,sans-serif;
+                font-size: 1.33em;
+                
+                margin: 0.3em 0px 0px;
+            }
+            
+            div.warning {
+                font-family: "QuicksandBook","Arial",Helvetica,sans-serif;
+                font-size:30px;
+                color: red;
+                text-align: center;
+            }
+            
+        </style>
+    </head>
+    
+    <body>
+        <div id="content" style="display:none;">
+            <img class="theimage" src="resources/logo.jpg" title="eXist-db: Open Source Native XML Database" alt="Logo"/>
+            <h2>eXist-db Open Source Native XML Database</h2>
+        </div>
+        <noscript>
+            <div id="content">
+                <img class="theimage" src="resources/logo.jpg" title="eXist-db: Open Source Native XML Database" alt="Logo"/>
+                <h2>eXist-db Open Source Native XML Database</h2>
+            </div>
+            <div class="warning">Warning:<BR/>The eXist-db dashboard requires javascript to be enabled.<BR>Please click <a href="/exist">HERE</A> to continue.</div>
+        </noscript>
+        <script type="text/javascript">
+        $(document).ready(function(){
+    
+            $('#content').fadeIn(1000);
+            
+            setTimeout(function(){
+                window.location.replace("/exist")
+            }, 2000);
+            
+    
+        });
+    </script>
+    </body>
+</html>
