@@ -856,6 +856,20 @@ public class RemoteUserManagementService implements UserManagementService {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);   
             }
         }
+
+        @Override
+        public String[] getGroupMembers(String groupName) throws XMLDBException {
+            try {
+                final List<Object> params = new ArrayList<Object>(1);
+                params.add(groupName);
+                
+                return (String[])parent.getClient().execute("getGroupMembers", params);
+            } catch (final XmlRpcException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);   
+            }
+        }
+        
+        
         
         
 	

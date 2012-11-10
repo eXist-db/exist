@@ -334,28 +334,27 @@ public interface UserManagementService extends Service {
     public void removeGroup(Account user, String rmgroup) throws XMLDBException;
 
 
-	public void addGroup(Group group) throws XMLDBException;
+    public void addGroup(Group group) throws XMLDBException;
 
-	@Deprecated //it'll removed after 1.6
-	public void addUser( User user ) throws XMLDBException;
-	
-	@Deprecated //it'll removed after 1.6
-	public void updateUser( User user ) throws XMLDBException;
+    @Deprecated //it'll removed after 1.6
+    public void addUser( User user ) throws XMLDBException;
 
-	@Deprecated //it'll removed after 1.6
-	public User getUser( String name ) throws XMLDBException;
-	
-	@Deprecated //it'll removed after 1.6
-	public User[] getUsers() throws XMLDBException;
-	
-	@Deprecated //it'll removed after 1.6
-	public void removeUser( User user ) throws XMLDBException;
+    @Deprecated //it'll removed after 1.6
+    public void updateUser( User user ) throws XMLDBException;
 
-	@Deprecated //it'll removed after 1.6
+    @Deprecated //it'll removed after 1.6
+    public User getUser( String name ) throws XMLDBException;
+
+    @Deprecated //it'll removed after 1.6
+    public User[] getUsers() throws XMLDBException;
+
+    @Deprecated //it'll removed after 1.6
+    public void removeUser( User user ) throws XMLDBException;
+
+    @Deprecated //it'll removed after 1.6
     public void lockResource(Resource res, User u) throws XMLDBException;
 
-    
-
+    public String[] getGroupMembers(String groupName) throws XMLDBException;
 }
 
 
