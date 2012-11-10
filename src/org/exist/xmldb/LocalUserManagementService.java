@@ -753,17 +753,37 @@ public class LocalUserManagementService implements UserManagementService {
 
                 @Override
                 public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 	        
                     sm.updateGroup(g);
                     
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
+
+    @Override
+    public String[] getGroupMembers(final String groupName) throws XMLDBException {
+        try {
+            final List<String> groupMembers = executeWithBroker(new BrokerOperation<List<String>>(){
+                @Override
+                public List<String> withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    return sm.findAllGroupMembers(groupName);
+                }
+            });
+            
+            return groupMembers.toArray(new String[groupMembers.size()]);
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    
 	
     @Override
     public void addUserGroup(Account user) throws XMLDBException {	

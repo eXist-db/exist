@@ -3964,6 +3964,25 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    @Override
+    public String[] getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException {
+        
+        try {
+            final List<String> groupMembers = executeWithBroker(new BrokerOperation<List<String>>() {
+                @Override
+                public List<String> withBroker(final DBBroker broker)  {
+                    return broker.getBrokerPool().getSecurityManager().findAllGroupMembers(groupName);
+                }
+
+            });
+            return groupMembers.toArray(new String[groupMembers.size()]);
+        } catch (URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        }
+    }
+    
+    
+
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
      * 
