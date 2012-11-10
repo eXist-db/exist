@@ -19,6 +19,7 @@
       <!-- Default queued blocking threadpool 
       -->
       <New class="org.eclipse.jetty.util.thread.QueuedThreadPool">
+        <Set name="name">eXistThread</Set>
         <Set name="minThreads">10</Set>
         <Set name="maxThreads">200</Set>
       </New>
@@ -104,13 +105,13 @@
         <Set name="handlers">
          <Array type="org.eclipse.jetty.server.Handler">
            <Item>
-             <New id="webapp" class="org.exist.http.WebAppContext">
+             <New id="webapp" class="org.exist.jetty.WebAppContext">
                <!-- can either be '/exist' or '/' -->
                <Set name="contextPath">/</Set>
                <Set name="war"><SystemProperty name="jetty.home" default="."/>/etc/standalone</Set>
-               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
-               />/etc/webdefault.xml</Set>
-             </New>
+               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+             <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
+            </New>
            </Item>
            <Item>
              <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
@@ -229,5 +230,13 @@
     <Set name="sendServerVersion">true</Set>
     <Set name="sendDateHeader">true</Set>
     <Set name="gracefulShutdown">1000</Set>
+
+<!-- =========================================================== -->
+  <!-- change java.io.tmpdir default value                         -->
+  <!-- =========================================================== -->
+  <Call class="java.lang.System" name="setProperty">
+    <Arg>java.io.tmpdir</Arg>
+    <Arg><SystemProperty name="jetty.home" default="."/>/tmp</Arg>
+  </Call>
 
 </Configure>
