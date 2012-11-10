@@ -127,7 +127,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public static final String                         PROPERTY_STATIC_MODULE_MAP                       = "xquery.modules.static";
     public static final String                         PROPERTY_MODULE_PARAMETERS                       = "xquery.modules.parameters";
 
-    private static final String                        JAVA_URI_START                                   = "java:";
+    public static final String                        JAVA_URI_START                                   = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
 
     protected final static Logger                      LOG                                              = Logger.getLogger( XQueryContext.class );
@@ -1647,7 +1647,9 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Module loadBuiltInModule( String namespaceURI, String moduleClass )
     {
-        Module module = getModule( namespaceURI );
+        Module module = null;
+        if (namespaceURI != null)
+            module = getModule( namespaceURI );
 
         if( module != null ) {
 //          LOG.debug("module " + namespaceURI + " is already present");
@@ -1692,7 +1694,7 @@ public class XQueryContext implements BinaryValueManager, Context
             
             module = cnstr.newInstance(moduleParameters.get(namespaceURI));
 
-            if(!module.getNamespaceURI().equals(namespaceURI)) {
+            if(namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn( "the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI() );
                 return( null );
             }
@@ -2679,7 +2681,10 @@ public class XQueryContext implements BinaryValueManager, Context
             throw new XPathException(ErrorCodes.XQST0088, "The first URILiteral in a module import must be of nonzero length.");
         }
     	
-        Module module = getRootModule( namespaceURI );
+        Module module = null;
+
+        if (namespaceURI != null)
+            module = getRootModule( namespaceURI );
 
         if( module != null ) {
             LOG.debug( "Module " + namespaceURI + " already present." );
@@ -2688,99 +2693,101 @@ public class XQueryContext implements BinaryValueManager, Context
             setModule( namespaceURI, module );
         } else {
             // if location is not specified, try to resolve in expath repo
-            if (location == null) {
+            if (location == null && namespaceURI != null) {
                 module = resolveInEXPathRepository(namespaceURI, prefix);
             }
 
             if ( module == null ) {
 
-            if( location == null ) {
+                if( location == null && namespaceURI != null) {
 
-                // check if there's a static mapping in the configuration
-                location = getModuleLocation( namespaceURI );
+                    // check if there's a static mapping in the configuration
+                    location = getModuleLocation( namespaceURI );
 
-                if( location == null ) {
-                    location = namespaceURI;
-                }
-            }
-
-            //Is the module's namespace mapped to a URL ?
-            if( mappedModules.containsKey( location ) ) {
-                location = mappedModules.get( location ).toString();
-            }
-
-            // is it a Java module?
-            if( location.startsWith( JAVA_URI_START ) ) {
-                location = location.substring( JAVA_URI_START.length() );
-                module   = loadBuiltInModule( namespaceURI, location );
-                
-            } else {
-                Source moduleSource;
-
-                if( location.startsWith( XmldbURI.XMLDB_URI_PREFIX )
-                        || ( ( location.indexOf( ':' ) == -1 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
-
-                    // Is the module source stored in the database?
-                    try {
-                        XmldbURI locationUri = XmldbURI.xmldbUriFor( location );
-
-                        if( moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) {
-                            XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
-                            locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
-                        }
-                        
-                        DocumentImpl sourceDoc = null;
-
-                        try {
-                            sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
-
-                            if(sourceDoc == null) {
-                                throw moduleLoadException("Module location hint URI '" + location + " does not refer to anything.", location);                                
-                            }
-
-                            if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
-                                throw moduleLoadException("Module location hint URI '" + location + " does not refer to an XQuery.", location);                                
-                            }
-                            
-                            moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
-
-                            // we don't know if the module will get returned, oh well
-                            module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
-
-                        } catch(final PermissionDeniedException e) {
-                            throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);                                
-                        } finally {
-                            if(sourceDoc != null) {
-                                sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
-                            }
-                        }
-                    } catch(final URISyntaxException e) {
-                        throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);                                
+                    if( location == null ) {
+                        location = namespaceURI;
                     }
-                    
+                }
+
+                //Is the module's namespace mapped to a URL ?
+                if( mappedModules.containsKey( location ) ) {
+                    location = mappedModules.get( location ).toString();
+                }
+
+                // is it a Java module?
+                if( location.startsWith( JAVA_URI_START ) ) {
+                    location = location.substring( JAVA_URI_START.length() );
+                    module   = loadBuiltInModule( namespaceURI, location );
+
                 } else {
+                    Source moduleSource;
 
-                    // No. Load from file or URL
-                    try {
+                    if( location.startsWith( XmldbURI.XMLDB_URI_PREFIX )
+                            || ( ( location.indexOf( ':' ) == -1 ) && moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) ) {
 
-                        //TODO: use URIs to ensure proper resolution of relative locations
-                        moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
+                        // Is the module source stored in the database?
+                        try {
+                            XmldbURI locationUri = XmldbURI.xmldbUriFor( location );
 
-                    } catch(final MalformedURLException e) {
-                        throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
-                    } catch(final IOException e) {
-                        throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", location, e);
-                    } catch(final PermissionDeniedException e) {
-                        throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
+                            if( moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) {
+                                XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
+                                locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
+                            }
+
+                            DocumentImpl sourceDoc = null;
+
+                            try {
+                                sourceDoc = getBroker().getXMLResource( locationUri.toCollectionPathURI(), Lock.READ_LOCK );
+
+                                if(sourceDoc == null) {
+                                    throw moduleLoadException("Module location hint URI '" + location + " does not refer to anything.", location);
+                                }
+
+                                if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
+                                    throw moduleLoadException("Module location hint URI '" + location + " does not refer to an XQuery.", location);
+                                }
+
+                                moduleSource = new DBSource( getBroker(), (BinaryDocument)sourceDoc, true );
+
+                                // we don't know if the module will get returned, oh well
+                                module = compileOrBorrowModule( prefix, namespaceURI, location, moduleSource );
+
+                            } catch(final PermissionDeniedException e) {
+                                throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
+                            } finally {
+                                if(sourceDoc != null) {
+                                    sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                                }
+                            }
+                        } catch(final URISyntaxException e) {
+                            throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
+                        }
+
+                    } else {
+
+                        // No. Load from file or URL
+                        try {
+
+                            //TODO: use URIs to ensure proper resolution of relative locations
+                            moduleSource = SourceFactory.getSource( getBroker(), moduleLoadPath, location, true );
+
+                        } catch(final MalformedURLException e) {
+                            throw moduleLoadException("Invalid module location hint URI '" + location + ".", location, e);
+                        } catch(final IOException e) {
+                            throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + ".", location, e);
+                        } catch(final PermissionDeniedException e) {
+                            throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
+                        }
+
+                        // we don't know if the module will get returned, oh well
+                        module = compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
                     }
-
-                    // we don't know if the module will get returned, oh well
-                    module = compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
                 }
-            }
             } // NOTE: expathrepo related, closes the EXPath else (if module != null)
         }
-
+        if (namespaceURI == null) {
+            namespaceURI = module.getNamespaceURI();
+        }
         if( prefix == null ) {
             prefix = module.getDefaultPrefix();
         }
@@ -2872,6 +2879,13 @@ public class XQueryContext implements BinaryValueManager, Context
 
             if( reader == null ) {
                 throw( new XPathException( "failed to load module: '" + namespaceURI + "' from: '" + source + "', location: '" + location + "'. Source not found. " ) );
+            }
+
+            if (namespaceURI == null) {
+                QName qname = source.isModule();
+                if (qname == null)
+                    return null;
+                namespaceURI = qname.getNamespaceURI();
             }
         }
         catch( IOException e ) {

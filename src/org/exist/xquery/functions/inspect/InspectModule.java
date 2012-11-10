@@ -45,7 +45,9 @@ public class InspectModule extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        ExternalModule module = InspectionModule.loadModule(context, args[0].getStringValue(), false);
+        XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+        tempContext.setModuleLoadPath(context.getModuleLoadPath());
+        Module module = tempContext.importModule(null, null, args[0].getStringValue());
 
         if (module == null)
             return Sequence.EMPTY_SEQUENCE;
@@ -54,30 +56,34 @@ public class InspectModule extends BasicFunction {
         attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
         attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
         int nodeNr = builder.startElement(MODULE_QNAME, attribs);
-        XQDocHelper.parse(module);
+        if (!module.isInternalModule())
+            XQDocHelper.parse((ExternalModule) module);
         if (module.getDescription() != null) {
             builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
             builder.characters(module.getDescription());
             builder.endElement();
         }
-        if (module.getMetadata() != null) {
-            for (Map.Entry<String, String> entry: module.getMetadata().entrySet()) {
-                builder.startElement(new QName(entry.getKey()), null);
-                builder.characters(entry.getValue());
+        if (!module.isInternalModule()) {
+            ExternalModule externalModule = (ExternalModule) module;
+            if (externalModule.getMetadata() != null) {
+                for (Map.Entry<String, String> entry: externalModule.getMetadata().entrySet()) {
+                    builder.startElement(new QName(entry.getKey()), null);
+                    builder.characters(entry.getValue());
+                    builder.endElement();
+                }
+            }
+            // variables
+            for (VariableDeclaration var: externalModule.getVariableDeclarations()) {
+                attribs.clear();
+                attribs.addAttribute("", "name", "name", "CDATA", var.getName());
+                SequenceType type = var.getSequenceType();
+                if (type != null) {
+                    attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
+                    attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+                }
+                builder.startElement(VARIABLE_QNAME, attribs);
                 builder.endElement();
             }
-        }
-        // variables
-        for (VariableDeclaration var: module.getVariableDeclarations()) {
-            attribs.clear();
-            attribs.addAttribute("", "name", "name", "CDATA", var.getName());
-            SequenceType type = var.getSequenceType();
-            if (type != null) {
-                attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
-                attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
-            }
-            builder.startElement(VARIABLE_QNAME, attribs);
-            builder.endElement();
         }
         // functions
         for (FunctionSignature sig : module.listFunctions()) {
