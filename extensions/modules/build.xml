@@ -220,12 +220,7 @@
         ========================================
     -->
     <target name="prepare-ivy">
-       <fetch classpathref="classpath.core" dest="${top.dir}/tools/ant/lib/" 
-            url="http://repo1.maven.org/maven2/org/apache/ivy/ivy/2.2.0/ivy-2.2.0.jar" 
-            classname="org.apache.ivy.Main"/>
-        
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
-        
         <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant"/>
     </target>
 
