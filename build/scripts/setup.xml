@@ -59,6 +59,6 @@
           <pathelement location="tools/ant/lib/asocat-exist.jar"/>
         </classpath>
     </taskdef>
-    <fetch dest="${autostart-dir}" url="${public-repo}/${xar}"/>
+    <fetch dest="${autostart-dir}" url="${public-repo}/${xar}" failonerror="false" maxtime="30"/>
   </target>
 </project>
