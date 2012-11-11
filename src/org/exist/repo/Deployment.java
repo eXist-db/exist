@@ -194,7 +194,7 @@ public class Deployment {
                 checkUserSettings();
 
                 // install
-                scanDirectory(packageDir, targetCollection);
+                scanDirectory(packageDir, targetCollection, true);
 
                 // run the post-setup query if present
                 ElementImpl postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -353,7 +353,7 @@ public class Deployment {
      * @param directory
      * @param target
      */
-    private void scanDirectory(File directory, XmldbURI target) {
+    private void scanDirectory(File directory, XmldbURI target, boolean inRootDir) {
         TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Txn txn = mgr.beginTransaction();
         Collection collection = null;
@@ -370,7 +370,7 @@ public class Deployment {
             // lock the collection while we store the files
             // TODO: could be released after each operation
             collection.getLock().acquire(Lock.WRITE_LOCK);
-            storeFiles(directory, collection);
+            storeFiles(directory, collection, inRootDir);
         } catch (LockException e) {
             e.printStackTrace();
         } finally {
@@ -381,7 +381,7 @@ public class Deployment {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.isDirectory()) {
-                scanDirectory(file, target.append(file.getName()));
+                scanDirectory(file, target.append(file.getName()), false);
             }
         }
     }
@@ -392,12 +392,14 @@ public class Deployment {
      * @param directory
      * @param targetCollection
      */
-    private void storeFiles(File directory, Collection targetCollection) {
+    private void storeFiles(File directory, Collection targetCollection, boolean inRootDir) {
         File[] files = directory.listFiles();
         MimeTable mimeTab = MimeTable.getInstance();
         TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         for (File file : files) {
-            if (!file.isDirectory() && !file.getName().equals("repo.xml")) {
+            if (inRootDir && file.getName().equals("repo.xml"))
+                continue;
+            if (!file.isDirectory()) {
                 MimeType mime = mimeTab.getContentTypeFor(file.getName());
                 if (mime == null)
                     mime = MimeType.BINARY_TYPE;
