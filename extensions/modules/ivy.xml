@@ -1,11 +1,34 @@
+<?xml version="1.0"?>
 <!--
     Ivy module to retrieve the tika jar, including dependancies, excluding duplicate jars
 
     $Id$
 -->
 <ivy-module version="2.0">
-    <info organisation="org.exist" module="cssparser"/>
+    <info organisation="org.exist.xquery.modules" module="extensions-modules"/>
     <dependencies>
-        <dependency org="net.sourceforge.cssparser" name="cssparser" rev="0.9.5" conf="*->*,!sources,!javadoc"/>  
+        <dependency org="net.sourceforge.cssparser" name="cssparser" rev="0.9.5" conf="*->*,!sources,!javadoc"/>
+        
+        <!-- <dependency org="org.jfree" name="jfreechart" rev="1.0.14" conf="*->*,!sources,!javadoc">
+            <exclude module="itext"/>
+            <exclude module="xml-apis"/>
+            <exclude module="servlet-api"/>
+        </dependency> -->
+        
+        <!-- <dependency org="org.dspace" name="cql-java" rev="1.1"/> -->
+        
+        <!-- <dependency org="jivesoftware" name="smack" rev="3.1.0"/> -->
+        
+        <!-- <dependency org="org.apache.xmlgraphics" name="fop" rev="1.1" conf="*->*,!sources,!javadoc">
+                    <exclude module="batik-xml"/>
+                    <exclude module="xalan"/>
+                    <exclude module="xml-apis"/>
+                    <exclude module="xml-apis-ext"/>
+                    <exclude module="avalon-framework-impl"/>
+                    <exclude module="avalon-framework-api"/>
+                    <exclude module="servlet-api"/>
+                    <exclude module="commons-io"/>
+                    <exclude module="commons-logging"/>
+                </dependency> -->
     </dependencies>
 </ivy-module>
