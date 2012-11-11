@@ -32,14 +32,12 @@ import org.exist.http.SOAPServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
-import org.exist.util.VirtualTempFile;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
