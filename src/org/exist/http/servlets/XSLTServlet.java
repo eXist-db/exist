@@ -21,7 +21,6 @@
  */
 package org.exist.http.servlets;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
