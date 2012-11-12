@@ -469,7 +469,9 @@ public class FunctionFactory {
 				newParamTypes.add(paramTypes[paramTypes.length - 1]);
 		}
 		SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
-		FunctionSignature newSignature = new FunctionSignature(signature.getName(), newParamArray, signature.getReturnType());
+		FunctionSignature newSignature = new FunctionSignature(signature);
+        newSignature.setArgumentTypes(newParamArray);
+
 		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		for (QName varName: variables) {
 			func.addVariable(varName);

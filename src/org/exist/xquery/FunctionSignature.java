@@ -66,7 +66,18 @@ public class FunctionSignature {
 	private String description = null;
 	private String deprecated = null;
     private Map<String, String> metadata = null;
-	
+
+    public FunctionSignature(FunctionSignature other) {
+        this.name = other.name;
+        this.arguments = other.arguments;
+        this.returnType = other.returnType;
+        this.annotations = other.annotations;
+        this.isOverloaded = other.isOverloaded;
+        this.deprecated = other.deprecated;
+        this.description = other.description;
+        this.metadata = other.metadata;
+    }
+
 	public FunctionSignature(QName name) {
 		this(name, null, DEFAULT_TYPE, false);
 	}
