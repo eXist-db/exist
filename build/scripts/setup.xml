@@ -60,7 +60,7 @@
         </classpath>
     </taskdef>
     <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}"
-           failonerror="false" maxtime="10"/>
+           failonerror="false" maxtime="120"/>
     <unzip src="${autostart-dir}/pkg.zip" dest="${autostart-dir}"/>
     <delete file="${autostart-dir}/pkg.zip" failonerror="false"/>
   </target>
