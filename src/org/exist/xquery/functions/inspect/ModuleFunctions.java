@@ -31,7 +31,16 @@ public class ModuleFunctions extends BasicFunction {
                 Type.FUNCTION_REFERENCE,
                 Cardinality.ZERO_OR_MORE,
                 "Sequence of function items containing all public functions in the module or the empty sequence " +
-                "if the module is not known in the current context."))
+                "if the module is not known in the current context.")),
+        new FunctionSignature(
+            new QName("module-functions-by-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+            "Returns a sequence of function items pointing to each public function in the specified module.",
+            new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI of the module to be loaded.") },
+            new FunctionReturnSequenceType(
+                Type.FUNCTION_REFERENCE,
+                Cardinality.ZERO_OR_MORE,
+                "Sequence of function items containing all public functions in the module or the empty sequence " +
+                        "if the module is not known in the current context."))
     };
 
     public ModuleFunctions(XQueryContext context, FunctionSignature signature) {
@@ -45,7 +54,11 @@ public class ModuleFunctions extends BasicFunction {
             XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
-            Module module = tempContext.importModule(null, null, args[0].getStringValue());
+            Module module;
+            if (isCalledAs("module-functions-by-uri"))
+                module = tempContext.importModule(args[0].getStringValue(), null, null);
+            else
+                module = tempContext.importModule(null, null, args[0].getStringValue());
             if (module == null)
                 return Sequence.EMPTY_SEQUENCE;
             addFunctionRefsFromModule(tempContext, list, module);

@@ -37,8 +37,8 @@ public class InspectModule extends BasicFunction {
                 "An XML fragment describing the module and all functions contained in it.")),
         new FunctionSignature(
             new QName("inspect-module-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-            "Compiles a module from source (without importing it) and returns an XML fragment describing the " +
-                    "module and the functions/variables contained in it.",
+            "Returns an XML fragment describing the " +
+            "module identified by the given URI and the functions/variables contained in it.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE,
                     "The location URI of the module to inspect"),
@@ -71,10 +71,11 @@ public class InspectModule extends BasicFunction {
         AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
         attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
-        if (isCalledAs("inspect-module"))
+        if (module.isInternalModule()) {
+            attribs.addAttribute("", "location", "location", "CDATA", "java:" + module.getClass().getName());
+        } else if (isCalledAs("inspect-module")) {
             attribs.addAttribute("", "location", "location", "CDATA", args[0].getStringValue());
-        else
-            attribs.addAttribute("", "location", "location", "CDATA", module.getClass().getName());
+        }
         int nodeNr = builder.startElement(MODULE_QNAME, attribs);
         if (!module.isInternalModule())
             XQDocHelper.parse((ExternalModule) module);
