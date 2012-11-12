@@ -23,7 +23,6 @@
       <Set name="minThreads">10</Set>
       <Set name="maxThreads">200</Set>
     </New>
-
     <!-- Optional Java 5 bounded threadpool with job queue 
       <New class="org.eclipse.thread.concurrent.ThreadPool">
         <Set name="corePoolSize">50</Set>
@@ -51,8 +50,8 @@
         <Set name="Acceptors">2</Set>
         <Set name="statsOn">false</Set>
         <Set name="confidentialPort">
-	  <SystemProperty name="jetty.port.ssl" default="8443"/>
-	</Set>
+          <SystemProperty name="jetty.port.ssl" default="8443"/>
+        </Set>
         <Set name="lowResourcesConnections">20000</Set>
         <Set name="lowResourcesMaxIdleTime">5000</Set>
       </New>
@@ -66,8 +65,8 @@
     <Arg>
       <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
         <Set name="Port">
-	  <SystemProperty name="jetty.port.ssl" default="8443"/>
-	</Set>
+          <SystemProperty name="jetty.port.ssl" default="8443"/>
+        </Set>
         <Set name="maxIdleTime">30000</Set>
         <Set name="Acceptors">2</Set>
         <Set name="AcceptQueueSize">100</Set>
@@ -113,7 +112,7 @@
               <Set name="contextPath">/exist</Set>
               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
               <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
-			  <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
+              <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
             </New>
           </Item>
           <Item>
