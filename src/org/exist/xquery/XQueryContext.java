@@ -320,20 +320,8 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         if ( _repo == null ) {
             try {
-                String existHome = System.getProperty("exist.home");
-                if (existHome != null){
-                    File repo_dir = new File(existHome + "/webapp/WEB-INF/expathrepo");
-                    // ensure the dir exists
-                    repo_dir.mkdir();
-                    FileSystemStorage storage = new FileSystemStorage(repo_dir);
-                    _repo = new ExistRepository(storage);
-                }else{
-                    File repo_dir = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
-                    // ensure the dir exists
-                    repo_dir.mkdir();
-                    FileSystemStorage storage = new FileSystemStorage(repo_dir);
-                    _repo = new ExistRepository(storage);
-                }
+                File existHome = db.getConfiguration().getExistHome();
+                _repo = ExistRepository.getRepository(existHome);
             }
             catch ( PackageException ex ) {
                 // problem with pkg-repo.jar throwing exception
