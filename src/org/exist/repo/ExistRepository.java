@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
@@ -43,6 +44,8 @@ public class ExistRepository {
     public final static String EXPATH_REPO_DIR = "expathrepo";
 
     public final static String EXPATH_REPO_DEFAULT = "webapp/WEB-INF/" + EXPATH_REPO_DIR;
+
+    public final static Logger LOG = Logger.getLogger(ExistRepository.class);
 
     public ExistRepository(FileSystemStorage storage) throws PackageException {
         myParent = new Repository(storage);
@@ -176,7 +179,12 @@ public class ExistRepository {
 
     public static ExistRepository getRepository(File home) throws PackageException {
         if (home != null){
-            File repo_dir = new File(home, EXPATH_REPO_DEFAULT);
+            File repo_dir;
+            if (home.getName().equals("WEB-INF"))
+                repo_dir = new File(home, EXPATH_REPO_DIR);
+            else
+                repo_dir = new File(home, EXPATH_REPO_DEFAULT);
+            LOG.info("EXPath repository dir: " + repo_dir.getAbsolutePath());
             // ensure the dir exists
             repo_dir.mkdir();
             FileSystemStorage storage = new FileSystemStorage(repo_dir);
