@@ -48,7 +48,11 @@
   </target>
   
   <target name="download">
-    <available file="${autostart-dir}/${xar}" property="xar-installed"/>
+    <pathconvert property="xar-installed" setonempty="false">
+        <fileset dir="${autostart-dir}">
+            <include name="${xar}-*.xar"/>
+        </fileset>
+    </pathconvert>
     <antcall target="download-xar"/>
   </target>
 
