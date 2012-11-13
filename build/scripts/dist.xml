@@ -127,6 +127,7 @@
                 <exclude name="WEB-INF/data/fs.journal/**"/>
                 <exclude name="WEB-INF/data/export/**"/>
                 <exclude name="WEB-INF/data/sanity/**"/>
+                <exclude name="WEB-INF/expathrepo/**"/>
                 <exclude name="**/*.log*"/>
             </fileset>
             <!-- Betterform -->
