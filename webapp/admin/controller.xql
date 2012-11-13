@@ -3,7 +3,11 @@ xquery version "1.0";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
-if (starts-with($exist:path, "/backups")) then
+if ($exist:path eq '') then
+   <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+     <redirect url="{concat(request:get-uri(), '/')}"/>
+   </dispatch>
+else if (starts-with($exist:path, "/backups")) then
     let $user := xdb:get-current-user()
     return
         if (not(xdb:is-admin-user($user))) then
