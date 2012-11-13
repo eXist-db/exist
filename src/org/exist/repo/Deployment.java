@@ -233,7 +233,7 @@ public class Deployment {
         // determine target collection
         XmldbURI targetCollection;
         try {
-            targetCollection = XmldbURI.create(target.getStringValue());
+            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
         } catch (Exception e) {
             throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
         }
