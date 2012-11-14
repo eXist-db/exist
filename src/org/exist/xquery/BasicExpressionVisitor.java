@@ -22,7 +22,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
     @Override
     public void visitCastExpr(CastExpression expression) {
-        //Nothing todo
+        //Nothing to do
     }
 
     @Override
@@ -124,6 +124,9 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
                     for (int i = 0; i < expression.getLength(); i++) {
                         Expression next = expression.getExpression(i);
                         next.accept(this);
+                        if (steps.size() - 1 != i) {
+                        	steps.add(null);
+                        }
                     }
                 }
                 @Override

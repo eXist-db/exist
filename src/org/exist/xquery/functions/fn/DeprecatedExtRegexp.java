@@ -117,7 +117,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
         if (!steps.isEmpty()) {
             LocationStep firstStep = steps.get(0);
             LocationStep lastStep = steps.get(steps.size() - 1);
-            if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
+            if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
@@ -131,7 +131,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else {
+            } else if (lastStep != null && steps.size() != 1) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());

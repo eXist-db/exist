@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.ErrorCodes.ErrorCode;
 
 /**
  *
@@ -186,6 +187,7 @@ public class ErrorCodes {
     public static ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", " Invalid date/time formatting component");
 
     public static final ErrorCode XTDE1310 = new W3CErrorCode("XTDE1310", " Invalid decimal format picture string.");
+	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
     
     /* eXist specific XQuery and XPath errors
      *
