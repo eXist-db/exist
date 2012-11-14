@@ -2050,6 +2050,19 @@ public class DOMFile extends BTree implements Lockable {
                     (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
                 break;
             }
+            case Node.PROCESSING_INSTRUCTION_NODE: {
+	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
+	            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
+	            final int nodeIdLen = pool.getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	            readOffset += nodeIdLen;
+	            int targetLen = ByteConversion.byteToInt(data, readOffset);
+	            readOffset += 4 + targetLen;
+	            os.write(
+            		data, 
+            		readOffset, 
+            		realLen - (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen + targetLen + 4));
+	            break;
+            }
             case Node.ATTRIBUTE_NODE: {
                 if (isTopNode) {
                     final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
