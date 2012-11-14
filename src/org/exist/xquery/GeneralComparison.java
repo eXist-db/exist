@@ -212,7 +212,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         optimizeSelf = true;
                     }
                 }
-            } else if (steps.size() != 1 && lastStep != null) {
+            } else if (firstStep != null && steps.size() != 1 && lastStep != null) {
                 NodeTest test = lastStep.getTest();
 
                 if( !test.isWildcardTest() && ( test.getName() != null ) ) {

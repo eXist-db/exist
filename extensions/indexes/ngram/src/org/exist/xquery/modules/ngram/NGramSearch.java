@@ -174,7 +174,7 @@ public class NGramSearch extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else if (steps.size() != 1 && lastStep != null) {
+            } else if (steps.size() != 1 && lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());

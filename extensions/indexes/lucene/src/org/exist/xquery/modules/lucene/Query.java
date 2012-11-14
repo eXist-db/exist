@@ -141,7 +141,7 @@ public class Query extends Function implements Optimizable {
                     axis = outerStep.getAxis();
                     optimizeSelf = true;
                 }
-            } else if (steps.size() != 1 && lastStep != null) {
+            } else if (steps.size() != 1 && lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (test.getName() == null)
                     contextQName = new QName(null, null, null);
