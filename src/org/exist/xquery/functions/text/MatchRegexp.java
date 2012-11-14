@@ -157,7 +157,7 @@ public class MatchRegexp extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else if (lastStep != null && steps.size() != 1) {
+            } else if (firstStep != null && lastStep != null && steps.size() != 1) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());
