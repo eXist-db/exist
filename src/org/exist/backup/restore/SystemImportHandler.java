@@ -552,27 +552,37 @@ public class SystemImportHandler extends DefaultHandler {
 
         @Override
         public void apply() {
-            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
             try {
-            	Permission permission = getTarget().getPermissions();
-                permission.setOwner(getOwner());
-                permission.setGroup(getGroup());
-                permission.setMode(getMode());
-                if(permission instanceof ACLPermission) {
-                    ACLPermission aclPermission = (ACLPermission)permission;
-                    aclPermission.clear();
-                    for(ACEAider ace : getAces()) {
-                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
-                    }
-                }
-                broker.saveCollection(txn, getTarget());
+            	getTarget().getLock().acquire(Lock.WRITE_LOCK);
+
+                final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+                final Txn txn = txnManager.beginTransaction();
+            	try {
+                    Permission permission = getTarget().getPermissions();
+	                permission.setOwner(getOwner());
+	                permission.setGroup(getGroup());
+	                permission.setMode(getMode());
+	                if(permission instanceof ACLPermission) {
+	                    ACLPermission aclPermission = (ACLPermission)permission;
+	                    aclPermission.clear();
+	                    for(ACEAider ace : getAces()) {
+	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+	                    }
+	                }
+	                broker.saveCollection(txn, getTarget());
+	                
+	                txnManager.commit(txn);
                 
-                txnManager.commit(txn);
+            	} catch (Exception xe) {
+                	txnManager.abort(txn);
+                	
+                	throw xe;
+
+            	} finally {
+                	getTarget().release(Lock.WRITE_LOCK);
+                }
                 
             } catch (Exception xe) {
-            	txnManager.abort(txn);
-            	
                 final String msg = "ERROR: Failed to set permissions on Collection '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);
                 getListener().warn(msg);
@@ -588,30 +598,42 @@ public class SystemImportHandler extends DefaultHandler {
 
         @Override
         public void apply() {
-            final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
             try {
-            	Permission permission = getTarget().getPermissions();
-                permission.setOwner(getOwner());
-                permission.setGroup(getGroup());
-                permission.setMode(getMode());
-                if(permission instanceof ACLPermission) {
-                    ACLPermission aclPermission = (ACLPermission)permission;
-                    aclPermission.clear();
-                    for(ACEAider ace : getAces()) {
-                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
-                    }
-                }
-                broker.storeXMLResource(txn, getTarget());
-                txnManager.commit(txn);
-            	
-            } catch(Exception xe) {
-            	txnManager.abort(txn);
-            	
+            	getTarget().getUpdateLock().acquire(Lock.WRITE_LOCK);
+
+            	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+                final Txn txn = txnManager.beginTransaction();
+
+	            try {
+	            	
+	            	Permission permission = getTarget().getPermissions();
+	                permission.setOwner(getOwner());
+	                permission.setGroup(getGroup());
+	                permission.setMode(getMode());
+	                if(permission instanceof ACLPermission) {
+	                    ACLPermission aclPermission = (ACLPermission)permission;
+	                    aclPermission.clear();
+	                    for(ACEAider ace : getAces()) {
+	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
+	                    }
+	                }
+	                broker.storeXMLResource(txn, getTarget());
+	                txnManager.commit(txn);
+	            	
+	            } catch(Exception xe) {
+	            	txnManager.abort(txn);
+	            	
+	            	throw xe;
+	            	
+	            } finally {
+	                getTarget().getUpdateLock().release(Lock.WRITE_LOCK);
+	            }
+            
+            } catch (Exception xe) {
                 final String msg = "ERROR: Failed to set permissions on Document '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);
                 getListener().warn(msg);
-            }
+			}
         }
     }
 }
