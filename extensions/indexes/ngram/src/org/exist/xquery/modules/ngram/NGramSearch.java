@@ -38,9 +38,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.storage.ElementValue;
-import org.exist.util.XMLChar;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.fn.FunStringToCodepoints;
 import org.exist.xquery.modules.ngram.query.AlternativeStrings;
 import org.exist.xquery.modules.ngram.query.EmptyExpression;
 import org.exist.xquery.modules.ngram.query.EndAnchor;
@@ -161,7 +159,7 @@ public class NGramSearch extends Function implements Optimizable {
         if (!steps.isEmpty()) {
             LocationStep firstStep = steps.get(0);
             LocationStep lastStep = steps.get(steps.size() - 1);
-            if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
+            if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
@@ -176,7 +174,7 @@ public class NGramSearch extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else {
+            } else if (steps.size() != 1 && lastStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());
@@ -358,15 +356,23 @@ public class NGramSearch extends Function implements Optimizable {
                         Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
                         Matcher m = p.matcher(qualifier);
                         if (!m.matches()) // Should not happen
-                            throw new XPathException("err:FTDY0020: query string violates wildcard qualifier syntax");
+                            throw new XPathException(
+                        		this,
+                        		ErrorCodes.FTDY0020,
+                        		"query string violates wildcard qualifier syntax"
+                    		);
                         try {
-                        wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+                        	wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
                         } catch (NumberFormatException nfe) {
-                            throw new XPathException("err:FTDY0020: query string violates wildcard qualifier syntax",
-                                nfe);
-                                }
-                            }
+                            throw new XPathException(this, 
+                        		ErrorCodes.FTDY0020, 
+                        		"query string violates wildcard qualifier syntax",
+                        		new StringValue(query),
+                        		nfe
+                    		);
                         }
+                    }
+                }
                 expressions.add(wildcard);
             } else {
                 if (token.startsWith("[")) {

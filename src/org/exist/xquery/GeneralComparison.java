@@ -194,7 +194,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             LocationStep firstStep = steps.get( 0 );
             LocationStep lastStep  = steps.get( steps.size() - 1 );
 
-            if( ( steps.size() == 1 ) && ( firstStep.getAxis() == Constants.SELF_AXIS ) ) {
+            if( firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
 
                 if( ( outerExpr != null ) && ( outerExpr instanceof LocationStep ) ) {
@@ -212,7 +212,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         optimizeSelf = true;
                     }
                 }
-            } else {
+            } else if (steps.size() != 1 && lastStep != null) {
                 NodeTest test = lastStep.getTest();
 
                 if( !test.isWildcardTest() && ( test.getName() != null ) ) {

@@ -124,7 +124,7 @@ public class Query extends Function implements Optimizable {
         if (!steps.isEmpty()) {
             LocationStep firstStep = steps.get(0);
             LocationStep lastStep = steps.get(steps.size() - 1);
-            if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
+            if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
@@ -141,7 +141,7 @@ public class Query extends Function implements Optimizable {
                     axis = outerStep.getAxis();
                     optimizeSelf = true;
                 }
-            } else {
+            } else if (steps.size() != 1 && lastStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (test.getName() == null)
                     contextQName = new QName(null, null, null);
