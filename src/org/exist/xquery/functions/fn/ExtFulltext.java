@@ -114,7 +114,7 @@ public class ExtFulltext extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else if (firstStep != null && lastStep != null && steps.size() != 1) {
+            } else if (firstStep != null && lastStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());
@@ -123,10 +123,20 @@ public class ExtFulltext extends Function implements Optimizable {
                         contextQName.setNameType(ElementValue.ATTRIBUTE);
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
-                    if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                        axis = steps.get(1).getAxis();
+
+                    if (axis == Constants.SELF_AXIS && steps.size() > 1) {
+                    	if (steps.get(1) != null) {
+                    		axis = steps.get(1).getAxis();
+                    	} else {
+                    		contextQName = null;
+                    		contextStep = null;
+                    		axis = Constants.UNKNOWN_AXIS;
+                    		optimizeChild = false;
+                    	}
+                    }
+
                     optimizeChild = steps.size() == 1 &&
-                        (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
+                            (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
                 }
             }
         }

@@ -131,7 +131,7 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
                         optimizeSelf = true;
                     }
                 }
-            } else if (firstStep != null && lastStep != null && steps.size() != 1) {
+            } else if (firstStep != null && lastStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());
@@ -139,8 +139,15 @@ public class DeprecatedExtRegexp extends Function implements Optimizable {
                         contextQName.setNameType(ElementValue.ATTRIBUTE);
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
-                    if (axis == Constants.SELF_AXIS && steps.size() > 1)
-                        axis = steps.get(1).getAxis();
+                    if (axis == Constants.SELF_AXIS && steps.size() > 1) {
+                    	if (steps.get(1) != null) {
+                    		axis = steps.get(1).getAxis();
+                    	} else {
+                    		contextQName = null;
+                    		contextStep = null;
+                    		axis = Constants.UNKNOWN_AXIS;
+                    	}
+                    }
                 }
             }
         }
