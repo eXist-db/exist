@@ -137,6 +137,10 @@
         </filter-mapping>
         <xsl:text>
 </xsl:text>
+        <listener>
+            <listener-class>de.betterform.agent.web.servlet.BfServletContextListener</listener-class>
+        </listener>
+
 
         <xsl:comment>====================== betterFORM filter and servlets ======================</xsl:comment>
         <xsl:text>
