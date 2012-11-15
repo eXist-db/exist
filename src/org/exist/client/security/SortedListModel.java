@@ -30,9 +30,9 @@ import javax.swing.AbstractListModel;
 
 public class SortedListModel<T extends Object> extends AbstractListModel {
 
-	private static final long serialVersionUID = 8156990970750901747L;
+    private static final long serialVersionUID = 8156990970750901747L;
 
-	private final SortedSet<T> model;
+    private final SortedSet<T> model;
 
     public SortedListModel() {
         model = new TreeSet<T>();

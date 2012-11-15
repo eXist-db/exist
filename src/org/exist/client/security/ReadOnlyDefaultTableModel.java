@@ -29,9 +29,9 @@ import javax.swing.table.DefaultTableModel;
  */
 public class ReadOnlyDefaultTableModel extends DefaultTableModel {
 
-	private static final long serialVersionUID = 8229062312676408884L;
+    private static final long serialVersionUID = 8229062312676408884L;
 
-	public ReadOnlyDefaultTableModel(final String[][] data, final String[] columnNames) {
+    public ReadOnlyDefaultTableModel(final String[][] data, final String[] columnNames) {
         super(data, columnNames);
     }
 

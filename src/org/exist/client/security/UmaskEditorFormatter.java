@@ -31,9 +31,9 @@ import javax.swing.text.DocumentFilter;
  */
 public class UmaskEditorFormatter extends AbstractFormatter {
 
-	private static final long serialVersionUID = -1209002227738149636L;
+    private static final long serialVersionUID = -1209002227738149636L;
 
-	@Override
+    @Override
     public Object stringToValue(String text) throws ParseException {
         return (String)text;
     }

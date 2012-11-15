@@ -38,9 +38,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EditUserDialog extends UserDialog {
     
-	private static final long serialVersionUID = 9097018734007436201L;
+    private static final long serialVersionUID = 9097018734007436201L;
 
-	private final static String HIDDEN_PASSWORD_CONST = "password";
+    private final static String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
     
