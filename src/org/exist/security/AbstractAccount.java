@@ -53,18 +53,18 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	@ConfigurationFieldAsElement("expired")
 	private boolean accountExpired = false;
 	
-        //@ConfigurationFieldAsElement("credentials-expired")
-        private boolean credentialsExpired = false;
-	
-        @ConfigurationFieldAsElement("enabled")
-        private boolean enabled = true;
-        
-        @ConfigurationFieldAsElement("umask")
-        @ConfigurationFieldSettings(OCTAL_STRING_KEY)
-        private int umask = Permission.DEFAULT_UMASK;
+    //@ConfigurationFieldAsElement("credentials-expired")
+    private boolean credentialsExpired = false;
 
-        @ConfigurationFieldAsElement("metadata")
-        private Map<String, String> metadata = new HashMap<String, String>();
+    @ConfigurationFieldAsElement("enabled")
+    private boolean enabled = true;
+    
+    @ConfigurationFieldAsElement("umask")
+    @ConfigurationFieldSettings(OCTAL_STRING_KEY)
+    private int umask = Permission.DEFAULT_UMASK;
+
+    @ConfigurationFieldAsElement("metadata")
+    private Map<String, String> metadata = new HashMap<String, String>();
     
 	protected Credential _cred = null;
 
@@ -176,17 +176,17 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
     @Override
-        public int[] getGroupIds() {
-            if(groups == null) return new int[0];
+    public int[] getGroupIds() {
+        if(groups == null) return new int[0];
 
 		int i = 0;
 		int[] ids = new int[groups.size()];
 		for (Group group : groups) {
-                    ids[i++] = group.getId();
+	                ids[i++] = group.getId();
 		}
-
+	
 		return ids;
-        }
+    }
 
     @Override
 	public final boolean hasGroup(String name) {
