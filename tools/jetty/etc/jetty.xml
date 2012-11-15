@@ -34,7 +34,7 @@
     <Arg>
       <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
         <Set name="host"><SystemProperty name="jetty.host"/></Set>
-        <Set name="port"><SystemProperty name="jetty.port" default="8080"/></Set>
+        <Set name="port"><SystemProperty name="jetty.port" default="8600"/></Set>
         <Set name="maxIdleTime">300000</Set>
         <Set name="Acceptors">2</Set>
         <Set name="statsOn">false</Set>
@@ -67,6 +67,9 @@
           <Item>
             <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
           </Item>
+          <Item>
+          <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+        </Item>
         </Array>
       </Set>
     </New>
@@ -171,6 +174,8 @@
       </Arg>
     </Call>
   </Ref>
+  
+
 
   <!-- =========================================================== -->
   <!-- Configure Authentication Login Service                      -->
@@ -219,6 +224,21 @@
       </New>
     </Arg>
   </Call>
+  
+   <!-- =============================================================== -->
+   <!-- Configure request log handler       			        -->
+   <!-- =============================================================== -->  
+  <Ref id="RequestLog">
+  <Set name="requestLog">
+    <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+      <Arg><SystemProperty name="jetty.logs" default="tools/jetty/logs"/>/yyyy_mm_dd.request.log</Arg>
+      <Set name="retainDays">90</Set>
+      <Set name="append">true</Set>
+      <Set name="extended">false</Set>
+      <Set name="LogTimeZone">GMT</Set>
+    </New>
+  </Set>
+</Ref>
 
   <!-- =============================================================== -->
   <!-- Configure stderr and stdout to a Jetty rollover log file        -->
