@@ -19,16 +19,20 @@ rem and for NT handling to skip to.
 
 :doneStart
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
+set JAVA_RUN="java"
+
+if not "%JAVA_HOME%" == "" (
+    set JAVA_RUN="%JAVA_HOME%\bin\java"
+    goto gotJavaHome
+)
 
 rem @WINDOWS_INSTALLER_1@
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
-
-echo Java environment not found. Please set
-echo your JAVA_HOME environment variable to
-echo the home of your JDK.
-goto :eof
+echo WARNING: JAVA_HOME not found in your environment.
+echo.
+echo Please, set the JAVA_HOME variable in your enviroment to match the
+echo location of the Java Virtual Machine you want to use in case of run fail.
+echo.
 
 :gotJavaHome
 rem @WINDOWS_INSTALLER_2@
@@ -48,5 +52,5 @@ echo home directory of eXist.
 goto :eof
 
 :gotExistHome
-"%JAVA_HOME%\bin\java" -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" shutdown %CMD_LINE_ARGS%
+%JAVA_RUN% -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" shutdown %CMD_LINE_ARGS%
 :eof

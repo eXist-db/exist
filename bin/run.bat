@@ -18,14 +18,20 @@ rem This label provides a place for the argument list loop to break out
 rem and for NT handling to skip to.
 
 :doneStart
-if not "%JAVA_HOME%" == "" goto gotJavaHome
+set JAVA_RUN="java"
+
+if not "%JAVA_HOME%" == "" (
+    set JAVA_RUN="%JAVA_HOME%\bin\java"
+    goto gotJavaHome
+)
+
 rem @WINDOWS_INSTALLER_1@
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
-echo Java environment not found. Please set
-echo your JAVA_HOME environment variable to
-echo the home of your JDK.
-goto :eof
+echo WARNING: JAVA_HOME not found in your environment.
+echo.
+echo Please, set the JAVA_HOME variable in your enviroment to match the
+echo location of the Java Virtual Machine you want to use in case of run fail.
+echo.
 
 :gotJavaHome
 rem @WINDOWS_INSTALLER_2@
@@ -48,5 +54,5 @@ set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
 set JAVA_OPTS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
 :gotJavaOpts
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %CMD_LINE_ARGS%
+%JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" %CMD_LINE_ARGS%
 :eof
