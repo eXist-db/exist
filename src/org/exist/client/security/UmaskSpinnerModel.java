@@ -29,7 +29,6 @@ import javax.swing.AbstractSpinnerModel;
  */
 public class UmaskSpinnerModel extends AbstractSpinnerModel {
     
-    //private int umask = Permission.DEFAULT_UMASK;
     private int umask = 0765;
     public final static int OCTAL_RADIX = 8;
     

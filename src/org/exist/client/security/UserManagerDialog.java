@@ -42,9 +42,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class UserManagerDialog extends javax.swing.JFrame {
 
-	private static final long serialVersionUID = 2091215304766070041L;
+    private static final long serialVersionUID = 2091215304766070041L;
 
-	private final UserManagementService userManagementService;
+    private final UserManagementService userManagementService;
     private final String currentUser;
     
     private DefaultTableModel usersTableModel = null;

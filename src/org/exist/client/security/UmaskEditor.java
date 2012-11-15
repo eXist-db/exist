@@ -33,9 +33,9 @@ import javax.swing.text.DefaultFormatterFactory;
  */
 public class UmaskEditor extends DefaultEditor {
     
-	private static final long serialVersionUID = 1531848918506511061L;
+    private static final long serialVersionUID = 1531848918506511061L;
 
-	public UmaskEditor(final JSpinner jSpinner) {
+    public UmaskEditor(final JSpinner jSpinner) {
         super(jSpinner);
         
         final UmaskEditorFormatter umaskEditorFormatter = new UmaskEditorFormatter();

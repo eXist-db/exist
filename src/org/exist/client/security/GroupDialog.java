@@ -34,9 +34,9 @@ import org.exist.xmldb.UserManagementService;
  */
 public class GroupDialog extends javax.swing.JFrame {
 
-	private static final long serialVersionUID = 2291775874309563932L;
+    private static final long serialVersionUID = 2291775874309563932L;
 
-	private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._]{3,}");
+    private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._]{3,}");
     
     private final UserManagementService userManagementService;
     

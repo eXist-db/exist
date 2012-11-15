@@ -37,9 +37,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EditGroupDialog extends GroupDialog {
     
-	private static final long serialVersionUID = -9092253443709031810L;
+    private static final long serialVersionUID = -9092253443709031810L;
 	
-	private final Group group;
+    private final Group group;
     private final String currentUser;
     
     public EditGroupDialog(final UserManagementService userManagementService, final String currentUser, final Group group) {
