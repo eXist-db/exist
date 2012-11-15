@@ -507,8 +507,11 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         int len         = -1;
 
         while( ( next < document.size ) && ( document.treeLevel[next] > level ) ) {
-            if( ( document.nodeKind[next] == Node.TEXT_NODE ) || 
-                    ( document.nodeKind[next] == Node.CDATA_SECTION_NODE ) ) {
+            if( 
+            		   ( document.nodeKind[next] == Node.TEXT_NODE )
+            		|| ( document.nodeKind[next] == Node.CDATA_SECTION_NODE )
+            		|| ( document.nodeKind[next] == Node.PROCESSING_INSTRUCTION_NODE )
+                ) {
                 if( len < 0 ) {
                     startOffset = document.alpha[next];
                     len         = document.alphaLen[next];
@@ -531,7 +534,8 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         while( ( next < document.size ) && ( document.treeLevel[next] > level ) ) {
             switch( document.nodeKind[next] ) {
                 case Node.TEXT_NODE:
-                case Node.CDATA_SECTION_NODE: {
+                case Node.CDATA_SECTION_NODE:
+            	case Node.PROCESSING_INSTRUCTION_NODE: {
                     if( buf == null ) {
                         buf = new StringBuilder();
                     }
