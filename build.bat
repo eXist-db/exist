@@ -2,11 +2,18 @@
 
 rem $Id$
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
-echo Java environment not found. Please set
-echo your JAVA_HOME environment variable to
-echo the home of you JDK.
-goto :eof
+set JAVA_RUN="java"
+
+if not "%JAVA_HOME%" == "" (
+    set JAVA_RUN="%JAVA_HOME%\bin\java"
+    goto gotJavaHome
+)
+
+echo WARNING: JAVA_HOME not found in your environment.
+echo.
+echo Please, set the JAVA_HOME variable in your enviroment to match the
+echo location of the Java Virtual Machine you want to use in case of build run fail.
+echo.
 
 :gotJavaHome
 if not "%EXIST_HOME%" == "" goto gotExistHome
@@ -14,7 +21,7 @@ set EXIST_HOME=%CD%
 
 :gotExistHome
 set ANT_HOME=%EXIST_HOME%\tools\ant
-set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\test\junit-4.8.2.jar;%JAVA_HOME%\lib\tools.jar;%EXIST_HOME%\lib\user\svnkit.jar;%EXIST_HOME%\lib\user\svnkit-cli.jar
+set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%EXIST_HOME%\lib\user\svnkit.jar;%EXIST_HOME%\lib\user\svnkit-cli.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
 
@@ -34,4 +41,4 @@ echo _JAVA_OPTS=%_JAVA_OPTS%
 echo Starting Ant...
 echo
 
-"%JAVA_HOME%\bin\java" %_JAVA_OPTS% -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
+%JAVA_RUN% %_JAVA_OPTS% -classpath "%_LIBJARS%" org.apache.tools.ant.launch.Launcher %1 %2 %3 %4 %5 %6 %7 %8 %9
