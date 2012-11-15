@@ -21,19 +21,19 @@
  */
 package org.exist.client.security;
 
-import java.util.regex.Pattern;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.client.security.FindUserForm.SelectedUsernameCallback;
-import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.GroupAider;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -58,6 +58,8 @@ public class GroupDialog extends javax.swing.JFrame {
         this.userManagementService = userManagementService;
         initComponents();
         tblGroupMembers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
+        
+        //TODO add the invoking user to the new group as a member and manager
     }
 
     public UserManagementService getUserManagementService() {
