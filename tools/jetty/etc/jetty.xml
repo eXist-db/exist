@@ -231,7 +231,7 @@
   <Ref id="RequestLog">
   <Set name="requestLog">
     <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
-      <Arg><SystemProperty name="jetty.logs" default="tools/jetty/logs"/>/yyyy_mm_dd.request.log</Arg>
+      <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
       <Set name="retainDays">90</Set>
       <Set name="append">true</Set>
       <Set name="extended">false</Set>
