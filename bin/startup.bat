@@ -11,16 +11,20 @@ set JMX_ENABLED=0
 set JMX_PORT=1099
 set JAVA_ARGS=
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
+set JAVA_RUN="java"
+
+if not "%JAVA_HOME%" == "" (
+    set JAVA_RUN="%JAVA_HOME%\bin\java"
+    goto gotJavaHome
+)
 
 rem @WINDOWS_INSTALLER_1@
 
-if not "%JAVA_HOME%" == "" goto gotJavaHome
-
-echo Java environment not found. Please set
-echo your JAVA_HOME environment variable to
-echo the home of your JDK.
-goto :eof
+echo WARNING: JAVA_HOME not found in your environment.
+echo.
+echo Please, set the JAVA_HOME variable in your enviroment to match the
+echo location of the Java Virtual Machine you want to use in case of run fail.
+echo.
 
 :gotJavaHome
 rem @WINDOWS_INSTALLER_2@
@@ -47,6 +51,6 @@ set BATCH.D="%EXIST_HOME%\bin\batch.d"
 call %BATCH.D%\get_opts.bat %*
 call %BATCH.D%\check_jmx_status.bat
 
-"%JAVA_HOME%\bin\java" "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %JAVA_ARGS%
+%JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" jetty %JAVA_ARGS%
 :eof
 
