@@ -77,6 +77,10 @@ public class EditGroupDialog extends GroupDialog {
         } catch(final PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not get group members: " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
         }
+        
+        //enable additions to the group?
+        miAddGroupMember.setEnabled(canModifyGroupMembers());
+        btnAddMember.setEnabled(canModifyGroupMembers());
     }
     
     @Override
@@ -103,7 +107,7 @@ public class EditGroupDialog extends GroupDialog {
     @Override
     protected boolean canModifyGroupMembers() {
         try {
-            return getUserManagementService().getAccount(currentUser).hasDbaRole() || isGroupManager(group.getManagers(), currentUser);
+            return (getUserManagementService().getAccount(currentUser).hasDbaRole() || isGroupManager(group.getManagers(), currentUser));
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not establish user " + currentUser + "'s group permissions: " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -111,6 +115,16 @@ public class EditGroupDialog extends GroupDialog {
             JOptionPane.showMessageDialog(this, "Could not establish user " + currentUser + "'s group permissions: " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+    }
+    
+    @Override
+    protected boolean canModifySelectedGroupMember() {
+        final boolean groupMemberSelected = tblGroupMembers.getSelectedRow() > -1;
+        
+        return
+            groupMemberSelected
+            && (!(group.getName().equals(org.exist.security.SecurityManager.DBA_GROUP) && (getSelectedMember().equals(org.exist.security.SecurityManager.DBA_USER) || getSelectedMember().equals(org.exist.security.SecurityManager.SYSTEM))))
+            && (!(group.getName().equals(org.exist.security.SecurityManager.GUEST_GROUP) && getSelectedMember().equals(org.exist.security.SecurityManager.GUEST_USER)));
     }
     
     

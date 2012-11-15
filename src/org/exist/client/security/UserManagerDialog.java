@@ -33,6 +33,7 @@ import org.exist.security.Account;
 import org.exist.security.AccountComparator;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
+import org.exist.security.SecurityManager;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -168,6 +169,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
             @Override
             public void windowClosed(final WindowEvent e) {
                 refreshUsersTableModel();
+                refreshGroupsTableModel(); //creating a user may have created a private group for that user
             }
         });
         
@@ -434,11 +436,12 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean userSelected = tblUsers.getSelectedRow() > -1;
         final String selectedUsername = getSelectedUsername();
         
-        boolean canModify = userSelected && !(selectedUsername.equals("SYSTEM") || selectedUsername.equals("admin") || selectedUsername.equals("guest"));
+        boolean canModify = userSelected && !selectedUsername.equals(SecurityManager.SYSTEM);
+        boolean canDelete = userSelected && !(selectedUsername.equals(SecurityManager.SYSTEM) || selectedUsername.equals(SecurityManager.DBA_USER) || selectedUsername.equals(SecurityManager.GUEST_USER));
         miEditUser.setEnabled(canModify);
-        miRemoveUser.setEnabled(canModify);
+        miRemoveUser.setEnabled(canDelete);
         
-        if(evt.getClickCount() == 2) {
+        if(evt.getClickCount() == 2 && canModify) {
             
             try {
                 final Account account = userManagementService.getAccount(selectedUsername);
@@ -476,10 +479,9 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean groupSelected = tblGroups.getSelectedRow() > -1;
         final String selectedGroup = getSelectedGroup();
         
-        boolean canModify = groupSelected && !(selectedGroup.equals("dba") || selectedGroup.equals("guest"));
+        boolean canDelete = groupSelected && !(selectedGroup.equals(SecurityManager.DBA_GROUP) || selectedGroup.equals(SecurityManager.GUEST_GROUP));
         
-        miEditGroup.setEnabled(canModify);
-        miRemoveGroup.setEnabled(canModify);
+        miRemoveGroup.setEnabled(canDelete);
         
          if(evt.getClickCount() == 2) {
             try {
