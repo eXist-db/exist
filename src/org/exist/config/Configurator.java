@@ -323,7 +323,7 @@ public class Configurator {
                                 if (obj instanceof org.exist.security.internal.RealmImpl) {
                                     continue;
                                 }
-                                LOG.info("Unconfigured instance ["+obj+"], remove the object.");
+                                LOG.debug("Unconfigured instance ["+obj+"], remove the object.");
                                 //XXX: remove by method call
                                 iterator.remove();
                                 continue;
@@ -344,7 +344,7 @@ public class Configurator {
                                 }
                             }
                             if (!found) {
-                                LOG.info("Configuration was removed, remove the object [" + obj + "].");
+                                LOG.debug("Configuration was removed, remove the object [" + obj + "].");
                                 //XXX: remove by method call
 	                            iterator.remove();
                             }
