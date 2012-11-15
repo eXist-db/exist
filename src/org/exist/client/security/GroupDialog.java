@@ -22,11 +22,20 @@
 package org.exist.client.security;
 
 import java.util.regex.Pattern;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.HighlightedTableCellRenderer;
+import org.exist.client.security.FindUserForm.SelectedUsernameCallback;
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.Account;
+import org.exist.security.EXistSchemaType;
+import org.exist.security.Group;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.UserManagementService;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  *
@@ -102,6 +111,11 @@ public class GroupDialog extends javax.swing.JFrame {
         btnAddMember = new javax.swing.JButton();
 
         miAddGroupMember.setText("Add Group Member...");
+        miAddGroupMember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miAddGroupMemberActionPerformed(evt);
+            }
+        });
         pmGroupMembers.add(miAddGroupMember);
 
         miCbGroupMemberManager.setSelected(true);
@@ -158,6 +172,11 @@ public class GroupDialog extends javax.swing.JFrame {
         });
 
         btnAddMember.setText("Add Group Member...");
+        btnAddMember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddMemberActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -263,6 +282,61 @@ public class GroupDialog extends javax.swing.JFrame {
 
     protected void createGroup() {
         
+        //1 - create the group
+        Group group = null;
+        try {
+            final GroupAider groupAider = new GroupAider(txtGroupName.getText());
+            groupAider.setMetadataValue(EXistSchemaType.DESCRIPTION, txtDescription.getText());
+            getUserManagementService().addGroup(groupAider);
+            
+            //get the created group
+            group = getUserManagementService().getGroup(txtGroupName.getText());
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not create group '" + txtGroupName.getText() + "': " + xmldbe.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        //TODO (2) needs a function getUserManagementService().addUserToGroup()
+        
+        //2 - add the users to the group
+        final Set<Account> managers = new HashSet<Account>();
+        for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
+            final String member = (String)getGroupMembersTableModel().getValueAt(i, 0);
+
+            try {
+                final Account account = getUserManagementService().getAccount(member);
+                account.addGroup(group);
+                getUserManagementService().updateAccount(account);
+                
+                final boolean isManager = (Boolean)getGroupMembersTableModel().getValueAt(i, 1);
+                if(isManager) {
+                    managers.add(account);
+                }
+            } catch(final XMLDBException xmldbe) {
+                JOptionPane.showMessageDialog(this, "Could not add user '" + member + "' to group '" + group.getName() + "': " + xmldbe.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch(final PermissionDeniedException pde) {
+                JOptionPane.showMessageDialog(this, "Could not add user '" + member + "' to group '" + group.getName() + "': " + pde.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        
+        //TODO (3) needs a function getUserManagementService().addGroupManager();
+        
+        //3 - add the group managers to the group
+        try {
+            for(final Account manager : managers) {
+                group.addManager(manager);
+            }
+            getUserManagementService().updateGroup(group);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not add managers to group '" + txtGroupName.getText() + "': " + xmldbe.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
+        } catch(final PermissionDeniedException pde) {
+            JOptionPane.showMessageDialog(this, "Could not add managers to group '" + txtGroupName.getText() + "': " + pde.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        setVisible(false);
+        dispose();
     }
     
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
@@ -274,20 +348,20 @@ public class GroupDialog extends javax.swing.JFrame {
         return true;
     }
     
+    protected boolean canModifySelectedGroupMember() {
+        return tblGroupMembers.getSelectedRow() > -1;
+    }
+    
     private void tblGroupMembersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblGroupMembersMouseClicked
-        final boolean groupMemberSelected = tblGroupMembers.getSelectedRow() > -1;
+                
+        miCbGroupMemberManager.setEnabled(canModifySelectedGroupMember());
+        miCbGroupMemberManager.setSelected(isSelectedMemberManager());
         
-        boolean canModify = groupMemberSelected && canModifyGroupMembers();
-        
-        miAddGroupMember.setEnabled(canModify);
-        miCbGroupMemberManager.setEnabled(canModify);
-        miRemoveGroupMember.setEnabled(canModify);
+        miRemoveGroupMember.setEnabled(canModifySelectedGroupMember());
     }//GEN-LAST:event_tblGroupMembersMouseClicked
 
     private void miCbGroupMemberManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCbGroupMemberManagerActionPerformed
-        final int row = tblGroupMembers.getSelectedRow();
-        final Boolean val = (Boolean)getGroupMembersTableModel().getValueAt(row, 1);
-        getGroupMembersTableModel().setValueAt(!val.booleanValue(), row, 1);
+        getGroupMembersTableModel().setValueAt(!isSelectedMemberManager(), tblGroupMembers.getSelectedRow(), 1);
     }//GEN-LAST:event_miCbGroupMemberManagerActionPerformed
 
     private void miRemoveGroupMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveGroupMemberActionPerformed
@@ -295,8 +369,59 @@ public class GroupDialog extends javax.swing.JFrame {
         getGroupMembersTableModel().removeRow(row);
     }//GEN-LAST:event_miRemoveGroupMemberActionPerformed
 
+    private void btnAddMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddMemberActionPerformed
+        showFindUserForm();
+    }//GEN-LAST:event_btnAddMemberActionPerformed
+
+    private void miAddGroupMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miAddGroupMemberActionPerformed
+        showFindUserForm();
+    }//GEN-LAST:event_miAddGroupMemberActionPerformed
+
+    protected String getSelectedMember() {
+        final int row = tblGroupMembers.getSelectedRow();
+        return (String)getGroupMembersTableModel().getValueAt(row, 0);
+    }
+    
+    protected boolean isSelectedMemberManager() {
+        final int row = tblGroupMembers.getSelectedRow();
+        return (Boolean)getGroupMembersTableModel().getValueAt(row, 1);
+    }
+    
+    private void showFindUserForm() {
+        final SelectedUsernameCallback selectedUsernameCallback = new SelectedUsernameCallback() {
+            @Override
+            public void selected(final String username) {
+               if(!groupMembersContains(username)) {
+                   getGroupMembersTableModel().addRow(new Object[]{
+                       username,
+                       false
+                   });
+               }
+            }
+        };
+        
+        try {
+            final FindUserForm findUserForm = new FindUserForm(getUserManagementService(), selectedUsernameCallback);
+            findUserForm.setTitle("Add User to Group...");
+            findUserForm.setVisible(true);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not retrieve list of users: " + xmldbe.getMessage(), "Add Member Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    }
+    
+    private boolean groupMembersContains(final String username) {
+        for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
+          final String member = (String)getGroupMembersTableModel().getValueAt(i, 0);
+          if(member.equals(username)) {
+              return true;
+          }
+        }
+        return false;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAddMember;
+    protected javax.swing.JButton btnAddMember;
     private javax.swing.JButton btnClose;
     protected javax.swing.JButton btnCreate;
     private javax.swing.JScrollPane jScrollPane1;
@@ -305,11 +430,11 @@ public class GroupDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblDescription;
     private javax.swing.JLabel lblGroupMembers;
     private javax.swing.JLabel lblGroupName;
-    private javax.swing.JMenuItem miAddGroupMember;
+    protected javax.swing.JMenuItem miAddGroupMember;
     private javax.swing.JCheckBoxMenuItem miCbGroupMemberManager;
     private javax.swing.JMenuItem miRemoveGroupMember;
     private javax.swing.JPopupMenu pmGroupMembers;
-    private javax.swing.JTable tblGroupMembers;
+    protected javax.swing.JTable tblGroupMembers;
     protected javax.swing.JTextField txtDescription;
     protected javax.swing.JTextField txtGroupName;
     // End of variables declaration//GEN-END:variables
