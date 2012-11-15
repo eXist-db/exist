@@ -84,6 +84,9 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
     }
 
+    public String getNodeValue() throws DOMException {
+    	return getData();
+    }
 
     public AtomicValue atomize() throws XPathException
     {
