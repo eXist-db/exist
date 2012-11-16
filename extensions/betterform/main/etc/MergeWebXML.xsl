@@ -104,6 +104,10 @@
         <servlet-mapping>
             <servlet-name>ResourceServlet</servlet-name>
             <url-pattern>/bfResources/*</url-pattern>
+            <init-param>
+                <param-name>caching</param-name>
+                <param-value>true</param-value>
+            </init-param>
         </servlet-mapping>
         <servlet-mapping>
             <servlet-name>error</servlet-name>
