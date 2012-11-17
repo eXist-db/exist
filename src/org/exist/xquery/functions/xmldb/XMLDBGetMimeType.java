@@ -93,8 +93,9 @@ public class XMLDBGetMimeType extends BasicFunction {
 				throw new XPathException(this, e);
 			} finally {
 				//release all locks
-				if(doc != null)
-					doc.getUpdateLock().release(Lock.READ_LOCK);
+				if(doc != null) {
+                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;
