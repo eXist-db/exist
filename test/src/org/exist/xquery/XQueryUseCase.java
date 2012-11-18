@@ -22,7 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.File;
 import java.io.FileFilter;

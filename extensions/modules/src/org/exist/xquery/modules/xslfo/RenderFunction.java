@@ -23,7 +23,7 @@ package org.exist.xquery.modules.xslfo;
 import java.io.ByteArrayInputStream;
 import java.util.Properties;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;

@@ -21,7 +21,7 @@
  */
 package org.exist.config;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import junit.framework.*;
 import org.exist.collections.Collection;

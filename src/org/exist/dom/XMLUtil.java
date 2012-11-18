@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.DocumentFragment;
 import org.xml.sax.InputSource;

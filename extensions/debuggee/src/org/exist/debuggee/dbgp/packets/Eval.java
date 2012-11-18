@@ -21,7 +21,7 @@
  */
 package org.exist.debuggee.dbgp.packets;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.apache.mina.core.session.IoSession;

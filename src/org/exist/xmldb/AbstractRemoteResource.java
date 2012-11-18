@@ -20,7 +20,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import org.apache.xmlrpc.XmlRpcException;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;

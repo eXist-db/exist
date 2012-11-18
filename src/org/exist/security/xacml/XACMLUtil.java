@@ -75,7 +75,7 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

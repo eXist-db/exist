@@ -40,7 +40,7 @@ import java.net.URLDecoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**

@@ -48,7 +48,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.xquery.modules.jfreechart.render.Renderer;
 import org.exist.xquery.modules.jfreechart.render.RendererFactory;
 import org.exist.xquery.value.Base64BinaryValueType;
