@@ -3981,7 +3981,49 @@ public class RpcConnection implements RpcAPI {
         }
     }
     
+    @Override
+    public void addAccountToGroup(final String accountName, final String groupName) throws EXistException, PermissionDeniedException {
+         try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, PermissionDeniedException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final Account account = sm.getAccount(accountName);
+                    account.addGroup(groupName);
+                    sm.updateAccount(account);
+                    
+                    return null;
+                }
+            });
+        } catch (final URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        } catch (final PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        }
+    }
     
+    @Override
+    public void addGroupManager(final String manager, final String groupName) throws EXistException, PermissionDeniedException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, PermissionDeniedException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    final Account account = sm.getAccount(manager);
+                    final Group group = sm.getGroup(groupName);
+                    group.addManager(account);
+                    sm.updateGroup(group);
+                    
+                    return null;
+                }
+            });
+        } catch (final URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        } catch (final PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        }
+    }
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it

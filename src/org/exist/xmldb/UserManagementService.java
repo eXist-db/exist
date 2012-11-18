@@ -199,7 +199,10 @@ public interface UserManagementService extends Service {
      */
     public Account getAccount( String name ) throws XMLDBException;
 
+    public void addAccountToGroup(String accountName, String groupName) throws XMLDBException;
 
+    public void addGroupManager(String manager, String groupName) throws XMLDBException;
+    
     /**
      *  Retrieve a list of all existing accounts.
      *

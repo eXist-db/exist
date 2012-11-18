@@ -783,7 +783,45 @@ public class LocalUserManagementService implements UserManagementService {
         }
     }
     
+    @Override
+    public void addAccountToGroup(final String accountName, final String groupName) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final Account account = sm.getAccount(accountName);
+                    account.addGroup(groupName);
+                    sm.updateAccount(account);
+                    
+                    return null;
+                }
+            });
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
     
+    @Override
+    public void addGroupManager(final String manager, final String groupName) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    final Account account = sm.getAccount(manager);
+                    final Group group = sm.getGroup(groupName);
+                    group.addManager(account);
+                    sm.updateGroup(group);
+                    
+                    return null;
+                }
+            });
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 	
     @Override
     public void addUserGroup(Account user) throws XMLDBException {	
