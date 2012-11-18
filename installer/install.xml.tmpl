@@ -1,4 +1,4 @@
-<installation version="1.0">
+<installation version="5.0">
     <info>
         <appname>@name@</appname>
         <appversion>@version@</appversion>
@@ -30,11 +30,12 @@
         <res id="ProcessPanel.Spec.xml" src="installer/jobs.xml"/>
         <res id="HTMLInfoPanel.start" src="installer/start.html"/>
         <res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
+        <res id="logo" src="webapp/logo.jpg"/>
         <!--res id="customicons.xml" src="installer/custom.icons.xml"/-->
         <!--res id="pkgicon" src="installer/apps/icon.png"/-->
     </resources>
 
-    <jar src="tools/izpack/clinstaller.jar" stage="install"/>
+    <!--jar src="tools/izpack/clinstaller.jar" stage="install"/-->
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
     <natives>
@@ -47,6 +48,7 @@
         <variable name="JDKPathPanel.skipIfValid" value="yes"/>
         <variable name="JDKPathPanel.minVersion" value="1.6"/>
         <variable name="dataDir" value="webapp/WEB-INF/data"/>
+        <variable name="ShowCreateDirectoryMessage" value="false"/>
     </variables>
     
     <conditions>
@@ -62,7 +64,7 @@
         <panel classname="TargetPanel"/>
         <panel classname="UserInputPanel" id="UserInputPanel.0"/>
         <panel classname="UserInputPanel" id="UserInputPanel.1"/>
-        <panel classname="PacksPanel"/>
+        <panel classname="TreePacksPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ProcessPanel"/>
         <panel classname="ShortcutPanel"/>
