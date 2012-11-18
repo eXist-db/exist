@@ -151,8 +151,13 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     }//GEN-LAST:event_cmbUsernameActionPerformed
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
+        final String currentUsername = (String)cmbUsername.getSelectedItem();
+        if(!isValidUsername(currentUsername)) {
+            return;
+        }
+        
         for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
-            callback.complete((String)cmbUsername.getSelectedItem());
+            callback.complete(currentUsername);
         }
         setVisible(false);
         dispose();

@@ -21,7 +21,6 @@
  */
 package org.exist.client.security;
 
-import java.awt.Point;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +29,8 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.ResourceDescriptor;
 import org.exist.security.ACLPermission;
+import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
+import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
@@ -57,6 +58,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
     private final List<DialogCompleteWithResponse<Void>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Void>>();
     
     private DefaultTableModel basicPermissionsTableModel = null;
+    private DefaultTableModel aclTableModel = null;
 
     /**
      * Creates new form PropertiesDialog
@@ -88,6 +90,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         lblGroupValue.setText(permission.getGroup().getName());
         //final Point pntLblGroupValue = lblGroupValue.getLocation();
         //btnChangeGroup.setLocation(pntLblGroupValue.x + (lblGroupValue.getText().length() * 4), pntLblGroupValue.y);
+        
+        if(!(permission instanceof ACLPermission)) {
+            tblAcl.setEnabled(false);
+        }
     }
     
     private DefaultTableModel getBasicPermissionsTableModel() {
@@ -126,6 +132,55 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         }
         
         return basicPermissionsTableModel;
+    }
+    
+    private DefaultTableModel getAclTableModel() {
+        if(aclTableModel == null) {
+            final Object[][] aces;
+            
+            if(permission instanceof ACLPermission) {
+                final ACLPermission aclPermission = (ACLPermission)permission;
+                aces = new Object[aclPermission.getACECount()][6];
+                for(int i = 0; i < aclPermission.getACECount(); i++) {
+                    aces[i] = new Object[]{
+                        aclPermission.getACETarget(i).toString(),
+                        aclPermission.getACEWho(i),
+                        aclPermission.getACEAccessType(i).toString(),
+                        (aclPermission.getACEMode(i) & Permission.READ) == Permission.READ,
+                        (aclPermission.getACEMode(i) & Permission.WRITE) == Permission.WRITE,
+                        (aclPermission.getACEMode(i) & Permission.EXECUTE) == Permission.EXECUTE,
+                    };
+                }
+            } else {
+                aces = new Object[0][6];
+            }
+                
+            aclTableModel = new javax.swing.table.DefaultTableModel(
+                aces,
+                new String [] {
+                    "Target", "Subject", "Access", "Read", "Write", "Execute"
+                }
+            ) {
+                final Class[] types = new Class [] {
+                    java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
+                };
+
+                boolean[] canEdit = new boolean [] {
+                    false, false, false, true, true, true
+                };
+
+                @Override
+                public Class getColumnClass(int columnIndex) {
+                    return types [columnIndex];
+                }
+
+                @Override
+                public boolean isCellEditable(int rowIndex, int columnIndex) {
+                    return canEdit [columnIndex];
+                }
+            };
+        }
+        return aclTableModel;
     }
     
     private int getBasicMode() {
@@ -173,6 +228,14 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        pmAcl = new javax.swing.JPopupMenu();
+        miInsertAceBefore = new javax.swing.JMenuItem();
+        miInsertAceAfter = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        miMoveUp = new javax.swing.JMenuItem();
+        miMoveDown = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        miRemoveAce = new javax.swing.JMenuItem();
         lblResource = new javax.swing.JLabel();
         lblInternetMediaType = new javax.swing.JLabel();
         lblCreated = new javax.swing.JLabel();
@@ -197,6 +260,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         jSeparator2 = new javax.swing.JSeparator();
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
+        btnAddAce = new javax.swing.JButton();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -210,6 +274,48 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
             }
         ));
         jScrollPane1.setViewportView(jTable1);
+
+        miInsertAceBefore.setText("Insert ACE before...");
+        miInsertAceBefore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miInsertAceBeforeActionPerformed(evt);
+            }
+        });
+        pmAcl.add(miInsertAceBefore);
+
+        miInsertAceAfter.setText("Insert ACE after...");
+        miInsertAceAfter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miInsertAceAfterActionPerformed(evt);
+            }
+        });
+        pmAcl.add(miInsertAceAfter);
+        pmAcl.add(jSeparator3);
+
+        miMoveUp.setText("Move ACE up");
+        miMoveUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miMoveUpActionPerformed(evt);
+            }
+        });
+        pmAcl.add(miMoveUp);
+
+        miMoveDown.setText("Move ACE down");
+        miMoveDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miMoveDownActionPerformed(evt);
+            }
+        });
+        pmAcl.add(miMoveDown);
+        pmAcl.add(jSeparator4);
+
+        miRemoveAce.setText("Remove ACE");
+        miRemoveAce.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRemoveAceActionPerformed(evt);
+            }
+        });
+        pmAcl.add(miRemoveAce);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Properties");
@@ -253,6 +359,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         });
 
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
+        tblBasePermissions.setRowSelectionAllowed(false);
         jScrollPane2.setViewportView(tblBasePermissions);
         tblBasePermissions.getColumnModel().getColumn(0).setResizable(false);
 
@@ -260,32 +367,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
 
         lblBasePermissions.setText("Base Permissions");
 
-        tblAcl.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
-            },
-            new String [] {
-                "Target", "Subject", "Access", "Read", "Write", "Execute"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true, true, true, true, true
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        tblAcl.setModel(getAclTableModel());
+        tblAcl.setComponentPopupMenu(pmAcl);
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
@@ -299,6 +382,13 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCloseActionPerformed(evt);
+            }
+        });
+
+        btnAddAce.setText("Add Access Control Entry...");
+        btnAddAce.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddAceActionPerformed(evt);
             }
         });
 
@@ -345,8 +435,9 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 15, Short.MAX_VALUE))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnAddAce))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -395,12 +486,14 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAddAce)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSave)
-                    .addComponent(btnClose))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnClose)
+                    .addComponent(btnSave))
+                .addGap(20, 20, 20))
         );
 
         pack();
@@ -411,9 +504,22 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         try {
             final List<ACEAider> dlgAces = new ArrayList<ACEAider>();
             if(permission instanceof ACLPermission) {
-                final ACLPermission dlgAclPerm = (ACLPermission)permission;
-                for(int j = 0; j < dlgAclPerm.getACECount(); j++) {
-                    dlgAces.add(new ACEAider(dlgAclPerm.getACEAccessType(j), dlgAclPerm.getACETarget(j), dlgAclPerm.getACEWho(j), dlgAclPerm.getACEMode(j)));
+                for(int i = 0; i < tblAcl.getRowCount(); i++) {
+                    final ACE_TARGET target = ACE_TARGET.valueOf((String)getAclTableModel().getValueAt(i, 0));
+                    final String who = (String)getAclTableModel().getValueAt(i, 1);
+                    final ACE_ACCESS_TYPE access = ACE_ACCESS_TYPE.valueOf((String)getAclTableModel().getValueAt(i, 2));
+                    int mode = 0;
+                    if((Boolean)tblAcl.getValueAt(i, 3)) {
+                        mode |= Permission.READ;
+                    }
+                    if((Boolean)tblAcl.getValueAt(i, 4)) {
+                        mode |= Permission.WRITE;
+                    }
+                    if((Boolean)tblAcl.getValueAt(i, 5)) {
+                        mode |= Permission.EXECUTE;
+                    }
+                    
+                    dlgAces.add(new ACEAider(access, target, who, mode));
                 }
             }
 
@@ -446,6 +552,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
 
     private void btnChangeOwnerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeOwnerActionPerformed
         final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
+            @Override
             public void complete(final String username) {
                 lblOwnerValue.setText(username);
             }
@@ -464,6 +571,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
 
     private void btnChangeGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeGroupActionPerformed
         final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
+            @Override
             public void complete(final String groupName) {
                 lblGroupValue.setText(groupName);
             }
@@ -480,7 +588,99 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         }
     }//GEN-LAST:event_btnChangeGroupActionPerformed
 
+    private void miRemoveAceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveAceActionPerformed
+        getAclTableModel().removeRow(tblAcl.getSelectedRow());
+    }//GEN-LAST:event_miRemoveAceActionPerformed
+
+    private void miMoveUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miMoveUpActionPerformed
+        if(tblAcl.getSelectedRow() > 0) {
+            getAclTableModel().moveRow(tblAcl.getSelectedRow(), tblAcl.getSelectedRow(), tblAcl.getSelectedRow() - 1);
+        }
+    }//GEN-LAST:event_miMoveUpActionPerformed
+
+    private void miMoveDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miMoveDownActionPerformed
+        if(tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1) {
+            getAclTableModel().moveRow(tblAcl.getSelectedRow(), tblAcl.getSelectedRow(), tblAcl.getSelectedRow() + 1);
+        }
+    }//GEN-LAST:event_miMoveDownActionPerformed
+
+    private void btnAddAceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddAceActionPerformed
+        
+        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
+            @Override
+            public void complete(final ACEAider ace) {
+                getAclTableModel().addRow(new Object[]{
+                    ace.getTarget().toString(),
+                    ace.getWho(),
+                    ace.getAccessType().toString(),
+                    (ace.getMode() & Permission.READ) == Permission.READ,
+                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                });
+            }
+        };
+        
+        try {
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            aceDialog.addDialogCompleteWithResponseCallback(callback);
+            aceDialog.setVisible(true);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnAddAceActionPerformed
+
+    private void miInsertAceBeforeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miInsertAceBeforeActionPerformed
+        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
+            @Override
+            public void complete(final ACEAider ace) {
+                final int insertAt = tblAcl.getSelectedRow();
+                getAclTableModel().insertRow(insertAt, new Object[]{
+                    ace.getTarget().toString(),
+                    ace.getWho(),
+                    ace.getAccessType().toString(),
+                    (ace.getMode() & Permission.READ) == Permission.READ,
+                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                });
+            }
+        };
+        
+        try {
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            aceDialog.addDialogCompleteWithResponseCallback(callback);
+            aceDialog.setVisible(true);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_miInsertAceBeforeActionPerformed
+
+    private void miInsertAceAfterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miInsertAceAfterActionPerformed
+        final DialogCompleteWithResponse<ACEAider> callback = new DialogCompleteWithResponse<ACEAider>(){
+            @Override
+            public void complete(final ACEAider ace) {
+                final int insertAt = tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1 ? tblAcl.getSelectedRow() + 1 : getAclTableModel().getRowCount();
+                getAclTableModel().insertRow(insertAt, new Object[]{
+                    ace.getTarget().toString(),
+                    ace.getWho(),
+                    ace.getAccessType().toString(),
+                    (ace.getMode() & Permission.READ) == Permission.READ,
+                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                });
+            }
+        };
+        
+        try {
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            aceDialog.addDialogCompleteWithResponseCallback(callback);
+            aceDialog.setVisible(true);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_miInsertAceAfterActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddAce;
     private javax.swing.JButton btnChangeGroup;
     private javax.swing.JButton btnChangeOwner;
     private javax.swing.JButton btnClose;
@@ -490,6 +690,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel lblAccessControlList;
     private javax.swing.JLabel lblBasePermissions;
@@ -505,6 +707,12 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
     private javax.swing.JLabel lblOwnerValue;
     private javax.swing.JLabel lblResource;
     private javax.swing.JLabel lblResourceValue;
+    private javax.swing.JMenuItem miInsertAceAfter;
+    private javax.swing.JMenuItem miInsertAceBefore;
+    private javax.swing.JMenuItem miMoveDown;
+    private javax.swing.JMenuItem miMoveUp;
+    private javax.swing.JMenuItem miRemoveAce;
+    private javax.swing.JPopupMenu pmAcl;
     private javax.swing.JTable tblAcl;
     private javax.swing.JTable tblBasePermissions;
     // End of variables declaration//GEN-END:variables

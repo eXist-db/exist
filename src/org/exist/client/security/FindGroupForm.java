@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.exist.security.Account;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -151,8 +150,13 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     }//GEN-LAST:event_cmbGroupNameActionPerformed
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
+        final String currentGroupName = (String)cmbGroupName.getSelectedItem();
+        if(!isValidGroupName(currentGroupName)) {
+            return;
+        }
+        
         for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
-            callback.complete((String)cmbGroupName.getSelectedItem());
+            callback.complete(currentGroupName);
         }
         setVisible(false);
         dispose();
