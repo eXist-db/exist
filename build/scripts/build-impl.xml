@@ -461,8 +461,8 @@
                 <path refid="classpath.aspectj"/>                
             </classpath>
             <link href="http://xmldb.exist-db.org/javadoc/"/>
-            <link href="http://java.sun.com/javase/6/docs/api/"/>
-            <link href="http://java.sun.com/javaee/5/docs/api/"/>
+            <link href="http://java.sun.com/javase/7/docs/api/"/>
+            <link href="http://java.sun.com/javaee/6/docs/api/"/>
             <link href="http://commons.apache.org/codec/apidocs"/>
             <link href="http://commons.apache.org/collections/api/"/>
             <link href="http://commons.apache.org/discovery/apidocs/"/>
@@ -488,9 +488,7 @@
             <link href="http://java.sun.com/products/javamail/javadocs/"/>
             <link href="http://java.sun.com/javase/technologies/desktop/javabeans/glasgow/javadocs"/>   
             <link href="http://download.eclipse.org/jetty/stable-7/apidocs/"/> 
-            <link href="http://milton.ettrema.com/reference/milton-api/apidocs/"/> 
-            <link href="http://milton.ettrema.com/reference/milton-servlet/apidocs/"/> 
-            <link href="http://www.oxygenxml.com/apidoc/saxon-9.2/"/>
+            <link href="http://www.saxonica.com/documentation/javadoc"/> 
             <link href="http://lucene.apache.org/java/2_9_4/api/all/"/>
         </javadoc>
 
