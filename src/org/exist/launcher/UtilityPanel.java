@@ -22,10 +22,10 @@ public class UtilityPanel extends JFrame implements Observer {
 
         setBackground(new Color(255, 255, 255, 255));
 
-        JPanel toolbarPanel = new JPanel();
-        toolbarPanel.setBackground(new Color(255, 255, 255, 255));
-        Box toolbar = Box.createHorizontalBox();
-        toolbarPanel.add(toolbar);
+        JToolBar toolbar = new JToolBar();
+        toolbar.setOpaque(false);
+        toolbar.setBorderPainted(false);
+        //toolbar.setBackground(new Color(255, 255, 255, 255));
 
         JButton button;
 
@@ -71,7 +71,7 @@ public class UtilityPanel extends JFrame implements Observer {
         });
         toolbar.add(button);
 
-        getContentPane().add(toolbarPanel);
+        getContentPane().add(toolbar);
 
         JPanel msgPanel = new JPanel();
         msgPanel.setLayout(new BorderLayout());
@@ -118,15 +118,19 @@ public class UtilityPanel extends JFrame implements Observer {
         launcher.addObserver(this);
     }
 
-    private JButton createButton(Box toolbar, String image, String title) {
+    private JButton createButton(JToolBar toolbar, String image, String title) {
         URL imageURL = UtilityPanel.class.getResource(image);
         ImageIcon icon = new ImageIcon(imageURL, title);
         JButton button = new JButton(title, icon);
+
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
         button.setOpaque(false);
         button.setHorizontalTextPosition(SwingConstants.CENTER);
         button.setVerticalTextPosition(SwingConstants.BOTTOM);
-        button.setBorder(new EmptyBorder(10, 10, 10, 10));
-        button.setBackground(new Color(255, 255, 255, 0));
+        //button.setBorder(new EmptyBorder(10, 10, 10, 10));
+        //button.setBackground(new Color(255, 255, 255, 0));
         return button;
     }
 
