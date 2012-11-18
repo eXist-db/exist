@@ -4024,6 +4024,51 @@ public class RpcConnection implements RpcAPI {
             throw new EXistException(pde.getMessage(), pde);
         }
     }
+    
+    @Override
+    public void removeGroupManager(final String groupName, final String manager) throws EXistException, PermissionDeniedException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, PermissionDeniedException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final Group group = sm.getGroup(groupName);
+                    final Account account = sm.getAccount(manager);
+                    
+                    group.removeManager(account);
+                    sm.updateGroup(group);
+                    
+                    return null;
+                }
+            });
+        } catch (final URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        } catch (final PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        }
+    }
+    
+    public void removeGroupMember(final String group, final String member) throws EXistException, PermissionDeniedException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, PermissionDeniedException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    final Account account = sm.getAccount(member);
+                    account.remGroup(group);
+                    sm.updateAccount(account);
+                    
+                    return null;
+                }
+            });
+        } catch (final URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        } catch (final PermissionDeniedException pde) {
+            throw new EXistException(pde.getMessage(), pde);
+        }
+    }
+            
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
