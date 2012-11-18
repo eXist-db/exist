@@ -357,7 +357,7 @@ public class FunctionCall extends Function {
     }
 
     /**
-     * @see org.exist.xquery.PathExpr#resetState()
+     * @see org.exist.xquery.PathExpr#resetState(boolean)
      */
     @Override
     public void resetState(boolean postOptimization) {

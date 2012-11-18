@@ -107,8 +107,6 @@ public interface Module {
      * Returns an iterator over all global variables in this modules, which were
      * either declared with "declare variable" (for external modules) or set in the
      * module implementation (internal modules).
-     *  
-     * @return
      */
     public Iterator<QName> getGlobalVariables();
     

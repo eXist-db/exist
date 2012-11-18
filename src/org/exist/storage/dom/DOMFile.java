@@ -245,7 +245,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Retrieve the current page
      * 
-     * @param p Description of the Parameter
+     * @param pointer Description of the Parameter
      * @return The current page
      */
     protected final DOMPage getDOMPage(long pointer) {
@@ -1251,7 +1251,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Retrieve node at virtual address.
      * 
-     * @param p The virtual address
+     * @param node The virtual address
      * @return  The reference of the node
      */
     protected long findValue(DBBroker broker, NodeProxy node)
@@ -1563,7 +1563,7 @@ public class DOMFile extends BTree implements Lockable {
      * Remove the overflow value.
      * 
      * @param transaction   The current transaction
-     * @param pnum  The pointer to the value
+     * @param pointer  The pointer to the value
      */
     public void removeOverflowValue(Txn transaction, long pointer) {
         if (!lock.isLockedForWrite())
@@ -1622,7 +1622,7 @@ public class DOMFile extends BTree implements Lockable {
      * Physically remove a node. The data of the node will be removed from the
      * page and the occupied space is freed.
      * 
-     * @param p
+     * @param pointer
      */
     //Seems to be unused -pb
     //public void removeNode(long pointer) {
@@ -1767,9 +1767,6 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Remove a sequence of pages, starting with the page denoted by the passed
      * address pointer p.
-     * 
-     * @param transaction
-     * @param p
      */
     public void removeAll(Txn transaction, long pointer) {
         if (!lock.isLockedForWrite())
@@ -1856,12 +1853,7 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     /**
-     * Update the key/value pair where the value is found at address p.
-     *
-     * @param transaction 
-     * @param p 
-     * @param value 
-     * @throws org.exist.util.ReadOnlyException 
+     * Update the key/value pair where the value is found at address p. 
      */
     public void update(Txn transaction, long pointer, byte[] value) throws ReadOnlyException {
         if (!lock.isLockedForWrite())
@@ -2109,7 +2101,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Find a record within the page or the pages linked to it.
      * 
-     * @param p
+     * @param pointer
      * @return The record position in the page
      */
     protected RecordPos findRecord(long pointer, boolean skipLinks) {
@@ -2155,7 +2147,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * The current object owning this file.
      * 
-     * @param obj   The new ownerObject value
+     * @param ownerObject   The new ownerObject value
      */
     public synchronized final void setOwnerObject(Object ownerObject) {
         if (ownerObject == null) {

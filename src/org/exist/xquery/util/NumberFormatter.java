@@ -18,10 +18,8 @@ public abstract class NumberFormatter {
 
     /**
      * Get the zero digit corresponding to the digit family of the given value.
-     * This method was taken from saxon {@link http://saxon.sourceforge.net/}.
+     * This method was taken from saxon {@link <a href="http://saxon.sourceforge.net/">http://saxon.sourceforge.net/</a>}.
      *
-     * @param val
-     * @return
      */
     public static int getZeroDigit(int val) {
         for (int z = 0; z < zeroDigits.length; z++) {

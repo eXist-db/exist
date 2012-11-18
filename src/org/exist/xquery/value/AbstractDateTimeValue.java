@@ -735,7 +735,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     /**
      * Calculate the Julian day number at 00:00 on a given date. Code taken from saxon
-     * {@link http://saxon.sourceforge.net/}. Original algorithm is taken from
+     * {@link <a href="http://saxon.sourceforge.net">http://saxon.sourceforge.net</a>}. Original algorithm is taken from
      * http://vsg.cape.com/~pbaum/date/jdalg.htm and
      * http://vsg.cape.com/~pbaum/date/jdalg2.htm
      * (adjusted to handle BC dates correctly)

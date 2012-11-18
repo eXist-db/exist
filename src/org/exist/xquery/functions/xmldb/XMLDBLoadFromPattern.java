@@ -199,10 +199,6 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     
     /**
      * Check if path matches any of the exclude patterns.
-     * 
-     * @param excludes
-     * @param path
-     * @return
      */
     private static boolean checkExcludes(List<String> excludes, String path) {
     	if (excludes == null || excludes.isEmpty())

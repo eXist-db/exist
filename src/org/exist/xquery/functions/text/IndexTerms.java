@@ -173,10 +173,6 @@ public class IndexTerms extends BasicFunction {
      /**
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
-     *
-     * @param broker
-     * @param docs
-     * @return
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
         Set<QName> indexes = new HashSet<QName>();

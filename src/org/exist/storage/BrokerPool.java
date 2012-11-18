@@ -1141,8 +1141,6 @@ public class BrokerPool extends Observable implements Database {
 
     /**
      * Returns the class loader used when this BrokerPool was configured.
-     *
-     * @return
      */
     public ClassLoader getClassLoader() {
         return this.classLoader;

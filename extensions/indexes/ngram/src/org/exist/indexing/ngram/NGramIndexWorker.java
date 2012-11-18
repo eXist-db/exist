@@ -405,7 +405,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @param broker
      * @param docs
-     * @return
+     * 
      */
     private List<QName> getDefinedIndexes(DBBroker broker, DocumentSet docs) {
         List<QName> indexes = new ArrayList<QName>(20);
@@ -555,7 +555,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * thus be longer than the ngram size.
      *
      * @param text
-     * @return
+     * 
      */
     public String[] tokenize(String text) {
         int len = text.codePointCount(0, text.length());

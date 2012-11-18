@@ -132,7 +132,7 @@ public class ModuleUtils {
 	 * 
 	 * @param context
 	 *            The Context of the calling XQuery
-	 * @param xml
+	 * @param inputSource
 	 *            The InputSource of XML
 	 * 
 	 * @return The NodeValue of XML

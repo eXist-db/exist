@@ -353,7 +353,6 @@ public class Transform extends BasicFunction {
     /**
      * @param stylesheetItem
      * @param options
-     * @return
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */

@@ -37,7 +37,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 
 /** generate statistics about the XML storage - 
- * used by {@link org.apache.cocoon.generation.StatusGenerator}
+ * used by org.apache.cocoon.generation.StatusGenerator
  * @author jmv
  */
 public class XMLStatistics {

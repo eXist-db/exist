@@ -291,9 +291,6 @@ public class FunDeepEqual extends CollatingFunction {
     /**
      * Return the number of real attributes in the map. Filter out
      * xmlns namespace attributes.
-     *
-     * @param nnm
-     * @return
      */
     private static int getAttrCount(NamedNodeMap nnm) {
         int count = 0;

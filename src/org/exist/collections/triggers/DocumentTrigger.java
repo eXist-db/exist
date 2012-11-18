@@ -83,7 +83,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * 
      * @param event the type of event that triggered this call (see the constants defined in this interface). The ContentHandler instance for the output.
      * @param broker the database instance used to process the current action.
-     * @param transaction the current transaction context
+     * @param txn the current transaction context
      * @param documentPath the full absolute path of the document currently processed.
      * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
      *  existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
@@ -105,7 +105,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * 
      * @param event the type of event that triggered this call (see the constants defined in this interface).
      * @param broker the database instance used to process the current action.
-     * @param transaction the current transaction context
+     * @param txn the current transaction context
      * @param documentPath the path of the document, if removed the old path of the document
      * @param document the stored document or null if the document is removed
      **/

@@ -532,10 +532,6 @@ public class XIncludeFilter implements Receiver {
 	/**
 	 * Process xmlns() schema. We process these here, because namespace mappings should
 	 * already been known when parsing the xpointer() expression.
-	 * 
-	 * @param xpointer
-	 * @return
-	 * @throws XPathException
 	 */
 	private String checkNamespaces(String xpointer) throws XPathException {
 		int p0;

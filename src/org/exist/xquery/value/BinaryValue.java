@@ -151,9 +151,6 @@ public abstract class BinaryValue extends AtomicValue {
     
     /**
      * Return the underlying Java object for this binary value. Might be a File or byte[].
-     * 
-     * @return
-     * @throws XPathException
      */
     public Object toJavaObject() throws XPathException {
     	return toJavaObject(byte[].class);

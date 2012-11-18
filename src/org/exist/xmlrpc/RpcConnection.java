@@ -308,7 +308,6 @@ public class RpcConnection implements RpcAPI {
      * The method <code>doQuery</code>
      *
      * @param broker a <code>DBBroker</code> value
-     * @param xpath a <code>String</code> value
      * @param contextSet a <code>NodeSet</code> value
      * @param parameters a <code>HashMap</code> value
      * @return a <code>QueryResult</code> value
@@ -4624,7 +4623,6 @@ public class RpcConnection implements RpcAPI {
      * @param end
      * @param broker
      * @param docs
-     * @return
      * @throws PermissionDeniedException
      */
     private Vector<Vector<Object>> scanIndexTerms(String start, String end, DBBroker broker, DocumentSet docs, NodeSet nodes)

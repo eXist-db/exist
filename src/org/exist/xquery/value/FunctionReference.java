@@ -75,10 +75,6 @@ public class FunctionReference extends AtomicValue {
 
     /**
      * Calls {@link FunctionCall#eval(Sequence)}.
-     * 
-     * @param contextSequence
-     * @return
-     * @throws XPathException
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
     	return functionCall.eval(contextSequence);
@@ -87,11 +83,6 @@ public class FunctionReference extends AtomicValue {
     /**
      * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
      * 
-     * @param contextSequence
-     * @param contextItem
-     * @param seq
-     * @return
-     * @throws XPathException
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
     	return functionCall.evalFunction(contextSequence, contextItem, seq);

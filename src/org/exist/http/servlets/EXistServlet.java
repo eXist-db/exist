@@ -160,7 +160,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
     /**
      * @param request
-     * @return
      */
     private String adjustPath(HttpServletRequest request) {
         String path = request.getPathInfo();

@@ -244,7 +244,6 @@ public class RegexpFilter extends BasicFunction {
      * @param string
      * @param pattern
      * @param flags
-     * @return
      * @throws XPathException
      */
     private Sequence match(String string, String pattern, int flags) throws XPathException {

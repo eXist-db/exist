@@ -38,7 +38,7 @@ import org.exist.storage.io.VariableByteOutputStream;
  * Permissions are encoded into a 52 bit vector with the following convention -
  *
  * [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
- * @see UnixStylePermission.encodeAsBitVector(int, int, int) for more details
+ * @see UnixStylePermission#encodeAsBitVector(int, int, int) for more details
  *
  * @author Adam Retter <adam@exist-db.org>
  */
@@ -57,12 +57,6 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     
     /**
      * Construct a permission with given user, group and permissions
-     *
-     * @param  invokingUser Description of the Parameter
-     * @param  sm           Description of the Parameter
-     * @param  user         Description of the Parameter
-     * @param  group        Description of the Parameter
-     * @param  mode  Description of the Parameter
      */
     public UnixStylePermission(SecurityManager sm, int ownerId, int groupId, int mode) {
         this(sm);

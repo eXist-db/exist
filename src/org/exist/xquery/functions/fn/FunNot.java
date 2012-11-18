@@ -153,7 +153,6 @@ public class FunNot extends Function {
 	 * @param contextSequence
 	 * @param contextItem
 	 * @param arg
-	 * @return
 	 * @throws XPathException
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Item contextItem, Expression arg) throws XPathException {

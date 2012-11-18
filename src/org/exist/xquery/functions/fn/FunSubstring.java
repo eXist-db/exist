@@ -230,7 +230,7 @@ public class FunSubstring extends Function {
 	/**
 	 * fn:substring($sourceString, $startingLoc)
 	 * 
-	 * @see http://www.w3.org/TR/xpath-functions/#func-substring
+	 * @see <a href="http://www.w3.org/TR/xpath-functions/#func-substring">w3.org</a>
 	 * 
 	 * @param stringSource	The source string to substring
 	 * @param startingLoc	The Starting Location for the substring, start 
@@ -252,7 +252,7 @@ public class FunSubstring extends Function {
 	/**
 	 * fn:substring($sourceString, $startingLoc, $length)
 	 * 
-	 * @see http://www.w3.org/TR/xpath-functions/#func-substring
+	 * @see <a href="http://www.w3.org/TR/xpath-functions/#func-substring">http://www.w3.org/TR/xpath-functions/#func-substring</a>
 	 * 
 	 * @param stringSource	The source string to substring
 	 * @param startingLoc	The Starting Location for the substring, start 
