@@ -83,7 +83,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         try {
             pathUri = XmldbURI.xmldbUriFor(pathParameter);
         } catch (URISyntaxException ex) {
-            LOG.error(ex.getMessage());
+            logger.debug(ex.getMessage());
             throw new XPathException("Invalid path '" + pathParameter + "'");
         }
 
@@ -110,7 +110,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         String currentValue = getMimeTypeStoredResource(pathUri);
         MimeType currentMimeType = null;
         if (currentValue == null) {
-            LOG.error("Resource has no mime-type");
+            logger.debug("Resource has no mime-type");
         } else {
             currentMimeType = mimeTable.getContentType(currentValue);
         }
@@ -163,23 +163,28 @@ public class XMLDBSetMimeType extends BasicFunction {
     /**
      * Determine mimetype of currently stored resource. Copied from get-mime-type.
      */
-    private String getMimeTypeStoredResource(XmldbURI pathUri) {
+    private String getMimeTypeStoredResource(XmldbURI pathUri) throws XPathException {
         String returnValue = null;
         DocumentImpl doc = null;
         try {
             // relative collection Path: add the current base URI
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+        } catch (XPathException ex){
+            logger.debug("Unable to convert path " + pathUri);
+            return returnValue;
+        }
+        
+        try {
             // try to open the document and acquire a lock
             doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
-            if (doc != null) {
+            if (doc == null) {
+                throw new XPathException("Resource '"+pathUri+"' does not exist.");
+            } else {
                 returnValue = ((DocumentImpl) doc).getMetadata().getMimeType();
             }
 
-        } catch (XPathException ex) {
-            LOG.error(ex.getMessage());
-
         } catch (PermissionDeniedException ex) {
-            LOG.error(ex.getMessage());
+            logger.debug(ex.getMessage());
 
         } finally {
 
