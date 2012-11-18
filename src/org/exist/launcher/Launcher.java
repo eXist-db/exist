@@ -21,9 +21,7 @@
  */
 package org.exist.launcher;
 
-import org.apache.log4j.Logger;
 import org.exist.jetty.JettyStart;
-import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
 
 import javax.imageio.ImageIO;
@@ -33,11 +31,11 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Observable;
-import java.util.Observer;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -46,9 +44,7 @@ import java.util.Observer;
  *
  * @author Wolfgang Meier
  */
-public class Launcher {
-
-    private final static Logger LOG = Logger.getLogger(Launcher.class);
+public class Launcher extends Observable {
 
     private MenuItem stopItem;
     private MenuItem startItem;
@@ -65,7 +61,7 @@ public class Launcher {
             }
         }
         /* Turn off metal's use of bold fonts */
-        UIManager.put("swing.boldMetal", Boolean.FALSE);
+        //UIManager.put("swing.boldMetal", Boolean.FALSE);
 
         //Schedule a job for the event-dispatching thread:
         SwingUtilities.invokeLater(new Runnable() {
@@ -75,22 +71,60 @@ public class Launcher {
         });
     }
 
+    private SystemTray tray = null;
     private TrayIcon trayIcon = null;
     private SplashScreen splash;
     private JettyStart jetty;
 
+    private UtilityPanel utilityPanel;
+
     public Launcher(final String[] args) {
-        if (!SystemTray.isSupported()) {
-            showMessageAndExit("Not supported", "Running eXist-db via the launcher does not appear to be supported on your platform. " +
-                    "Please run it using startup.sh/startup.bat.", false);
-            return;
+        if (SystemTray.isSupported()) {
+            tray = SystemTray.getSystemTray();
         }
 
-        SystemTray tray = SystemTray.getSystemTray();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                utilityPanel = new UtilityPanel(Launcher.this);
+                if (!isSystemTraySupported())
+                    utilityPanel.setVisible(true);
+            }
+        });
 
-        final String home = getJettyHome();
         captureConsole();
 
+        final String home = getJettyHome();
+
+        if (isSystemTraySupported())
+            initSystemTray(home);
+
+        splash = new SplashScreen(this);
+        splash.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent windowEvent) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            jetty = new JettyStart();
+                            jetty.addObserver(splash);
+                            jetty.run(new String[]{home}, splash);
+                        } catch (Exception e) {
+                            showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
+                            System.exit(1);
+                        }
+                    }
+                }.start();
+            }
+        });
+    }
+
+    public boolean isSystemTraySupported() {
+        return tray != null;
+    }
+
+    private void initSystemTray(String home) {
         Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
@@ -103,7 +137,7 @@ public class Launcher {
         final JDialog hiddenFrame = new JDialog();
         hiddenFrame.setUndecorated(true);
 
-        final PopupMenu popup = createMenu(home, tray);
+        final PopupMenu popup = createMenu(home);
         trayIcon.setPopupMenu(popup);
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -119,9 +153,6 @@ public class Launcher {
             hiddenFrame.setVisible(true);
             tray.add(trayIcon);
         } catch (AWTException e) {
-            e.printStackTrace();
-            showMessageAndExit("Not supported", "Running eXist-db via the launcher is not supported on your platform. " +
-                    "Please run it using bin/startup.sh or bin\\startup.bat.", false);
             return;
         }
         trayIcon.addActionListener(new ActionListener() {
@@ -130,28 +161,9 @@ public class Launcher {
                 trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
             }
         });
-
-        splash = new SplashScreen(this);
-        splash.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowOpened(WindowEvent windowEvent) {
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            jetty = new JettyStart();
-                            jetty.addObserver(splash);
-                            jetty.run(new String[]{home}, splash);
-                        } catch (Exception e) {
-                            showMessageAndExit("Error Occurred", "An error occurred during startup. Please check the logs.", true);
-                        }
-                    }
-                }.start();
-            }
-        });
     }
 
-    private PopupMenu createMenu(final String home, final SystemTray tray) {
+    private PopupMenu createMenu(final String home) {
         PopupMenu popup = new PopupMenu();
         startItem = new MenuItem("Start server");
         startItem.setEnabled(false);
@@ -184,6 +196,17 @@ public class Launcher {
             }
         });
 
+        popup.addSeparator();
+
+        MenuItem toolbar = new MenuItem("Show Tool Window");
+        popup.add(toolbar);
+        toolbar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                utilityPanel.setVisible(true);
+            }
+        });
+
         MenuItem item;
 
         if (Desktop.isDesktopSupported()) {
@@ -195,14 +218,7 @@ public class Launcher {
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-                        try {
-                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/dashboard/");
-                            desktop.browse(url);
-                        } catch (URISyntaxException e) {
-                            trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
-                        } catch (IOException e) {
-                            trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
-                        }
+                        dashboard(desktop);
                     }
                 });
                 item = new MenuItem("Open eXide");
@@ -210,14 +226,7 @@ public class Launcher {
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-                        try {
-                            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
-                            desktop.browse(url);
-                        } catch (URISyntaxException e) {
-                            trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
-                        } catch (IOException e) {
-                            trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
-                        }
+                        eXide(desktop);
                     }
                 });
                 item = new MenuItem("Open Java Admin Client");
@@ -225,8 +234,7 @@ public class Launcher {
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-                        LauncherWrapper wrapper = new LauncherWrapper("client");
-                        wrapper.launch();
+                        client();
                     }
                 });
             }
@@ -243,25 +251,77 @@ public class Launcher {
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                jetty.shutdown();
-                tray.remove(trayIcon);
-                System.exit(0);
+                    shutdown();
                 }
             });
         }
         return popup;
     }
 
+    protected void shutdown() {
+        utilityPanel.setStatus("Shutting down ...");
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                jetty.shutdown();
+                if (tray != null)
+                    tray.remove(trayIcon);
+                System.exit(0);
+            }
+        });
+    }
+
+    protected void dashboard(Desktop desktop) {
+        utilityPanel.setStatus("Opening dashboard in browser ...");
+        try {
+            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/dashboard/");
+            desktop.browse(url);
+        } catch (URISyntaxException e) {
+            if (isSystemTraySupported())
+                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+            utilityPanel.setStatus("Unable to launch browser");
+        } catch (IOException e) {
+            if (isSystemTraySupported())
+                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+            utilityPanel.setStatus("Unable to launch browser");
+        }
+    }
+
+    protected void eXide(Desktop desktop) {
+        utilityPanel.setStatus("Opening dashboard in browser ...");
+        try {
+            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
+            desktop.browse(url);
+        } catch (URISyntaxException e) {
+            if (isSystemTraySupported())
+                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+            utilityPanel.setStatus("Unable to launch browser");
+        } catch (IOException e) {
+            if (isSystemTraySupported())
+                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+            utilityPanel.setStatus("Unable to launch browser");
+        }
+    }
+
+    protected void client() {
+        LauncherWrapper wrapper = new LauncherWrapper("client");
+        wrapper.launch();
+    }
+
     protected void signalStarted() {
-        trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
-        startItem.setEnabled(false);
-        stopItem.setEnabled(true);
+        if (isSystemTraySupported()) {
+            trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
+            startItem.setEnabled(false);
+            stopItem.setEnabled(true);
+        }
     }
 
     protected void signalShutdown() {
-        trayIcon.setToolTip("eXist-db server stopped");
-        startItem.setEnabled(true);
-        stopItem.setEnabled(false);
+        if (isSystemTraySupported()) {
+            trayIcon.setToolTip("eXist-db server stopped");
+            startItem.setEnabled(true);
+            stopItem.setEnabled(false);
+        }
     }
 
     private String getJettyHome() {
@@ -290,7 +350,7 @@ public class Launcher {
             panel.add(displayLogs, BorderLayout.SOUTH);
         }
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
-        System.exit(1);
+        //System.exit(1);
     }
 
     /**
@@ -302,14 +362,33 @@ public class Launcher {
         System.setErr(createLoggingProxy(System.err));
     }
 
-    public static PrintStream createLoggingProxy(final PrintStream realStream) {
-        return new PrintStream(realStream) {
+    public PrintStream createLoggingProxy(final PrintStream realStream) {
+        OutputStream out = new OutputStream() {
             @Override
-            public void print(String s) {
-                realStream.print(s);
-                LOG.info(s);
+            public void write(int i) throws IOException {
+                realStream.write(i);
+                String s = String.valueOf((char) i);
+                Launcher.this.setChanged();
+                Launcher.this.notifyObservers(s);
+            }
+
+            @Override
+            public void write(byte[] bytes) throws IOException {
+                realStream.write(bytes);
+                String s = new String(bytes);
+                Launcher.this.setChanged();
+                Launcher.this.notifyObservers(s);
+            }
+
+            @Override
+            public void write(byte[] bytes, int offset, int len) throws IOException {
+                realStream.write(bytes, offset, len);
+                String s = new String(bytes, offset, len);
+                Launcher.this.setChanged();
+                Launcher.this.notifyObservers(s);
             }
         };
+        return new PrintStream(out);
     }
 
     private class LogActionListener implements ActionListener {
