@@ -329,8 +329,6 @@
                 <include name="**.png"/>
             </fileset>
         </copy>
-    	<copy file="${src}/org/exist/launcher/logo.jpg"
-            todir="${build.classes}/org/exist/launcher"/>
         <copy todir="${build.classes}/org/exist/webstart/resources">
             <fileset dir="${src}/org/exist/webstart/resources">
                 <include name="*.jpg"/>
@@ -664,6 +662,9 @@
         <delete failonerror="no" file=".exist_history"/>
         <delete failonerror="no" file=".exist_query_history"/>
 
+        <!-- autodeploy -->
+        <delete failonerror="no" dir="autodeploy"/>
+        
         <!-- XQTS files -->
         <delete failonerror="no">
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts" includes="*" excludes="QT3TS_case.java,QT3TS_To_junit.java,XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
