@@ -100,8 +100,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
@@ -113,13 +111,14 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
+import org.exist.client.security.DialogCompleteWithResponse;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -1458,36 +1457,28 @@ public class ClientFrame extends JFrame
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
             
-            ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
-                    service, name, permAider, created, modified, mimeType);
-            
-            
-            dialog.setVisible(true);
-            if (dialog.getResult() == ResourcePropertyDialog.APPLY_OPTION) {
-                
-                Permission dlgPerm = dialog.permissions;
-                List<ACEAider> dlgAces = new ArrayList<ACEAider>();
-                if(dlgPerm instanceof ACLPermission) {
-                    ACLPermission dlgAclPerm = (ACLPermission)dialog.permissions;
-                    for(int j = 0; j < dlgAclPerm.getACECount(); j++) {
-                        dlgAces.add(new ACEAider(dlgAclPerm.getACEAccessType(j), dlgAclPerm.getACETarget(j), dlgAclPerm.getACEWho(j), dlgAclPerm.getACEMode(j)));
+            final DialogCompleteWithResponse<Void> callback = new DialogCompleteWithResponse<Void>() {
+                @Override
+                public void complete(final Void v) {
+                    try {
+                        client.reloadCollection();
+                    } catch (final XMLDBException e) {
+                        showErrorMessage(Messages.getString("ClientFrame.197") + e.getMessage(), e); //$NON-NLS-1$
+                        e.printStackTrace();
                     }
                 }
-                
-                int rows[] = fileman.getSelectedRows();
-                for (int i = 0; i < rows.length; i++) {
-                    ResourceDescriptor desc = resources.getRow(rows[i]);
-                    
-                    if (desc.isCollection()) {
-                        Collection coll = collection.getChildCollection(desc.getName().toString());
-                        service.setPermissions(coll, dlgPerm.getOwner().getName(), dlgPerm.getGroup().getName(), dlgPerm.getMode(), dlgAces);
-                    } else {
-                        Resource res = collection.getResource(desc.getName().toString());
-                        service.setPermissions(res, dlgPerm.getOwner().getName(), dlgPerm.getGroup().getName(), dlgPerm.getMode(), dlgAces);
-                    }
-                }
-                client.reloadCollection();
+            };
+            
+            final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
+            final int rows[] = fileman.getSelectedRows();
+            for(int i = 0; i < rows.length; i++) {
+                selected.add(resources.getRow(rows[i]));
             }
+            
+            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, collection, name, mimeType, created, modified, permAider, selected);
+            editPropertiesDialog.addDialogCompleteWithResponseCallback(callback);
+            editPropertiesDialog.setVisible(true);
+            
         } catch (XMLDBException e) {
             showErrorMessage(Messages.getString("ClientFrame.197") + e.getMessage(), e); //$NON-NLS-1$
             e.printStackTrace();

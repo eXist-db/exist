@@ -26,7 +26,6 @@ import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.HighlightedTableCellRenderer;
-import org.exist.client.security.FindUserForm.SelectedUsernameCallback;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.internal.aider.GroupAider;
@@ -373,9 +372,9 @@ public class GroupDialog extends javax.swing.JFrame {
     }
     
     private void showFindUserForm() {
-        final SelectedUsernameCallback selectedUsernameCallback = new SelectedUsernameCallback() {
+        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>() {
             @Override
-            public void selected(final String username) {
+            public void complete(final String username) {
                if(!groupMembersContains(username)) {
                    getGroupMembersTableModel().addRow(new Object[]{
                        username,
@@ -386,7 +385,8 @@ public class GroupDialog extends javax.swing.JFrame {
         };
         
         try {
-            final FindUserForm findUserForm = new FindUserForm(getUserManagementService(), selectedUsernameCallback);
+            final FindUserForm findUserForm = new FindUserForm(getUserManagementService());
+            findUserForm.addDialogCompleteWithResponseCallback(callback);
             findUserForm.setTitle("Add User to Group...");
             findUserForm.setVisible(true);
         } catch(final XMLDBException xmldbe) {
