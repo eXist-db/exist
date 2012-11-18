@@ -155,7 +155,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="48M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
+    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
 		doc-ids="default" minDiskSpace="128M">
 

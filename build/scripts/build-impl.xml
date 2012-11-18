@@ -143,11 +143,13 @@
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true">
 			<filterset>
 				<filter token="dataDir" value="webapp/WEB-INF/data"/>
+                <filter token="cacheSize" value="64"/>
 			</filterset>
 		</copy>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/installer/conf.xml" filtering="true">
 			<filterset>
 				<filter token="dataDir" value="$dataDir"/>
+                <filter token="cacheSize" value="${cacheSize}"/>
 			</filterset>
 		</copy>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties"
