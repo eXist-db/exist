@@ -107,26 +107,22 @@ public class XMLDBSetMimeType extends BasicFunction {
         }
 
         // Get mime-type of resource
-        String currentValue = getMimeTypeStoredResource(pathUri);
-        MimeType currentMimeType = null;
-        if (currentValue == null) {
-            // stored vresource has no mime-type (un expected(
-            // fall back to document name
-            logger.debug("Resource '" + pathUri + "' has no mime-type");
-            currentMimeType = mimeTable.getContentTypeFor(pathUri);
-                
-        } else {
-            currentMimeType = mimeTable.getContentType(currentValue);
-        }
-
-        // Final check
+        MimeType currentMimeType = getMimeTypeStoredResource(pathUri);
         if (currentMimeType == null) {
-            throw new XPathException("Unable to determine mime-type of stored resource '" + pathUri + "'.");
-        }
+            // stored resource has no mime-type (unexpected situation)
+            // fall back to document name
+            logger.debug("Resource '" + pathUri + "' has no mime-type, retrieve from document name.");
+            currentMimeType = mimeTable.getContentTypeFor(pathUri);
+            
+            // if extension based lookup still fails
+            if (currentMimeType == null) {
+                throw new XPathException("Unable to determine mime-type from path '" + pathUri + "'.");
+            }            
+        } 
 
         // Check if mimeType are equivalent
-        // in cases value null is set
-        if (newMimeType.isXMLType() != currentMimeType.isXMLType()) {
+        // in some cases value null is set, then allow to set to new value (repair action)
+        if (newMimeType.isXMLType() != currentMimeType.isXMLType() ) {
             throw new XPathException("New mime-type must be a " + currentMimeType.getXMLDBType() + " mime-type");
         }
 
@@ -168,12 +164,13 @@ public class XMLDBSetMimeType extends BasicFunction {
      * Determine mimetype of currently stored resource. Copied from
      * get-mime-type.
      */
-    private String getMimeTypeStoredResource(XmldbURI pathUri) throws XPathException {
-        String returnValue = null;
+    private MimeType getMimeTypeStoredResource(XmldbURI pathUri) throws XPathException {
+        MimeType returnValue = null;
         DocumentImpl doc = null;
         try {
             // relative collection Path: add the current base URI
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+            
         } catch (XPathException ex) {
             logger.debug("Unable to convert path " + pathUri);
             return returnValue;
@@ -185,7 +182,8 @@ public class XMLDBSetMimeType extends BasicFunction {
             if (doc == null) {
                 throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
-                returnValue = ((DocumentImpl) doc).getMetadata().getMimeType();
+                String mimetype = ((DocumentImpl) doc).getMetadata().getMimeType();
+                returnValue = MimeTable.getInstance().getContentType(mimetype);
             }
 
         } catch (PermissionDeniedException ex) {
