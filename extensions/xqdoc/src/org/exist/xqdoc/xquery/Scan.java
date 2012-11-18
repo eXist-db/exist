@@ -1,6 +1,6 @@
 package org.exist.xqdoc.xquery;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;

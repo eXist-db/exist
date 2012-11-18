@@ -27,7 +27,7 @@ import java.io.InputStream;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;

@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;

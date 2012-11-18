@@ -12,7 +12,7 @@ import org.exist.client.ClientFrame;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.security.xacml.XACMLUtil;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

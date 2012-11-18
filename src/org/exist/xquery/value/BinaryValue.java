@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.log4j.Logger;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;

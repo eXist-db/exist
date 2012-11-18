@@ -38,7 +38,7 @@ import org.exist.util.MimeType;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.xmldb.api.DatabaseManager;

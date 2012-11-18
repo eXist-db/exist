@@ -42,7 +42,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 
 /**

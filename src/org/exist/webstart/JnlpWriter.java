@@ -35,7 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.IOUtils;
 
 import org.apache.log4j.Logger;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  * Class for writing JNLP file, jar files and image files.

@@ -36,7 +36,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;

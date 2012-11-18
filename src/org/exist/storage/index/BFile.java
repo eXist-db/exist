@@ -57,7 +57,7 @@ import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.EOFException;
 import java.io.File;

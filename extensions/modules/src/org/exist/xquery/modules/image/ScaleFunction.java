@@ -23,7 +23,7 @@
 package org.exist.xquery.modules.image;
 
 import org.apache.log4j.Logger;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;

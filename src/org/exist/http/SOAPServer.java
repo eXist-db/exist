@@ -62,7 +62,7 @@ import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.external.org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
