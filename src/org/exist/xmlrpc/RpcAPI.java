@@ -748,6 +748,10 @@ public interface RpcAPI {
         
         String[] getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException;
         
+        void addAccountToGroup(final String accountName, final String groupName) throws EXistException, PermissionDeniedException;
+        
+        void addGroupManager(final String manager, final String groupName) throws EXistException, PermissionDeniedException;
+        
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 

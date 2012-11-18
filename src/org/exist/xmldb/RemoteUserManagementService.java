@@ -868,6 +868,32 @@ public class RemoteUserManagementService implements UserManagementService {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);   
             }
         }
+
+    @Override
+    public void addAccountToGroup(final String accountName, final String groupName) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(1);
+            params.add(accountName);
+            params.add(groupName);
+                
+            parent.getClient().execute("addAccountToGroup", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public void addGroupManager(final String manager, final String groupName) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(1);
+            params.add(manager);
+            params.add(groupName);
+                
+            parent.getClient().execute("addGroupManager", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
         
         
         
