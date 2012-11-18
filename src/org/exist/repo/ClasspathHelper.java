@@ -21,9 +21,8 @@ public class ClasspathHelper {
         ClassLoader loader = pool.getClassLoader();
         if (!(loader instanceof EXistClassLoader))
             return;
-        File existHome = pool.getConfiguration().getExistHome();
         Classpath cp = new Classpath();
-        scanPackages(cp, existHome);
+        scanPackages(pool, cp);
         ((EXistClassLoader)loader).addURLs(cp);
     }
 
@@ -42,9 +41,9 @@ public class ClasspathHelper {
         }
     }
 
-    private static void scanPackages(Classpath classpath, File existHome) {
+    private static void scanPackages(BrokerPool pool, Classpath classpath) {
         try {
-            ExistRepository repo = ExistRepository.getRepository(existHome);
+            ExistRepository repo = pool.getExpathRepo();
             for (Packages pkgs : repo.getParentRepo().listPackages()) {
                 Package pkg = pkgs.latest();
                 try {

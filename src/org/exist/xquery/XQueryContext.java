@@ -312,23 +312,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private boolean analyzed = false;
 
-    // TODO: expath repo manageer, may change
-    private static ExistRepository _repo = null;
-
     public synchronized ExistRepository getRepository()
-            throws XPathException
-    {
-        if ( _repo == null ) {
-            try {
-                File existHome = db.getConfiguration().getExistHome();
-                _repo = ExistRepository.getRepository(existHome);
-            }
-            catch ( PackageException ex ) {
-                // problem with pkg-repo.jar throwing exception
-                throw new XPathException("Problem setting expath repository", ex);
-            }
-        }
-        return _repo;
+    throws XPathException {
+        return getBroker().getBrokerPool().getExpathRepo();
     }
 
     private Module resolveInEXPathRepository(String namespace, String prefix)

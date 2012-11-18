@@ -51,6 +51,7 @@ import org.exist.numbering.NodeIdFactory;
 import org.exist.plugin.PluginsManager;
 import org.exist.plugin.PluginsManagerImpl;
 import org.exist.repo.ClasspathHelper;
+import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.AuthenticationException;
@@ -75,6 +76,8 @@ import org.exist.util.hashtable.MapRWLock.LongOperation;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
+import org.expath.pkg.repo.PackageException;
+
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -590,7 +593,9 @@ public class BrokerPool extends Observable implements Database {
     private BrokerWatchdog watchdog = null;
 
     private ClassLoader classLoader;
-    
+
+    private ExistRepository expathRepo = null;
+
     /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
@@ -970,7 +975,15 @@ public class BrokerPool extends Observable implements Database {
         
             //require to allow access by BrokerPool.getInstance();  
             instances.put(instanceName, this);
-            
+
+            try {
+                // initialize expath repository so startup triggers can access it
+                expathRepo = ExistRepository.getRepository(this.conf.getExistHome());
+            } catch (PackageException e) {
+                LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
+                    "the package manager may not work.");
+            }
+
             callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
         } finally {
             release(broker);
@@ -1228,6 +1241,10 @@ public class BrokerPool extends Observable implements Database {
 	public Configuration getConfiguration() {
 		return conf;
 	}	
+
+    public ExistRepository getExpathRepo() {
+        return expathRepo;
+    }
 
     //TODO : rename as setShutdwonListener ?
 	public void registerShutdownListener(ShutdownListener listener) {

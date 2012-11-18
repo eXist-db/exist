@@ -34,52 +34,47 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
         if (!autodeployDir.canRead() && autodeployDir.isDirectory())
             return;
-        try {
-            ExistRepository repo = ExistRepository.getRepository(homeDir);
-            UserInteractionStrategy interact = new BatchUserInteraction();
-            File[] xars = autodeployDir.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.getName().endsWith(".xar");
-                }
-            });
-            
-            if (xars == null) {
-                LOG.error(autodeployDir.getAbsolutePath() + " does not exist.");
-                return;
+        ExistRepository repo = broker.getBrokerPool().getExpathRepo();
+        UserInteractionStrategy interact = new BatchUserInteraction();
+        File[] xars = autodeployDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.getName().endsWith(".xar");
+            }
+        });
 
-            } else {
-                LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
-            }
-            
-            for (File xar : xars) {
-                Deployment deployment = new Deployment(broker);
-                try {
-                    // extract name URI from .xar to compare with installed packages
-                    String name = deployment.getNameFromDescriptor(xar);
-                    LOG.debug("Checking package " + name);
-                    Packages packages = repo.getParentRepo().getPackages(name);
-                    if (packages != null) {
-                        LOG.info("Application package " + name + " already installed. Skipping.");
-                    } else {
-                        // installing the xar into the expath repo
-                        org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
-                        ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-                        String pkgName = pkg.getName();
-                        broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
-                        deployment.deploy(pkgName, repo, null);
-                    }
-                } catch (PackageException e) {
-                    LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
-                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
-                } catch (IOException e) {
-                    LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
-                    broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+        if (xars == null) {
+            LOG.error(autodeployDir.getAbsolutePath() + " does not exist.");
+            return;
+
+        } else {
+            LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
+        }
+
+        for (File xar : xars) {
+            Deployment deployment = new Deployment(broker);
+            try {
+                // extract name URI from .xar to compare with installed packages
+                String name = deployment.getNameFromDescriptor(xar);
+                LOG.debug("Checking package " + name);
+                Packages packages = repo.getParentRepo().getPackages(name);
+                if (packages != null) {
+                    LOG.info("Application package " + name + " already installed. Skipping.");
+                } else {
+                    // installing the xar into the expath repo
+                    org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
+                    ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+                    String pkgName = pkg.getName();
+                    broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
+                    deployment.deploy(pkgName, repo, null);
                 }
+            } catch (PackageException e) {
+                LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
+                broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
+            } catch (IOException e) {
+                LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
+                broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
             }
-        } catch (PackageException e) {
-            LOG.warn("Exception caught while initializing expath repository: " + e.getMessage(), e);
-            broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
         }
     }
 

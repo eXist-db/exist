@@ -23,6 +23,7 @@
 package org.exist.installer;
 
 import org.exist.EXistException;
+import org.exist.repo.AutoDeploymentTrigger;
 import org.exist.repo.ExistRepository;
 import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
@@ -63,6 +64,7 @@ public class Setup {
             passwd = args[0].substring(5);
             offset = 1;
         }
+        System.setProperty(AutoDeploymentTrigger.AUTODEPLOY_PROPERTY, "off");
         XQueryService query = initDb(passwd);
 //        if (query != null) {
 //            try {
