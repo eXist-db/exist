@@ -35,21 +35,21 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class FindUserForm extends javax.swing.JFrame implements DialogWithResponse<String> {
+public class FindGroupForm extends javax.swing.JFrame implements DialogWithResponse<String> {
     private final UserManagementService userManagementService;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
-    private final Set<String> allUsernames;
-    private DefaultComboBoxModel usernameModel;
+    private final Set<String> allGroupNames;
+    private DefaultComboBoxModel groupNameModel;
 
     /**
-     * Creates new form FindUserForm
+     * Creates new form FindGroupForm
      */
-    public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
+    public FindGroupForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
         
-        allUsernames = new HashSet<String>();
-        for(final Account account : userManagementService.getAccounts()) {
-            allUsernames.add(account.getName());
+        allGroupNames = new HashSet<String>();
+        for(final String groupName : userManagementService.getGroups()) {
+            allGroupNames.add(groupName);
         }
         
         initComponents();
@@ -64,17 +64,17 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblUsername = new javax.swing.JLabel();
+        lblGroupName = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        cmbUsername = new javax.swing.JComboBox();
-        AutoCompletion.enable(cmbUsername);
+        cmbGroupName = new javax.swing.JComboBox();
+        AutoCompletion.enable(cmbGroupName);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Find User...");
 
-        lblUsername.setText("User name:");
+        lblGroupName.setText("Group:");
 
         btnOk.setText("Ok");
         btnOk.setEnabled(false);
@@ -91,11 +91,11 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
             }
         });
 
-        cmbUsername.setEditable(true);
-        cmbUsername.setModel(getUsernameModel());
-        cmbUsername.addActionListener(new java.awt.event.ActionListener() {
+        cmbGroupName.setEditable(true);
+        cmbGroupName.setModel(getGroupNameModel());
+        cmbGroupName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbUsernameActionPerformed(evt);
+                cmbGroupNameActionPerformed(evt);
             }
         });
 
@@ -105,10 +105,10 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(14, 14, 14)
-                .addComponent(lblUsername)
+                .addComponent(lblGroupName)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmbUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addComponent(cmbGroupName, javax.swing.GroupLayout.PREFERRED_SIZE, 341, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(45, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -125,8 +125,8 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
             .addGroup(layout.createSequentialGroup()
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblUsername)
-                    .addComponent(cmbUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblGroupName)
+                    .addComponent(cmbGroupName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -144,15 +144,15 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
         dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
-    private void cmbUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbUsernameActionPerformed
-        final String currentUsername = (String)cmbUsername.getSelectedItem();
-        final boolean isValid = isValidUsername(currentUsername);
+    private void cmbGroupNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbGroupNameActionPerformed
+        final String currentGroupName = (String)cmbGroupName.getSelectedItem();
+        final boolean isValid = isValidGroupName(currentGroupName);
         btnOk.setEnabled(isValid);
-    }//GEN-LAST:event_cmbUsernameActionPerformed
+    }//GEN-LAST:event_cmbGroupNameActionPerformed
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
         for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
-            callback.complete((String)cmbUsername.getSelectedItem());
+            callback.complete((String)cmbGroupName.getSelectedItem());
         }
         setVisible(false);
         dispose();
@@ -162,26 +162,26 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JComboBox cmbUsername;
+    private javax.swing.JComboBox cmbGroupName;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JLabel lblUsername;
+    private javax.swing.JLabel lblGroupName;
     // End of variables declaration//GEN-END:variables
 
 
-    private boolean isValidUsername(final String username) {
-        return allUsernames.contains(username);
+    private boolean isValidGroupName(final String groupName) {
+        return allGroupNames.contains(groupName);
     }
     
-    private ComboBoxModel getUsernameModel() {
-        if(usernameModel == null) {
-            usernameModel = new DefaultComboBoxModel();
-            usernameModel.addElement("");
-            for(final String username : allUsernames) {
-               usernameModel.addElement(username);
+    private ComboBoxModel getGroupNameModel() {
+        if(groupNameModel == null) {
+            groupNameModel = new DefaultComboBoxModel();
+            groupNameModel.addElement("");
+            for(final String groupName : allGroupNames) {
+               groupNameModel.addElement(groupName);
             }
         }
         
-        return usernameModel;
+        return groupNameModel;
     }
     
     private UserManagementService getUserManagementService() {
