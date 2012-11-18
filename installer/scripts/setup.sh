@@ -22,7 +22,7 @@ if [ ! -f "$EXIST_HOME/start.jar" ]; then
 	exit 1
 fi
 
-OPTIONS="-Dexist.home=$EXIST_HOME"
+OPTIONS="-Dexist.home=$EXIST_HOME -Duse.autodeploy.feature=false"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then

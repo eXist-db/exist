@@ -64,13 +64,13 @@ public class Setup {
             offset = 1;
         }
         XQueryService query = initDb(passwd);
-        if (query != null) {
-            try {
-                installApps(query, args, offset);
-            } catch (EXistException e) {
-                System.err.println("An error occurred while installing apps: " + e.getMessage());
-            }
-        }
+//        if (query != null) {
+//            try {
+//                installApps(query, args, offset);
+//            } catch (EXistException e) {
+//                System.err.println("An error occurred while installing apps: " + e.getMessage());
+//            }
+//        }
         shutdown(passwd);
     }
 
