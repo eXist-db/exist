@@ -147,7 +147,7 @@ public abstract class Name {
 	
 	/**
 	 * Keep the existing name of the source item if it is unique in the destination folder, otherwise
-	 * adjust it as per the rules of {@link #adjust(String)}.
+	 * adjust it as per the rules of {@link #adjust(Database, String)}.
 	 *
 	 * @return the existing name if unique, otherwise a unique variation of the existing name
 	 */
@@ -178,7 +178,7 @@ public abstract class Name {
 
 	/**
 	 * Keep the existing name of the source item, overwriting any document with the same name
-	 * in the destination folder as per the rules for {@link #overwrite(String)}.
+	 * in the destination folder as per the rules for {@link #overwrite(Database, String)}.
 	 *
 	 * @return the existing name that will be used whether it's unique or not
 	 */
@@ -207,7 +207,7 @@ public abstract class Name {
 	
 	/**
 	 * Keep the existing name of the source item, believed to be unique in the destination folder.
-	 * The name follows the rules given in {@link #create(String)}.
+	 * The name follows the rules given in {@link #create(Database, String)}.
 	 *
 	 * @return the existing name, with a stipulation that any operation using it will fail if it's a duplicate
 	 */

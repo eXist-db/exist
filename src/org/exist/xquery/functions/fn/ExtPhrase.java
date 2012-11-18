@@ -181,7 +181,7 @@ public class ExtPhrase extends ExtFulltext {
      * 
      * @param context
      * @param result
-     * @return
+     * 
      */
     private Sequence patternMatch(XQueryContext context, String[] terms, NodeSet result) {
         //Generate list of search term patterns

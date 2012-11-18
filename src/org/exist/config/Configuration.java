@@ -43,9 +43,6 @@ public interface Configuration {
 
     /**
      * Return sub configuration by name.
-     *  
-     * @param name
-     * @return
      */
     public Configuration getConfiguration(String name);
 
@@ -53,14 +50,12 @@ public interface Configuration {
      * Return list of sub configurations by name.
      * 
      * @param name
-     * @return
      */
     public List<Configuration> getConfigurations(String name);
 
     /**
      * Return set of properties configuration have.
      * 
-     * @return
      */
     public Set<String> getProperties();
 
@@ -68,7 +63,6 @@ public interface Configuration {
      * Check presents of setting by name.
      * 
      * @param name
-     * @return
      */
     public boolean hasProperty(String name);
 
@@ -76,7 +70,6 @@ public interface Configuration {
      * Return property string value.
      * 
      * @param property
-     * @return
      */
     public String getProperty(String property);
 
@@ -84,7 +77,6 @@ public interface Configuration {
      * Return property map value.
      * 
      * @param property
-     * @return
      */
     public Map<String, String> getPropertyMap(String property);
 
@@ -92,7 +84,7 @@ public interface Configuration {
      * Return property integer value.
      * 
      * @param property
-     * @return
+     *
      */
     public Integer getPropertyInteger(String property);
     
@@ -100,7 +92,7 @@ public interface Configuration {
      * Return property long value.
      * 
      * @param property
-     * @return
+     * 
      */
     public Long getPropertyLong(String property);
     
@@ -108,7 +100,7 @@ public interface Configuration {
      * Return property boolean value.
      * 
      * @param property
-     * @return
+     * 
      */
     public Boolean getPropertyBoolean(String property);
     
@@ -117,7 +109,7 @@ public interface Configuration {
      * 
      * @param name
      * @param object
-     * @return
+     *
      */
     public Object putObject(String name, Object object);
     
@@ -125,28 +117,28 @@ public interface Configuration {
      * Get object associated by key from internal map.
      * 
      * @param name
-     * @return
+     * 
      */
     public Object getObject(String name);
 
     /**
      * Configuration name.
      * 
-     * @return
+     * 
      */
     public String getName();
 
     /**
      * Return configuration's String value.
      *  
-     * @return
+     * 
      */
     public String getValue();
 
     /**
      * Return element associated with configuration.
      *  
-     * @return
+     * 
      */
     public ElementAtExist getElement();
 

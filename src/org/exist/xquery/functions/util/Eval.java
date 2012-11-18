@@ -472,7 +472,6 @@ public class Eval extends BasicFunction {
 
     /**
      * @param expr
-     * @return
      * @throws XPathException
      * @throws NullPointerException
      * @throws IllegalArgumentException

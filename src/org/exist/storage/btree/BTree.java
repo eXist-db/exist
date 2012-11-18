@@ -2241,8 +2241,6 @@ public class BTree extends Paged {
 
         /**
          * Search for the given key in the keys of this node.
-         * @param key
-         * @return
          */
         private int searchKey(Value key) {
             if (pageHeader.getStatus() == BRANCH && prefix != null && prefix.getLength() > 0) {

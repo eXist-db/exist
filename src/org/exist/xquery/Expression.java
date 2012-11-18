@@ -190,7 +190,6 @@ public interface Expression {
     /**
      * Returns true if the expression object has not yet been reset, so
      * {@link #resetState(boolean)} should be called.
-     * @return
      */
     public boolean needsReset();
 

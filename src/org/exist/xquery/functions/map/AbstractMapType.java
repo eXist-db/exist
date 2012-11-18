@@ -94,8 +94,6 @@ public abstract class AbstractMapType extends FunctionReference
 
     /**
      * Return the accessor function. Will be created on demand.
-     *
-     * @return
      */
     protected InternalFunctionCall getAccessorFunc() {
         initFunction();

@@ -167,7 +167,7 @@ public interface Permission {
      * 
      * The new settings are or'ed with the existing settings.
      * 
-     *@param  modeStr                  The new mode
+     *@param  str                  The new mode
      *@exception  SyntaxException  Description of the Exception
      *
      * @deprecated Setting permissions via string is not very efficient!
@@ -185,14 +185,14 @@ public interface Permission {
     /**
      *  Set mode for others
      *
-     *@param  mode  The new mode value
+     *@param  perm  The new mode value
      */
     public void setOtherMode(int perm) throws PermissionDeniedException;
 
     /**
      *  Set mode for the owner
      *
-     *@param  mode  The new mode value
+     *@param  other  The new mode value
      */
     public void setOwnerMode(int other) throws PermissionDeniedException;
 

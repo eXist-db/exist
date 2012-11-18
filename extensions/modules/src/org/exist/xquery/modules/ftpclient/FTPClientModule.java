@@ -64,7 +64,7 @@ public class FTPClientModule extends AbstractInternalModule {
      * Stores a Connection in the Context of an XQuery.
      *
      * @param   context  The Context of the XQuery to store the Connection in
-     * @param   con      The connection to store
+     * @param   ftp      The connection to store
      *
      * @return  A unique ID representing the connection
      */

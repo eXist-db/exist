@@ -48,8 +48,6 @@ public abstract class DOMTransaction {
 
     /**
      * @deprecated : use other constructors
-     * @param owner
-     * @param f
      */
     public DOMTransaction(Object owner, DOMFile file) {
         this.ownerObject = owner;
@@ -61,7 +59,7 @@ public abstract class DOMTransaction {
      * Creates a new <code>DOMTransaction</code> instance.
      *
      * @param owner an <code>Object</code> value
-     * @param f a <code>DOMFile</code> value
+     * @param file a <code>DOMFile</code> value
      * @param mode an <code>int</code> value
      */
     public DOMTransaction(Object owner, DOMFile file, int mode) {
@@ -73,7 +71,7 @@ public abstract class DOMTransaction {
      * Creates a new <code>DOMTransaction</code> instance.
      *
      * @param owner an <code>Object</code> value
-     * @param f a <code>DOMFile</code> value
+     * @param file a <code>DOMFile</code> value
      * @param mode an <code>int</code> value
      * @param doc a <code>DocumentImpl</code> value
      */

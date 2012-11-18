@@ -944,12 +944,6 @@ public abstract class Serializer implements XMLReader {
 	 * 
 	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
 	 * 
-	 * @param seq
-	 * @param start
-	 * @param count
-	 * @param wrap Indicates whether the output should be wrapped
-         * @param typed Indicates whether the output types should be wrapped
-	 * @throws SAXException
 	 */
     public void toSAX(Sequence seq) throws SAXException {
         try {
@@ -983,9 +977,6 @@ public abstract class Serializer implements XMLReader {
 	 * 
 	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
 	 * 
-	 * @param item
-	 * @param start
-	 * @param count
 	 * @param wrap Indicates whether the output should be wrapped
          * @param typed Indicates whether the output types should be wrapped
 	 * @throws SAXException

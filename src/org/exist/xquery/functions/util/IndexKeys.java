@@ -229,7 +229,6 @@ public class IndexKeys extends BasicFunction {
      *
      * @param broker
      * @param docs
-     * @return
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
         Set<QName> indexes = new HashSet<QName>();

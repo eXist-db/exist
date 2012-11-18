@@ -937,10 +937,6 @@ public class RemoteUserManagementService implements UserManagementService {
 	 * modified by Chris Tomlinson to remove handling of home which
 	 * breaks the call on updateAccount in RpcConnection since there is
 	 * no parameter to receive it
-	 *
-	 *@param  user                Description of the Parameter
-	 *@param  rmgroup             Description of group to remove 
-	 *@exception  XMLDBException  Description of the Exception
 	 */
     @Override
     public void removeGroupMember(final String group, final String account) throws XMLDBException {

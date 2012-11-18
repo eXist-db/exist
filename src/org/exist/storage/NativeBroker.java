@@ -2399,9 +2399,9 @@ public class NativeBroker extends DBBroker {
     }
 
     /**
-     * @doc src document
-     * @destination destination collection
-     * @newName the new name for the document
+     * @param doc src document
+     * @param destination destination collection
+     * @param newName the new name for the document
      */
     @Override
     public void copyResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, EXistException {

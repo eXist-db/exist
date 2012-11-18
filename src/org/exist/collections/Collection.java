@@ -446,10 +446,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * If recursive is true, documents from sub-collections are
      * included.
      *
-     * @param broker
-     * @param docs
-     * @param recursive
-     * @param checkPermissions
      * @return The set of documents.
      */
     public MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs,
@@ -1965,7 +1961,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * for this collection? Called by {@link org.exist.storage.NativeBroker}
      * before doing a reindex.
      *
-     * @param enabled
+     * @param collectionConfigEnabled
      */
     public void setCollectionConfigEnabled(boolean collectionConfigEnabled) {
         this.collectionConfigEnabled = collectionConfigEnabled;

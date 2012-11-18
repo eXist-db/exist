@@ -155,8 +155,6 @@ public interface Database {
 
 	/**
 	 * Master document triggers.
-	 *  
-	 * @return
 	 */
 	public Collection<DocumentTrigger> getDocumentTriggers();
 
@@ -164,8 +162,6 @@ public interface Database {
 
 	/**
 	 * Master Collection triggers.
-	 *  
-	 * @return
 	 */
 	public Collection<CollectionTrigger> getCollectionTriggers();
 
