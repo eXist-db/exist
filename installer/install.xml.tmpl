@@ -10,6 +10,8 @@
     </info>
 
     <guiprefs height="450" resizable="yes" width="680">
+        <modifier key="headingPanelCounter" value="progressbar"/>
+        <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
         <laf name="looks">
             <os family="unix"/>
         </laf>
@@ -28,14 +30,17 @@
         <res id="ProcessPanel.Spec.xml" src="installer/jobs.xml"/>
         <res id="HTMLInfoPanel.start" src="installer/start.html"/>
         <res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
-        <res id="customicons.xml" src="installer/custom.icons.xml"/>
+        <!--res id="customicons.xml" src="installer/custom.icons.xml"/-->
+        <!--res id="pkgicon" src="installer/apps/icon.png"/-->
     </resources>
 
     <jar src="tools/izpack/clinstaller.jar" stage="install"/>
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
-    <native type="izpack" name="ShellLink.dll"/>
-    <native type="izpack" name="ShellLink_x64.dll"/>
+    <natives>
+        <native type="izpack" name="ShellLink.dll"/>
+        <native type="izpack" name="ShellLink_x64.dll"/>
+    </natives>
 
     <variables>
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
@@ -56,8 +61,8 @@
         <!--panel classname="JDKPathPanel"/-->
         <panel classname="TargetPanel"/>
         <panel classname="UserInputPanel" id="UserInputPanel.0"/>
-        <panel classname="PacksPanel"/>
         <panel classname="UserInputPanel" id="UserInputPanel.1"/>
+        <panel classname="PacksPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ProcessPanel"/>
         <panel classname="ShortcutPanel"/>
@@ -66,7 +71,7 @@
     </panels>
 
     <packs>
-        <pack name="core" required="yes">
+        <pack name="Core" required="yes" installGroups="Group1">
             <description>Everything needed for the database core, including Jetty</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
                 <include name="client.properties.tmpl"/>
@@ -183,7 +188,10 @@
 
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
                 <include name="*.sh"/>
+                <exclude name="eXist-settings.sh"/>
             </fileset>
+
+            <file src="installer/scripts/eXist-settings.sh" targetdir="$INSTALL_PATH/bin/functions.d"/>
 
             <fileset dir="bin/batch.d" targetdir="$INSTALL_PATH/bin/batch.d">
                 <include name="*.bat"/>
@@ -199,6 +207,7 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/setup.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh"/>
 
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
@@ -214,52 +223,105 @@
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
 
-            <executable targetfile="$INSTALL_PATH/start.jar" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/start.jar" stage="never">
+                <os family="unix"/>
+            </executable>
             
-            <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh" stage="never"
-                os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/functions.d/getopt-settings.sh" stage="never"
-                os="unix"/>
-            <executable targetfile="$INSTALL_PATH/bin/functions.d/jmx-settings.sh" stage="never"
-                os="unix"/>
-            <executable targetfile="$INSTALL_PATH/build.sh" stage="never" os="unix"/>
-	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-32" stage="never" os="unix"/>
-	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ia-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never" os="unix"/>
-            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/functions.d/getopt-settings.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/bin/functions.d/jmx-settings.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/build.sh" stage="never">
+                <os family="unix"/>
+            </executable>
+	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-32" stage="never">
+                <os family="unix"/>
+            </executable>
+	        <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-aix-ppc-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-freebsd-x86-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-ia-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-hpux-parisc-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ia-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-ppc-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-linux-x86-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-macosx-universal-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-sparc-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-32" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/wrapper-solaris-x86-64" stage="never">
+                <os family="unix"/>
+            </executable>
+            <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never">
+                <os family="unix"/>
+            </executable>
         </pack>
         
-        <pack name="apps" required="no" preselected="yes">
-            <description>EXPath packaged applications for eXist-db</description>
-            <fileset targetdir="$INSTALL_PATH/apps" dir="installer/apps">
-                <include name="*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="sources" required="no">
-            <description>Java source files</description>
+        <pack name="Sources" required="no" installGroups="Group1">
+            <description>Java source files and build scripts. Install this package if you want to
+            customize the build, create extensions or contribute to eXist-db.</description>
             <fileset targetdir="$INSTALL_PATH/src" dir="src">
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
@@ -298,11 +360,15 @@
             <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
         </pack>
 
-        <pack name="javadoc" required="no">
-            <description>Generated Javadocs</description>
+        <!--pack name="Javadoc" required="no">
+            <description>Generated Javadocs for eXist-db core code.</description>
             <fileset targetdir="$INSTALL_PATH/webapp/api" dir="webapp/api">
                 <exclude name="**/CVS/"/>
             </fileset>
+        </pack-->
+        
+        <pack name="Apps" required="no" installGroups="Group2">
+            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later.</description>
         </pack>
     </packs>
 </installation>
