@@ -110,19 +110,23 @@ public class XMLDBSetMimeType extends BasicFunction {
         String currentValue = getMimeTypeStoredResource(pathUri);
         MimeType currentMimeType = null;
         if (currentValue == null) {
-            logger.debug("Resource has no mime-type");
+            // stored vresource has no mime-type (un expected(
+            // fall back to document name
+            logger.debug("Resource '" + pathUri + "' has no mime-type");
+            currentMimeType = mimeTable.getContentTypeFor(pathUri);
+                
         } else {
             currentMimeType = mimeTable.getContentType(currentValue);
         }
 
+        // Final check
         if (currentMimeType == null) {
-            throw new XPathException("Unable to determine mime-type of stored resource.");
+            throw new XPathException("Unable to determine mime-type of stored resource '" + pathUri + "'.");
         }
 
         // Check if mimeType are equivalent
-        if (newMimeType.isXMLType() == currentMimeType.isXMLType()) {
-            // OK
-        } else {
+        // in cases value null is set
+        if (newMimeType.isXMLType() != currentMimeType.isXMLType()) {
             throw new XPathException("New mime-type must be a " + currentMimeType.getXMLDBType() + " mime-type");
         }
 
@@ -161,7 +165,8 @@ public class XMLDBSetMimeType extends BasicFunction {
     }
 
     /**
-     * Determine mimetype of currently stored resource. Copied from get-mime-type.
+     * Determine mimetype of currently stored resource. Copied from
+     * get-mime-type.
      */
     private String getMimeTypeStoredResource(XmldbURI pathUri) throws XPathException {
         String returnValue = null;
@@ -169,16 +174,16 @@ public class XMLDBSetMimeType extends BasicFunction {
         try {
             // relative collection Path: add the current base URI
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
-        } catch (XPathException ex){
+        } catch (XPathException ex) {
             logger.debug("Unable to convert path " + pathUri);
             return returnValue;
         }
-        
+
         try {
             // try to open the document and acquire a lock
             doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
             if (doc == null) {
-                throw new XPathException("Resource '"+pathUri+"' does not exist.");
+                throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
                 returnValue = ((DocumentImpl) doc).getMetadata().getMimeType();
             }
