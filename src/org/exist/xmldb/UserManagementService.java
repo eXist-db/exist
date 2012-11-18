@@ -203,6 +203,8 @@ public interface UserManagementService extends Service {
 
     public void addGroupManager(String manager, String groupName) throws XMLDBException;
     
+    public void removeGroupManager(String groupName, String manager) throws XMLDBException;
+    
     /**
      *  Retrieve a list of all existing accounts.
      *
@@ -325,16 +327,8 @@ public interface UserManagementService extends Service {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
     public void addUserGroup(Account user) throws XMLDBException;
-    
-    /**
-	 *  Update the specified user removing a group from user's group
-	 *  Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-	 *
-	 *@param  user                Description of the Parameter
-	 *@param  rmgroup             Description of group to remove 
-	 *@exception  XMLDBException  Description of the Exception
-	 */
-    public void removeGroup(Account user, String rmgroup) throws XMLDBException;
+   
+    public void removeGroupMember(final String group, final String account) throws XMLDBException;
 
 
     public void addGroup(Group group) throws XMLDBException;

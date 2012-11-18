@@ -872,7 +872,7 @@ public class RemoteUserManagementService implements UserManagementService {
     @Override
     public void addAccountToGroup(final String accountName, final String groupName) throws XMLDBException {
         try {
-            final List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(accountName);
             params.add(groupName);
                 
@@ -885,11 +885,24 @@ public class RemoteUserManagementService implements UserManagementService {
     @Override
     public void addGroupManager(final String manager, final String groupName) throws XMLDBException {
         try {
-            final List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(manager);
             params.add(groupName);
                 
             parent.getClient().execute("addGroupManager", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public void removeGroupManager(final String groupName, final String manager) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(2);
+            params.add(groupName);
+            params.add(manager);
+            
+            parent.getClient().execute("removeGroupManager", params);
         } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -929,17 +942,16 @@ public class RemoteUserManagementService implements UserManagementService {
 	 *@param  rmgroup             Description of group to remove 
 	 *@exception  XMLDBException  Description of the Exception
 	 */
-	public void removeGroup(Account user, String rmgroup) throws XMLDBException {
-		try {
+    @Override
+    public void removeGroupMember(final String group, final String account) throws XMLDBException {
+        try {
             List<Object> params = new ArrayList<Object>(3);
-			params.add(user.getName());
-			String[] gl = user.getGroups();
-			params.add(gl);
-			params.add(rmgroup);
-			parent.getClient().execute("updateAccount", params);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		}
+            params.add(group);
+            params.add(account);
+            parent.getClient().execute("removeGroupMember", params);
+        } catch (XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
 	/* (non-Javadoc)

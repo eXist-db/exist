@@ -822,13 +822,50 @@ public class LocalUserManagementService implements UserManagementService {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
+    
+    @Override
+    public void removeGroupManager(final String groupName, final String manager) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    final Group group = sm.getGroup(groupName);
+                    final Account account = sm.getAccount(manager);
+                    group.removeManager(account);
+                    sm.updateGroup(group);
+                    
+                    return null;
+                }
+            });
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
 	
     @Override
     public void addUserGroup(Account user) throws XMLDBException {	
     }
 	
     @Override
-    public void removeGroup(Account user, String rmgroup) throws XMLDBException {	
+    public void removeGroupMember(final String group, final String member) throws XMLDBException {
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    
+                    final Account account = sm.getAccount(member);
+                    account.remGroup(group);
+                    sm.updateAccount(account);
+
+                    return null;
+                }
+            });
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
     }
 
     @Override

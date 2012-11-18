@@ -752,6 +752,8 @@ public interface RpcAPI {
         
         void addGroupManager(final String manager, final String groupName) throws EXistException, PermissionDeniedException;
         
+        public void removeGroupManager(final String groupName, final String manager) throws EXistException, PermissionDeniedException;
+        
 	boolean setPermissions(String resource, String permissions)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
