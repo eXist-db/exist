@@ -21,18 +21,14 @@
  */
 package org.exist.client.security;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.client.security.FindUserForm.SelectedUsernameCallback;
-import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
@@ -48,25 +44,27 @@ public class GroupDialog extends javax.swing.JFrame {
     private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._]{3,}");
     
     private final UserManagementService userManagementService;
+    private final String currentUser;
     
     private DefaultTableModel groupMembersTableModel = null;
     
     /**
      * Creates new form GroupDialog
      */
-    public GroupDialog(final UserManagementService userManagementService) {
+    public GroupDialog(final UserManagementService userManagementService, final String currentUser) {
         this.userManagementService = userManagementService;
+        this.currentUser = currentUser;
         initComponents();
         tblGroupMembers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
         
-        //TODO add the invoking user to the new group as a member and manager
+        addSelfAsManager();
     }
 
     public UserManagementService getUserManagementService() {
         return userManagementService;
     }
     
-    protected DefaultTableModel getGroupMembersTableModel() {
+    protected final DefaultTableModel getGroupMembersTableModel() {
         if(groupMembersTableModel == null) {
             groupMembersTableModel = new ReadOnlyDefaultTableModel(null, new String[] {
                 "Username", "Group Manager"
@@ -84,6 +82,13 @@ public class GroupDialog extends javax.swing.JFrame {
         }
         
         return groupMembersTableModel;
+    }
+    
+    protected void addSelfAsManager() {
+        getGroupMembersTableModel().addRow(new Object[]{
+            currentUser,
+            Boolean.TRUE
+        });
     }
 
     /**
@@ -298,43 +303,21 @@ public class GroupDialog extends javax.swing.JFrame {
             return;
         }
         
-        //TODO (2) needs a function getUserManagementService().addUserToGroup()
-        
-        //2 - add the users to the group
-        final Set<Account> managers = new HashSet<Account>();
+        //2 - add the users to the group and set managers
         for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
             final String member = (String)getGroupMembersTableModel().getValueAt(i, 0);
 
             try {
-                final Account account = getUserManagementService().getAccount(member);
-                account.addGroup(group);
-                getUserManagementService().updateAccount(account);
+                getUserManagementService().addAccountToGroup(member, group.getName());
                 
                 final boolean isManager = (Boolean)getGroupMembersTableModel().getValueAt(i, 1);
                 if(isManager) {
-                    managers.add(account);
+                    getUserManagementService().addGroupManager(member, group.getName());
                 }
             } catch(final XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not add user '" + member + "' to group '" + group.getName() + "': " + xmldbe.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
                 return;
-            } catch(final PermissionDeniedException pde) {
-                JOptionPane.showMessageDialog(this, "Could not add user '" + member + "' to group '" + group.getName() + "': " + pde.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
-                return;
             }
-        }
-        
-        //TODO (3) needs a function getUserManagementService().addGroupManager();
-        
-        //3 - add the group managers to the group
-        try {
-            for(final Account manager : managers) {
-                group.addManager(manager);
-            }
-            getUserManagementService().updateGroup(group);
-        } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not add managers to group '" + txtGroupName.getText() + "': " + xmldbe.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
-        } catch(final PermissionDeniedException pde) {
-            JOptionPane.showMessageDialog(this, "Could not add managers to group '" + txtGroupName.getText() + "': " + pde.getMessage(), "Create Group Error", JOptionPane.ERROR_MESSAGE);
         }
         
         setVisible(false);
@@ -420,6 +403,10 @@ public class GroupDialog extends javax.swing.JFrame {
           }
         }
         return false;
+    }
+    
+    protected String getCurrentUser() {
+        return currentUser;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
