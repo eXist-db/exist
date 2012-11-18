@@ -92,6 +92,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
 	            buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
 	        }
         } catch (Throwable e) {
+            e.printStackTrace();
             buf.append("<manager error=\"" + e.getMessage() + "\"/>");
 		}
         buf.append("</group>");
@@ -168,14 +169,16 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @Override
     public List<Account> getManagers() {
     	
-    	List<Account> list = new ArrayList<Account>(managers.size());
+    	final List<Account> list = new ArrayList<Account>();
     	
-    	for (Reference<SecurityManager, Account> ref : managers) {
-    		Account acc = ref.resolve();
-    		if (acc != null)
-    			list.add(acc);
-    	}
-        
+        if(managers != null) {
+            for(final Reference<SecurityManager, Account> ref : managers) {
+                final Account acc = ref.resolve();
+                if(acc != null) {
+                    list.add(acc);
+                }
+            }
+        }
     	return list;
     }
 

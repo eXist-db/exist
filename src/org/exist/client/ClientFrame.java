@@ -113,6 +113,7 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
+import org.exist.client.security.UserManagerDialog;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
@@ -184,8 +185,7 @@ public class ClientFrame extends JFrame
     /**
      * @throws java.awt.HeadlessException
      */
-    public ClientFrame(InteractiveClient client, XmldbURI path,
-            Properties properties) throws HeadlessException {
+    public ClientFrame(InteractiveClient client, XmldbURI path, Properties properties) throws HeadlessException {
         super(Messages.getString("ClientFrame.3")); //$NON-NLS-1$
         this.path = path;
         this.properties = properties;
@@ -334,9 +334,8 @@ public class ClientFrame extends JFrame
         fileman.setDropMode(DropMode.ON);
         DropTarget filemanDropTarget = new DropTarget(fileman, DnDConstants.ACTION_COPY, new FileListDropTargetListener());
         fileman.setDropTarget(filemanDropTarget);
-        
-        ResourceTableCellRenderer renderer = new ResourceTableCellRenderer();
-        fileman.setDefaultRenderer(Object.class, renderer);
+       
+        fileman.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer<ResourceTableModel>());
         JScrollPane scroll = new JScrollPane(fileman);
         scroll.setMinimumSize(new Dimension(300, 150));
         split.setLeftComponent(scroll);
@@ -1291,11 +1290,14 @@ public class ClientFrame extends JFrame
     
     private void editUsersAction(ActionEvent ev) {
         try {
-            Collection collection = client.getCollection();
-            UserManagementService service = (UserManagementService) collection
+            final Collection collection = client.getCollection();
+            final UserManagementService userManagementService = (UserManagementService) collection
                     .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-            UserDialog dialog = new UserDialog(service, Messages.getString("ClientFrame.184"), client); //$NON-NLS-1$
-            dialog.setVisible(true);
+            //UserDialog dialog = new UserDialog(service, Messages.getString("ClientFrame.184"), client); //$NON-NLS-1$
+            //dialog.setVisible(true);
+            final UserManagerDialog userManager = new UserManagerDialog(userManagementService, client.getProperties().getProperty("user"));
+            userManager.setVisible(true);
+            
         } catch (XMLDBException e) {
             showErrorMessage(Messages.getString("ClientFrame.185"), e); //$NON-NLS-1$
             e.printStackTrace();
@@ -1871,55 +1873,6 @@ public class ClientFrame extends JFrame
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             shellPopup.show((Component) e.getSource(), e.getX(), e.getY());
-        }
-    }
-    
-    static class ResourceTableCellRenderer implements TableCellRenderer {
-        
-        public final static Color collectionBackground = new Color(225, 235, 224);
-        public final static Color collectionForeground = Color.black;
-        public final static Color highBackground = new Color(115, 130, 189);
-        public final static Color highForeground = Color.white;
-        public final static Color altBackground = new Color(235, 235, 235);
-        
-        public static final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
-        
-        /*
-         * (non-Javadoc)
-         *
-         * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(javax.swing.JTable,
-         *           java.lang.Object, boolean, boolean, int, int)
-         */
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
-            if(value instanceof XmldbURI) {
-            	value = new PrettyXmldbURI((XmldbURI)value);
-            }
-            Component renderer = DEFAULT_RENDERER
-                    .getTableCellRendererComponent(table, value, isSelected,
-                    hasFocus, row, column);
-            ((JLabel) renderer).setOpaque(true);
-            Color foreground, background;
-            
-            ResourceTableModel resources = (ResourceTableModel) table.getModel();
-            if (isSelected) {
-                foreground = highForeground;
-                background = highBackground;
-            } else if (resources.getRow(row).isCollection()) {
-                foreground = collectionForeground;
-                background = collectionBackground;
-            } else if (row % 2 == 0) {
-                background = altBackground;
-                foreground = Color.black;
-            } else {
-                foreground = Color.black;
-                background = Color.white;
-            }
-
-            renderer.setForeground(foreground);
-            renderer.setBackground(background);
-            return renderer;
         }
     }
     

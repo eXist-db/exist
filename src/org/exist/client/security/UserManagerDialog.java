@@ -74,7 +74,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
                 for(int i = 0; i < accounts.length; i++) {
                     tableData[i][0] = accounts[i].getName();
                     tableData[i][1] = accounts[i].getMetadataValue(AXSchemaType.FULLNAME);
-                    tableData[i][1] = accounts[i].getMetadataValue(EXistSchemaType.DESCRIPTION);
+                    tableData[i][2] = accounts[i].getMetadataValue(EXistSchemaType.DESCRIPTION);
                 }
 
                 usersTableModel = new ReadOnlyDefaultTableModel(
@@ -177,7 +177,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
     }
     
     private void showGroupDialog() {
-        final GroupDialog groupDialog = new GroupDialog(userManagementService);
+        final GroupDialog groupDialog = new GroupDialog(userManagementService, currentUser);
         
         groupDialog.addWindowListener(new WindowAdapter(){           
             @Override
