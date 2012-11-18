@@ -27,6 +27,7 @@ import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Commandline;
 import org.exist.util.ConfigurationHelper;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +46,8 @@ public class LauncherWrapper {
     private final static String OS = System.getProperty("os.name").toLowerCase();
 
     public final static void main(String[] args) {
+        boolean spawn = SystemTray.isSupported();
+
         LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
         wrapper.launch();
     }
@@ -57,10 +60,13 @@ public class LauncherWrapper {
     }
 
     public void launch() {
+        launch(true);
+    }
+
+    public void launch(boolean spawn) {
         String home = System.getProperty("exist.home", ".");
         Project project = new Project();
         project.setBasedir(home);
-
         DefaultLogger logger = new DefaultLogger();
         logger.setOutputPrintStream(System.out);
         logger.setErrorPrintStream(System.err);
@@ -69,7 +75,7 @@ public class LauncherWrapper {
 
         Java java = new Java();
         java.setFork(true);
-        java.setSpawn(true);
+        java.setSpawn(spawn);
         //java.setClassname(org.exist.start.Main.class.getName());
         java.setProject(project);
         java.setJar(new File(home, "start.jar"));
