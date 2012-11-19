@@ -1475,7 +1475,7 @@ public class ClientFrame extends JFrame
                 selected.add(resources.getRow(rows[i]));
             }
             
-            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, collection, name, mimeType, created, modified, permAider, selected);
+            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty("user"), collection, name, mimeType, created, modified, permAider, selected);
             editPropertiesDialog.addDialogCompleteWithResponseCallback(callback);
             editPropertiesDialog.setVisible(true);
             

@@ -23,8 +23,11 @@ package org.exist.client.security;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.ResourceDescriptor;
@@ -32,6 +35,7 @@ import org.exist.security.ACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
+import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.xmldb.UserManagementService;
@@ -47,6 +51,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWithResponse<Void> {
     private final UserManagementService userManagementService;
+    private final String currentUser;
     private final Collection parent;
     private final XmldbURI uri;
     private final String internetMediaType;
@@ -63,8 +68,9 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
     /**
      * Creates new form PropertiesDialog
      */
-    public EditPropertiesDialog(final UserManagementService userManagementService, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, final Date lastModified, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
+    public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, final Date lastModified, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;
+        this.currentUser = currentUser;
         this.parent = parent;
         this.uri = uri;
         this.internetMediaType = internetMediaType;
@@ -91,8 +97,30 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         //final Point pntLblGroupValue = lblGroupValue.getLocation();
         //btnChangeGroup.setLocation(pntLblGroupValue.x + (lblGroupValue.getText().length() * 4), pntLblGroupValue.y);
         
-        if(!(permission instanceof ACLPermission)) {
-            tblAcl.setEnabled(false);
+        try {
+            final boolean canModify = canModifyPermissions();
+        
+            btnChangeOwner.setEnabled(isDba());
+            btnChangeGroup.setEnabled(isDba());
+            
+            tblBasePermissions.setEnabled(canModify);
+            
+            if(!(permission instanceof ACLPermission)) {
+                tblAcl.setEnabled(false);
+            } else {
+                tblAcl.setEnabled(canModify);
+            }
+            
+            miInsertAceBefore.setEnabled(canModify);
+            miInsertAceAfter.setEnabled(canModify);
+            btnAddAce.setEnabled(canModify);
+        
+            miMoveUp.setEnabled(false);
+            miMoveDown.setEnabled(false);
+        
+            miRemoveAce.setEnabled(false);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -369,6 +397,11 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
 
         tblAcl.setModel(getAclTableModel());
         tblAcl.setComponentPopupMenu(pmAcl);
+        tblAcl.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblAclMouseClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
@@ -678,6 +711,32 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
             JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
+
+    private boolean isDba() throws XMLDBException {
+        final Set<String> dbaMembers = new HashSet<String>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
+        return dbaMembers.contains(currentUser);
+    }
+    
+    private boolean canModifyPermissions() throws XMLDBException {
+        return isDba() || permission.getOwner().getName().equals(currentUser);
+    }
+    
+    private void tblAclMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblAclMouseClicked
+        final boolean aclSelected = tblAcl.getSelectedRow() > -1;
+        try {
+            final boolean canModify = canModifyPermissions();
+        
+            miInsertAceBefore.setEnabled(canModify);
+            miInsertAceAfter.setEnabled(canModify);
+        
+            miMoveUp.setEnabled(canModify && aclSelected);
+            miMoveDown.setEnabled(canModify && aclSelected);
+        
+            miRemoveAce.setEnabled(canModify && aclSelected);
+        } catch(final XMLDBException xmldbe) {
+            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_tblAclMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddAce;
