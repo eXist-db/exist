@@ -55,18 +55,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTriggersVisitor;
 import org.exist.collections.triggers.DocumentTriggersVisitor;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeHandle;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
@@ -3431,7 +3420,8 @@ public class NativeBroker extends DBBroker {
         if (listener != null) {
             switch (node.getNodeType()) {
                 case Node.TEXT_NODE :
-                    listener.characters(transaction, (TextImpl) node, currentPath);
+                case Node.CDATA_SECTION_NODE :
+                    listener.characters(transaction, (CharacterDataImpl) node, currentPath);
                     break;
                 case Node.ELEMENT_NODE :
                     listener.startElement(transaction, (ElementImpl) node, currentPath);
