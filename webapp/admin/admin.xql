@@ -16,10 +16,7 @@ import module namespace status = "http://exist-db.org/xquery/admin-interface/sta
 import module namespace browse = "http://exist-db.org/xquery/admin-interface/browse" at "browse.xqm";
 import module namespace users = "http://exist-db.org/xquery/admin-interface/users" at "users.xqm";
 import module namespace xqueries = "http://exist-db.org/xquery/admin-interface/xqueries" at "xqueries.xqm";
-import module namespace shut = "http://exist-db.org/xquery/admin-interface/shutdown" at "shutdown.xqm";
-import module namespace setup = "http://exist-db.org/xquery/admin-interface/setup" at "setup.xqm";
 import module namespace rev="http://exist-db.org/xquery/admin-interface/revisions" at "versions.xqm";
-import module namespace backup="http://exist-db.org/xquery/admin-interface/backup" at "backup.xqm";
 import module namespace prof="http://exist-db.org/xquery/profiling" at "trace.xqm";
 import module namespace grammar="http://exist-db.org/xquery/admin-interface/grammar" at "grammar.xqm";
 import module namespace install="http://exist-db.org/xquery/install-tools" at "install.xqm";
@@ -59,27 +56,17 @@ declare function admin:menu-panel() as element()
                       <li><a href="{$link}?panel=browse">Collections</a></li>
                       <li><a href="{$link}?panel=indexes">Indexes</a></li>
                   </ul>
-              </li>
-              <li>Install
-                  <ul>
-                      <li><a href="{$link}?panel=setup">betterFORM Examples</a></li>
-                      <!--li><a href="{$link}?panel=install">Tools</a></li-->
-                  </ul>
-              </li>
-             
+              </li>             
               <li>System
                  <ul>
-                      <li><a href="{$link}?panel=shutdown">Shutdown</a></li>
-                      <li><a href="{$link}?panel=status">Status</a></li>																		
+                      <li><a href="{$link}?panel=status">Status</a></li>
                  </ul>
               </li>
               
               <li>Tooling
                   <ul>
-                      <li><a href="{$link}?panel=backup">Backups</a></li>
                       <li><a href="{$link}?panel=repo">Package Repository</a></li>
                       <li><a href="{$link}?panel=trace">Query Profiling</a></li>
-                      <!--li><a href="{$link}?panel=users">User Management</a></li-->
                   </ul>
               </li>
               
@@ -106,14 +93,10 @@ declare function admin:panel() as element()
     let $panel := request:get-parameter("panel", "status")[1] return
         switch ($panel)
             case "browse"    return  browse:main()
-            (:case "users"     return  users:main():)
             case "xqueries"  return  xqueries:main()
-            case "shutdown"  return  shut:main()
-            case "setup"     return  setup:main()
-    		case "repo"      return  repomanager:main()
-    		case "revisions" return  rev:main()
-    		case "backup"    return  backup:main()
-    	    case "trace"     return  prof:main()
+            case "repo"      return  repomanager:main()
+            case "revisions" return  rev:main()
+            case "trace"     return  prof:main()
             case "grammar"   return  grammar:main()    
             case "install"   return  install:main()
             case "indexes"   return  indexes:main()
@@ -199,7 +182,7 @@ let $isLoggedIn :=  if(xdb:get-current-user() eq "guest") then
         (: if we are already logged in, are we logging out - i.e. set permissions back to guest :)
         if(request:get-parameter("logout",()))then
         (
-        	let $null  := xdb:login("/db", "guest", "guest") 
+            let $null  := xdb:login("/db", "guest", "guest") 
             let $inval := session:invalidate()
             
             return false()
@@ -216,13 +199,13 @@ return (
         <head>
             <title>eXist Database Administration</title>
             <link type="text/css" href="admin.css" rel="stylesheet"/>
-			<link type="text/css" href="styles/prettify.css" rel="stylesheet"/>
+            <link type="text/css" href="styles/prettify.css" rel="stylesheet"/>
             <link rel="shortcut icon" href="../resources/exist_icon_16x16.ico"/>
-			<link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
-			<script type="text/javascript" src="scripts/prettify.js"/>
-			<script type="text/javascript" src="$shared/resources/scripts/jquery/jquery-1.7.1.min.js"></script>
-			<script type="text/javascript" src="scripts/admin.js"></script>
-			{ admin:panel-header() }
+            <link rel="icon" href="../resources/exist_icon_16x16.png" type="image/png"/>
+            <script type="text/javascript" src="scripts/prettify.js"/>
+            <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery-1.7.1.min.js"></script>
+            <script type="text/javascript" src="scripts/admin.js"></script>
+            { admin:panel-header() }
         </head>
         <body class="yui-skin-sam">
             <div class="header">
