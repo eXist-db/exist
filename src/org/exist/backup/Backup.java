@@ -251,7 +251,9 @@ public class Backup
 
         // get resources and permissions
         String[] resources = current.listResources();
-        Arrays.sort( resources );
+
+        // do not sort: order is important because permissions need to be read in the same order below
+        // Arrays.sort( resources );
 
         UserManagementService   mgtService   = (UserManagementService)current.getService( "UserManagementService", "1.0" );
         Permission[]            perms        = mgtService.listResourcePermissions();
