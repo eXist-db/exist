@@ -22,12 +22,7 @@
 package org.exist.indexing;
 
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
@@ -313,7 +308,8 @@ public class IndexController {
                 listener.startElement(transaction, (ElementImpl) node, path);
                 break;
             case Node.TEXT_NODE :
-                listener.characters(transaction, (TextImpl) node, path);
+            case Node.CDATA_SECTION_NODE :
+                listener.characters(transaction, (CharacterDataImpl) node, path);
                 break;
             case Node.ATTRIBUTE_NODE :
                 listener.attribute(transaction, (AttrImpl) node, path);
