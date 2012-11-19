@@ -50,6 +50,7 @@ public class JnlpJarFiles {
         "xmlrpc-client-%latest%",
         "ws-commons-util-%latest%",
         "commons-pool-%latest%",
+        "commons-io-%latest%",
         "excalibur-cli-%latest%",
         "jEdit-syntax",
         "jline-%latest%",
