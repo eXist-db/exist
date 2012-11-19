@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<data xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:bf="http://betterform.sourceforge.net/xforms">
-    <project id="1">relaxation</project>
-    <project id="2">killTheCat</project>
-    <project id="3">getFatAndHappy</project>
-    <project id="4">beNaughty</project>
-    <project id="5">saveTheWorld</project>
-</data>

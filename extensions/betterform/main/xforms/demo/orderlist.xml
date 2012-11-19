@@ -1,6 +1,0 @@
-<order>
-    <item amount="1" price="0.50" taxValue="0" sum="0">eraser</item>
-    <item amount="1" price="2.50" taxValue="0" sum="">ballpoint_pen</item>
-    <item amount="1" price="50.00" taxValue="0" sum="0">fountain_pen</item>
-    <item amount="1" price="0" taxValue="0" sum="0"/>
-</order>
