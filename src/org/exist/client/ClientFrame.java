@@ -1294,7 +1294,7 @@ public class ClientFrame extends JFrame
                     .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
             //UserDialog dialog = new UserDialog(service, Messages.getString("ClientFrame.184"), client); //$NON-NLS-1$
             //dialog.setVisible(true);
-            final UserManagerDialog userManager = new UserManagerDialog(userManagementService, client.getProperties().getProperty("user"));
+            final UserManagerDialog userManager = new UserManagerDialog(userManagementService, client.getProperties().getProperty(InteractiveClient.USER));
             userManager.setVisible(true);
             
         } catch (XMLDBException e) {
@@ -1475,7 +1475,7 @@ public class ClientFrame extends JFrame
                 selected.add(resources.getRow(rows[i]));
             }
             
-            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty("user"), collection, name, mimeType, created, modified, permAider, selected);
+            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, permAider, selected);
             editPropertiesDialog.addDialogCompleteWithResponseCallback(callback);
             editPropertiesDialog.setVisible(true);
             
