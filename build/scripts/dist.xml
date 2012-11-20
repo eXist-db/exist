@@ -131,9 +131,6 @@
 			<zipfileset dir="extensions/betterform/main/xrx/"  prefix="betterform/samples/xrx">
 			    <include name="**/*"/>
 			</zipfileset>
-            <zipfileset dir="extensions/betterform/main/xforms/"  prefix="betterform/samples/xforms">
-                <include name="**/*"/>
-            </zipfileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>
