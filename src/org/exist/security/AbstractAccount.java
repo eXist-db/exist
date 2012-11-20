@@ -39,9 +39,6 @@ import org.exist.xmldb.XmldbURI;
 
 @ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
-
-	@ConfigurationFieldAsElement("home")
-	protected XmldbURI home = null;
 	
 	@ConfigurationFieldAsElement("group")
 	@ConfigurationReferenceBy("name")
@@ -225,12 +222,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		buf.append("id=\"");
 		buf.append(Integer.toString(id));
 		buf.append("\"");
-		if (home != null) {
-			buf.append(" home=\"");
-			buf.append(home);
-			buf.append("\">");
-		} else
-			buf.append(">");
+                buf.append(">");
 		if (groups != null) {
 			for (Group group : groups) {
                             buf.append(group.toString());
@@ -238,11 +230,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		}
 		buf.append("</user>");
 		return buf.toString();
-	}
-
-    @Override
-	public XmldbURI getHome() {
-		return home;
 	}
 
     @Override
@@ -271,11 +258,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 			return groups.get(0);
 
 		return null;
-	}
-
-    @Override
-	public void setHome(XmldbURI homeCollection) {
-		home = homeCollection;
 	}
 
     @Override

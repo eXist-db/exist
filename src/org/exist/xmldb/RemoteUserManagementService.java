@@ -49,9 +49,6 @@ public class RemoteUserManagementService implements UserManagementService {
             params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
             final String[] gl = user.getGroups();
             params.add(gl);
-            if(user.getHome() != null) {
-                params.add(user.getHome().toString());
-            }
             params.add(user.isEnabled());
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : user.getMetadataKeys()) {
@@ -663,8 +660,6 @@ public class RemoteUserManagementService implements UserManagementService {
                 u.addGroup((String) groups[i]);
             }
             
-            String home = (String) tab.get("home");
-            u.setHome(home==null?null:XmldbURI.create(home));
             return u;
                         
         } catch (XmlRpcException e) {
@@ -699,9 +694,6 @@ public class RemoteUserManagementService implements UserManagementService {
                 for (int j = 0; j < groups.length; j++) {
                     u[i].addGroup((String) groups[j]);
                 }
-                
-                String home = (String) tab.get("home");
-                u[i].setHome(home==null?null:XmldbURI.create(home));
                 
                 u[i].setEnabled(Boolean.valueOf((String)tab.get("enabled")));
                 
@@ -816,9 +808,6 @@ public class RemoteUserManagementService implements UserManagementService {
                 params.add(user.getDigestPassword() == null ? "" : user.getDigestPassword());
                 final String[] gl = user.getGroups();
                 params.add(gl);
-                if(user.getHome() != null) {
-                    params.add(user.getHome().toString());
-                }
                 params.add(user.isEnabled());
                 final Map<String, String> metadata = new HashMap<String, String>();
                 for(final SchemaType key : user.getMetadataKeys()) {
@@ -930,14 +919,9 @@ public class RemoteUserManagementService implements UserManagementService {
             }
         }
 	
-	/**
-	 *  Update the specified user removing a group from user's group
-	 *  method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-	 * 
-	 * modified by Chris Tomlinson to remove handling of home which
-	 * breaks the call on updateAccount in RpcConnection since there is
-	 * no parameter to receive it
-	 */
+    /**
+     *  Remove an account from a group
+     */
     @Override
     public void removeGroupMember(final String group, final String account) throws XMLDBException {
         try {

@@ -1863,9 +1863,7 @@ public class RpcConnection implements RpcAPI {
 	        tab.put("default-group-id", dg.getId());
 	        tab.put("default-group-realmId", dg.getRealmId());
 	        tab.put("default-group-name", dg.getName());
-	
-	        if (u.getHome() != null)
-	            tab.put("home", u.getHome().toString());
+                
 	        return tab;
         
         } finally {
@@ -1897,10 +1895,6 @@ public class RpcConnection implements RpcAPI {
                 groups.addElement(gl[j]);
             }
             tab.put("groups", groups);
-            
-            if(user.getHome() != null) {
-                tab.put("home", user.getHome().toString());
-            }
             
             tab.put("enabled", Boolean.toString(user.isEnabled()));
             
@@ -3762,13 +3756,12 @@ public class RpcConnection implements RpcAPI {
      * @param passwd a <code>String</code> value
      * @param passwdDigest a <code>String</code> value
      * @param groups a <code>Vector</code> value
-     * @param home a <code>String</code> value
      * @return a <code>boolean</code> value
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public boolean addAccount(String name, String passwd, String passwdDigest, Vector<String> groups, String home, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+    public boolean addAccount(String name, String passwd, String passwdDigest, Vector<String> groups, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         
     	if (passwd.length() == 0) {
             passwd = null;
@@ -3792,14 +3785,6 @@ public class RpcConnection implements RpcAPI {
             if (!u.hasGroup(g)) {
                 u.addGroup(g);
             }
-        }
-        
-        if (home != null) {
-        	try {
-                u.setHome(XmldbURI.xmldbUriFor(home));
-        	} catch(URISyntaxException e) {
-        		throw new EXistException("Invalid home URI",e);
-        	}
         }
         
         u.setEnabled(enabled);
@@ -3831,11 +3816,11 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean updateAccount(final String name, final String passwd, final String passwdDigest, final Vector<String> groups) throws EXistException, PermissionDeniedException {
-    	return updateAccount(name, passwd, passwdDigest, groups, null, null, null);
+    	return updateAccount(name, passwd, passwdDigest, groups, null, null);
     }
 
     @Override
-    public boolean updateAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final String home, final Boolean enabled, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+    public boolean updateAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final Boolean enabled, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         if(passwd.length() == 0) {
             passwd = null;
         }
@@ -3846,14 +3831,6 @@ public class RpcConnection implements RpcAPI {
 
         for(String g : groups) {
             account.addGroup(g);
-        }
-        
-        if(home != null) {
-            try {
-                account.setHome(XmldbURI.xmldbUriFor(home));
-            } catch(URISyntaxException e) {
-                throw new EXistException("Invalid home URI",e);
-            }
         }
         
         if(enabled != null) {
@@ -5238,11 +5215,6 @@ public class RpcConnection implements RpcAPI {
     @Override
     public int xupdateResource(String resource, byte[] xupdate) throws PermissionDeniedException, EXistException, SAXException {
         return xupdateResource(resource, xupdate, DEFAULT_ENCODING);
-    }
-    
-    @Override
-    public boolean addAccount(String name, String passwd, String digestPassword, Vector<String> groups, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
-        return addAccount(name, passwd, digestPassword,groups, null, enabled, metadata);
     }
 
     @Override

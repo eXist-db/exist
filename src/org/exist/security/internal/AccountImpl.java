@@ -192,7 +192,6 @@ public class AccountImpl extends AbstractAccount {
     }
     
     private void instantiate(Account from_user) throws PermissionDeniedException {
-        home = from_user.getHome();
 
         //copy metadata
         for(final SchemaType metadataKey : from_user.getMetadataKeys()) {
@@ -229,8 +228,6 @@ public class AccountImpl extends AbstractAccount {
 
     public AccountImpl(AbstractRealm realm, AccountImpl from_user) throws ConfigurationException {
         super(realm, from_user.id, from_user.name);
-
-        home = from_user.home;
 
         //copy metadata
         for(SchemaType metadataKey : from_user.getMetadataKeys()) {

@@ -47,30 +47,48 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBCreateUser extends BasicFunction {
 
-	protected static final Logger logger = Logger
-			.getLogger(XMLDBCreateUser.class);
+    protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("create-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Create a new user, $user-id, in the database. "
-					+ XMLDBModule.NEED_PRIV_USER
-					+ " $user-id is the username, $password is the password, "
-					+ "$groups is the sequence of group memberships. "
-					+ "The first group in the sequence is the primary group."
-					+ "$home-collection-uri is the home collection URI."
-					+ XMLDBModule.COLLECTION_URI, 
-			new SequenceType[] {
-				new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
-				new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
-				new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
-				new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI") 
-			}, 
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("create-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Create a new user, $user-id, in the database. "
+            + XMLDBModule.NEED_PRIV_USER
+            + " $user-id is the username, $password is the password, "
+            + "$groups is the sequence of group memberships. "
+            + "The first group in the sequence is the primary group."
+            + "$home-collection-uri is the home collection URI."
+            + XMLDBModule.COLLECTION_URI, 
+            new SequenceType[] {
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
+                new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships"),
+                new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI") 
+            }, 
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            "$home-collection-uri has no effect since 2.0. User the simplified version."
+        ),
+        new FunctionSignature(
+            new QName("create-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Create a new user, $user-id, in the database. "
+            + XMLDBModule.NEED_PRIV_USER
+            + " $user-id is the username, $password is the password, "
+            + "$groups is the sequence of group memberships. "
+            + "The first group in the sequence is the primary group."
+            + XMLDBModule.COLLECTION_URI, 
+            new SequenceType[] {
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
+                new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships")
+            }, 
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+        )
+    };
 
 	/**
 	 * @param context
 	 */
-	public XMLDBCreateUser(XQueryContext context) {
+	public XMLDBCreateUser(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -105,20 +123,10 @@ public class XMLDBCreateUser extends BasicFunction {
 		// an additional argument
 		Sequence groups = args[2];
 		int len = groups.getItemCount();
-		for (int x = 0; x < len; x++)
-			userObj.addGroup(groups.itemAt(x).getStringValue());
-
-		if (!"".equals(args[3].getStringValue())) {
-			try {
-				userObj.setHome(
-					new AnyURIValue(args[3].getStringValue()).toXmldbURI()
-				);
-			} catch (XPathException e) {
-				logger.error("Invalid home collection-uri for user " + user);
-
-				throw new XPathException(this, "Invalid home collection URI", e);
-			}
-		}
+		for (int x = 0; x < len; x++) {
+                    userObj.addGroup(groups.itemAt(x).getStringValue());
+                }
+		
 		Collection collection = null;
 		try {
 			collection = new LocalCollection(

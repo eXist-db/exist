@@ -824,12 +824,8 @@ public class InteractiveClient {
                         System.out.println("\nentered passwords differ. Try again...");
                         
                     }
-                    String home = console.readLine("home collection [none]: ");
                     UserAider user = new UserAider(args[1]);
                     user.setPassword(p1);
-                    if (home != null && home.length() > 0) {
-                        user.setHome(URIUtils.encodeXmldbUriFor(home));
-                    }
                     String groups = console.readLine("enter groups: ");
                     StringTokenizer tok = new StringTokenizer(groups, " ,");
                     String group;

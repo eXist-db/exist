@@ -823,15 +823,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		            throw new RemoteException("you are not allowed to change this user");
 		        }
 		        ((AccountImpl)u).setPassword(password);
-		    }
-		    
-		    if(home != null) {
-		        try {
-		            u.setHome(XmldbURI.xmldbUriFor(home));
-		        } catch(URISyntaxException e) {
-		            throw new RemoteException("Invalid collection URI",e);
-		        }
-		    }
+                    }
         
             for(String groupName : groups.getElements()) {
                 if (!u.hasGroup(groupName)) {
@@ -878,9 +870,6 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	        desc.setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
 	 */
 	        desc.setGroups(new Strings(u.getGroups()));
-	        if (u.getHome() != null) {
-	            desc.setHome(u.getHome().toString());
-	        }
 	        return desc;
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
@@ -925,8 +914,6 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             r[i].setGroups(new Strings((String[])groups.toArray(new String[groups.size()])));
  */
             r[i].setGroups(new Strings(user.getGroups()));
-            if (user.getHome() != null)
-                r[i].setHome(user.getHome().toString());
             
             i++;
         }

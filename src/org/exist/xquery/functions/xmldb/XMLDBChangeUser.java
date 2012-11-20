@@ -50,32 +50,53 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBChangeUser extends BasicFunction {
     private static final Logger logger = Logger.getLogger(XMLDBChangeUser.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
-			    new QName("change-user", XMLDBModule.NAMESPACE_URI,
-					      XMLDBModule.PREFIX),
-			    "Change properties of an existing database user. " +
-                XMLDBModule.NEED_PRIV_USER +
-                " $user-id is the username, $password is the password, " +
-			    "$groups is the sequence of group memberships, " +
-                "$home-collection is the home collection. The username, " +
-                "$user-id, is mandatory. " +
-                "Non-empty values for the other parameters are optional, " +
-                "where if empty the existing value is used.",
-                new SequenceType[]{
-                    new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
-                    new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
-                    new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The groups the user is member of"),
-                    new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The user's home collection")
-                },
-                new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signatures[] = {
+        new FunctionSignature(
+            new QName("change-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Change properties of an existing database user. " +
+            XMLDBModule.NEED_PRIV_USER +
+            " $user-id is the username, $password is the password, " +
+            "$groups is the sequence of group memberships, " +
+            "$home-collection is the home collection. The username, " +
+            "$user-id, is mandatory. " +
+            "Non-empty values for the other parameters are optional, " +
+            "where if empty the existing value is used.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
+                new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The groups the user is member of"),
+                new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The user's home collection")
+            },
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            "$home-collection has no effect since 2.0. User the simplified version."
+        ),
+        new FunctionSignature(
+            new QName("change-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Change properties of an existing database user. " +
+            XMLDBModule.NEED_PRIV_USER +
+            " $user-id is the username, $password is the password, " +
+            "$groups is the sequence of group memberships, " +
+            "The username, " +
+            "$user-id, is mandatory. " +
+            "Non-empty values for the other parameters are optional, " +
+            "where if empty the existing value is used.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+                new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
+                new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The groups the user is member of")
+            },
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+        )
+    };
 	
-    public XMLDBChangeUser(XQueryContext context) {
+    public XMLDBChangeUser(XQueryContext context, FunctionSignature signature) {
 	super(context, signature);
     }
 	
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
 	throws XPathException {
 
@@ -88,8 +109,8 @@ public class XMLDBChangeUser extends BasicFunction {
 	    
 	    Account oldUser = ums.getAccount(userName);
 	    if (oldUser == null) {
-            logger.error("User " + userName + " not found");
-            throw new XPathException(this, "User " + userName + " not found");
+                logger.error("User " + userName + " not found");
+                throw new XPathException(this, "User " + userName + " not found");
 	    }
 
 	    UserAider user = new UserAider(oldUser.getName());
@@ -102,30 +123,22 @@ public class XMLDBChangeUser extends BasicFunction {
             user.setPasswordDigest(oldUser.getDigestPassword());
 	    }
 	    if (!args[2].isEmpty()) {
-            // set groups
-            for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
-                user.addGroup(i.nextItem().getStringValue());
+                // set groups
+                for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
+                    user.addGroup(i.nextItem().getStringValue());
+                }
+	    } else {
+                user.setGroups(oldUser.getGroups());
             }
-	    } else
-            user.setGroups(oldUser.getGroups());
-	    if (!args[3].isEmpty()) {
-		// set home collection
-		try {
-		    user.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
-		} catch (URISyntaxException e) {
-		    logger.error("Invalid home collection URI " + args[3].getStringValue(), e);
-            throw new XPathException(this,"Invalid home collection URI",e);
-		}
-	    } else
-            user.setHome(oldUser.getHome());
 
 	    ums.updateAccount(user);
 	} catch (XMLDBException xe) {
 	    logger.error("Failed to update user " + userName, xe);
 	    throw new XPathException(this, "Failed to update user " + userName, xe);
         } finally {
-            if (null != collection)
+            if (null != collection) {
                 try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+            }
 	}
 	
         return Sequence.EMPTY_SEQUENCE;
