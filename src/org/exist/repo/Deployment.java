@@ -1,9 +1,32 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-12 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.repo;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -15,6 +38,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.BinaryDocument;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.memtree.*;
 import org.exist.security.Permission;
@@ -37,11 +61,15 @@ import org.exist.xquery.*;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.expath.pkg.repo.FileSystemStorage;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Packages;
+import org.expath.pkg.repo.UserInteractionStrategy;
+import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -57,6 +85,7 @@ public class Deployment {
     private final static Logger LOG = Logger.getLogger(Deployment.class);
 
     private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
+    private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";
 
     private final static QName SETUP_ELEMENT = new QName("setup", REPO_NAMESPACE);
     private static final QName PRE_SETUP_ELEMENT = new QName("prepare", REPO_NAMESPACE);
@@ -65,6 +94,7 @@ public class Deployment {
     private static final QName PERMISSIONS_ELEMENT = new QName("permissions", REPO_NAMESPACE);
     private static final QName CLEANUP_ELEMENT = new QName("cleanup", REPO_NAMESPACE);
     private static final QName DEPLOYED_ELEMENT = new QName("deployed", REPO_NAMESPACE);
+    private static final QName DEPENDENCY_ELEMENT = new QName("dependency", PKG_NAMESPACE);
 
     private DBBroker broker;
 
@@ -103,6 +133,53 @@ public class Deployment {
         } catch (FileNotFoundException e) {
             throw new PackageException("Failed to read repo.xml: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Install and deploy a give xar archive. Dependencies are installed from
+     * the PackageLoader.
+     *
+     */
+    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+        DocumentImpl document = getDescriptor(xar);
+        ElementImpl root = (ElementImpl) document.getDocumentElement();
+        String name = root.getAttribute("name");
+
+        InMemoryNodeSet deps;
+        try {
+            deps = findElements(root, DEPENDENCY_ELEMENT);
+            for (SequenceIterator i = deps.iterate(); i.hasNext(); ) {
+                Element dependency = (Element) i.nextItem();
+                String pkgName = dependency.getAttribute("package");
+                if (pkgName != null) {
+                    LOG.info("Package " + name + " depends on " + pkgName);
+                    File depFile = loader.load(pkgName);
+                    if (depFile != null)
+                        installAndDeploy(depFile, loader);
+                    else
+                        LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
+                            "is not fatal, but the package may not work as expected");
+                }
+            }
+        } catch (XPathException e) {
+            throw new PackageException("Invalid descriptor found in " + xar.getAbsolutePath());
+        }
+
+        ExistRepository repo = broker.getBrokerPool().getExpathRepo();
+        Packages packages = repo.getParentRepo().getPackages(name);
+        if (packages != null) {
+            LOG.info("Application package " + name + " already installed. Skipping.");
+        } else {
+            // installing the xar into the expath repo
+            LOG.info("Installing package " + xar.getAbsolutePath());
+            UserInteractionStrategy interact = new BatchUserInteraction();
+            org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
+            String pkgName = pkg.getName();
+            broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
+            LOG.info("Deploying package " + pkgName);
+            return deploy(pkgName, repo, null);
+        }
+        return null;
     }
 
     public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
@@ -476,6 +553,12 @@ public class Deployment {
         if (setupNodes.getItemCount() == 0)
             return null;
         return (ElementImpl) setupNodes.itemAt(0);
+    }
+
+    private InMemoryNodeSet findElements(NodeImpl root, QName qname) throws XPathException {
+        InMemoryNodeSet setupNodes = new InMemoryNodeSet();
+        root.selectDescendants(false, new NameTest(Type.ELEMENT, qname), setupNodes);
+        return setupNodes;
     }
 
     public String getNameFromDescriptor(File xar) throws IOException, PackageException {
