@@ -327,6 +327,13 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 		} catch (IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"IO exception while reading file " + file.getAbsolutePath(), e);
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+						"IO exception while closing stream of file " + file.getAbsolutePath(), e);
+			}
 		}
 	}
 
