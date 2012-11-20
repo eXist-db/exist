@@ -618,24 +618,7 @@ public class ClientFrame extends JFrame
             public void actionPerformed(ActionEvent e) {
                 // load properties modified by the login panel
                 Properties loginData=getLoginData(properties);
-                if (loginData == null) return;
-                Properties oldProps=properties;
-                properties.putAll(loginData);
-                statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                try {
-                    client.shutdown(false);
-                    client.connect();
-                    client.reloadCollection();
-                } catch (Exception u) {
-                    showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty("uri") + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    properties=oldProps;
-                    try { 
-                        client.connect();
-                    }
-                    catch (Exception uu) {
-                        showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty("uri") , u); //$NON-NLS-1$ //$NON-NLS-2$
-                    }
-                }
+                reconnectClient(loginData);
             }
         });
         connectMenu.add(item);
@@ -691,6 +674,30 @@ public class ClientFrame extends JFrame
         HelpMenu.add(item);
         
         return menubar;
+    }
+    
+    public void reconnectClient(final Properties loginData) {
+        if(loginData == null) {
+            return;
+        }
+        
+        final Properties oldProps=properties;
+        properties.putAll(loginData);
+        statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                
+        try {
+            client.shutdown(false);
+            client.connect();
+            client.reloadCollection();
+        } catch (Exception u) {
+            showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty("uri") + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            properties=oldProps;
+            try { 
+                client.connect();
+            } catch(final Exception uu) {
+                showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty("uri") , uu); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
     }
     
     public void setPath(XmldbURI currentPath) {
@@ -1287,14 +1294,16 @@ public class ClientFrame extends JFrame
         executor.submit(callable);
     }
     
+    public UserManagementService getUserManagementService() throws XMLDBException {
+        final Collection collection = client.getCollection();
+        return (UserManagementService) collection.getService("UserManagementService", "1.0");
+    }
+    
     private void editUsersAction(ActionEvent ev) {
         try {
-            final Collection collection = client.getCollection();
-            final UserManagementService userManagementService = (UserManagementService) collection
-                    .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-            //UserDialog dialog = new UserDialog(service, Messages.getString("ClientFrame.184"), client); //$NON-NLS-1$
-            //dialog.setVisible(true);
-            final UserManagerDialog userManager = new UserManagerDialog(userManagementService, client.getProperties().getProperty(InteractiveClient.USER));
+            final UserManagementService userManagementService = getUserManagementService();
+            
+            final UserManagerDialog userManager = new UserManagerDialog(userManagementService, client.getProperties().getProperty(InteractiveClient.USER), this);
             userManager.setVisible(true);
             
         } catch (XMLDBException e) {
@@ -1412,8 +1421,7 @@ public class ClientFrame extends JFrame
             return;
         try {
             Collection collection = client.getCollection();
-            UserManagementService service = (UserManagementService) collection
-                    .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+            UserManagementService service = getUserManagementService();
             PermissionAider permAider = null;
             XmldbURI name;
             Date created = new Date();
