@@ -21,8 +21,10 @@
  */
 package org.exist.client.security;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
 import org.exist.security.AXSchemaType;
@@ -36,13 +38,14 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class EditUserDialog extends UserDialog {
+public class EditUserDialog extends UserDialog implements DialogWithResponse<String> {
     
     private static final long serialVersionUID = 9097018734007436201L;
 
     private final static String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
+    private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
     
     public EditUserDialog(final UserManagementService userManagementService, final Account account) {
         super(userManagementService);
@@ -81,6 +84,15 @@ public class EditUserDialog extends UserDialog {
     protected void createUser() {
         //dont create a user, update instead!
         updateUser();
+        
+        //return updated password
+        for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
+            
+            //only fire if password changed
+            if(isPasswordChanged()) {
+                callback.complete(txtPassword.getText());
+            }
+        }
     }
     
     private void updateUser() {
@@ -94,12 +106,17 @@ public class EditUserDialog extends UserDialog {
         }
     }
     
+    private boolean isPasswordChanged() {
+        final String password = new String(txtPassword.getPassword());
+        return !password.equals(HIDDEN_PASSWORD_CONST);
+    }
+    
     private void setAccountFromFormProperties() throws PermissionDeniedException {
         getAccount().setMetadataValue(AXSchemaType.FULLNAME, txtFullName.getText());
         getAccount().setMetadataValue(EXistSchemaType.DESCRIPTION, txtDescription.getText());
         
-        final String password = new String(txtPassword.getPassword());
-        if(!password.equals(HIDDEN_PASSWORD_CONST)) {
+        if(isPasswordChanged()) {
+            final String password = new String(txtPassword.getPassword());
             getAccount().setPassword(password);
         }
         
@@ -134,5 +151,14 @@ public class EditUserDialog extends UserDialog {
     
     protected Account getAccount() {
         return account;
+    }
+
+    private List<DialogCompleteWithResponse<String>> getDialogCompleteWithResponseCallbacks() {
+        return dialogCompleteWithResponseCallbacks;
+    }
+    
+    @Override
+    public void addDialogCompleteWithResponseCallback(final DialogCompleteWithResponse<String> dialogCompleteWithResponseCallback) {
+        getDialogCompleteWithResponseCallbacks().add(dialogCompleteWithResponseCallback);
     }
 }

@@ -24,10 +24,13 @@ package org.exist.client.security;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
+import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.exist.client.ClientFrame;
 import org.exist.client.HighlightedTableCellRenderer;
+import org.exist.client.InteractiveClient;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.AccountComparator;
@@ -45,8 +48,9 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 2091215304766070041L;
 
-    private final UserManagementService userManagementService;
+    private UserManagementService userManagementService;
     private final String currentUser;
+    private final ClientFrame client;
     
     private DefaultTableModel usersTableModel = null;
     private DefaultTableModel groupsTableModel = null;
@@ -54,9 +58,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
     /**
      * Creates new form UserManagerDialog
      */
-    public UserManagerDialog(final UserManagementService userManagementService, final String currentUser) {
+    public UserManagerDialog(final UserManagementService userManagementService, final String currentUser, final ClientFrame client) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;
+        this.client = client;
         initComponents();
         tblUsers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
         tblGroups.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
@@ -392,7 +397,32 @@ public class UserManagerDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miEditUserActionPerformed
 
     private void showEditUserDialog(final Account account) {
+        
+        final UserManagerDialog that = this;
+        
+        final DialogCompleteWithResponse<String> callback = new DialogCompleteWithResponse<String>(){
+            @Override
+            public void complete(final String response) {
+                //get client to reconnect with edited users new password
+                final Properties loginData = new Properties();
+                loginData.setProperty(InteractiveClient.PASSWORD, response);
+                client.reconnectClient(loginData);
+                
+                //get reconnected userManagementService
+                try {
+                    that.userManagementService = client.getUserManagementService();
+                } catch(final XMLDBException xmldbe) {
+                    JOptionPane.showMessageDialog(that, "Could not edit user '" + getSelectedUsername() + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        
         final EditUserDialog userDialog = new EditUserDialog(userManagementService, account);
+        if(getSelectedUsername().equals(currentUser)) {
+            //register for password update event, if we are changing the password
+            //of the current user
+            userDialog.addDialogCompleteWithResponseCallback(callback);
+        }
         
         userDialog.addWindowListener(new WindowAdapter(){           
             @Override
