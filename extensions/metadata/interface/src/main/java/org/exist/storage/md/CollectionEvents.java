@@ -22,7 +22,6 @@
 package org.exist.storage.md;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
@@ -42,9 +41,7 @@ import org.exist.xmldb.XmldbURI;
 public class CollectionEvents implements CollectionTrigger {
 
 	@Override
-	public void configure(DBBroker broker, Collection parent,
-			Map<String, List<? extends Object>> parameters)
-			throws TriggerException {
+	public void configure(DBBroker broker, Collection parent, Map parameters) throws TriggerException {
 	}
 
 	@Override
@@ -60,6 +57,7 @@ public class CollectionEvents implements CollectionTrigger {
 
 	@Override
 	public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+		System.out.println("beforeCreateCollection "+uri);
 	}
 
 	@Override
@@ -100,12 +98,12 @@ public class CollectionEvents implements CollectionTrigger {
 		} catch (PermissionDeniedException e) {
 			throw new TriggerException(e);
 		}
-		MDStorageManager._.md.moveMetas(collection.getURI(), newUri);
 	}
 
 	@Override
 	public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 		System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
+		MDStorageManager._.md.moveMetas(oldUri, collection.getURI());
 	}
 	
 	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
