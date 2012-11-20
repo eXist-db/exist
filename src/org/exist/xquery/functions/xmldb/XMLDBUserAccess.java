@@ -57,26 +57,34 @@ public class XMLDBUserAccess extends BasicFunction {
     protected static final FunctionParameterSequenceType ARG_USER_ID = new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id");
     protected static final Logger logger = Logger.getLogger(XMLDBUserAccess.class);
     public final static FunctionSignature fnExistsUser = new FunctionSignature(
-            new QName("exists-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns true if the user $user-id exists.",
-            new SequenceType[]{ARG_USER_ID},
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the user exists, false() otherwise"));
+        new QName("exists-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Returns true if the user $user-id exists.",
+        new SequenceType[]{ARG_USER_ID},
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the user exists, false() otherwise")
+    );
+    
     public final static FunctionSignature fnUserGroups = new FunctionSignature(
-            new QName("get-user-groups", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns the sequence of groups the user $user-id is a member of.",
-            new SequenceType[]{ARG_USER_ID},
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the group memberships"));
+        new QName("get-user-groups", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Returns the sequence of groups the user $user-id is a member of.",
+        new SequenceType[]{ARG_USER_ID},
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the group memberships")
+    );
+    
     public final static FunctionSignature fnUserPrimaryGroup = new FunctionSignature(
-            new QName("get-user-primary-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns the user's primary group.",
-            new SequenceType[]{ARG_USER_ID},
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Primary Group of the User"));
+        new QName("get-user-primary-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Returns the user's primary group.",
+        new SequenceType[]{ARG_USER_ID},
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Primary Group of the User")
+    );
+    
     public final static FunctionSignature fnUserHome = new FunctionSignature(
-            new QName("get-user-home", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns the user's home collection URI or the empty sequence "
-            + "if no home collection is assigned to the user $user-id.",
-            new SequenceType[]{ARG_USER_ID},
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the home collection URI of user $user-id if one is assigned, otherwise the empty sequence"));
+        new QName("get-user-home", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Returns the user's home collection URI or the empty sequence "
+        + "if no home collection is assigned to the user $user-id.",
+        new SequenceType[]{ARG_USER_ID},
+        new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the home collection URI of user $user-id if one is assigned, otherwise the empty sequence"),
+        "Users do not have home collections since 2.0. Will return /db."
+    );
 
     /**
      * @param context
@@ -123,7 +131,7 @@ public class XMLDBUserAccess extends BasicFunction {
                 return groups;
                 // get-user-home
             } else {
-                XmldbURI home = user.getHome();
+                XmldbURI home = XmldbURI.DB;
                 return null == home ? Sequence.EMPTY_SEQUENCE : new AnyURIValue(home);
             }
         } catch(XMLDBException e) {

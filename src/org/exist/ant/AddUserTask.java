@@ -27,7 +27,6 @@ import org.apache.tools.ant.Project;
 import org.xmldb.api.base.XMLDBException;
 
 import org.exist.security.internal.aider.UserAider;
-import org.exist.xmldb.XmldbURI;
 
 import java.net.URISyntaxException;
 
@@ -37,11 +36,9 @@ import java.net.URISyntaxException;
  *
  * @author  peter.klotz@blue-elephant-systems.com
  */
-public class AddUserTask extends UserTask
-{
+public class AddUserTask extends UserTask {
     private String name;
     private String primaryGroup;
-    private String home;
     private String secret;
 
     /* (non-Javadoc)
@@ -62,10 +59,6 @@ public class AddUserTask extends UserTask
                 usr.setPassword( secret );
             }
 
-            if( home != null ) {
-                usr.setHome( XmldbURI.xmldbUriFor( home ) );
-            }
-
             if( primaryGroup != null ) {
                 usr.addGroup( primaryGroup );
             }
@@ -84,15 +77,6 @@ public class AddUserTask extends UserTask
             }
 
         }
-        catch( URISyntaxException e ) {
-            String msg = "URI syntax exception caught: " + e.getMessage();
-
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
-            } else {
-                log( msg, e, Project.MSG_ERR );
-            }
-        }
     }
 
 
@@ -105,12 +89,6 @@ public class AddUserTask extends UserTask
     public void setPrimaryGroup( String primaryGroup )
     {
         this.primaryGroup = primaryGroup;
-    }
-
-
-    public void setHome( String home )
-    {
-        this.home = home;
     }
 
 

@@ -183,7 +183,6 @@ public class ConverterFrom1_0 {
 		
 		Account new_account = new UserAider(RealmImpl.ID, name);
 		new_account.setPassword(password);
-		new_account.setHome(home);
 		
 		NodeList gl = node.getChildNodes();
 		Node group;

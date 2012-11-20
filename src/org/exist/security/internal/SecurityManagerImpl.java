@@ -23,7 +23,6 @@ package org.exist.security.internal;
 
 import org.exist.scheduler.JobDescription;
 import org.exist.security.AbstractRealm;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,8 +37,6 @@ import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
@@ -639,8 +636,6 @@ public class SecurityManagerImpl implements SecurityManager {
             save();
             newAccount.save();
 
-            createUserHome(newAccount);
-
             return newAccount;
         } finally {
             accountLocks.getWriteLock(newAccount).unlock();
@@ -682,8 +677,6 @@ public class SecurityManagerImpl implements SecurityManager {
             save(broker);
             newAccount.save(broker);
 
-            createUserHome(broker, newAccount);
-
             return newAccount;
         } finally {
             accountLocks.getWriteLock(newAccount).unlock();
@@ -710,84 +703,6 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public Configuration getConfiguration() {
 		return configuration;
-    }
-
-    private void createUserHome(Account account) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
-        try {
-            broker = getDatabase().get(null);
-            createUserHome(broker, account);
-        } catch (Exception e) {
-        	//ignore error on home collection creation 
-        	LOG.error(e);
-        } finally {
-            getDatabase().release(broker);
-        }
-    }
-        
-    private void createUserHome(DBBroker broker, Account account) throws EXistException, PermissionDeniedException {
-        if(account.getHome() == null) {
-        	return;
-        }
-
-        TransactionManager transact = getDatabase().getTransactionManager();
-        Txn txn = transact.beginTransaction();
-        try {
-
-            Subject currentUser = broker.getSubject();
-
-            try {
-                broker.setSubject(getSystemSubject());
-
-                Collection home = broker.getCollection(account.getHome());
-                if (home == null) {
-                	home = broker.getOrCreateCollection(txn, account.getHome());
-
-                	home.getPermissions().setOwner(account);
-                	CollectionConfiguration config = home.getConfiguration(broker);
-                	String group = (config!=null) ? config.getDefCollGroup(account) : account.getPrimaryGroup();
-                	home.getPermissions().setGroup(group);
-                	home.getPermissions().setMode(PermissionFactory.getDefaultCollectionPermission().getMode());
-
-                	broker.saveCollection(txn, home);
-                }
-
-                transact.commit(txn);
-            } finally {
-                broker.setSubject(currentUser);
-            }
-        } catch (IOException e) {
-            transact.abort(txn);
-
-           	LOG.error(e);
-            //e.printStackTrace();
-
-            throw new EXistException(e);
-
-        } catch (TriggerException e) {
-            transact.abort(txn);
-
-           	LOG.debug(e);
-            //e.printStackTrace();
-
-            throw new EXistException(e);
-
-        } catch (PermissionDeniedException e) {
-            transact.abort(txn);
-
-           	LOG.debug(e);
-            //e.printStackTrace();
-
-            throw e;
-
-        } catch (EXistException e) {
-            transact.abort(txn);
-
-           	LOG.debug(e);
-            //e.printStackTrace();
-
-            throw e;
-        }
     }
     
     //Session management part	

@@ -34,7 +34,6 @@ import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * Account details.
@@ -46,7 +45,6 @@ public class UserAider implements Account {
     private final String realmId;
     private final String name;
     private final int id;
-    private XmldbURI homeCollection = null;
     private Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
     private String password = null;
     private String passwordDigest = null;
@@ -183,22 +181,6 @@ public class UserAider implements Account {
     @Override
     public boolean hasGroup(final String group) {
         return roles.containsKey(group);
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
-     */
-    @Override
-    public void setHome(final XmldbURI homeCollection) {
-        this.homeCollection = homeCollection;
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getHome()
-     */
-    @Override
-    public XmldbURI getHome() {
-        return homeCollection;
     }
 
     /* (non-Javadoc)

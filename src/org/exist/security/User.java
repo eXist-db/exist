@@ -21,9 +21,6 @@
  */
 package org.exist.security;
 
-import org.exist.security.realm.Realm;
-import org.exist.xmldb.XmldbURI;
-
 @Deprecated //use Account
 public interface User extends Principal {
 
@@ -86,12 +83,6 @@ public interface User extends Principal {
 	 * @param  passwd  The new password value
 	 */
 	public void setPassword(String passwd);
-
-	public void setHome(XmldbURI homeCollection);
-
-	public XmldbURI getHome();
-
-	public Realm getRealm();
 
 	/**
 	 * Get the user's password

@@ -421,7 +421,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
 
         updatingAccount.setPassword(account.getPassword());
-        updatingAccount.setHome(account.getHome());
         updatingAccount.setUserMask(account.getUserMask());
         
         //update the metadata

@@ -119,22 +119,6 @@ public abstract class AbstractSubject implements Subject {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.security.User#setHome(org.exist.xmldb.XmldbURI)
-     */
-    @Override
-    public void setHome(XmldbURI homeCollection) {
-        account.setHome(homeCollection);
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getHome()
-     */
-    @Override
-    public XmldbURI getHome() {
-        return account.getHome();
-    }
-
-    /* (non-Javadoc)
      * @see org.exist.security.User#getRealm()
      */
     @Override

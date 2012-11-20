@@ -23,7 +23,6 @@ package org.exist.security;
 
 import java.util.Set;
 import org.exist.security.realm.Realm;
-import org.exist.xmldb.XmldbURI;
 
 public interface Account extends Principal, User {
 
@@ -100,12 +99,6 @@ public interface Account extends Principal, User {
 	 */
     @Override
 	public void setPassword(String passwd);
-
-    @Override
-	public void setHome(XmldbURI homeCollection);
-
-    @Override
-	public XmldbURI getHome();
 
     @Override
 	public Realm getRealm();

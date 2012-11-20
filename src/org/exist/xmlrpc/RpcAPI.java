@@ -730,16 +730,13 @@ public interface RpcAPI {
 	HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home, boolean isEnabled, Map<String, String> metadata)
-		throws EXistException, PermissionDeniedException;
-
 	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, boolean isEnabled, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
-
+        
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
-	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups, String home, Boolean enabled, Map<String, String> metadata)
+	boolean updateAccount(String name, String passwd, String digestPassword, Vector<String> groups, Boolean isEnabled, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
 
 	boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException;
