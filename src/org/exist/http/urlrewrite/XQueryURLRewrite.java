@@ -917,10 +917,14 @@ public class XQueryURLRewrite extends HttpServlet {
 		context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession( false ));
 
         context.declareVariable("exist:controller", sourceInfo.controllerPath);
+        request.setAttribute("$exist:controller", sourceInfo.controllerPath);
         context.declareVariable("exist:root", basePath);
+        request.setAttribute("$exist:root", basePath);
         context.declareVariable("exist:context", request.getContextPath());
+        request.setAttribute("$exist:context", request.getContextPath());
         String prefix = staticRewrite == null ? null : staticRewrite.getPrefix();
         context.declareVariable("exist:prefix", prefix == null ? "" : prefix);
+        request.setAttribute("$exist:prefix", prefix == null ? "" : prefix);
         String path;
         if (sourceInfo.controllerPath.length() > 0 && !sourceInfo.controllerPath.equals("/"))
             path = request.getInContextPath().substring(sourceInfo.controllerPath.length());
@@ -930,6 +934,7 @@ public class XQueryURLRewrite extends HttpServlet {
         if(p != Constants.STRING_NOT_FOUND)
             path = path.substring(0, p);
         context.declareVariable("exist:path", path);
+        request.setAttribute("$exist:path", path);
 
         String resource = "";
         Matcher nameMatcher = NAME_REGEX.matcher(path);
@@ -937,6 +942,7 @@ public class XQueryURLRewrite extends HttpServlet {
             resource = nameMatcher.group(1);
         }
         context.declareVariable("exist:resource", resource);
+        request.setAttribute("$exist:resource", resource);
 
         if (LOG.isTraceEnabled())
             LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource + "\nexist:controller = " +
