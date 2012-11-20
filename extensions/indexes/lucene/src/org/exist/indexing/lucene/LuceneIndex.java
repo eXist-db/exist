@@ -214,12 +214,17 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     protected void commit() {
-    	if (!needsCommit)
-    		return;
+    	if (!needsCommit) {
+            return;
+        }
         try {
-        	LOG.warn("Committing lucene index");
-        	if (cachedWriter != null)
-        		cachedWriter.commit();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Committing lucene index");
+            }
+            
+        	if (cachedWriter != null) {
+                cachedWriter.commit();
+            }
             needsCommit = false;
         } catch(CorruptIndexException cie) {
             LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
