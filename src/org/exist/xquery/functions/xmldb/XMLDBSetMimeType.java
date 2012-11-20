@@ -140,7 +140,12 @@ public class XMLDBSetMimeType extends BasicFunction {
 
             // try to open the document and acquire a lock
             doc = (DocumentImpl) broker.getXMLResource(pathUri, Lock.WRITE_LOCK);
-            if (doc != null) {
+            if (doc == null) {
+                // no document selected, abort
+                txnManager.abort(txn);
+
+            } else {
+                // set new mime-type
                 doc.getMetadata().setMimeType(newMimeType.getName());
                 txnManager.commit(txn);
             }
