@@ -14,11 +14,9 @@
   <icon></icon>
   <jre>
     <path></path>
-    <minVersion>1.5.0</minVersion>
+    <minVersion>1.6.0</minVersion>
     <maxVersion></maxVersion>
-    <initialHeapSize>0</initialHeapSize>
-    <maxHeapSize>0</maxHeapSize>
-	<jdkPreference>preferJdk</jdkPreference>
+    <jdkPreference>preferJdk</jdkPreference>
   </jre>
   <splash>
     <file>logo.bmp</file>
@@ -27,12 +25,12 @@
     <timeoutErr>true</timeoutErr>
   </splash>
   <versionInfo>
-	<fileVersion>1.4.0.0</fileVersion>
-	<txtFileVersion>1.4.0dev</txtFileVersion>
+	<fileVersion>2.0.0.0</fileVersion>
+	<txtFileVersion>2.0.0rc</txtFileVersion>
 	<fileDescription>eXist Installer</fileDescription>
 	<copyright>eXist Open Source Project</copyright>
-	<productVersion>1.4.0.0</productVersion>
-	<txtProductVersion>1.4.0dev</txtProductVersion>
+	<productVersion>2.0.0.0</productVersion>
+	<txtProductVersion>2.0</txtProductVersion>
 	<productName>eXist Open Source XML Database</productName>
 	<internalName>eXist</internalName>
 	<originalFilename>eXist-setup.exe</originalFilename>
