@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <processing>
     <logfiledir>$INSTALL_PATH</logfiledir>
-    <job name="Initial Database Setup ...">
+    <job name="Setting admin password ...">
         <os family="windows"/>
         <executefile name="$INSTALL_PATH/bin/setup.bat">
             <arg>pass:$adminPasswd</arg>
         </executefile>
     </job>
-    <job name="Initial Database Setup ...">
+    <job name="Setting admin password ...">
         <os family="unix"/>
         <executefile name="$INSTALL_PATH/bin/setup.sh">
             <arg>pass:$adminPasswd</arg>

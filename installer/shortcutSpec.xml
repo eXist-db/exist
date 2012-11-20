@@ -5,14 +5,14 @@
 		name="eXist Database"
 		type="Application"
 		encoding="UTF-8"
-		target="$JAVA_HOME/bin/java"
-		commandLine="-jar start.jar"
+		target="$INSTALL_PATH/start.jar"
 		workingDirectory="$INSTALL_PATH"
 		description="eXist Database Launcher" 
 		programGroup="yes"
         desktop="yes"
 		terminal="false"
-		iconFile="$INSTALL_PATH/icon.bmp"/>
+		iconFile="$INSTALL_PATH/icon.ico"
+		initialState="noShow"/>
 	<shortcut name="Install eXist as Service" 
 		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
 		description="Install the eXist server as a service"
@@ -32,5 +32,5 @@
 		programGroup="yes"
         desktop="no"
 		terminal="false"
-		iconFile="$INSTALL_PATH/icon.bmp"/>
+		iconFile="$INSTALL_PATH/icon.ico"/>
 </shortcuts>

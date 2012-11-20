@@ -1,0 +1,33 @@
+<launch4jConfig>
+  <dontWrapJar>true</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>../start.jar</jar>
+  <outfile>../start.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>http://exist-db.org</supportUrl>
+  <customProcName>false</customProcName>
+  <stayAlive>false</stayAlive>
+  <manifest></manifest>
+  <icon>icon.ico</icon>
+  <jre>
+    <path></path>
+    <minVersion>1.6.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJdk</jdkPreference>
+  </jre>
+  <versionInfo>
+  <fileVersion>2.0.0.0</fileVersion>
+  <txtFileVersion>2.0.0rc</txtFileVersion>
+  <fileDescription>eXist Launcher</fileDescription>
+  <copyright>eXist Open Source Project</copyright>
+  <productVersion>2.0.0.0</productVersion>
+  <txtProductVersion>2.0</txtProductVersion>
+  <productName>eXist Open Source XML Database</productName>
+  <internalName>eXist</internalName>
+  <originalFilename>start.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>

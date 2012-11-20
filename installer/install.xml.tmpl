@@ -96,6 +96,7 @@
                 <include name="exist-modules.jar"/>
                 <include name="exist-fluent.jar"/>
                 <include name="start.jar"/>
+                <include name="start.exe"/>
                 <include name="examples.jar"/>
                 <include name="mime-types.xml.tmpl"/>
                 <include name="mime-types.xml"/>
@@ -161,6 +162,7 @@
             <file src="installer/conf.xml" targetdir="$INSTALL_PATH"/>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
+            <file src="installer/icon.ico" targetdir="$INSTALL_PATH"/>
             <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
             <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
 
@@ -202,6 +204,8 @@
             <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH"/>
             <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH"/>
 
+            <file src="installer/vm.properties" targetdir="$INSTALL_PATH"/>
+
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
@@ -221,6 +225,8 @@
 
             <parsable type="xml" targetfile="$INSTALL_PATH/conf.xml"/>
 
+            <parsable type="plain" targetfile="$INSTALL_PATH/vm.properties"/>
+
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
@@ -228,7 +234,6 @@
             <executable targetfile="$INSTALL_PATH/start.jar" stage="never">
                 <os family="unix"/>
             </executable>
-            
             <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never">
                 <os family="unix"/>
             </executable>
