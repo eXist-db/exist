@@ -258,10 +258,10 @@ public class ReentrantReadWriteLock implements Lock {
      */
     public synchronized void release(int mode) {
         if (Thread.currentThread() != owner_) {
-            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
-                " Released a lock on " + getId() + " it didn't hold." +
-                " Either the thread was interrupted or it never acquired the lock." +
-                " The lock was owned by: " + owner_);
+//            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
+//                " Released a lock on " + getId() + " it didn't hold." +
+//                " Either the thread was interrupted or it never acquired the lock." +
+//                " The lock was owned by: " + owner_);
             if (DEBUG) {
                 LOG.debug("Lock was acquired by :");
                 while (!seStack.isEmpty()) {
