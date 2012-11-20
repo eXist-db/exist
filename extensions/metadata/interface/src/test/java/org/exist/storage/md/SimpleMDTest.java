@@ -945,7 +945,7 @@ public class SimpleMDTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+        	pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
             
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);

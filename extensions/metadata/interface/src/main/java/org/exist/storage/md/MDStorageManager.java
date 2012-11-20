@@ -67,6 +67,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String PREFIX_KEY = PREFIX+":"+KEY;
 	public final static String PREFIX_META = PREFIX+":"+META;
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
+	public final static String PREFIX_VALUE_IS_DOCUMENT = PREFIX+":"+VALUE_IS_DOCUMENT;
 
 	protected static MDStorageManager _ = null;
 	
@@ -143,7 +144,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 				DocumentImpl doc = (DocumentImpl) value;
 				
 		        attr.addAttribute(NAMESPACE_URI, VALUE, PREFIX_VALUE, "CDATA", doc.getURI().toString());
-		        attr.addAttribute(NAMESPACE_URI, VALUE_IS_DOCUMENT, PREFIX_VALUE, "CDATA", "true");
+		        attr.addAttribute(NAMESPACE_URI, VALUE_IS_DOCUMENT, PREFIX_VALUE_IS_DOCUMENT, "CDATA", "true");
 			
 	        } else {
 				
