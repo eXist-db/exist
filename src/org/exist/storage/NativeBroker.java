@@ -696,6 +696,9 @@ public class NativeBroker extends DBBroker {
                 Collection current = getCollection(XmldbURI.ROOT_COLLECTION_URI);
                 if (current == null) {
                     LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
+                    
+                    pool.getCollectionTrigger().beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
+                    
                     current = new Collection(this, XmldbURI.ROOT_COLLECTION_URI);
                     
                     current.setId(getNextCollectionId(transaction));
@@ -708,6 +711,7 @@ public class NativeBroker extends DBBroker {
                     //TODO : acquire lock manually if transaction is null ?
                     saveCollection(transaction, current);
                     
+                    pool.getCollectionTrigger().afterCreateCollection(this, transaction, current);
                     
                     //import an initial collection configuration
                     try {
@@ -758,6 +762,8 @@ public class NativeBroker extends DBBroker {
                         
                         CollectionConfiguration colConf = current.getConfiguration(this);
                         
+                        pool.getCollectionTrigger().beforeCreateCollection(this, transaction, path);
+                        
                         CollectionTriggersVisitor triggersVisitor = null;
                         if(colConf != null) {
                             triggersVisitor = colConf.getCollectionTriggerProxies().instantiateVisitor(this);
@@ -776,6 +782,8 @@ public class NativeBroker extends DBBroker {
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
                         
+                        pool.getCollectionTrigger().afterCreateCollection(this, transaction, sub);
+
                         if(colConf != null) {
                             triggersVisitor.afterCreateCollection(this, transaction, sub);
                         }
@@ -1234,7 +1242,7 @@ public class NativeBroker extends DBBroker {
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
             
             triggersVisitor.afterMoveCollection(this, transaction, collection, srcURI);
-	        
+
         } finally {
             pool.getProcessMonitor().endJob();
         }
@@ -1386,6 +1394,8 @@ public class NativeBroker extends DBBroker {
         try {
 
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_COLLECTION, collection.getURI());
+            
+            pool.getCollectionTrigger().beforeDeleteCollection(this, transaction, collection);
             
             final CollectionTriggersVisitor triggersVisitor = parent.getConfiguration(this).getCollectionTriggerProxies().instantiateVisitor(this);
             triggersVisitor.beforeDeleteCollection(this, transaction, collection);
@@ -1577,6 +1587,8 @@ public class NativeBroker extends DBBroker {
                 
                 triggersVisitor.afterDeleteCollection(this, transaction, collection.getURI());
     	        
+                pool.getCollectionTrigger().afterDeleteCollection(this, transaction, collection.getURI());
+
                 return true;
                 
             }
