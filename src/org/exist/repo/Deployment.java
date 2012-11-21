@@ -145,6 +145,13 @@ public class Deployment {
         ElementImpl root = (ElementImpl) document.getDocumentElement();
         String name = root.getAttribute("name");
 
+        ExistRepository repo = broker.getBrokerPool().getExpathRepo();
+        Packages packages = repo.getParentRepo().getPackages(name);
+        if (packages != null) {
+            LOG.info("Application package " + name + " already installed. Skipping.");
+            return null;
+        }
+
         InMemoryNodeSet deps;
         try {
             deps = findElements(root, DEPENDENCY_ELEMENT);
@@ -153,32 +160,39 @@ public class Deployment {
                 String pkgName = dependency.getAttribute("package");
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
-                    File depFile = loader.load(pkgName);
-                    if (depFile != null)
-                        installAndDeploy(depFile, loader);
-                    else
-                        LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
-                            "is not fatal, but the package may not work as expected");
+                    if (repo.getParentRepo().getPackages(pkgName) != null) {
+                        LOG.debug("Package " + pkgName + " already installed");
+                    } else if (loader != null) {
+                        File depFile = loader.load(pkgName);
+                        if (depFile != null)
+                            installAndDeploy(depFile, loader);
+                        else
+                            LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
+                                "is not fatal, but the package may not work as expected");
+                    }
                 }
             }
         } catch (XPathException e) {
             throw new PackageException("Invalid descriptor found in " + xar.getAbsolutePath());
         }
 
-        ExistRepository repo = broker.getBrokerPool().getExpathRepo();
-        Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null) {
-            LOG.info("Application package " + name + " already installed. Skipping.");
-        } else {
-            // installing the xar into the expath repo
-            LOG.info("Installing package " + xar.getAbsolutePath());
-            UserInteractionStrategy interact = new BatchUserInteraction();
-            org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
-            String pkgName = pkg.getName();
-            broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
-            LOG.info("Deploying package " + pkgName);
-            return deploy(pkgName, repo, null);
-        }
+        // installing the xar into the expath repo
+        LOG.info("Installing package " + xar.getAbsolutePath());
+        UserInteractionStrategy interact = new BatchUserInteraction();
+        org.expath.pkg.repo.Package pkg = repo.getParentRepo().installPackage(xar, true, interact);
+        ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+        if (info != null && !info.getJars().isEmpty())
+            ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
+        String pkgName = pkg.getName();
+        broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
+        LOG.info("Deploying package " + pkgName);
+        return deploy(pkgName, repo, null);
+    }
+
+    public String installAndDeploy(String name, PackageLoader loader) throws IOException, PackageException {
+        File xar = loader.load(name);
+        if (xar != null)
+            return installAndDeploy(xar, loader);
         return null;
     }
 
@@ -397,8 +411,10 @@ public class Deployment {
     private Sequence runQuery(XmldbURI targetCollection, File tempDir, String fileName, boolean preInstall)
             throws PackageException, IOException, XPathException {
         File xquery = new File(tempDir, fileName);
-        if (!xquery.canRead())
-            throw new PackageException("The XQuery resource specified in the <setup> element was not found");
+        if (!xquery.canRead()) {
+            LOG.warn("The XQuery resource specified in the <setup> element was not found");
+            return Sequence.EMPTY_SEQUENCE;
+        }
         XQuery xqs = broker.getXQueryService();
         XQueryContext ctx = xqs.newContext(AccessContext.REST);
         ctx.declareVariable("dir", tempDir.getAbsolutePath());

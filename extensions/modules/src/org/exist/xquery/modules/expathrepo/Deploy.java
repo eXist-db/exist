@@ -1,15 +1,26 @@
 package org.exist.xquery.modules.expathrepo;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.repo.Deployment;
+import org.exist.repo.PackageLoader;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.NativeBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.expath.pkg.repo.PackageException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
 
 public class Deploy extends BasicFunction {
 
@@ -36,6 +47,29 @@ public class Deploy extends BasicFunction {
 				},
 				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
 						"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+        new FunctionSignature(
+            new QName("install-and-deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+            "Downloads, installs and deploys a package from the public repository at $publicRepoURL. Dependencies are resolved " +
+            "automatically. For downloading the package, the package URI is simply appended to the $publicRepoURL and the " +
+            "resulting URL is used for an HTTP GET request.",
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE,
+                            "Unique name of the package to install."),
+                    new FunctionParameterSequenceType("publicRepoURL", Type.STRING, Cardinality.EXACTLY_ONE,
+                            "The URL of the public repo.")
+            },
+            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                    "<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+        new FunctionSignature(
+                new QName("install-and-deploy-from-db", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+                "Installs and deploys a package from a .xar archive file stored in the database. Dependencies are not " +
+                "resolved and will just be ignored.",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE,
+                        "Database path to the package archive (.xar file)")
+                },
+                new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                        "<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
 		new FunctionSignature(
 				new QName("undeploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 				"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
@@ -60,21 +94,63 @@ public class Deploy extends BasicFunction {
 					"of the dba group to use repo:deploy/undeploy");
 		
 		String pkgName = args[0].getStringValue();
-        String userTarget = null;
-        if (getArgumentCount() == 2)
-            userTarget = args[1].getStringValue();
         try {
             Deployment deployment = new Deployment(context.getBroker());
             String target;
-            if (isCalledAs("deploy"))
+            if (isCalledAs("deploy")) {
+                String userTarget = null;
+                if (getArgumentCount() == 2)
+                    userTarget = args[1].getStringValue();
                 target = deployment.deploy(pkgName, context.getRepository(), userTarget);
-            else
+            } else if (isCalledAs("install-and-deploy")) {
+                String repoURI = args[1].getStringValue();
+                target = installAndDeploy(pkgName, repoURI);
+            } else if (isCalledAs("install-and-deploy-from-db")) {
+                target = installAndDeployFromDb(pkgName);
+            } else
                 target = deployment.undeploy(pkgName, context.getRepository());
             return statusReport(target);
         } catch (PackageException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY001, e.getMessage());
         } catch (IOException e) {
             throw new XPathException(this, ErrorCodes.FOER0000, "Caught IO error while deploying expath archive");
+        }
+    }
+
+    private String installAndDeploy(String pkgName, String repoURI) throws XPathException {
+        try {
+            RepoPackageLoader loader = new RepoPackageLoader(repoURI);
+            Deployment deployment = new Deployment(context.getBroker());
+            return deployment.installAndDeploy(pkgName, loader);
+        } catch (MalformedURLException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
+        } catch (PackageException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+        } catch (IOException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+        }
+    }
+
+    private String installAndDeployFromDb(String path) throws XPathException {
+        XmldbURI docPath = XmldbURI.createInternal(path);
+        DocumentImpl doc = null;
+        try {
+            doc = context.getBroker().getXMLResource(docPath, Lock.READ_LOCK);
+            if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
+                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
+
+            File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+            Deployment deployment = new Deployment(context.getBroker());
+            return deployment.installAndDeploy(file, null);
+        } catch (PackageException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+        } catch (IOException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+        } catch (PermissionDeniedException e) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+        } finally {
+            if (doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
         }
     }
 
@@ -100,4 +176,43 @@ public class Deploy extends BasicFunction {
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 	}
+
+    private class RepoPackageLoader implements PackageLoader {
+
+        private String repoURL;
+
+        public RepoPackageLoader(String repoURL) {
+            this.repoURL = repoURL;
+        }
+
+        @Override
+        public File load(String name) throws IOException {
+            String pkgURL = repoURL + URLEncoder.encode(name, "UTF-8");
+            LOG.info("Retrieving package from " + pkgURL);
+            HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
+            connection.setConnectTimeout(15 * 1000);
+            connection.setReadTimeout(15 * 1000);
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) " +
+                    "Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
+            connection.connect();
+            InputStream is = connection.getInputStream();
+
+            File outFile = File.createTempFile("deploy", "xar");
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(outFile);
+
+                byte[] buf = new byte[512];
+                int count;
+                while ((count = is.read(buf)) > 0) {
+                    fos.write(buf, 0, count);
+                }
+                return outFile;
+            } finally {
+                if (fos != null)
+                    fos.close();
+            }
+        }
+    }
 }
