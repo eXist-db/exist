@@ -2656,6 +2656,11 @@ public class NativeBroker extends DBBroker {
                 LOG.info("Removing document " + document.getFileURI() + 
                     " (" + document.getDocId() + ") ...");
             }
+            
+            if (freeDocId) {
+            	pool.getDocumentTrigger().beforeDeleteDocument(this, transaction, document);
+            }
+            
             dropIndex(transaction, document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
@@ -2688,11 +2693,17 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             removeResourceMetadata(transaction, document);
-            if(freeDocId)
+            if (freeDocId) {
                 freeResourceId(transaction, document.getDocId());
+
+            	pool.getDocumentTrigger().afterDeleteDocument(this, transaction, document.getURI());
+            }
+
         } catch (ReadOnlyException e) {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
-        }
+        } catch (TriggerException e) {
+            LOG.warn(e);
+		}
     }
 
     private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
