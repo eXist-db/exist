@@ -113,25 +113,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	}
 
 	//backup methods
-	@Override
-	public void backup(Collection colection, AttributesImpl attrs) {
-	}
-
-	@Override
-	public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
-	}
-
-	@Override
-	public void backup(DocumentAtExist document, AttributesImpl attrs) {
-		Metas ms = md.getMetas(document);
-		
+	private void backup(Metas ms, AttributesImpl attrs) {
         attrs.addAttribute( NAMESPACE_URI, UUID, PREFIX_UUID, "CDATA", ms.getUUID() );
 	}
 
-	@Override
-	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
-		Metas ms = md.getMetas(document);
-		
+	private void backup(Metas ms, SAXSerializer serializer) throws SAXException {
 		List<Meta> sub = ms.metas();
 		for (Meta m : sub) {
 
@@ -156,8 +142,32 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 		}
 	}
 
+	@Override
+	public void backup(Collection colection, AttributesImpl attrs) {
+		System.out.println("backup collection "+colection.getURI());
+		backup(md.getMetas(colection.getURI()), attrs);
+	}
+
+	@Override
+	public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
+		System.out.println("backup collection "+colection.getURI());
+		backup(md.getMetas(colection.getURI()), serializer);
+	}
+
+	@Override
+	public void backup(DocumentAtExist document, AttributesImpl attrs) {
+		System.out.println("backup document "+document.getURI());
+		backup(md.getMetas(document), attrs);
+	}
+
+	@Override
+	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
+		System.out.println("backup document "+document.getURI());
+		backup(md.getMetas(document), serializer);
+	}
+
 	//restore methods
-	
+	private Metas collectionMetas = null;
 	private Metas currentMetas = null;
 
 	@Override
@@ -182,12 +192,22 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			String key = atts.getValue(NAMESPACE_URI, KEY);
 			String value = atts.getValue(NAMESPACE_URI, VALUE);
 			
-			md._addMeta(currentMetas, uuid, key, value);
+			if (currentMetas == null) {
+				md._addMeta(collectionMetas, uuid, key, value);
+			} else {
+				md._addMeta(currentMetas, uuid, key, value);
+			}
 		}
 	}
 
 	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {}
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (localName.equals("collection")) {
+        	;
+        } else if (localName.equals("resource")) {
+    		currentMetas = null;
+        }
+	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {}
@@ -202,10 +222,19 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public void skippedEntity(String name) throws SAXException {}
 
 	@Override
-	public void startCollectionRestore(Collection colection, Attributes atts) {}
+	public void startCollectionRestore(Collection colection, Attributes atts) {
+		System.out.println("startCollectionRestore "+colection.getURI());
+		String uuid = atts.getValue(NAMESPACE_URI, UUID);
+		if (uuid != null)
+			collectionMetas = md.replaceMetas(colection.getURI(), uuid);
+		else
+			collectionMetas = md.addMetas(colection); 
+	}
 
 	@Override
-	public void endCollectionRestore(Collection colection) {}
+	public void endCollectionRestore(Collection colection) {
+//		System.out.println("endCollectionRestore "+colection.getURI());
+	}
 
 	@Override
 	public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
@@ -219,6 +248,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 	@Override
 	public void endDocumentRestore(DocumentAtExist document) {
+//		System.out.println("endDocumentRestore "+document.getURI());
 	}
 
 	@Override

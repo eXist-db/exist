@@ -25,7 +25,6 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.exist.backup.Restore;
 import org.exist.backup.SystemExport;
 import org.exist.backup.SystemImport;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
@@ -85,9 +84,12 @@ public class BackupRestoreMDTest extends TestCase {
     	MetaData md = MetaData.get();
     	assertNotNull(md);
     	
+    	String colUUID = null;
+
     	String docUUID = null;
     	String doc2UUID = null;
     	
+    	String key0UUID = null;
     	String key1UUID = null;
     	String key2UUID = null;
     	String key3UUID = null;
@@ -99,9 +101,20 @@ public class BackupRestoreMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
+            //collection
             Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
         	assertNotNull(root);
 
+	    	Metas colMD = md.getMetas(TestConstants.TEST_COLLECTION_URI);
+	    	assertNotNull(colMD);
+	    	
+	    	colUUID = colMD.getUUID();
+
+	    	//set metas
+	    	Meta meta = colMD.put(KEY1, VALUE2);
+	    	key0UUID = meta.getUUID();
+	    	
+	    	//xml document
 	    	Metas docMD = md.getMetas(doc1uri);
 	    	assertNotNull(docMD);
 	    	
@@ -111,13 +124,13 @@ public class BackupRestoreMDTest extends TestCase {
 	    	docMD.put(KEY1, VALUE1);
 	    	docMD.put(KEY2, VALUE2);
 	    	
-	    	Meta meta = docMD.get(KEY1);
+	    	meta = docMD.get(KEY1);
 	    	key1UUID = meta.getUUID();
 	
 	    	meta = docMD.get(KEY2);
 	    	key2UUID = meta.getUUID();
 	
-	    	//binary
+	    	//binary document
 	    	docMD = MetaData.get().getMetas(doc2uri);
 	    	assertNotNull(docMD);
 	
@@ -144,16 +157,30 @@ public class BackupRestoreMDTest extends TestCase {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
+            //collection
             Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
         	assertNotNull(root);
 
+        	Metas colMD = md.getMetas(TestConstants.TEST_COLLECTION_URI);
+	    	
+	    	assertNotNull(colMD);
+	    	
+	    	assertEquals(colUUID, colMD.getUUID());
+	
+	    	Meta meta = colMD.get(KEY1);
+	    	assertNotNull(meta);
+	
+	    	assertEquals(VALUE2, meta.getValue());
+	    	assertEquals(key0UUID, meta.getUUID());
+
+	    	//xml document
         	Metas docMD = md.getMetas(doc1uri);
 	    	
 	    	assertNotNull(docMD);
 	    	
 	    	assertEquals(docUUID, docMD.getUUID());
 	
-	    	Meta meta = docMD.get(KEY1);
+	    	meta = docMD.get(KEY1);
 	    	assertNotNull(meta);
 	
 	    	assertEquals(VALUE1, meta.getValue());
@@ -165,7 +192,7 @@ public class BackupRestoreMDTest extends TestCase {
 	    	assertEquals(VALUE2, meta.getValue());
 	    	assertEquals(key2UUID, meta.getUUID());
 	
-	    	//binary
+	    	//binary document
 	    	docMD = MetaData.get().getMetas(doc2uri);
 	    	assertNotNull(docMD);
 	    	
