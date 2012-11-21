@@ -22,6 +22,7 @@
 package org.exist.repo;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Interface for resolving package dependencies. Implementations may load
@@ -35,5 +36,5 @@ public interface PackageLoader {
      * @param name unique name of the package
      * @return a file containing the package or null if not found
      */
-    public File load(String name);
+    public File load(String name) throws IOException;
 }

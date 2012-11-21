@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: CompressionModule.java 11884 2010-07-01 10:32:31Z deliriumsky $
+ * $Id$
  */
 package org.exist.xquery.modules.expathrepo;
 
@@ -34,6 +34,7 @@ import java.util.Map;
  * XQuery Extension module for expath expathrepo
  *
  * @author James Fuller <jim.fuller@exist-db.org>
+ * @author Wolfgang Meier
  * @author cutlass
  * @version 1.0
  */
@@ -51,6 +52,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
     	new FunctionDef(Deploy.signatures[0], Deploy.class),
     	new FunctionDef(Deploy.signatures[1], Deploy.class),
         new FunctionDef(Deploy.signatures[2], Deploy.class),
+        new FunctionDef(Deploy.signatures[3], Deploy.class),
+        new FunctionDef(Deploy.signatures[4], Deploy.class),
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signatureInstall, InstallFunction.class),
         new FunctionDef(InstallFunction.signatureInstallFromDB, InstallFunction.class),

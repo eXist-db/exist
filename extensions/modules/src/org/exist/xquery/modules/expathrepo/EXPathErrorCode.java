@@ -26,7 +26,8 @@ public class EXPathErrorCode extends ErrorCode {
     public final static ErrorCode EXPDY002 = new EXPathErrorCode("EXPATH002", "Bad collection URI.");
     public final static ErrorCode EXPDY003 = new EXPathErrorCode("EXPATH003", "Permission denied.");
     public final static ErrorCode EXPDY004 = new EXPathErrorCode("EXPATH004", "Error in descriptor found.");
-    
+    public final static ErrorCode EXPDY005 = new EXPathErrorCode("EXPATH005", "Invalid repo URI");
+    public final static ErrorCode EXPDY006 = new EXPathErrorCode("EXPATH006", "Failed to connect to public repo");
     
     public final static String EXPATH_ERROR_NS = "http://expath.org/ns/error";
     public final static String EXPATH_ERROR_PREFIX = "experr";
