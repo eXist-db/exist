@@ -77,6 +77,8 @@ public class StackGet extends Command {
 			return result;
 		
 		Expression expr = stacks.get(index);
+		if (expr == null) 
+			return result;
 		
 		int level = stacks.size() - index - 1;
 		

@@ -22,16 +22,13 @@
 package org.exist.debuggee;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.Database;
-import org.exist.EXistException;
 import org.exist.debuggee.dbgp.packets.Init;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -118,9 +115,10 @@ public class DebuggeeImpl implements Debuggee {
 	}
 
 	@Override
-	public String start(String uri) {
+	public String start(String uri) throws Exception {
 		Database db = null;
 		DBBroker broker = null;
+		ScriptRunner runner = null;
 		
 		try {
 			db = BrokerPool.getInstance();
@@ -157,8 +155,25 @@ public class DebuggeeImpl implements Debuggee {
 			queryContext.setDebuggeeJoint(joint);
 			joint.continuation(new Init(session, sessionId, "eXist"));
 
-			ScriptRunner runner = new ScriptRunner(session, compiled);
+			runner = new ScriptRunner(session, compiled);
 			runner.start();
+			
+			int count = 0;
+			while (joint.firstExpression == null && runner.exception == null && count < 10) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+				count++;
+			}
+			
+			if (runner.exception != null) {
+				throw runner.exception;
+			}
+			
+			if (joint.firstExpression == null) {
+				throw new XPathException("Can't run debug session.");
+			}
 
 			//queryContext.declareVariable(Debuggee.SESSION, sessionId);
 			
@@ -167,21 +182,11 @@ public class DebuggeeImpl implements Debuggee {
 			
 			return sessionId;
 
-		} catch (EXistException e) {
-			e.printStackTrace();
-			return null;
-		} catch (XPathException e) {
-			e.printStackTrace();
-			return null;
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (PermissionDeniedException e) {
-			e.printStackTrace();
-			return null;
+		} catch (Exception e) {
+			if (runner != null)
+				runner.stop();
+			
+			throw e;
 		} finally {
 			if (db != null)
 				db.release(broker);
