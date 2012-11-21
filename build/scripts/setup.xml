@@ -64,8 +64,10 @@
         </classpath>
     </taskdef>
     <fetch dest="${autostart-dir}" url="${autodeploy.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
-           failonerror="false" maxtime="120"/>
-    <unzip src="${autostart-dir}/pkg.zip" dest="${autostart-dir}"/>
-    <delete file="${autostart-dir}/pkg.zip" failonerror="false"/>
+           failonerror="false" maxtime="120">
+         <patternset>
+             <include name="**/*.xar"/>
+         </patternset>
+    </fetch>
   </target>
 </project>
