@@ -64,7 +64,7 @@ public class SVNWCUtil {
     public static File getDefaultConfigurationDirectory() {
     	try {
 			Subject subject = BrokerPool.getInstance().getSubject();
-			XmldbURI home = subject.getHome();
+			XmldbURI home = null;//subject.getHome();
 			if (home != null)
 				return new Resource(home.append(".subversion"));
 		} catch (EXistException e) {
