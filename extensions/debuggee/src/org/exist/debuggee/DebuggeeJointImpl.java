@@ -55,7 +55,7 @@ public class DebuggeeJointImpl implements DebuggeeJoint, Status {
 
     private Map<String, String> features = new HashMap<String, String>(DebuggeeImpl.SET_GET_FEATURES);
 	
-	private Expression firstExpression = null;
+	protected Expression firstExpression = null;
 	
 	private List<Expression> stack = new ArrayList<Expression>();
 	private int stackDepth = 0;

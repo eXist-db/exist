@@ -25,13 +25,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.exist.Database;
-import org.exist.EXistException;
 import org.exist.debuggee.dbgp.packets.Stop;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 
 /**
@@ -45,11 +42,14 @@ public class ScriptRunner implements Runnable, Observer {
 
 	private Thread thread;
 	
+	protected Exception exception = null;
+	
 	public ScriptRunner(SessionImpl session, CompiledXQuery compiled) {
 		this.session = session;
 		expression = compiled;
 		
 		thread = new Thread(this);
+		thread.setDaemon(true);
 		thread.setName("Debug session "+compiled.getContext().hashCode());
 	}
 
@@ -57,6 +57,10 @@ public class ScriptRunner implements Runnable, Observer {
 		thread.start();
 	}
 	
+	public void stop() {
+		thread.interrupt();
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
@@ -102,9 +106,9 @@ public class ScriptRunner implements Runnable, Observer {
 //	        	broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
 //	        }
 		
-		} catch (PermissionDeniedException pde) {
-                } catch (EXistException e) {
-		} catch (XPathException e) {
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	exception = e;
 		} finally {
 			if (db != null)
 				db.release(broker);
@@ -121,5 +125,4 @@ public class ScriptRunner implements Runnable, Observer {
 		}
 		
 	}
-
 }
