@@ -38,7 +38,7 @@ public interface Debuggee {
 	
 	public boolean joint(CompiledXQuery compiledXQuery);
 
-	public String start(String uri);
+	public String start(String uri) throws Exception;
 
 	public Session getSession(String id);
 }
