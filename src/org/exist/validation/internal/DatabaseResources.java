@@ -47,13 +47,11 @@ import java.util.Map;
  */
 public class DatabaseResources {
     
-    public final static String QUERY_LOCATION 
-        = "org/exist/validation/internal/query/";
-    public final static String FIND_XSD
-        = QUERY_LOCATION + "find_schema_by_targetNamespace.xq";
+    public final static String QUERY_LOCATION = "org/exist/validation/internal/query/";
     
-    public final static String FIND_CATALOGS_WITH_DTD
-        = QUERY_LOCATION + "find_catalogs_with_dtd.xq";
+    public final static String FIND_XSD = QUERY_LOCATION + "find_schema_by_targetNamespace.xq";
+    
+    public final static String FIND_CATALOGS_WITH_DTD = QUERY_LOCATION + "find_catalogs_with_dtd.xq";
     
     public final static String PUBLICID = "publicId";
     
@@ -129,8 +127,10 @@ public class DatabaseResources {
         String catalogPath = params.get(CATALOG);
         String collection = params.get(COLLECTION);
         
-        logger.debug("collection=" + collection + " namespace=" + namespace
-            + " publicId="+publicId + " catalogPath="+catalogPath);
+        if(logger.isDebugEnabled()) {
+            logger.debug("collection=" + collection + " namespace=" + namespace
+                + " publicId="+publicId + " catalogPath="+catalogPath);
+        }
         
         DBBroker broker = null;
         Sequence result= null;
@@ -189,7 +189,10 @@ public class DatabaseResources {
     }
     
     public String findXSD(String collection, String targetNamespace, Subject user){
-        logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
+        
+        if(logger.isDebugEnabled()) {
+            logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
+        }
         
         Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);
@@ -201,7 +204,10 @@ public class DatabaseResources {
     }
     
     public String findCatalogWithDTD(String collection, String publicId, Subject user){
-        logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
+        
+        if(logger.isDebugEnabled()) {
+            logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
+        }
         
         Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);

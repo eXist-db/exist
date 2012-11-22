@@ -78,7 +78,10 @@ public class AnyUriResolver implements XMLEntityResolver {
             // quick fail
             return null;
         }
-        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        }
         
         String resourcePath=null;
         String baseSystemId=null;
@@ -119,7 +122,9 @@ public class AnyUriResolver implements XMLEntityResolver {
         XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
             baseSystemId, is, "UTF-8");
         
-        LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+        if(LOG.isDebugEnabled()) {
+            LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+        }
         
         return xis;
         

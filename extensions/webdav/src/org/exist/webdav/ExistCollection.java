@@ -65,8 +65,9 @@ public class ExistCollection extends ExistResource {
 	
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
 
-        if(LOG.isTraceEnabled())
+        if(LOG.isTraceEnabled()) {
             LOG.trace("New collection object for " + uri);
+        }
 
         brokerPool = pool;
         this.xmldbUri = uri;
@@ -199,10 +200,12 @@ public class ExistCollection extends ExistResource {
             LOG.error(e);
             //return empty list
             return new ArrayList<XmldbURI>();
+            
         } catch (EXistException e) {
             LOG.error(e);
             //return empty list
             return new ArrayList<XmldbURI>();
+            
         } finally {
             // Clean up resources
             if (collection != null) {
