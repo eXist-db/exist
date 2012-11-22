@@ -52,6 +52,9 @@
         <fileset dir="${top.dir}/${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${top.dir}/${lib.user}">
+            <include name="*.jar"/>
+        </fileset>
         <fileset dir="${top.dir}/tools/ant/lib">
             <include name="*.jar"/>
         </fileset>
