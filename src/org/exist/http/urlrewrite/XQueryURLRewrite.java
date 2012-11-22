@@ -173,8 +173,8 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         
         long start = System.currentTimeMillis();
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        HttpServletRequest request = servletRequest;
+        HttpServletResponse response = servletResponse;
 
         if (LOG.isTraceEnabled())
             LOG.trace(request.getRequestURI());
@@ -335,7 +335,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 modifiedRequest.allowCaching(!modelView.hasViews());
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse);
 
-                int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
+                int status = wrappedResponse.getStatus();
                 if (status == HttpServletResponse.SC_NOT_MODIFIED) {
                 	response.flushBuffer();
                 } else if (status < 400) {
@@ -347,7 +347,8 @@ public class XQueryURLRewrite extends HttpServlet {
                 	// HTTP response code indicates an error
                 	if (modelView.hasErrorHandlers()) {
                         byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-                        modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));
+                        if (data != null)
+                            modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));
                 		applyViews(modelView, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
                 	} else {
                 		flushError(response, wrappedResponse);
@@ -359,21 +360,21 @@ public class XQueryURLRewrite extends HttpServlet {
 //                writeResults(response, broker, result);
 //            }
         } catch (EXistException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ServletException("An error occurred while retrieving query results: " 
+            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
+            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
                     + e.getMessage(), e);
 
         } catch (XPathException e) {
-            LOG.error(e.getMessage(), e);
-            throw new ServletException("An error occurred while executing the urlrewrite query: " 
+            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
+            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
                     + e.getMessage(), e);
 
 //        } catch (SAXException e) {
 //            throw new ServletException("Error while serializing results: " + e.getMessage(), e);
             
-        } catch (Throwable e){
-            LOG.error(e.getMessage(), e);
-            throw new ServletException("An error occurred: "
+        } catch (Throwable e) {
+            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
+            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
                     + e.getMessage(), e);
         }
     }
@@ -467,12 +468,14 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
 	private void flushError(HttpServletResponse response, HttpServletResponse wrappedResponse) throws IOException {
-        byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
-        if (data != null) {
-            response.setContentType(wrappedResponse.getContentType());
-            response.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
-            response.getOutputStream().write(data);
-            response.flushBuffer();
+        if (!response.isCommitted()) {
+            byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
+            if (data != null) {
+                response.setContentType(wrappedResponse.getContentType());
+                response.setCharacterEncoding(wrappedResponse.getCharacterEncoding());
+                response.getOutputStream().write(data);
+                response.flushBuffer();
+            }
         }
     }
 
@@ -791,7 +794,7 @@ public class XQueryURLRewrite extends HttpServlet {
                     }
                 }
                 if (controllerDoc == null) {
-                    LOG.warn("XQueryURLRewrite controller could not be found");
+                    LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
                     return null;
                 }
 
