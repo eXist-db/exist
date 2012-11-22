@@ -22,8 +22,6 @@
 package org.exist.webdav;
 
 import com.bradmcevoy.http.CollectionResource;
-
-
 import com.bradmcevoy.http.Auth;
 import com.bradmcevoy.http.CopyableResource;
 import com.bradmcevoy.http.DeletableResource;
@@ -42,9 +40,9 @@ import com.bradmcevoy.http.exceptions.ConflictException;
 import com.bradmcevoy.http.exceptions.LockedException;
 import com.bradmcevoy.http.exceptions.NotAuthorizedException;
 import com.bradmcevoy.http.exceptions.PreConditionFailedException;
-
 import com.bradmcevoy.http.webdav.DefaultUserAgentHelper;
 import com.bradmcevoy.http.webdav.UserAgentHelper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -129,8 +127,9 @@ public class MiltonDocument extends MiltonResource
             userAgentHelper=new DefaultUserAgentHelper();
         }
 
-        if(LOG.isTraceEnabled())
+        if(LOG.isTraceEnabled()) {
             LOG.trace("DOCUMENT:" + uri.toString());
+        }
         
         resourceXmldbUri = uri;
         brokerPool = pool;
@@ -287,8 +286,10 @@ public class MiltonDocument extends MiltonResource
                     // Returns the exact size, default behaviour for Finder, 
                     // or when set by a system property
                     
-                    LOG.debug("Serializing XML to /dev/null to determine size"
-                            + " (" + resourceXmldbUri + ") MacFinder="+isMacFinder );
+                    if(LOG.isDebugEnabled()){
+                        LOG.debug("Serializing XML to /dev/null to determine size"
+                                + " (" + resourceXmldbUri + ") MacFinder="+isMacFinder );
+                    }
 
                     // Stream document to '/dev/null' and count bytes
                     ByteCountOutputStream counter = new ByteCountOutputStream();
@@ -329,8 +330,9 @@ public class MiltonDocument extends MiltonResource
                     // to a buffer first. isMacFinder is not needed
 
                     try {
-                        LOG.debug("Serializing XML to virtual file"
-                                + " (" + resourceXmldbUri + ")");
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("Serializing XML to virtual file" + " (" + resourceXmldbUri + ")");
+                        }
 
                         vtf = new VirtualTempFile();
                         existDocument.stream(vtf);
@@ -366,7 +368,9 @@ public class MiltonDocument extends MiltonResource
             size = existDocument.getContentLength();
         }
         
-        LOG.debug("Size=" + size + " (" + resourceXmldbUri + ")");
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Size=" + size + " (" + resourceXmldbUri + ")");
+        }
         return size;
         
     }
@@ -407,8 +411,9 @@ public class MiltonDocument extends MiltonResource
 
         org.exist.dom.LockToken inputToken = convertToken(timeout, lockInfo);
 
-        if(LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Lock: " + resourceXmldbUri);
+        }
         
         LockResult lr = null;
         try {
@@ -438,8 +443,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
+        }
 
         LockResult lr = null;
         try {
@@ -473,8 +479,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("Unlock: " + resourceXmldbUri);
+        }
         
         try {
             existDocument.unlock();
@@ -495,8 +502,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public LockToken getCurrentLock() {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("getLock: " + resourceXmldbUri);
+        }
         
         org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
 
@@ -520,8 +528,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("moveTo: " + resourceXmldbUri + " newName=" + newName);
+        }
 
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
@@ -540,8 +549,9 @@ public class MiltonDocument extends MiltonResource
     @Override
     public void copyTo(CollectionResource rDest, String newName) {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug("copyTo: " + resourceXmldbUri + " newName=" + newName);
+        }
         
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {

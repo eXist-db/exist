@@ -174,7 +174,10 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             // quick fail
             return null;
         }
-        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        }
         
         String retValue = super.resolveIdentifier(xri);
         LOG.debug("Resolved " + (retValue!=null));
@@ -195,7 +198,9 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             return null;
         }
         
-        LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
+        }
         XMLInputSource retValue = super.resolveEntity(xri);
         
         

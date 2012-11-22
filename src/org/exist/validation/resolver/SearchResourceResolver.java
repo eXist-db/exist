@@ -66,7 +66,10 @@ public class SearchResourceResolver implements XMLEntityResolver {
             // quick fail
             return null;
         }
-        LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
+        }
 
 
         String resourcePath = null;
@@ -91,7 +94,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
             LOG.debug("Searching publicId '"+xri.getPublicId()+"' in catalogs in database from "+collection+"...");
             
             String catalogPath = databaseResources.findCatalogWithDTD(collection, xri.getPublicId(), user);
-            LOG.info("Found publicId in catalog '"+catalogPath+"'");
+            LOG.debug("Found publicId in catalog '"+catalogPath+"'");
             if(catalogPath!=null && catalogPath.startsWith("/")){
                 catalogPath="xmldb:exist://"+catalogPath;
             }
@@ -132,7 +135,9 @@ public class SearchResourceResolver implements XMLEntityResolver {
         XMLInputSource xis = new XMLInputSource(xri.getPublicId(),
             xri.getExpandedSystemId(), xri.getBaseSystemId(), is, "UTF-8");
 
-        LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+        if(LOG.isDebugEnabled()) {
+            LOG.debug( "XMLInputSource: "+getXisDetails(xis) );
+        }
         
         return xis;
     }
