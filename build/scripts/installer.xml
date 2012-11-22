@@ -17,6 +17,7 @@
     </taskdef>
     
 	<property name="apps.dir" value="installer/apps"/>
+    <property file="installer/apps.properties"/>
     
 	<target name="commandline-installer">
         <!--ant antfile="build.xml" dir="tools/izpack"/-->
@@ -39,8 +40,30 @@
         <touch file="webapp/WEB-INF/logs/xmldb.log"/>
     </target>
 
-    <target name="xars" description="Scan apps directory and include all .xar files into installer">
+    <target name="download-xars" description="Download xars to include in installer">
+        <delete dir="${apps.dir}"/>
         <mkdir dir="${apps.dir}"/>
+        <echo message="Downloading xar packages to include in installer ..."/>
+        <foreach list="${apps}" target="download-xar" param="xar"></foreach>
+    </target>
+    
+    <target name="download-xar">
+        
+        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
+            <classpath>
+                <pathelement location="tools/ant/lib/asocat-exist.jar"/>
+            </classpath>
+        </taskdef>
+        <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
+            failonerror="false" maxtime="120">
+            <patternset>
+                <include name="**/*.xar"/>
+            </patternset>
+        </fetch>
+    </target>
+    
+    <target name="xars" depends="download-xars" description="Scan apps directory and include all .xar files into installer">
+        <echo message="Processing xar packages ..."/>
         <foreach target="process-xar" param="app">
             <path>
                 <fileset dir="${apps.dir}">
@@ -56,6 +79,7 @@
         </path>
         
         <pathconvert pathsep=";" refid="descriptors" property="apps.list"/>
+        <delete file="installer/install.xml" failonerror="false"/>
         <xslt basedir="installer" in="installer/install.xml.tmpl"
             out="installer/install.xml"
             style="install.xsl" classpathref="classpath.core" 
@@ -83,9 +107,9 @@
         <move file="${apps.dir}/expath-pkg.xml" tofile="${apps.dir}/${app.name}.xml"/>
     </target>
     
-    <target depends="prepare-installer,commandline-installer" name="installer" description="Create installer">
+    <target depends="prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
@@ -110,54 +134,29 @@
         <delete dir="installer/temp"/-->
     </target>
 
-	<target depends="snapshot-installer" name="installer-exe" description="Create .exe from installer">
+    <target name="launcher-exe" description="Create .exe for launcher">
+        <!--taskdef name="launch4j"
+            classname="net.sf.launch4j.ant.Launch4jTask"
+            classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+
+        <echo message="${svn.revision}"/>
+        <launch4j configFile="installer/launch4j-start.xml" fileVersion="${project.version.numeric}.${svn.revision}"
+            txtFileVersion="${project.version}-rev${svn.revision}"
+            productVersion="${project.version.numeric}.${svn.revision}"/-->
+    </target>
+
+	<target depends="installer" name="installer-exe" description="Create .exe from installer">
 		<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
 		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.exe"/>
+
 		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}" 
 			outfile="${inst-exe}" fileVersion="${project.version.numeric}.${svn.revision}"
 			txtFileVersion="${project.version}-rev${svn.revision}"
 			productVersion="${project.version.numeric}.${svn.revision}"/>
 	</target>
-	
-    <target depends="prepare-installer,commandline-installer"
-            name="snapshot-installer" description="Create snapshot installer">
-        <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${svn.revision}.jar"/>
-
-        <property name="install-input" location="installer/install.xml"/>
-        <property name="install-output" location="${inst-jar}"/>
-        <property name="install-basedir" location="."/>
-        <izpack input="${install-input}"
-                output="${install-output}"
-                basedir="${install-basedir}" izPackDir="${izpack.dir}"
-                installerType="standard"/>
-    
-    		<!-- remove traces of jar signing -->
-        <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask">
-		        <classpath refid="classpath.core"/>
-		    </taskdef>
-        <!--unsignjars>
-            <fileset dir=".">
-                <include name="${inst-jar}"/>
-            </fileset>
-        </unsignjars-->
-        
-        <!-- add main-class to jar-manifest -->
-        <jar destfile="${inst-jar}"
-                compress="yes" update="yes">
-            <manifest>
-                <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
-                <attribute name="Project-Name" value="${project.name}"/>
-                <attribute name="Project-Version" value="${project.version}"/>
-                <attribute name="Project-Build" value="${DSTAMP}"/>
-                <attribute name="SVN-Revision" value="${svn.revision}"/>
-            </manifest>
-        </jar>
-
-    </target>
 
     <target name="copy_scripts">
         <filter filtersfile="installer/scripts/scripts.properties" />
