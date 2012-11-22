@@ -11,6 +11,7 @@
         Reference to directories
     -->
     <property name="src" value="./src"/>
+    <property name="modules.lib" value="./lib"/>
     <property name="classes" value="./classes"/>
     
     <property name="top.dir" value="../.."/>
@@ -51,9 +52,6 @@
         <fileset dir="${top.dir}/${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${top.dir}/${lib.user}">
-            <include name="*.jar"/>
-        </fileset>
         <fileset dir="${top.dir}/tools/ant/lib">
             <include name="*.jar"/>
         </fileset>
@@ -74,10 +72,10 @@
     -->
     <condition property="libs.available.xslfo">
         <and>
-            <available file="${top.dir}/${lib.user}/fop.jar"/>
-            <available file="${top.dir}/${lib.user}/batik-all-1.7.jar"/>
-            <available file="${top.dir}/${lib.user}/xmlgraphics-commons-1.5.jar"/>
-            <available file="${top.dir}/${lib.user}/avalon-framework-4.2.0.jar"/>
+            <available file="${modules.lib}/fop.jar"/>
+            <available file="${modules.lib}/batik-all-1.7.jar"/>
+            <available file="${modules.lib}/xmlgraphics-commons-1.5.jar"/>
+            <available file="${modules.lib}/avalon-framework-4.2.0.jar"/>
         </and>
     </condition>
 
@@ -88,7 +86,7 @@
         <echo message="------------------------------------------------------"/>
 
         <!-- Apache FOP -->       
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" url="${include.module.xslfo.url}">
+        <fetch classpathref="classpath.core" dest="${modules.lib}" url="${include.module.xslfo.url}">
             <patternset>
                 <include name="**/fop.jar"/>
                 <include name="**/batik-all-*.jar"/>
@@ -126,7 +124,7 @@
         <echo message="Downloading libraries required by the xmlcalabash module"/>
         <echo message="------------------------------------------------------"/>
 
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+        <fetch classpathref="classpath.core" dest="${modules.lib}" 
                url="${include.module.xmlcalabash.url}" classname="com.xmlcalabash.drivers.Main">
             <patternset>
               <include name="**/calabash.jar"/>
@@ -160,7 +158,7 @@
         <echo message="Downloading libraries required by the jfreechart module"/>
         <echo message="-------------------------------------------------------"/>
 
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+        <fetch classpathref="classpath.core" dest="${modules.lib}" 
                              url="${include.module.jfreechart.url}" classname="org.jfree.chart.JFreeChart"
                              usecache="true">
             <patternset>
@@ -179,7 +177,7 @@
         <echo message="Downloading libraries required by the memcached module"/>
         <echo message="-------------------------------------------------------"/>
         
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+        <fetch classpathref="classpath.core" dest="${modules.lib}" 
             url="${include.module.memcached.url}" classname="net.spy.memcached.MemcachedClient"/>
     </target>
 
@@ -191,7 +189,7 @@
         <echo message="Downloading libraries required by the XMPP module"/>
         <echo message="--------------------------------------------------"/>
 
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+        <fetch classpathref="classpath.core" dest="${modules.lib}" 
                              url="${include.module.xmpp.url}" classname="org.jivesoftware.smack.XMPPConnection">
             <patternset>
                 <include name="**/smack.jar"/>
@@ -209,7 +207,7 @@
         <echo message="Downloading libraries required by the cqlparser module"/>
         <echo message="------------------------------------------------------"/>
 
-        <fetch classpathref="classpath.core" dest="${top.dir}/${lib.user}" 
+        <fetch classpathref="classpath.core" dest="${modules.lib}" 
                url="${include.module.cqlparser.url}" classname="org.z3950.zing.cql.CQLParser" />
 
     </target>
@@ -291,7 +289,7 @@
     </target>
 
     <target name="clean-all">
-        <delete file="${top.dir}/${lib.user}/calabash.jar" failonerror="false"/>
+        <delete file="${modules.lib}/calabash.jar" failonerror="false"/>
     </target>
 
 
