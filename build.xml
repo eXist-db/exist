@@ -34,7 +34,4 @@
     <import file="build/scripts/static-docs.xml"/>
     <import file="build/scripts/subversion.xml"/>
     
-    <!-- Standalone backup/restore distribution build -->  
-    <import file="build/scripts/backrest.xml"/>
-    
 </project>
