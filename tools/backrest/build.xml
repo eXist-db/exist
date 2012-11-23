@@ -7,7 +7,7 @@
     <!-- import common targets -->
     <import file="../../build.xml"/>
     
-    <property name="backrest" value="./backrest"/>
+    <property name="backrest" value="./tools/backrest"/>
     <property name="backrest.src" value="${backrest}/src"/>
     <property name="backrest.dist" value="${backrest}/dist/${project.name}-backrest-${project.version}"/>
     <property name="backrest.lib" value="${backrest.dist}/lib"/>
