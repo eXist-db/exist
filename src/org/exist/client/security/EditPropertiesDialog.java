@@ -561,7 +561,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             dispose();
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not update properties: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
-            return;
         }
     }//GEN-LAST:event_btnSaveActionPerformed
 
@@ -585,7 +584,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             findUserForm.setVisible(true);
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not retrieve list of users: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
-            return;
         }
     }//GEN-LAST:event_btnChangeOwnerActionPerformed
 
@@ -604,7 +602,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             findGroupForm.setVisible(true);
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not retrieve list of groups: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
-            return;
         }
     }//GEN-LAST:event_btnChangeGroupActionPerformed
 
