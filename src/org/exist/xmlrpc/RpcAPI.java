@@ -743,7 +743,7 @@ public interface RpcAPI {
 
         boolean updateGroup(final String name, final Vector<String> managers, final Map<String, String> metadata) throws EXistException, PermissionDeniedException;
         
-        String[] getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException;
+        Vector<String> getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException;
         
         void addAccountToGroup(final String accountName, final String groupName) throws EXistException, PermissionDeniedException;
         
