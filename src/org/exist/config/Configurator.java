@@ -63,6 +63,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -979,7 +980,7 @@ public class Configurator {
             IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            doc.getPermissions().setMode(0770);
+            doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
             fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
             saving.add(fullURI);
             collection.store(txn, broker, info, data, false);
