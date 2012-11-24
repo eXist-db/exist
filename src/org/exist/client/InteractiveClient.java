@@ -152,7 +152,7 @@ public class InteractiveClient {
     protected static String EDIT_CMD = "emacsclient -t $file";
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
-    protected static String URI_DEFAULT = "xmldb:exist://localhost:8443/exist/xmlrpc";
+    protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
