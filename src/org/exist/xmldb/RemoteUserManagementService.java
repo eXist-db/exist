@@ -852,7 +852,13 @@ public class RemoteUserManagementService implements UserManagementService {
                 final List<Object> params = new ArrayList<Object>(1);
                 params.add(groupName);
                 
-                return (String[])parent.getClient().execute("getGroupMembers", params);
+                final Object[] groupMembersResults = (Object[])parent.getClient().execute("getGroupMembers", params);
+                
+                final String[] groupMembers = new String[groupMembersResults.length]; 
+                for(int i = 0; i < groupMembersResults.length; i++) {
+                    groupMembers[i] = groupMembersResults[i].toString();
+                }
+                return groupMembers;
             } catch (final XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);   
             }
