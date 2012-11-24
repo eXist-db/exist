@@ -63,6 +63,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private DefaultTableModel basicPermissionsTableModel = null;
     private DefaultTableModel aclTableModel = null;
 
+    private final static String ERROR_TITLE = "Edit Properties Error";
+    
     /**
      * Creates new form PropertiesDialog
      */
@@ -118,7 +120,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         
             miRemoveAce.setEnabled(false);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -349,17 +351,17 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
         lblGroup.setText("Group:");
 
-        lblResourceValue.setText("jLabel6");
+        lblResourceValue.setText("<resource>");
 
-        lblInternetMediaTypeValue.setText("jLabel6");
+        lblInternetMediaTypeValue.setText("<internet media type>");
 
-        lblCreatedValue.setText("jLabel6");
+        lblCreatedValue.setText("<created>");
 
-        lblLastModifiedValue.setText("jLabel6");
+        lblLastModifiedValue.setText("<last modified>");
 
-        lblOwnerValue.setText("jLabel6");
+        lblOwnerValue.setText("<owner>");
 
-        lblGroupValue.setText("jLabel6");
+        lblGroupValue.setText("<group>");
 
         btnChangeOwner.setText("...");
         btnChangeOwner.addActionListener(new java.awt.event.ActionListener() {
@@ -558,7 +560,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             setVisible(false);
             dispose();
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not update properties: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not update properties: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -582,7 +584,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             findUserForm.setTitle("Change Owner...");
             findUserForm.setVisible(true);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not retrieve list of users: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not retrieve list of users: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
     }//GEN-LAST:event_btnChangeOwnerActionPerformed
@@ -601,7 +603,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             findGroupForm.setTitle("Change Group...");
             findGroupForm.setVisible(true);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not retrieve list of groups: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not retrieve list of groups: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
     }//GEN-LAST:event_btnChangeGroupActionPerformed
@@ -643,7 +645,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnAddAceActionPerformed
 
@@ -668,7 +670,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miInsertAceBeforeActionPerformed
 
@@ -693,7 +695,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
 
@@ -719,7 +721,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         
             miRemoveAce.setEnabled(canModify && aclSelected);
         } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), "Edit Properties Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_tblAclMouseClicked
 

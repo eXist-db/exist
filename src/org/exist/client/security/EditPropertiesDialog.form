@@ -257,32 +257,32 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblResourceValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;resource&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblInternetMediaTypeValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;internet media type&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblCreatedValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;created&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblLastModifiedValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;last modified&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblOwnerValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;owner&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblGroupValue">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel6"/>
+        <Property name="text" type="java.lang.String" value="&lt;group&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnChangeOwner">
