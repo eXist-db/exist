@@ -61,6 +61,7 @@ import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XQueryService;
@@ -384,18 +385,25 @@ public class QueryDialog extends JFrame {
 		return tabs;
 	}
 
-	private List<String> getCollections(Collection root, Collection collection, List<String> collectionsList)
-			throws XMLDBException {
-		if(!collection.getName().equals(root.getName())) {
-			collectionsList.add(root.getName());
+	private List<String> getCollections(final Collection root, final Collection collection, final List<String> collectionsList) throws XMLDBException {
+            if(!collection.getName().equals(root.getName())) {
+                collectionsList.add(root.getName());
+            }
+            final String[] childCollections = root.listChildCollections();
+            Collection child = null;
+            for(int i = 0; i < childCollections.length; i++) {
+                try {
+                    child = root.getChildCollection(childCollections[i]);
+                } catch(final XMLDBException xmldbe) {
+                    if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                        continue;
+                    } else {
+                        throw xmldbe;
+                    }
                 }
-		String[] childCollections= root.listChildCollections();
-		Collection child;
-		for (int i= 0; i < childCollections.length; i++) {
-			child= root.getChildCollection(childCollections[i]);
-			getCollections(child, collection, collectionsList);
-		}
-		return collectionsList;
+                getCollections(child, collection, collectionsList);
+            }
+            return collectionsList;
 	}
 
 	private void open() {
