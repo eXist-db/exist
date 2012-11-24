@@ -22,18 +22,23 @@
 package org.exist.client;
 
 import java.io.File;
-
 import javax.swing.filechooser.FileFilter;
 
 public class ZipFilter extends FileFilter {
-    public boolean accept(File f) {
-        if (f.getName().toLowerCase().endsWith(".zip"))
+    @Override
+    public boolean accept(final File f) {
+        if (f.getName().toLowerCase().endsWith(".zip")) {
             return true;
-        if (f.isDirectory())
-        	return true;
+        }
+        
+        if(f.isDirectory()) {
+            return true;
+        }
+        
         return false;
     }
     
+    @Override
     public String getDescription() {
         return Messages.getString("ClientFrame.166"); 
     }

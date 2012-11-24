@@ -119,6 +119,7 @@ import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -357,7 +358,7 @@ public class ClientFrame extends JFrame
         
         split.setRightComponent(scroll);
         
-        statusbar = new JLabel(Messages.getString("ClientFrame.27") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        statusbar = new JLabel(Messages.getString("ClientFrame.27") + properties.getProperty(InteractiveClient.USER) + "@" + properties.getProperty(InteractiveClient.URI)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         statusbar.setMinimumSize(new Dimension(400, 15));
         statusbar.setBorder(BorderFactory
                 .createBevelBorder(BevelBorder.LOWERED));
@@ -683,19 +684,19 @@ public class ClientFrame extends JFrame
         
         final Properties oldProps=properties;
         properties.putAll(loginData);
-        statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty(InteractiveClient.USER) + "@" + properties.getProperty(InteractiveClient.URI)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 
         try {
             client.shutdown(false);
             client.connect();
             client.reloadCollection();
         } catch (Exception u) {
-            showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty("uri") + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty(InteractiveClient.URI) + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             properties=oldProps;
             try { 
                 client.connect();
             } catch(final Exception uu) {
-                showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty("uri") , uu); //$NON-NLS-1$ //$NON-NLS-2$
+                showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty(InteractiveClient.URI) , uu); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
     }
@@ -923,42 +924,42 @@ public class ClientFrame extends JFrame
         }
     }
     
-    private void moveAction(ActionEvent ev) {
+    private void moveAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
     	PrettyXmldbURI[] collections = null;
         
     	//get an array of collection paths
-        try
-		{    
-        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+        try {    
+            final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
-        } 
-        catch (XMLDBException e)
-		{
+        } catch(final XMLDBException e) {
             showErrorMessage(e.getMessage(), e);
             return;
         }
         
         //prompt the user for a destination collection from the list
-        Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.111"), Messages.getString("ClientFrame.112"), JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]); //$NON-NLS-1$ //$NON-NLS-2$
-        if(val == null)
+        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.111"), Messages.getString("ClientFrame.112"), JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]); //$NON-NLS-1$ //$NON-NLS-2$
+        if(val == null) {
             return;
+        }
 	    
         final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
-        Runnable moveTask = new Runnable() {
+        final Runnable moveTask = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
                     client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                     for(int i = 0; i < res.length; i++) {
                         setStatus(Messages.getString("ClientFrame.115") + res[i].getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.move(res[i].getName(), destinationPath, null);
-                        else
+                        } else {
                             service.moveResource(res[i].getName(), destinationPath, null);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -970,32 +971,36 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private void renameAction(ActionEvent ev) {
+    private void renameAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
-        Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 		
-        if(val == null)
+        if(val == null) {
             return;
+        }
+        
         XmldbURI parseIt;
         try {
-        	parseIt = URIUtils.encodeXmldbUriFor((String)val);
+            parseIt = URIUtils.encodeXmldbUriFor((String)val);
         } catch (URISyntaxException e) {
-        	showErrorMessage(Messages.getString("ClientFrame.121")+e.getMessage(),e); //$NON-NLS-1$
-        	return;
+            showErrorMessage(Messages.getString("ClientFrame.121")+e.getMessage(),e); //$NON-NLS-1$
+            return;
         }
         final XmldbURI destinationFilename = parseIt;
-        Runnable renameTask = new Runnable() {
+        final Runnable renameTask = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
                     client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                     for(int i = 0; i < res.length; i++) {
                         setStatus(Messages.getString("ClientFrame.124") + res[i].getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.move(res[i].getName(), null, destinationFilename);
-                        else
+                        } else {
                             service.moveResource(res[i].getName(), null, destinationFilename);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -1013,10 +1018,9 @@ public class ClientFrame extends JFrame
     	PrettyXmldbURI[] collections = null;
         
     	//get an array of collection paths
-        try
-		{    
-        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+        try {    
+            final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } 
@@ -1050,10 +1054,11 @@ public class ClientFrame extends JFrame
                     	//Its too late and brain hurts - deliriumsky
                     	
                         setStatus(Messages.getString("ClientFrame.132") + res[i].getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.copy(res[i].getName(), destinationPath, null);
-                        else
+                        } else {
                             service.copyResource(res[i].getName(), destinationPath, null);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -1065,14 +1070,20 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private ArrayList<PrettyXmldbURI> getCollections(Collection root, ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException
-    {
+    private ArrayList<PrettyXmldbURI> getCollections(final Collection root, final ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
-        String[] childCollections= root.listChildCollections();
-        Collection child;
-        for(int i = 0; i < childCollections.length; i++)
-        {
-            child = root.getChildCollection(childCollections[i]);
+        final String[] childCollections = root.listChildCollections();
+        Collection child = null;
+        for(int i = 0; i < childCollections.length; i++) {
+            try {
+                child = root.getChildCollection(childCollections[i]);
+            } catch(final XMLDBException xmldbe) {
+                if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                    continue;
+                } else {
+                    throw xmldbe;
+                }
+            }
             getCollections(child, collectionsList);
         }
         return collectionsList;
@@ -1173,22 +1184,22 @@ public class ClientFrame extends JFrame
     }
     
     private void backupAction(ActionEvent ev) {
-        CreateBackupDialog dialog = new CreateBackupDialog(
-                properties.getProperty("uri", "xmldb:exist://"),  
-                properties.getProperty("user", "admin"),  
-                properties.getProperty("password", null), 
-                new File(preferences.get("directory.backup", System.getProperty("user.home")))); 
-        if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), 
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, null, null) == JOptionPane.YES_OPTION) {
+        final CreateBackupDialog dialog = new CreateBackupDialog(
+            properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),  
+            properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),  
+            properties.getProperty(InteractiveClient.PASSWORD, null), 
+            new File(preferences.get("directory.backup", System.getProperty("user.home")))
+        ); 
+        
+        if(JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
             
-            String collection = dialog.getCollection();
-            String backuptarget = dialog.getBackupTarget();
+            final String collection = dialog.getCollection();
+            final String backuptarget = dialog.getBackupTarget();
             
             // DWES add check here?
-            File target=new File(backuptarget);
+            final File target = new File(backuptarget);
             if(target.exists()){
-                if (JOptionPane.showConfirmDialog( this,
+                if(JOptionPane.showConfirmDialog( this,
                         Messages.getString("CreateBackupDialog.6a") + " "
                         + backuptarget + " "
                         + Messages.getString("CreateBackupDialog.6b"),
@@ -1203,11 +1214,12 @@ public class ClientFrame extends JFrame
         
             
             try {
-            Backup backup = new Backup(
-                    properties.getProperty("user", "admin"), 
-                    properties.getProperty("password", null), backuptarget, 
-                    XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") 
-                    + collection));
+                final Backup backup = new Backup(
+                    properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), 
+                    properties.getProperty(InteractiveClient.PASSWORD, null), backuptarget, 
+                    XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") 
+                    + collection)
+                );
                 backup.backup(true, this);
             } catch (XMLDBException e) {
                 showErrorMessage("XMLDBException: " + e.getMessage(), e); //$NON-NLS-1$
@@ -1244,7 +1256,7 @@ public class ClientFrame extends JFrame
 	            String restoreFile = f.getAbsolutePath();
 	            
                     final GuiRestoreListener listener = new GuiRestoreListener(this);    
-                    doRestore(listener, properties.getProperty("user", "admin"), properties.getProperty("password", null), newDbaPass, new File(restoreFile), properties.getProperty("uri", "xmldb:exist://"));
+                    doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, new File(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
                         
         	}
         }
@@ -1264,8 +1276,8 @@ public class ClientFrame extends JFrame
 
                     listener.hideDialog();
 
-                    if (properties.getProperty("user", "admin").equals("admin") && dbaPassword != null) {
-                        properties.setProperty("password", dbaPassword);
+                    if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
+                        properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
                     }
                     
                     SwingUtilities.invokeAndWait(new Runnable() {
@@ -1461,7 +1473,7 @@ public class ClientFrame extends JFrame
                 
             } else {
                 name = XmldbURI.create(".."); //$NON-NLS-1$
-                Account account = service.getAccount(properties.getProperty("user"));
+                Account account = service.getAccount(properties.getProperty(InteractiveClient.USER));
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
             

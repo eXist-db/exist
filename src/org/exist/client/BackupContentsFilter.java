@@ -22,18 +22,23 @@
 package org.exist.client;
 
 import java.io.File;
-
 import javax.swing.filechooser.FileFilter;
 
 public class BackupContentsFilter extends FileFilter {
-    public boolean accept(File f) {
-        if (f.getName().toLowerCase().equals( Messages.getString("ClientFrame.167") ))
+    @Override
+    public boolean accept(final File f) {
+        if (f.getName().toLowerCase().equals(Messages.getString("ClientFrame.167"))) {
             return true;
-        if (f.isDirectory())
+        }
+        
+        if(f.isDirectory()) {
             return true;
+        }
+        
         return false;
     }
     
+    @Override
     public String getDescription() {
         return Messages.getString("ClientFrame.168"); 
     }
