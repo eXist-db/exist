@@ -453,10 +453,17 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("not implemented 'assert-permutation'", false);
 
 		} else if ("assert-count".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-count'", false);
+		    if (expected.getLength() == 1 && "1".equals( expected.item(0).getNodeValue()) && result != null) {
+		        return;
+		    }
+	        Assert.assertEquals(
+                expected.item(0).getNodeValue(), 
+                String.valueOf( result.getItemCount() )
+            );
 
 		} else if ("assert-empty".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-empty'", false);
+		    
+			Assert.assertTrue(result.isEmpty());
 
 		} else if ("assert-xml".equals(type)) {
                     for(int i = 0; i < expected.getLength(); i++) {
