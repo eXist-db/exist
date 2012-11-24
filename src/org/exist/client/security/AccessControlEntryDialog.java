@@ -176,6 +176,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
 
         cmbGroupName.setEditable(true);
         cmbGroupName.setModel(getGroupNameModel());
+        cmbGroupName.setEnabled(false);
         cmbGroupName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbGroupNameActionPerformed(evt);
