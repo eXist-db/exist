@@ -3941,7 +3941,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public String[] getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException {
+    public Vector<String> getGroupMembers(final String groupName) throws EXistException, PermissionDeniedException {
         
         try {
             final List<String> groupMembers = executeWithBroker(new BrokerOperation<List<String>>() {
@@ -3951,7 +3951,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
             });
-            return groupMembers.toArray(new String[groupMembers.size()]);
+            return new Vector<String>(groupMembers);
         } catch (URISyntaxException use) {
             throw new EXistException(use.getMessage(), use);
         }
