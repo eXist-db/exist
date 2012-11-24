@@ -7,7 +7,7 @@
 		<requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
-        <pack200/>
+        <!--pack200/-->
     </info>
 
     <guiprefs height="450" resizable="yes" width="680">
@@ -124,6 +124,10 @@
                 <exclude name="indexes/**/lib/g*.jar"/>
                 <exclude name="indexes/**/lib/j*.jar"/>
                 <exclude name="indexes/**/lib/v*.jar"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/extensions/betterform/main/webapp/WEB-INF"
+                dir="extensions/betterform/main/webapp/WEB-INF">
+                <include name="classes/**"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/build/scripts" dir="build/scripts">
                 <exclude name="**/.*"/>
