@@ -126,37 +126,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     
     private DefaultTableModel getBasicPermissionsTableModel() {
         if(basicPermissionsTableModel == null) {
-            
-            final Object[][] basicPermissions = new Object [][] {
-                {"Read", (permission.getOwnerMode() & Permission.READ) == Permission.READ, (permission.getGroupMode() & Permission.READ) == Permission.READ, (permission.getOtherMode() & Permission.READ) == Permission.READ},
-                {"Write", (permission.getOwnerMode() & Permission.WRITE) == Permission.WRITE, (permission.getGroupMode() & Permission.WRITE) == Permission.WRITE, (permission.getOtherMode() & Permission.WRITE) == Permission.WRITE},
-                {"Execute", (permission.getOwnerMode() & Permission.EXECUTE) == Permission.EXECUTE, (permission.getGroupMode() & Permission.EXECUTE) == Permission.EXECUTE, (permission.getOtherMode() & Permission.EXECUTE) == Permission.EXECUTE}
-            };
-            
-            basicPermissionsTableModel = new javax.swing.table.DefaultTableModel(
-                basicPermissions,
-                new String [] {
-                    "Permission", "User", "Group", "Other"
-                }
-            ) {
-                final Class[] types = new Class [] {
-                    java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
-                };
-                
-                boolean[] canEdit = new boolean [] {
-                    false, true, true, true
-                };
-
-                @Override
-                public Class getColumnClass(int columnIndex) {
-                    return types [columnIndex];
-                }
-
-                @Override
-                public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return canEdit [columnIndex];
-                }
-            };
+            basicPermissionsTableModel = new BasicPermissionsTableModel(permission);
         }
         
         return basicPermissionsTableModel;
@@ -164,49 +134,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     
     private DefaultTableModel getAclTableModel() {
         if(aclTableModel == null) {
-            final Object[][] aces;
-            
-            if(permission instanceof ACLPermission) {
-                final ACLPermission aclPermission = (ACLPermission)permission;
-                aces = new Object[aclPermission.getACECount()][6];
-                for(int i = 0; i < aclPermission.getACECount(); i++) {
-                    aces[i] = new Object[]{
-                        aclPermission.getACETarget(i).toString(),
-                        aclPermission.getACEWho(i),
-                        aclPermission.getACEAccessType(i).toString(),
-                        (aclPermission.getACEMode(i) & Permission.READ) == Permission.READ,
-                        (aclPermission.getACEMode(i) & Permission.WRITE) == Permission.WRITE,
-                        (aclPermission.getACEMode(i) & Permission.EXECUTE) == Permission.EXECUTE,
-                    };
-                }
-            } else {
-                aces = new Object[0][6];
-            }
-                
-            aclTableModel = new javax.swing.table.DefaultTableModel(
-                aces,
-                new String [] {
-                    "Target", "Subject", "Access", "Read", "Write", "Execute"
-                }
-            ) {
-                final Class[] types = new Class [] {
-                    java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
-                };
-
-                boolean[] canEdit = new boolean [] {
-                    false, false, false, true, true, true
-                };
-
-                @Override
-                public Class getColumnClass(int columnIndex) {
-                    return types [columnIndex];
-                }
-
-                @Override
-                public boolean isCellEditable(int rowIndex, int columnIndex) {
-                    return canEdit [columnIndex];
-                }
-            };
+            aclTableModel = new AclTableModel(permission);
         }
         return aclTableModel;
     }
@@ -245,8 +173,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         pmAcl = new javax.swing.JPopupMenu();
         miInsertAceBefore = new javax.swing.JMenuItem();
         miInsertAceAfter = new javax.swing.JMenuItem();
@@ -280,19 +206,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         btnSave = new javax.swing.JButton();
         btnClose = new javax.swing.JButton();
         btnAddAce = new javax.swing.JButton();
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(jTable1);
 
         miInsertAceBefore.setText("Insert ACE before...");
         miInsertAceBefore.addActionListener(new java.awt.event.ActionListener() {
@@ -728,14 +641,12 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private javax.swing.JButton btnChangeOwner;
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnSave;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
-    private javax.swing.JTable jTable1;
     private javax.swing.JLabel lblAccessControlList;
     private javax.swing.JLabel lblBasePermissions;
     private javax.swing.JLabel lblCreated;
