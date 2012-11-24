@@ -47,6 +47,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.exist.security.PermissionDeniedException;
 
 
 public class CreateBackupDialog extends JPanel
@@ -152,28 +153,35 @@ public class CreateBackupDialog extends JPanel
 
     private Vector<String> getAllCollections()
     {
-        Vector<String> list = new Vector<String>();
+        final Vector<String> list = new Vector<String>();
 
         try {
-            Collection root = DatabaseManager.getCollection( uri + XmldbURI.ROOT_COLLECTION, user, passwd );
-            getAllCollections( root, list );
-        }
-        catch( XMLDBException e ) {
+            final Collection root = DatabaseManager.getCollection( uri + XmldbURI.ROOT_COLLECTION, user, passwd );
+            getAllCollections(root, list);
+        } catch(final XMLDBException e) {
             e.printStackTrace();
         }
-        return( list );
+        return(list);
     }
 
 
-    private void getAllCollections( Collection collection, Vector<String> collections ) throws XMLDBException
+    private void getAllCollections(final Collection collection, final Vector<String> collections) throws XMLDBException
     {
         collections.add( collection.getName() );
-        String[]   childCollections = collection.listChildCollections();
-        Collection child;
+        final String[] childCollections = collection.listChildCollections();
+        Collection child = null;
 
-        for( int i = 0; i < childCollections.length; i++ ) {
-            child = collection.getChildCollection( childCollections[i] );
-            getAllCollections( child, collections );
+        for(int i = 0; i < childCollections.length; i++ ) {
+            try {
+                child = collection.getChildCollection(childCollections[i]);
+            } catch(final XMLDBException xmldbe) {
+                if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                    continue;
+                } else {
+                    throw xmldbe;
+                }
+            }
+            getAllCollections(child, collections);
         }
     }
 
