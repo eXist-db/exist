@@ -1477,18 +1477,6 @@ public class ClientFrame extends JFrame
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
             
-            final DialogCompleteWithResponse<Void> callback = new DialogCompleteWithResponse<Void>() {
-                @Override
-                public void complete(final Void v) {
-                    try {
-                        client.reloadCollection();
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(Messages.getString("ClientFrame.197") + e.getMessage(), e); //$NON-NLS-1$
-                        e.printStackTrace();
-                    }
-                }
-            };
-            
             final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
             final int rows[] = fileman.getSelectedRows();
             for(int i = 0; i < rows.length; i++) {
@@ -1496,7 +1484,17 @@ public class ClientFrame extends JFrame
             }
             
             final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, permAider, selected);
-            editPropertiesDialog.addDialogCompleteWithResponseCallback(callback);
+            editPropertiesDialog.addWindowListener(new WindowAdapter(){           
+                @Override
+                public void windowClosed(final WindowEvent e) {
+                    try {
+                        client.reloadCollection();
+                    } catch (final XMLDBException xmldbe) {
+                        showErrorMessage(Messages.getString("ClientFrame.197") + xmldbe.getMessage(), xmldbe); //$NON-NLS-1$
+                        xmldbe.printStackTrace();
+                    }
+                }
+            });
             editPropertiesDialog.setVisible(true);
             
         } catch (XMLDBException e) {
