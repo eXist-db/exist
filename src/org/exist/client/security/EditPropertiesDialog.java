@@ -49,7 +49,7 @@ import org.xmldb.api.base.XMLDBException;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWithResponse<Void> {
+public class EditPropertiesDialog extends javax.swing.JFrame {
     private final UserManagementService userManagementService;
     private final String currentUser;
     private final Collection parent;
@@ -59,8 +59,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
     private final Date lastModified;
     private final PermissionAider permission;
     private final List<ResourceDescriptor> applyTo;
-    
-    private final List<DialogCompleteWithResponse<Void>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Void>>();
     
     private DefaultTableModel basicPermissionsTableModel = null;
     private DefaultTableModel aclTableModel = null;
@@ -229,15 +227,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
         }
         
         return mode;
-    }
-
-    private List<DialogCompleteWithResponse<Void>> getDialogCompleteWithResponseCallbacks() {
-        return dialogCompleteWithResponseCallbacks;
-    }
-
-    @Override
-    public void addDialogCompleteWithResponseCallback(final DialogCompleteWithResponse<Void> dialogCompleteWithResponseCallback) {
-        getDialogCompleteWithResponseCallbacks().add(dialogCompleteWithResponseCallback);
     }
 
     private UserManagementService getUserManagementService() {
@@ -566,10 +555,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame implements DialogWi
                 }
             }
 
-            for(final DialogCompleteWithResponse<Void> callback : getDialogCompleteWithResponseCallbacks()) {
-                callback.complete(null);
-            }
-            
             setVisible(false);
             dispose();
         } catch(final XMLDBException xmldbe) {
