@@ -330,6 +330,7 @@ public class QT3TS_case extends TestCase {
                 	checkResults(node.getLocalName(), node.getChildNodes(), result);
                 }
             } catch (XPathException e) {
+                e.printStackTrace();
             	ErrorCode errorCode = e.getErrorCode();
             	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
             		return;
@@ -418,7 +419,20 @@ public class QT3TS_case extends TestCase {
 	        }
 
 		} else if ("assert-deep-eq".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-deep-eq'", false);
+		    Assert.assertEquals(1, expected.getLength());
+		    final Node node = expected.item(0);
+            String expect = node.getNodeValue();
+
+            StringBuilder got = new StringBuilder();
+            for (int i = 0; i < result.getItemCount(); i++) {
+                got.append(result.itemAt(i).getStringValue());
+                if (i != result.getItemCount() - 1)
+                    got.append(", ");
+            }
+            Assert.assertEquals(
+                expect, 
+                got.toString()
+            );
 		
 		} else if ("assert-true".equals(type)) {
 			Assert.assertTrue("expecting true get false", result.effectiveBooleanValue());
