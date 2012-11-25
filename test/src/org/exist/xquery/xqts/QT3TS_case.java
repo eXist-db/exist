@@ -485,7 +485,15 @@ public class QT3TS_case extends TestCase {
             String[] expect = node.getNodeValue().split(", ");
             
             for (int i = 0; i < result.getItemCount(); i++) {
-                String got = result.itemAt(i).getStringValue();
+                Item item = result.itemAt(i);
+                String got = item.getStringValue();
+                if (item.getType() == Type.STRING) {
+                    got = '"' + got + '"';
+                } else if (item.getType() == Type.BOOLEAN) {
+                    got = got + "()";
+                } else if (item.getType() == Type.FLOAT) {
+                    got = "xs:float('" + got + "')";
+                }
                 
                 boolean found = false;
                 for (int j = 0; j < expect.length; j++) {
