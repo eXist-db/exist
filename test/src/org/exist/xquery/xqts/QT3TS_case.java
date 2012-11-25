@@ -23,17 +23,12 @@ package org.exist.xquery.xqts;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
@@ -153,8 +148,8 @@ public class QT3TS_case extends TestCase {
 	    return enviroments;
     }
     
-    private Sequence getEnviroment(String file, String name, XQueryContext context) {
-    	Sequence enviroment = null;
+    private String getEnviroment(String file, String name) {
+    	String enviroment = null;
     	
 		DBBroker broker = null;
 	    try {
@@ -187,20 +182,16 @@ public class QT3TS_case extends TestCase {
                 for (int j = 0; j < sources.getLength(); j++) {
                 	ElementImpl source = (ElementImpl) sources.item(j);
                 	
-//                	System.out.println(source);
-                	
                 	String role = source.getAttribute("role");
-                    Assert.assertEquals(".", role);
+                    if (!role.equals("."))
+                        continue;
+//                    Assert.assertEquals(".", role);
 
                 	String url = source.getAttribute("file");
                     Assert.assertFalse("".equals(url));
 //                    Assert.assertFalse(enviroments.containsKey(name));
                     Assert.assertNull(enviroment);
-                    try {
-                    	enviroment = enviroment(col+"/"+url);
-					} catch (Exception e) {
-		                Assert.fail(e.getMessage());
-					}
+                    enviroment = col + "/" + url;
                 }
             }
 		} catch (Exception e) {
@@ -235,7 +226,7 @@ public class QT3TS_case extends TestCase {
 	            "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
 	            "let $tc := $testCases//qt:test-case[@name eq \""+tcName+"\"]\n"+
 	            "return $tc";
-	
+
 	            ResourceSet results = service.query(query);
 	            
 	            Assert.assertFalse("", results.getSize() != 1);
@@ -249,7 +240,8 @@ public class QT3TS_case extends TestCase {
 	
 	            //compile & evaluate
 	            String caseScript = null;
-	
+
+                List<String> staticDocs = new ArrayList<String>();
 	            NodeList childNodes = TC.getChildNodes();
 	            for (int i = 0; i < childNodes.getLength(); i++) {
 	                Node child = childNodes.item(i);
@@ -271,7 +263,8 @@ public class QT3TS_case extends TestCase {
 	                            String ref = el.getAttribute("ref");
 	                            if (!(ref == null || "empty".equals(ref) || ref.isEmpty())) {
 	                            	Assert.assertNull(contextSequence);
-	                            	contextSequence = getEnviroment(file, ref, context);
+	                            	String contextDoc = getEnviroment(file, ref);
+                                    staticDocs.add(contextDoc);
 	                            } else {
 	                                NodeList _childNodes = el.getChildNodes();
 	                                for (int j = 0; j < _childNodes.getLength(); j++) {
@@ -296,12 +289,6 @@ public class QT3TS_case extends TestCase {
 	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
 	                                            	Assert.assertEquals(1, res.getItemCount());
 	                                            	var.setValue(res);
-                                                } else if ("xs:string".equals(type)) {
-                                                    var.setStaticType(Type.STRING);
-                                                    
-                                                    Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
-                                                    Assert.assertEquals(1, res.getItemCount());
-                                                    var.setValue(res);
 	                                        	} else {
 	                                        		Assert.fail("unknown type '"+type+"'");
 	                                        	}
@@ -329,7 +316,15 @@ public class QT3TS_case extends TestCase {
 	                        ;
 	                }
 	            }
-                
+
+                if (staticDocs.size() > 0) {
+                    XmldbURI contextDocs[] = new XmldbURI[staticDocs.size()];
+                    int i = 0;
+                    for (String path : staticDocs) {
+                        contextDocs[i++] = XmldbURI.createInternal(path);
+                    }
+                    context.setStaticallyKnownDocuments(contextDocs);
+                }
                 final CompiledXQuery compiled = xquery.compile(context, xquery3declaration+caseScript);
                 result = xquery.execute(compiled, contextSequence);
 
@@ -338,14 +333,20 @@ public class QT3TS_case extends TestCase {
                 	checkResults(node.getLocalName(), node.getChildNodes(), result);
                 }
             } catch (XPathException e) {
-                e.printStackTrace();
-            	ErrorCode errorCode = e.getErrorCode();
-            	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
-            		return;
-            	
+                String msg = e.getMessage();
+                for (String code : extectedError) {
+                    if (msg.contains(code))
+                        return;
+                }
+
+//                e.printStackTrace();
+//            	ErrorCode errorCode = e.getErrorCode();
+//            	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
+//            		return;
+
             	if (extectedError.contains("*"))
             	    return;
-            	
+
                 Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
             } catch (Exception e) { 
             	e.printStackTrace();
@@ -416,32 +417,32 @@ public class QT3TS_case extends TestCase {
 	        for (int i = 0; i < expected.getLength(); i++) {
 	        	final Node node = expected.item(i);
 	        	String expect = node.getNodeValue();
-//	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'"))) {
-//	        		//? check is it xs:string ?
-//		        	Assert.assertEquals(
-//	        			expect.substring(1, expect.length()-1), 
-//	        			result.itemAt(i).getStringValue()
-//	    			); 
-//	        	} else if (expect.startsWith("xs:float(")) {
-//	                final int actual = result.itemAt(i).getType();
-//	                if (Type.subTypeOf(actual, Type.getType("xs:float"))) {
-//	                    
-//	                    Assert.assertEquals(
-//                            expect.substring(10, expect.length()-2), 
-//                            result.itemAt(i).getStringValue()
-//                        ); 
-//	                    return;
-//	                }
-//
-//	                Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
-//	                        Type.getType(expect), 
-//	                        result.itemAt(i).getType()
-//	                    ); 
-//	                
-//	        	} else 
+	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'"))) {
+	        		//? check is it xs:string ?
+		        	Assert.assertEquals(
+	        			expect.substring(1, expect.length()-1), 
+	        			result.itemAt(i).getStringValue()
+	    			); 
+	        	} else if (expect.startsWith("xs:float(")) {
+	                final int actual = result.itemAt(i).getType();
+	                if (Type.subTypeOf(actual, Type.getType("xs:float"))) {
+	                    
+	                    Assert.assertEquals(
+                            expect.substring(10, expect.length()-2), 
+                            result.itemAt(i).getStringValue()
+                        ); 
+	                    return;
+	                }
+
+	                Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
+	                        Type.getType(expect), 
+	                        result.itemAt(i).getType()
+	                    ); 
+	                
+	        	} else 
 		        	Assert.assertEquals(
 	        			expect, 
-	        			itemToString(result.itemAt(i))
+	        			result.itemAt(i).getStringValue()
 	    			); 
 	        }
 
@@ -452,7 +453,7 @@ public class QT3TS_case extends TestCase {
 
             StringBuilder got = new StringBuilder();
             for (int i = 0; i < result.getItemCount(); i++) {
-                got.append( itemToString( result.itemAt(i) ) );
+                got.append(result.itemAt(i).getStringValue());
                 if (i != result.getItemCount() - 1)
                     got.append(", ");
             }
@@ -496,7 +497,15 @@ public class QT3TS_case extends TestCase {
             String[] expect = node.getNodeValue().split(", ");
             
             for (int i = 0; i < result.getItemCount(); i++) {
-                String got = itemToString(result.itemAt(i));
+                Item item = result.itemAt(i);
+                String got = item.getStringValue();
+                if (item.getType() == Type.STRING) {
+                    got = '"' + got + '"';
+                } else if (item.getType() == Type.BOOLEAN) {
+                    got = got + "()";
+                } else if (item.getType() == Type.FLOAT) {
+                    got = "xs:float('" + got + "')";
+                }
                 
                 boolean found = false;
                 for (int j = 0; j < expect.length; j++) {
@@ -528,40 +537,39 @@ public class QT3TS_case extends TestCase {
             );
 
 		} else if ("assert-empty".equals(type)) {
-		    
-			Assert.assertTrue(result.isEmpty());
+            Assert.assertTrue(result.isEmpty());
 
 		} else if ("assert-xml".equals(type)) {
-            for(int i = 0; i < expected.getLength(); i++) {
-                final int ic = i;
-                boolean ignorePrefixes = false;
-                final Node exNode = expected.item(i);
-                String exString = null;
-                if(exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-                    final Attr attr = (Attr)exNode;
-                    if(attr.getName().equals("file")) {
-                        final Sequence seq = enviroment(XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue());
-                        StringBuilder sb = new StringBuilder();
-                        for(int j = 0; j < seq.getItemCount(); j++) {
-                            sb.append(toString(seq.itemAt(j)));
+                    for(int i = 0; i < expected.getLength(); i++) {
+                        final int ic = i;
+                        boolean ignorePrefixes = false;
+                        final Node exNode = expected.item(i);
+                        String exString = null;
+                        if(exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+                            final Attr attr = (Attr)exNode;
+                            if(attr.getName().equals("file")) {
+                                final Sequence seq = enviroment(XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue());
+                                StringBuilder sb = new StringBuilder();
+                                for(int j = 0; j < seq.getItemCount(); j++) {
+                                    sb.append(toString(seq.itemAt(j)));
+                                }
+                                exString = sb.toString();
+                            } else if(attr.getName().equals("ignore-prefixes")) {
+                                ignorePrefixes = Boolean.parseBoolean(attr.getValue());
+                                exString = expected.item(++i).getNodeValue();
+                            } else {
+                                Assert.fail("eXist XQTS3 Test Suite Error: Unknown Attribute '" +attr.getName() + "'");
+                                return;
+                            }
+                        } else {
+                            exString = exNode.getNodeValue();
                         }
-                        exString = sb.toString();
-                    } else if(attr.getName().equals("ignore-prefixes")) {
-                        ignorePrefixes = Boolean.parseBoolean(attr.getValue());
-                        exString = expected.item(++i).getNodeValue();
-                    } else {
-                        Assert.fail("eXist XQTS3 Test Suite Error: Unknown Attribute '" +attr.getName() + "'");
-                        return;
-                    }
-                } else {
-                    exString = exNode.getNodeValue();
-                }
 
-                final Item acNode = result.itemAt(ic);
-                Assert.assertTrue(
-                    diffXML(exString, toString(acNode), ignorePrefixes)
-                );
-            }
+                        final Item acNode = result.itemAt(ic);
+                        Assert.assertTrue(
+                            diffXML(exString, toString(acNode), ignorePrefixes)
+                        );
+                    }
 
 		} else if ("error".equals(type)) {
 			Assert.assertTrue("unhandled error "+expected, false);
@@ -569,26 +577,6 @@ public class QT3TS_case extends TestCase {
 		} else {
 			Assert.assertTrue("unknown '"+type+"'", false);
 		}
-    }
-    
-    private String itemToString(Item item) throws XPathException {
-
-        StringBuilder sb = new StringBuilder();
-
-        if (item.getType() == Type.STRING) {
-            sb.append('"').append(item.getStringValue()).append('"');
-        
-        } else if (item.getType() == Type.BOOLEAN) {
-            sb.append(item.getStringValue()).append("()");
-
-        } else if (item.getType() == Type.FLOAT) {
-            sb.append("xs:float('").append(item.getStringValue()).append("')");
-
-        } else {
-            sb.append(item.getStringValue());
-        }
-        
-        return sb.toString();
     }
     
     private static final Properties properties = new Properties();
