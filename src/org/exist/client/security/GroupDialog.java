@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;

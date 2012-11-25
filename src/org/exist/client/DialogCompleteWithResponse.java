@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.client.security;
+package org.exist.client;
 
 /**
  *

@@ -21,6 +21,8 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
+import org.exist.client.DialogWithResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;

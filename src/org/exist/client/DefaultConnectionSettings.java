@@ -1,3 +1,5 @@
+package org.exist.client;
+
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-2012 The eXist Project
@@ -19,13 +21,25 @@
  *
  *  $Id$
  */
-package org.exist.client.security;
+public class DefaultConnectionSettings extends Connection {
 
-/**
- *
- * @author Adam Retter <adam.retter@googlemail.com>
- */
-public interface DialogWithResponse<T> {
+    public DefaultConnectionSettings(final String username, final String password, final String uri, final boolean ssl) {
+        super(username, password, uri, ssl);
+    }
+
+    public DefaultConnectionSettings(final String username, final String password, final String configuration) {
+        super(username, password, configuration);
+    }
+
+    public void setUri(final String uri) {
+        this.uri = uri;
+    }
+
+    public void setSsl(final boolean ssl) {
+        this.ssl = ssl;
+    }
     
-    public void addDialogCompleteWithResponseCallback(final DialogCompleteWithResponse<T> dialogCompleteWithResponseCallback);
+    public void setConfiguration(final String configuration) {
+        this.configuration = configuration;
+    }
 }

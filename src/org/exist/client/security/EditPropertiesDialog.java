@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
