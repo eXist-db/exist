@@ -190,7 +190,7 @@ public class ClientFrame extends JFrame
         this.properties = properties;
         this.client = client;
         
-        this.setIconImage(InteractiveClient.getExistIconImage(getClass()));
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         
         setupComponents();
         addWindowListener(new WindowAdapter() {
