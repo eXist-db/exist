@@ -113,7 +113,6 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.client.security.DialogCompleteWithResponse;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
@@ -190,6 +189,8 @@ public class ClientFrame extends JFrame
         this.path = path;
         this.properties = properties;
         this.client = client;
+        
+        this.setIconImage(InteractiveClient.getExistIconImage(getClass()));
         
         setupComponents();
         addWindowListener(new WindowAdapter() {
@@ -616,9 +617,10 @@ public class ClientFrame extends JFrame
         item = new JMenuItem(Messages.getString("ClientFrame.69"), KeyEvent.VK_U); //$NON-NLS-1$
         item.setToolTipText(Messages.getString("ClientFrame.70")); //$NON-NLS-1$
         item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
                 // load properties modified by the login panel
-                Properties loginData=getLoginData(properties);
+                final Properties loginData = getLoginData(properties);
                 reconnectClient(loginData);
             }
         });
@@ -678,7 +680,7 @@ public class ClientFrame extends JFrame
     }
     
     public void reconnectClient(final Properties loginData) {
-        if(loginData == null) {
+        if(loginData == null || loginData.isEmpty()) {
             return;
         }
         
@@ -1746,20 +1748,42 @@ public class ClientFrame extends JFrame
     
     /**
      * @param   properties pass properties to the login panel
-     * @return  the modiefied properties
+     * @return  the modified properties
      */
-    
-    protected static Properties getLoginData(Properties properties) {
+    protected static Properties getLoginData(final Properties props) {
 
-        LoginPanel login = new LoginPanel(properties);
-        if (JOptionPane.showOptionDialog(null, login, 
-                SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " "
-                + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login" ,
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, null, null) == JOptionPane.OK_OPTION) {
-            return login.getProperties();
-        }
-        return null;
+        final Properties properties = new Properties();
+        
+        final DefaultConnectionSettings defaultConnectionSettings = new DefaultConnectionSettings(
+            props.getProperty(InteractiveClient.USER, InteractiveClient.USER_DEFAULT),
+            props.getProperty(InteractiveClient.PASSWORD, ""),
+            InteractiveClient.URI_DEFAULT,
+            Boolean.parseBoolean(props.getProperty(InteractiveClient.SSL_ENABLE, InteractiveClient.SSL_ENABLE_DEFAULT))
+        );
+        defaultConnectionSettings.setConfiguration(props.getProperty(InteractiveClient.CONFIGURATION));
+                
+        final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings);
+        
+        connectionDialog.setTitle(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login");
+        
+        connectionDialog.addDialogCompleteWithResponseCallback(new DialogCompleteWithResponse<Connection>(){
+            @Override
+            public void complete(final Connection connection) {
+                properties.setProperty(InteractiveClient.USER, connection.getUsername());
+                properties.setProperty(InteractiveClient.PASSWORD, connection.getPassword());
+                
+                if(!connection.getUri().isEmpty()) {
+                    properties.setProperty(InteractiveClient.URI, connection.getUri());
+                    properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
+                } else {
+                    properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
+                }
+            }
+        });
+        
+        connectionDialog.setVisible(true);
+        
+        return properties;
     }
     
     public static void showErrorMessage(String message, Throwable t) {

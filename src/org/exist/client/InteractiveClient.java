@@ -22,6 +22,7 @@
 package org.exist.client;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -66,6 +67,8 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
@@ -153,6 +156,7 @@ public class InteractiveClient {
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
     protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String SSL_ENABLE_DEFAULT="FALSE";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
@@ -307,14 +311,18 @@ public class InteractiveClient {
         
         // secure empty configuration
         String configuration=properties.getProperty("configuration");
-        if (configuration != null && !"".equals(configuration)) database.setProperty("configuration", configuration);
+        
+        if(configuration != null && !"".equals(configuration)) {
+            database.setProperty("configuration", configuration);
+        }
+        
         DatabaseManager.registerDatabase(database);
-        current = DatabaseManager.getCollection(properties.getProperty("uri")
-        + path, properties.getProperty("user"), properties
-                .getProperty("password"));
-        if (startGUI && frame != null)
-            frame.setStatus("connected to " + properties.getProperty("uri")
-            + " as user " + properties.getProperty("user"));
+        
+        final String collectionUri = properties.getProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString()) + path;
+        current = DatabaseManager.getCollection(collectionUri, properties.getProperty("user"), properties.getProperty("password"));
+        if (startGUI && frame != null) {
+            frame.setStatus("connected to " + properties.getProperty("uri") + " as user " + properties.getProperty("user"));
+        }
     }
     
     /**
@@ -2320,8 +2328,8 @@ public class InteractiveClient {
      */
     private boolean getGuiLoginData(Properties props){
         
-        Properties loginData = ClientFrame.getLoginData(properties);
-        if (loginData == null) {
+        final Properties loginData = ClientFrame.getLoginData(props);
+        if (loginData == null || loginData.isEmpty()) {
             // User pressed <cancel>
             return false;
         }
@@ -2822,4 +2830,16 @@ public class InteractiveClient {
         
     }
     
+    public static ImageIcon getExistIcon(final Class clazz) {
+        return new javax.swing.ImageIcon(clazz.getResource("/org/exist/client/icons/x.png"));
+    }
+    
+    public static Image getExistIconImage(final Class clazz) {
+        try {
+            return ImageIO.read(clazz.getResource("/org/exist/client/icons/x.png"));
+        } catch(final IOException ioe) {
+            ioe.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
