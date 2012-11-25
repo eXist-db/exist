@@ -102,21 +102,27 @@ public class CastExpression extends AbstractExpression {
             Item item = seq.itemAt(0);
 
             if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ATOMIC))
-				throw new XPathException(this, ErrorCodes.XPTY0004, "cardinality error: sequence with more than one item is not allowed here");
+				throw new XPathException(this, 
+				        ErrorCodes.XPTY0004, 
+				        "cardinality error: sequence with more than one item is not allowed here");
             try {
                 // casting to QName needs special treatment
                 if(requiredType == Type.QNAME) {
                     if (item.getType() == Type.QNAME)
                         result = item.toSequence();
+                    
                     else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
                         result = new QNameValue(context, item.getStringValue());
+                    
                     } else {
-                        throw new XPathException(this, "Cannot cast " + Type.getTypeName(item.getType()) +
-                                " to xs:QName");
+                        throw new XPathException(this, 
+                            ErrorCodes.XPTY0004, 
+                            "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
                     }
                 } else
                     result = item.convertTo(requiredType);
-    		} catch(XPathException e) {
+    		
+            } catch(XPathException e) {
                 e.setLocation(e.getLine(), e.getColumn());
                 throw e;
             }

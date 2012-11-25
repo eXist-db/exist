@@ -28,6 +28,7 @@ import org.exist.util.XMLChar;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -87,8 +88,9 @@ public class FunCodepointsToString extends BasicFunction {
                 long next = ((NumericValue)i.nextItem()).getLong();
                 if (next < 0 || next > Integer.MAX_VALUE ||
                         !XMLChar.isValid((int)next)) {
-                    throw new XPathException("err:FOCH0001: Codepoint " +
-                        next + " is not a valid character.");
+                    throw new XPathException(this,
+                            ErrorCodes.FOCH0001, 
+                            "Codepoint " + next + " is not a valid character.");
                 }
                 if (next < 65536) {
                     buf.append((char)next);
