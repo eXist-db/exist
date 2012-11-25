@@ -405,13 +405,29 @@ public class QT3TS_case extends TestCase {
 	        for (int i = 0; i < expected.getLength(); i++) {
 	        	final Node node = expected.item(i);
 	        	String expect = node.getNodeValue();
-	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'")))
+	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'"))) {
 	        		//? check is it xs:string ?
 		        	Assert.assertEquals(
 	        			expect.substring(1, expect.length()-1), 
 	        			result.itemAt(i).getStringValue()
 	    			); 
-	        	else
+	        	} else if (expect.startsWith("xs:float(")) {
+	                final int actual = result.itemAt(i).getType();
+	                if (Type.subTypeOf(actual, Type.getType("xs:float"))) {
+	                    
+	                    Assert.assertEquals(
+                            expect.substring(10, expect.length()-2), 
+                            result.itemAt(i).getStringValue()
+                        ); 
+	                    return;
+	                }
+
+	                Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
+	                        Type.getType(expect), 
+	                        result.itemAt(i).getType()
+	                    ); 
+	                
+	        	} else 
 		        	Assert.assertEquals(
 	        			expect, 
 	        			result.itemAt(i).getStringValue()
@@ -464,7 +480,32 @@ public class QT3TS_case extends TestCase {
 			Assert.assertTrue("not implemented 'serialization-matches'", false);
 
 		} else if ("assert-permutation".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-permutation'", false);
+            Assert.assertEquals(1, expected.getLength());
+            final Node node = expected.item(0);
+            String[] expect = node.getNodeValue().split(", ");
+            
+            for (int i = 0; i < result.getItemCount(); i++) {
+                String got = result.itemAt(i).getStringValue();
+                
+                boolean found = false;
+                for (int j = 0; j < expect.length; j++) {
+                    if (expect[j] != null && got.equals(expect[j])) {
+                        expect[j] = null;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    Assert.fail("Unexpected '"+got+"'");
+                }
+            }
+            
+            for (int j = 0; j < expect.length; j++) {
+                if (expect[j] != null) {
+                    Assert.fail("Unmatched '"+expect[j]+"'");
+                }
+            }
 
 		} else if ("assert-count".equals(type)) {
 		    if (expected.getLength() == 1 && "1".equals( expected.item(0).getNodeValue()) && result != null) {
@@ -512,7 +553,7 @@ public class QT3TS_case extends TestCase {
                     }
 
 		} else if ("error".equals(type)) {
-			Assert.assertTrue("not implemented 'error'", false);
+			Assert.assertTrue("unhandled error "+expected, false);
 
 		} else {
 			Assert.assertTrue("unknown '"+type+"'", false);
