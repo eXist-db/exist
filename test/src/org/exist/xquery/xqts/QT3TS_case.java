@@ -153,7 +153,7 @@ public class QT3TS_case extends TestCase {
 	    return enviroments;
     }
     
-    private Sequence getEnviroment(String file, String name) {
+    private Sequence getEnviroment(String file, String name, XQueryContext context) {
     	Sequence enviroment = null;
     	
 		DBBroker broker = null;
@@ -186,6 +186,8 @@ public class QT3TS_case extends TestCase {
                 NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
                 for (int j = 0; j < sources.getLength(); j++) {
                 	ElementImpl source = (ElementImpl) sources.item(j);
+                	
+//                	System.out.println(source);
                 	
                 	String role = source.getAttribute("role");
                     Assert.assertEquals(".", role);
@@ -269,7 +271,7 @@ public class QT3TS_case extends TestCase {
 	                            String ref = el.getAttribute("ref");
 	                            if (!(ref == null || "empty".equals(ref) || ref.isEmpty())) {
 	                            	Assert.assertNull(contextSequence);
-	                            	contextSequence = getEnviroment(file, ref);
+	                            	contextSequence = getEnviroment(file, ref, context);
 	                            } else {
 	                                NodeList _childNodes = el.getChildNodes();
 	                                for (int j = 0; j < _childNodes.getLength(); j++) {
@@ -294,6 +296,12 @@ public class QT3TS_case extends TestCase {
 	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
 	                                            	Assert.assertEquals(1, res.getItemCount());
 	                                            	var.setValue(res);
+                                                } else if ("xs:string".equals(type)) {
+                                                    var.setStaticType(Type.STRING);
+                                                    
+                                                    Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                                    Assert.assertEquals(1, res.getItemCount());
+                                                    var.setValue(res);
 	                                        	} else {
 	                                        		Assert.fail("unknown type '"+type+"'");
 	                                        	}
@@ -334,6 +342,9 @@ public class QT3TS_case extends TestCase {
             	ErrorCode errorCode = e.getErrorCode();
             	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
             		return;
+            	
+            	if (extectedError.contains("*"))
+            	    return;
             	
                 Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
             } catch (Exception e) { 

@@ -91,7 +91,12 @@ public class FunDocAvailable extends Function {
             result = BooleanValue.FALSE;
         } else {
             String path = arg.itemAt(0).getStringValue();
-            result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
+            try {
+                result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
+            } catch (XPathException e) {
+                e.prependMessage(ErrorCodes.FODC0005, "");
+                throw e;
+            }
         }
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
