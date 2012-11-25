@@ -2833,13 +2833,4 @@ public class InteractiveClient {
     public static ImageIcon getExistIcon(final Class clazz) {
         return new javax.swing.ImageIcon(clazz.getResource("/org/exist/client/icons/x.png"));
     }
-    
-    public static Image getExistIconImage(final Class clazz) {
-        try {
-            return ImageIO.read(clazz.getResource("/org/exist/client/icons/x.png"));
-        } catch(final IOException ioe) {
-            ioe.printStackTrace();
-            return null;
-        }
-    }
 }
