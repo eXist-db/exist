@@ -59,12 +59,12 @@ public class FavouriteConnection extends Connection implements Comparable<Object
      * @param url the url
      */
     public FavouriteConnection(final String name, final String username, final String password, final String url, final boolean ssl) {
-        super(name, password, url, ssl);
+        super(username, password, url, ssl);
         this.name = name;
     }
     
     public FavouriteConnection(final String name, final String username, final String password, final String configuration) {
-        super(name, password, configuration);
+        super(username, password, configuration);
         this.name = name;
     }
 
