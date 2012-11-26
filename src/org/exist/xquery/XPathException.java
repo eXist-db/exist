@@ -230,9 +230,9 @@ public class XPathException extends Exception {
     }
 
     public void prependMessage(ErrorCode errorCode, String msg) {
-        if (this.errorCode == ErrorCodes.ERROR) {
+//        if (this.errorCode == ErrorCodes.ERROR) {
             this.errorCode = errorCode;
-        }
+//        }
         message = msg + message;
     }
 
