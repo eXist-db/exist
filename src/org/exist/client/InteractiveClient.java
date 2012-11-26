@@ -150,14 +150,16 @@ public class InteractiveClient {
     public static final String DRIVER="driver";
     public static final String SSL_ENABLE="ssl-enable";
     public static final String LOCAL_MODE = "local-mode-opt";
+    public static final String NO_EMBED_MODE = "NO_EMBED_MODE";
     
     // values
     protected static String EDIT_CMD = "emacsclient -t $file";
     protected static String ENCODING = "ISO-8859-1";            //TODO this should probably be UTF-8?
     protected static String PASS = null;
     protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
-    protected static String SSL_ENABLE_DEFAULT="FALSE";
+    protected static String SSL_ENABLE_DEFAULT = "FALSE";
     protected static String LOCAL_MODE_DEFAULT = "FALSE";
+    protected static String NO_EMBED_MODE_DEFAULT = "FALSE";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
@@ -172,7 +174,7 @@ public class InteractiveClient {
         defaultProps.setProperty("colors", "false");
         defaultProps.setProperty("permissions", "false");
         defaultProps.setProperty("expand-xincludes", "true");
-        defaultProps.setProperty(SSL_ENABLE, "false");
+        defaultProps.setProperty(SSL_ENABLE, SSL_ENABLE_DEFAULT);
     }
     
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
@@ -1980,7 +1982,7 @@ public class InteractiveClient {
                     break;
                     //
                 case CommandlineOptions.NO_EMBED_OPT :
-                    props.setProperty("NO_EMBED_MODE", "TRUE");
+                    props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
                     break;
                 case CommandlineOptions.QUIET_OPT :
                     quiet = true;

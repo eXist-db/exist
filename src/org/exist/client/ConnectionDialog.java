@@ -45,8 +45,10 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     private ComboBoxModel connectionTypeModel = null;
     private DefaultListModel favouritesModel = null;
     private final DefaultConnectionSettings defaultConnectionSettings;
-    private final List<DialogCompleteWithResponse<Connection>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Connection>>();
+    private final boolean disableEmbeddedConnectionType;
     private File config;
+    
+    private final List<DialogCompleteWithResponse<Connection>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Connection>>();
     
     private enum ConnectionType {
         Remote,
@@ -56,12 +58,16 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     /**
      * Creates new form ConnectionForm
      */
-    public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault) {
+    public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault, final boolean disableEmbeddedConnectionType) {
         super(parent, modal);
         this.defaultConnectionSettings = defaultConnectionSettings;
         this.config = new File(defaultConnectionSettings.getConfiguration());
+        this.disableEmbeddedConnectionType = disableEmbeddedConnectionType;
         initComponents();
-        if(embeddedByDefault) {
+        
+        if(disableEmbeddedConnectionType) {
+            cmbConnectionType.removeItem(ConnectionType.Embedded);
+        } else if(embeddedByDefault) {
             cmbConnectionType.setSelectedItem(ConnectionType.Embedded);
             toggleRemoteEmbeddedDisplayTab(false);
         }
@@ -568,19 +574,28 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         }
         
         if(evt.getClickCount() == 2 && lstFavourites.getSelectedIndex() >= 0) {
-            final FavouriteConnection f = (FavouriteConnection)lstFavourites.getSelectedValue();
-            txtUsername.setText(f.getUsername());
-            txtPassword.setText(f.getPassword());
+            final FavouriteConnection favourite = (FavouriteConnection)lstFavourites.getSelectedValue();
             
-            cmbConnectionType.setSelectedItem(f.getUri().equals("") ? ConnectionType.Embedded : ConnectionType.Remote);
-            tpConnectionType.setSelectedIndex(cmbConnectionType.getSelectedIndex());
+            final boolean favouriteHasEmbeddedMode = favourite.getUri().equals("");
             
-            txtServerUri.setText(f.getUri());
-            chkSsl.setSelected(Boolean.valueOf(f.isSsl()));
+            if(disableEmbeddedConnectionType && favouriteHasEmbeddedMode) {
+                JOptionPane.showMessageDialog(this, "The favourite connection '" + favourite.getName() + "' uses an Embedded Connection Type, but Embedded Connections have been disabled at client startup.", "Favourite Selection Error", JOptionPane.ERROR_MESSAGE);
+                lstFavourites.clearSelection();
+            } else {
             
-            txtConfiguration.setText(f.getConfiguration());
-            
-            txtPassword.requestFocusInWindow(); //set focus to password field
+                txtUsername.setText(favourite.getUsername());
+                txtPassword.setText(favourite.getPassword());
+
+                cmbConnectionType.setSelectedItem(favouriteHasEmbeddedMode ? ConnectionType.Embedded : ConnectionType.Remote);
+                tpConnectionType.setSelectedIndex(cmbConnectionType.getSelectedIndex());
+
+                txtServerUri.setText(favourite.getUri());
+                chkSsl.setSelected(Boolean.valueOf(favourite.isSsl()));
+
+                txtConfiguration.setText(favourite.getConfiguration());
+
+                txtPassword.requestFocusInWindow(); //set focus to password field
+            }
         }
     }//GEN-LAST:event_lstFavouritesMouseClicked
 
