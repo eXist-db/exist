@@ -74,7 +74,13 @@ set_client_java_options() {
     if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
 	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
     fi
-    JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+
+    OS=`uname`
+    if [ "${OS}" == "Darwin" ]; then
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS} -Xdock:icon=${EXIST_HOME}/icon.png";
+    else
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+    fi
 }
 
 set_java_options() {
