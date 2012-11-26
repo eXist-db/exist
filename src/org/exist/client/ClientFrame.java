@@ -21,7 +21,6 @@
  */
 package org.exist.client;
 
-import com.siemens.ct.exi.values.BooleanValue;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
