@@ -299,7 +299,7 @@ public class InteractiveClient {
      * @exception Exception   Description of the Exception
      */
     protected void connect() throws Exception {
-        final String uri = properties.getProperty(InteractiveClient.URI);
+        String uri = properties.getProperty(InteractiveClient.URI);
         if (startGUI && frame != null) {
             frame.setStatus("connecting to " + uri);
         }
@@ -1989,8 +1989,8 @@ public class InteractiveClient {
                     verbose = true;
                     break;
                 case CommandlineOptions.LOCAL_OPT :
-                    //props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
                     props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
+                    props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
                     break;
                 case CommandlineOptions.USER_OPT :
                     props.setProperty(InteractiveClient.USER, option.getArgument());
