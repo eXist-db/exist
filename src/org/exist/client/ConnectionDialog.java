@@ -35,7 +35,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
-import org.exist.xmldb.XmldbURI;
 
 /**
  *
@@ -57,11 +56,15 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     /**
      * Creates new form ConnectionForm
      */
-    public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings) {
+    public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault) {
         super(parent, modal);
         this.defaultConnectionSettings = defaultConnectionSettings;
         this.config = new File(defaultConnectionSettings.getConfiguration());
         initComponents();
+        if(embeddedByDefault) {
+            cmbConnectionType.setSelectedItem(ConnectionType.Embedded);
+            toggleRemoteEmbeddedDisplayTab(false);
+        }
     }
 
     private ComboBoxModel getConnectionTypeModel() {
@@ -86,7 +89,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         final List<FavouriteConnection> favourites = new ArrayList<FavouriteConnection>();
         
         // Write a node for each item in model.
-        for(int i=0; i < model.getSize(); i++) {
+        for(int i = 0; i < model.getSize(); i++) {
             favourites.add((FavouriteConnection)model.getElementAt(i));
         }
         
@@ -469,6 +472,10 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     private void cmbConnectionTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbConnectionTypeActionPerformed
         final boolean remote = (((ConnectionType)cmbConnectionType.getSelectedItem()) == ConnectionType.Remote);
         
+        toggleRemoteEmbeddedDisplayTab(remote);
+    }//GEN-LAST:event_cmbConnectionTypeActionPerformed
+
+    private void toggleRemoteEmbeddedDisplayTab(final boolean remote) {
         //remote controls
         lblServerUri.setEnabled(remote);
         lblServerUri.setVisible(remote);
@@ -490,9 +497,8 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         } else {
             tpConnectionType.setSelectedIndex(1);
         }
-        
-    }//GEN-LAST:event_cmbConnectionTypeActionPerformed
-
+    }
+    
     private void btnSelectConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectConfigurationActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
