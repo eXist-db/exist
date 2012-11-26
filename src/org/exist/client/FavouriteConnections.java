@@ -21,19 +21,18 @@
  */
 package org.exist.client;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import java.io.IOException;
 import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.BackingStoreException;
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
+import java.util.prefs.Preferences;
 import org.exist.xmldb.XmldbURI;
 
 public class FavouriteConnections {
@@ -66,7 +65,12 @@ public class FavouriteConnections {
                 
                 // Fill node
                 favouriteNode.put(FavouriteConnection.USERNAME, favourite.getUsername());
-                favouriteNode.put(FavouriteConnection.PASSWORD, favourite.getPassword());
+                
+                //do NOT store passwords in plain-text in users preferences
+                //favouriteNode.put(FavouriteConnection.PASSWORD, favourite.getPassword());
+                favouriteNode.put(FavouriteConnection.PASSWORD, "");
+                //TODO hash passwords before storing - need to implement server-side login with hashes
+                
                 favouriteNode.put(FavouriteConnection.URI, favourite.getUri());
                 favouriteNode.put(FavouriteConnection.CONFIGURATION, favourite.getConfiguration());
                 favouriteNode.put(FavouriteConnection.SSL, Boolean.valueOf(favourite.isSsl()).toString().toUpperCase());
@@ -123,22 +127,39 @@ public class FavouriteConnections {
     }
     
     private static FavouriteConnection getRemoteFavourite(final String favouriteNodeName, final Preferences node) {
-        return new FavouriteConnection(
+        //do NOT store passwords in plain-text in users preferences
+        /* return new FavouriteConnection(
             favouriteNodeName,
             node.get(FavouriteConnection.USERNAME, ""),
             node.get(FavouriteConnection.PASSWORD, ""),
             node.get(FavouriteConnection.URI, ""),
             Boolean.parseBoolean(node.get(FavouriteConnection.SSL, "FALSE"))
-        );
+        );*/
+        return new FavouriteConnection(
+            favouriteNodeName,
+            node.get(FavouriteConnection.USERNAME, ""),
+            "",
+            node.get(FavouriteConnection.URI, ""),
+            Boolean.parseBoolean(node.get(FavouriteConnection.SSL, "FALSE"))
+        ); 
+        //TODO hash passwords before storing - need to implement server-side login with hashes
     }
     
     private static FavouriteConnection getEmbeddedFavourite(final String favouriteNodeName, final Preferences node) {
-        return new FavouriteConnection(
+        //do NOT store passwords in plain-text in users preferences
+        /* return new FavouriteConnection(
             favouriteNodeName,
             node.get(FavouriteConnection.USERNAME, ""),
             node.get(FavouriteConnection.PASSWORD, ""),
             node.get(FavouriteConnection.CONFIGURATION, "")
+        ); */ 
+        return new FavouriteConnection(
+            favouriteNodeName,
+            node.get(FavouriteConnection.USERNAME, ""),
+            "",
+            node.get(FavouriteConnection.CONFIGURATION, "")
         );
+        //TODO hash passwords before storing - need to implement server-side login with hashes
     }
     
     public static void importFromFile(final File f) throws IOException, InvalidPreferencesFormatException {
