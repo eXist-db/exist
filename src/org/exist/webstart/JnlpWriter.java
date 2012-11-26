@@ -138,6 +138,12 @@ public class JnlpWriter {
             writer.writeEndElement();
 
             writer.writeStartElement("icon");
+            writer.writeAttribute("href", "jnlp_icon_128x128.gif");
+            writer.writeAttribute("width", "128");
+            writer.writeAttribute("height", "128");
+            writer.writeEndElement();
+            
+            writer.writeStartElement("icon");
             writer.writeAttribute("href", "jnlp_icon_64x64.gif");
             writer.writeAttribute("width", "64");
             writer.writeAttribute("height", "64");
