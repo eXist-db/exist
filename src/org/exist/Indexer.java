@@ -551,7 +551,7 @@ public class Indexer extends Observable implements ContentHandler,
             if (charBuf != null) {
                 if (charBuf.isWhitespaceOnly()) {
                     if (suppressWSmixed) {
-                        if (charBuf.length() > 0 && last.getChildCount() > 0) {
+                        if (charBuf.length() > 0 && !(last.getChildCount() == 0 && (normalize & XMLString.SUPPRESS_LEADING_WS) != 0)) {
                             text.setData(charBuf);
                             text.setOwnerDocument(document);
                             last.appendChildInternal(prevNode, text);
