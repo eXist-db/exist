@@ -67,7 +67,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import jline.Completor;
 import jline.ConsoleReader;
@@ -2349,13 +2348,13 @@ public class InteractiveClient {
     private void connectToDatabase() {
         try {
             connect();
-        } catch (Exception cnf) {
-            if (startGUI && frame != null)
+        } catch(final Exception cnf) {
+            if(startGUI && frame != null) {
                 frame.setStatus("Connection to database failed; message: "
                         + cnf.getMessage());
-            else
-                System.err.println("Connection to database failed; message: "
-                        + cnf.getMessage());
+            } else {
+                System.err.println("Connection to database failed; message: " + cnf.getMessage());
+            }
             cnf.printStackTrace();
             System.exit(1);
         }
