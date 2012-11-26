@@ -1758,7 +1758,11 @@ public class ClientFrame extends JFrame
         if(props.getProperty(InteractiveClient.URI) == null || props.getProperty(InteractiveClient.URI).isEmpty()) {
             serverUri = InteractiveClient.URI_DEFAULT;
         } else {
-            serverUri = props.getProperty(InteractiveClient.URI);
+            if(Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, "FALSE"))) {
+                serverUri = InteractiveClient.URI_DEFAULT;
+            } else {
+                serverUri = props.getProperty(InteractiveClient.URI);
+            }
         }
         
         final DefaultConnectionSettings defaultConnectionSettings = new DefaultConnectionSettings(
@@ -1782,6 +1786,7 @@ public class ClientFrame extends JFrame
                 if(!connection.getUri().isEmpty()) {
                     properties.setProperty(InteractiveClient.URI, connection.getUri());
                     properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
+                    properties.setProperty(InteractiveClient.LOCAL_MODE, "FALSE");
                 } else {
                     properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
                     properties.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
