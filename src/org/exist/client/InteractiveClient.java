@@ -150,13 +150,15 @@ public class InteractiveClient {
     public static final String CONFIGURATION="configuration";
     public static final String DRIVER="driver";
     public static final String SSL_ENABLE="ssl-enable";
+    public static final String LOCAL_MODE = "local-mode-opt";
     
     // values
     protected static String EDIT_CMD = "emacsclient -t $file";
-    protected static String ENCODING = "ISO-8859-1";
+    protected static String ENCODING = "ISO-8859-1";            //TODO this should probably be UTF-8?
     protected static String PASS = null;
     protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
     protected static String SSL_ENABLE_DEFAULT="FALSE";
+    protected static String LOCAL_MODE_DEFAULT = "FALSE";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
@@ -298,30 +300,32 @@ public class InteractiveClient {
      * @exception Exception   Description of the Exception
      */
     protected void connect() throws Exception {
-        if (startGUI && frame != null)
-            frame.setStatus("connecting to " + properties.getProperty("uri"));
+        final String uri = properties.getProperty(InteractiveClient.URI);
+        if (startGUI && frame != null) {
+            frame.setStatus("connecting to " + uri);
+        }
         
         // Create database
-        Class<?> cl = Class.forName(properties.getProperty(DRIVER));
-        Database database = (Database) cl.newInstance();
+        final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
+        final Database database = (Database) cl.newInstance();
         
         // Configure database
         database.setProperty("create-database", "true");       
         database.setProperty("ssl-enable", properties.getProperty(SSL_ENABLE));       
         
         // secure empty configuration
-        String configuration=properties.getProperty("configuration");
+        final String configuration = properties.getProperty(InteractiveClient.CONFIGURATION);
         
-        if(configuration != null && !"".equals(configuration)) {
+        if(configuration != null && (!configuration.isEmpty())) {
             database.setProperty("configuration", configuration);
         }
         
         DatabaseManager.registerDatabase(database);
         
-        final String collectionUri = properties.getProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString()) + path;
+        final String collectionUri = uri + path;
         current = DatabaseManager.getCollection(collectionUri, properties.getProperty("user"), properties.getProperty("password"));
         if (startGUI && frame != null) {
-            frame.setStatus("connected to " + properties.getProperty("uri") + " as user " + properties.getProperty("user"));
+            frame.setStatus("connected to " + uri + " as user " + properties.getProperty("user"));
         }
     }
     
@@ -1986,20 +1990,21 @@ public class InteractiveClient {
                     verbose = true;
                     break;
                 case CommandlineOptions.LOCAL_OPT :
-                    props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
+                    //props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
+                    props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
                     break;
                 case CommandlineOptions.USER_OPT :
-                    props.setProperty("user", option.getArgument());
+                    props.setProperty(InteractiveClient.USER, option.getArgument());
                     if (!cOpt.passwdSpecified)
                         cOpt.needPasswd = true;
                     break;
                 case CommandlineOptions.PASS_OPT :
-                    props.setProperty("password", option.getArgument());
+                    props.setProperty(InteractiveClient.PASSWORD, option.getArgument());
                     cOpt.needPasswd = false;
                     cOpt.passwdSpecified = true;
                     break;
                 case CommandlineOptions.CONFIG_OPT :
-                    properties.setProperty("configuration", option
+                    properties.setProperty(InteractiveClient.CONFIGURATION, option
                             .getArgument());
                     break;
                 case CommandlineOptions.COLLECTION_OPT :

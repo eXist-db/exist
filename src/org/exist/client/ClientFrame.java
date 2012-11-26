@@ -21,6 +21,7 @@
  */
 package org.exist.client;
 
+import com.siemens.ct.exi.values.BooleanValue;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -1754,15 +1755,22 @@ public class ClientFrame extends JFrame
 
         final Properties properties = new Properties();
         
+        final String serverUri;
+        if(props.getProperty(InteractiveClient.URI) == null || props.getProperty(InteractiveClient.URI).isEmpty()) {
+            serverUri = InteractiveClient.URI_DEFAULT;
+        } else {
+            serverUri = props.getProperty(InteractiveClient.URI);
+        }
+        
         final DefaultConnectionSettings defaultConnectionSettings = new DefaultConnectionSettings(
             props.getProperty(InteractiveClient.USER, InteractiveClient.USER_DEFAULT),
             props.getProperty(InteractiveClient.PASSWORD, ""),
-            InteractiveClient.URI_DEFAULT,
+            serverUri,
             Boolean.parseBoolean(props.getProperty(InteractiveClient.SSL_ENABLE, InteractiveClient.SSL_ENABLE_DEFAULT))
         );
         defaultConnectionSettings.setConfiguration(props.getProperty(InteractiveClient.CONFIGURATION));
                 
-        final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings);
+        final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings, Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, InteractiveClient.LOCAL_MODE_DEFAULT)));
         
         connectionDialog.setTitle(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login");
         
@@ -1777,6 +1785,7 @@ public class ClientFrame extends JFrame
                     properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
                 } else {
                     properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
+                    properties.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
                 }
             }
         });
