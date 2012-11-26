@@ -65,6 +65,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             cmbConnectionType.setSelectedItem(ConnectionType.Embedded);
             toggleRemoteEmbeddedDisplayTab(false);
         }
+        txtPassword.requestFocusInWindow(); //set focus to password field
     }
 
     private ComboBoxModel getConnectionTypeModel() {
@@ -571,6 +572,8 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             chkSsl.setSelected(Boolean.valueOf(f.isSsl()));
             
             txtConfiguration.setText(f.getConfiguration());
+            
+            txtPassword.requestFocusInWindow(); //set focus to password field
         }
     }//GEN-LAST:event_lstFavouritesMouseClicked
 
