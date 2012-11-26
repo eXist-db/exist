@@ -495,8 +495,15 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         
         if(remote) {
             tpConnectionType.setSelectedIndex(0);
+            if(txtServerUri.getText().isEmpty()) {
+                txtServerUri.setText(defaultConnectionSettings.getUri());
+                chkSsl.setSelected(defaultConnectionSettings.isSsl());
+            }
         } else {
             tpConnectionType.setSelectedIndex(1);
+            if(txtConfiguration.getText().isEmpty()) {
+                txtConfiguration.setText(defaultConnectionSettings.getConfiguration());
+            }
         }
     }
     
