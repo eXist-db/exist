@@ -276,11 +276,11 @@ public class JnlpWriter {
         String type = null;
         if (filename.endsWith(".gif")) {
             type = "image/gif";
+        } else if (filename.endsWith(".png")) {
+            type = "image/png";
         } else {
             type = "image/jpeg";
         }
-
-        
         
         InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
         if (is == null) {
