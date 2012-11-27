@@ -30,7 +30,6 @@ import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
 import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
@@ -53,7 +52,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class Restore {
     
-    private final static Logger LOG = Logger.getLogger(Restore.class);
+//    private final static Logger LOG = Logger.getLogger(Restore.class);
 
     public void restore(RestoreListener listener, String username, String password, String newAdminPass, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         
@@ -157,6 +156,9 @@ public class Restore {
         final Collection root = DatabaseManager.getCollection(dbUri.toString(), username, password);
         final UserManagementService mgmt = (UserManagementService)root.getService("UserManagementService", "1.0");
         final Account dba  = mgmt.getAccount(SecurityManager.DBA_USER);
+        if (dba == null) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "'"+SecurityManager.DBA_USER+"' account can't be found.");
+        }
         dba.setPassword(adminPassword);
         mgmt.updateAccount(dba);
 
