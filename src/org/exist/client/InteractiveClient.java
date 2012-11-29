@@ -1984,6 +1984,9 @@ public class InteractiveClient {
                 case CommandlineOptions.NO_EMBED_OPT :
                     props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
                     break;
+                case CommandlineOptions.USE_SSL_OPT :
+                    props.setProperty(InteractiveClient.SSL_ENABLE, "TRUE");
+                    break;
                 case CommandlineOptions.QUIET_OPT :
                     quiet = true;
                     break;
