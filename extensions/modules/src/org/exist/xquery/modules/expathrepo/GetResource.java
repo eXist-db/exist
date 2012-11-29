@@ -1,8 +1,6 @@
 package org.exist.xquery.modules.expathrepo;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -15,8 +13,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryDocument;
-import org.exist.xquery.value.BinaryValueFromFile;
-import org.exist.xquery.value.BinaryValueManager;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -25,6 +21,7 @@ import org.exist.xquery.value.Type;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Packages;
+import org.expath.pkg.repo.Storage;
 
 public class GetResource extends BasicFunction {
 
@@ -56,9 +53,11 @@ public class GetResource extends BasicFunction {
 			for (Packages pp : repo.getParentRepo().listPackages()) {
 				pkg = pp.latest();
 				if (pkg.getName().equals(pkgName)) {
-					StreamSource source = pkg.getResolver().resolveResource(path);
-					if (source != null) {
+					try {
+						StreamSource source = pkg.getResolver().resolveResource(path);
 						return Base64BinaryDocument.getInstance(context, source.getInputStream());
+					} catch (Storage.NotExistException ex) {
+						// nothing
 					}
 				}
 			}

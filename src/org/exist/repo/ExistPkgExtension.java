@@ -23,6 +23,7 @@ import org.expath.pkg.repo.DescriptorExtension;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Storage.NotExistException;
 import org.expath.pkg.repo.parser.XMLStreamHelper;
 
 /**
@@ -71,8 +72,10 @@ public class ExistPkgExtension
         // stuff.  We need to find a proper way to make that at the real install
         // phase though (during the "xrepo install").
         if ( ! info.getJars().isEmpty() ) {
-            StreamSource classpath = pkg.getResolver().resolveResource(".exist/classpath.txt");
-            if ( classpath == null ) {
+            try {
+                pkg.getResolver().resolveResource(".exist/classpath.txt");
+            }
+            catch ( NotExistException ex ) {
                 setupPackage(pkg, info);
             }
         }
@@ -154,10 +157,13 @@ public class ExistPkgExtension
         try {
             FileWriter out = new FileWriter(classpath);
             for ( String jar : jars ) {
-                StreamSource jar_src = res.resolveComponent(jar);
-                if ( jar_src == null ) {
+                StreamSource jar_src;
+                try {
+                    jar_src = res.resolveComponent(jar);
+                }
+                catch ( NotExistException ex ) {
                     String msg = "Inconsistent package descriptor, the JAR file is not in the package: ";
-                    throw new PackageException(msg + jar);
+                    throw new PackageException(msg + jar, ex);
                 }
                 URI uri = URI.create(jar_src.getSystemId());
                 File file = new File(uri);
