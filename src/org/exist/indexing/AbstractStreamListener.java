@@ -79,4 +79,7 @@ public abstract class AbstractStreamListener implements StreamListener {
     @Override
     public abstract IndexWorker getWorker();
 
+    @Override
+    public void metadata(Txn transaction, String key, Object value) {
+    }
 }
