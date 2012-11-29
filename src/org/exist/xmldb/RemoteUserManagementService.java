@@ -660,6 +660,17 @@ public class RemoteUserManagementService implements UserManagementService {
                 u.addGroup((String) groups[i]);
             }
             
+            u.setEnabled(Boolean.valueOf((String)tab.get("enabled")));
+                
+            final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
+            for(final String key : metadata.keySet()) {
+                if(AXSchemaType.valueOfNamespace(key) != null) {
+                    u.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                } else if(EXistSchemaType.valueOfNamespace(key) != null) {
+                    u.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                }
+            }
+            
             return u;
                         
         } catch (XmlRpcException e) {

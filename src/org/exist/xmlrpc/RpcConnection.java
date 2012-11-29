@@ -1846,25 +1846,36 @@ public class RpcConnection implements RpcAPI {
         try {
             broker = factory.getBrokerPool().get(user);
 
-            Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
-	        if (u == null)
-	            throw new EXistException("account '" + name + "' does not exist");
+            final Account u = factory.getBrokerPool().getSecurityManager().getAccount(name);
+            if (u == null) {
+                throw new EXistException("account '" + name + "' does not exist");
+            }
 	        
-	        HashMap<String, Object> tab = new HashMap<String, Object>();
-	        tab.put("name", u.getName());
-	        
-	        Vector<String> groups = new Vector<String>();
-	        String[] gl = u.getGroups();
-			for (int i = 0; i < gl.length; i++)
-				groups.addElement(gl[i]);
-	        tab.put("groups", groups);
-	        
-	        Group dg = u.getDefaultGroup();
-	        tab.put("default-group-id", dg.getId());
-	        tab.put("default-group-realmId", dg.getRealmId());
-	        tab.put("default-group-name", dg.getName());
-                
-	        return tab;
+            final HashMap<String, Object> tab = new HashMap<String, Object>();
+            tab.put("uid", user.getId());
+            tab.put("name", u.getName());
+
+            final Vector<String> groups = new Vector<String>();
+            final String[] groupNames = u.getGroups();
+            for(final String groupName : groupNames) {
+                groups.addElement(groupName);
+            }
+            tab.put("groups", groups);
+
+            final Group dg = u.getDefaultGroup();
+            tab.put("default-group-id", dg.getId());
+            tab.put("default-group-realmId", dg.getRealmId());
+            tab.put("default-group-name", dg.getName());
+            
+            tab.put("enabled", Boolean.toString(u.isEnabled()));
+            
+            final Map<String, String> metadata = new HashMap<String, String>();
+            for(final SchemaType key : u.getMetadataKeys()) {
+                metadata.put(key.getNamespace(), u.getMetadataValue(key));
+            }
+            tab.put("metadata", metadata);
+            
+            return tab;
         
         } finally {
             factory.getBrokerPool().release(broker);
