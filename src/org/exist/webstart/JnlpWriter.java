@@ -194,6 +194,12 @@ public class JnlpWriter {
             writer.writeStartElement("argument");
             writer.writeCharacters("--no-embedded-mode");
             writer.writeEndElement();
+            
+            if(request.isSecure()){
+                writer.writeStartElement("argument");
+                writer.writeCharacters("--use-ssl");
+                writer.writeEndElement();
+            }
 
             writer.writeEndElement(); // application-desc
 
