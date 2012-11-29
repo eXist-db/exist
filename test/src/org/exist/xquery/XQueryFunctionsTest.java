@@ -373,7 +373,7 @@ public class XQueryFunctionsTest extends TestCase {
                 message = e.getMessage();
             }
             //depends whether we have strict type checking or not
-            assertTrue(message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
+            assertTrue(message.indexOf("XPTY0004") > -1 | message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
 			
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -420,7 +420,7 @@ public class XQueryFunctionsTest extends TestCase {
                 message = e.getMessage();
             }
             //depends whether we have strict type checking or not
-            assertTrue(message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
+            assertTrue(message.indexOf("XPTY0004") > -1 | message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
 
 		} catch (XMLDBException e) {
 			e.printStackTrace();
