@@ -1771,7 +1771,7 @@ public class ClientFrame extends JFrame
             serverUri,
             Boolean.parseBoolean(props.getProperty(InteractiveClient.SSL_ENABLE, InteractiveClient.SSL_ENABLE_DEFAULT))
         );
-        defaultConnectionSettings.setConfiguration(props.getProperty(InteractiveClient.CONFIGURATION));
+        defaultConnectionSettings.setConfiguration(props.getProperty(InteractiveClient.CONFIGURATION,""));
                 
         final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings, Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, InteractiveClient.LOCAL_MODE_DEFAULT)), Boolean.parseBoolean(props.getProperty(InteractiveClient.NO_EMBED_MODE, InteractiveClient.NO_EMBED_MODE_DEFAULT)));
         
