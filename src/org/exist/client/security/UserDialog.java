@@ -42,7 +42,7 @@ public class UserDialog extends javax.swing.JFrame {
 
     private static final long serialVersionUID = -7544980948396443454L;
 
-    private final Pattern PTN_USERNAME = Pattern.compile("[a-zA-Z0-9\\-\\._]{3,}");
+    private final Pattern PTN_USERNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
     private final Pattern PTN_PASSWORD = Pattern.compile(".{3,}");
     private final UserManagementService userManagementService;
     private SortedListModel<String> availableGroupsModel = null;
