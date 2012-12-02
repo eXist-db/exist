@@ -89,8 +89,6 @@ import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.*;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.FileSystemStorage;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
