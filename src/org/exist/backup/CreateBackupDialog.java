@@ -38,6 +38,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.io.File;
+import java.util.Collections;
 
 import java.util.Vector;
 
@@ -89,6 +90,7 @@ public class CreateBackupDialog extends JPanel
         add( label );
 
         Vector<String> v = getAllCollections();
+        Collections.sort(v);
         collections = new JComboBox( v );
         c.gridx     = 1;
         c.gridy     = 0;
