@@ -53,7 +53,6 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(OneParamFunctions.signature[8], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[9], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[10], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[11], OneParamFunctions.class),
         
         new FunctionDef(NoParamFunctions.signature[0], NoParamFunctions.class),
         
