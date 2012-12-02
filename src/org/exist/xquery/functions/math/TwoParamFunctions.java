@@ -60,7 +60,7 @@ public class TwoParamFunctions extends BasicFunction {
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
                 ),
         new FunctionSignature(
-                new QName("power", MathModule.NAMESPACE_URI),
+                new QName("pow", MathModule.NAMESPACE_URI),
                 "Returns the result of raising the first argument to the power of the second.",
                 new SequenceType[] {
                     new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
