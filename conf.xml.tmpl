@@ -125,7 +125,7 @@
             with high load will never be shrinked. A negative value means that
             shrinkage will not be performed.
 
-		 - doc-ids:
+         - doc-ids:
             how document ids are managed by eXist. Takes the values
             "default" or "incremental".
             
@@ -157,23 +157,23 @@
     -->
     <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-		doc-ids="default" minDiskSpace="128M">
+        doc-ids="default" minDiskSpace="128M">
 
-       	<!--
-       	    Startup Triggers are executed before the database becomes generally available
-       	    for service and have complete access to the database as the SYSTEM broker
-       	-->
-       	<startup>
-       		<triggers>
-       		    <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
-       			<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-			<!-- 
-			 ! AutoDeploymentTrigger will install any .xar application package it finds
-			 ! in the autodeploy directory unless the application has already been installed
-			 ! in the db. -->	
-       			<trigger class="org.exist.repo.AutoDeploymentTrigger"/>
-       		</triggers>
-       	</startup>
+        <!--
+            Startup Triggers are executed before the database becomes generally available
+            for service and have complete access to the database as the SYSTEM broker
+        -->
+        <startup>
+            <triggers>
+                <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
+                <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
+            <!-- 
+             ! AutoDeploymentTrigger will install any .xar application package it finds
+             ! in the autodeploy directory unless the application has already been installed
+             ! in the db. -->   
+                <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
+            </triggers>
+        </startup>
 
 
         <!-- 
@@ -609,14 +609,14 @@
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
-    	<!--
-        	You may add as many custom-filters as you want, they will be executed
-        	in the order you specify them. Thus:
-        	
-        	<custom-filter class="org.exist.FirstFilter"/>
-        	<custom-filter class="org.exist.SecondFilter"/>
+        <!--
+            You may add as many custom-filters as you want, they will be executed
+            in the order you specify them. Thus:
+            
+            <custom-filter class="org.exist.FirstFilter"/>
+            <custom-filter class="org.exist.SecondFilter"/>
         -->
-    	
+        
         <!--
         <custom-filter class="org.exist.versioning.VersioningFilter"/>
         -->
@@ -717,7 +717,7 @@
     <!-- TODO: add attribute 'enabled="yes/no"' -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no" 
             enable-query-rewriting="yes" backwardCompatible="no" 
-			enforce-index-use="always"
+            enforce-index-use="always"
             raise-error-on-failed-retrieval="no">
         
         <builtin-modules>
@@ -736,7 +736,9 @@
                 Default Modules 
             -->
             <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />
+            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
             <module uri="http://exist-db.org/xquery/mail"       class="org.exist.xquery.modules.mail.MailModule" />
+            <module uri="http://exist-db.org/xquery/math"       class="org.exist.xquery.modules.math.MathModule" />
             <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
             <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
             <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
@@ -745,10 +747,13 @@
             <module uri="http://exist-db.org/xquery/text"       class="org.exist.xquery.functions.text.TextModule" />
             <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
             <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule" />
-            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
-			<module uri="http://www.w3.org/2005/xpath-functions/map" class="org.exist.xquery.functions.map.MapModule" />
+
+            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule" />
+            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
+            
+            
 
             <!-- 
                 EXPath Modules 
@@ -837,14 +842,13 @@
             <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
             <module uri="http://exist-db.org/xquery/cqlparser"           class="org.exist.xquery.modules.cqlparser.CQLParserModule" />
             <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
-            <module uri="http://exist-db.org/xquery/exi"  				class="org.exist.xquery.modules.exi.ExiModule" />
+            <module uri="http://exist-db.org/xquery/exi"                class="org.exist.xquery.modules.exi.ExiModule" />
             <module uri="http://exist-db.org/xquery/examples"           class="org.exist.xquery.modules.example.ExampleModule" />
             <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
             <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
             <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
             <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
             <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
-            <module uri="http://exist-db.org/xquery/math"               class="org.exist.xquery.modules.math.MathModule" />
             <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
             <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
             <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />

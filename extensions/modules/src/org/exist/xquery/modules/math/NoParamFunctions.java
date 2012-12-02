@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2012 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ *  $Id$
  */
 package org.exist.xquery.modules.math;
 
@@ -49,12 +51,6 @@ public class NoParamFunctions extends BasicFunction {
                 "Returns base of the natural logarithms, e.",
                 null,
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of e")
-                ),
-        new FunctionSignature(
-                new QName("pi", MathModule.NAMESPACE_URI),
-                "Returns the value of pi.",
-                null,
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
                 ),
         new FunctionSignature(
                 new QName("random", MathModule.NAMESPACE_URI),
