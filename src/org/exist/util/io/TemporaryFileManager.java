@@ -117,7 +117,7 @@ public class TemporaryFileManager {
         }
     }
     
-    private void cleanupOldTempFolders(File t) {
+    private void cleanupOldTempFolders(final File t) {
         final File oldFolders[] = t.listFiles(new FileFilter(){
             @Override
             public boolean accept(File f) {
@@ -125,12 +125,12 @@ public class TemporaryFileManager {
             }
         });
         
-        for(File oldFolder : oldFolders) {
+        for(final File oldFolder : oldFolders) {
             deleteFolder(oldFolder);
         }
     }
     
-    private void deleteFolder(File folder) {
+    private void deleteFolder(final File folder) {
         try {
             FileUtils.deleteDirectory(folder);
             LOG.debug("Deleted temporary folder: " + folder.getAbsolutePath());

@@ -49,7 +49,7 @@ public class FilterInputStreamCacheFactory {
      * Get a suitable Cache instance
      * 
      */
-    public static FilterInputStreamCache getCacheInstance(FilterInputStreamCacheConfiguration cacheConfiguration) throws IOException {
+    public static FilterInputStreamCache getCacheInstance(final FilterInputStreamCacheConfiguration cacheConfiguration) throws IOException {
        
         final FilterInputStreamCache cache = new FilterInputStreamCacheFactory().instantiate(cacheConfiguration);
         if(cache == null) {
@@ -58,7 +58,7 @@ public class FilterInputStreamCacheFactory {
         return cache;
     }
     
-    private FilterInputStreamCache instantiate(FilterInputStreamCacheConfiguration cacheConfiguration) {
+    private FilterInputStreamCache instantiate(final FilterInputStreamCacheConfiguration cacheConfiguration) {
         try {
             final Class clazz = Class.forName(cacheConfiguration.getCacheClass());
             
@@ -71,13 +71,13 @@ public class FilterInputStreamCacheFactory {
             
             return (FilterInputStreamCache)obj;
             
-        } catch (ClassNotFoundException cnfe) {
+        } catch(final ClassNotFoundException cnfe) {
            LOG.error(cnfe.getMessage(), cnfe);
            return null;
-        } catch (InstantiationException ie) {
+        } catch(final InstantiationException ie) {
            LOG.error(ie.getMessage(), ie);
            return null;
-        } catch (IllegalAccessException iae) {
+        } catch(final IllegalAccessException iae) {
            LOG.error(iae.getMessage(), iae);
            return null;
         }

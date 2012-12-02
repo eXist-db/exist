@@ -82,7 +82,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         return memoryMapSize;
     }
 
-    private void increaseSize(long bytes) throws IOException {
+    private void increaseSize(final long bytes) throws IOException {
 
         long factor = (bytes / getMemoryMapSize());
         if(factor == 0 || bytes % getMemoryMapSize() > 0) {
@@ -92,14 +92,14 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
         buf.force();
         
         //TODO revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well! Adam
-        int position = buf.position();
+        final int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
         buf.position(position); //setting the position in the map() call above does not seem to work!
         //bufAccessor.refresh();
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(final byte[] b, final int off, final int len) throws IOException {
 
         if(buf.remaining() < len) {
             //we need to remap the file
@@ -110,7 +110,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     }
 
     @Override
-    public void write(int i) throws IOException {
+    public void write(final int i) throws IOException {
 
         if(buf.remaining() < 1) {
             //we need to remap the file
@@ -121,7 +121,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     }
 
     @Override
-    public byte get(int off) throws IOException {
+    public byte get(final int off) throws IOException {
 
        if(off > buf.capacity()) {
             //we need to remap the file
@@ -137,7 +137,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
     }
 
     @Override
-    public void copyTo(int cacheOffset, byte[] b, int off, int len) throws IOException {
+    public void copyTo(final int cacheOffset, final byte[] b, final int off, final int len) throws IOException {
 
         if(off + len > buf.capacity()) {
             //we need to remap the file

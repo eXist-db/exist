@@ -42,7 +42,7 @@ public class ByteBufferInputStream extends InputStream {
     private boolean closed = false;
     private final static int END_OF_STREAM = -1;
 
-    public ByteBufferInputStream(ByteBufferAccessor bufAccessor) {
+    public ByteBufferInputStream(final ByteBufferAccessor bufAccessor) {
         this.bufAccessor = bufAccessor;
     }
 
@@ -69,7 +69,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(final byte[] b) throws IOException {
         isClosed();
 
         if(available() == 0) {
@@ -77,22 +77,24 @@ public class ByteBufferInputStream extends InputStream {
         } else if(b.length > available()) {
             return read(b, 0, available());
         } else {
-            int currentPosition = bufAccessor.getBuffer().position();
+            final int currentPosition = bufAccessor.getBuffer().position();
             return bufAccessor.getBuffer().get(b).position() - currentPosition;
         }
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, int len) throws IOException {
         isClosed();
 
-        if(available() == 0)
+        if(available() == 0) {
             return END_OF_STREAM;
+        }
         
-        if (len > available())
-        	len = available();
+        if(len > available()) {
+            len = available();
+        }
 
-        int currentPosition = bufAccessor.getBuffer().position();
+        final int currentPosition = bufAccessor.getBuffer().position();
         return bufAccessor.getBuffer().get(b, off, len).position() - currentPosition;
     }
 
@@ -102,7 +104,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public synchronized void mark(int i) {
+    public synchronized void mark(final int i) {
         bufAccessor.getBuffer().mark();
     }
 
