@@ -24,7 +24,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private FilterInputStreamCache cache;
 
 
-    protected BinaryValueFromInputStream(final BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
+    protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         super(manager, binaryValueType);
 
         try {
@@ -46,21 +46,21 @@ public class BinaryValueFromInputStream extends BinaryValue {
         this.is.mark(Integer.MAX_VALUE);
     }
 
-    public static BinaryValueFromInputStream getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, InputStream is) throws XPathException {
+    public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(manager, binaryValueType, is);
         manager.registerBinaryValueInstance(binaryInputStream);
         return binaryInputStream;
     }
 
     @Override
-    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
-        BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
+    public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
+        final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
         getManager().registerBinaryValueInstance(binaryInputStream);
         return binaryInputStream;
     }
 
     @Override
-    public void streamBinaryTo(OutputStream os) throws IOException {
+    public void streamBinaryTo(final OutputStream os) throws IOException {
         try {
             int read = -1;
             byte data[] = new byte[READ_BUFFER_SIZE];
@@ -94,7 +94,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
             (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))

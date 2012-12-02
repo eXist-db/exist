@@ -46,17 +46,17 @@ public class MemoryFilterInputStreamCache implements FilterInputStreamCache {
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(final byte[] b, final int off, final int len) throws IOException {
         cache.write(b, off, len);
     }
 
     @Override
-    public void write(int i) throws IOException {
+    public void write(final int i) throws IOException {
         cache.write(i);
     }
 
     @Override
-    public byte get(int off) {
+    public byte get(final int off) {
         return cache.toByteArray()[off];
     }
 
@@ -66,7 +66,7 @@ public class MemoryFilterInputStreamCache implements FilterInputStreamCache {
     }
 
     @Override
-    public void copyTo(int cacheOffset, byte[] b, int off, int len) {
+    public void copyTo(final int cacheOffset, final byte[] b, final int off, final int len) {
         System.arraycopy(cache.toByteArray(), cacheOffset, b, off, len);
     }
 

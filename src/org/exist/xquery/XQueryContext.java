@@ -3460,7 +3460,7 @@ public class XQueryContext implements BinaryValueManager, Context
     private List<BinaryValue> binaryValueInstances;
     
     @Override
-    public void registerBinaryValueInstance(BinaryValue binaryValue) {
+    public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
              binaryValueInstances = new ArrayList<BinaryValue>();
         }
@@ -3475,7 +3475,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void cleanupBinaryValueInstances() {
         if(binaryValueInstances != null) {
-            for(BinaryValue bv : binaryValueInstances) {
+            for(final BinaryValue bv : binaryValueInstances) {
                 try {
                     bv.close();
                 } catch (IOException ioe) {
