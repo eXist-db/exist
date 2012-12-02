@@ -1185,12 +1185,29 @@ public class ClientFrame extends JFrame
         return target.delete();
     }
     
-    private void backupAction(ActionEvent ev) {
+    private void backupAction(final ActionEvent ev) {
+        
+        //get the collection to highlight in the backup dialog
+        final String defaultSelectedCollection;
+        final ResourceDescriptor selResources[] = getSelectedResources();
+        if(selResources != null) {
+            if(selResources.length == 1 && selResources[0].isCollection()) {
+                //use the selected collection
+                defaultSelectedCollection = path.toString() + "/" + selResources[0].getName().toString();
+            } else {
+                //use the current collection
+                defaultSelectedCollection = path.toString();
+            }
+        } else {
+            defaultSelectedCollection = path.toString();
+        }
+        
         final CreateBackupDialog dialog = new CreateBackupDialog(
             properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),  
             properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),  
             properties.getProperty(InteractiveClient.PASSWORD, null), 
-            new File(preferences.get("directory.backup", System.getProperty("user.home")))
+            new File(preferences.get("directory.backup", System.getProperty("user.home"))),
+            defaultSelectedCollection
         ); 
         
         if(JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
