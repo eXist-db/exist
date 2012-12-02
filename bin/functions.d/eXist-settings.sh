@@ -77,7 +77,8 @@ set_client_java_options() {
 
     OS=`uname`
     if [ "${OS}" == "Darwin" ]; then
-        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS} -Xdock:icon=${EXIST_HOME}/icon.png";
+	CLIENT_NAME="Client"
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS} -Xdock:icon=${EXIST_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
     else
         JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
     fi
