@@ -107,7 +107,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     public void removeService(final RestXqService service) {
         cacheLock.writeLock().lock();
         try {        
-            cache.remove(service);
+            cache.remove(service.getResourceFunction().getXQueryLocation());
         } finally {
             cacheLock.writeLock().unlock();
         }
@@ -118,7 +118,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
         cacheLock.writeLock().lock();
         try {
             for(RestXqService service : services) {
-                cache.remove(service);
+                cache.remove(service.getResourceFunction().getXQueryLocation());
             }
         } finally {
             cacheLock.writeLock().unlock();
