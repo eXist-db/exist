@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-09 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
  */
 package org.exist.xquery.modules.math;
 
@@ -50,15 +48,26 @@ public class TwoParamFunctions extends BasicFunction {
     
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
-                new QName("functionname", MathModule.NAMESPACE_URI),
-                "Description",
+                new QName("atan2", MathModule.NAMESPACE_URI),
+                "Returns the angle theta from the conversion of rectangular coordinates (x, y) to polar coordinates (r, theta).",
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("arg1", Type.DOUBLE, Cardinality.EXACTLY_ONE, "About arg1"),
-                    new FunctionParameterSequenceType("arg2", Type.DOUBLE, Cardinality.EXACTLY_ONE, "About arg2")
+                    new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The y coordinate"),
+                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The x coordinate")
                 },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "About result.")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in "
+                    + "polar coordinates that corresponds to the point (x, y) in Cartesian coordinates."),
+            "Replaced by http://www.w3.org/2005/xpath-functions/math/#atan2"
                 ),
-
+        new FunctionSignature(
+                new QName("power", MathModule.NAMESPACE_URI),
+                "Returns the value of $value raised to the power of $power.",
+                new SequenceType[] {
+                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
+                    new FunctionParameterSequenceType("power", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The power to raise the value to")
+                },
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#pow"
+                )
     };
     
     /**
@@ -91,9 +100,15 @@ public class TwoParamFunctions extends BasicFunction {
         Sequence seqB = args[1].convertTo(Type.DOUBLE);
         NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
         
-        // Do it
-        calcValue=0.0;
-        
+        if("atan2".equals(functionName)) {
+            calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
+            
+        } else if("power".equals(functionName)) {
+            calcValue=Math.pow(valueA.getDouble(), valueB.getDouble());
+            
+        } else {
+            throw new XPathException(this, "Function "+functionName+" not found.");
+        }
         result=new DoubleValue(calcValue);
         
         

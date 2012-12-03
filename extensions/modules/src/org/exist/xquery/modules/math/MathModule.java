@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2006-2009 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
  */
 package org.exist.xquery.modules.math;
 
@@ -47,11 +45,22 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(OneParamFunctions.signature[3], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[4], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[5], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[6], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[7], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[8], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[9], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[10], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[11], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[12], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[13], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[14], OneParamFunctions.class),
         
         new FunctionDef(NoParamFunctions.signature[0], NoParamFunctions.class),
-        new FunctionDef(NoParamFunctions.signature[1], NoParamFunctions.class)
+        new FunctionDef(NoParamFunctions.signature[1], NoParamFunctions.class),
+        new FunctionDef(NoParamFunctions.signature[2], NoParamFunctions.class),
         
-         //new FunctionDef(TwoParamFunctions.signature[0], TwoParamFunctions.class)
+        new FunctionDef(TwoParamFunctions.signature[0], TwoParamFunctions.class),
+        new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
     };
     
     public MathModule(Map<String, List<? extends Object>> parameters) {
@@ -67,7 +76,7 @@ public class MathModule extends AbstractInternalModule {
     }
     
     public String getDescription() {
-        return "A module containing functions for additonal mathematical operations.";
+        return "A module containing functions for common mathematical operations.";
     }
 
     public String getReleaseVersion() {
