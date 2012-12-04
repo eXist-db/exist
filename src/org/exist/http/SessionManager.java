@@ -42,14 +42,19 @@ public class SessionManager {
     
     private class QueryResult {
 
-        long created;
+        long lastAccess;
         String queryString;
         Sequence sequence;
 
         private QueryResult(String query, Sequence sequence) {
             this.queryString = query;
             this.sequence = sequence;
-            this.created = System.currentTimeMillis();
+            this.lastAccess = System.currentTimeMillis();
+        }
+        
+        protected Sequence sequence() {
+            lastAccess = System.currentTimeMillis();
+            return sequence;
         }
     }
 
@@ -104,7 +109,7 @@ public class SessionManager {
         if (cached == null)
             return null;
         if (cached.queryString.equals(query))
-            return cached.sequence;
+            return cached.sequence();
         // wrong query
         return null;
     }
@@ -118,7 +123,7 @@ public class SessionManager {
     protected void timeoutCheck() {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < slots.length; i++) {
-            if (slots[i] != null && now - slots[i].created > TIMEOUT) {
+            if (slots[i] != null && now - slots[i].lastAccess > TIMEOUT) {
                 LOG.debug("Removing cached query result for session " + i);
                 slots[i] = null;
             }
