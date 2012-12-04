@@ -39,7 +39,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author wolf
  */
 public abstract class FilteringTrigger implements DocumentTrigger {
-	
+
     // The output handlers to which SAX events should be
     // forwarded
     private ContentHandler outputHandler = null;
@@ -50,7 +50,7 @@ public abstract class FilteringTrigger implements DocumentTrigger {
     protected Collection getCollection() {
         return collection;
     }
-    
+
     /**
      * Configure the trigger. The default implementation just stores the parent collection
      * reference into the field {@link #collection collection}. Use method {@link #getCollection() getCollection}
@@ -93,7 +93,7 @@ public abstract class FilteringTrigger implements DocumentTrigger {
 
     @Override
     public void setOutputHandler(ContentHandler handler) {
-            outputHandler = handler;
+        outputHandler = handler;
     }
 
     @Override

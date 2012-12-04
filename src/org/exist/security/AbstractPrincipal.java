@@ -42,136 +42,134 @@ import org.exist.xmldb.XmldbURI;
 @ConfigurationClass("")
 public abstract class AbstractPrincipal implements Principal {
 
-	private Realm realm;
-	
-	@ConfigurationFieldAsElement("name")
-	protected final String name;
-	
-	@ConfigurationFieldAsAttribute("id")
-	protected final int id;
-	
-	//XXX: this must be under org.exist.security.internal to make it protected
-	public boolean removed = false;
+    private Realm realm;
 
-	protected Configuration configuration = null;
-	
-	public AbstractPrincipal(Realm realm, Collection collection, int id, String name) throws ConfigurationException {
-		this.realm = realm;
-		this.id = id;
-		this.name = name;
-		
-		if (collection != null) {
-			BrokerPool database;
-			try {
-				database = BrokerPool.getInstance();
-			} catch (EXistException e) {
-				throw new ConfigurationException(e);
-			} 
-			
-			DBBroker broker = null;
-			try {
-				broker = database.get(null);
+    @ConfigurationFieldAsElement("name")
+    protected final String name;
 
-				Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
-				configuration = Configurator.configure(this, _config_);
-			} catch (EXistException e) {
-				throw new ConfigurationException(e);
-			} finally {
-				database.release(broker);
-			}
-		}
-	}
-        
-        protected AbstractPrincipal(DBBroker broker, Realm realm, Collection collection, int id, String name) throws ConfigurationException {
-		this.realm = realm;
-		this.id = id;
-		this.name = name;
+    @ConfigurationFieldAsAttribute("id")
+    protected final int id;
 
-                try {
-                        Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
-                        configuration = Configurator.configure(this, _config_);
-                } catch (EXistException e) {
-                        throw new ConfigurationException(e);
-                }
-	}
-	
-	public AbstractPrincipal(AbstractRealm realm, Configuration _config_) throws ConfigurationException {
-		this.realm = realm;
+    //XXX: this must be under org.exist.security.internal to make it protected
+    public boolean removed = false;
 
-		configuration = Configurator.configure(this, _config_);
+    protected Configuration configuration = null;
 
-		this.id = configuration.getPropertyInteger("id");
-		this.name = configuration.getProperty("name");
-		
-	}
+    public AbstractPrincipal(Realm realm, Collection collection, int id, String name) throws ConfigurationException {
+        this.realm = realm;
+        this.id = id;
+        this.name = name;
 
-        @Override
-	public void save() throws ConfigurationException, PermissionDeniedException {
-            if (configuration != null) {
-                configuration.save();
+        if (collection != null) {
+            BrokerPool database;
+            try {
+                database = BrokerPool.getInstance();
+            } catch (EXistException e) {
+                throw new ConfigurationException(e);
+            } 
+
+            DBBroker broker = null;
+            try {
+                broker = database.get(null);
+
+                Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name + ".xml"));
+                configuration = Configurator.configure(this, _config_);
+            } catch (EXistException e) {
+                throw new ConfigurationException(e);
+            } finally {
+                database.release(broker);
             }
-	}
-        
-        @Override
-        public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException {
-            if (configuration != null) {
-                configuration.save(broker);
-            }
-	}
-	
-    @Override
-	public String getName() {
-		return name;
-	}
+        }
+    }
+
+    protected AbstractPrincipal(DBBroker broker, Realm realm, Collection collection, int id, String name)
+            throws ConfigurationException {
+        this.realm = realm;
+        this.id = id;
+        this.name = name;
+        try {
+            Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
+            configuration = Configurator.configure(this, _config_);
+        } catch (EXistException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public AbstractPrincipal(AbstractRealm realm, Configuration _config_) throws ConfigurationException {
+        this.realm = realm;
+
+        configuration = Configurator.configure(this, _config_);
+
+        this.id = configuration.getPropertyInteger("id");
+        this.name = configuration.getProperty("name");
+
+    }
 
     @Override
-	public final int getId() {
-		return id;
-	}
-
-        @Override
-        public Realm getRealm() {
-            return realm;
+    public void save() throws ConfigurationException, PermissionDeniedException {
+        if (configuration != null) {
+            configuration.save();
         }
+    }
 
-        @Override
-        public String getRealmId() {
-            return realm.getId();
+    @Override
+    public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException {
+        if (configuration != null) {
+            configuration.save(broker);
         }
+    }
 
-	@Override
-	public final boolean isConfigured() {
-		return (configuration != null);
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public final Configuration getConfiguration() {
-		return configuration;
-	}
+    @Override
+    public final int getId() {
+        return id;
+    }
 
-	public final void setCollection(DBBroker broker, Collection collection) throws ConfigurationException {
-		if (collection != null) {
-			Configurator.unregister(configuration);
+    @Override
+    public Realm getRealm() {
+        return realm;
+    }
 
-			Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name+".xml"));
-			configuration = Configurator.configure(this, _config_);
-		}
-	}
+    @Override
+    public String getRealmId() {
+        return realm.getId();
+    }
 
-	public final void setCollection(DBBroker broker, Collection collection, XmldbURI uri) throws ConfigurationException {
-		if (collection != null) {
-			Configurator.unregister(configuration);
+    @Override
+    public final boolean isConfigured() {
+        return (configuration != null);
+    }
 
-			Configuration _config_ = Configurator.parse(this, broker, collection, uri);
-			configuration = Configurator.configure(this, _config_);
-		}
-	}
-	
-	protected Database getDatabase() {
-		return realm.getDatabase();
-	}
+    @Override
+    public final Configuration getConfiguration() {
+        return configuration;
+    }
 
-        public void setRemoved(boolean removed) {
-            this.removed = removed;
+    public final void setCollection(DBBroker broker, Collection collection) throws ConfigurationException {
+        if (collection != null) {
+            Configurator.unregister(configuration);
+            Configuration _config_ = Configurator.parse(this, broker, collection, XmldbURI.create(name + ".xml"));
+            configuration = Configurator.configure(this, _config_);
         }
+    }
+
+    public final void setCollection(DBBroker broker, Collection collection, XmldbURI uri) throws ConfigurationException {
+        if (collection != null) {
+            Configurator.unregister(configuration);
+            Configuration _config_ = Configurator.parse(this, broker, collection, uri);
+            configuration = Configurator.configure(this, _config_);
+        }
+    }
+
+    protected Database getDatabase() {
+        return realm.getDatabase();
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
+    }
 }
