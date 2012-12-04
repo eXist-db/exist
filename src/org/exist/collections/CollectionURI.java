@@ -66,7 +66,6 @@ public class CollectionURI {
     }
 
     public void removeLastSegment() {
-        @SuppressWarnings("unused")
         char c;
         int pos = length - 1;
         while ((c = uri[pos]) != FRAGMENT_SEPARATOR) {
@@ -98,9 +97,9 @@ public class CollectionURI {
      */
     public int hashCode() {
         int h = hash;
-        if(h == 0) {
+        if (h == 0) {
             int off = 0;
-            for(int i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++) {
                 h = 31*h + uri[off++];
             }
             hash = h;
@@ -113,8 +112,8 @@ public class CollectionURI {
             CollectionURI otherCollectionURI = (CollectionURI)object;
             if (this.length == otherCollectionURI.length) {
                 int pos = length - 1;
-                while(pos > -1) {
-                    if(this.uri[pos] != otherCollectionURI.uri[pos--])
+                while (pos > -1) {
+                    if (this.uri[pos] != otherCollectionURI.uri[pos--])
                         return false;
                 }
                 return true;

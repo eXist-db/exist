@@ -22,10 +22,10 @@
 package org.exist.security;
 
 import java.util.Set;
+
 import org.exist.config.Configuration;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

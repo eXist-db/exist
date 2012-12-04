@@ -87,7 +87,7 @@ public interface Configuration {
      *
      */
     public Integer getPropertyInteger(String property);
-    
+
     /**
      * Return property long value.
      * 
@@ -95,7 +95,7 @@ public interface Configuration {
      * 
      */
     public Long getPropertyLong(String property);
-    
+
     /**
      * Return property boolean value.
      * 
@@ -103,7 +103,7 @@ public interface Configuration {
      * 
      */
     public Boolean getPropertyBoolean(String property);
-    
+
     /**
      * Keep at internal map object associated with key.
      * 
@@ -112,7 +112,7 @@ public interface Configuration {
      *
      */
     public Object putObject(String name, Object object);
-    
+
     /**
      * Get object associated by key from internal map.
      * 

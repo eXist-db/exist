@@ -55,7 +55,7 @@ public class CollectionConfiguration {
     public final static XmldbURI COLLECTION_CONFIG_SUFFIX_URI = XmldbURI.create(COLLECTION_CONFIG_SUFFIX); 
     public final static String DEFAULT_COLLECTION_CONFIG_FILE = "collection" + COLLECTION_CONFIG_SUFFIX; 
     public final static XmldbURI DEFAULT_COLLECTION_CONFIG_FILE_URI = XmldbURI.create(DEFAULT_COLLECTION_CONFIG_FILE); 
-    	
+
     public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
 
     private final static String ROOT_ELEMENT = "collection";
@@ -95,9 +95,9 @@ public class CollectionConfiguration {
     private String defResGroup = null;
 
     private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
-    
+
     private BrokerPool pool;
-    
+
     public CollectionConfiguration(BrokerPool pool) {
         this.pool = pool;
     }
@@ -111,7 +111,8 @@ public class CollectionConfiguration {
      * @param doc collection configuration document
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, Document doc, boolean checkOnly, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
+    protected void read(DBBroker broker, Document doc, boolean checkOnly,
+            XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
         if (!checkOnly) {
             this.docName = docName;
             this.srcCollectionURI = srcCollectionURI;
@@ -123,21 +124,21 @@ public class CollectionConfiguration {
         }
         if (!ROOT_ELEMENT.equals(root.getLocalName())) {
             throwOrLog("Expected element '" + ROOT_ELEMENT +
-                    "' in configuration document. Got element '" + root.getLocalName() + "'", checkOnly);
+                "' in configuration document. Got element '" + root.getLocalName() + "'", checkOnly);
             return;
         }
         if(!NAMESPACE.equals(root.getNamespaceURI())) {
             throwOrLog("Expected namespace '" + NAMESPACE +
-                    "' for element '" + PARAMETER_ELEMENT + 
-                    "' in configuration document. Got '" + root.getNamespaceURI() + "'", checkOnly);
+                "' for element '" + PARAMETER_ELEMENT + 
+                "' in configuration document. Got '" + root.getNamespaceURI() + "'", checkOnly);
             return;
         }
         NodeList childNodes = root.getChildNodes();
         Node node;
-        for(int i = 0; i < childNodes.getLength(); i++) {
+        for (int i = 0; i < childNodes.getLength(); i++) {
             node = childNodes.item(i);
-            if(NAMESPACE.equals(node.getNamespaceURI())) {
-                if(TRIGGERS_ELEMENT.equals(node.getLocalName())) {
+            if (NAMESPACE.equals(node.getNamespaceURI())) {
+                if (TRIGGERS_ELEMENT.equals(node.getLocalName())) {
                     NodeList triggers = node.getChildNodes();
                     for(int j = 0; j < triggers.getLength(); j++) {
                         node = triggers.item(j);
@@ -157,10 +158,10 @@ public class CollectionConfiguration {
                             }
                         }
                     }
-                } else if(INDEX_ELEMENT.equals(node.getLocalName())) {
+                } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
                     Element elem = (Element) node;
                     try {
-                        if(indexSpec == null)
+                        if (indexSpec == null)
                             indexSpec = new IndexSpec(broker, elem);
                         else
                             indexSpec.read(broker, elem);
@@ -243,7 +244,8 @@ public class CollectionConfiguration {
                         validationMode=XMLReaderObjectFactory.convertValidationMode(mode);
                     }
                 } else {
-                    throwOrLog("Ignored node '" + node.getLocalName() + "' in configuration document", checkOnly);
+                    throwOrLog("Ignored node '" + node.getLocalName() +
+                        "' in configuration document", checkOnly);
                     //TODO : throw an exception like above ? -pb
                 }
             } else if (node.getNodeType() == Node.ELEMENT_NODE) {
