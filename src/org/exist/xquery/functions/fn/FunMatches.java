@@ -153,6 +153,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List<Expression> arguments) throws XPathException {
+        steps.clear();
         Expression path = arguments.get(0);
         steps.add(path);
         
