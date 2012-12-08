@@ -52,7 +52,11 @@ public class FunctionFactory {
         }
         return createFunction(context, qname, ast, parent, params);
     }
-    
+
+    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
+        return createFunction(context, qname, ast, parent, params, true);
+    }
+
     /**
      * Create a function call.
      *
@@ -61,11 +65,12 @@ public class FunctionFactory {
      * optimizes some function calls like starts-with, ends-with or
      * contains.
      */
-    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
+    public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
+        boolean optimizeStrFuncs) throws XPathException {
         String local = qname.getLocalName();
         String uri = qname.getNamespaceURI();
         Expression step = null;
-        if (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri)) {
+        if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
             //TODO : move to text:near()
             if (local.equals("near")) {
                 step = near(context, ast, params);
@@ -289,7 +294,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
-        PathExpr arg = (PathExpr) params.get(0);
+        Expression arg = params.get(0);
         int code = Type.getType(qname);
         CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
