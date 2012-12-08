@@ -26,31 +26,39 @@ public class NamedFunctionReference extends AbstractExpression {
 	
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		resolvedFunction = lookupFunction(qname, arity);
+		resolvedFunction = lookupFunction(this, context, qname, arity);
     	contextInfo.addFlag(SINGLE_STEP_EXECUTION);
     	resolvedFunction.analyze(contextInfo);
 	}
 
-	private FunctionCall lookupFunction(QName funcName, int arity) throws XPathException {
+	public static FunctionCall lookupFunction(Expression self, XQueryContext context, QName funcName, int arity) throws XPathException {
 		XQueryAST ast = new XQueryAST();
-		ast.setLine(line);
-		ast.setColumn(column);
+		ast.setLine(self.getLine());
+		ast.setColumn(self.getColumn());
 		List<Expression> args = new ArrayList<Expression>(arity);
 		for (int i = 0; i < arity; i++) {
 			args.add(new Function.Placeholder(context));
 		}
-		Expression fun = FunctionFactory.createFunction(context, funcName, ast, null, args);
+		Expression fun = FunctionFactory.createFunction(context, funcName, ast, null, args, false);
         if (fun == null)
-            throw new XPathException(this, ErrorCodes.XPST0017, "Function not found: " + qname);
+            throw new XPathException(self, ErrorCodes.XPST0017, "Function not found: " + funcName);
+        try {
+            context.resolveForwardReferences();
+        } catch (XPathException e) {
+            return null;
+        }
         if (fun instanceof FunctionCall) {
-        	FunctionCall func = (FunctionCall) fun;
-        	return func;
+            return (FunctionCall) fun;
         } else if (fun instanceof Function) {
         	InternalFunctionCall funcCall = new InternalFunctionCall((Function)fun);
-	        funcCall.setLocation(line, column);
+	        funcCall.setLocation(self.getLine(), self.getColumn());
 	        return FunctionFactory.wrap(context, funcCall);
+        } else if (fun instanceof CastExpression) {
+            InternalFunctionCall funcCall = new InternalFunctionCall(((CastExpression)fun).toFunction());
+            funcCall.setLocation(self.getLine(), self.getColumn());
+            return FunctionFactory.wrap(context, funcCall);
         } else
-        	throw new XPathException(this, ErrorCodes.XPST0017, "Named function reference should point to a function; found: " + 
+        	throw new XPathException(self, ErrorCodes.XPST0017, "Named function reference should point to a function; found: " +
         			fun.getClass().getName());
 	}
 	

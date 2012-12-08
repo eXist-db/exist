@@ -22,11 +22,12 @@
 package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CastExpression represents cast expressions as well as all type 
@@ -48,17 +49,21 @@ public class CastExpression extends AbstractExpression {
 	 */
 	public CastExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
 		super(context);
-		this.expression = expr;
 		this.requiredType = requiredType;
 		this.cardinality = cardinality;
-		if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
-			expression = new Atomize(context, expression);
+        setExpression(expr);
 	}
 
 	protected Expression getInnerExpression() {
 		return expression;
 	}
-	
+
+    public void setExpression(Expression expr) {
+        this.expression = expr;
+        if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
+            expression = new Atomize(context, expression);
+    }
+
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
@@ -189,4 +194,33 @@ public class CastExpression extends AbstractExpression {
 	public void accept(ExpressionVisitor visitor) {
 		visitor.visitCastExpr(this);
 	}
+
+    public Function toFunction() throws XPathException {
+        QName qname = QName.parse(context, Type.getTypeName(CastExpression.this.requiredType));
+        FunctionSignature signature = new FunctionSignature(qname);
+        SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
+        signature.setArgumentTypes(new SequenceType[] { argType });
+        signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
+        return new FunctionWrapper(context, signature);
+    }
+
+    private class FunctionWrapper extends Function {
+
+        protected FunctionWrapper(XQueryContext context, FunctionSignature signature) throws XPathException {
+            super(context, signature);
+            List<Expression> args = new ArrayList<Expression>(1);
+            args.add(new Function.Placeholder(context));
+            super.setArguments(args);
+        }
+
+        @Override
+        public void setArguments(List<Expression> arguments) throws XPathException {
+            CastExpression.this.setExpression(arguments.get(0));
+        }
+
+        @Override
+        public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+            return CastExpression.this.eval(contextSequence);
+        }
+    }
 }

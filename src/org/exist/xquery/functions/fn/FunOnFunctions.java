@@ -62,8 +62,16 @@ public class FunOnFunctions extends BasicFunction {
 				QName fname = ((QNameValue) args[0].itemAt(0)).getQName();
 				int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
 				
-			    FunctionCall call = FunOnFunctions.lookupFunction(this, fname, arity);
-			    
+			    FunctionCall call;
+                try {
+                    call = NamedFunctionReference.lookupFunction(this, context, fname, arity);
+                } catch (XPathException e) {
+                    if (e.getErrorCode() == ErrorCodes.XPST0017) {
+                        // return empty sequence for all "function not found" related errors
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+                    throw e;
+                }
 			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
 			} else if (isCalledAs("function-name")) {
 				FunctionReference ref = (FunctionReference) args[0].itemAt(0);
