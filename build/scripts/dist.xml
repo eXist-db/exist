@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <!-- $Id$ -->
 <project basedir="../.." default="dist" name="dist">
-	
+    
   <description>Create eXist distribution</description>
-	
-	<!-- import common targets -->
-	<import file="../../build.xml"/>
+    
+    <!-- import common targets -->
+    <import file="../../build.xml"/>
     
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
     <!-- ================================================================== -->
     <target name="webapps">
-	
+    
         <mkdir dir="dist"/>
         
         <!-- When there are no java docs, create empty file -->
@@ -44,9 +44,9 @@
             <lib dir="${lib.core}">
                 <include name="*.jar"/>
             </lib>
-			<lib dir="${lib.extensions}">
-				<include name="*.jar"/>
-			</lib>
+            <lib dir="${lib.extensions}">
+                <include name="*.jar"/>
+            </lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
                 <exclude name="servlet-api-*.jar"/>
@@ -59,10 +59,10 @@
             <lib dir="${lib.endorsed}">
                 <include name="*.jar"/>
             </lib>
-           	<!-- Include lucene jar, needed for documentation search -->
-			<lib dir="extensions/indexes/lucene/lib">
-				<include name="*.jar"/>
-			</lib>
+            <!-- Include lucene jar, needed for documentation search -->
+            <lib dir="extensions/indexes/lucene/lib">
+                <include name="*.jar"/>
+            </lib>
             <!-- Include spatial jars, when available -->
             <lib dir="extensions/indexes/spatial/lib">
                 <include name="*.jar"/>
@@ -93,24 +93,30 @@
             <lib dir="extensions/exquery/lib">
                 <include name="*.jar"/>
             </lib>
+            <!-- RestXQ-->
             <lib dir="extensions/exquery/restxq/lib">
                 <include name="*.jar"/>
             </lib>
+            <!-- Include extension modules jars  -->
+            <lib dir="extensions/modules/lib">
+                <include name="*.jar"/>
+            </lib>
+            
 
             <!-- Add configuration files to WEB-INF -->
             <webinf dir=".">
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
-				<include name="controller-config.xml"/>
+                <include name="controller-config.xml"/>
                 <include name="server.xml"/>
                 <include name="mime-types.xml"/>
                 <include name="descriptor.xml"/>
                 <include name="log4j.dtd"/>
                 <include name="atom-services.xml"/>
             </webinf>
-        	
-        	<!-- Add autodeploy directory to war WEB-INF -->
-        	<webinf dir="." includes="autodeploy/*"/>
+            
+            <!-- Add autodeploy directory to war WEB-INF -->
+            <webinf dir="." includes="autodeploy/*"/>
             
             <!-- Add files context root ('/') -->
             <fileset dir="webapp">
@@ -128,9 +134,9 @@
                 <exclude name="**/*.log*"/>
             </fileset>
             <!-- Betterform -->
-			<zipfileset dir="extensions/betterform/main/xrx/"  prefix="betterform/samples/xrx">
-			    <include name="**/*"/>
-			</zipfileset>
+            <zipfileset dir="extensions/betterform/main/xrx/"  prefix="betterform/samples/xrx">
+                <include name="**/*"/>
+            </zipfileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>
@@ -202,7 +208,7 @@
                 <include name="*.bat"/>
                 <include name="*.sh"/>
                 <include name="conf.xml"/>
-            	<include name="server.xml"/>
+                <include name="server.xml"/>
                 <include name="*.tmpl"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
@@ -316,7 +322,7 @@
                 excludes="${project.name}-${project.version}.zip"
                 zipfile="${dist}/${project.name}-${project.version}.zip"/>
     </target>
-	
+    
     <!-- ================================================================== -->
     <!-- Create dist-tgz                                                    -->
     <!-- ================================================================== -->
