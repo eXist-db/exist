@@ -1568,7 +1568,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
             oldDoc = documents.get(docUri.getRawCollectionPath());
-            checkPermissionsForAddDocument(transaction, broker, docUri, oldDoc);
+            checkPermissionsForAddDocument(broker, oldDoc);
+            checkCollectionConflict(broker, docUri);
             manageDocumentInformation(broker, oldDoc, document );
             Indexer indexer = new Indexer(broker, transaction);
             
@@ -1750,7 +1751,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      * @throws PermissionDeniedException
      */
-    private void checkPermissionsForAddDocument(Txn transaction, DBBroker broker, XmldbURI docUri, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
+    private void checkPermissionsForAddDocument(final DBBroker broker, final DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
         if (oldDoc != null) {
             
             LOG.debug("Found old doc " + oldDoc.getDocId());
@@ -1758,12 +1759,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             // check if the document is locked by another user
             Account lockUser = oldDoc.getUserLock();
             if(lockUser != null && !lockUser.equals(broker.getSubject())) {
-                throw new PermissionDeniedException("The document is locked by user " + lockUser.getName());
+                throw new PermissionDeniedException("The document is locked by user '" + lockUser.getName() + "'.");
             }
             
             // do we have write permission on the old document or are we the owner of the old document?
             if(!((oldDoc.getPermissions().getOwner().getId() != broker.getSubject().getId()) | (oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE)))) {
-                throw new PermissionDeniedException("Document exists, but write permission is not granted.");
+                throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + path + "', and you do not have write access on that resource.");
             }
             
             // do we have execute permission on the collection?
@@ -1780,34 +1781,35 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 throw new PermissionDeniedException("Execute permission is not granted on the Collection.");
             }
         }
-        
-        if (hasChildCollection(broker, docUri.lastSegment())) {
-            throw new PermissionDeniedException(
-                "The collection '" + getURI() + "' have collection '" + docUri.lastSegment() + "'. "+
-                "Document with same name can't be created."
+    }
+    
+    private void checkCollectionConflict(final DBBroker broker, final XmldbURI docUri) throws EXistException, PermissionDeniedException {
+        if(hasChildCollection(broker, docUri.lastSegment())) {
+            throw new EXistException(
+                "The collection '" + getURI() + "' already has a sub-collection named '" + docUri.lastSegment() + "', you cannot create a Document with the same name as an existing collection."
             );
         }
     }
 
     // Blob
     @Deprecated
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType) throws PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, data, mimeType, null, null);
     }
 
     // Blob
     @Deprecated
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, new ByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size) throws PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
         
         return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
@@ -1818,7 +1820,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is, String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
             throw new PermissionDeniedException("Database is read-only");
@@ -1829,7 +1831,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
-            checkPermissionsForAddDocument(transaction, broker, docUri, oldDoc);
+            checkPermissionsForAddDocument(broker, oldDoc);
+            checkCollectionConflict(broker, docUri);
             manageDocumentInformation(broker, oldDoc, blob );
             DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
