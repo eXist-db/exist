@@ -2440,7 +2440,7 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Account '" + getSubject().getName() + "' does not have execute access on the destination collection '" + destination.getURI() + "'.");
                 }
              
-                if(!destination.hasChildCollection(this, newName.lastSegment())) {
+                if(destination.hasChildCollection(this, newName.lastSegment())) {
                     throw new EXistException(
                         "The collection '" + destination.getURI() + "' already has a sub-collection named '" + newName.lastSegment() + "', you cannot create a Document with the same name as an existing collection."
                     );
@@ -2580,7 +2580,7 @@ public class NativeBroker extends DBBroker {
         }
         
         try {
-            if(!destination.hasChildCollection(this, newName.lastSegment())) {
+            if(destination.hasChildCollection(this, newName.lastSegment())) {
                 throw new PermissionDeniedException(
                     "The collection '" + destination.getURI() + "' have collection '" + newName.lastSegment() + "'. " +
             		"Document with same name can't be created."
