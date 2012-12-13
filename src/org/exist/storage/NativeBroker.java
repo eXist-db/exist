@@ -757,8 +757,12 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException("Account '"+ getSubject().getName() + "' not allowed to execute to collection '" + current.getURI() + "'");
                         }
                         
-                        LOG.debug("Creating collection '" + path + "'...");
+                        if (current.hasDocument(this, path.lastSegment())) {
+                            LOG.error("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'");
+                            throw new PermissionDeniedException("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'.");
+                        }
                         
+                        LOG.debug("Creating collection '" + path + "'...");
                         
                         CollectionConfiguration colConf = current.getConfiguration(this);
                         

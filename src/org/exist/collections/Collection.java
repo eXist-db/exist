@@ -126,7 +126,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     private Permission permissions;
 
-    public Collection(DBBroker broker){
+    private Collection(DBBroker broker){
         //The permissions assigned to this collection
         permissions = PermissionFactory.getDefaultCollectionPermission();
     }
