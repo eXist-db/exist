@@ -2437,9 +2437,16 @@ public class NativeBroker extends DBBroker {
                 DocumentImpl oldDoc = destination.getDocument(this, newName);
                 
                 if(!destination.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
-                        throw new PermissionDeniedException("Account " + getSubject().getName() + " have no execute access on the destination collection '"+destination.getURI()+"'.");
+                    throw new PermissionDeniedException("Account " + getSubject().getName() + " have no execute access on the destination collection '"+destination.getURI()+"'.");
                 }
              
+                if(!destination.hasChildCollection(this, newName.lastSegment())) {
+                    throw new PermissionDeniedException(
+                        "The collection '" + destination.getURI() + "' have collection '" + newName.lastSegment() + "'. " +
+                		"Document with same name can't be created."
+                    );
+                }
+
                 final XmldbURI newURI = destination.getURI().append(newName);
                 final XmldbURI oldUri = doc.getURI();
                 
@@ -2574,6 +2581,13 @@ public class NativeBroker extends DBBroker {
         }
         
         try {
+            if(!destination.hasChildCollection(this, newName.lastSegment())) {
+                throw new PermissionDeniedException(
+                    "The collection '" + destination.getURI() + "' have collection '" + newName.lastSegment() + "'. " +
+            		"Document with same name can't be created."
+                );
+            }
+
             // check if the move would overwrite a collection
             //TODO : resolve URIs : destination.getURI().resolve(newName)
             final DocumentImpl oldDoc = destination.getDocument(this, newName);

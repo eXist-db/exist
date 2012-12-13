@@ -1568,7 +1568,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
             oldDoc = documents.get(docUri.getRawCollectionPath());
-            checkPermissionsForAddDocument(transaction, broker, oldDoc);
+            checkPermissionsForAddDocument(transaction, broker, docUri, oldDoc);
             manageDocumentInformation(broker, oldDoc, document );
             Indexer indexer = new Indexer(broker, transaction);
             
@@ -1750,7 +1750,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      * @throws PermissionDeniedException
      */
-    private void checkPermissionsForAddDocument(Txn transaction, DBBroker broker, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
+    private void checkPermissionsForAddDocument(Txn transaction, DBBroker broker, XmldbURI docUri, DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
         if (oldDoc != null) {
             
             LOG.debug("Found old doc " + oldDoc.getDocId());
@@ -1779,6 +1779,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if(!getPermissions().validate(broker.getSubject(), Permission.EXECUTE)) {
                 throw new PermissionDeniedException("Execute permission is not granted on the Collection.");
             }
+        }
+        
+        if (hasChildCollection(broker, docUri.lastSegment())) {
+            throw new PermissionDeniedException(
+                "The collection '" + getURI() + "' have collection '" + docUri.lastSegment() + "'. "+
+                "Document with same name can't be created."
+            );
         }
     }
 
@@ -1822,7 +1829,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
-            checkPermissionsForAddDocument(transaction, broker, oldDoc);
+            checkPermissionsForAddDocument(transaction, broker, docUri, oldDoc);
             manageDocumentInformation(broker, oldDoc, blob );
             DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
