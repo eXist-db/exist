@@ -406,8 +406,15 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                     builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
 
                     if( body != null ) {
-                        BinaryValue binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(body));
-                        builder.characters( binary.getStringValue() );
+                        BinaryValue binary = null;
+                        try {
+                            binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(body));
+                            builder.characters( binary.getStringValue() );
+                        } finally {
+                            // free resources
+                            if (binary != null)
+                                binary.destroy(null);
+                        }
                     }
                 }
             }
