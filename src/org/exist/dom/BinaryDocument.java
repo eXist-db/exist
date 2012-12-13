@@ -49,14 +49,6 @@ public class BinaryDocument extends DocumentImpl {
     public BinaryDocument(BrokerPool pool) {
         super(pool, null, null);
     } 
-    
-    public BinaryDocument(BrokerPool pool, Collection collection) {
-        super(pool, collection);
-    }
-
-    public BinaryDocument(BrokerPool pool, XmldbURI fileURI) {
-        super(pool, null, fileURI);
-    }
 
     public BinaryDocument(BrokerPool pool, Collection collection, XmldbURI fileURI) {
         super(pool, collection, fileURI);
