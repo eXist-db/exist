@@ -1072,6 +1072,9 @@ public class BrokerPool extends Observable implements Database {
                 LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
             }
         }
+        // trigger a checkpoint after processing all startup triggers
+        checkpoint = true;
+        triggerSync(Sync.MAJOR_SYNC);
     }    
         
      /**
