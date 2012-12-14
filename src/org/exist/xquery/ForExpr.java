@@ -311,6 +311,8 @@ public class ForExpr extends BindingExpression {
                         groupedSequence.addAll(toGroupSequence);
                     }
                 }
+                // free resources
+                var.destroy(resultSequence);
             }
         } finally {
             // restore the local variable stack 
