@@ -1425,7 +1425,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-//            if ((dp.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, dp)) && loggable != null)
+            if (loggable.getLsn() > dp.getPageHeader().getLsn())
                 dp.getPageHeader().setLsn(loggable.getLsn());
             dp.setDirty(true);
             dataCache.add(dp);
