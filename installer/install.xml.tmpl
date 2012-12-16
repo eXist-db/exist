@@ -1,4 +1,4 @@
-<installation version="5.0">
+<installation version="1.0">
     <info>
         <appname>@name@</appname>
         <appversion>@version@</appversion>
@@ -39,10 +39,8 @@
     <!--jar src="tools/izpack/clinstaller.jar" stage="install"/-->
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
-    <natives>
-        <native type="izpack" name="ShellLink.dll"/>
-        <native type="izpack" name="ShellLink_x64.dll"/>
-    </natives>
+    <native type="izpack" name="ShellLink.dll"/>
+    <native type="izpack" name="ShellLink_x64.dll"/>
 
     <variables>
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
@@ -52,6 +50,14 @@
         <variable name="ShowCreateDirectoryMessage" value="false"/>
     </variables>
     
+    <!-- Determine suggested data directory -->
+    <dynamicvariables>
+        <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME/eXist-db/data"/>
+        <variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist-db/data"/>
+        <variable name="DATA_DIR" condition="!izpack.macinstall+!izpack.windowsinstall"
+            value="$INSTALL_PATH/webapp/WEB-INF/data"/>
+    </dynamicvariables>
+
     <conditions>
         <!-- not until IzPack 5.0 -->
         <!-- condition type="exists" id="apps.exist">
