@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;

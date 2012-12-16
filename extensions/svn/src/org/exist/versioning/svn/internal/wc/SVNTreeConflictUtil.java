@@ -16,7 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.wc.SVNConflictAction;
 import org.exist.versioning.svn.wc.SVNConflictReason;
 import org.exist.versioning.svn.wc.SVNOperation;

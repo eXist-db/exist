@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import org.exist.EXistException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNAuthenticationManager;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.internal.wc.SVNExternal;

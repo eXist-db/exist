@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNAdminUtil;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileListUtil;

@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNAdminArea;
 import org.exist.versioning.svn.internal.wc.admin.SVNWCAccess;
 import org.exist.versioning.svn.wc.SVNStatusType;
