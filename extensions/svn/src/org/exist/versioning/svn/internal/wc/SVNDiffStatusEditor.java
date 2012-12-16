@@ -14,7 +14,7 @@ package org.exist.versioning.svn.internal.wc;
 import java.io.File;
 import java.io.OutputStream;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;

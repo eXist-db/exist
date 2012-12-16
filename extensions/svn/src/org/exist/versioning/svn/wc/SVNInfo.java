@@ -14,7 +14,7 @@ package org.exist.versioning.svn.wc;
 import java.io.File;
 import java.util.Date;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;

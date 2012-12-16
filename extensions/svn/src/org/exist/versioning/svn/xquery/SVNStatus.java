@@ -23,7 +23,7 @@ package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.wc.ISVNStatusHandler;
 import org.exist.versioning.svn.wc.SVNClientManager;
 import org.exist.versioning.svn.wc.SVNStatusClient;

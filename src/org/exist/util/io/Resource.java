@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.versioning.svn;
+package org.exist.util.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;

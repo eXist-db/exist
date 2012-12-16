@@ -25,7 +25,7 @@ import org.exist.security.Subject;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.internal.util.SVNHashMap;
 import java.util.Map;

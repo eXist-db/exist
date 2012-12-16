@@ -22,7 +22,7 @@
 package org.exist.commands.svn;
 
 import org.exist.plugin.command.*;
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.WorkingCopy;
 import org.exist.versioning.svn.wc.ISVNStatusHandler;
 import org.exist.versioning.svn.wc.SVNClientManager;

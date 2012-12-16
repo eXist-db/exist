@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNFileType;

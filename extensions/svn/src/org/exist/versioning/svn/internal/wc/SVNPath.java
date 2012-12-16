@@ -13,7 +13,7 @@ package org.exist.versioning.svn.internal.wc;
 
 import java.io.File;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;
 import org.tmatesoft.svn.core.SVNException;

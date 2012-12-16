@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNAmbientDepthFilterEditor;
 import org.exist.versioning.svn.internal.wc.SVNCancellableEditor;
 import org.exist.versioning.svn.internal.wc.SVNCancellableOutputStream;

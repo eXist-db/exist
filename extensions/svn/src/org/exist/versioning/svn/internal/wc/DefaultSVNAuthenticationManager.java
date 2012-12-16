@@ -21,7 +21,7 @@ import java.util.StringTokenizer;
 
 import javax.net.ssl.TrustManager;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.SVNErrorCode;
 import org.tmatesoft.svn.core.SVNErrorMessage;

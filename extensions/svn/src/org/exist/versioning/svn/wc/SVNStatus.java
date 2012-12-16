@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.exist.versioning.svn.internal.wc.admin.SVNEntry;
 import org.tmatesoft.svn.core.SVNLock;

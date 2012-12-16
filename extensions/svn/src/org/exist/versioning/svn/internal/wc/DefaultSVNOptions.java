@@ -32,7 +32,7 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.wc.ISVNConflictHandler;
 import org.exist.versioning.svn.wc.ISVNMerger;
 import org.exist.versioning.svn.wc.ISVNMergerFactory;
