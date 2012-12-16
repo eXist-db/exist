@@ -7,7 +7,7 @@
             txt="Please select a directory where eXist will keep its data files. On Vista and Windows 7, this should be outside the usual 'Program Files' directory:"
             align="left" type="staticText"/>
         <field variable="dataDir" align="center" type="dir">
-            <spec create="false" mustExist="false" set="$INSTALL_PATH/webapp/WEB-INF/data" size="20"
+            <spec create="false" mustExist="false" set="$DATA_DIR" size="20"
                 txt="Data dir: "/>
         </field>
     </panel>
@@ -21,7 +21,7 @@
                 <pwd set="" size="20" txt="Enter password: "/>
                 <pwd set="" size="20" txt="Retype password: "/>
             </spec>
-            <validator class="com.izforge.izpack.panels.userinput.validator.PasswordEqualityValidator"
+            <validator class="com.izforge.izpack.util.PasswordEqualityValidator"
                 txt="Entered passwords did not match."/>
         </field>
         <field align="bottom" type="divider"/>
