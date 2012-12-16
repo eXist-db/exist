@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2012 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,17 +21,7 @@
  */
 package org.exist.util.io;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringBufferInputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -57,7 +47,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.versioning.svn.internal.wc.SVNFileUtil;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -115,6 +104,17 @@ public class Resource extends File {
 
     public String getName() {
     	return uri.lastSegment().toString();
+    }
+    
+    private void closeFile(InputStream is) {
+        if (is == null) {
+            return;
+        }
+        try {
+            is.close();
+        } catch (IOException e) {
+            //
+        }
     }
     
     public boolean mkdir() {
@@ -402,7 +402,7 @@ public class Resource extends File {
 	
 				} else {
 					// store as binary resource
-					is = new StringBufferInputStream("");
+					is = new ByteArrayInputStream("".getBytes("UTF-8"));
 	
 					collection.addBinaryResource(transaction, broker, fileName, is,
 							mimeType.getName(), 0L , new Date(), new Date());
@@ -413,7 +413,7 @@ public class Resource extends File {
 				tm.abort(transaction);
 				throw new IOException(e);
 			} finally {
-				SVNFileUtil.closeFile(is);
+				closeFile(is);
 	
 				if (resource != null)
 					resource.getUpdateLock().release(Lock.READ_LOCK);
