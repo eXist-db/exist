@@ -5,9 +5,9 @@
     <!-- Convert log4j.xml for use in war-file -->
     <xsl:output method="xml"/>
     
-    <xsl:template match="appender/param[@name='File']">
+    <!-- <xsl:template match="appender/param[@name='File']">
         <param name="File" value="../logs/{substring-after(@value,'logs/')}"/>
-    </xsl:template>
+    </xsl:template> -->
 
     <xsl:template match="*|@*|node()|comment()">
         <xsl:copy>
