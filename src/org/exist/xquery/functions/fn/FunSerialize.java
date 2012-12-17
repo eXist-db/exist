@@ -53,7 +53,7 @@ public class FunSerialize extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         Properties outputProperties = new Properties();
-        if (getArgumentCount() == 2)
+        if (getArgumentCount() == 2 && !args[1].isEmpty())
             parseParameters((NodeValue) args[1].itemAt(0), outputProperties);
 
         StringBuilder out = new StringBuilder();
