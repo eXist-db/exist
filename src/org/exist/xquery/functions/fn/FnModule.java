@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
 
@@ -172,6 +173,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunRound.signature, FunRound.class),
         new FunctionDef(FunRoundHalfToEven.signatures[0], FunRoundHalfToEven.class),
         new FunctionDef(FunRoundHalfToEven.signatures[1], FunRoundHalfToEven.class),
+        new FunctionDef(FunSerialize.signatures[0], FunSerialize.class),
+            new FunctionDef(FunSerialize.signatures[1], FunSerialize.class),
         new FunctionDef(FunStartsWith.signatures[0], FunStartsWith.class),
         new FunctionDef(FunStartsWith.signatures[1], FunStartsWith.class),
         new FunctionDef(FunString.signatures[0], FunString.class),
@@ -222,6 +225,10 @@ public class FnModule extends AbstractInternalModule {
     static {
         Arrays.sort(functions, new FunctionComparator());
     }
+
+    public final static ErrorCodes.ErrorCode SENR0001 = new ErrorCodes.ErrorCode("SENR0001", "serialization error in fn:serialize");
+    public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
+            "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
     public FnModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, true);
