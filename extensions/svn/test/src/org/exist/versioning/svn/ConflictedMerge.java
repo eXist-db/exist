@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.ISVNConflictHandler;
 import org.exist.versioning.svn.wc.SVNClientManager;
