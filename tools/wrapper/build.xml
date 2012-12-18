@@ -40,10 +40,10 @@
     	<mkdir dir="${work}"/>
         <tstamp/>
     	
-    	<filter token="app.name" value="eXist"/>
-    	<filter token="app.long.name" value="eXist Native XML Database"/>
-    	<filter token="app.description" value="eXist Database Server"/>
-    	<filter token="app.long.description" value="Start and stop the eXist Database Server wrapper"/>
+    	<filter token="app.name" value="eXist-db"/>
+    	<filter token="app.long.name" value="eXist-db Native XML Database"/>
+    	<filter token="app.description" value="eXist-db Database Server"/>
+    	<filter token="app.long.description" value="Start and stop the eXist-db Database Server wrapper"/>
     	<filter token="jetty.dir" value="${jetty.dir}"/>
     	<filter token="java.vm" value="java"/>
     	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="false" />
