@@ -677,14 +677,6 @@
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
     </target>
 
-    <!-- ============================================================================ -->
-    <!-- Build thirdparty modules (JBoss integration)                                 -->
-    <!--                                                                              -->
-    <!-- ============================================================================ -->
-    <target name="thirdparty" depends="jar">
-        <ant antfile="build.xml" dir="thirdparty/jboss"/>
-    </target>
-
     <target name="wrapper" depends="jar">
         <ant antfile="build.xml" dir="tools/wrapper" inheritall="false"/>
     </target>

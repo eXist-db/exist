@@ -192,7 +192,6 @@
         <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
         <mkdir dir="${dist.dir}/log"/>
         <mkdir dir="${dist.dir}/samples"/>
-        <mkdir dir="${dist.dir}/thirdparty"/>
         <mkdir dir="${dist.dir}/extensions"/>
         <mkdir dir="${dist.dir}/extensions/modules"/>
         <touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
@@ -278,10 +277,6 @@
                 <exclude name="*~"/>
                 <exclude name=".*"/>
             </fileset>
-        </copy>
-        <copy todir="${dist.dir}/thirdparty">
-            <fileset dir="./thirdparty">
-                <!--<exclude name="**/lib/*.jar"/>--></fileset>
         </copy>
         <copy todir="${dist.dir}/extensions">
             <fileset dir="./extensions"/>

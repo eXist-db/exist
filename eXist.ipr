@@ -417,7 +417,6 @@
     </library>
     <library name="tools">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
         <root url="file://$PROJECT_DIR$/tools/ant/lib" />
         <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />

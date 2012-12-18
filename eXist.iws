@@ -1837,7 +1837,6 @@
         <filter targetName="test-xqdoc" isVisible="false" />
         <filter targetName="test-xqts" isVisible="false" />
         <filter targetName="test-xslts" isVisible="false" />
-        <filter targetName="thirdparty" isVisible="false" />
         <filter targetName="to-html" isVisible="false" />
         <filter targetName="undeploy" isVisible="false" />
         <filter targetName="webapps" isVisible="false" />
