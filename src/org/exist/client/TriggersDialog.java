@@ -77,7 +77,7 @@ class TriggersDialog extends JFrame {
     public TriggersDialog(final String title, final InteractiveClient client) {
         super(title);
         this.client = client;
-		
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());		
         //capture the frame's close event
         final WindowListener windowListener = new WindowAdapter() {
             @Override

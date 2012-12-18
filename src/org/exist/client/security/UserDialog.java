@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
+import org.exist.client.InteractiveClient;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Permission;
@@ -53,6 +54,7 @@ public class UserDialog extends javax.swing.JFrame {
      */
     public UserDialog(final UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         initComponents();
     }
 

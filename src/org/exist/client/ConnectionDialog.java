@@ -63,6 +63,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         this.defaultConnectionSettings = defaultConnectionSettings;
         this.config = new File(defaultConnectionSettings.getConfiguration());
         this.disableEmbeddedConnectionType = disableEmbeddedConnectionType;
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         initComponents();
         
         if(disableEmbeddedConnectionType) {

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.exist.client.InteractiveClient;
 import org.exist.client.ResourceDescriptor;
 import org.exist.security.ACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
@@ -79,7 +80,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         this.lastModified = lastModified;
         this.permission = permission;
         this.applyTo = applyTo;
-        
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
         initComponents();
         setFormProperties();
     }
