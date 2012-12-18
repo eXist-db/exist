@@ -1,14 +1,14 @@
 #! /bin/sh
 
 ##  eXist Native XML Database
-##  Copyright (C) 2004-2011 The eXist Project
+##  Copyright (C) 2004-2012 The eXist-db Project
 ##  http://exist-db.org
 ##  wolf, ljo
 ##
 ##  $Id$
 
 #
-# Copyright (c) 1999, 2011 Tanuki Software, Ltd.
+# Copyright (c) 1999, 2012 Tanuki Software, Ltd.
 # http://www.tanukisoftware.com
 # All rights reserved.
 #
@@ -23,7 +23,7 @@
 
 #-----------------------------------------------------------------------------
 # These settings can be modified to fit the needs of your application
-# Optimized for use with version 3.5.11 of the Wrapper.
+# Optimized for use with version 3.5.17 of the Wrapper.
 
 # Application
 APP_NAME="@app.name@"
@@ -230,8 +230,19 @@ PSEXE="/usr/ucb/ps"
         fi
     fi
 
+TREXE="/usr/bin/tr"
+if [ ! -x "$TREXE" ]
+then
+    TREXE="/bin/tr"
+    if [ ! -x "$TREXE" ]
+    then
+        eval echo `gettext 'Unable to locate "tr".'`
+        eval echo `gettext 'Please report this message along with the location of the command on your system.'`
+        exit 1
+    fi
+fi
 # Resolve the os
-DIST_OS=`uname -s | tr "[A-Z]" "[a-z]" | tr -d ' '`
+DIST_OS=`uname -s | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
 case "$DIST_OS" in
     'sunos')
         DIST_OS="solaris"
@@ -262,20 +273,25 @@ then
     then
         DIST_BITS="32"
     else
-        DIST_BITS="64"
+        if [ "X`sysctl -n hw.cpu64bit_capable`" == "X1" ]  
+        then
+            DIST_BITS="64"
+        else
+            DIST_BITS="32"
+        fi
     fi
     APP_PLIST_BASE=${PLIST_DOMAIN}.${APP_NAME}
     APP_PLIST=${APP_PLIST_BASE}.plist
 else
     DIST_ARCH=
-    DIST_ARCH=`uname -p 2>/dev/null | tr "[A-Z]" "[a-z]" | tr -d ' '`
+    DIST_ARCH=`uname -p 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
     if [ "X$DIST_ARCH" = "X" ]
     then
         DIST_ARCH="unknown"
     fi
     if [ "$DIST_ARCH" = "unknown" ]
     then
-        DIST_ARCH=`uname -m 2>/dev/null | tr "[A-Z]" "[a-z]" | tr -d ' '`
+        DIST_ARCH=`uname -m 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
     fi
     case "$DIST_ARCH" in
         'athlon' | 'i386' | 'i486' | 'i586' | 'i686')
@@ -340,6 +356,15 @@ else
         '2064' | '2066' | '2084' | '2086' | '2094' | '2096' | '2097' | '2098' | '2817')
             DIST_ARCH="390"
             DIST_BITS="64"
+            ;;
+        armv*)
+            if [ -z "`readelf -A /proc/self/exe | grep Tag_ABI_VFP_args`" ] ; then 
+                DIST_ARCH="armel"
+                DIST_BITS="32"
+            else 
+                DIST_ARCH="armhf"
+                DIST_BITS="32"
+            fi
             ;;
     esac
 fi
@@ -536,6 +561,12 @@ checkUser() {
     fi
     if [ "X$RUN_AS_USER" != "X" ]
     then
+        if [ "`$IDEXE -u -n "$RUN_AS_USER" 2>/dev/null`" != "$RUN_AS_USER" ]
+        then
+            eval echo `gettext 'User $RUN_AS_USER does not exist.'`
+            exit 1
+        fi
+
         # If LOCKPROP and $RUN_AS_USER are defined then the new user will most likely not be
         # able to create the lock file.  The Wrapper will be able to update this file once it
         # is created but will not be able to delete it on shutdown.  If $1 is set then
@@ -745,7 +776,7 @@ waitforwrapperstop() {
     done
 }
 
-launchdinternal() {
+launchinternal() {
     getpid
     trap launchdtrap TERM 
     if [ "X$pid" = "X" ]
@@ -753,7 +784,7 @@ launchdinternal() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.17 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -776,7 +807,7 @@ console() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.17 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -898,7 +929,7 @@ start() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.17 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -1004,8 +1035,8 @@ status() {
 
 installUpstart() {
     eval echo `gettext ' Installing the $APP_LONG_NAME daemon using upstart..'`
-    if [ -f "${APP_NAME}.conf" ] ; then 
-        eval echo `gettext ' a custom upstart conf file ${APP_NAME}.conf found'`
+    if [ -f "${REALDIR}/${APP_NAME}.install" ] ; then 
+        eval echo `gettext ' a custom upstart conf file ${APP_NAME}.install found'`
         cp "${REALDIR}/${APP_NAME}.install" "/etc/init/${APP_NAME}.conf"
     else
         eval echo `gettext ' creating default upstart conf file..'`
@@ -1015,7 +1046,7 @@ installUpstart() {
         echo "start on runlevel [2345]" >> "/etc/init/${APP_NAME}.conf"
         echo "stop on runlevel [!2345]" >> "/etc/init/${APP_NAME}.conf"
         echo "env LANG=${LANG}" >> "/etc/init/${APP_NAME}.conf"
-       echo "exec \"${REALPATH}\" launchdinternal" >> "/etc/init/${APP_NAME}.conf"
+       echo "exec \"${REALPATH}\" upstartinternal" >> "/etc/init/${APP_NAME}.conf"
     fi
 }
 
@@ -1024,10 +1055,10 @@ installdaemon() {
         eval echo `gettext 'Must be root to perform this action.'`
         exit 1
     else
-        APP_NAME_LOWER=`echo "$APP_NAME" | tr "[A-Z]" "[a-z]"`
+        APP_NAME_LOWER=`echo "$APP_NAME" | $TREXE "[A-Z]" "[a-z]"`
         if [ "$DIST_OS" = "solaris" ] ; then
             eval echo `gettext 'Detected Solaris:'`
-            if [ -f /etc/init.d/$APP_NAME ] ; then
+            if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME"] ; then
                 eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                 exit 1
             else
@@ -1039,7 +1070,7 @@ installdaemon() {
         elif [ "$DIST_OS" = "linux" ] ; then
             if [ -f /etc/redhat-release -o -f /etc/redhat_version -o -f /etc/fedora-release ]  ; then
                 eval echo `gettext 'Detected RHEL or Fedora:'`                  
-                if [ -f "/etc/init.d/$APP_NAME" -o -f "/etc/init/${APP_NAME}.conf" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" -o -f "/etc/init/${APP_NAME}.conf" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
                 else
@@ -1054,7 +1085,7 @@ installdaemon() {
                 fi
             elif [ -f /etc/SuSE-release ] ; then
                 eval echo `gettext 'Detected SuSE or SLES:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
                 else
@@ -1064,7 +1095,7 @@ installdaemon() {
                 fi
             elif [ -f /etc/lsb-release ] ; then
                 eval echo `gettext 'Detected Ubuntu:'`
-                if [ -f "/etc/init.d/$APP_NAME" -o -f "/etc/init/${APP_NAME}.conf" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" -o -f "/etc/init/${APP_NAME}.conf" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
                 else
@@ -1078,7 +1109,7 @@ installdaemon() {
                 fi
             else
                 eval echo `gettext 'Detected Linux:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
                 else
@@ -1092,7 +1123,7 @@ installdaemon() {
             fi
         elif [ "$DIST_OS" = "hpux" ] ; then     
             eval echo `gettext 'Detected HP-UX:'`          
-            if [ -f "/sbin/init.d/$APP_NAME" ] ; then
+            if [ -f "/sbin/init.d/$APP_NAME" -o -L "/sbin/init.d/$APP_NAME" ] ; then
                 eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                 exit 1
             else
@@ -1120,7 +1151,7 @@ installdaemon() {
             fi
         elif [ "$DIST_OS" = "freebsd" ] ; then
             eval echo `gettext 'Detected FreeBSD:'`                
-            if [ -f "/etc/rc.d/$APP_NAME" ] ; then
+            if [ -f "/etc/rc.d/$APP_NAME" -o -L "/etc/rc.d/$APP_NAME" ] ; then
                 eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                 exit 1
             else
@@ -1158,7 +1189,7 @@ installdaemon() {
             fi
         elif [ "$DIST_OS" = "macosx" ] ; then
             eval echo `gettext 'Detected Mac OSX:'`
-            if [ -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
+            if [ -f "/Library/LaunchDaemons/${APP_PLIST}" -o -L "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
                 eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                 exit 1
             else
@@ -1215,11 +1246,11 @@ removedaemon() {
         eval echo `gettext 'Must be root to perform this action.'`
         exit 1
     else
-        stopit "0"
-        APP_NAME_LOWER=`echo "$APP_NAME" | tr "[A-Z]" "[a-z]"`
+        APP_NAME_LOWER=`echo "$APP_NAME" | $TREXE "[A-Z]" "[a-z]"`
         if [ "$DIST_OS" = "solaris" ] ; then
             eval echo `gettext 'Detected Solaris:'`
-            if [ -f "/etc/init.d/$APP_NAME" ] ; then
+            if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                 for i in "/etc/rc3.d/S20$APP_NAME_LOWER" "/etc/rc3.d/K20$APP_NAME_LOWER" "/etc/init.d/$APP_NAME"
                 do
@@ -1232,12 +1263,14 @@ removedaemon() {
         elif [ "$DIST_OS" = "linux" ] ; then
             if [ -f /etc/redhat-release -o -f /etc/redhat_version -o -f /etc/fedora-release ] ; then
                 eval echo `gettext 'Detected RHEL or Fedora:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                     /sbin/chkconfig "$APP_NAME" off
                     /sbin/chkconfig --del "$APP_NAME"
                     rm -f "/etc/init.d/$APP_NAME"
                 elif [ -f "/etc/init/${APP_NAME}.conf" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from upstart...'`
                     rm "/etc/init/${APP_NAME}.conf"
                 else
@@ -1246,7 +1279,8 @@ removedaemon() {
                 fi
             elif [ -f /etc/SuSE-release ] ; then
                 eval echo `gettext 'Detected SuSE or SLES:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                     insserv -r "/etc/init.d/$APP_NAME"
                     rm -f "/etc/init.d/$APP_NAME"
@@ -1256,11 +1290,13 @@ removedaemon() {
                 fi
             elif [ -f /etc/lsb-release ] ; then
                 eval echo `gettext 'Detected Ubuntu:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from init.d...'`
                     update-rc.d -f "$APP_NAME" remove
                     rm -f "/etc/init.d/$APP_NAME"
                 elif [ -f "/etc/init/${APP_NAME}.conf" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from upstart...'`
                     rm "/etc/init/${APP_NAME}.conf"
                 else
@@ -1269,7 +1305,8 @@ removedaemon() {
                 fi
             else
                 eval echo `gettext 'Detected Linux:'`
-                if [ -f "/etc/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
+                    stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                     for i in "/etc/rc3.d/K20$APP_NAME_LOWER" "/etc/rc5.d/K20$APP_NAME_LOWER" "/etc/rc3.d/S20$APP_NAME_LOWER" "/etc/init.d/$APP_NAME" "/etc/rc5.d/S20$APP_NAME_LOWER"
                     do
@@ -1282,7 +1319,8 @@ removedaemon() {
             fi
         elif [ "$DIST_OS" = "hpux" ] ; then
             eval echo `gettext 'Detected HP-UX:'`
-            if [ -f "/sbin/init.d/$APP_NAME" ] ; then
+            if [ -f "/sbin/init.d/$APP_NAME" -o -L "/sbin/init.d/$APP_NAME" ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                 for i in "/sbin/rc3.d/K20$APP_NAME_LOWER" "/sbin/rc3.d/S20$APP_NAME_LOWER" "/sbin/init.d/$APP_NAME"
                 do
@@ -1294,9 +1332,10 @@ removedaemon() {
             fi
         elif [ "$DIST_OS" = "aix" ] ; then
             eval echo `gettext 'Detected AIX:'`
-            if [ -f "/etc/rc.d/init.d/$APP_NAME" -o -n "`/usr/sbin/lsitab $APP_NAME`" -o -n "`/usr/bin/lssrc -S -s $APP_NAME`" ] ; then
+            if [ -f "/etc/rc.d/init.d/$APP_NAME" -o -L "/etc/rc.d/init.d/$APP_NAME" -o -n "`/usr/sbin/lsitab $APP_NAME`" -o -n "`/usr/bin/lssrc -S -s $APP_NAME`" ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
-                if [ -f "/etc/rc.d/init.d/$APP_NAME" ] ; then
+                if [ -f "/etc/rc.d/init.d/$APP_NAME" -o -L "/etc/rc.d/init.d/$APP_NAME" ] ; then
                     for i in "/etc/rc.d/rc2.d/S20$APP_NAME_LOWER" "/etc/rc.d/rc2.d/K20$APP_NAME_LOWER" "/etc/rc.d/init.d/$APP_NAME"
                     do
                         rm -f $i
@@ -1312,7 +1351,8 @@ removedaemon() {
             fi
         elif [ "$DIST_OS" = "freebsd" ] ; then
             eval echo `gettext 'Detected FreeBSD:'`
-            if [ -f "/etc/rc.d/$APP_NAME" ] ; then
+            if [ -f "/etc/rc.d/$APP_NAME" -o -L "/etc/rc.d/$APP_NAME" ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                 for i in "/etc/rc.d/$APP_NAME"
                 do
@@ -1325,7 +1365,8 @@ removedaemon() {
             fi
         elif [ "$DIST_OS" = "macosx" ] ; then
             eval echo `gettext 'Detected Mac OSX:'`
-            if [ -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
+            if [ -f "/Library/LaunchDaemons/${APP_PLIST}" -o -L "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                 # Make sure the plist is installed
                 LOADED_PLIST=`launchctl list | grep ${APP_PLIST_BASE}`
@@ -1340,6 +1381,7 @@ removedaemon() {
         elif [ "$DIST_OS" = "zos" ] ; then
             eval echo `gettext 'Detected z/OS:'`
             if [ -f /etc/rc.bak ] ; then
+                stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                 cp /etc/rc /etc/rc.bak
                 sed  "s/_BPX_JOBNAME=\'APP_NAME\'.*//g" /etc/rc.bak > /etc/rc
@@ -1483,7 +1525,6 @@ docommand() {
             if [ "$DIST_OS" = "macosx" -a -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
                 macosxstart
             elif [ "$DIST_OS" = "linux" -a -f "/etc/init/${APP_NAME}.conf" ] ; then
-                checkUser touchlock "$@"
                 upstartstart
             else
                 checkUser touchlock "$@"
@@ -1536,7 +1577,6 @@ docommand() {
             ;;
     
         'status')
-            checkUser "" "$COMMAND"
             status
             ;;
     
@@ -1565,13 +1605,16 @@ docommand() {
             stopmsg
             ;;
     
-        'launchdinternal')
+        'launchdinternal' | 'upstartinternal')
+            if [ ! "$DIST_OS" = "macosx" -o ! -f "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
+                checkUser touchlock "$@"
+            fi
             # Internal command called by launchd on Max OSX.
             # We do not want to call checkUser here as it is handled in the launchd plist file.  Doing it here would confuse launchd.
             if [ ! -n "$FIXED_COMMAND" ] ; then
                 shift
             fi
-            launchdinternal "$@"
+            launchinternal "$@"
             ;;
     
         *)
