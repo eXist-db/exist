@@ -64,6 +64,7 @@ class UploadDialog extends JFrame {
 		c.insets = new Insets(5, 5, 5, 5);
 
 		JLabel label = new JLabel(Messages.getString("UploadDialog.1")); //$NON-NLS-1$
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
 		c.gridx = 0;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
