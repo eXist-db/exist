@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -87,8 +87,6 @@ public class Launcher extends Observable {
             @Override
             public void run() {
                 utilityPanel = new UtilityPanel(Launcher.this);
-                if (!isSystemTraySupported())
-                    utilityPanel.setVisible(true);
             }
         });
 
@@ -118,6 +116,9 @@ public class Launcher extends Observable {
                 }.start();
             }
         });
+
+        if (tray.getTrayIcons().length > 0)
+            utilityPanel.setVisible(false);
     }
 
     public boolean isSystemTraySupported() {
@@ -136,6 +137,7 @@ public class Launcher extends Observable {
 
         final JDialog hiddenFrame = new JDialog();
         hiddenFrame.setUndecorated(true);
+        hiddenFrame.setIconImage(image);
 
         final PopupMenu popup = createMenu(home);
         trayIcon.setPopupMenu(popup);
