@@ -344,11 +344,9 @@ public class TryCatchExpression extends AbstractExpression {
     // was called with one argument).
     private void addErrDescription(XPathException xpe, ErrorCode errorCode) throws XPathException {
 
-        String description = null;
-        if (xpe != null)
+        String description = errorCode.getDescription();
+        if (description == null && xpe != null)
             description = xpe.getDetailMessage();
-        if (description == null || description.length() == 0)
-            description = errorCode.getDescription();
         
         QName q_description = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
         LocalVariable err_description = new LocalVariable( q_description);
