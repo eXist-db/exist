@@ -117,7 +117,7 @@ public class Launcher extends Observable {
             }
         });
 
-        if (tray.getTrayIcons().length > 0)
+        if (tray != null && tray.getTrayIcons().length > 0)
             utilityPanel.setVisible(false);
     }
 
