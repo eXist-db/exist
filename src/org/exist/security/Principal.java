@@ -25,6 +25,7 @@ import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -32,13 +33,21 @@ import org.exist.storage.DBBroker;
  */
 public interface Principal extends java.security.Principal, Configurable {
 
-	public int getId();
+    public int getId();
 
-        public Realm getRealm();
+    public Realm getRealm();
 
-	public String getRealmId();
+    public String getRealmId();
 
-        public void save() throws ConfigurationException, PermissionDeniedException;
-        
-        public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException;
+    public void save() throws ConfigurationException, PermissionDeniedException;
+
+    public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException;
+    
+    public void setMetadataValue(SchemaType schemaType, String value);
+
+    public String getMetadataValue(SchemaType schemaType);
+
+    public Set<SchemaType> getMetadataKeys();
+    
+    public void clearMetadata();
 }
