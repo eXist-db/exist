@@ -876,6 +876,15 @@ public class SecurityManagerImpl implements SecurityManager {
         return groupNames;
     }
     
+    @Override
+    public List<String> findAllUserNames() {
+        final List<String> userNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
+            userNames.addAll(realm.findAllUserNames());
+        }
+        return userNames;
+    }
+    
     private Map<XmldbURI, Integer> saving = new HashMap<XmldbURI, Integer>();
     
     @Override

@@ -344,6 +344,16 @@ public class RealmImpl extends AbstractRealm {
             }
         });
     }
+    
+    @Override
+    public List<String> findAllUserNames() {
+        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Account> principalDb) {
+                return new ArrayList<String>(principalDb.keySet());
+            }
+        });
+    }
 
     @Override
     public List<String> findAllGroupMembers(final String groupName) {
