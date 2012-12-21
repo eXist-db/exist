@@ -41,9 +41,10 @@ import org.exist.xquery.value.Type;
  *
  * @author Adam Retter <adam@googlemail.com>
  */
-public class SetAccountMetadataFunction extends BasicFunction {
+public class SetPrincipalMetadataFunction extends BasicFunction {
 
     private final static QName qnSetAccountMetadata = new QName("set-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnSetGroupMetadata = new QName("set-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
@@ -55,11 +56,21 @@ public class SetAccountMetadataFunction extends BasicFunction {
                 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
             },
             new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        ),
+        new FunctionSignature(
+            qnSetGroupMetadata,
+            "Sets a metadata attribute value for a group",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to set metadata for."),
+                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
+                new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
+            },
+            new SequenceType(Type.EMPTY, Cardinality.ZERO)
         )
     };
 
 
-    public SetAccountMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
+    public SetPrincipalMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -72,28 +83,48 @@ public class SetAccountMetadataFunction extends BasicFunction {
             throw new XPathException("You must be an authenticated user");
         }
 
-        final String username = args[0].getStringValue();
-
-        if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(username)) {
-            throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to modify the users metadata."));
-        }
+        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         
-        if(isCalledAs(qnSetAccountMetadata.getLocalName())) {
-            final String metadataAttributeNamespace = args[1].getStringValue();
-            final String value = args[2].getStringValue();
+        final String strPrincipal = args[0].getStringValue();
+        final String metadataAttributeNamespace = args[1].getStringValue();
+        final String value = args[2].getStringValue();
             
-            setAccountMetadata(broker, username, metadataAttributeNamespace, value);
+        final Principal principal;
+        if(isCalledAs(qnSetAccountMetadata.getLocalName())) {
+            if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(strPrincipal)) {
+                throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to modify the users metadata."));
+            }
+            principal = securityManager.getAccount(strPrincipal);
+        } else if(isCalledAs(qnSetGroupMetadata.getLocalName())) {
+            
+            //check for a valid group metadata key
+            boolean valid = false;
+            for(final SchemaType groupMetadataKey : GetPrincipalMetadataFunction.GROUP_METADATA_KEYS) {
+                if(groupMetadataKey.getNamespace().equals(metadataAttributeNamespace)) {
+                    valid = true;
+                    break;
+                }
+            }
+            
+            if(!valid) {
+                throw new XPathException("The metadata attribute key '" + metadataAttributeNamespace + "' is not valid on a group.");
+            }
+            
+            final Group group = securityManager.getGroup(strPrincipal);
+            if(!currentUser.hasDbaRole() && !group.isManager(currentUser)) {
+                throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to modify the groups metadata."));
+            }
+            principal = group;
         } else {
             throw new XPathException(this, "Unknown function");
         }
+
+        setAccountMetadata(securityManager, principal, metadataAttributeNamespace, value);
         
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private void setAccountMetadata(final DBBroker broker, final String username, final String metadataAttributeNamespace, final String value) throws XPathException {
-        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        final Account account = securityManager.getAccount(username);
-        
+    private void setAccountMetadata(final SecurityManager securityManager, final Principal principal, final String metadataAttributeNamespace, final String value) throws XPathException {
         SchemaType schemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
         if(schemaType == null) {
             schemaType = EXistSchemaType.valueOfNamespace(metadataAttributeNamespace);
@@ -103,10 +134,14 @@ public class SetAccountMetadataFunction extends BasicFunction {
             throw new XPathException("Unknown metadata attribute key: " + metadataAttributeNamespace);
         }
         
-        account.setMetadataValue(schemaType, value);
+        principal.setMetadataValue(schemaType, value);
         
         try {
-            securityManager.updateAccount(account);
+            if(principal instanceof Account) {
+                securityManager.updateAccount((Account)principal);
+            } else if(principal instanceof Group) {
+                securityManager.updateGroup((Group)principal);
+            }
         } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde);
         } catch(final EXistException ee) {
