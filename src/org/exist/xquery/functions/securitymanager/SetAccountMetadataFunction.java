@@ -25,7 +25,6 @@ import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -52,23 +51,23 @@ public class SetAccountMetadataFunction extends BasicFunction {
             "Sets a metadata attribute value for an account",
             new SequenceType[] {
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to set metadata for."),
-                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute namespace as defined by axschema.org"),
-                new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value")
+                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
+                new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
             },
             new SequenceType(Type.EMPTY, Cardinality.ZERO)
         )
     };
 
 
-    public SetAccountMetadataFunction(XQueryContext context, FunctionSignature signature) {
+    public SetAccountMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        DBBroker broker = getContext().getBroker();
-        Subject currentUser = broker.getSubject();
+        final DBBroker broker = getContext().getBroker();
+        final Subject currentUser = broker.getSubject();
         if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
             throw new XPathException("You must be an authenticated user");
         }
@@ -91,22 +90,26 @@ public class SetAccountMetadataFunction extends BasicFunction {
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private void setAccountMetadata(DBBroker broker, String username, String metadataAttributeNamespace, String value) throws XPathException {
+    private void setAccountMetadata(final DBBroker broker, final String username, final String metadataAttributeNamespace, final String value) throws XPathException {
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         final Account account = securityManager.getAccount(username);
         
-        final AXSchemaType axSchemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
-        if(axSchemaType == null) {
-            throw new XPathException("Unknown axschema.org attribute: " + metadataAttributeNamespace);
+        SchemaType schemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
+        if(schemaType == null) {
+            schemaType = EXistSchemaType.valueOfNamespace(metadataAttributeNamespace);
         }
         
-        account.setMetadataValue(axSchemaType, value);
+        if(schemaType == null) {
+            throw new XPathException("Unknown metadata attribute key: " + metadataAttributeNamespace);
+        }
+        
+        account.setMetadataValue(schemaType, value);
         
         try {
             securityManager.updateAccount(account);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde);
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             throw new XPathException(this, ee);
         }
     }

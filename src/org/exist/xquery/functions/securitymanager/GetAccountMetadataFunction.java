@@ -128,10 +128,16 @@ public class GetAccountMetadataFunction extends BasicFunction {
     private Sequence getAccountMetadata(final DBBroker broker, final Subject currentUser, final String username, final String metadataAttributeNamespace) {
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         final Account account = securityManager.getAccount(username);
+        
         final AXSchemaType axSchemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
         String metadataValue = null;
         if(axSchemaType != null) {
             metadataValue = account.getMetadataValue(axSchemaType);
+        } else {
+            final EXistSchemaType exSchemaType = EXistSchemaType.valueOfNamespace(metadataAttributeNamespace);
+            if(exSchemaType != null) {
+                metadataValue = account.getMetadataValue(exSchemaType);
+            }
         }
 
         if(metadataValue == null || metadataValue.isEmpty()) {
