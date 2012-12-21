@@ -48,13 +48,13 @@ import org.exist.xquery.value.ValueSequence;
 public class FindGroupFunction extends BasicFunction {
 
     private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-            qnGetGroups,
-            "Gets all groups",
+            qnListGroups,
+            "List all groups",
             null,
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
         ),
@@ -94,7 +94,7 @@ public class FindGroupFunction extends BasicFunction {
         SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         List<String> groupNames;
-        if(isCalledAs(qnGetGroups.getLocalName())) {
+        if(isCalledAs(qnListGroups.getLocalName())) {
             groupNames = securityManager.findAllGroupNames();
         } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
             final String startsWith = args[0].getStringValue();
@@ -109,8 +109,8 @@ public class FindGroupFunction extends BasicFunction {
         //order a-z
         Collections.sort(groupNames);
 
-        Sequence result = new ValueSequence();
-        for(String groupName : groupNames) {
+        final Sequence result = new ValueSequence();
+        for(final String groupName : groupNames) {
             result.add(new StringValue(groupName));
         }
         return result;
