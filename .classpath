@@ -148,9 +148,9 @@
 	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1-min.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-net-2.2.jar"/>
 	<classpathentry kind="lib" path="extensions/contentextraction/lib/metadata-extractor-2.4.0-beta-1.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-3.6.0.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-3.6.0.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-3.6.0.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-3.6.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-3.6.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-3.6.1.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/existdb-favicon.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-8.1.8.v20121106.jar"/>
