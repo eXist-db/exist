@@ -90,9 +90,6 @@ public class GetAccountMetadataFunction extends BasicFunction {
 
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getSubject();
-        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-            throw new XPathException("You must be an authenticated user");
-        }
 
         if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) && args.length == 0) {
             return getAllAccountMetadataKeys();
