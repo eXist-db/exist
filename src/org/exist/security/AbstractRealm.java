@@ -589,6 +589,11 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
+    public List<String> findAllUserNames() {
+        return new ArrayList<String>();
+    }
+    
+    @Override
     public List<String> findAllGroupMembers(final String groupName) {
         return new ArrayList<String>();
     }
