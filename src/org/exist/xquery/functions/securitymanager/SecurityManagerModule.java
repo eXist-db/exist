@@ -50,10 +50,15 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(UMaskFunction.signatures[0], UMaskFunction.class),
         new FunctionDef(UMaskFunction.signatures[1], UMaskFunction.class),
         
-        new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
-        new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
-        new FunctionDef(GetAccountMetadataFunction.signatures[2], GetAccountMetadataFunction.class),
-        new FunctionDef(SetAccountMetadataFunction.signatures[0], SetAccountMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[0], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[1], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[2], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[3], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[4], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.signatures[5], GetPrincipalMetadataFunction.class),
+        
+        new FunctionDef(SetPrincipalMetadataFunction.signatures[0], SetPrincipalMetadataFunction.class),
+        new FunctionDef(SetPrincipalMetadataFunction.signatures[1], SetPrincipalMetadataFunction.class),
 
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),

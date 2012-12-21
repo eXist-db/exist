@@ -24,8 +24,8 @@ package org.exist.xquery.functions.securitymanager;
 import java.util.Set;
 import org.exist.dom.QName;
 import org.exist.security.AXSchemaType;
-import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
+import org.exist.security.Principal;
 import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -49,11 +49,21 @@ import org.exist.xquery.value.ValueSequence;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class GetAccountMetadataFunction extends BasicFunction {
+public class GetPrincipalMetadataFunction extends BasicFunction {
 
+    public final static SchemaType[] GROUP_METADATA_KEYS = {
+        AXSchemaType.LANGUAGE,
+        AXSchemaType.EMAIL,
+        EXistSchemaType.DESCRIPTION
+    };
+    
     private final static QName qnGetAccountMetadataKeys = new QName("get-account-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetAccountMetadata = new QName("get-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
+    private final static QName qnGetGroupMetadataKeys = new QName("get-group-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnGetGroupMetadata = new QName("get-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+
+    
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             qnGetAccountMetadataKeys,
@@ -77,38 +87,83 @@ public class GetAccountMetadataFunction extends BasicFunction {
                 new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
+        ),
+        
+        new FunctionSignature(
+            qnGetGroupMetadataKeys,
+            "Gets a sequence of the metadata attribute keys that may be used for a group.",
+            null,
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+        ),
+        new FunctionSignature(
+            qnGetGroupMetadataKeys,
+            "Gets a sequence of the metadata attribute keys present for a group",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from.")
+            },
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+        ),
+        new FunctionSignature(
+            qnGetGroupMetadata,
+            "Gets a metadata attribute value for a group",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from."),
+                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
         )
     };
 
 
-    public GetAccountMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
+    public GetPrincipalMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+        
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getSubject();
 
-        if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) && args.length == 0) {
-            return getAllAccountMetadataKeys();
+        if(args.length == 0) {
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName())) {
+                result = getAllAccountMetadataKeys();
+            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalName())) {
+                result = getAllGroupMetadataKeys();
+            } else {
+                throw new XPathException("Unknown function");
+            }
         } else {
-            final String username = args[0].getStringValue();
-            
-            if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(username)) {
-                throw new XPathException("You must be a DBA to retrieve metadata about other users. Otherwise you may only retrieve metadata about yourself.");
+            final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
+            final String strPrincipal = args[0].getStringValue();
+            final Principal principal;
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) || isCalledAs(qnGetAccountMetadata.getLocalName())) {
+                if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(strPrincipal)) {
+                    throw new XPathException("You must be a DBA to retrieve metadata about other users, otherwise you may only retrieve metadata about yourself.");
+                }
+                principal = securityManager.getAccount(strPrincipal);
+            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalName()) || isCalledAs(qnGetGroupMetadata.getLocalName())) {
+                if(!currentUser.hasDbaRole() && !currentUser.hasGroup(strPrincipal)) {
+                    throw new XPathException("You must be a DBA to retrieve metadata about other groups, otherwise you may only retrieve metadata about groups you are a member of.");
+                }
+                principal = securityManager.getGroup(strPrincipal);
+            } else {
+                throw new XPathException("Unknown function");
             }
             
-            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName())) {
-                return getAccountMetadataKeys(broker, username);
-            } else if(isCalledAs(qnGetAccountMetadata.getLocalName())) {
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) || isCalledAs(qnGetGroupMetadataKeys.getLocalName())) {
+                result = getPrincipalMetadataKeys(principal);
+            } else if(isCalledAs(qnGetAccountMetadata.getLocalName()) || isCalledAs(qnGetGroupMetadata.getLocalName())) {
                 final String metadataAttributeNamespace = args[1].getStringValue();
-                return getAccountMetadata(broker, currentUser, username, metadataAttributeNamespace);
+                result = getPrincipalMetadata(principal, metadataAttributeNamespace);
             } else {
                 throw new XPathException("Unknown function");
             }
         }
+        
+        return result;
     }
 
     private Sequence getAllAccountMetadataKeys() throws XPathException {
@@ -122,18 +177,24 @@ public class GetAccountMetadataFunction extends BasicFunction {
         return result;
     }
     
-    private Sequence getAccountMetadata(final DBBroker broker, final Subject currentUser, final String username, final String metadataAttributeNamespace) {
-        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        final Account account = securityManager.getAccount(username);
+    private Sequence getAllGroupMetadataKeys() throws XPathException {
+        final ValueSequence result = new ValueSequence();   
+        for(final SchemaType GROUP_METADATA_KEY : GROUP_METADATA_KEYS) {
+            result.add(new AnyURIValue(GROUP_METADATA_KEY.getNamespace()));
+        }
+        return result;
+    }
+    
+    private Sequence getPrincipalMetadata(final Principal principal, final String metadataAttributeNamespace) {
         
         final AXSchemaType axSchemaType = AXSchemaType.valueOfNamespace(metadataAttributeNamespace);
         String metadataValue = null;
         if(axSchemaType != null) {
-            metadataValue = account.getMetadataValue(axSchemaType);
+            metadataValue = principal.getMetadataValue(axSchemaType);
         } else {
             final EXistSchemaType exSchemaType = EXistSchemaType.valueOfNamespace(metadataAttributeNamespace);
             if(exSchemaType != null) {
-                metadataValue = account.getMetadataValue(exSchemaType);
+                metadataValue = principal.getMetadataValue(exSchemaType);
             }
         }
 
@@ -144,16 +205,13 @@ public class GetAccountMetadataFunction extends BasicFunction {
         }
     }
 
-    private Sequence getAccountMetadataKeys(final DBBroker broker, final String username) throws XPathException {
-        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
-        final Account account = securityManager.getAccount(username);
+    private Sequence getPrincipalMetadataKeys(final Principal principal) throws XPathException {
         
-        final Set<SchemaType> metadataKeys = account.getMetadataKeys();
+        final Set<SchemaType> metadataKeys = principal.getMetadataKeys();
         final Sequence seq = new ValueSequence(metadataKeys.size());
         for(final SchemaType schemaType : metadataKeys) {
             seq.add(new AnyURIValue(schemaType.getNamespace()));
         }
-
         return seq;
     }
 }
