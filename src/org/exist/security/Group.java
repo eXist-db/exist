@@ -39,12 +39,4 @@ public interface Group extends Principal {
     public void removeManager(Account account) throws PermissionDeniedException;
 
     public void assertCanModifyGroup(Account account) throws PermissionDeniedException;
-    
-    public void setMetadataValue(SchemaType schemaType, String value);
-
-    public String getMetadataValue(SchemaType schemaType);
-
-    public Set<SchemaType> getMetadataKeys();
-    
-    public void clearMetadata();
 }
