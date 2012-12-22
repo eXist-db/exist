@@ -60,6 +60,9 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_ACCOUNT_METADATA, SetPrincipalMetadataFunction.class),
         new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_GROUP_METADATA, SetPrincipalMetadataFunction.class),
 
+        new FunctionDef(AccountStatusFunction.FNS_IS_ACCOUNT_ENABLED, AccountStatusFunction.class),
+        new FunctionDef(AccountStatusFunction.FNS_SET_ACCOUNT_ENABLED, AccountStatusFunction.class),
+        
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
 
