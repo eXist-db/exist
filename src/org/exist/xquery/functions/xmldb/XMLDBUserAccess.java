@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.FindGroupFunction;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -67,7 +68,8 @@ public class XMLDBUserAccess extends BasicFunction {
         new QName("get-user-groups", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Returns the sequence of groups the user $user-id is a member of.",
         new SequenceType[]{ARG_USER_ID},
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the group memberships")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the group memberships"),
+        FindGroupFunction.FNS_GET_USER_GROUPS
     );
     
     public final static FunctionSignature fnUserPrimaryGroup = new FunctionSignature(
