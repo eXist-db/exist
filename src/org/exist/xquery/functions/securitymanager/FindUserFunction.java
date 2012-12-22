@@ -23,7 +23,6 @@ package org.exist.xquery.functions.securitymanager;
 
 import java.util.Collections;
 import java.util.List;
-import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -54,38 +53,38 @@ public class FindUserFunction extends BasicFunction {
     private final static QName qnListUsers = new QName("list-users", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            qnFindUsersByUsername,
-            "Finds users whoose username starts with a matching string",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match usernames")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
-        ),
-        new FunctionSignature(
-            qnFindUsersByName,
-            "Finds users whoose personal name starts with a matching string",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a personal name")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
-        ),
-        new FunctionSignature(
-            qnFindUsersByNamePart,
-            "Finds users whoose first name or last name starts with a matching string",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a first or last name")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
-        ),
-        new FunctionSignature(
-            qnListUsers,
-            "List all users. You must be a DBA to enumerate all users, if you are not a DBA you will just get the username of the currently logged in user.",
-            null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of users.")
-        )
-    };
+    public final static FunctionSignature FNS_FIND_USERS_BY_USERNAME = new FunctionSignature(
+        qnFindUsersByUsername,
+        "Finds users whoose username starts with a matching string",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match usernames")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
+    );
+    public final static FunctionSignature FNS_FIND_USERS_BY_NAME = new FunctionSignature(
+        qnFindUsersByName,
+        "Finds users whoose personal name starts with a matching string",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a personal name")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
+    );
+    
+    public final static FunctionSignature FNS_FIND_USERS_BY_NAME_PART = new FunctionSignature(
+        qnFindUsersByNamePart,
+        "Finds users whoose first name or last name starts with a matching string",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match a first or last name")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
+    );
+    
+    public final static FunctionSignature FNS_LIST_USERS = new FunctionSignature(
+        qnListUsers,
+        "List all users. You must be a DBA to enumerate all users, if you are not a DBA you will just get the username of the currently logged in user.",
+        null,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of users.")
+    );
 
 
     public FindUserFunction(XQueryContext context, FunctionSignature signature) {

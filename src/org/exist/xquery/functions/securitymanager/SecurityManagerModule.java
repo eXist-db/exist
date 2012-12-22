@@ -1,6 +1,6 @@
 /*
  *  eXist-db SecurityManager Module Extension
- *  Copyright (C) 2011 Adam Retter <adam@existsolutions.com>
+ *  Copyright (C) 2012 Adam Retter <adam@existsolutions.com>
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -42,13 +42,13 @@ public class SecurityManagerModule extends AbstractInternalModule {
     private final static String DESCRIPTION = "Module for interacting with the Security Manager";
 
     private final static FunctionDef[] functions = {
-        new FunctionDef(FindUserFunction.signatures[0], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[2], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[3], FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_USERNAME, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME_PART, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_LIST_USERS, FindUserFunction.class),
 
-        new FunctionDef(UMaskFunction.signatures[0], UMaskFunction.class),
-        new FunctionDef(UMaskFunction.signatures[1], UMaskFunction.class),
+        new FunctionDef(UMaskFunction.FNS_GET_UMASK, UMaskFunction.class),
+        new FunctionDef(UMaskFunction.FNS_SET_UMASK, UMaskFunction.class),
         
         new FunctionDef(GetPrincipalMetadataFunction.signatures[0], GetPrincipalMetadataFunction.class),
         new FunctionDef(GetPrincipalMetadataFunction.signatures[1], GetPrincipalMetadataFunction.class),
@@ -63,8 +63,8 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
 
-        new FunctionDef(GroupMembershipFunctions.signatures[0], GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.signatures[1], GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MANAGERS, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS, GroupMembershipFunctions.class),
 
         new FunctionDef(FindGroupFunction.FNS_LIST_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
