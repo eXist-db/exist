@@ -64,55 +64,55 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
     private final static QName qnGetGroupMetadata = new QName("get-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            qnGetAccountMetadataKeys,
-            "Gets a sequence of the metadata attribute keys that may be used for an account.",
-            null,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
-        ),
-        new FunctionSignature(
-            qnGetAccountMetadataKeys,
-            "Gets a sequence of the metadata attribute keys present for an account",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve metadata from.")
-            },
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
-        ),
-        new FunctionSignature(
-            qnGetAccountMetadata,
-            "Gets a metadata attribute value for an account",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve metadata from."),
-                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
-        ),
-        
-        new FunctionSignature(
-            qnGetGroupMetadataKeys,
-            "Gets a sequence of the metadata attribute keys that may be used for a group.",
-            null,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
-        ),
-        new FunctionSignature(
-            qnGetGroupMetadataKeys,
-            "Gets a sequence of the metadata attribute keys present for a group",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from.")
-            },
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
-        ),
-        new FunctionSignature(
-            qnGetGroupMetadata,
-            "Gets a metadata attribute value for a group",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from."),
-                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
-        )
-    };
+    public final static FunctionSignature FNS_GET_ALL_ACCOUNT_METADATA_KEYS = new FunctionSignature(
+        qnGetAccountMetadataKeys,
+        "Gets a sequence of the metadata attribute keys that may be used for an account.",
+        null,
+        new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+    );
+    
+    public final static FunctionSignature FNS_GET_ACCOUNT_METADATA_KEYS = new FunctionSignature(
+        qnGetAccountMetadataKeys,
+        "Gets a sequence of the metadata attribute keys present for an account",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve metadata from.")
+        },
+        new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+    );
+    
+    public final static FunctionSignature FNS_GET_ACCOUNT_METADATA = new FunctionSignature(
+        qnGetAccountMetadata,
+        "Gets a metadata attribute value for an account",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve metadata from."),
+            new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
+    );
+
+    public final static FunctionSignature FNS_GET_ALL_GROUP_METADATA_KEYS = new FunctionSignature(
+        qnGetGroupMetadataKeys,
+        "Gets a sequence of the metadata attribute keys that may be used for a group.",
+        null,
+        new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+    );
+    public final static FunctionSignature FNS_GET_GROUP_METADATA_KEYS = new FunctionSignature(
+        qnGetGroupMetadataKeys,
+        "Gets a sequence of the metadata attribute keys present for a group",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from.")
+        },
+        new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
+    );
+    public final static FunctionSignature FNS_GET_GROUP_METADATA = new FunctionSignature(
+        qnGetGroupMetadata,
+        "Gets a metadata attribute value for a group",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to retrieve metadata from."),
+            new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The fully qualified metadata attribute key name")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
+    );
 
 
     public GetPrincipalMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
