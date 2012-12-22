@@ -56,7 +56,7 @@ public class UMaskFunction extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to retrieve the umask for.")
         },
-        new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_MORE, "The umask of the users account expressed as an interger")
+        new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_MORE, "The umask of the users account expressed as an integer")
     );
     
     public final static FunctionSignature FNS_SET_UMASK = new FunctionSignature(
