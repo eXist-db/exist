@@ -29,24 +29,23 @@ public class GroupMembershipFunctions extends BasicFunction {
     private final static QName qnGetGroupManagers = new QName("get-group-managers", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetGroupMembers = new QName("get-group-members", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            qnGetGroupManagers,
-            "Gets a list of the group managers. Can only be called by a group manager.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of managers for.")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group managers for the group $group")
-        ),
-        new FunctionSignature(
-            qnGetGroupMembers,
-            "Gets a list of the group members.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of members for.")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group members for the group $group")
-        ),
-    };
+    public final static FunctionSignature FNS_GET_GROUP_MANAGERS = new FunctionSignature(
+        qnGetGroupManagers,
+        "Gets a list of the group managers. Can only be called by a group manager.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of managers for.")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group managers for the group $group")
+    );
+    
+    public final static FunctionSignature FNS_GET_GROUP_MEMBERS = new FunctionSignature(
+        qnGetGroupMembers,
+        "Gets a list of the group members.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name to retrieve the list of members for.")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group members for the group $group")
+    );
 
     public GroupMembershipFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
