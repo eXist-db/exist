@@ -46,29 +46,28 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
     private final static QName qnSetAccountMetadata = new QName("set-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnSetGroupMetadata = new QName("set-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            qnSetAccountMetadata,
-            "Sets a metadata attribute value for an account",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to set metadata for."),
-                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
-                new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
-            },
-            new SequenceType(Type.EMPTY, Cardinality.ZERO)
-        ),
-        new FunctionSignature(
-            qnSetGroupMetadata,
-            "Sets a metadata attribute value for a group",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to set metadata for."),
-                new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
-                new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
-            },
-            new SequenceType(Type.EMPTY, Cardinality.ZERO)
-        )
-    };
-
+    
+    public final static FunctionSignature FNS_SET_ACCOUNT_METADATA = new FunctionSignature(
+        qnSetAccountMetadata,
+        "Sets a metadata attribute value for an account",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to set metadata for."),
+            new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
+            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
+        },
+        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+    );
+    
+    public final static FunctionSignature FNS_SET_GROUP_METADATA = new FunctionSignature(
+        qnSetGroupMetadata,
+        "Sets a metadata attribute value for a group",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to set metadata for."),
+            new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
+            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
+        },
+        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+    );
 
     public SetPrincipalMetadataFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

@@ -38,7 +38,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/securitymanager";
     public final static String PREFIX = "sm";
-    private final static String RELEASED_IN_VERSION = "eXist-1.5";
+    private final static String RELEASED_IN_VERSION = "eXist-2.0";
     private final static String DESCRIPTION = "Module for interacting with the Security Manager";
 
     private final static FunctionDef[] functions = {
@@ -50,15 +50,15 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(UMaskFunction.FNS_GET_UMASK, UMaskFunction.class),
         new FunctionDef(UMaskFunction.FNS_SET_UMASK, UMaskFunction.class),
         
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[0], GetPrincipalMetadataFunction.class),
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[1], GetPrincipalMetadataFunction.class),
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[2], GetPrincipalMetadataFunction.class),
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[3], GetPrincipalMetadataFunction.class),
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[4], GetPrincipalMetadataFunction.class),
-        new FunctionDef(GetPrincipalMetadataFunction.signatures[5], GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ALL_ACCOUNT_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ALL_GROUP_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_GROUP_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_GROUP_METADATA, GetPrincipalMetadataFunction.class),
         
-        new FunctionDef(SetPrincipalMetadataFunction.signatures[0], SetPrincipalMetadataFunction.class),
-        new FunctionDef(SetPrincipalMetadataFunction.signatures[1], SetPrincipalMetadataFunction.class),
+        new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_ACCOUNT_METADATA, SetPrincipalMetadataFunction.class),
+        new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_GROUP_METADATA, SetPrincipalMetadataFunction.class),
 
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
