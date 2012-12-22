@@ -68,7 +68,7 @@ public class AccountStatusFunction extends BasicFunction {
         new SequenceType(Type.EMPTY, Cardinality.ZERO)
     );
     
-     public AccountStatusFunction(final XQueryContext context, final FunctionSignature signature) {
+    public AccountStatusFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
     
