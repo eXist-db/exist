@@ -22,14 +22,13 @@
  */
 package org.exist.xquery;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Describes the signature of a built-in or user-defined function, i.e.
@@ -52,10 +51,10 @@ public class FunctionSignature {
 	 */
 	public final static SequenceType[] NO_ARGS = new SequenceType[0];
 
-	private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed at anytime during the 1.5 development and will be removed in the 1.6 release.";
+	private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major release version.";
 	
-	public final static SequenceType[] singleArgument(SequenceType arg) {
-		return new SequenceType[] { arg };
+	public static SequenceType[] singleArgument(final SequenceType arg) {
+            return new SequenceType[] { arg };
 	}
 	
     private Annotation[] annotations;
@@ -99,6 +98,12 @@ public class FunctionSignature {
 			String deprecated) {
 		this(name, description, arguments, returnType, false);
 		setDeprecated(deprecated);
+	}
+        
+        /**
+         */
+        public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
+		this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalName() + "' instead!");
 	}
 	
 	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType,
@@ -191,24 +196,25 @@ public class FunctionSignature {
         return metadata;
     }
 
-	public boolean isOverloaded() {
-		return isOverloaded;
-	}
+    public boolean isOverloaded() {
+        return isOverloaded;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated != null;
+    }
+
+    public String getDeprecated() {
+        if (deprecated != null && deprecated.length() > 0) {
+            return deprecated + DEPRECATION_REMOVAL_MESSAGE;
+        } else {
+            return null;
+        }
+    }
 	
-	public boolean isDeprecated() {
-		return deprecated != null;
-	}
-	
-	public String getDeprecated() {
-		if (deprecated != null && deprecated.length() > 0)
-			return deprecated + DEPRECATION_REMOVAL_MESSAGE;
-		else
-			return null;
-	}
-	
-	public void setDeprecated(String message) {
-		deprecated = message;
-	}
+    public final void setDeprecated(final String message) {
+        deprecated = message;
+    }
 
     public boolean isPrivate() {
         Annotation[] annotations = getAnnotations();
