@@ -24,22 +24,22 @@
 <project basedir="../.." name="SubVersion">
 
   <description>Subversion tasks</description>
-  
-  <property name="svnkit.repo"    value="http://maven.tmatesoft.com/content/repositories/releases"/>
+
+  <property name="svnkit.repo" value="http://maven.tmatesoft.com/content/repositories/releases"/>
   <property name="svnkit.version" value="1.3.7"/>
 
   <property name="svn.svnkit.jar" value="${lib.user}/svnkit.jar"/>
   <property name="svn.tmp.svnkit.jar" value="${lib.user}/svnkit-${svnkit.version}.jar"/>
-  
+
   <property name="svn.svnkitcli.jar" value="${lib.user}/svnkit-cli.jar"/>
   <property name="svn.tmp.svnkitcli.jar" value="${lib.user}/svnkit-cli-${svnkit.version}.jar"/>
-  
-  <property name="svn.patch.file" value="exist.patch"/>
-  
 
- 
+  <property name="svn.patch.file" value="exist.patch"/>
+
+
+
   <available classname="org.tmatesoft.svn.cli.SVN" property="svn-present"/>
-   
+
 
   <!-- 
     Try to read SVN info from entries-file (if file exist).
@@ -47,7 +47,7 @@
   -->
   <target name="svn-prepare" if="svn-present">
     <echo>Determining local SVN revision</echo>
-    
+
     <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask"/>
 
     <tstamp/>
@@ -69,23 +69,22 @@
   -->
   <target name="svn-download" description="Download latest SVN library.">
 
-		<taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
-    
-    <!--echo>Old svnkit files will be remove automagically from "${lib.user}"</echo>
-    <delete verbose="true">
-      <fileset dir="${lib.user}" includes="svnkit*jar" excludes="svnkit*${svnkit.version}*jar"></fileset>
-    </delete-->
-    
-    <!-- Get file and rename  -->
-		<fetch  dest="${lib.user}" 
-		  url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit-cli/${svnkit.version}/svnkit-cli-${svnkit.version}.jar" classname="org.tmatesoft.svn.cli.SVN"/>
-    
-    <move file="${svn.tmp.svnkitcli.jar}" tofile="${svn.svnkitcli.jar}" failonerror="false"/>
-    
-    <!-- Get file and rename  -->
-    <fetch classpathref="classpath.core" dest="${lib.user}" 
-      url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit/${svnkit.version}/svnkit-${svnkit.version}.jar" classname="org.tmatesoft.svn.util.Version"/>
+    <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask"/>
 
+    <!-- Get file and rename  -->
+    <fetch dest="${lib.user}"
+      url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit-cli/${svnkit.version}/svnkit-cli-${svnkit.version}.jar"
+      classname="org.tmatesoft.svn.cli.SVN"/>
+
+    <!-- required to get rid of version-info in filename -->
+    <move file="${svn.tmp.svnkitcli.jar}" tofile="${svn.svnkitcli.jar}" failonerror="false"/>
+
+    <!-- Get file and rename  -->
+    <fetch classpathref="classpath.core" dest="${lib.user}"
+      url="${svnkit.repo}/org/tmatesoft/svnkit/svnkit/${svnkit.version}/svnkit-${svnkit.version}.jar"
+      classname="org.tmatesoft.svn.util.Version"/>
+
+    <!-- required to get rid of version-info in filename -->
     <move file="${svn.tmp.svnkit.jar}" tofile="${svn.svnkit.jar}" failonerror="false"/>
   </target>
 
