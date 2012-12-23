@@ -189,42 +189,53 @@ public class LuceneConfig {
 					        }
 					    }
 					    parseConfig(node.getChildNodes(), namespaces);
+                        
 					} else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
 					    analyzers.addAnalyzer((Element) node);
+                        
 					} else if (FIELD_TYPE_ELEMENT.equals(node.getLocalName())) {
 						FieldType type = new FieldType((Element) node, analyzers);
 						fieldTypes.put(type.getId(), type);
+                        
 					} else if (INDEX_ELEMENT.equals(node.getLocalName())) {
 						// found an index definition
 					    Element elem = (Element) node;
 						LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
 						// if it is a named index, add it to the namedIndexes map
-						if (config.getName() != null)
-						    namedIndexes.put(config.getName(), config);
+						if (config.getName() != null) {
+                            namedIndexes.put(config.getName(), config);
+                        }
 
 						// register index either by QName or path
 						if (config.getNodePath().hasWildcard()) {
 							wildcardPaths.add(config);
 						} else {
 						    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
-						    if (idxConf == null)
-						        paths.put(config.getNodePath().getLastComponent(), config);
-						    else
-						        idxConf.add(config);
+						    if (idxConf == null) {
+                                paths.put(config.getNodePath().getLastComponent(), config);
+                            }
+						    else {
+                                idxConf.add(config);
+                            }
 						}
+                        
 					} else if (INLINE_ELEMENT.equals(node.getLocalName())) {
 					    Element elem = (Element) node;
 					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-					    if (inlineNodes == null)
-					        inlineNodes = new TreeSet<QName>();
+					    if (inlineNodes == null) {
+                            inlineNodes = new TreeSet<QName>();
+                        }
 					    inlineNodes.add(qname);
+                        
 					} else if (IGNORE_ELEMENT.equals(node.getLocalName())) {
 					    Element elem = (Element) node;
 					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-					    if (ignoreNodes == null)
-					        ignoreNodes = new TreeSet<QName>();
+					    if (ignoreNodes == null) {
+                            ignoreNodes = new TreeSet<QName>();
+                        }
 					    ignoreNodes.add(qname);
 					}
+                    
                 } catch (DatabaseConfigurationException e) {
 					LOG.warn("Invalid lucene configuration element: " + e.getMessage());
 				}
