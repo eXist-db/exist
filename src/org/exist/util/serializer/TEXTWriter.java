@@ -22,10 +22,8 @@ package org.exist.util.serializer;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-
 import org.exist.dom.QName;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
@@ -57,7 +55,7 @@ public class TEXTWriter extends XMLWriter {
         // empty
     }
     
-    public TEXTWriter(Writer writer) {
+    public TEXTWriter(final Writer writer) {
         super();
         this.writer = writer;
     }
@@ -74,13 +72,13 @@ public class TEXTWriter extends XMLWriter {
      * @param properties outputProperties
      */
     @Override
-    public void setOutputProperties(Properties properties) {
-        if (properties == null)
+    public void setOutputProperties(final Properties properties) {
+        if (properties == null) {
             outputProperties = defaultProperties;
-        else
+        } else {
             outputProperties = properties;
-        String encoding = outputProperties.getProperty(OutputKeys.ENCODING,
-                "UTF-8");
+        }
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
         charSet = CharacterSet.getCharacterSet(encoding);
     }
     
@@ -90,7 +88,7 @@ public class TEXTWriter extends XMLWriter {
      * @param writer
      */
     @Override
-    public void setWriter(Writer writer) {
+    public void setWriter(final Writer writer) {
         this.writer = writer;
         
     }
@@ -107,86 +105,85 @@ public class TEXTWriter extends XMLWriter {
     
     
     @Override
-    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
+    public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         // empty
     }
     
     @Override
-    public void startElement(QName qname) throws TransformerException {
+    public void startElement(final QName qname) throws TransformerException {
         // empty
     }
     
     @Override
-    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
+    public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         // empty
     }
     
     @Override
-    public void endElement(QName qname) throws TransformerException {
+    public void endElement(final QName qname) throws TransformerException {
         // empty
     }
     
     @Override
-    public void namespace(String prefix, String nsURI) throws TransformerException {
+    public void namespace(final String prefix, final String nsURI) throws TransformerException {
         // empty
     }
     
     @Override
-    public void attribute(String qname, String value) throws TransformerException {
+    public void attribute(final String qname, final String value) throws TransformerException {
         // empty
     }
     
     @Override
-    public void attribute(QName qname, String value) throws TransformerException {
+    public void attribute(final QName qname, final String value) throws TransformerException {
         // empty
     }
     
     @Override
-    public void characters(CharSequence chars) throws TransformerException {
+    public void characters(final CharSequence chars) throws TransformerException {
         
         try {
             writeChars(chars, false);
-        } catch (IOException e) {
-            throw new TransformerException(e.getMessage(), e);
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
     
     @Override
-    public void characters(char[] ch, int start, int len) throws TransformerException {
-        
-        XMLString s = new XMLString(ch, start, len);
+    public void characters(final char[] ch, final int start, final int len) throws TransformerException {
+        final XMLString s = new XMLString(ch, start, len);
         characters(s);
         s.release();
     }
     
     @Override
-    public void processingInstruction(String target, String data) throws TransformerException {
+    public void processingInstruction(final String target, final String data) throws TransformerException {
         // empty
     }
     
     @Override
-    public void comment(CharSequence data) throws TransformerException {
+    public void comment(final CharSequence data) throws TransformerException {
         // empty
     }
     
     @Override
-    public void cdataSection(char[] ch, int start, int len) throws TransformerException {
+    public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
         
         try {
             writer.write(ch, start, len);
             
-        } catch (IOException e) {
-            throw new TransformerException(e.getMessage(), e);
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
     
     @Override
-    public void documentType(String name, String publicId, String systemId) throws TransformerException {
+    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
         // empty
     }
     
     @Override
-    protected void closeStartTag(boolean isEmpty) throws TransformerException {
+    protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         // empty
     }
     
@@ -196,31 +193,31 @@ public class TEXTWriter extends XMLWriter {
     }
     
     @Override
-    protected void writeDoctype(String rootElement) throws TransformerException {
+    protected void writeDoctype(final String rootElement) throws TransformerException {
         // empty
     }
     
-    private void writeChars(CharSequence s, boolean inAttribute) throws IOException {
+    private void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         
         final int len = s.length();
         writeCharSeq(s, 0, len);
     }
     
-    private void writeCharSeq(CharSequence ch, int start, int end) throws IOException {
+    private void writeCharSeq(final CharSequence ch, final int start, final int end) throws IOException {
         for (int i = start; i < end; i++) {
             writer.write(ch.charAt(i));
         }
     }
     
     @Override
-    protected void writeCharacterReference(char charval) throws IOException {
+    protected void writeCharacterReference(final char charval) throws IOException {
         int o = 0;
         charref[o++] = '&';
         charref[o++] = '#';
         charref[o++] = 'x';
-        String code = Integer.toHexString(charval);
-        int len = code.length();
-        for (int k = 0; k < len; k++) {
+        final String code = Integer.toHexString(charval);
+        final int len = code.length();
+        for(int k = 0; k < len; k++) {
             charref[o++] = code.charAt(k);
         }
         charref[o++] = ';';

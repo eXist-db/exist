@@ -101,13 +101,13 @@ public class JSONWriter extends XMLWriter {
         try {
             if(root != null) {
                 if(jsonp != null) {
-                    writer.write(jsonp + "(");
+                    getWriter().write(jsonp + "(");
                 }
 
-                root.serialize(writer, true);
+                root.serialize(getWriter(), true);
 
                 if(jsonp != null) {
-                    writer.write(")");
+                    getWriter().write(")");
                 }
             }
         } catch(final IOException ioe) {
