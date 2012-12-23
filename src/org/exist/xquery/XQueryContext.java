@@ -62,6 +62,7 @@ import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.interpreter.Context;
 import org.exist.memtree.InMemoryXMLStreamReader;
@@ -69,6 +70,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.repo.ExistRepository;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -84,6 +86,7 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
@@ -2138,7 +2141,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Subject getUserFromHttpSession()
     {
-        SessionModule myModule = (SessionModule)getModule( SessionModule.NAMESPACE_URI );
+        RequestModule myModule = (RequestModule)getModule( RequestModule.NAMESPACE_URI );
 
         //Sanity check : one may *not* want to bind the module !
         if( myModule == null ) {
@@ -2148,7 +2151,7 @@ public class XQueryContext implements BinaryValueManager, Context
         Variable var = null;
 
         try {
-            var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+            var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
         }
         catch( XPathException xpe ) {
             return( null );
@@ -2157,17 +2160,21 @@ public class XQueryContext implements BinaryValueManager, Context
         if( ( var != null ) && ( var.getValue() != null ) ) {
 
             if( var.getValue().getItemType() == Type.JAVA_OBJECT ) {
-                JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+                JavaObjectValue reqValue = (JavaObjectValue)var.getValue().itemAt( 0 );
 
-                if( session.getObject() instanceof SessionWrapper ) {
-
-                    try {
-                        return( (Subject)( (SessionWrapper)session.getObject() ).getAttribute( HTTP_SESSIONVAR_XMLDB_USER ) );
-                    }
-                    catch( IllegalStateException e ) {
-
-                        // session is invalid
-                        return( null );
+                if( reqValue.getObject() instanceof RequestWrapper) {
+                    RequestWrapper req = (RequestWrapper) reqValue.getObject();
+                    Object user = req.getAttribute("xquery.user");
+                    Object passAttr = req.getAttribute("xquery.password");
+                    if (user != null) {
+                        String password = passAttr == null ? null : passAttr.toString();
+                        try {
+                            return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
+                        } catch (AuthenticationException e) {
+                            LOG.error("User can not be authenticated: " + user.toString());
+                        }
+                    } else {
+                        req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
                     }
                 }
             }
