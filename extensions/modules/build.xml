@@ -215,6 +215,14 @@
 
     </target>
 
+    <target name="finish-persistentlogin" if="${include.module.persistentlogin}">
+        <copy todir="${classes}/org/exist/xquery/modules/persistentlogin">
+            <fileset dir="${src}/org/exist/xquery/modules/persistentlogin">
+                <include name="*.xql"/>
+            </fileset>
+        </copy>
+    </target>
+
     <!-- 
         ========================================
         Below this line only generic build items
@@ -271,10 +279,11 @@
             <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="${include.module.xmlcalabash}"/>
             <exclude name="org/exist/xquery/modules/expathrepo/**" unless="${include.module.expathrepo}"/>
             <exclude name="org/exist/xquery/modules/process/**" unless="${include.module.process}"/>
+            <exclude name="org/exist/xquery/modules/persistentlogin/**" unless="${include.module.persistentlogin}"/>
         </javac>
     </target>
 
-    <target name="jar" depends="compile">
+    <target name="jar" depends="compile, finish-persistentlogin">
         <echo message="Creating exist-modules.jar ..."/>
         <jar basedir="${classes}" jarfile="${top.dir}/${lib.extensions}/exist-modules.jar">
             <manifest>
