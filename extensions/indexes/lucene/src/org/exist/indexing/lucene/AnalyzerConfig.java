@@ -26,6 +26,7 @@ public class AnalyzerConfig {
 	
     private final static String ID_ATTRIBUTE = "id";
     private final static String CLASS_ATTRIBUTE = "class";
+    private static final String PARAM_VALUE_ENTRY = "value";
 
     private Map<String, Analyzer> analyzers = new TreeMap<String, Analyzer>();
     private Analyzer defaultAnalyzer = null;
@@ -48,6 +49,7 @@ public class AnalyzerConfig {
         
         if(id == null || id.length() == 0) {
             defaultAnalyzer = analyzer;
+            
         } else {
             analyzers.put(id, analyzer);
         }
@@ -78,8 +80,8 @@ public class AnalyzerConfig {
                     final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
                     cstr.setAccessible(true);                
                     return (Analyzer)cstr.newInstance(cParamValues);
-                } catch (NoSuchMethodException nsme) {
                     
+                } catch (NoSuchMethodException nsme) {                  
 //                    LOG.warn("Could not find matching analyzer class constructor" + className + ": " + nsme.getMessage() + " now looking for similar constructor with Version paramater", nsme);
                     
                     //couldnt find a matching constructor,
@@ -98,11 +100,13 @@ public class AnalyzerConfig {
                             cstr.setAccessible(true);        
                             LOG.warn("Using analyzer " + clazz.getName());
                             return (Analyzer)cstr.newInstance(vcParamValues);
+                            
                         } catch (NoSuchMethodException vnsme) {
                             LOG.error("Could not find matching analyzer class constructor" + className + ": " + vnsme.getMessage(), vnsme);
                         }
                     }
                 }
+                
             } catch (ClassNotFoundException e) {
                 LOG.error("Lucene index: analyzer class " + className + " not found.");
             } catch (IllegalAccessException e) {
@@ -141,8 +145,8 @@ public class AnalyzerConfig {
         }
         
         final String value;
-        if(attrs.getNamedItem("value") != null) {
-            value = attrs.getNamedItem("value").getNodeValue();
+        if(attrs.getNamedItem(PARAM_VALUE_ENTRY) != null) {
+            value = attrs.getNamedItem(PARAM_VALUE_ENTRY).getNodeValue();
         } else {
             value = null;
         }
@@ -158,6 +162,7 @@ public class AnalyzerConfig {
                 field.setAccessible(true);
                 final Object fValue = field.get(fieldClazz.newInstance());
                 parameter = new KeyTypedValue(name, fValue);
+                
             } catch(NoSuchFieldException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
             } catch(ClassNotFoundException nsfe) {
@@ -167,18 +172,23 @@ public class AnalyzerConfig {
             } catch(IllegalAccessException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
             }
+            
         } else if(type != null && type.equals("java.io.File")) {
             final File f = new File(value);
             parameter = new KeyTypedValue(name, f, File.class);
+            
         } else if(type != null && type.equals("java.util.Set")) {
             final Set s = getConstructorParameterSetValues(param);
             parameter = new KeyTypedValue(name, s, Set.class);
+            
         } else if(type != null && (type.equals("java.lang.Integer") || type.equals("int"))) {
             final Integer n = Integer.parseInt(value);
             parameter = new KeyTypedValue(name, n);
+            
         } else if(type != null && (type.equals("java.lang.Boolean") || type.equals("boolean"))) {
             final boolean b = Boolean.parseBoolean(value);
             parameter = new KeyTypedValue(name, b);
+            
         } else {
             
             try {
@@ -201,7 +211,7 @@ public class AnalyzerConfig {
     
     private static Set<String> getConstructorParameterSetValues(Element param) {
         final Set<String> set = new HashSet<String>();
-        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, "value");
+        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
         for(int i = 0; i < values.getLength(); i++) {
             final Element value = (Element)values.item(i);
             
