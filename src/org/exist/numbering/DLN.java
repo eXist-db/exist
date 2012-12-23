@@ -21,11 +21,10 @@
  */
 package org.exist.numbering;
 
+import java.io.IOException;
 import org.exist.security.MessageDigester;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-
-import java.io.IOException;
 
 /**
  * Represents a node id in the form of a dynamic level number (DLN). DLN's are
@@ -57,20 +56,21 @@ public class DLN extends DLNBase implements NodeId {
      * 
      * @param s
      */
-    public DLN(String s) {
+    public DLN(final String s) {
         bits = new byte[1];
-        StringBuilder buf = new StringBuilder(16);
+        final StringBuilder buf = new StringBuilder(16);
         boolean subValue = false;
-        for (int p = 0; p < s.length(); p++) {
-            char ch = s.charAt(p);
-            if (ch == '.' || ch == '/') {
+        for(int p = 0; p < s.length(); p++) {
+            final char ch = s.charAt(p);
+            if(ch == '.' || ch == '/') {
                 addLevelId(Integer.parseInt(buf.toString()), subValue);
                 subValue = ch == '/';
                 buf.setLength(0);
-            } else
+            } else {
                 buf.append(ch);
+            }
         }
-        if (buf.length() > 0) {
+        if(buf.length() > 0) {
             addLevelId(Integer.parseInt(buf.toString()), subValue);
         }
     }
@@ -81,7 +81,7 @@ public class DLN extends DLNBase implements NodeId {
      * 
      * @param id
      */
-    public DLN(int id) {
+    public DLN(final int id) {
         bits = new byte[1];
         addLevelId(id, false);
     }
@@ -92,7 +92,7 @@ public class DLN extends DLNBase implements NodeId {
      * 
      * @param other
      */
-    public DLN(DLN other) {
+    public DLN(final DLN other) {
         super(other);
     }
 
@@ -103,7 +103,7 @@ public class DLN extends DLNBase implements NodeId {
      * @param data the byte[] to read from
      * @param startOffset the start offset to start reading at
      */
-    public DLN(int units, byte[] data, int startOffset) {
+    public DLN(final int units, final byte[] data, final int startOffset) {
         super(units, data, startOffset);
     }
 
@@ -114,11 +114,11 @@ public class DLN extends DLNBase implements NodeId {
      * @param is
      * @throws IOException
      */
-    public DLN(short bitCnt, VariableByteInput is) throws IOException {
+    public DLN(final short bitCnt, final VariableByteInput is) throws IOException {
         super(bitCnt, is);
     }
 
-    public DLN(byte prefixLen, DLN previous, short bitCnt, VariableByteInput is) throws IOException {
+    public DLN(final byte prefixLen, final DLN previous, final short bitCnt, final VariableByteInput is) throws IOException {
         super(prefixLen, previous, bitCnt, is);
     }
 
@@ -129,7 +129,7 @@ public class DLN extends DLNBase implements NodeId {
      * @param data
      * @param nbits
      */
-    protected DLN(byte[] data, int nbits) {
+    protected DLN(final byte[] data, final int nbits) {
         super(data, nbits);
     }
 
@@ -139,8 +139,9 @@ public class DLN extends DLNBase implements NodeId {
      *
      * @return new child node id
      */
+    @Override
     public NodeId newChild() {
-        DLN child = new DLN(this);
+        final DLN child = new DLN(this);
         child.addLevelId(1, false);
         return child;
     }
@@ -151,37 +152,42 @@ public class DLN extends DLNBase implements NodeId {
      *
      * @return new sibling node id.
      */
+    @Override
     public NodeId nextSibling() {
-        DLN sibling = new DLN(this);
+        final DLN sibling = new DLN(this);
         sibling.incrementLevelId();
         return sibling;
     }
 
+    @Override
     public NodeId precedingSibling() {
-        DLN sibling = new DLN(this);
+        final DLN sibling = new DLN(this);
         sibling.decrementLevelId();
         return sibling;
     }
 
-    public NodeId getChild(int child) {
-        DLN nodeId = new DLN(this);
+    @Override
+    public NodeId getChild(final int child) {
+        final DLN nodeId = new DLN(this);
         nodeId.addLevelId(child, false);
         return nodeId;
     }
 
-    public NodeId insertNode(NodeId right) {
-        DLN rightNode = (DLN) right;
-        if (right == null)
+    @Override
+    public NodeId insertNode(final NodeId right) {
+        final DLN rightNode = (DLN) right;
+        if (right == null) {
             return nextSibling();
-        int lastLeft = lastLevelOffset();
-        int lastRight = rightNode.lastLevelOffset();
-        int lenLeft = getSubLevelCount(lastLeft);
-        int lenRight = rightNode.getSubLevelCount(lastRight);
-        DLN newNode;
-        if (lenLeft > lenRight) {
+        }
+        final int lastLeft = lastLevelOffset();
+        final int lastRight = rightNode.lastLevelOffset();
+        final int lenLeft = getSubLevelCount(lastLeft);
+        final int lenRight = rightNode.getSubLevelCount(lastRight);
+        final DLN newNode;
+        if(lenLeft > lenRight) {
             newNode = new DLN(this);
             newNode.incrementLevelId();
-        } else if (lenLeft < lenRight) {
+        } else if(lenLeft < lenRight) {
             newNode = (DLN) rightNode.insertBefore(); 
         } else {
             newNode = new DLN(this);
@@ -190,10 +196,11 @@ public class DLN extends DLNBase implements NodeId {
         return newNode;
     }
 
+    @Override
     public NodeId insertBefore() {
-        int lastPos = lastFieldPosition();
-        int lastId = getLevelId(lastPos);
-        DLN newNode = new DLN(this);
+        final int lastPos = lastFieldPosition();
+        final int lastId = getLevelId(lastPos);
+        final DLN newNode = new DLN(this);
         //System.out.println("insertBefore: " + newNode.toString() + " = " + newNode.bitIndex);
         if (lastId == 1) {
             newNode.setLevelId(lastPos, 0);
@@ -206,15 +213,17 @@ public class DLN extends DLNBase implements NodeId {
         return newNode;
     }
 
-    public NodeId append(NodeId otherId) {
-        DLN other = (DLN) otherId;
-        DLN newId = new DLN(this);
+    @Override
+    public NodeId append(final NodeId otherId) {
+        final DLN other = (DLN) otherId;
+        final DLN newId = new DLN(this);
         int offset = 0;
-        while (offset <= other.bitIndex) {
+        while(offset <= other.bitIndex) {
             boolean subLevel = false;
-            if (offset > 0)
+            if (offset > 0) {
                 subLevel = ((other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0);
-            int id = other.getLevelId(offset);
+            }
+            final int id = other.getLevelId(offset);
             newId.addLevelId(id, subLevel);
             offset += DLNBase.getUnitsRequired(id) * BITS_PER_UNIT;
         }
@@ -230,53 +239,68 @@ public class DLN extends DLNBase implements NodeId {
      * 
      * @see NodeId#getParentId()
      */
+    @Override
     public NodeId getParentId() {
-        if (this == DOCUMENT_NODE)
+        if(this == DOCUMENT_NODE) {
             return null;
-        int last = lastLevelOffset();
-        if (last == 0)
+        }
+        
+        final int last = lastLevelOffset();
+        if (last == 0) {
             return DOCUMENT_NODE;
+        }
+        
         return new DLN(bits, last - 1);
     }
 
-    public boolean isDescendantOf(NodeId ancestor) {
-        DLN other = (DLN) ancestor;
+    @Override
+    public boolean isDescendantOf(final NodeId ancestor) {
+        final DLN other = (DLN) ancestor;
         return startsWith(other) && bitIndex > other.bitIndex
             && isLevelSeparator(other.bitIndex + 1);
     }
 
-    public boolean isDescendantOrSelfOf(NodeId other) {
-        DLN ancestor = (DLN) other;
+    @Override
+    public boolean isDescendantOrSelfOf(final NodeId other) {
+        final DLN ancestor = (DLN) other;
         return startsWith(ancestor) &&
             (bitIndex == ancestor.bitIndex || isLevelSeparator((ancestor).bitIndex + 1));
     }
 
-    public boolean isChildOf(NodeId parent) {
-        DLN other = (DLN) parent;
-        if(!startsWith(other))
+    @Override
+    public boolean isChildOf(final NodeId parent) {
+        final DLN other = (DLN) parent;
+        if(!startsWith(other)) {
             return false;
-        int levels = getLevelCount(other.bitIndex + 2);
+        }
+        final int levels = getLevelCount(other.bitIndex + 2);
         return levels == 1;
     }
 
-    public int computeRelation(NodeId ancestor) {
-        DLN other = (DLN) ancestor;
-        if (other == NodeId.DOCUMENT_NODE)
+    @Override
+    public int computeRelation(final NodeId ancestor) {
+        final DLN other = (DLN) ancestor;
+        if (other == NodeId.DOCUMENT_NODE) {
             return getLevelCount(0) == 1 ? IS_CHILD : IS_DESCENDANT;
+        }
+        
         if (startsWith(other)) {
-            if (bitIndex == other.bitIndex)
+            if (bitIndex == other.bitIndex) {
                 return IS_SELF;
+            }
             if (bitIndex > other.bitIndex && isLevelSeparator(other.bitIndex + 1)) {
-                if (getLevelCount(other.bitIndex + 2) == 1)
+                if (getLevelCount(other.bitIndex + 2) == 1) {
                     return IS_CHILD;
+                }
                 return IS_DESCENDANT;
             }
         }
         return -1;
     }
 
-    public boolean isSiblingOf(NodeId sibling) {
-        NodeId parent = getParentId();
+    @Override
+    public boolean isSiblingOf(final NodeId sibling) {
+        final NodeId parent = getParentId();
         return sibling.isChildOf(parent);
     }
 
@@ -284,44 +308,54 @@ public class DLN extends DLNBase implements NodeId {
      * Returns the level within the document tree at which
      * this node occurs.
      */
+    @Override
     public int getTreeLevel() {
         return getLevelCount(0);
     }
 
-    public boolean equals(NodeId other) {
+    @Override
+    public boolean equals(final NodeId other) {
         return super.equals((DLNBase) other);
     }
 
-    public int compareTo(NodeId otherId) {
-        if (otherId == null)
+    @Override
+    public int compareTo(final NodeId otherId) {
+        if(otherId == null) {
             return 1;
+        }
         final DLN other = (DLN) otherId;
         final int a1len = bits.length;
         final int a2len = other.bits.length;
-        int limit = a1len <= a2len ? a1len : a2len;
-        byte[] obits = other.bits;
-        for (int i = 0; i < limit; i++) {
-            byte b1 = bits[i];
-            byte b2 = obits[i];
-            if (b1 != b2)
+        final int limit = a1len <= a2len ? a1len : a2len;
+        final byte[] obits = other.bits;
+        
+        for(int i = 0; i < limit; i++) {
+            final byte b1 = bits[i];
+            final byte b2 = obits[i];
+            if(b1 != b2) {
                 return (b1 & 0xFF) - (b2 & 0xFF);
+            }
         }
         return (a1len - a2len);
     }
 
-    public boolean after(NodeId other, boolean isFollowing) {
+    @Override
+    public boolean after(final NodeId other, final boolean isFollowing) {
         if (compareTo(other) > 0) {
-            if (isFollowing)
+            if (isFollowing) {
                 return !isDescendantOf(other);
+            }
             return true;
         }
         return false;
     }
 
-    public boolean before(NodeId other, boolean isPreceding) {
+    @Override
+    public boolean before(final NodeId other, final boolean isPreceding) {
         if (compareTo(other) < 0) {
-            if (isPreceding)
+            if (isPreceding) {
                 return !other.isDescendantOf(this);
+            }
             return true;
         }
         return false;
@@ -333,20 +367,23 @@ public class DLN extends DLNBase implements NodeId {
      * @param os
      * @throws IOException
      */
-    public void write(VariableByteOutputStream os) throws IOException {
+    @Override
+    public void write(final VariableByteOutputStream os) throws IOException {
         os.writeShort((short) units());
         os.write(bits, 0, bits.length);
     }
 
-    public NodeId write(NodeId prevId, VariableByteOutputStream os) throws IOException {
+    @Override
+    public NodeId write(final NodeId prevId, final VariableByteOutputStream os) throws IOException {
         int i = 0;
-        if (prevId != null) {
-            DLN previous = (DLN) prevId;
+        if(prevId != null) {
+            final DLN previous = (DLN) prevId;
             final int len = Math.min(bits.length, previous.bits.length);
-            for ( ; i < len; i++) {
-                byte b = bits[i];
-                if (b != previous.bits[i])
+            for( ; i < len; i++) {
+                final byte b = bits[i];
+                if (b != previous.bits[i]) {
                     break;
+                }
             }
         }
         os.writeByte((byte) i);
@@ -355,17 +392,17 @@ public class DLN extends DLNBase implements NodeId {
         return this;
     }
 
-    public static void main(String[] args) {
-        DLN left1 = new DLN("5.6.2.6");
-        DLN left2 = new DLN("5.6.2.7");
-        DLN right = new DLN("5.6.2.7.1");
-        byte[] nodeIdData1 = new byte[left1.size()];
+    public static void main(final String[] args) {
+        final DLN left1 = new DLN("5.6.2.6");
+        final DLN left2 = new DLN("5.6.2.7");
+        final DLN right = new DLN("5.6.2.7.1");
+        final byte[] nodeIdData1 = new byte[left1.size()];
         left1.serialize(nodeIdData1, 0);
         System.out.println(left1.units() + ": " +left1 + ": " + MessageDigester.byteArrayToHex(nodeIdData1) + Integer.toHexString(left1.units()));
-        byte[] nodeIdData2 = new byte[left2.size()];
+        final byte[] nodeIdData2 = new byte[left2.size()];
         left2.serialize(nodeIdData2, 0);
         System.out.println(left2.units() + ": " + left2 + ": " + MessageDigester.byteArrayToHex(nodeIdData2) + Integer.toHexString(left2.units()));
-        byte[] nodeIdData3 = new byte[right.size()];
+        final byte[] nodeIdData3 = new byte[right.size()];
         right.serialize(nodeIdData3, 0);
         System.out.println(right.units() + ": " + right + ": " + MessageDigester.byteArrayToHex(nodeIdData3) + Integer.toHexString(right.units()));
     }

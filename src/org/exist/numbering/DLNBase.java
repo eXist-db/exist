@@ -21,10 +21,9 @@
  */
 package org.exist.numbering;
 
-import org.exist.storage.io.VariableByteInput;
-
 import java.io.IOException;
 import java.util.Arrays;
+import org.exist.storage.io.VariableByteInput;
 
 /**
  * Base class representing a node id in the form of a dynamic level number (DLN).
@@ -68,8 +67,8 @@ public class DLNBase {
      */
     protected final static int[] PER_COMPONENT_SIZE = initComponents();
 
-    private final static int[] initComponents() {
-        int size[] = new int[10];
+    private static int[] initComponents() {
+        final int size[] = new int[10];
         size[0] = 7;  // = Math.pow(2, 3) - 1;
         int components, numBits;
         for (int i = 1; i < size.length; i++) {
@@ -102,29 +101,32 @@ public class DLNBase {
         bits = new byte[1];
     }
 
-    public DLNBase(DLNBase dln) {
+    public DLNBase(final DLNBase dln) {
         this.bits = new byte[dln.bits.length];
         System.arraycopy(dln.bits, 0, this.bits, 0, dln.bits.length);
         this.bitIndex = dln.bitIndex;
     }
 
-    public DLNBase(int units, byte[] data, int startOffset) {
-    	if (units < 0)
-    		throw new IllegalArgumentException("Negative size for DLN: " + units);
+    public DLNBase(final int units, final byte[] data, final int startOffset) {
+    	if (units < 0) {
+            throw new IllegalArgumentException("Negative size for DLN: " + units);
+        }
         int blen = units / 8;
-        if (units % 8 > 0)
-        	++blen;
+        if (units % 8 > 0) {
+            ++blen;
+        }
         bits = new byte[blen];
         System.arraycopy(data, startOffset, bits, 0, blen);
         bitIndex = units - 1;
     }
 
-    protected DLNBase(byte[] data, int nbits) {
-        int remainder = nbits % 8;
-        int len = nbits / 8;
+    protected DLNBase(final byte[] data, final int nbits) {
+        final int remainder = nbits % 8;
+        final int len = nbits / 8;
         bits = new byte[len + (remainder > 0 ? 1 : 0)];
-        if (len > 0)
+        if (len > 0) {
             System.arraycopy(data, 0, bits, 0, len);
+        }
         if (remainder > 0) {
             byte b = 0;
             for (int i = 0; i < remainder; i++) {
@@ -137,22 +139,25 @@ public class DLNBase {
         bitIndex = nbits - 1;
     }
 
-    public DLNBase(short bitCnt, VariableByteInput is) throws IOException {
+    public DLNBase(final short bitCnt, final VariableByteInput is) throws IOException {
         int blen = bitCnt / 8;
-        if (bitCnt % 8 > 0)
+        if (bitCnt % 8 > 0) {
             ++blen;
+        }
         bits = new byte[blen];
         is.read(bits);
         bitIndex = bitCnt - 1;
     }
 
-    public DLNBase(byte prefixLen, DLNBase previous, short bitCnt, VariableByteInput is) throws IOException {
+    public DLNBase(final byte prefixLen, final DLNBase previous, final short bitCnt, final VariableByteInput is) throws IOException {
         int blen = bitCnt / 8;
-        if (bitCnt % 8 > 0)
+        if (bitCnt % 8 > 0) {
             ++blen;
+        }
         bits = new byte[blen];
-        if (previous.bits.length < prefixLen)
+        if (previous.bits.length < prefixLen) {
             throw new IOException("Found wrong prefix len: " + prefixLen + ". Previous: " + previous.toString());
+        }
         System.arraycopy(previous.bits, 0, bits, 0, prefixLen);
         is.read(bits, prefixLen, blen - prefixLen);
         bitIndex = bitCnt - 1;
@@ -165,7 +170,7 @@ public class DLNBase {
      * @param offset
      * @param levelId
      */
-    public void setLevelId(int offset, int levelId) {
+    public void setLevelId(final int offset, final int levelId) {
         bitIndex = offset - 1;
         setCurrentLevelId(levelId);
     }
@@ -176,8 +181,10 @@ public class DLNBase {
      *
      * @param levelId initial value
      */
-    public void addLevelId(int levelId, boolean isSubLevel) {
-        if (bitIndex > -1) setNextBit(isSubLevel);
+    public void addLevelId(final int levelId, final boolean isSubLevel) {
+        if (bitIndex > -1){
+            setNextBit(isSubLevel);
+        }
         setCurrentLevelId(levelId);
     }
 
@@ -185,7 +192,7 @@ public class DLNBase {
      * Increments the last level id by one.
      */
     public void incrementLevelId() {
-        int last = lastFieldPosition();
+        final int last = lastFieldPosition();
         bitIndex = last - 1;
         setCurrentLevelId(getLevelId(last) + 1);
     }
@@ -194,18 +201,21 @@ public class DLNBase {
         final int last = lastFieldPosition();
         bitIndex = last - 1;
         int levelId = getLevelId(last) - 1;
-        if (levelId < 1)
+        if (levelId < 1) {
             levelId = 0;
+        }
         setCurrentLevelId(levelId);
         // after decrementing, the DLN may need less bytes
         // than before. Remove the unused bytes, otherwise binary
         // comparisons may get wrong.
-        int len = bitIndex + 1;
+        final int len = bitIndex + 1;
         int blen = len / 8;
-        if (len % 8 > 0)
+        if (len % 8 > 0) {
             ++blen;
+        }
+        
         if (blen < bits.length) {
-            byte[] nbits = new byte[blen];
+            final byte[] nbits = new byte[blen];
             System.arraycopy(bits, 0, nbits, 0, blen);
             bits = nbits;
         }
@@ -219,10 +229,11 @@ public class DLNBase {
      * @param levelId
      */
     protected void setCurrentLevelId(int levelId) {
-        int units = getUnitsRequired(levelId);
-        int numBits = bitWidth(units);
-        if (units > 1)
+        final int units = getUnitsRequired(levelId);
+        final int numBits = bitWidth(units);
+        if (units > 1) {
             levelId -= PER_COMPONENT_SIZE[units - 2];
+        }
         for (int i = 1; i < units; i++) {
             setNextBit(true);
         }
@@ -239,9 +250,9 @@ public class DLNBase {
      * @return the level id
      */
     public int getLevelId(int startBit) {
-        int units = unitsUsed(startBit, bits);
+        final int units = unitsUsed(startBit, bits);
         startBit += units;
-        int numBits = bitWidth(units);
+        final int numBits = bitWidth(units);
         //System.err.println("startBit: " + startBit + "; bitIndex: " + bitIndex + 
         //"; units: " + units + ": numBits: " + numBits + " " + toBitString() +
         //"; bits: " + bits.length);
@@ -251,8 +262,9 @@ public class DLNBase {
                 id |= 1 << i;
             }
         }
-        if (units > 1)
+        if (units > 1) {
             id += PER_COMPONENT_SIZE[units - 2];
+        }
         return id;
     }
 
@@ -277,7 +289,7 @@ public class DLNBase {
         return bits.length;
     }
 
-    private static int unitsUsed(int startBit, byte[] bits) {
+    private static int unitsUsed(int startBit, final byte[] bits) {
         int units = 1;
         while ((bits[startBit >> UNIT_SHIFT] & (1 << ((7 - startBit++) & 7))) != 0) {
             ++units;
@@ -285,7 +297,7 @@ public class DLNBase {
         return units;
     }
 
-    public boolean isLevelSeparator(int index) {
+    public boolean isLevelSeparator(final int index) {
         return (bits[index >> UNIT_SHIFT] & (1 << ((7 - index) & 7))) == 0;
     }
     
@@ -295,18 +307,20 @@ public class DLNBase {
      *
      * @return the number of levels in this id
      */
-    public int getLevelCount(int startOffset) {
+    public int getLevelCount(final int startOffset) {
         int bit = startOffset;
         int count = 0;
         while (bit > -1 && bit <= bitIndex) {
-            int units = unitsUsed(bit, bits);
+            final int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
             if (bit < bitIndex) {
-                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR) {
                     ++count;
-            } else
+                }
+            } else {
                 ++count;
+            }
         }
         return count;
     }
@@ -319,19 +333,21 @@ public class DLNBase {
      * @param startOffset
      * @return number of sub-levels
      */
-    public int getSubLevelCount(int startOffset) {
+    public int getSubLevelCount(final int startOffset) {
         int bit = startOffset;
         int count = 0;
         while (bit > -1 && bit <= bitIndex) {
-            int units = unitsUsed(bit, bits);
+            final int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
             if (bit < bitIndex) {
                 ++count;
-                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR) {
                     break;
-            } else
+                }
+            } else {
                 ++count;
+            }
         }
         return count;
     }
@@ -363,11 +379,12 @@ public class DLNBase {
         while (bit <= bitIndex) {
             // check if the next bit starts a new level or just a sub-level component
             if (bit > 0) {
-                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR)
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR) {
                     lastOffset = bit + 1;
+                }
                 ++bit;
             }
-            int units = unitsUsed(bit, bits);
+            final int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
         }
@@ -378,9 +395,10 @@ public class DLNBase {
         int bit = 0;
         int lastOffset = 0;
         while (bit <= bitIndex) {
-            if (bit > 0)
+            if (bit > 0) {
                 lastOffset = ++bit;
-            int units = unitsUsed(bit, bits);
+            }
+            final int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
         }
@@ -394,17 +412,19 @@ public class DLNBase {
      *
      * @param value the value of the bit to set, i.e. 1 (true) or 0 (false)
      */
-    private void setNextBit(boolean value) {
+    private void setNextBit(final boolean value) {
         ++bitIndex;
         if ((bitIndex >> UNIT_SHIFT) >= bits.length) {
-            byte[] new_bits = new byte[bits.length + 1];
+            final byte[] new_bits = new byte[bits.length + 1];
             System.arraycopy(bits, 0, new_bits, 0, bits.length);
             bits = new_bits;
         }
-        if (value)
+        if (value) {
             bits[bitIndex >> UNIT_SHIFT] |= 1 << ((7 - bitIndex) & 7);
-        else
+        }
+        else {
             bits[bitIndex >> UNIT_SHIFT] &= ~(1 << ((7 - bitIndex) & 7));
+        }
     }
 
     /**
@@ -416,7 +436,7 @@ public class DLNBase {
      * @param units
      * @return number of bits available
      */
-    protected static int bitWidth(int units) {
+    protected static int bitWidth(final int units) {
         return (units * BITS_PER_UNIT) - units;
     }
 
@@ -427,36 +447,39 @@ public class DLNBase {
      * @param levelId the integer to encode in the level id
      * @return number of units required
      */
-    protected static int getUnitsRequired(int levelId) {
-        for (int i = 0; i < PER_COMPONENT_SIZE.length; i++) {
-            if (levelId < PER_COMPONENT_SIZE[i])
+    protected static int getUnitsRequired(final int levelId) {
+        for(int i = 0; i < PER_COMPONENT_SIZE.length; i++) {
+            if(levelId < PER_COMPONENT_SIZE[i]) {
                 return i + 1;
+            }
         }
         // can't happen
         throw new IllegalStateException("Number of nodes exceeds the internal limit");
     }
 
     protected void compact() {
-        int units = bitIndex + 1;
+        final int units = bitIndex + 1;
         int blen = units / 8;
-        if (units % 8 > 0)
+        if (units % 8 > 0) {
             ++blen;
-        byte[] nbits = new byte[blen];
+        }
+        final byte[] nbits = new byte[blen];
         System.arraycopy(bits, 0, nbits, 0, blen);
         this.bits = nbits;
     }
 
-    public void serialize(byte[] data, int offset) {
+    public void serialize(final byte[] data, final int offset) {
         System.arraycopy(bits, 0, data, offset, bits.length);
     }
 
-    public static int getLengthInBytes(int units, byte[] data, int startOffset) {
+    public static int getLengthInBytes(final int units, final byte[] data, final int startOffset) {
         return (int) Math.ceil(units / 8.0);
     }
 
-    public boolean equals(DLNBase other) {
-        if (bitIndex != other.bitIndex)
+    public boolean equals(final DLNBase other) {
+        if (bitIndex != other.bitIndex) {
             return false;
+        }
         return Arrays.equals(bits, other.bits);
     }
 
@@ -482,12 +505,13 @@ public class DLNBase {
 //        return compareTo(other);
 //    }
 
-    public int compareBits(DLNBase other, int bitCount) {
-        int bytes = bitCount / 8;
-        int remaining = bitCount % 8;
+    public int compareBits(final DLNBase other, final int bitCount) {
+        final int bytes = bitCount / 8;
+        final int remaining = bitCount % 8;
         for (int i = 0; i < bytes; i++) {
-            if (bits[i] != other.bits[i])
+            if (bits[i] != other.bits[i]) {
                 return (bits[i] & 0xFF) - (other.bits[i] & 0xFF);
+            }
         }
         return (bits[bytes] & BIT_MASK[remaining]) - 
             (other.bits[bytes] & BIT_MASK[remaining]);
@@ -500,20 +524,22 @@ public class DLNBase {
      * 
      * @param other
      */
-    public boolean startsWith(DLNBase other) {
-        if (other.bitIndex > bitIndex)
+    public boolean startsWith(final DLNBase other) {
+        if (other.bitIndex > bitIndex) {
             return false;
-        int bytes = other.bitIndex / 8;
-        int remaining = other.bitIndex % 8;
+        }
+        final int bytes = other.bitIndex / 8;
+        final int remaining = other.bitIndex % 8;
         for (int i = 0; i < bytes; i++) {
-            if (bits[i] != other.bits[i])
+            if (bits[i] != other.bits[i]) {
                 return false;
+            }
         }
         return (bits[bytes] & BIT_MASK[remaining]) == (other.bits[bytes] & BIT_MASK[remaining]);
     }
 
     public String debug() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append(toString());
         buf.append(" = ");
         buf.append(toBitString());
@@ -525,16 +551,17 @@ public class DLNBase {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         int offset = 0;
         while (offset <= bitIndex) {
             if (offset > 0) { 
-                if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
+                if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0) {
                     buf.append('.');
-                else
+                } else {
                     buf.append('/');
+                }
             }
-            int id = getLevelId(offset);
+            final int id = getLevelId(offset);
             buf.append(id);
             offset += getUnitsRequired(id) * BITS_PER_UNIT;
         }
@@ -542,8 +569,8 @@ public class DLNBase {
     }
 
     public String toBitString() {
-        StringBuilder buf = new StringBuilder();
-        int len = bits.length;
+        final StringBuilder buf = new StringBuilder();
+        final int len = bits.length;
         for (int i = 0; i < len; i++) {
             buf.append(toBitString(bits[i]));
         }
@@ -559,11 +586,11 @@ public class DLNBase {
      * @param b the byte to display
      * @return string representation
      */
-    public final static String toBitString(byte b) {
-        char[] buf = new char[8];
+    public static String toBitString(byte b) {
+        final char[] buf = new char[8];
         int charPos = 8;
-        int radix = 2;
-        int mask = radix - 1;
+        final int radix = 2;
+        final int mask = radix - 1;
         for (int i = 0; i < 8; i++) {
             buf[--charPos] = digits[b & mask];
             b >>>= 1;
