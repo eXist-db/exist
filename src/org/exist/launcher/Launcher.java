@@ -83,19 +83,14 @@ public class Launcher extends Observable {
             tray = SystemTray.getSystemTray();
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                utilityPanel = new UtilityPanel(Launcher.this);
-            }
-        });
-
         captureConsole();
 
         final String home = getJettyHome();
 
         if (isSystemTraySupported())
             initSystemTray(home);
+
+        final boolean systemTrayReady = tray != null && tray.getTrayIcons().length > 0;
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
@@ -117,8 +112,12 @@ public class Launcher extends Observable {
             }
         });
 
-        if (tray != null && tray.getTrayIcons().length > 0)
-            utilityPanel.setVisible(false);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                utilityPanel = new UtilityPanel(Launcher.this, systemTrayReady);
+            }
+        });
     }
 
     public boolean isSystemTraySupported() {
