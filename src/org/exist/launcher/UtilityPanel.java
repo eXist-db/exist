@@ -37,7 +37,8 @@ public class UtilityPanel extends JFrame implements Observer {
     private TextArea messages;
     JLabel statusLabel;
 
-    public UtilityPanel(final Launcher launcher) {
+    public UtilityPanel(final Launcher launcher, boolean hideOnStart) {
+        this.setAlwaysOnTop(true);
 
         BufferedImage image = null;
         try {
@@ -45,7 +46,6 @@ public class UtilityPanel extends JFrame implements Observer {
         } catch (IOException e) {
         }
         this.setIconImage(image);
-        this.setVisible(true);
 
         if (!launcher.isSystemTraySupported())
             setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -148,6 +148,9 @@ public class UtilityPanel extends JFrame implements Observer {
         this.setLocation(d.width - this.getWidth() - 40, 60);
 
         launcher.addObserver(this);
+
+        if (!hideOnStart)
+            setVisible(true);
     }
 
     private JButton createButton(JToolBar toolbar, String image, String title) {
