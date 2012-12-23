@@ -22,16 +22,14 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.InputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -179,4 +177,14 @@ public class URLSource extends AbstractSource {
 	public void validate(Subject subject, int perm) throws PermissionDeniedException {
 		// TODO protected?
 	}
+
+    @Override
+    public QName isModule() throws IOException {
+        InputStream is = getInputStream();
+        try {
+            return getModuleDecl(is);
+        } finally {
+            is.close();
+        }
+    }
 }
