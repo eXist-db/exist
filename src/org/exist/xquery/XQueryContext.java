@@ -135,7 +135,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private static final String                        TEMP_STORE_ERROR                                 = "Error occurred while storing temporary data";
     public static final String                         XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR            = "_eXist_xquery_update_error";
-    public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
+    public static final String                         HTTP_SESSIONVAR_XMLDB_USER                       = "_eXist_xmldb_user";
+    public static final String                         HTTP_REQ_ATTR_USER                               = "xquery.user";
+    public static final String                         HTTP_REQ_ATTR_PASS                               = "xquery.password";
 
     // Static namespace/prefix mappings
     protected HashMap<String, String>                  staticNamespaces                                 = new HashMap<String, String>();
@@ -2164,8 +2166,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
                 if( reqValue.getObject() instanceof RequestWrapper) {
                     RequestWrapper req = (RequestWrapper) reqValue.getObject();
-                    Object user = req.getAttribute("xquery.user");
-                    Object passAttr = req.getAttribute("xquery.password");
+                    Object user = req.getAttribute(HTTP_REQ_ATTR_USER);
+                    Object passAttr = req.getAttribute(HTTP_REQ_ATTR_PASS);
                     if (user != null) {
                         String password = passAttr == null ? null : passAttr.toString();
                         try {
@@ -2174,7 +2176,7 @@ public class XQueryContext implements BinaryValueManager, Context
                             LOG.error("User can not be authenticated: " + user.toString());
                         }
                     } else {
-                        req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                        return (Subject) req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
                     }
                 }
             }
