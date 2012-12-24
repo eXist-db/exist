@@ -95,7 +95,7 @@ public class PersistentLoginFunctions extends BasicFunction {
     private Sequence register(String user, String pass, DurationValue timeToLive, FunctionReference callback) throws XPathException {
         if (login(user, pass)) {
             PersistentLogin.LoginDetails details = PersistentLogin.getInstance().register(user, pass, timeToLive);
-            return callback(callback, details);
+            return callback(callback, null, details);
         }
         return Sequence.EMPTY_SEQUENCE;
     }
@@ -105,7 +105,7 @@ public class PersistentLoginFunctions extends BasicFunction {
         if (data == null)
             return Sequence.EMPTY_SEQUENCE;
         if (login(data.getUser(), data.getPassword())) {
-            return callback(callback, data);
+            return callback(callback, token, data);
         }
         return Sequence.EMPTY_SEQUENCE;
     }
@@ -125,9 +125,13 @@ public class PersistentLoginFunctions extends BasicFunction {
         }
     }
 
-    private Sequence callback(FunctionReference func, PersistentLogin.LoginDetails details) throws XPathException {
+    private Sequence callback(FunctionReference func, String oldToken, PersistentLogin.LoginDetails details) throws XPathException {
         Sequence[] args = new Sequence[4];
-        args[0] = new StringValue(details.toString());
+        String newToken = details.toString();
+        if (oldToken != null && oldToken.equals(newToken))
+            args[0] = Sequence.EMPTY_SEQUENCE;
+        else
+            args[0] = new StringValue(newToken);
         args[1] = new StringValue(details.getUser());
         args[2] = new StringValue(details.getPassword());
         args[3] = details.getTimeToLive();

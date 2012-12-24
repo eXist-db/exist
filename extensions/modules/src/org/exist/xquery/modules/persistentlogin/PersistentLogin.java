@@ -7,10 +7,7 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DurationValue;
 
 import java.security.SecureRandom;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A persistent login feature ("remember me") similar to the implementation in <a href="https://github.com/SpringSource/spring-security">Spring Security</a>,
@@ -39,6 +36,8 @@ public class PersistentLogin {
     public final static int DEFAULT_SERIES_LENGTH = 16;
 
     public final static int DEFAULT_TOKEN_LENGTH = 16;
+
+    public final static int INVALIDATION_TIMEOUT = 20000;
 
     private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<String, LoginDetails>());
 
@@ -85,18 +84,16 @@ public class PersistentLogin {
             LOG.debug("No session found for series " + tokens[0]);
             return null;
         }
-        seriesMap.remove(tokens[0]);
-        if (!tokens[1].equals(data.getToken())) {
-            throw new XPathException("Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
-                    "Session is deleted for security reasons.");
-        }
         long now = System.currentTimeMillis();
         if (now > data.expires) {
             LOG.debug("Persistent session expired");
+            seriesMap.remove(tokens[0]);
             return null;
         }
-        data.update();
-        seriesMap.put(tokens[0], data);
+        if (!data.checkAndUpdateToken(tokens[1])) {
+            throw new XPathException("Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
+                    "Session is deleted for security reasons.");
+        }
         return data;
     }
 
@@ -138,6 +135,8 @@ public class PersistentLogin {
         private long expires;
         private DurationValue timeToLive;
 
+        private Map<String, Long> invalidatedTokens = new HashMap<String, Long>();
+
         public LoginDetails(String user, String password, DurationValue timeToLive, long expires) {
             this.userName = user;
             this.password = password;
@@ -167,9 +166,41 @@ public class PersistentLogin {
             return timeToLive;
         }
 
+        public boolean checkAndUpdateToken(String token) {
+            if (this.token.equals(token)) {
+                update();
+                return true;
+            }
+            // check map of invalidating tokens
+            Long timeout = invalidatedTokens.get(token);
+            if (timeout == null)
+                return false;
+            // timed out: remove
+            if (System.currentTimeMillis() > timeout) {
+                invalidatedTokens.remove(token);
+                return false;
+            }
+            // found invalidating token: return true but do not replace token
+            return true;
+        }
+
         public String update() {
+            timeoutCheck();
+            // leave a small time window until previous token is deleted
+            // to allow for concurrent requests
+            invalidatedTokens.put(this.token, System.currentTimeMillis() + INVALIDATION_TIMEOUT);
             this.token = generateToken();
             return this.token;
+        }
+
+        private void timeoutCheck() {
+            long now = System.currentTimeMillis();
+            for (Iterator<Map.Entry<String, Long>> i = invalidatedTokens.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry<String, Long> entry = i.next();
+                if (entry.getValue() > now) {
+                    i.remove();
+                }
+            }
         }
 
         @Override

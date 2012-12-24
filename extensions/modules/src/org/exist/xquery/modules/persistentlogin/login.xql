@@ -65,13 +65,16 @@ declare function login:set-user($domain as xs:string, $maxAge as xs:dayTimeDurat
             ()
 };
 
-declare %private function login:callback($newToken as xs:string, $user as xs:string, $password as xs:string, 
+declare %private function login:callback($newToken as xs:string?, $user as xs:string, $password as xs:string, 
     $expiration as xs:duration, $domain as xs:string, $asDba as xs:boolean) {
     if (not($asDba) or xmldb:is-admin-user($user)) then (
         request:set-attribute($domain || ".user", $user),
         request:set-attribute("xquery.user", $user),
         request:set-attribute("xquery.password", $password),
-        response:set-cookie($domain, $newToken, $expiration, false(), (), "/")
+        if ($newToken) then
+            response:set-cookie($domain, $newToken, $expiration, false(), (), "/")
+        else
+            ()
     ) else
         ()
 };
