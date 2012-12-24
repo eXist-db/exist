@@ -9,7 +9,7 @@
       <dependency>
           <groupId>com.sleepycat</groupId>
           <artifactId>je</artifactId>
-          <version>5.0.55</version>
+          <version>5.0.58</version>
       </dependency>
   </dependencies>
 </project>
