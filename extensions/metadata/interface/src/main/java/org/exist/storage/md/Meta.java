@@ -34,4 +34,6 @@ public interface Meta {
 	public Object getValue();
 
 	public String getObject();
+	
+	public void delete();
 }

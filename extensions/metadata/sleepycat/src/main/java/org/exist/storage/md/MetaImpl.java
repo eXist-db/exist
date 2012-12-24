@@ -96,4 +96,8 @@ public class MetaImpl implements Meta {
 	public String getObject() {
 		return object;
 	}
+	
+	public void delete() {
+	    MetaDataImpl._.delMeta(object, key);
+	}
 }

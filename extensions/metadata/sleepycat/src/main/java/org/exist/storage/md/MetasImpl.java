@@ -99,7 +99,11 @@ public class MetasImpl implements Metas {
 		return MetaDataImpl._.getMeta(this, key);
 	}
 
-	protected void update(DocumentAtExist doc) {
+    public void delete(String key) {
+        MetaDataImpl._.delMeta(uuid, key);
+    }
+
+    protected void update(DocumentAtExist doc) {
 		uri = doc.getURI().toString();
 	}
 	
@@ -127,6 +131,10 @@ public class MetasImpl implements Metas {
 //	public EntityCursor<MetaImpl> keys() {
 //		return MetaDataImpl._.getMetaKeys(this);
 //	}
+
+	public void delete() {
+	    MetaDataImpl._.delMetas(this);
+	}
 
 	public void restore(String uuid, String key, String value) {
 		MetaDataImpl._._addMeta(this, uuid, key, value);
