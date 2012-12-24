@@ -35,5 +35,9 @@ public interface Metas {
 
 	public Meta put(String key, Object value);
 
-	public List<Meta> metas();
+    public void delete(String key);
+
+    public List<Meta> metas();
+
+    public void delete();
 }
