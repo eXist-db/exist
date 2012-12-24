@@ -53,7 +53,8 @@ public class FindGroupFunction extends BasicFunction {
     private final static QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    
+    // deprecated sm:get-groups
+    private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
     public final static FunctionSignature FNS_LIST_GROUPS = new FunctionSignature(
@@ -62,7 +63,15 @@ public class FindGroupFunction extends BasicFunction {
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
     );
-    
+
+    public final static FunctionSignature FNS_GET_GROUPS = new FunctionSignature(
+            qnGetGroups,
+            "List all groups",
+            null,
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups"),
+            FNS_LIST_GROUPS
+    );
+
     public final static FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
         qnFindGroupsByGroupname,
         "Finds groups whoose group name starts with a matching string",
@@ -108,7 +117,7 @@ public class FindGroupFunction extends BasicFunction {
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         final List<String> groupNames;
-        if(isCalledAs(qnListGroups.getLocalName())) {
+        if(isCalledAs(qnListGroups.getLocalName()) || isCalledAs(qnGetGroups.getLocalName())) {
             groupNames = securityManager.findAllGroupNames();
         } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
             final String startsWith = args[0].getStringValue();
