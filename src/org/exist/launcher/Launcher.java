@@ -73,6 +73,7 @@ public class Launcher extends Observable {
 
     private SystemTray tray = null;
     private TrayIcon trayIcon = null;
+    private boolean initSystemTray = true;
     private SplashScreen splash;
     private JettyStart jetty;
 
@@ -88,9 +89,8 @@ public class Launcher extends Observable {
         final String home = getJettyHome();
 
         if (isSystemTraySupported())
-            initSystemTray(home);
+            initSystemTray = initSystemTray(home);
 
-        final boolean systemTrayReady = tray != null && tray.getTrayIcons().length > 0;
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
@@ -112,6 +112,8 @@ public class Launcher extends Observable {
             }
         });
 
+        final boolean systemTrayReady = tray != null && initSystemTray && tray.getTrayIcons().length > 0;
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -124,7 +126,7 @@ public class Launcher extends Observable {
         return tray != null;
     }
 
-    private void initSystemTray(String home) {
+    private boolean initSystemTray(String home) {
         Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
@@ -137,9 +139,17 @@ public class Launcher extends Observable {
         final JDialog hiddenFrame = new JDialog();
         hiddenFrame.setUndecorated(true);
         hiddenFrame.setIconImage(image);
-
+        
         final PopupMenu popup = createMenu(home);
         trayIcon.setPopupMenu(popup);
+
+        trayIcon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
+            }
+        });
+
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -149,19 +159,17 @@ public class Launcher extends Observable {
                 }
             }
         });
+
         try {
             hiddenFrame.setResizable(false);
+            hiddenFrame.pack();
             hiddenFrame.setVisible(true);
             tray.add(trayIcon);
         } catch (AWTException e) {
-            return;
+            return false;
         }
-        trayIcon.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
-            }
-        });
+
+        return true;
     }
 
     private PopupMenu createMenu(final String home) {
