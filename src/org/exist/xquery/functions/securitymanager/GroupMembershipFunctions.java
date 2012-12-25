@@ -47,40 +47,40 @@ public class GroupMembershipFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group members for the group $group")
     );
 
-    public GroupMembershipFunctions(XQueryContext context, FunctionSignature signature) {
+    public GroupMembershipFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
-        String groupName = args[0].itemAt(0).getStringValue();
+        final String groupName = args[0].itemAt(0).getStringValue();
 
-        SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
+        final SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
 
         try {
 
             if(isCalledAs(qnGetGroupManagers.getLocalName())) {
-                Group group = manager.getGroup(groupName);
-                ValueSequence seq = new ValueSequence();
-                for(Account groupManager : group.getManagers()) {
+                final Group group = manager.getGroup(groupName);
+                final ValueSequence seq = new ValueSequence();
+                for(final Account groupManager : group.getManagers()) {
                     seq.add(new StringValue(groupManager.getName()));
                 }
                 result = seq;
             } else if(isCalledAs(qnGetGroupMembers.getLocalName())) {
 
-                List<String> groupMembers = manager.findAllGroupMembers(groupName);
+                final List<String> groupMembers = manager.findAllGroupMembers(groupName);
 
-                ValueSequence seq = new ValueSequence();
-                for(String groupMember : groupMembers) {
+                final ValueSequence seq = new ValueSequence();
+                for(final String groupMember : groupMembers) {
                     seq.add(new StringValue(groupMember));
                 }
                 result = seq;
             }
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde);
         }
 
