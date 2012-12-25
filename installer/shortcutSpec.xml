@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shortcuts>
-	<programGroup defaultName="eXist XML Database" location="applications"/>
+	<programGroup defaultName="eXist-db XML Database" location="applications"/>
 	<shortcut 
-		name="eXist Database"
+		name="eXist-db Database"
 		type="Application"
 		encoding="UTF-8"
 		target="$INSTALL_PATH/start.jar"
 		workingDirectory="$INSTALL_PATH"
-		description="eXist Database Launcher" 
+		description="eXist-db XML Database Launcher" 
 		programGroup="yes"
-        desktop="yes"
+		desktop="yes"
 		terminal="false"
 		iconFile="$INSTALL_PATH/icon.ico"
 		initialState="noShow"/>
-	<shortcut name="Install eXist as Service" 
+	<shortcut name="Install eXist-db as Service" 
 		target="$INSTALL_PATH/tools/wrapper/bin/install.bat"
-		description="Install the eXist server as a service"
+		description="Install the eXist-db server as a service"
 		programGroup="yes" desktop="no"/>
-	<shortcut name="Uninstall the eXist service"
+	<shortcut name="Uninstall the eXist-db service"
 		target="$INSTALL_PATH/tools/wrapper/bin/uninstall.bat"
-		description="Uninstall the eXist service"
+		description="Uninstall the eXist-db service"
 		programGroup="yes" desktop="no"/>
 	<shortcut 
 		name="Uninstall eXist-db"
