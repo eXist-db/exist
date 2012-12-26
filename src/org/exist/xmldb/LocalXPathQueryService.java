@@ -274,6 +274,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	    }
 		if(moduleLoadPath != null)
 			context.setModuleLoadPath(moduleLoadPath);
+		else
+            context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + collection.getPath());
+		    
 
 		// declare namespace/prefix mappings
 		for (Map.Entry<String, String> entry : namespaceDecls.entrySet()) {
