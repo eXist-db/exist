@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>xquery3 inline function</testName>
+    <description>
+        <p>Inline function in XQuery 3</p>
+        <author>Dmitiry Shabanov</author>
+        <author>Dan Tsimbala</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xq3-test"/>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xq3-test"/>
+    </tearDown>
+    <!-- 
+    <test output="text" id="inline-function-001">
+        <task>Try to call a %public function</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:external-func($data) {
+        let $case := function ($result-generator) {
+                $result-generator($data)
+        }
+
+        return $case(function ($data) {
+                local:external-func($data)
+        })
+};
+
+local:external-func(
+map {
+	'string' := 'some string'
+})]]></code>
+        <expected>error</expected>
+    </test>
+    -->
+    <test output="text" id="inline-function-002">
+        <task></task>
+        <code><![CDATA[xquery version "3.0";
+
+declare function local:external-func($data) {
+        let $case := function ($result-generator) {
+                $result-generator($data)
+        }
+
+        return $case(function ($data) {
+                $data('string')
+        })
+};
+
+local:external-func(
+map {
+	'string' := 'some string'
+})]]></code>
+        <expected>some string</expected>
+    </test>
+</TestSet>
