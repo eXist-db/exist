@@ -202,22 +202,25 @@ public class Deployment {
             // fails silently if package dir is not found?
             return null;
         DocumentImpl repoXML = getRepoXML(packageDir);
-        ElementImpl target = null;
-        try {
-            target = findElement(repoXML, TARGET_COLL_ELEMENT);
-            ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
-            if (cleanup != null) {
-                runQuery(null, packageDir, cleanup.getStringValue(), false);
+        if (repoXML != null) {
+            ElementImpl target = null;
+            try {
+                target = findElement(repoXML, TARGET_COLL_ELEMENT);
+                ElementImpl cleanup = findElement(repoXML, CLEANUP_ELEMENT);
+                if (cleanup != null) {
+                    runQuery(null, packageDir, cleanup.getStringValue(), false);
+                }
+                if (target != null) {
+                    uninstall(target);
+                }
+                return target == null ? null : target.getStringValue();
+            } catch (XPathException e) {
+                throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
+            } catch (IOException e) {
+                throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             }
-            if (target != null) {
-                uninstall(target);
-            }
-            return target == null ? null : target.getStringValue();
-        } catch (XPathException e) {
-            throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
-        } catch (IOException e) {
-            throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
         }
+        return null;
     }
 
     public String deploy(String pkgName, ExistRepository repo, String userTarget) throws PackageException, IOException {
