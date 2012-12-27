@@ -37,6 +37,8 @@ check_exist_home "$0";
 
 set_exist_options;
 
+check_java_home;
+
 # set java options
 set_client_java_options;
 
