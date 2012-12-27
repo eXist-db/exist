@@ -63,6 +63,7 @@ import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.LocalXPathQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -581,6 +582,12 @@ public class QueryDialog extends JFrame {
 				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
 				long t0 = System.currentTimeMillis();
+				
+				if (service instanceof LocalXPathQueryService && resource != null) {
+                    ((LocalXPathQueryService) service).setModuleLoadPath(
+                            XmldbURI.EMBEDDED_SERVER_URI_PREFIX + resource.getParentCollection().getName());
+                }
+				
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
 				// Check could also be collection instanceof LocalCollection
