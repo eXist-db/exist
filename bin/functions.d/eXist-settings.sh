@@ -90,6 +90,23 @@ set_java_options() {
     fi
     JAVA_OPTIONS="${JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
 }
+
+check_java_home() {
+    if [ -z "${JAVA_HOME}" ]; then
+	if [ -z "${JRE_HOME}" ]; then
+	    echo -e "WARNING: JAVA_HOME not found in your environment.\n\nPlease, set the JAVA_HOME variable in your enviroment to match the\nlocation of the Java Virtual Machine you want to use in case of run\nfail."
+	    exit 1;
+	else
+	    JAVA_HOME=${JRE_HOME};
+	fi
+        # find it?
+	if [ -z "${JAVA_HOME}" ]; then
+	    exit 1;
+	fi
+    fi
+    JAVA_HOME="${JAVA_HOME}";
+}
+
 set_exist_options() {
     OPTIONS="-Dexist.home=$EXIST_HOME"
 }

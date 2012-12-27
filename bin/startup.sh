@@ -40,6 +40,8 @@ check_exist_home "$0";
 set_exist_options;
 set_jetty_home;
 
+check_java_home;
+
 # set java options
 set_java_options;
 
