@@ -124,6 +124,7 @@ options {
 		Expression inputSequence;
 		Expression action;
 		boolean isForClause= true;
+		List<GroupSpec> groupSpecs = null;
 	}
 
 	/**
@@ -1276,12 +1277,11 @@ throws PermissionDeniedException, EXistException, XPathException
 	#(
 		r:"return"
 		{
-			List clauses= new ArrayList();
+			List<ForLetClause> clauses= new ArrayList<ForLetClause>();
 			Expression action= new PathExpr(context);
 			action.setASTNode(r);
 			PathExpr whereExpr= null;
 			List orderBy= null;
-            List<GroupSpec> groupSpecs = null;
 		}
 		(
 			#(
@@ -1355,7 +1355,21 @@ throws PermissionDeniedException, EXistException, XPathException
 		(
 			#(
                 GROUP_BY
-                { groupSpecs = new ArrayList<GroupSpec>(4); }
+                {
+                	// attach group by to last for expression, skipping lets
+                	ForLetClause clause = null;
+                	for (int i = clauses.size() - 1; i > -1; i--) {
+                		ForLetClause currentClause = clauses.get(i);
+                		if (currentClause.isForClause) {
+                			clause = currentClause;
+                			break;
+                		}
+                	}
+                	if (clause == null)
+                		clause = clauses.get(clauses.size() - 1);
+                	clause.groupSpecs = new ArrayList<GroupSpec>(4);
+                }
+                // { groupSpecs = new ArrayList<GroupSpec>(4); }
                 (
 	                #(
 	                	groupVarName:VARIABLE_BINDING
@@ -1368,8 +1382,27 @@ throws PermissionDeniedException, EXistException, XPathException
 	                    )?
 	                    {
 	                    	String groupKeyVar = groupVarName.getText();
+
+	                    	// if there is no groupSpec expression, try to find definition of
+	                    	// grouping variable and inline it
+	                    	if (groupSpecExpr == null) {
+	                    		ForLetClause groupVarDef = null;
+			                	for (int i = clauses.size() - 1; i > -1; i--) {
+			                		ForLetClause currentClause = clauses.get(i);
+			                		if (!currentClause.isForClause && currentClause.varName.equals(groupKeyVar)) {
+			                			groupVarDef = currentClause;
+			                			break;
+			                		}
+			                	}
+			                	if (groupVarDef == null) {
+			                		throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
+			                	}
+			                	// inline the grouping expression
+			                	clauses.remove(groupVarDef);
+			                	groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
+	                    	}
 	                    	GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);  
-	                    	groupSpecs.add(groupSpec);
+	                    	clause.groupSpecs.add(groupSpec);
 	                    }
 	                    (
 							"collation" groupCollURI:STRING_LITERAL
@@ -1459,6 +1492,15 @@ throws PermissionDeniedException, EXistException, XPathException
                     expr.setReturnExpression(new DebuggableExpression(action));
                 else
                     expr.setReturnExpression(action);
+                if (clause.groupSpecs != null) {
+                	GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()]; 
+	                int k= 0;
+	                for (GroupSpec groupSpec : clause.groupSpecs) {
+	                    specs[k++]= groupSpec; 
+	                }
+	                expr.setGroupSpecs(specs);
+	                expr.setGroupReturnExpr(action);
+                }
 				if (clause.isForClause)
 					 ((ForExpr) expr).setPositionalVariable(clause.posVar);
 				if (whereExpr != null) {
@@ -1476,16 +1518,6 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				((BindingExpression)action).setOrderSpecs(orderSpecs);
 			}
-            // bv : group by initialisation 
-            if (groupSpecs != null) {
-                GroupSpec specs[]= new GroupSpec[groupSpecs.size()]; 
-                int k= 0;
-                for (GroupSpec groupSpec : groupSpecs) {
-                    specs[k++]= groupSpec; 
-                } 
-                ((BindingExpression)action).setGroupSpecs(specs); 
-                ((BindingExpression)action).setGroupReturnExpr(groupReturnExpr);
-            } 
          
 			path.add(action);
 			step = action;
