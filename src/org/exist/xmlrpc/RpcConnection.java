@@ -1863,9 +1863,11 @@ public class RpcConnection implements RpcAPI {
             tab.put("groups", groups);
 
             final Group dg = u.getDefaultGroup();
-            tab.put("default-group-id", dg.getId());
-            tab.put("default-group-realmId", dg.getRealmId());
-            tab.put("default-group-name", dg.getName());
+            if(dg != null) {
+                tab.put("default-group-id", dg.getId());
+                tab.put("default-group-realmId", dg.getRealmId());
+                tab.put("default-group-name", dg.getName());
+            }
             
             tab.put("enabled", Boolean.toString(u.isEnabled()));
             

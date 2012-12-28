@@ -642,22 +642,30 @@ public class RemoteUserManagementService implements UserManagementService {
             if(tab == null || tab.isEmpty()) {
                 return null;
             }
-                        
-            GroupAider defaultGroup = new GroupAider(
-                (Integer) tab.get("default-group-id"),
-                (String) tab.get("default-group-realmId"),
-                (String) tab.get("default-group-name")
-            );
+                     
+            final UserAider u;
+            if(tab.get("default-group-id") != null) {
+                final GroupAider defaultGroup = new GroupAider(
+                    (Integer) tab.get("default-group-id"),
+                    (String) tab.get("default-group-realmId"),
+                    (String) tab.get("default-group-name")
+                );
+                
+                u = new UserAider(
+                    (String) tab.get("realmId"), 
+                    (String) tab.get("name"),
+                    defaultGroup
+                );
+            } else {
+                u = new UserAider(
+                    (String) tab.get("realmId"), 
+                    (String) tab.get("name")
+                );
+            }
 
-            UserAider u = new UserAider(
-                (String) tab.get("realmId"), 
-                (String) tab.get("name"),
-                defaultGroup
-            );
-			
-            Object[] groups = (Object[]) tab.get("groups");
-            for(int i = 0; i < groups.length; i++) {
-                u.addGroup((String) groups[i]);
+            final Object[] groups = (Object[]) tab.get("groups");
+            for(final Object group : groups) {
+                u.addGroup((String) group);
             }
             
             u.setEnabled(Boolean.valueOf((String)tab.get("enabled")));
