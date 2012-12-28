@@ -21,6 +21,8 @@
  */
 package org.exist.launcher;
 
+import org.exist.repo.ExistRepository;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,7 +37,9 @@ import java.util.Observer;
 public class UtilityPanel extends JFrame implements Observer {
 
     private TextArea messages;
-    JLabel statusLabel;
+    private JLabel statusLabel;
+    private JButton dashboardButton;
+    private JButton eXideButton;
 
     public UtilityPanel(final Launcher launcher, boolean hideOnStart) {
         this.setAlwaysOnTop(true);
@@ -65,23 +69,23 @@ public class UtilityPanel extends JFrame implements Observer {
             final Desktop desktop = Desktop.getDesktop();
 
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                button = createButton(toolbar, "dashboard.png", "Dashboard");
-                button.addActionListener(new ActionListener() {
+                dashboardButton = createButton(toolbar, "dashboard.png", "Dashboard");
+                dashboardButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         launcher.dashboard(desktop);
                     }
                 });
-                toolbar.add(button);
+                toolbar.add(dashboardButton);
 
-                button = createButton(toolbar, "exide.png", "eXide");
-                button.addActionListener(new ActionListener() {
+                eXideButton = createButton(toolbar, "exide.png", "eXide");
+                eXideButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         launcher.eXide(desktop);
                     }
                 });
-                toolbar.add(button);
+                toolbar.add(eXideButton);
             }
         }
 
@@ -180,11 +184,20 @@ public class UtilityPanel extends JFrame implements Observer {
 
     @Override
     public void update(Observable observable, final Object o) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                messages.append(o.toString());
+        if (o instanceof ExistRepository.Notification) {
+            ExistRepository.Notification notification = (ExistRepository.Notification) o;
+            if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD)) {
+                dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+            } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE)) {
+                eXideButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             }
-        });
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    messages.append(o.toString());
+                }
+            });
+        }
     }
 }

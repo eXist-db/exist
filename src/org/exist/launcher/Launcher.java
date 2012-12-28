@@ -21,7 +21,10 @@
  */
 package org.exist.launcher;
 
+import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
+import org.exist.repo.ExistRepository;
+import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
 
 import javax.imageio.ImageIO;
@@ -36,6 +39,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Observable;
+import java.util.Observer;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -44,10 +48,15 @@ import java.util.Observable;
  *
  * @author Wolfgang Meier
  */
-public class Launcher extends Observable {
+public class Launcher extends Observable implements Observer {
 
     private MenuItem stopItem;
     private MenuItem startItem;
+    private MenuItem dashboardItem;
+    private MenuItem eXideItem;
+
+    public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
+    public final static String PACKAGE_EXIDE = "http://exist-db.org/apps/eXide";
 
     public static void main(final String[] args) {
         String os = System.getProperty("os.name", "");
@@ -222,17 +231,17 @@ public class Launcher extends Observable {
             popup.addSeparator();
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                item = new MenuItem("Open dashboard");
-                popup.add(item);
-                item.addActionListener(new ActionListener() {
+                dashboardItem = new MenuItem("Open dashboard");
+                popup.add(dashboardItem);
+                dashboardItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         dashboard(desktop);
                     }
                 });
-                item = new MenuItem("Open eXide");
-                popup.add(item);
-                item.addActionListener(new ActionListener() {
+                eXideItem = new MenuItem("Open eXide");
+                popup.add(eXideItem);
+                eXideItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         eXide(desktop);
@@ -322,6 +331,7 @@ public class Launcher extends Observable {
             trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
             startItem.setEnabled(false);
             stopItem.setEnabled(true);
+            registerObserver();
         }
     }
 
@@ -330,6 +340,27 @@ public class Launcher extends Observable {
             trayIcon.setToolTip("eXist-db server stopped");
             startItem.setEnabled(true);
             stopItem.setEnabled(false);
+        }
+    }
+
+    private void registerObserver() {
+        try {
+            BrokerPool pool = BrokerPool.getInstance();
+            pool.getExpathRepo().addObserver(this);
+            pool.getExpathRepo().addObserver(utilityPanel);
+        } catch (EXistException e) {
+            System.err.println("Failed to register as observer for package manager events");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        ExistRepository.Notification notification = (ExistRepository.Notification) o;
+        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD)) {
+            dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE)) {
+            eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         }
     }
 
