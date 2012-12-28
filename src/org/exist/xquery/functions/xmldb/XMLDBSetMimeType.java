@@ -149,7 +149,7 @@ public class XMLDBSetMimeType extends BasicFunction {
                 doc.getMetadata().setMimeType(newMimeType.getName());
                 
                 // store meta data into database
-                broker.storeXMLResource(txn, doc);
+                broker.storeMetadata(txn, doc);
                 
                 // commit changes
                 txnManager.commit(txn);
