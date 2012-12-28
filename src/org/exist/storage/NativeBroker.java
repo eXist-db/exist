@@ -2264,6 +2264,11 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
+    public File getBinaryFile(final BinaryDocument blob) throws IOException {
+        return getCollectionFile(fsDir, blob.getURI(), false);
+    }
+
+    @Override
     public InputStream getBinaryResource(final BinaryDocument blob) 
             throws IOException {
         File binFile = getCollectionFile(fsDir,blob.getURI(),false);

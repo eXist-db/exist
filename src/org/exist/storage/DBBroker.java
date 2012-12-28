@@ -47,6 +47,8 @@ import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 
 import javax.xml.stream.XMLStreamException;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -583,7 +585,9 @@ public abstract class DBBroker extends Observable {
     public abstract void readBinaryResource(final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
-    public abstract InputStream getBinaryResource(final BinaryDocument blob)
+    public abstract File getBinaryFile(final BinaryDocument blob) throws IOException;
+
+	public abstract InputStream getBinaryResource(final BinaryDocument blob)
            throws IOException;
 
     public abstract long getBinaryResourceSize(final BinaryDocument blob)
