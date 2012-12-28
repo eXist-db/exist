@@ -732,28 +732,37 @@ public class RemoteUserManagementService implements UserManagementService {
     }
 
         @Override
-	public Group getGroup(String name) throws XMLDBException {
+	public Group getGroup(final String name) throws XMLDBException {
             try {
-                List<Object> params = new ArrayList<Object>(1);
+                final List<Object> params = new ArrayList<Object>(1);
                 params.add(name);
-                HashMap<String,Object> tab = (HashMap<String,Object>) parent.getClient().execute("getGroup", params);
+                
+                final Map<String,Object> tab = (HashMap<String,Object>) parent.getClient().execute("getGroup", params);
+                
                 if(tab != null && !tab.isEmpty()) {
-                    final Group role = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
+                    final Group group = new GroupAider((Integer)tab.get("id"), (String) tab.get("realmId"), (String) tab.get("name"));
+                    
+                    final Object[] managers = (Object[]) tab.get("managers");
+                    for(final Object manager : managers) {
+                        group.addManager(getAccount((String)manager));
+                    }
                     
                     final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
                     for(final String key : metadata.keySet()) {
                         if(AXSchemaType.valueOfNamespace(key) != null) {
-                            role.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
+                            group.setMetadataValue(AXSchemaType.valueOfNamespace(key), metadata.get(key));
                         } else if(EXistSchemaType.valueOfNamespace(key) != null) {
-                            role.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
+                            group.setMetadataValue(EXistSchemaType.valueOfNamespace(key), metadata.get(key));
                         }
                     }
                     
-                    return role;
+                    return group;
                 }
                 return null;
-            } catch (XmlRpcException e) {
-                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+            } catch(final XmlRpcException xre) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre);
+            } catch(final PermissionDeniedException pde) {
+                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde);
             }
     }
 

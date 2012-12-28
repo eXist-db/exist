@@ -1930,10 +1930,10 @@ public class RpcConnection implements RpcAPI {
      */
     @Override
     public Vector<String> getGroups() throws EXistException, PermissionDeniedException {
-    	java.util.Collection<Group> roles = factory.getBrokerPool().getSecurityManager().getGroups();
-        Vector<String> v = new Vector<String>(roles.size());
-        for (Group role : roles) {
-            v.addElement(role.getName());
+    	java.util.Collection<Group> groups = factory.getBrokerPool().getSecurityManager().getGroups();
+        final Vector<String> v = new Vector<String>(groups.size());
+        for(final Group group : groups) {
+            v.addElement(group.getName());
         }
         return v;
     }
@@ -1944,12 +1944,20 @@ public class RpcConnection implements RpcAPI {
             return executeWithBroker(new BrokerOperation<HashMap<String, Object>>() {
                 @Override
                 public HashMap<String, Object> withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
-                    Group group = factory.getBrokerPool().getSecurityManager().getGroup(name);
+                    final SecurityManager securityManager = factory.getBrokerPool().getSecurityManager();
+                    final Group group = securityManager.getGroup(name);
                     if(group != null){
                         final HashMap<String, Object> map = new HashMap<String, Object>();
                         map.put("id", group.getId());
                         map.put("realmId", group.getRealmId());
                         map.put("name", name);
+                        
+                        final List<Account> groupManagers = group.getManagers();
+                        final Vector<String> managers = new Vector<String>(groupManagers.size());
+                        for(final Account groupManager : groupManagers) {
+                            managers.add(groupManager.getName());
+                        }
+                        map.put("managers", managers);
 
                         final Map<String, String> metadata = new HashMap<String, String>();
                         for(final SchemaType key : group.getMetadataKeys()) {
