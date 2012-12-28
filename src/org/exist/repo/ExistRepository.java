@@ -14,10 +14,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
@@ -37,9 +34,10 @@ import org.expath.pkg.repo.URISpace;
  * A repository as viewed by eXist.
  *
  * @author Florent Georges
+ * @author Wolfgang Meier
  * @since  2010-09-22
  */
-public class ExistRepository {
+public class ExistRepository extends Observable {
 
     public final static String EXPATH_REPO_DIR = "expathrepo";
 
@@ -198,10 +196,37 @@ public class ExistRepository {
         }
     }
 
+    public void reportAction(Action action, String packageURI) {
+        notifyObservers(new Notification(action, packageURI));
+        setChanged();
+    }
+
     /** The wrapped EXPath repository. */
     private Repository myParent;
     /** An empty map for constructors expecting a parameter map. */
     private static final Map<String, List<Object>> EMPTY_MAP = new HashMap<String, List<Object>>();
+
+    public enum Action {
+        INSTALL, UNINSTALL
+    }
+
+    public final static class Notification {
+        private Action action;
+        private String packageURI;
+
+        public Notification(Action action, String packageURI) {
+            this.action = action;
+            this.packageURI = packageURI;
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public String getPackageURI() {
+            return packageURI;
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------ */

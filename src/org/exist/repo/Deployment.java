@@ -184,7 +184,10 @@ public class Deployment {
         if (info != null && !info.getJars().isEmpty())
             ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
         String pkgName = pkg.getName();
+        // signal status
         broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
+        repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
+
         LOG.info("Deploying package " + pkgName);
         return deploy(pkgName, repo, null);
     }
