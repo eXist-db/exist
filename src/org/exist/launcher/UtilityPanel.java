@@ -70,6 +70,7 @@ public class UtilityPanel extends JFrame implements Observer {
 
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 dashboardButton = createButton(toolbar, "dashboard.png", "Dashboard");
+                dashboardButton.setEnabled(false);
                 dashboardButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -79,6 +80,7 @@ public class UtilityPanel extends JFrame implements Observer {
                 toolbar.add(dashboardButton);
 
                 eXideButton = createButton(toolbar, "exide.png", "eXide");
+                eXideButton.setEnabled(false);
                 eXideButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
