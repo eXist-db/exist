@@ -24,8 +24,15 @@ package org.exist.launcher;
 import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -232,6 +239,7 @@ public class Launcher extends Observable implements Observer {
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 dashboardItem = new MenuItem("Open dashboard");
+                dashboardItem.setEnabled(false);
                 popup.add(dashboardItem);
                 dashboardItem.addActionListener(new ActionListener() {
                     @Override
@@ -240,6 +248,7 @@ public class Launcher extends Observable implements Observer {
                     }
                 });
                 eXideItem = new MenuItem("Open eXide");
+                eXideItem.setEnabled(false);
                 popup.add(eXideItem);
                 eXideItem.addActionListener(new ActionListener() {
                     @Override
@@ -331,6 +340,7 @@ public class Launcher extends Observable implements Observer {
             trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
             startItem.setEnabled(false);
             stopItem.setEnabled(true);
+            checkInstalledApps();
             registerObserver();
         }
     }
@@ -340,6 +350,34 @@ public class Launcher extends Observable implements Observer {
             trayIcon.setToolTip("eXist-db server stopped");
             startItem.setEnabled(true);
             stopItem.setEnabled(false);
+        }
+    }
+
+    private void checkInstalledApps() {
+        BrokerPool pool = null;
+        DBBroker broker = null;
+        try {
+            pool = BrokerPool.getInstance();
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            XQuery xquery = broker.getXQueryService();
+            Sequence pkgs = xquery.execute("repo:list()", null, AccessContext.INITIALIZE);
+            for (SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
+                ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
+                update(pool.getExpathRepo(), notification);
+                utilityPanel.update(pool.getExpathRepo(), notification);
+            }
+        } catch (EXistException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } catch (XPathException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } catch (PermissionDeniedException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (pool != null)
+                pool.release(broker);
         }
     }
 
