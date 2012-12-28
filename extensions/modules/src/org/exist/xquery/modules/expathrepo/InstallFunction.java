@@ -77,6 +77,7 @@ public class InstallFunction extends BasicFunction {
         		// download .xar from a URI
         		URI uri = _getURI(pkgOrPath);
                 pkg = parent_repo.installPackage(uri, force, interact);
+                repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
         	} else {
         		// .xar is stored as a binary resource
         		BinaryDocument doc = null;
@@ -85,6 +86,7 @@ public class InstallFunction extends BasicFunction {
         			File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
         			LOG.debug("Installing file: " + file.getAbsolutePath());
         			pkg = parent_repo.installPackage(file, force, interact);
+                    repo.reportAction(ExistRepository.Action.INSTALL, pkg.getName());
         		} finally {
         			if (doc != null)
         				doc.getUpdateLock().release(Lock.READ_LOCK);
