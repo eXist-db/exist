@@ -165,7 +165,7 @@ public class LetExpr extends BindingExpression {
                     }
                 }
                 //Check if we can speed up the processing of the "order by" clause.
-                fastOrderBy = in.isPersistentSet() && checkOrderSpecs(in);
+                fastOrderBy = !(in instanceof DeferredFunctionCall) && in.isPersistentSet() && checkOrderSpecs(in);
                 //PreorderedValueSequence applies the order specs to all items
                 //in one single processing step
                 if (fastOrderBy) {
@@ -271,7 +271,8 @@ public class LetExpr extends BindingExpression {
                 context.getProfiler().end(this, "", resultSequence);
             if (resultSequence == null)
                 return Sequence.EMPTY_SEQUENCE;
-            actualReturnType = resultSequence.getItemType();
+            if (!(resultSequence instanceof DeferredFunctionCall))
+                actualReturnType = resultSequence.getItemType();
             return resultSequence;
         } finally {
             context.popDocumentContext();
