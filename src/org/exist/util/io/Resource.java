@@ -25,16 +25,21 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.LockToken;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -42,12 +47,16 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
 
 /**
  * eXist's resource. It extend java.io.File
@@ -61,8 +70,38 @@ public class Resource extends File {
 
     public static final char separatorChar = '/';
 
-    protected XmldbURI uri;
-    protected XmldbURI collectionPath = null;
+    //  default output properties for the XML serialization
+    public final static Properties XML_OUTPUT_PROPERTIES = new Properties();
+
+    static {
+        XML_OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "yes");
+        XML_OUTPUT_PROPERTIES.setProperty(OutputKeys.ENCODING, "UTF-8");
+        XML_OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        XML_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        XML_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+    }
+
+    private static final SecureRandom random = new SecureRandom();
+    static File generateFile(String prefix, String suffix, File dir) {
+        long n = random.nextLong();
+        if (n == Long.MIN_VALUE) {
+            n = 0;      // corner case
+        } else {
+            n = Math.abs(n);
+        }
+        return new Resource(dir, prefix + Long.toString(n) + suffix);
+    }
+
+    public static File createTempFile(String prefix, String suffix, File directory) throws IOException {
+        if (prefix.length() < 3)
+            throw new IllegalArgumentException("Prefix string too short");
+        if (suffix == null)
+            suffix = ".tmp";
+        
+        return generateFile(prefix, suffix, directory);
+    }
+
+	protected XmldbURI uri;
     
     protected boolean initialized = false;
     
@@ -236,7 +275,7 @@ public class Resource extends File {
 		}
     }
     
-    public boolean renameTo(File dest) {
+    public boolean _renameTo(File dest) {
     	XmldbURI destinationPath = ((Resource)dest).uri;
 
     	DBBroker broker = null; 
@@ -274,11 +313,12 @@ public class Resource extends File {
 	            newName = destinationPath.lastSegment();
 	
 	            transaction = tm.beginTransaction();
-	            broker.copyResource(transaction, doc, destination, newName);
+	            broker.moveResource(transaction, doc, destination, newName);
 	            tm.commit(transaction);
 	            return true;
 	            
 	        } catch ( Exception e ) {
+	        	e.printStackTrace();
 	        	if (transaction != null) tm.abort(transaction);
 	        	return false;
 	        } finally {
@@ -291,6 +331,158 @@ public class Resource extends File {
         }
     }
     
+    public boolean renameTo(File dest) {
+    	
+    	System.out.println("rename from "+uri+" to "+dest.getPath());
+    	
+        XmldbURI destinationPath = ((Resource)dest).uri;
+
+        DBBroker broker = null; 
+        BrokerPool db = null;
+        TransactionManager tm;
+
+        try {
+            try {
+                db = BrokerPool.getInstance();
+                broker = db.get(null);
+            } catch (EXistException e) {
+                return false;
+            }
+    
+            tm = db.getTransactionManager();
+            Txn transaction = null;
+    
+            org.exist.collections.Collection destination = null;
+            org.exist.collections.Collection source = null;
+            XmldbURI newName;
+            try {
+                source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
+                if(source == null) {
+                    return false;
+                }
+                DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
+                if(doc == null) {
+                    return false;
+                }
+                destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
+                if(destination == null) {
+                    return false;
+                }
+                
+                newName = destinationPath.lastSegment();
+    
+                transaction = tm.beginTransaction();
+                moveResource(broker, transaction, doc, source, destination, newName);
+
+//                resource = null;
+//                collection = null;
+//                initialized = false;
+//                uri = ((Resource)dest).uri;
+
+                tm.commit(transaction);
+                return true;
+                
+            } catch ( Exception e ) {
+                e.printStackTrace();
+                if (transaction != null) tm.abort(transaction);
+                return false;
+            } finally {
+                if(source != null) source.release(Lock.WRITE_LOCK);
+                if(destination != null) destination.release(Lock.WRITE_LOCK);
+            }
+        } finally {
+            if (db != null)
+                db.release( broker );
+        }
+    }
+
+    private void moveResource(DBBroker broker, Txn txn, DocumentImpl doc, Collection source, Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, SAXException, EXistException {
+        
+        final MimeTable mimeTable = MimeTable.getInstance();
+        
+        final boolean isXML = mimeTable.isXMLContent(newName.toString());
+        
+        final MimeType mimeType = mimeTable.getContentTypeFor(newName);
+        
+    	if ( mimeType != null && !mimeType.getName().equals( doc.getMetadata().getMimeType()) ) {
+            doc.getMetadata().setMimeType(mimeType.getName());
+            broker.storeXMLResource(txn, doc);
+
+            doc = source.getDocument(broker, uri.lastSegment());
+        }
+        
+    	if (isXML) {
+            if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+            	//XML to XML
+                //move to same type as it
+                broker.moveResource(txn, doc, destination, newName);
+
+            } else {
+                //convert BINARY to XML
+                
+                File file = broker.getBinaryFile((BinaryDocument) doc);
+
+                FileInputSource is = new FileInputSource(file);
+                
+                IndexInfo info = destination.validateXMLResource(txn, broker, newName, is);
+                info.getDocument().getMetadata().setMimeType(mimeType.getName());
+
+                is = new FileInputSource(file);
+                destination.store(txn, broker, info, is, false);
+                
+                source.removeBinaryResource(txn, broker, doc);
+            }
+        } else {
+            if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            	//BINARY to BINARY
+
+            	//move to same type as it
+                broker.moveResource(txn, doc, destination, newName);
+                
+            } else {
+                //convert XML to BINARY
+                // xml file
+                Serializer serializer = broker.getSerializer();
+                serializer.setUser(broker.getSubject());
+                serializer.setProperties(XML_OUTPUT_PROPERTIES);
+                
+                File tempFile = null;
+                FileInputStream is = null;
+				try {
+                    tempFile = File.createTempFile("eXist", ".xml");
+                    tempFile.deleteOnExit();
+                    
+                    Writer w = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
+//                    tempFile.delete();
+
+                    serializer.serialize(doc, w);
+                    w.flush();
+                    w.close();
+                    
+                    is = new FileInputStream(tempFile);
+                    
+                    final DocumentMetadata meta = doc.getMetadata();
+                    
+                    final Date created = new Date(meta.getCreated());
+                    final Date lastModified = new Date(meta.getLastModified());
+    
+                    BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName, is, mimeType.getName(), -1, created, lastModified);
+                    
+                    binary = destination.addBinaryResource(txn, broker, binary, is, mimeType.getName(), -1, created, lastModified);
+                    
+                    source.removeXMLResource(txn, broker, doc.getFileURI());
+                    
+                } finally {
+                	if (is != null)
+                		is.close();
+
+                	if (tempFile != null)
+                		tempFile.delete();
+                }
+            }
+        }
+    }
+
     public boolean setReadOnly() {
     	//XXX: code !!!
     	
@@ -465,6 +657,8 @@ public class Resource extends File {
 						collection = resource.getCollection();
 					}
 				}
+			} catch (IOException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new IOException(e);
 			} finally {
@@ -510,6 +704,10 @@ public class Resource extends File {
     	InputStream is = getConnection().getInputStream();
         BufferedInputStream bis = new BufferedInputStream(is);
         return new InputStreamReader(bis);
+    }
+    
+    public BufferedReader getBufferedReader() throws IOException {
+    	return new BufferedReader(getReader());
     }
 
     private URLConnection connection = null;
@@ -698,4 +896,44 @@ public class Resource extends File {
     public String getAbsolutePath() {
     	return uri.toString();
     }
+
+	protected File getFile() throws FileNotFoundException {
+		if (isDirectory())
+			throw new FileNotFoundException("unsupported operation for collection.");
+
+		DocumentImpl doc;
+		try {
+			if (!exists())
+				createNewFile();
+			
+			doc = getDocument();
+		} catch (IOException e) {
+			throw new FileNotFoundException(e.getMessage());
+		}
+		
+		if (doc instanceof BinaryDocument) {
+	    	DBBroker broker = null; 
+			BrokerPool db = null;
+
+			try {
+				try {
+					db = BrokerPool.getInstance();
+					broker = db.get(null);
+				} catch (EXistException e) {
+					throw new FileNotFoundException(e.getMessage());
+				}
+				
+				return broker.getBinaryFile(((BinaryDocument)doc));
+			
+			} catch (Exception e) {
+				throw new FileNotFoundException(e.getMessage());
+				
+			} finally {
+		    	if (db != null)
+		    		db.release(broker);
+		    }
+		}
+
+		throw new FileNotFoundException("unsupported operation for XML document.");
+	}
 }
