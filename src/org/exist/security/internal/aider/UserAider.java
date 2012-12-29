@@ -40,6 +40,10 @@ import org.exist.storage.DBBroker;
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+
+//TODO UserAider (and all *Aider classes) is evil and must be destroyed. Its too easy to use a UserAider to securityManager.updateAccount
+//and it turns out you have forgotten to set some property of the account and so it is removed from the configuration
+//Note by Adam Retter 2012-12-29
 public class UserAider implements Account {
     
     private final String realmId;

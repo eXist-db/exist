@@ -206,14 +206,6 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 	}
 
     @Override
-	public final String getPrimaryGroup() {
-		if (groups != null && groups.size() > 0)
-			return groups.get(0).getName();
-
-		return null;
-	}
-
-    @Override
 	public final String toString() {
 		StringBuilder buf = new StringBuilder();
 		buf.append("<account name=\"");
@@ -252,12 +244,30 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		return false;
 	}
 
+        @Override
+	public final String getPrimaryGroup() {
+            
+            //TODO this function should return Group and not String
+            
+            final Group defaultGroup = getDefaultGroup();
+            if(defaultGroup != null) {
+                return defaultGroup.getName();
+            } else {
+                return null;
+            }
+	}
+    
+        /**
+         * @deprecated user getPrimaryGroup instead;
+         */
+        @Deprecated
 	@Override
 	public Group getDefaultGroup() {
-		if (groups != null && groups.size() > 0)
-			return groups.get(0);
+            if(groups != null && groups.size() > 0) {
+                return groups.get(0);
+            }
 
-		return null;
+            return null;
 	}
 
     @Override
