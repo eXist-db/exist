@@ -121,11 +121,12 @@ public class Validation extends BasicFunction  {
             new SequenceType[]{
                 new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
+                new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "The reference to an OASIS catalog file (.xml), "+
                         "a collection (path ends with '/') or a grammar document. "+
                         "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
-                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\". The parameter can be passed as an xs:anyURI or a" +
+                        "document node.")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                     Shared.xmlreportText), deprecated2
