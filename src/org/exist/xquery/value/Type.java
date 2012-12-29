@@ -388,15 +388,18 @@ public class Type {
 	 * 
 	 * @param subtype
 	 */
-	public static int getSuperType(int subtype) {
-		if (subtype == ITEM || subtype == NODE)
-			return ITEM;
-        int supertype = superTypes[subtype];
-		if(supertype == 0) {
-			LOG.warn("no supertype for " + getTypeName(subtype), new Throwable());
-			return ITEM;
-		}
-		return supertype;
+	public static int getSuperType(final int subtype) {
+            if(subtype == ITEM || subtype == NODE) {
+                return ITEM;
+            }
+            
+            final int supertype = superTypes[subtype];
+            if(supertype == 0) {
+                LOG.warn("eXist does not define a super-type for the sub-type " + getTypeName(subtype), new Throwable());
+                return ITEM;
+            }
+            
+            return supertype;
 	}
 
 	/**
