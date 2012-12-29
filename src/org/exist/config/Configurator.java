@@ -719,19 +719,19 @@ public class Configurator {
                     String value = null;
                     final String typeName = field.getType().getName();
                     if(typeName.equals("java.util.List")) {
-                        simple = false;
                         serializeList(instance, element, serializer);
+                        continue;
                     } else if(implementsInterface(field.getType(), Configurable.class)) {
-                        simple = false;
                         final Configurable subInstance = (Configurable) field.get(instance);
                         serialize(subInstance, serializer);
+                        continue;
                     } else if(typeName.equals("java.util.Map")) {
                         serializeMap(element.getAnnotation().value(), (Map<String, String>)field.get(instance), serializer);
+                        continue;
                     } else {
                         value = extractFieldValue(field, instance);
                         if(value == null) {
-                            LOG.error("field '" + field.getName() + 
-                                "' has unsupported type [" + typeName + "] - skiped");
+                            LOG.error("field '" + field.getName() + "' has unsupported type [" + typeName + "] - skiped");
                             //TODO : throw exception ? -pb
                         }
                     }
