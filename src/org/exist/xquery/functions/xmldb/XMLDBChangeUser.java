@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.security.Account;
+import org.exist.security.Group;
 import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.LocalCollection;
@@ -114,7 +115,14 @@ public class XMLDBChangeUser extends BasicFunction {
                 throw new XPathException(this, "User " + userName + " not found");
 	    }
 
-	    final UserAider user = new UserAider(oldUser.getName(), oldUser.getPrimaryGroup()); //dont forget to set the default group
+            final Group oldPrimaryGroup = oldUser.getDefaultGroup();
+            final UserAider user;
+            if(oldPrimaryGroup != null) {
+                //dont forget to set the primary group
+                user = new UserAider(oldUser.getName(), oldPrimaryGroup); 
+            } else {
+                user = new UserAider(oldUser.getName()); 
+            }
 	    
             //copy the umask
             user.setUserMask(oldUser.getUserMask());
