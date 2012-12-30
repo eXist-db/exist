@@ -72,7 +72,7 @@ public class Validation extends BasicFunction  {
     private static final String GRAMMAR_DESCRIPTION = "The reference to an OASIS catalog file (.xml), "
             + "a collection (path ends with '/') or a grammar document. "
             + "Supported grammar documents extensions are \".dtd\" \".xsd\" "
-            + "\".rng\" \".rnc\" \".sch\" and \".nvdl\". The parameter can be passed as an xs:anyURI or a"
+            + "\".rng\" \".rnc\" \".sch\" and \".nvdl\". The parameter can be passed as an xs:anyURI or a "
             + "document node.";
     
     private static final String INSTANCE_DESCRIPTION = "The document referenced as xs:anyURI or a node (element or returned by fn:doc())";
