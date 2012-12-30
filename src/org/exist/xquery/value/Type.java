@@ -415,6 +415,13 @@ public class Type {
 		//Super shortcut
 		if(type1 == type2)
 			return type1;
+        // if one of the types is empty(), return the other type: optimizer is free to choose
+        // an optimization based on the more specific type.
+        if (type1 == Type.EMPTY)
+            return type2;
+        else if (type2 == Type.EMPTY)
+            return type1;
+
 		//TODO : optimize by swapping the arguments based on their numeric values ?
 		//Processing lower value first *should* reduce the size of the Set
 		//Collect type1's super-types
