@@ -82,18 +82,23 @@ import org.xml.sax.XMLReader;
 public class Jaxp extends BasicFunction {
 
     private static final String simpleFunctionTxt =
-            "Validate document by parsing $instance. Optionally " +
-            "grammar caching can be enabled. Supported grammars types " +
-            "are '.xsd' and '.dtd'.";
+            "Validate document by parsing $instance. Optionally "
+            + "grammar caching can be enabled. Supported grammars types "
+            + "are '.xsd' and '.dtd'.";
+    
     private static final String extendedFunctionTxt =
-            "Validate document by parsing $instance. Optionally " +
-            "grammar caching can be enabled and " +
-            "an XML catalog can be specified. Supported grammars types " +
-            "are '.xsd' and '.dtd'.";
-    private static final String documentTxt = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) " +
-            "or as a Java file object.";
+            "Validate document by parsing $instance. Optionally "
+            + "grammar caching can be enabled and "
+            + "an XML catalog can be specified. Supported grammars types "
+            + "are '.xsd' and '.dtd'.";
+    
+    private static final String documentTxt = "The document referenced as xs:anyURI, a node (element or result of fn:doc()) "
+            + "or as a Java file object.";
+    
     private static final String catalogTxt = "The catalogs referenced as xs:anyURI's.";
+    
     private static final String cacheTxt = "Set the flag to true() to enable grammar caching.";
+
     private final BrokerPool brokerPool;
     // Setup function signature
     public final static FunctionSignature signatures[] = {
