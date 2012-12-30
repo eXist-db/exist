@@ -62,13 +62,13 @@ JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 PROFILER_OPTS=-agentlib:yjpagent
 
 if [ "x${yjp_home}" != "x" ]; then
-"$JAVA_HOME/bin/java" $JAVA_OPTS \
+"${JAVA_RUN}" $JAVA_OPTS \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	-Dexist.home=$EXIST_HOME $PROFILER_OPTS \
-	-jar start.jar "$@"
+	-jar ${EXIST_HOME}/start.jar "$@"
 else
-"$JAVA_HOME/bin/java" $JAVA_OPTS \
+"${JAVA_RUN}" $JAVA_OPTS \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	-Dexist.home=$EXIST_HOME \
-	-jar start.jar "$@"
+	-jar ${EXIST_HOME}/start.jar "$@"
 fi

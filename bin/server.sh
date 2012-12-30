@@ -44,6 +44,6 @@ check_jmx_status;
 # save LANG
 set_locale_lang;
 
-"$JAVA_HOME"/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
+"${JAVA_RUN}" $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
 
 restore_locale_lang;
