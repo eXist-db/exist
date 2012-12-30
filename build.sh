@@ -1,17 +1,20 @@
 #!/bin/bash
 # $Id$
 
+JAVA_RUN="$JAVA_HOME/bin/java"
+
 if [ "$JAVA_HOME" = "" ] ; then
-  echo "ERROR: JAVA_HOME not found in your environment."
-  echo
-  echo "Please, set the JAVA_HOME variable in your environment to match the"
-  echo "location of the Java Virtual Machine you want to use."
-  exit 1
+  JAVA_RUN="java"
+  echo "WARNING: JAVA_HOME not found in your environment."
+#  echo
+#  echo "Please, set the JAVA_HOME variable in your environment to match the"
+#  echo "location of the Java Virtual Machine you want to use."
+#  exit 1
 fi
 
-if [ ! -d "$JAVA_HOME" ]; then
-    JAVA_HOME="%{JAVA_HOME}"
-fi
+#if [ ! -d "$JAVA_HOME" ]; then
+#    JAVA_HOME="%{JAVA_HOME}"
+#fi
 
 if [ -z "$EXIST_HOME" ]; then
     P=$(dirname $0)
@@ -38,4 +41,6 @@ JAVA_OPTS="-Dant.home=$ANT_HOME -Dant.library.dir=$ANT_HOME/lib -Djava.endorsed.
 echo Starting Ant...
 echo
 
-"$JAVA_HOME/bin/java" -Xms512m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
+echo "$JAVA_RUN"
+
+"$JAVA_RUN" -Xms512m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
