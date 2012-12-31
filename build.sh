@@ -6,6 +6,7 @@ JAVA_RUN="$JAVA_HOME/bin/java"
 if [ "$JAVA_HOME" = "" ] ; then
   JAVA_RUN="java"
   echo "WARNING: JAVA_HOME not found in your environment."
+# This should be an error according to the java guidelines, stop changing it. /ljo
 #  echo
 #  echo "Please, set the JAVA_HOME variable in your environment to match the"
 #  echo "location of the Java Virtual Machine you want to use."
