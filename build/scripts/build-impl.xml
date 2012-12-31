@@ -640,6 +640,7 @@
                 excludes=".DO_NOT_DELETE"/>
         </delete>
         <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
+        <delete dir="${src.webapp}/WEB-INF/data/expathrepo"/>
     </target>
 
     <target name="clean-all" depends="clean-default-data-dir" description="Cleanup deeper, data is removed">
