@@ -5,7 +5,7 @@
         <url>http://exist-db.org</url>
         <javaversion>1.6</javaversion>
 		<requiresjdk>no</requiresjdk>
-        <run-privileged condition="izpack.windowsinstall.vista"/>
+        <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
         <!--pack200/-->
     </info>
@@ -32,6 +32,7 @@
         <res id="HTMLInfoPanel.start" src="installer/start.html"/>
         <res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
         <res id="logo" src="webapp/logo.jpg"/>
+        <res id="TargetPanel.dir.windows" src="installer/target-win.txt"/>
         <!--res id="customicons.xml" src="installer/custom.icons.xml"/-->
         <!--res id="pkgicon" src="installer/apps/icon.png"/-->
     </resources>
@@ -52,11 +53,7 @@
     
     <!-- Determine suggested data directory -->
     <dynamicvariables>
-        <variable name="INSTALL_PATH" condition="izpack.windowsinstall" value="$USER_HOME\eXist-db"/>
-        <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME\eXist-db\data"/>
-        <!--variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist-db/data"/-->
-        <variable name="DATA_DIR" condition="!izpack.windowsinstall"
-            value="$INSTALL_PATH/webapp/WEB-INF/data"/>
+        <variable name="DATA_DIR" value="$INSTALL_PATH/webapp/WEB-INF/data"/>
     </dynamicvariables>
 
     <conditions>
@@ -170,6 +167,7 @@
                 <exclude name="WEB-INF/data/fs.journal/**"/>
                 <exclude name="WEB-INF/data/lucene/**"/>
                 <exclude name="WEB-INF/expathrepo/**"/>
+                <exclude name="WEB-INF/data/expathrepo/**"/>
             </fileset>
             <file src="installer/conf.xml" targetdir="$INSTALL_PATH"/>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
