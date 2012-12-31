@@ -978,7 +978,7 @@ public class BrokerPool extends Observable implements Database {
 
             try {
                 // initialize expath repository so startup triggers can access it
-                expathRepo = ExistRepository.getRepository(this.conf.getExistHome());
+                expathRepo = ExistRepository.getRepository(this.conf);
             } catch (PackageException e) {
                 LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
                     "the package manager may not work.");
