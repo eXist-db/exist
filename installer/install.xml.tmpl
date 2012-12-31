@@ -52,9 +52,10 @@
     
     <!-- Determine suggested data directory -->
     <dynamicvariables>
-        <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME/eXist-db/data"/>
-        <variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist-db/data"/>
-        <variable name="DATA_DIR" condition="!izpack.macinstall+!izpack.windowsinstall"
+        <variable name="INSTALL_PATH" condition="izpack.windowsinstall" value="$USER_HOME\eXist-db"/>
+        <variable name="DATA_DIR" condition="izpack.windowsinstall" value="$USER_HOME\eXist-db\data"/>
+        <!--variable name="DATA_DIR" condition="izpack.macinstall" value="/Users/Shared/eXist-db/data"/-->
+        <variable name="DATA_DIR" condition="!izpack.windowsinstall"
             value="$INSTALL_PATH/webapp/WEB-INF/data"/>
     </dynamicvariables>
 
@@ -92,6 +93,7 @@
                 <include name="conf.xml.tmpl"/>
                 <include name="descriptor.xml.tmpl"/>
                 <include name="descriptor.xml"/>
+                <include name="collection.xconf.init"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="log4j.dtd"/>
@@ -386,7 +388,7 @@
         </pack-->
         
         <pack name="Apps" required="no" installGroups="Group2">
-            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later.</description>
+            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later. The shared-resources package is required for any of the other applications.</description>
         </pack>
     </packs>
 </installation>
