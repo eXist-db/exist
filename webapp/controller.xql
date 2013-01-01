@@ -36,7 +36,7 @@ return
 			<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
 			{
 				if ($dashboard) then
-					<redirect url="apps/{substring-after($dashboard, '/db/')}/"/>
+					<redirect url="apps/{$dashboard}/"/>
 				else
 					<redirect url="404.html"/>
 			}

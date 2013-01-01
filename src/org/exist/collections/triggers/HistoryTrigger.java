@@ -66,128 +66,132 @@ import org.exist.xquery.value.DateTimeValue;
  * @author Mark Spanbroek
  * @see org.exist.collections.triggers.Trigger
  */
-public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger
-{
+public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
 
     protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
 
-    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException
-    {
+    public void configure(DBBroker broker, Collection parent,
+            Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
-        
-        if(parameters.containsKey("root"))
-        {
-            try
-            {
-            	rootPath = XmldbURI.xmldbUriFor(parameters.get("root").get(0).toString());
-            }
-            catch(URISyntaxException e)
-            {
-            	throw new TriggerException(e);
+        if(parameters.containsKey("root")) {
+            try {
+                rootPath = XmldbURI.xmldbUriFor(parameters.get("root").get(0).toString());
+            } catch(URISyntaxException e) {
+                throw new TriggerException(e);
             }
         }
     }
-    
-    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentName, DocumentImpl doc) throws TriggerException {
-    	makeCopy(broker, txn, doc);
+
+    public void prepare(int event, DBBroker broker, Txn txn,
+            XmldbURI documentName, DocumentImpl doc) throws TriggerException {
+        makeCopy(broker, txn, doc);
     }
 
-    public void makeCopy(DBBroker broker, Txn txn, DocumentImpl doc) throws TriggerException
-    {
-    	if(doc == null)
-    		return;
-        
-    	// construct the destination path
-   	  	XmldbURI path = rootPath.append(doc.getURI());
-        
-   	  	try
-   	  	{
-   	  		//construct the destination document name
-   	  		String dtValue = new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue();
-   	  		dtValue = dtValue.replaceAll(":", "-"); // multiple ':' are not allowed in URI so use '-'
-   	  		dtValue = dtValue.replaceAll("\\.", "-"); // as we are using '-' instead of ':' do the same for '.'
-   	  		XmldbURI name = XmldbURI.create(dtValue);
-        
-   	  		// create the destination document
-        
-   	  		//TODO : how is the transaction handled ? It holds the locks ! 
-   	  		Collection destination = broker.getOrCreateCollection(txn, path);
-   	  		broker.saveCollection(txn, destination);
-   	  		broker.copyResource(txn, doc, destination, name);
-   	  	}
-   	  	catch(XPathException xpe)
-   	  	{
-   	  		throw new TriggerException(xpe);
-   	  	}
-   	  	catch(IOException exception)
-   	  	{
-   	  		throw new TriggerException(exception);
-   	  	}
-   	  	catch(PermissionDeniedException exception)
-   	  	{
-   	  		throw new TriggerException(exception);
-   	  	}
-   	  	catch(LockException exception)
-   	  	{
-   	  		throw new TriggerException(exception);
-   	  	} catch (EXistException exception) {
-   	  		throw new TriggerException(exception);
-		}
-    }
-    
-	public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document)
-    {
+    public void makeCopy(DBBroker broker, Txn txn, DocumentImpl doc)
+            throws TriggerException {
+        if (doc == null)
+            return;
+        // construct the destination path
+        XmldbURI path = rootPath.append(doc.getURI());
+        try {
+            //construct the destination document name
+            String dtValue = new DateTimeValue(new Date(doc.getMetadata()
+                .getLastModified())).getStringValue();
+            dtValue = dtValue.replaceAll(":", "-"); // multiple ':' are not allowed in URI so use '-'
+            dtValue = dtValue.replaceAll("\\.", "-"); // as we are using '-' instead of ':' do the same for '.'
+            XmldbURI name = XmldbURI.create(dtValue);
+            // create the destination document
+            //TODO : how is the transaction handled ? It holds the locks ! 
+            Collection destination = broker.getOrCreateCollection(txn, path);
+            broker.saveCollection(txn, destination);
+            broker.copyResource(txn, doc, destination, name);
+        } catch(XPathException xpe) {
+            throw new TriggerException(xpe);
+        } catch(IOException exception) {
+            throw new TriggerException(exception);
+        } catch(PermissionDeniedException exception) {
+            throw new TriggerException(exception);
+        } catch(LockException exception) {
+            throw new TriggerException(exception);
+        } catch (EXistException exception) {
+            throw new TriggerException(exception);
+        }
     }
 
-	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-	}
+    public void finish(int event, DBBroker broker, Txn txn,
+            XmldbURI documentPath, DocumentImpl document) {
+        //Nothing to do
+    }
 
-	@Override
-	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void beforeCreateDocument(DBBroker broker, Txn txn,
+            XmldbURI uri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-    	makeCopy(broker, txn, document);
-	}
+    @Override
+    public void afterCreateDocument(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void beforeUpdateDocument(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        makeCopy(broker, txn, document);
+    }
 
-	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-    	makeCopy(broker, txn, document);
-	}
+    @Override
+    public void afterUpdateDocument(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void beforeCopyDocument(DBBroker broker, Txn txn,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        makeCopy(broker, txn, document);
+    }
 
-	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-    	makeCopy(broker, txn, document);
-	}
+    @Override
+    public void afterCopyDocument(DBBroker broker, Txn txn,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-    	makeCopy(broker, txn, document);
-	}
+    @Override
+    public void beforeDeleteDocument(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        makeCopy(broker, txn, document);
+    }
 
-	@Override
-	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-	}
+    @Override
+    public void beforeMoveDocument(DBBroker broker, Txn txn,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        makeCopy(broker, txn, document);
+    }
 
-	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-	}
+    @Override
+    public void afterMoveDocument(DBBroker broker, Txn txn,
+            DocumentImpl document, XmldbURI newUri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void afterDeleteDocument(DBBroker broker, Txn txn,
+            XmldbURI uri) throws TriggerException {
+        //Nothing to do
+    }
 
-	@Override
-	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-	}
+    @Override
+    public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
+
+    @Override
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn,
+            DocumentImpl document) throws TriggerException {
+        //Nothing to do
+    }
 }

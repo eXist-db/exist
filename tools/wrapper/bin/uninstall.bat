@@ -1,7 +1,8 @@
 @echo off
 setlocal
 
-rem Copyright (c) 1999, 2011 Tanuki Software, Ltd.
+rem
+rem Copyright (c) 1999, 2012 Tanuki Software, Ltd.
 rem http://www.tanukisoftware.com
 rem All rights reserved.
 rem
@@ -11,18 +12,23 @@ rem license agreement you entered into with Tanuki Software.
 rem http://wrapper.tanukisoftware.com/doc/english/licenseOverview.html
 rem
 rem Java Service Wrapper general startup script.
+rem
 
 rem -----------------------------------------------------------------------------
 rem These settings can be modified to fit the needs of your application
-rem Optimized for use with version 3.5.11 of the Wrapper.
+rem Optimized for use with version 3.5.17 of the Wrapper.
 
 rem The base name for the Wrapper binary.
 set _WRAPPER_BASE=wrapper
 
 rem The name and location of the Wrapper configuration file.   This will be used
-rem  if the user does not specify a configuration file as the first argument to
+rem  if the user does not specify a configuration file as the first parameter to
 rem  this script.
 set _WRAPPER_CONF_DEFAULT=../conf/wrapper.conf
+
+rem Makes it possible to override the Wrapper configuration file by specifying it
+rem  as the first parameter.
+rem set _WRAPPER_CONF_OVERRIDE=true
 
 rem Note that it is only possible to pass parameters through to the JVM when
 rem  installing the service, or when running in a console.
@@ -49,6 +55,7 @@ set _REALPATH=%~dp0
 rem
 rem Decide on the specific Wrapper binary to use (See delta-pack)
 rem
+if "%PROCESSOR_ARCHITEW6432%"=="AMD64" goto amd64
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto amd64
 if "%PROCESSOR_ARCHITECTURE%"=="IA64" goto ia64
 set _WRAPPER_L_EXE=%_REALPATH%%_WRAPPER_BASE%-windows-x86-32.exe
@@ -74,10 +81,12 @@ rem
 rem Find the wrapper.conf
 rem
 :conf
-set _WRAPPER_CONF="%~f1"
-if not [%_WRAPPER_CONF%]==[""] (
-    shift
-    goto :startup
+if not [%_WRAPPER_CONF_OVERRIDE%]==[] (
+    set _WRAPPER_CONF="%~f1"
+    if not [%_WRAPPER_CONF%]==[""] (
+        shift
+        goto :startup
+    )
 )
 set _WRAPPER_CONF="%_WRAPPER_CONF_DEFAULT%"
 

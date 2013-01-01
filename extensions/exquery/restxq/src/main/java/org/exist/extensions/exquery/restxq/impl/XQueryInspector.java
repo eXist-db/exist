@@ -66,6 +66,7 @@ public class XQueryInspector {
             //look at each function
             final Iterator<UserDefinedFunction> itFunctions = compiled.getContext().localFunctions();
 
+            final Set<URI> xqueryLocations = new HashSet<URI>();
             while(itFunctions.hasNext()) {
                 final UserDefinedFunction function = itFunctions.next();
                 final Annotation annotations[] = function.getSignature().getAnnotations();
@@ -87,13 +88,19 @@ public class XQueryInspector {
                     final ResourceFunction resourceFunction = ResourceFunctionFactory.create(new URI(compiled.getSource().getKey()), functionRestAnnotations);
                     final RestXqService service = new RestXqServiceImpl(resourceFunction, compiled.getContext().getBroker().getBrokerPool());
 
-                    //add service and compiled query to the cache
-                    RestXqServiceCompiledXQueryCacheImpl.getInstance().returnCompiledQuery(resourceFunction.getXQueryLocation(), compiled);
-
+                    //record the xquerylocation
+                    xqueryLocations.add(resourceFunction.getXQueryLocation());
+                    
                     //add the service to the list of services for this query
                     services.add(service);
                 }
             }
+            
+            for(final URI xqueryLocation : xqueryLocations) {
+                //add service location and compiled query to the cache
+                RestXqServiceCompiledXQueryCacheImpl.getInstance().returnCompiledQuery(xqueryLocation, compiled);
+            }
+            
         } catch(final URISyntaxException use) {
             throw new ExQueryException(use.getMessage(), use);
         } catch(final AnnotationException ae) {

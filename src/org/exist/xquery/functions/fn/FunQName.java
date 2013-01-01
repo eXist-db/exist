@@ -23,6 +23,7 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.util.XMLChar;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -129,7 +130,7 @@ public class FunQName extends BasicFunction {
 				throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");
 			
 		}
-
+		
 		QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {
             if (context.getURIForPrefix(prefix) == null) {
@@ -140,7 +141,11 @@ public class FunQName extends BasicFunction {
 
             //context.declareInScopeNamespace(prefix, namespace);
         }
-		Sequence result = new QNameValue(context, qname);
+
+        if(!XMLChar.isValidName(qname.getLocalName()))
+            throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalName() + "' is not a valid local name.");
+
+        Sequence result = new QNameValue(context, qname);
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

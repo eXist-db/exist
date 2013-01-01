@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNEventFactory;
 import org.exist.versioning.svn.internal.wc.SVNFileUtil;

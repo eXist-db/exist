@@ -78,16 +78,23 @@ public class ForExpr extends BindingExpression {
 //            context.declareVariableBinding(groupVar);
 //        }
         // bv : Declare grouping key variable(s) 
-        if (groupBy!= null){ 
-            for (int i=0;i<groupBy.length;i++){ 
-                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context,
-                    groupBy[i].getKeyVarName(),null));
+//        if (groupBy!= null){
+//            for (int i=0;i<groupBy.length;i++){
+//                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context,
+//                    groupBy[i].getKeyVarName(),null));
+//                groupKeyVar.setSequenceType(sequenceType);
+//                context.declareVariableBinding(groupKeyVar);
+//            }
+//        }
+        // Save the local variable stack
+        LocalVariable mark = context.markLocalVariables(false);
+        if (groupSpecs != null) {
+            for (GroupSpec spec : groupSpecs) {
+                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, spec.getKeyVarName()));
                 groupKeyVar.setSequenceType(sequenceType);
                 context.declareVariableBinding(groupKeyVar);
             }
         }
-        // Save the local variable stack
-        LocalVariable mark = context.markLocalVariables(false);
         try {
             contextInfo.setParent(this);
             AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
@@ -129,9 +136,10 @@ public class ForExpr extends BindingExpression {
                     for(int i = 0; i < orderBy.length; i++)
                         orderBy[i].analyze(newContextInfo);
                 }
-                if (groupBy != null) { 
-                    for(int i = 0; i < groupBy.length; i++) 
-                        groupBy[i].analyze(newContextInfo); 
+                if (groupSpecs != null) {
+                    for (GroupSpec spec : groupSpecs) {
+                        spec.analyze(newContextInfo);
+                    }
                 }
                 returnExpr.analyze(newContextInfo);
             }
@@ -311,6 +319,8 @@ public class ForExpr extends BindingExpression {
                         groupedSequence.addAll(toGroupSequence);
                     }
                 }
+                // free resources
+                var.destroy(resultSequence);
             }
         } finally {
             // restore the local variable stack 

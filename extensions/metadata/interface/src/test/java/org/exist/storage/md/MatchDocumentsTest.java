@@ -70,6 +70,8 @@ public class MatchDocumentsTest {
     /** /db/test/test.binary **/
     private static XmldbURI doc3uri = col1uri.append("test.binary");
     private static XmldbURI doc4uri = col2uri.append("test_string1.xml");
+    private static XmldbURI doc5uri = col2uri.append("test.binary");
+    private static XmldbURI doc6uri = col1uri.append("test1.binary");
     
     private static String XML1 = "<test1/>";
     private static String XML2 = "<test2/>";
@@ -80,10 +82,12 @@ public class MatchDocumentsTest {
     private static String KEY2 = "key2";
 
     private static String VALUE1 = "value1";
+    private static String VALUE2 = "value2";
     
     private static BrokerPool pool;
     private static DocumentImpl doc1 = null;
     private static DocumentImpl doc2 = null;
+    private static DocumentImpl doc3 = null;
 
     @Test
 	public void test_deleteCollection() throws Exception {
@@ -97,19 +101,31 @@ public class MatchDocumentsTest {
     	Metas docMD = md.getMetas(doc1uri);
     	assertNotNull(docMD);
     	
-        DBBroker broker = null;
+    	Metas bDocMD = md.getMetas(doc3uri);
+    	assertNotNull(bDocMD);
+
+    	DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
-	    	//add first key-value
+	    	//add metas for XML document
 	    	docMD.put(KEY1, doc2);
 	    	docMD.put(KEY2, VALUE1);
 	    	
+	    	//add metas for binaty document
+	    	bDocMD.put(KEY1, VALUE2);
+	    	bDocMD.put(KEY2, doc2);
+
 	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
 	    	
 	    	assertEquals(1, list.size());
 	    	assertEquals(doc1uri, list.get(0).getURI());
+
+	    	list = md.matchDocuments(KEY1, VALUE2);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc3uri, list.get(0).getURI());
 
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
@@ -134,8 +150,11 @@ public class MatchDocumentsTest {
 	    	System.out.println("DONE.");
 
 	    	list = md.matchDocuments(KEY2, VALUE1);
-	    	
 	    	assertEquals(0, list.size());
+
+	    	list = md.matchDocuments(KEY1, VALUE2);
+	    	assertEquals(0, list.size());
+	    	
         } finally {
         	pool.release(broker);
         }
@@ -153,27 +172,39 @@ public class MatchDocumentsTest {
     	Metas docMD = md.getMetas(doc1uri);
     	assertNotNull(docMD);
     	
-        DBBroker broker = null;
+    	Metas bDocMD = md.getMetas(doc3uri);
+    	assertNotNull(bDocMD);
+
+    	DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             
-	    	//add first key-value
+	    	//add metas for XML document
 	    	docMD.put(KEY1, doc2);
 	    	docMD.put(KEY2, VALUE1);
 	    	
+	    	//add metas for binaty document
+	    	bDocMD.put(KEY1, VALUE2);
+	    	bDocMD.put(KEY2, doc2);
+
 	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
 	    	
 	    	assertEquals(1, list.size());
 	    	assertEquals(doc1uri, list.get(0).getURI());
 
-            Collection col = broker.getCollection(col1uri);
+	    	list = md.matchDocuments(KEY1, VALUE2);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc3uri, list.get(0).getURI());
+
+        	System.out.println("MOVE...");
+	    	Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
             Collection parent = broker.getCollection(col2uri.removeLastSegment());
         	assertNotNull(parent);
 
-        	System.out.println("MOVE...");
         	TransactionManager txnManager = null;
 	        Txn txn = null;
 	        try {
@@ -196,13 +227,14 @@ public class MatchDocumentsTest {
 	    	
 	    	assertEquals(1, list.size());
 	    	assertEquals(doc4uri, list.get(0).getURI());
+	    	
         } finally {
         	pool.release(broker);
         }
     }
 
     @Test
-	public void test_moveResource() throws Exception {
+	public void test_renameXMLResource() throws Exception {
     	System.out.println("test");
     	
     	startDB();
@@ -227,7 +259,7 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, list.size());
 	    	assertEquals(doc1uri, list.get(0).getURI());
 
-	    	System.out.println("MOVING...");
+	    	System.out.println("RENAMING...");
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
@@ -253,14 +285,73 @@ public class MatchDocumentsTest {
 	    	
 	    	assertEquals(1, list.size());
 	    	assertEquals(doc2uri, list.get(0).getURI());
-	    	
+
         } finally {
         	pool.release(broker);
         }
     }
 
     @Test
-	public void test_deleteResource() throws Exception {
+	public void test_moveXMLResource() throws Exception {
+    	System.out.println("test");
+    	
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc1uri);
+    	assertNotNull(docMD);
+    	
+        DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            
+	    	//add first key-value
+	    	docMD.put(KEY1, doc2);
+	    	docMD.put(KEY2, VALUE1);
+	    	
+	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc1uri, list.get(0).getURI());
+
+	    	System.out.println("MOVING...");
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+            
+	            Collection col = broker.getOrCreateCollection(txn, col2uri);
+	        	assertNotNull(col);
+	    		broker.saveCollection(txn, col);
+
+	            broker.moveResource(txn, doc1, col, doc4uri.lastSegment());
+
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+	    	list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc4uri, list.get(0).getURI());
+
+        } finally {
+        	pool.release(broker);
+        }
+    }
+
+    @Test
+	public void test_deleteXMLResource() throws Exception {
     	System.out.println("test");
     	
     	startDB();
@@ -308,8 +399,181 @@ public class MatchDocumentsTest {
 	    	System.out.println("DONE.");
 
 	    	list = md.matchDocuments(KEY2, VALUE1);
-	    	
 	    	assertEquals(0, list.size());
+	    	
+        } finally {
+        	pool.release(broker);
+        }
+    }
+
+    @Test
+	public void test_renameBinaryResource() throws Exception {
+    	System.out.println("test");
+    	
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc3uri);
+    	assertNotNull(docMD);
+    	
+        DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            
+	    	//add first key-value
+	    	docMD.put(KEY1, doc2);
+	    	docMD.put(KEY2, VALUE1);
+	    	
+	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc3uri, list.get(0).getURI());
+
+	    	System.out.println("MOVING...");
+            Collection col = broker.getCollection(col1uri);
+        	assertNotNull(col);
+
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+            
+	            broker.moveResource(txn, doc3, col, doc6uri.lastSegment());
+
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+	    	list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc6uri, list.get(0).getURI());
+	    	
+        } finally {
+        	pool.release(broker);
+        }
+    }
+
+    @Test
+	public void test_moveBinaryResource() throws Exception {
+    	System.out.println("test");
+    	
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc3uri);
+    	assertNotNull(docMD);
+    	
+        DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            
+	    	//add first key-value
+	    	docMD.put(KEY1, doc2);
+	    	docMD.put(KEY2, VALUE1);
+	    	
+	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc3uri, list.get(0).getURI());
+
+	    	System.out.println("MOVING...");
+
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+            
+	            Collection col = broker.getOrCreateCollection(txn, col2uri);
+	        	assertNotNull(col);
+	    		broker.saveCollection(txn, col);
+	        	
+	        	broker.moveResource(txn, doc3, col, doc5uri.lastSegment());
+
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+	    	list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc5uri, list.get(0).getURI());
+	    	
+        } finally {
+        	pool.release(broker);
+        }
+    }
+    @Test
+	public void test_deleteBinaryResource() throws Exception {
+    	System.out.println("test");
+    	
+    	startDB();
+    	
+    	MetaData md = MetaData.get();
+    	assertNotNull(md);
+    	
+    	Metas docMD = md.getMetas(doc3uri);
+    	assertNotNull(docMD);
+    	
+        DBBroker broker = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+            
+	    	//add first key-value
+	    	docMD.put(KEY1, doc2);
+	    	docMD.put(KEY2, VALUE1);
+	    	
+	    	List<DocumentImpl> list = md.matchDocuments(KEY2, VALUE1);
+	    	
+	    	assertEquals(1, list.size());
+	    	assertEquals(doc3uri, list.get(0).getURI());
+
+	    	System.out.println("DELETING...");
+            Collection col = broker.getCollection(col1uri);
+        	assertNotNull(col);
+
+        	TransactionManager txnManager = null;
+	        Txn txn = null;
+	        try {
+	            txnManager = pool.getTransactionManager();
+	            assertNotNull(txnManager);
+	            txn = txnManager.beginTransaction();
+	            assertNotNull(txn);
+            
+	            broker.removeXMLResource(txn, doc3);
+
+	            txnManager.commit(txn);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            txnManager.abort(txn);
+	            fail(e.getMessage());
+	        }
+	    	System.out.println("DONE.");
+
+	    	list = md.matchDocuments(KEY2, VALUE1);
+	    	assertEquals(0, list.size());
+	    	
         } finally {
         	pool.release(broker);
         }
@@ -373,10 +637,10 @@ public class MatchDocumentsTest {
             assertNotNull(info);
             root.store(txn, broker, info, XML2, false);
 
-            doc2 =  info.getDocument();
+            doc2 = info.getDocument();
 
             System.out.println("store "+doc3uri);
-            root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
+            doc3 = root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
         } catch (Exception e) {
@@ -419,13 +683,15 @@ public class MatchDocumentsTest {
             assertNotNull(txn);
             System.out.println("Transaction started ...");
 
-            Collection col = broker.getOrCreateCollection(txn, col1uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
-
-            col = broker.getOrCreateCollection(txn, col2uri);
-            if (col != null)
+            Collection col = broker.getCollection(col1uri);
+            if (col != null) {
             	broker.removeCollection(txn, col);
+            }
+
+            col = broker.getCollection(col2uri);
+            if (col != null) {
+            	broker.removeCollection(txn, col);
+            }
 
         	txnManager.commit(txn);
         } catch (Exception e) {

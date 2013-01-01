@@ -54,7 +54,8 @@ public class NoParamFunctions extends BasicFunction {
                 new QName("pi", MathModule.NAMESPACE_URI),
                 "Returns the value of pi.",
                 null,
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi"), 
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#pi"
                 ),
         new FunctionSignature(
                 new QName("random", MathModule.NAMESPACE_URI),

@@ -78,7 +78,11 @@ public class StringValue extends AtomicValue {
 		//string = StringValue.expand(string); //Should we have character entities
 		value = string;
 	}
-    
+
+    public void append(String toAppend) {
+        value += toAppend;
+    }
+
 	public StringValue expand() throws XPathException {
 		value = expand(value);
 		return this;

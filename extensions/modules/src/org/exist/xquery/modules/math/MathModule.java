@@ -34,7 +34,7 @@ public class MathModule extends AbstractInternalModule {
     
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/math";
     
-    public final static String PREFIX = "math";
+    public final static String PREFIX = "math-ext";
     public final static String INCLUSION_DATE = "2006-10-13";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
@@ -54,9 +54,11 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(OneParamFunctions.signature[12], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[13], OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.signature[14], OneParamFunctions.class),
+        
         new FunctionDef(NoParamFunctions.signature[0], NoParamFunctions.class),
         new FunctionDef(NoParamFunctions.signature[1], NoParamFunctions.class),
         new FunctionDef(NoParamFunctions.signature[2], NoParamFunctions.class),
+        
         new FunctionDef(TwoParamFunctions.signature[0], TwoParamFunctions.class),
         new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
     };

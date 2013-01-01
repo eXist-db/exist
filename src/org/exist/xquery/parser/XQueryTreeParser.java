@@ -108,6 +108,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 		Expression inputSequence;
 		Expression action;
 		boolean isForClause= true;
+		List<GroupSpec> groupSpecs = null;
 	}
 
 	/**
@@ -1203,12 +1204,11 @@ public XQueryTreeParser() {
 			match(_t,LITERAL_return);
 			_t = _t.getFirstChild();
 			
-						List clauses= new ArrayList();
+						List<ForLetClause> clauses= new ArrayList<ForLetClause>();
 						Expression action= new PathExpr(context);
 						action.setASTNode(r);
 						PathExpr whereExpr= null;
 						List orderBy= null;
-			List<GroupSpec> groupSpecs = null;
 					
 			{
 			int _cnt158=0;
@@ -1824,7 +1824,20 @@ public XQueryTreeParser() {
 				org.exist.xquery.parser.XQueryAST tmp10_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,GROUP_BY);
 				_t = _t.getFirstChild();
-				groupSpecs = new ArrayList<GroupSpec>(4);
+				
+					// attach group by to last for expression, skipping lets
+					ForLetClause clause = null;
+					for (int i = clauses.size() - 1; i > -1; i--) {
+						ForLetClause currentClause = clauses.get(i);
+						if (currentClause.isForClause) {
+							clause = currentClause;
+							break;
+						}
+					}
+					if (clause == null)
+						clause = clauses.get(clauses.size() - 1);
+					clause.groupSpecs = new ArrayList<GroupSpec>(4);
+				
 				{
 				int _cnt166=0;
 				_loop166:
@@ -1960,8 +1973,27 @@ public XQueryTreeParser() {
 						}
 						
 							                    	String groupKeyVar = groupVarName.getText();
+						
+							                    	// if there is no groupSpec expression, try to find definition of
+							                    	// grouping variable and inline it
+							                    	if (groupSpecExpr == null) {
+							                    		ForLetClause groupVarDef = null;
+									                	for (int i = clauses.size() - 1; i > -1; i--) {
+									                		ForLetClause currentClause = clauses.get(i);
+									                		if (!currentClause.isForClause && currentClause.varName.equals(groupKeyVar)) {
+									                			groupVarDef = currentClause;
+									                			break;
+									                		}
+									                	}
+									                	if (groupVarDef == null) {
+									                		throw new XPathException("Definition for grouping var " + groupKeyVar + " not found");
+									                	}
+									                	// inline the grouping expression
+									                	clauses.remove(groupVarDef);
+									                	groupSpecExpr = (PathExpr) groupVarDef.inputSequence;
+							                    	}
 							                    	GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);  
-							                    	groupSpecs.add(groupSpec);
+							                    	clause.groupSpecs.add(groupSpec);
 							
 						{
 						if (_t==null) _t=ASTNULL;
@@ -2723,6 +2755,15 @@ public XQueryTreeParser() {
 			expr.setReturnExpression(new DebuggableExpression(action));
 			else
 			expr.setReturnExpression(action);
+			if (clause.groupSpecs != null) {
+				GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()]; 
+				                int k= 0;
+				                for (GroupSpec groupSpec : clause.groupSpecs) {
+				                    specs[k++]= groupSpec; 
+				                }
+				                expr.setGroupSpecs(specs);
+				                expr.setGroupReturnExpr(action);
+			}
 							if (clause.isForClause)
 								 ((ForExpr) expr).setPositionalVariable(clause.posVar);
 							if (whereExpr != null) {
@@ -2740,16 +2781,6 @@ public XQueryTreeParser() {
 							}
 							((BindingExpression)action).setOrderSpecs(orderSpecs);
 						}
-			// bv : group by initialisation 
-			if (groupSpecs != null) {
-			GroupSpec specs[]= new GroupSpec[groupSpecs.size()]; 
-			int k= 0;
-			for (GroupSpec groupSpec : groupSpecs) {
-			specs[k++]= groupSpec; 
-			} 
-			((BindingExpression)action).setGroupSpecs(specs); 
-			((BindingExpression)action).setGroupReturnExpr(groupReturnExpr);
-			} 
 			
 						path.add(action);
 						step = action;

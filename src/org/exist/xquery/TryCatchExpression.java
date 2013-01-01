@@ -183,7 +183,7 @@ public class TryCatchExpression extends AbstractExpression {
                         try {  
                             // Add std errors
                             addErrCode(errorCodeQname);                          
-                            addErrDescription(errorCode); 
+                            addErrDescription(xpe, errorCode);
                             addErrValue(xpe); 
                             addErrModule(xpe); 
                             addErrLineNumber(xpe); 
@@ -342,9 +342,11 @@ public class TryCatchExpression extends AbstractExpression {
     // A description of the error condition; an empty sequence if no 
     // description is available (for example, if the error function 
     // was called with one argument).
-    private void addErrDescription(ErrorCode errorCode) throws XPathException {
+    private void addErrDescription(XPathException xpe, ErrorCode errorCode) throws XPathException {
 
         String description = errorCode.getDescription();
+        if (description == null && xpe != null)
+            description = xpe.getDetailMessage();
         
         QName q_description = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
         LocalVariable err_description = new LocalVariable( q_description);
@@ -352,7 +354,7 @@ public class TryCatchExpression extends AbstractExpression {
         if(description == null){
             err_description.setValue(Sequence.EMPTY_SEQUENCE);
         } else {
-            err_description.setValue(new StringValue(errorCode.getDescription()));
+            err_description.setValue(new StringValue(description));
         } 
         context.declareVariableBinding(err_description);
     }

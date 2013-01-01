@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,8 +21,18 @@
  */
 package org.exist.launcher;
 
+import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
+import org.exist.repo.ExistRepository;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.xacml.AccessContext;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -36,6 +46,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Observable;
+import java.util.Observer;
 
 /**
  * A launcher for the eXist-db server integrated with the desktop.
@@ -44,10 +55,15 @@ import java.util.Observable;
  *
  * @author Wolfgang Meier
  */
-public class Launcher extends Observable {
+public class Launcher extends Observable implements Observer {
 
     private MenuItem stopItem;
     private MenuItem startItem;
+    private MenuItem dashboardItem;
+    private MenuItem eXideItem;
+
+    public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
+    public final static String PACKAGE_EXIDE = "http://exist-db.org/apps/eXide";
 
     public static void main(final String[] args) {
         String os = System.getProperty("os.name", "");
@@ -73,6 +89,7 @@ public class Launcher extends Observable {
 
     private SystemTray tray = null;
     private TrayIcon trayIcon = null;
+    private boolean initSystemTray = true;
     private SplashScreen splash;
     private JettyStart jetty;
 
@@ -83,21 +100,13 @@ public class Launcher extends Observable {
             tray = SystemTray.getSystemTray();
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                utilityPanel = new UtilityPanel(Launcher.this);
-                if (!isSystemTraySupported())
-                    utilityPanel.setVisible(true);
-            }
-        });
-
         captureConsole();
 
         final String home = getJettyHome();
 
         if (isSystemTraySupported())
-            initSystemTray(home);
+            initSystemTray = initSystemTray(home);
+
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
@@ -118,13 +127,22 @@ public class Launcher extends Observable {
                 }.start();
             }
         });
+
+        final boolean systemTrayReady = tray != null && initSystemTray && tray.getTrayIcons().length > 0;
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                utilityPanel = new UtilityPanel(Launcher.this, systemTrayReady);
+            }
+        });
     }
 
     public boolean isSystemTraySupported() {
         return tray != null;
     }
 
-    private void initSystemTray(String home) {
+    private boolean initSystemTray(String home) {
         Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
@@ -136,9 +154,18 @@ public class Launcher extends Observable {
 
         final JDialog hiddenFrame = new JDialog();
         hiddenFrame.setUndecorated(true);
-
+        hiddenFrame.setIconImage(image);
+        
         final PopupMenu popup = createMenu(home);
         trayIcon.setPopupMenu(popup);
+
+        trayIcon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
+            }
+        });
+
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
@@ -148,19 +175,17 @@ public class Launcher extends Observable {
                 }
             }
         });
+
         try {
             hiddenFrame.setResizable(false);
+            hiddenFrame.pack();
             hiddenFrame.setVisible(true);
             tray.add(trayIcon);
         } catch (AWTException e) {
-            return;
+            return false;
         }
-        trayIcon.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                trayIcon.displayMessage(null, "Right click for menu", TrayIcon.MessageType.INFO);
-            }
-        });
+
+        return true;
     }
 
     private PopupMenu createMenu(final String home) {
@@ -213,17 +238,19 @@ public class Launcher extends Observable {
             popup.addSeparator();
             final Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                item = new MenuItem("Open dashboard");
-                popup.add(item);
-                item.addActionListener(new ActionListener() {
+                dashboardItem = new MenuItem("Open dashboard");
+                dashboardItem.setEnabled(false);
+                popup.add(dashboardItem);
+                dashboardItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         dashboard(desktop);
                     }
                 });
-                item = new MenuItem("Open eXide");
-                popup.add(item);
-                item.addActionListener(new ActionListener() {
+                eXideItem = new MenuItem("Open eXide");
+                eXideItem.setEnabled(false);
+                popup.add(eXideItem);
+                eXideItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         eXide(desktop);
@@ -313,6 +340,8 @@ public class Launcher extends Observable {
             trayIcon.setToolTip("eXist-db server running on port " + jetty.getPrimaryPort());
             startItem.setEnabled(false);
             stopItem.setEnabled(true);
+            checkInstalledApps();
+            registerObserver();
         }
     }
 
@@ -321,6 +350,55 @@ public class Launcher extends Observable {
             trayIcon.setToolTip("eXist-db server stopped");
             startItem.setEnabled(true);
             stopItem.setEnabled(false);
+        }
+    }
+
+    private void checkInstalledApps() {
+        BrokerPool pool = null;
+        DBBroker broker = null;
+        try {
+            pool = BrokerPool.getInstance();
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            XQuery xquery = broker.getXQueryService();
+            Sequence pkgs = xquery.execute("repo:list()", null, AccessContext.INITIALIZE);
+            for (SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
+                ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
+                update(pool.getExpathRepo(), notification);
+                utilityPanel.update(pool.getExpathRepo(), notification);
+            }
+        } catch (EXistException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } catch (XPathException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } catch (PermissionDeniedException e) {
+            System.err.println("Failed to check installed packages: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (pool != null)
+                pool.release(broker);
+        }
+    }
+
+    private void registerObserver() {
+        try {
+            BrokerPool pool = BrokerPool.getInstance();
+            pool.getExpathRepo().addObserver(this);
+            pool.getExpathRepo().addObserver(utilityPanel);
+        } catch (EXistException e) {
+            System.err.println("Failed to register as observer for package manager events");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        ExistRepository.Notification notification = (ExistRepository.Notification) o;
+        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD)) {
+            dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE)) {
+            eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         }
     }
 

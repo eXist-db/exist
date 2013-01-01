@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNEventFactory;
 import org.exist.versioning.svn.internal.wc.SVNFileType;

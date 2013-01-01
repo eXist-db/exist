@@ -413,8 +413,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
         }
         //check: remove account from group
         groups = updatingAccount.getGroups();
-        for (int i = 0; i < groups.length; i++) {
 
+        for (int i = 0; i < groups.length; i++) {
             if(!(account.hasGroup(groups[i]))) {
                 updatingAccount.remGroup(groups[i]);
             }
@@ -444,7 +444,6 @@ public abstract class AbstractRealm implements Realm, Configurable {
         final Account user = getDatabase().getSubject();
         group.assertCanModifyGroup(user);
 
-        
         //modify the group
         final Group updatingGroup = getGroup(group.getName());
         if(updatingGroup == null) {
@@ -464,7 +463,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                 updatingGroup.removeManager(manager);
             }
         }
-        
+
         //update the metadata
         if(group.hashCode() != updatingGroup.hashCode()) {
             updatingGroup.clearMetadata();
@@ -486,9 +485,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
     protected interface Unit<R> {
         public R execute(DBBroker broker) throws EXistException, PermissionDeniedException;
     }
-    
+
     protected <R> R executeAsSystemUser(Unit<R> unit) throws EXistException, PermissionDeniedException {
-        
         DBBroker broker = null;
         Subject currentSubject = getDatabase().getSubject();
         try {
@@ -503,7 +501,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             }
         }
     }
-    
+
     //configuration methods
     @Override
     public boolean isConfigured() {
@@ -514,9 +512,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
     public Configuration getConfiguration() {
         return configuration;
     }
-    
+
     protected class PrincipalDbByName<V extends Principal> {
-    
+
         private final Map<String, V> db = new HashMap<String, V>(65);
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final ReadLock readLock = lock.readLock();
@@ -558,7 +556,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             }
         }
     }
-    
+
     protected interface PrincipalDbRead<V extends Principal, R> {
        public R execute(final Map<String, V> principalDb);
     }
@@ -575,35 +573,40 @@ public abstract class AbstractRealm implements Realm, Configurable {
         public void execute(final Map<String, V> principalDb) throws E, E2;
     }
 
-	@Override
-	public List<String> findUsernamesWhereNameStarts(final String startsWith) {
+    @Override
+    public List<String> findUsernamesWhereNameStarts(final String startsWith) {
         return new ArrayList<String>();
-	}
+    }
 
-	@Override
-	public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
+    @Override
+    public List<String> findUsernamesWhereUsernameStarts(final String startsWith) {
         return new ArrayList<String>();
-	}
+    }
 
-	@Override
-	public List<String> findAllGroupNames() {
+    @Override
+    public List<String> findAllGroupNames() {
         return new ArrayList<String>();
-	}
+    }
 
-	@Override
-	public List<String> findAllGroupMembers(final String groupName) {
+    @Override
+    public List<String> findAllUserNames() {
         return new ArrayList<String>();
-	}
+    }
+    
+    @Override
+    public List<String> findAllGroupMembers(final String groupName) {
+        return new ArrayList<String>();
+    }
 
     @Override
     public List<String> findUsernamesWhereNamePartStarts(final String startsWith) {
         return new ArrayList<String>();
     }
-        
-	@Override
-	public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
+
+    @Override
+    public java.util.Collection<? extends String> findGroupnamesWhereGroupnameStarts(final String startsWith) {
         return new ArrayList<String>();
-	}
+    }
 
     @Override
     public java.util.Collection<? extends String> findGroupnamesWhereGroupnameContains(final String fragment) {

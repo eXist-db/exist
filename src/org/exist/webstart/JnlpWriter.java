@@ -138,6 +138,12 @@ public class JnlpWriter {
             writer.writeEndElement();
 
             writer.writeStartElement("icon");
+            writer.writeAttribute("href", "jnlp_icon_128x128.gif");
+            writer.writeAttribute("width", "128");
+            writer.writeAttribute("height", "128");
+            writer.writeEndElement();
+            
+            writer.writeStartElement("icon");
             writer.writeAttribute("href", "jnlp_icon_64x64.gif");
             writer.writeAttribute("width", "64");
             writer.writeAttribute("height", "64");
@@ -188,6 +194,12 @@ public class JnlpWriter {
             writer.writeStartElement("argument");
             writer.writeCharacters("--no-embedded-mode");
             writer.writeEndElement();
+            
+            if(request.isSecure()){
+                writer.writeStartElement("argument");
+                writer.writeCharacters("--use-ssl");
+                writer.writeEndElement();
+            }
 
             writer.writeEndElement(); // application-desc
 
@@ -270,11 +282,11 @@ public class JnlpWriter {
         String type = null;
         if (filename.endsWith(".gif")) {
             type = "image/gif";
+        } else if (filename.endsWith(".png")) {
+            type = "image/png";
         } else {
             type = "image/jpeg";
         }
-
-        
         
         InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
         if (is == null) {

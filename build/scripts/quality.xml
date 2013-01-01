@@ -53,14 +53,17 @@
 
     <target name="check-jars-present" unless="jars-present">
     	
-        <get src="http://www.ibiblio.org/maven2/pmd/pmd/4.2.5/pmd-4.2.5.jar"
-                dest="${tools.ant}/lib/pmd-4.2.5.jar" verbose="true" />
+        <get src="http://repo1.maven.org/maven2/pmd/pmd/4.3/pmd-4.3.jar"
+                dest="${tools.ant}/lib/pmd-4.3.jar" verbose="true" />
     	
-        <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-12/jaxen-1.1-beta-12.jar"
-                dest="${tools.ant}/lib/jaxen-1.1-beta-12.jar" verbose="true" />
+        <get src="http://repo1.maven.org/maven2/jaxen/jaxen/1.1.4/jaxen-1.1.4.jar"
+                dest="${tools.ant}/lib/jaxen-1.1.4.jar" verbose="true" />
            
-        <get src="http://www.ibiblio.org/maven2/oro/oro/2.0.8/oro-2.0.8.jar"
-                dest="${tools.ant}/lib/oro-2.0.8.jar" verbose="true" />
+        <!-- <get src="http://www.ibiblio.org/maven2/oro/oro/2.0.8/oro-2.0.8.jar"
+                dest="${tools.ant}/lib/oro-2.0.8.jar" verbose="true" /> -->
+                
+         <get src="http://repo1.maven.org/maven2/asm/asm/3.3.1/asm-3.3.1.jar"
+                        dest="${tools.ant}/lib/asm-3.3.1.jar" verbose="true" />
                 
     </target>
 
@@ -74,9 +77,10 @@
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
             <classpath>
                 <fileset dir="${tools.ant}/lib">
-                    <include name="jaxen-1.1-beta-8.jar" />
-                    <include name="oro-2.0.8.jar" />
+                    <include name="jaxen-*.jar" />
+                    <include name="oro-*.jar" />
                     <include name="pmd*.jar" />
+                    <include name="asm*.jar" />
                 </fileset>
             </classpath>
         </taskdef>

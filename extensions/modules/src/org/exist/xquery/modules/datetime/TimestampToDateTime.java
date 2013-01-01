@@ -51,7 +51,7 @@ public class TimestampToDateTime extends BasicFunction {
 			new QName("timestamp-to-datetime", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
 			"Return the date-time from value of number of UTC milliseconds since the Epoch. ",
 			new SequenceType[] {
-				new FunctionParameterSequenceType("ms", Type.LONG, Cardinality.EXACTLY_ONE, "The number of UTC milliseconds since the Epoch."),
+				new FunctionParameterSequenceType("ms", Type.UNSIGNED_LONG, Cardinality.EXACTLY_ONE, "The number of UTC milliseconds since the Epoch."),
 			},
 			new FunctionReturnSequenceType(Type.DATE, Cardinality.EXACTLY_ONE, "the xs:dateTime")
 		)

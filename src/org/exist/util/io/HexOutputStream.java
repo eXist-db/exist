@@ -50,7 +50,7 @@ public class HexOutputStream extends FilterOutputStream {
      * @param out
      *            OutputStream to wrap.
      */
-    public HexOutputStream(OutputStream out, boolean doEncode) {
+    public HexOutputStream(final OutputStream out, final boolean doEncode) {
         super(out);
         this.doEncode = doEncode;
     }
@@ -64,7 +64,7 @@ public class HexOutputStream extends FilterOutputStream {
      *             if an I/O error occurs.
      */
     @Override
-    public void write(int i) throws IOException {
+    public void write(final int i) throws IOException {
         byte singleByte[] = new byte[]{ (byte) i };
         write(singleByte, 0, 1);
     }
@@ -88,7 +88,7 @@ public class HexOutputStream extends FilterOutputStream {
      *             if offset, len or buffer size are invalid
      */
     @Override
-    public void write(byte b[], int offset, int len) throws IOException {
+    public void write(final byte b[], final int offset, final int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (offset < 0 || len < 0) {
@@ -104,7 +104,7 @@ public class HexOutputStream extends FilterOutputStream {
     }
 
     @Override
-    public void write(byte[] b) throws IOException {
+    public void write(final byte[] b) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         }

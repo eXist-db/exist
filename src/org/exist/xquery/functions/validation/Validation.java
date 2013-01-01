@@ -52,19 +52,32 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Validation extends BasicFunction  {
 
-    private static final String deprecated1="Use the validation:jaxp-parse(), " +
-            "validation:jaxv() or validation:jing() functions.";
-
-    private static final String deprecated2="Use the validation:jaxp-parse-report(), " +
-            "validation:jaxv-report() or validation:jing-report() functions.";
+    private static final String CONVENIENCE = "This is the original and oldest validation "
+            + "function of eXist-db. It basically wraps the jing library for .rnc/.rnc/.sch/.nvdl "
+            + "grammar files and uses the jaxp functionality otherwise. ";
     
-    private static final String simpleFunctionTxt=
-        "Validate xml. " +
-        "The grammar files (DTD, XML Schema) are resolved using the global "+
-        "catalog file(s).";
+    private static final String DEPRECATED_1 = CONVENIENCE + "It is recommended to use the validation:jaxp-parse(), "
+            + "validation:jaxv() or validation:jing() functions instead.";
     
-    private static final String extendedFunctionTxt=
-        "Validate document by using a specific grammar.";
+    private static final String DEPRECATED_2 = CONVENIENCE + "It is recommended to use the validation:jaxp-parse-report(), "
+            + "validation:jaxv-report() or validation:jing-report() functions instead.";
+    
+    private static final String FUNCTION_TEXT =
+            "Validate XML. "
+            + "The grammar files (DTD, XML Schema) are resolved using the global "
+            + "catalog file(s).";
+    
+    private static final String EXTENDED_FUNCTION_TEXT = "Validate XML by using a specific grammar.";
+    
+    private static final String GRAMMAR_DESCRIPTION = "The reference to an OASIS catalog file (.xml), "
+            + "a collection (path ends with '/') or a grammar document. "
+            + "Supported grammar documents extensions are \".dtd\" \".xsd\" "
+            + "\".rng\" \".rnc\" \".sch\" and \".nvdl\". The parameter can be passed as an xs:anyURI or a "
+            + "document node.";
+    
+    private static final String INSTANCE_DESCRIPTION = "The document referenced as xs:anyURI or a node (element or returned by fn:doc())";
+    
+    private static final String XML_REPORT_RETURN = " An XML report is returned.";
         
     
     private final Validator validator;
@@ -75,60 +88,48 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
             new QName("validate", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
-            simpleFunctionTxt,
+            FUNCTION_TEXT,
             new SequenceType[]{
-                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE, INSTANCE_DESCRIPTION)
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
-                Shared.simplereportText), deprecated1
+                Shared.simplereportText), DEPRECATED_1
         ),
         
         
         new FunctionSignature(
             new QName("validate", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
-            extendedFunctionTxt,
+            EXTENDED_FUNCTION_TEXT,
             new SequenceType[]{
-                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                        "The reference to an OASIS catalog file (.xml), "+
-                        "a collection (path ends with '/') or a grammar document. "+
-                        "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
-                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE, INSTANCE_DESCRIPTION),
+                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE, GRAMMAR_DESCRIPTION)
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.simplereportText), deprecated1
+                    Shared.simplereportText), DEPRECATED_1
         ),
         
         new FunctionSignature(
             new QName("validate-report", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
-            simpleFunctionTxt+" An  xml report is returned.",
+            FUNCTION_TEXT+XML_REPORT_RETURN,
             new SequenceType[]{
-                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                            "The document referenced as xs:anyURI or a node (element or returned by fn:doc())")
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE, INSTANCE_DESCRIPTION)
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.xmlreportText), deprecated2
+                    Shared.xmlreportText), DEPRECATED_2
         ),
         
         new FunctionSignature(
             new QName("validate-report", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
-            extendedFunctionTxt+" An xml report is returned.",
+            EXTENDED_FUNCTION_TEXT+XML_REPORT_RETURN,
             new SequenceType[]{
-                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE,
-                        "The document referenced as xs:anyURI or a node (element or returned by fn:doc())"),
-                new FunctionParameterSequenceType("grammar", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                        "The reference to an OASIS catalog file (.xml), "+
-                        "a collection (path ends with '/') or a grammar document. "+
-                        "Supported grammar documents extensions are \".dtd\" \".xsd\" "+
-                        "\".rng\" \".rnc\" \".sch\" and \".nvdl\".")
+                new FunctionParameterSequenceType("instance", Type.ITEM, Cardinality.EXACTLY_ONE, INSTANCE_DESCRIPTION),
+                new FunctionParameterSequenceType("grammar", Type.ITEM, Cardinality.EXACTLY_ONE, GRAMMAR_DESCRIPTION)
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
-                    Shared.xmlreportText), deprecated2
+                    Shared.xmlreportText), DEPRECATED_2
         )
                         
     };

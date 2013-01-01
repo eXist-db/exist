@@ -22,6 +22,7 @@
 package org.exist.client;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -66,6 +67,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.ImageIcon;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
@@ -147,12 +149,17 @@ public class InteractiveClient {
     public static final String CONFIGURATION="configuration";
     public static final String DRIVER="driver";
     public static final String SSL_ENABLE="ssl-enable";
+    public static final String LOCAL_MODE = "local-mode-opt";
+    public static final String NO_EMBED_MODE = "NO_EMBED_MODE";
     
     // values
     protected static String EDIT_CMD = "emacsclient -t $file";
-    protected static String ENCODING = "ISO-8859-1";
+    protected static String ENCODING = "ISO-8859-1";            //TODO this should probably be UTF-8?
     protected static String PASS = null;
-    protected static String URI_DEFAULT = "xmldb:exist://localhost:8443/exist/xmlrpc";
+    protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    protected static String SSL_ENABLE_DEFAULT = "FALSE";
+    protected static String LOCAL_MODE_DEFAULT = "FALSE";
+    protected static String NO_EMBED_MODE_DEFAULT = "FALSE";
     protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
@@ -167,7 +174,7 @@ public class InteractiveClient {
         defaultProps.setProperty("colors", "false");
         defaultProps.setProperty("permissions", "false");
         defaultProps.setProperty("expand-xincludes", "true");
-        defaultProps.setProperty(SSL_ENABLE, "false");
+        defaultProps.setProperty(SSL_ENABLE, SSL_ENABLE_DEFAULT);
     }
     
     protected static final int colSizes[] = new int[]{10, 10, 10, -1};
@@ -294,27 +301,33 @@ public class InteractiveClient {
      * @exception Exception   Description of the Exception
      */
     protected void connect() throws Exception {
-        if (startGUI && frame != null)
-            frame.setStatus("connecting to " + properties.getProperty("uri"));
+        String uri = properties.getProperty(InteractiveClient.URI);
+        if (startGUI && frame != null) {
+            frame.setStatus("connecting to " + uri);
+        }
         
         // Create database
-        Class<?> cl = Class.forName(properties.getProperty(DRIVER));
-        Database database = (Database) cl.newInstance();
+        final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
+        final Database database = (Database) cl.newInstance();
         
         // Configure database
         database.setProperty("create-database", "true");       
         database.setProperty("ssl-enable", properties.getProperty(SSL_ENABLE));       
         
         // secure empty configuration
-        String configuration=properties.getProperty("configuration");
-        if (configuration != null && !"".equals(configuration)) database.setProperty("configuration", configuration);
+        final String configuration = properties.getProperty(InteractiveClient.CONFIGURATION);
+        
+        if(configuration != null && (!configuration.isEmpty())) {
+            database.setProperty("configuration", configuration);
+        }
+        
         DatabaseManager.registerDatabase(database);
-        current = DatabaseManager.getCollection(properties.getProperty("uri")
-        + path, properties.getProperty("user"), properties
-                .getProperty("password"));
-        if (startGUI && frame != null)
-            frame.setStatus("connected to " + properties.getProperty("uri")
-            + " as user " + properties.getProperty("user"));
+        
+        final String collectionUri = uri + path;
+        current = DatabaseManager.getCollection(collectionUri, properties.getProperty("user"), properties.getProperty("password"));
+        if (startGUI && frame != null) {
+            frame.setStatus("connected to " + uri + " as user " + properties.getProperty("user"));
+        }
     }
     
     /**
@@ -1969,7 +1982,10 @@ public class InteractiveClient {
                     break;
                     //
                 case CommandlineOptions.NO_EMBED_OPT :
-                    props.setProperty("NO_EMBED_MODE", "TRUE");
+                    props.setProperty(InteractiveClient.NO_EMBED_MODE, "TRUE");
+                    break;
+                case CommandlineOptions.USE_SSL_OPT :
+                    props.setProperty(InteractiveClient.SSL_ENABLE, "TRUE");
                     break;
                 case CommandlineOptions.QUIET_OPT :
                     quiet = true;
@@ -1978,20 +1994,21 @@ public class InteractiveClient {
                     verbose = true;
                     break;
                 case CommandlineOptions.LOCAL_OPT :
-                    props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
+                    props.setProperty(InteractiveClient.LOCAL_MODE, "TRUE");
+                    props.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
                     break;
                 case CommandlineOptions.USER_OPT :
-                    props.setProperty("user", option.getArgument());
+                    props.setProperty(InteractiveClient.USER, option.getArgument());
                     if (!cOpt.passwdSpecified)
                         cOpt.needPasswd = true;
                     break;
                 case CommandlineOptions.PASS_OPT :
-                    props.setProperty("password", option.getArgument());
+                    props.setProperty(InteractiveClient.PASSWORD, option.getArgument());
                     cOpt.needPasswd = false;
                     cOpt.passwdSpecified = true;
                     break;
                 case CommandlineOptions.CONFIG_OPT :
-                    properties.setProperty("configuration", option
+                    properties.setProperty(InteractiveClient.CONFIGURATION, option
                             .getArgument());
                     break;
                 case CommandlineOptions.COLLECTION_OPT :
@@ -2320,8 +2337,8 @@ public class InteractiveClient {
      */
     private boolean getGuiLoginData(Properties props){
         
-        Properties loginData = ClientFrame.getLoginData(properties);
-        if (loginData == null) {
+        final Properties loginData = ClientFrame.getLoginData(props);
+        if (loginData == null || loginData.isEmpty()) {
             // User pressed <cancel>
             return false;
         }
@@ -2336,13 +2353,13 @@ public class InteractiveClient {
     private void connectToDatabase() {
         try {
             connect();
-        } catch (Exception cnf) {
-            if (startGUI && frame != null)
+        } catch(final Exception cnf) {
+            if(startGUI && frame != null) {
                 frame.setStatus("Connection to database failed; message: "
                         + cnf.getMessage());
-            else
-                System.err.println("Connection to database failed; message: "
-                        + cnf.getMessage());
+            } else {
+                System.err.println("Connection to database failed; message: " + cnf.getMessage());
+            }
             cnf.printStackTrace();
             System.exit(1);
         }
@@ -2822,4 +2839,7 @@ public class InteractiveClient {
         
     }
     
+    public static ImageIcon getExistIcon(final Class clazz) {
+        return new javax.swing.ImageIcon(clazz.getResource("/org/exist/client/icons/x.png"));
+    }
 }

@@ -23,6 +23,20 @@ if [ $index -gt 0 ]; then
     shift $(($index - 1)) 
 fi
 
+case "$0" in
+	/*)
+		SCRIPTPATH=$(dirname "$0")
+		;;
+	*)
+		SCRIPTPATH=$(dirname "$PWD/$0")
+		;;
+esac
+
+# source common functions and settings
+source "${SCRIPTPATH}"/functions.d/eXist-settings.sh
+source "${SCRIPTPATH}"/functions.d/jmx-settings.sh
+source "${SCRIPTPATH}"/functions.d/getopt-settings.sh
+
 if [ -z "$EXIST_HOME" ]; then
     EXIST_HOME_1=`dirname "$0"`
     EXIST_HOME=`dirname "$EXIST_HOME_1"`
@@ -37,6 +51,8 @@ if [ -z "$EXIST_BASE" ]; then
     EXIST_BASE=$EXIST_HOME
 fi
 
+check_java_home;
+
 if [ -z "$JAVA_OPTS" ]; then
     JAVA_OPTS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8"
 fi
@@ -46,13 +62,13 @@ JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 PROFILER_OPTS=-agentlib:yjpagent
 
 if [ "x${yjp_home}" != "x" ]; then
-"$JAVA_HOME/bin/java" $JAVA_OPTS \
+"${JAVA_RUN}" $JAVA_OPTS \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	-Dexist.home=$EXIST_HOME $PROFILER_OPTS \
-	-jar start.jar "$@"
+	-jar ${EXIST_HOME}/start.jar "$@"
 else
-"$JAVA_HOME/bin/java" $JAVA_OPTS \
+"${JAVA_RUN}" $JAVA_OPTS \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
 	-Dexist.home=$EXIST_HOME \
-	-jar start.jar "$@"
+	-jar ${EXIST_HOME}/start.jar "$@"
 fi

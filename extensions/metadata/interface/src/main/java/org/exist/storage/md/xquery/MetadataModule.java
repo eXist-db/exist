@@ -44,12 +44,18 @@ public class MetadataModule extends AbstractInternalModule {
 		new FunctionDef( DocumentByUUID.signatures[0], DocumentByUUID.class ),
 		new FunctionDef( Keys.signatures[0], Keys.class ),
 		new FunctionDef( Keys.signatures[1], Keys.class ),
+		
 		new FunctionDef( PairGet.signatures[0], PairGet.class ),
 		new FunctionDef( PairGet.signatures[1], PairGet.class ),
 		new FunctionDef( PairGet.signatures[2], PairGet.class ),
+		
 		new FunctionDef( PairSet.signatures[0], PairSet.class ),
 		new FunctionDef( PairSet.signatures[1], PairSet.class ),
-		new FunctionDef( UUID.signatures[0], UUID.class ),
+        
+		new FunctionDef( PairDelete.signatures[0], PairDelete.class ),
+        new FunctionDef( PairDelete.signatures[1], PairDelete.class ),
+
+        new FunctionDef( UUID.signatures[0], UUID.class ),
 		new FunctionDef( UUID.signatures[1], UUID.class )
 	};
 	

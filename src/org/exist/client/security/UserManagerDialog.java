@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
@@ -62,6 +63,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;
         this.client = client;
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         initComponents();
         tblUsers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
         tblGroups.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());

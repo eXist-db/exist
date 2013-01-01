@@ -6,6 +6,7 @@ import module namespace bang="http://exist-db.org/xquery/test/bang" at "bang.xql
 import module namespace concat="http://exist-db.org/xquery/test/string-concatenation" at "concat.xql";
 
 test:suite((
-    util:list-functions("http://exist-db.org/xquery/test/bang"),
-    util:list-functions("http://exist-db.org/xquery/test/string-concatenation")
+    inspect:module-functions(xs:anyURI("serialize.xql")),
+    inspect:module-functions(xs:anyURI("bang.xql")),
+    inspect:module-functions(xs:anyURI("concat.xql"))
 ))

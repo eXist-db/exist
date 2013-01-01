@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.core.io.diff.SVNDeltaProcessor;
 import org.exist.versioning.svn.internal.wc.admin.ISVNCleanupHandler;
 import org.exist.versioning.svn.internal.wc.admin.ISVNEntryHandler;

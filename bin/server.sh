@@ -33,6 +33,8 @@ check_exist_home "$0";
 
 set_exist_options;
 
+check_java_home;
+
 # set java options
 set_java_options;
 
@@ -42,6 +44,6 @@ check_jmx_status;
 # save LANG
 set_locale_lang;
 
-"$JAVA_HOME"/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
+"${JAVA_RUN}" $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
 
 restore_locale_lang;

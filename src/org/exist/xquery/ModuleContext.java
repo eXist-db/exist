@@ -280,7 +280,12 @@ public class ModuleContext extends XQueryContext {
     @Override
     final protected XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e) throws XPathException {
         //final String dependantModule = XmldbURI.create(moduleLoadPath).append(location).toString();
-        final String dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath()).append(location).toString();
+        String dependantModule;
+        try {
+            dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath(), false).append(location).toString();
+        } catch (Exception ex) {
+            dependantModule = location;
+        }
         
         if(e == null) {
             return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)));

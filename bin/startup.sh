@@ -40,6 +40,8 @@ check_exist_home "$0";
 set_exist_options;
 set_jetty_home;
 
+check_java_home;
+
 # set java options
 set_java_options;
 
@@ -49,7 +51,7 @@ set_locale_lang;
 # enable the JMX agent? If so, concat to $JAVA_OPTIONS:
 check_jmx_status;
 
-"${JAVA_HOME}"/bin/java ${JAVA_OPTIONS} ${OPTIONS} \
+"${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} \
 	${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" \
 	jetty ${JAVA_OPTS[@]}
 

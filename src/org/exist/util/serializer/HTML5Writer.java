@@ -1,14 +1,12 @@
 package org.exist.util.serializer;
 
 import java.io.Writer;
-
 import javax.xml.transform.TransformerException;
-
 import org.exist.util.hashtable.ObjectHashSet;
 
 public class HTML5Writer extends XHTMLWriter {
 
-	private final static ObjectHashSet<String> inlineTags = new ObjectHashSet<String>(31);
+    private final static ObjectHashSet<String> inlineTags = new ObjectHashSet<String>(31);
     
     static {
     	inlineTags.add("a");
@@ -62,33 +60,34 @@ public class HTML5Writer extends XHTMLWriter {
     	inlineTags.add("video");
     }
     
-	public HTML5Writer() {
-		super();
-	}
+    public HTML5Writer() {
+            super();
+    }
 
-	public HTML5Writer(Writer writer) {
-		super(writer);
-	}
+    public HTML5Writer(final Writer writer) {
+            super(writer);
+    }
 
-	@Override
-	protected void writeDoctype(String rootElement) throws TransformerException {
-		if (doctypeWritten)
+    @Override
+    protected void writeDoctype(final String rootElement) throws TransformerException {
+        if(doctypeWritten) {
             return;
-		
+        }
+
         documentType(rootElement, null, null);
-        
         doctypeWritten = true;
-	}
-	
-	@Override
-	protected boolean isInlineTag(String namespaceURI, String localName) {
-		return inlineTags.contains(localName);
-	}
-	
-	@Override
-	protected boolean needsEscape(char ch) {
-		if ("script".equals(currentTag))
-			return !(ch == '<' || ch == '>' || ch == '&');
-		return super.needsEscape(ch);
-	}
+    }
+
+    @Override
+    protected boolean isInlineTag(final String namespaceURI, final String localName) {
+        return inlineTags.contains(localName);
+    }
+
+    @Override
+    protected boolean needsEscape(final char ch) {
+        if("script".equals(currentTag)) {
+            return !(ch == '<' || ch == '>' || ch == '&');
+        }
+        return super.needsEscape(ch);
+    }
 }

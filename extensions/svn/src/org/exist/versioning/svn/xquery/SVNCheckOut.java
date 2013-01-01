@@ -24,7 +24,7 @@ package org.exist.versioning.svn.xquery;
 import java.io.IOException;
 
 import org.exist.dom.QName;
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.WorkingCopy;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;

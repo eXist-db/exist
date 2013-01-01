@@ -21,10 +21,8 @@ package org.exist.util.serializer;
 
 import java.io.Writer;
 import java.util.Properties;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 
@@ -52,7 +50,7 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#setWriter(java.io.Writer)
      */
     @Override
-    public void setWriter(Writer writer) {
+    public void setWriter(final Writer writer) {
         super.setWriter(writer);
         level = 0;
         afterTag = false;
@@ -63,9 +61,10 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#startElement(java.lang.String)
      */
     @Override
-    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
-        if (afterTag && !isInlineTag(namespaceURI, localName))
+    public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
+        if (afterTag && !isInlineTag(namespaceURI, localName)) {
             indent();
+        }
         super.startElement(namespaceURI, localName, qname);
         level++;
         afterTag = true;
@@ -76,9 +75,10 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#startElement(org.exist.dom.QName)
      */
     @Override
-    public void startElement(QName qname) throws TransformerException {
-        if (afterTag && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName()))
+    public void startElement(final QName qname) throws TransformerException {
+        if (afterTag && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName())) {
             indent();
+        }
         super.startElement(qname);
         level++;
         afterTag = true;
@@ -89,9 +89,11 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#endElement()
      */
     @Override
-    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
+    public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         level--;
-        if (afterTag && !sameline && !isInlineTag(namespaceURI, localName)) indent();
+        if (afterTag && !sameline && !isInlineTag(namespaceURI, localName)){
+            indent();
+        }
         super.endElement(namespaceURI, localName, qname);
         sameline = false;
         afterTag = true;
@@ -101,9 +103,11 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#endElement(org.exist.dom.QName)
      */
     @Override
-    public void endElement(QName qname) throws TransformerException {
+    public void endElement(final QName qname) throws TransformerException {
         level--;
-        if (afterTag && !sameline && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName())) indent();
+        if (afterTag && !sameline && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName())){
+            indent();
+        }
         super.endElement(qname);
         sameline = false;
         afterTag = true;
@@ -114,7 +118,7 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void characters(CharSequence chars) throws TransformerException {
-        int start = 0, length = chars.length();
+        final int start = 0, length = chars.length();
         //while (length > 0 && isWhiteSpace(chars.charAt(start))) {
             //--length;
             //if(length > 0)
@@ -123,8 +127,9 @@ public class IndentingXMLWriter extends XMLWriter {
         //while (length > 0 && isWhiteSpace(chars.charAt(start + length - 1))) {
             //--length;
         //}
-        if(length == 0)
+        if(length == 0) {
             return;	// whitespace only: skip
+        }
         if(start > 0 || length < chars.length()) {
             chars = chars.subSequence(start, length);	// drop whitespace
         }
@@ -141,7 +146,7 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#comment(java.lang.String)
      */
     @Override
-    public void comment(CharSequence data) throws TransformerException {
+    public void comment(final CharSequence data) throws TransformerException {
         super.comment(data);
         afterTag = true;
     }
@@ -150,17 +155,15 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#processingInstruction(java.lang.String, java.lang.String)
      */
     @Override
-    public void processingInstruction(String target, String data)
-            throws TransformerException {
+    public void processingInstruction(final String target, final String data) throws TransformerException {
         super.processingInstruction(target, data);	
         afterTag = true;
     }
 
     @Override
-    public void documentType(String name, String publicId, String systemId)
-            throws TransformerException {
+    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
         super.documentType(name, publicId, systemId);	
-        super.characters("\n");
+        super.characters("\n"); //TODO This should probably be System.getProperty(:line.separator") //???
         sameline = false;
     }
 
@@ -168,9 +171,9 @@ public class IndentingXMLWriter extends XMLWriter {
      * @see org.exist.util.serializer.XMLWriter#setOutputProperties(java.util.Properties)
      */
     @Override
-    public void setOutputProperties(Properties properties) {
+    public void setOutputProperties(final Properties properties) {
         super.setOutputProperties(properties);
-        String option = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
+        final String option = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
         try {
             indentAmount = Integer.parseInt(option);
         } catch(NumberFormatException e) {
@@ -179,22 +182,24 @@ public class IndentingXMLWriter extends XMLWriter {
         indent = outputProperties.getProperty(OutputKeys.INDENT, "no").equals("yes");
     }
 
-    protected boolean isInlineTag(String namespaceURI, String localName) {
+    protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return false;
     }
     
     protected void indent() throws TransformerException {
-        if(!indent)
+        if(!indent) {
             return;
-        int spaces = indentAmount * level;
-        while(spaces >= indentChars.length())
+        }
+        final int spaces = indentAmount * level;
+        while(spaces >= indentChars.length()) {
             indentChars += indentChars;
+        }
         super.characters("\n");
         super.characters(indentChars.subSequence(0, spaces));
         sameline = false;
     }
 
-    protected static boolean isWhiteSpace(char ch) {
+    protected static boolean isWhiteSpace(final char ch) {
         return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
     }
 }

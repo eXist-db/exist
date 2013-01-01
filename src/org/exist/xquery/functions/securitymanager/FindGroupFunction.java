@@ -21,9 +21,11 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.exist.dom.QName;
+import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -48,53 +50,74 @@ import org.exist.xquery.value.ValueSequence;
 public class FindGroupFunction extends BasicFunction {
 
     private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    // deprecated sm:get-groups
+    private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    
+    
+    public final static FunctionSignature FNS_LIST_GROUPS = new FunctionSignature(
+        qnListGroups,
+        "List all groups",
+        null,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
+    );
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
+    public final static FunctionSignature FNS_GET_GROUPS = new FunctionSignature(
             qnGetGroups,
-            "Gets all groups",
+            "List all groups",
             null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
-        ),
-        new FunctionSignature(
-            qnFindGroupsByGroupname,
-            "Finds groups whoose group name starts with a matching string",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match group names")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
-        ),
-        new FunctionSignature(
-            qnFindGroupsWhereGroupnameContains,
-            "Finds groups whoose group name contains the string fragment",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("fragment", Type.STRING, Cardinality.EXACTLY_ONE, "The fragment against which to match group names")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
-        ),
-    };
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups"),
+            FNS_LIST_GROUPS
+    );
 
+    public final static FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
+        qnFindGroupsByGroupname,
+        "Finds groups whoose group name starts with a matching string",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("starts-with", Type.STRING, Cardinality.EXACTLY_ONE, "The starting string against which to match group names")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
+    );
+    
+    public final static FunctionSignature FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS = new FunctionSignature(
+        qnFindGroupsWhereGroupnameContains,
+        "Finds groups whoose group name contains the string fragment",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("fragment", Type.STRING, Cardinality.EXACTLY_ONE, "The fragment against which to match group names")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
+    );
+    
+    public final static FunctionSignature FNS_GET_USER_GROUPS = new FunctionSignature(
+        qnGetUserGroups,            
+        "Returns the sequence of groups that the user $user is a member of. You must be a DBA or logged in as the user for which you are trying to retrieve group details for.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "The username to retrieve the group membership list for.")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The users group memberships")
+    );
 
     public FindGroupFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        DBBroker broker = getContext().getBroker();
-        Subject currentUser = broker.getSubject();
-        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+        final DBBroker broker = getContext().getBroker();
+        final Subject currentUser = broker.getSubject();
+        
+        if(!isCalledAs(qnGetUserGroups.getLocalName()) && currentUser.getName().equals(SecurityManager.GUEST_USER)) {
             throw new XPathException("You must be an authenticated user");
         }
 
         
-        SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
+        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
-        List<String> groupNames;
-        if(isCalledAs(qnGetGroups.getLocalName())) {
+        final List<String> groupNames;
+        if(isCalledAs(qnListGroups.getLocalName()) || isCalledAs(qnGetGroups.getLocalName())) {
             groupNames = securityManager.findAllGroupNames();
         } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
             final String startsWith = args[0].getStringValue();
@@ -102,6 +125,15 @@ public class FindGroupFunction extends BasicFunction {
         } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
             final String fragment = args[0].getStringValue();
             groupNames = securityManager.findGroupnamesWhereGroupnameContains(fragment);
+        } else if(isCalledAs(qnGetUserGroups.getLocalName())) {
+            final String username = args[0].getStringValue();
+            
+            if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
+                throw new XPathException("You must be a DBA or enquiring about your own user account!");
+            }
+            
+            final Account user = securityManager.getAccount(username);
+            groupNames = Arrays.asList(user.getGroups());
         } else {
             throw new XPathException("Unknown function");
         }
@@ -109,8 +141,8 @@ public class FindGroupFunction extends BasicFunction {
         //order a-z
         Collections.sort(groupNames);
 
-        Sequence result = new ValueSequence();
-        for(String groupName : groupNames) {
+        final Sequence result = new ValueSequence();
+        for(final String groupName : groupNames) {
             result.add(new StringValue(groupName));
         }
         return result;

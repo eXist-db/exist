@@ -1,6 +1,242 @@
 Java Service Wrapper Revision History.
 --------------------------------------
 
+3.5.17
+* Add a new wrapper.java.additional.default.stripquotes property to make it
+  possible to specify the default value of
+  wrapper.java.additional.<n>.stripquotes
+* Fix a bug where the timer failed to calculate the fire time when that time
+  was more than one week in the future.  This was possible for weekly timers
+  which spanned a daylight savings time change which rolled the time back by
+  an hour in the fall.
+* Fix problem in the shell script, where it might fail to remove an installed
+  daemon after the location of the script has been changed.
+* Add additional advice messages when a Windows service fails to be started
+  due to file access problems involving the Wrapper binary, configuration, or
+  log files.
+* Fix a problem where the dynamic library on MacOSX was not able to load it's
+  functions.
+* Added wrapper.app.parameter_file property, which works similar to the 
+  wrapper.java.additional_file property
+* Reduce CPU-consuption of WrapperProcess.waitFor() function
+
+3.5.16
+* (Standard, Professional) Retry failed share mappings if the target host or
+  network is unreachable as that may be a temporary problem.
+* (Professional) There was a problem where the IO-redirection of a child 
+  process which got created with the WrapperManager.exec API and used the
+  feature to run the child process in the logged on users desktop was 
+  only allowing to create a process once per second.   
+* Include information about the base configuration file in the debug output
+  when debugging of cacading configuration files has been enabled.
+* Add a check in the UNIX script to output a more descriptive error message,
+  when the user specified in the RUN_AS_USER variable doesn't exist.
+* (Standard, Professional) Fix a problem where console log output was not being
+  displayed correctly when running with the WrapperW.exe binary with the
+  wrapper.ntservice.console property was set to true.
+* (Standard, Professional) Implement the wrapper.ntservice.generate_console
+  property when using the WrapperW.exe binary so it is now possible to disable
+  the creation of the hidden console.
+* Modify the way the the wrapper.ntservice.generate_console property works so
+  it is now easier to disable the generation of the console using just this
+  property.
+* Improve the message logged when the the Wrapper attempts to perform a thread
+  dump without a valid console being available.
+* Add new wrapper.ping.alert.threshold and wrapper.ping.alert.loglevel
+  properties which make it much easier to debug ping timeout issues by asking
+  the Wrapper to log messages about ping responses which were shorter than the
+  registered wrapper.ping.timeout, but longer than the threshold.
+* Add a new WrapperManager.appearSlow method which makes it easier to test
+  how the Wrapper behaves when the JVM is being slow to respond to commands.
+* Add a new wrapper.disable_tests property which can be used to disable all of
+  the testing methods of the WrapperManager class.  It has always been possible
+  to control their access with a SecurityManager, but this is simpler for most
+  applications.
+* Update the default wrapper configuration file template so a restart due to a
+  matched OutOfMemoryError filter will no longer be triggered by default if the
+  user enables -verbose:class output.
+* Fix a problem on UNIX platforms where the Wrapper would fail to start if it
+  was located on the system PATH.  This had been a problem since version 3.3.0
+  but had gone unnoticed as the Wrapper is not usually referenced in this way.
+* Rework the internal flags governing the generation and hiding of the backend
+  console on Windows so we are able to almost always obtain the console's
+  window handle.
+* Cleanup some startup code to reduce duplication and make sure that more debug
+  and warning messages are logged after the "Wrapper Started" message.
+* Add new wrapper.java.additional_file and
+  wrapper.java.additional_file.stripquotes properties to make it possible to
+  specify JVM parameters in a file.
+* Add support for Linux on ARM systems.
+* Re-Enabled the forced reloading of the SYSTEM (and if set to a specific
+  account, the user) registry before launching the Wrapper as a service on
+  Windows XP and 2003. This has been originally disabeld for Windows XP and
+  2003 since version 3.5.5.
+* (Standard, Professional) Fix a problem where the instance class names logged
+  when a deadlock involving ReentrantLock instances were corrupted.  The actual
+  deadlock detection was working correctly, but this could have lead to other
+  problems caused by the corruption.  A workaround was to set the
+  wrapper.check.deadlock.output property to SIMPLE.
+* (Standard, Professional) Make it possible to completely disable the details
+  of a deadlock by setting the wrapper.check.deadlock.output property to NONE.
+* (Standard, Professional) Object Ids in thread dump reports were not correctly
+  being logged as 64-bit ids on 64-bit JVMs in some cases.
+* Fix a problem where the source code values returned by the
+  WrapperServiceActionEvent.getSourceCode() method were incorrect.  The
+  constant values were incorrect and have been corrected from this release.
+* Add new WrapperServiceActionEvent.getSourceCodeName() and
+  WrapperServiceActionEvent.getSourceCodeName(int actionSourceCode) methods
+  which returns a localized name of the source where the event originated.
+* Fix a minor problem where a couple uncommon backend packet codes were not
+  being correctly identified by name in the debug log output.  Functionally
+  they were all working correctly.
+* Added property wrapper.ping.timeout.action, which will let you specify an
+  action in case the timeout triggers. So far the only action was to restart
+  the JVM. 
+* Fix a problem where a JVM process was not stopped completely on a UNIX 
+  platform and stayed defunct after a forced kill until the Wrapper process
+  itself stopped. This was especially noticeable if the JVM is frozen and the
+  JVM is being killed forcibly.
+
+3.5.15
+* Add a new _WRAPPER_CONF_OVERRIDE setting to the Wrapper dedicated command
+  batch files on Windows so it is now possible to control whether or not the
+  first parameter is the configuration file name.  The ability to specify an
+  alternate configuration file is now disabled by default as it was confusing
+  for users who tried to pass other parameters to the JVM.
+* Correct a couple log messages in the WrapperManager class which were missing
+  the correct prefix identifying where they originated.
+* Remove some old reflection code needed for Java 1.2.x support as we have
+  required Java 1.4 since version 3.4.0.
+* Remove some code to try to reconnect the backend socket from Java.  It has
+  never been possible to do so without restarting the JVM, and the related
+  messages were confusing.
+* Add a new wrapper.disable_forced_shutdown property to make it possible to
+  disable the feature to forcibly kill the JVM on shutdown if CTRL-C was
+  pressed twice.
+* Reduce the number of times thread priorities are changed within the
+  WrapperManager class to simplify the startup and shutdown process.
+* Fixed a dangling pointer problem, which could cause undefined behaviour
+  whenever a property contained an unset environment variable.
+* Fix a race condition in the timer thread, which could cause a sigkill 
+  being propagated through the whole process group rather than the timer 
+  thread. This can only happen during the shutdown of the Wrapper. 
+* When a child process, which got launched by WrapperManager.exec()
+  failed to start due to a runtime-error (such as missing privileges), the 
+  forked heap persisted and the child process never finished until 
+  shutdown/restart of the JVM. The error only appears on Unix platforms
+  when using the FORK_EXEC start-type.
+* Change log level and message if a certificate check returned a problem, 
+  which is not directly caused by the signature of the Wrapper, but the 
+  signature chain. 
+* Fix a problem when the silent query command wasn't returning the correct
+  exit code on windows Vista (and later) when the command was run from an
+  unelevated console. Thanks to Darren for pointing this out. 
+* The java system property wrapper.backend.so_timeout was ignored if it 
+  was set to 0, making it not possible to explicitly set the timeout to 
+  be indefinitely.
+* Added the properties wrapper.jvm.additional.auto_bits.<platform> to 
+  individually turn on/off the feature for the supported platforms.
+* Fix a problem where the script was trying to use the 64-bit binaries on
+  Mac OSX even if the CPU was only a 32-bit architecture. This only affected
+  versions of Mac OSX greater 10.5.0, the vast majority of those machines are 
+  already 64-bit CPU's. 
+* The Wrapper when reloading the configuration file, was trying to access
+  data from the call stack of a function which was actually outside of the
+  memory range of the stack. This access violation might yield a segmentation
+  fault. This issue was introduced in 3.5.5. Thanks to Lincoln for helping
+  finding this problem.
+  
+3.5.14
+* Fix a problem in the AppCommand.bat.in file where a parenthesis in the
+  file name of the Wrapper binary would have caused a 
+  "PATH was unexpected at this time" error.
+* (Standard, Professional) Fix a problem when using a localized version of
+  the Wrapper on Windows 64-bit platforms where the Wrapper would continue
+  to use the default system language even wrapper.lang was used to specify
+  a different language.  Introduced in 3.5.12.
+* Fix a problem in the Windows AppCommand.bat.in command based batch file
+  where the 'status' command was incorrectly being reported as 'query' in the
+  usage output.  The 'status' command had always worked correctly if used.
+* Fix a problem on UNIX platforms where some asynchronous messages were
+  causing a warning message "Coding Error..." to be logged in place of the
+  intended message.  This could be seen if the configured log file did not
+  have write permissions.  Other than the incorrect log message, the Wrapper
+  worked correctly.  Introduced in 3.5.2.
+* Fix a problem in the UNIX script where running with upstart wasn't working
+  correctly when RUN_AS_USER was set.
+* Relax security checks when running the 'status' command against the UNIX
+  shell script so it now allows any user running the script to perform the
+  read-only check of the pid file.
+* Fix a problem with the UNIX script where the 'remove' command was trying to
+  stop a running application even when the application had not been installed.
+* Fix a buffer overflow which could potentially cause a crash during the
+  installation of a Windows Service when wrapper.ntservice.account was
+  specified.  This was introduced in 3.5.12.
+* Fix a heap corruption which could occur on startup and potentially cause a
+  crash. Only Windows systems, which use the System Event logs, were affected.
+  Discovered from a code review, there had never been any reports of this
+  causing problems for users.  This could happen if the configured wrapper.log
+  could not be written to as the Wrapper always tries to write to the Event
+  Log in such cases.  Introduced in 3.5.12.
+* Add a new version comparison between the UNIX shell script and Wrapper to
+  start showing a warning in case of a version mismatch.  The check will only
+  work if the shell script and Wrapper are each of at least version 3.5.14.
+* Added a new wrapper.pidfile.strict property which will tell the Wrapper not
+  to start if the pid file already existed.  Defaults to false for backwards
+  compatibility.
+* Make the Java side of the backend socket more resilient in case of a read
+  or write timeout.  The backend socket does not have a timeout set by default
+  so this should not have been an issue.  A couple users reported problems on
+  specific systems however which led to this fix.
+* To aid in the testing of the backend socket timeout, a new
+  wrapper.backend.so_timeout system property was added to make it possible to
+  configure the backend socket to use a timeout.  See the Javadocs of the
+  WrapperManager class for details.
+
+3.5.13
+* Fix a typo in the script where the environment variable 'TR_BIN' should 
+  actually be 'TREXE'.  This was causing the "install" command on UNIX
+  platforms to fail.   Introduced in 3.5.12.
+* Fix a heap corruption which could lead to a crash that would occur the
+  second time an internal buffer used for logging was expanded.  The buffer
+  would be expanded the first time a log line over 2048 characters in length
+  was encountered.   Then the second expansion would happen when a line at
+  least 1024 characters longer was encountered.  Introduced in 3.5.11.
+  Bug ID #3423108
+
+3.5.12
+* Put more descriptive Text in case the Wrapper is using integration method 4, 
+  but the jar file deos not specify the Main-Class correctly in its meta 
+  information.
+* Fix a bug when failing to grant the LogOnAsService permission to a domain
+  user.
+* Fix a bug where the ident for the syslog on Unix platforms was broken since 
+  3.5.0.  This was because when opening the syslog, the Wrapper was freeing the
+  memory for pointing to ident. However the string pointer ident will be
+  retained internally by the Syslog routines. And must not free the memory that
+  ident points to.  Bug #3404978.
+* Add a check on the script to make sure the 'tr' command exists on Unix
+  platforms.
+* Improve the parsing of log formats so that format tokens are recocognized
+  even if they are lower case.  This affects the wrapper.console.format,
+  wrapper.event.default.email.maillog.format, wrapper.logdialog.format, and
+  wrapper.logfile.format properties.
+* The Wrapper parses log formats by looking for known tokens, any invalid
+  tokens are simply ignored.  If the entire format is made up of invalid tokens
+  then this resulted in the Wrapper logging an empty line, which was not very
+  useful and caused confusion when encountered.  The Wrapper now reverts to the
+  default log format in such cases.  This affects the wrapper.console.format,
+  wrapper.event.default.email.maillog.format, wrapper.logdialog.format, and
+  wrapper.logfile.format properties.
+* Improve the debug output while loading native libraries to avoid confusion
+  about the meaning of the warning logged about attempts to load alternately
+  named native library files.
+* Fix a problem on Unix platforms where the default umask was being set to 0000
+  rather than inheriting it from the parent process when running as a daemon
+  process.  This can be a security problem as log and other files have global
+  read/write access.  Introduced in 3.5.8.  Can be worked around by setting
+  the wrapper.umask property to a safe value.
+
 3.5.11
 * Fix a potential crash on Windows caused by a buffer overflow.  This has been
   a problem since version 3.5.0 and affects configurations which define more
@@ -148,9 +384,9 @@ Java Service Wrapper Revision History.
   been rewritten and questionable parts have been simplified. The functionality
   of the script has been preserved.
 * Added the environment variable WRAPPER_CONF_DIR, which can be used for 
-  the configuration properties. (Feature Request 3160644)
+  the configuration properties.  Feature Request #3160644.
 * Made the script exit with the right exit code received when running the
-  script as different user, specified in RUN_AS_USER. (Bug Report 3185281)
+  script as different user, specified in RUN_AS_USER.  Bug #3185281.
 * Fix an access violation which could happen when reporting that the code
   signing certificate has failed to been verified.
 * Log an error if the backend socket is forcibly closed externally.  It had
@@ -203,11 +439,14 @@ Java Service Wrapper Revision History.
   had been disabled on their system.
 * Add a new wrapper.java.detach_started property which makes it possible to use
   the Wrapper as a simple tool to launch Java applications.  When enabled, the
-  Wrapper terminates immediately and the JVM is left to run on its own.
+  Wrapper terminates immediately and the JVM is left to run on its own.  Also
+  add new wrapper.java.outfile and wrapper.java.errfile properties which make
+  it possible to redirect the stdout and stderr of the JVM to files when
+  detached.
 * When running the Wrapper as a specified User Account, through the 
   wrapper.ntservice.account property, the Wrapper will add permission for the
-  account to log on as service automatically upon install. (Feature Request 
-  #3286491)
+  account to log on as service automatically upon install.  Feature Request
+  #3286491.
 * Fixed a problem binding the backend socket on Windows. If another process 
   bound a port inside the wrapper.port.min and wrapper.port.max range using the
   SO_EXCLUSIVEADDRUSE option, the Wrapper would stop at this port report 
@@ -1093,7 +1332,7 @@ Java Service Wrapper Revision History.
 * Add WAIT_FOR_STARTED_STATUS and WAIT_FOR_STARTED_TIMEOUT to the script. This
   lets the script wait (up to timeout sec.) when starting a daemonized process
   until the process has been started.
-  Thanks to Dobes V. (Feature Requests 2917391)
+  Thanks to Dobes V.  Feature Requests #2917391.
 * Improve the error message displayed when the user tries to run the Wrapper
   with the internal -s or --service commands.
 * Fix a problem where the WrapperSystemPropertyUtil.getBooleanValue() method

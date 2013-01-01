@@ -54,7 +54,9 @@ public class TwoParamFunctions extends BasicFunction {
                     new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The y coordinate"),
                     new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The x coordinate")
                 },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in "
+                    + "polar coordinates that corresponds to the point (x, y) in Cartesian coordinates."),
+            "Replaced by http://www.w3.org/2005/xpath-functions/math/#atan2"
                 ),
         new FunctionSignature(
                 new QName("power", MathModule.NAMESPACE_URI),
@@ -63,7 +65,8 @@ public class TwoParamFunctions extends BasicFunction {
                     new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
                     new FunctionParameterSequenceType("power", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The power to raise the value to")
                 },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#pow"
                 )
     };
     

@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
 import java.util.Stack;
-
 import javax.xml.transform.TransformerException;
-
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XMLWriter;
@@ -45,184 +44,188 @@ import org.exist.util.serializer.XMLWriter;
  *
  */
 public class JSONWriter extends XMLWriter {
-	
-	public final static String JASON_NS = "http://www.json.org";
-	
-	protected JSONNode root;
-	
-	protected Stack<JSONObject> stack = new Stack<JSONObject>();
 
-	protected boolean useNSPrefix = false;
+    private final static Logger LOG = Logger.getLogger(JSONWriter.class);
+    
+    private final static String ARRAY = "array";
+    private final static String LITERAL = "literal";
+    private final static String VALUE = "value";
+    
+    private final static String JSON_ARRAY = "json:" + ARRAY;
+    private final static String JSON_LITERAL = "json:" + LITERAL;
+    private final static String JSON_VALUE = "json:" + VALUE;
+    
+    public final static String JASON_NS = "http://www.json.org";
+	
+    protected JSONNode root;
+	
+    protected final Stack<JSONObject> stack = new Stack<JSONObject>();
+
+    protected boolean useNSPrefix = false;
+    
     protected boolean prefixAttributes = false;
     private String jsonp = null;
 	
-	public JSONWriter() {
-		// empty
-	}
+    public JSONWriter() {
+        // empty
+    }
 
-	public JSONWriter(Writer writer) {
-		super(writer);
-	}
+    public JSONWriter(final Writer writer) {
+        super(writer);
+    }
 
-	@Override
-	protected void resetObjectState() { 
-		super.resetObjectState();
-		stack.clear();
-		root = null;
-	}
+    @Override
+    protected void resetObjectState() { 
+        super.resetObjectState();
+        stack.clear();
+        root = null;
+    }
 
-	@Override
-	public void setOutputProperties(Properties properties) {
-		super.setOutputProperties(properties);
-                
-		final String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
-		useNSPrefix = useNSProp.equalsIgnoreCase("yes");
-        String prefixForAttr = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
+    @Override
+    public void setOutputProperties(final Properties properties) {
+        super.setOutputProperties(properties);
+
+        final String useNSProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
+        useNSPrefix = useNSProp.equalsIgnoreCase("yes");
+        final String prefixForAttr = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
         prefixAttributes = prefixForAttr.equalsIgnoreCase("yes");
         jsonp = properties.getProperty(EXistOutputKeys.JSONP);
-	}
+    }
 
-	@Override
-	public void startDocument() throws TransformerException {
-	}
+    @Override
+    public void startDocument() throws TransformerException {
+    }
 
-	@Override
-	public void endDocument() throws TransformerException {
-		try {
-                    if (root != null) {
-                        
-                        if(jsonp != null) {
-                            writer.write(jsonp + "(");
-                        }
-                        
-                        root.serialize(writer, true);
-                        
-                        if(jsonp != null) {
-                            writer.write(")");
-                        }
-                    }
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    @Override
+    public void endDocument() throws TransformerException {
+        try {
+            if(root != null) {
+                if(jsonp != null) {
+                    getWriter().write(jsonp + "(");
+                }
 
-	@Override
-	public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
-		if (qname.equals("json:value"))
-			processStartValue();
-		else if (useNSPrefix)
-			processStartElement(qname.replace(':', '_'), false);
-		else
-			processStartElement(QName.extractLocalName(qname), false);
-	}
+                root.serialize(getWriter(), true);
 
-	@Override
-	public void startElement(QName qname) throws TransformerException {
-		if (JASON_NS.equals(qname.getNamespaceURI()) && "value".equals(qname.getLocalName()))
-			processStartValue();
-		else if (useNSPrefix)
-			processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
-		else
-			processStartElement(qname.getLocalName(), false);
-	}
+                if(jsonp != null) {
+                    getWriter().write(")");
+                }
+            }
+        } catch(final IOException ioe) {
+            LOG.error(ioe.getMessage(), ioe);
+        }
+    }
 
-	private void processStartElement(String localName, boolean simpleValue) {
-		JSONObject obj = new JSONObject(localName);
-		if (root == null) {
-			root = obj;
-			stack.push(obj);
-		} else {
-			JSONObject parent = stack.peek();
-			parent.addObject(obj);
-			stack.push(obj);
-		}
-	}
-	
-	private void processStartValue() throws TransformerException {
-		// a json:value is stored as an unnamed object
-		JSONObject obj = new JSONObject();
-		if (root == null) {
-			root = obj;
-			stack.push(obj);
-		} else {
-			JSONObject parent = stack.peek();
-			parent.addObject(obj);
-			stack.push(obj);
-		}
-	}
-	
-	@Override
-	public void endElement(String namespaceUri, String localName, String qname) throws TransformerException {
-		stack.pop();
-	}
+    @Override
+    public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
+        if(qname.equals(JSON_VALUE)) {
+            processStartValue();
+        } else if(useNSPrefix) {
+            processStartElement(qname.replace(':', '_'), false);
+        } else {
+            processStartElement(QName.extractLocalName(qname), false);
+        }
+    }
 
-	@Override
-	public void endElement(QName qname) throws TransformerException {
-		stack.pop();
-	}
+    @Override
+    public void startElement(final QName qname) throws TransformerException {
+        if(JASON_NS.equals(qname.getNamespaceURI()) && VALUE.equals(qname.getLocalName())) {
+            processStartValue();
+        } else if(useNSPrefix) {
+            processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
+        } else {
+            processStartElement(qname.getLocalName(), false);
+        }
+    }
 
-	@Override
-	public void namespace(String prefix, String nsURI)
-			throws TransformerException {
-	}
+    private void processStartElement(final String localName, boolean simpleValue) {
+        final JSONObject obj = new JSONObject(localName);
+        if(root == null) {
+            root = obj;
+            stack.push(obj);
+        } else {
+            final JSONObject parent = stack.peek();
+            parent.addObject(obj);
+            stack.push(obj);
+        }
+    }
 
-	@Override
-	public void attribute(String qname, String value)
-			throws TransformerException {
-		JSONObject parent = stack.peek();
-		if (qname.equals("json:array")) {
-			parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
-		} else if (qname.equals("json:literal")) {
-			parent.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
-		} else {
-            String name = prefixAttributes ? "@" + qname : qname;
-			JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
-			parent.addObject(obj);
-		}
-	}
+    private void processStartValue() throws TransformerException {
+        // a json:value is stored as an unnamed object
+        final JSONObject obj = new JSONObject();
+        if(root == null) {
+            root = obj;
+            stack.push(obj);
+        } else {
+            final JSONObject parent = stack.peek();
+            parent.addObject(obj);
+            stack.push(obj);
+        }
+    }
 
-	@Override
-	public void attribute(QName qname, String value)
-			throws TransformerException {
-		attribute(qname.toString(), value);
-	}
+    @Override
+    public void endElement(final String namespaceUri, final String localName, final String qname) throws TransformerException {
+        stack.pop();
+    }
 
-	@Override
-	public void characters(CharSequence chars) throws TransformerException {
-		JSONObject parent = stack.peek();
-		JSONNode value = new JSONValue(chars.toString());
-		value.setSerializationType(parent.getSerializationType());
-		parent.addObject(value);
-	}
+    @Override
+    public void endElement(final QName qname) throws TransformerException {
+        stack.pop();
+    }
 
-	@Override
-	public void characters(char[] ch, int start, int len)
-			throws TransformerException {
-		characters(new String(ch, start, len));
-	}
+    @Override
+    public void namespace(final String prefix, final String nsURI) throws TransformerException {
+    }
 
-	@Override
-	public void processingInstruction(String target, String data)
-			throws TransformerException {
-		// skip
-	}
+    @Override
+    public void attribute(final String qname, final String value) throws TransformerException {
+        final JSONObject parent = stack.peek();
+        if(qname.equals(JSON_ARRAY)) {
+            parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
+        } else if(qname.equals(JSON_LITERAL)) {
+            parent.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
+        } else {
+            final String name = prefixAttributes ? "@" + qname : qname;
+            final JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
+            parent.addObject(obj);
+        }
+    }
 
-	@Override
-	public void comment(CharSequence data) throws TransformerException {
-		// skip
-	}
+    @Override
+    public void attribute(final QName qname, final String value) throws TransformerException {
+        attribute(qname.toString(), value);
+    }
 
-	@Override
-	public void cdataSection(char[] ch, int start, int len)
-			throws TransformerException {
-		// treat as string content
-		characters(ch, start, len);
-	}
+    @Override
+    public void characters(final CharSequence chars) throws TransformerException {
+        final JSONObject parent = stack.peek();
+        final JSONNode value = new JSONValue(chars.toString());
+        value.setSerializationType(parent.getSerializationType());
+        parent.addObject(value);
+    }
 
-	@Override
-	public void documentType(String name, String publicId, String systemId)
-			throws TransformerException {
-		// skip
-	}
+    @Override
+    public void characters(final char[] ch, final int start, final int len) throws TransformerException {
+        characters(new String(ch, start, len));
+    }
+
+    @Override
+    public void processingInstruction(final String target, final String data) throws TransformerException {
+        // skip
+    }
+
+    @Override
+    public void comment(final CharSequence data) throws TransformerException {
+        // skip
+    }
+
+    @Override
+    public void cdataSection(final char[] ch, final int start, final int len) throws TransformerException {
+        // treat as string content
+        characters(ch, start, len);
+    }
+
+    @Override
+    public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
+        // skip
+    }
 }

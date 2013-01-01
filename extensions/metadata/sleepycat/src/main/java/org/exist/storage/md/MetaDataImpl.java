@@ -286,7 +286,7 @@ public class MetaDataImpl extends MetaData {
 		}
 	}
 
-	private void delMetas(Metas d) {
+	protected void delMetas(Metas d) {
 		EntityCursor<MetaImpl> sub = metadata.subIndex(d.getUUID()).entities();
 		try {
 			for (MetaImpl m : sub)
@@ -345,7 +345,22 @@ public class MetaDataImpl extends MetaData {
 		return metadataByUUID.get(uuid);
 	}
 
-	public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
+    protected void delMeta(String docUUID, String key) {
+        //System.out.println("key = "+key);
+
+        EntityCursor<MetaImpl> sub = metadata.subIndex(docUUID).entities();
+        try {
+            for (MetaImpl m : sub)
+                if (m.getKey().equals(key)) {
+                    sub.delete();
+                }
+
+        } finally {
+            sub.close();
+        }
+    }
+
+    public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
 		
 		EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
 		join.addCondition(keyToMeta, key);

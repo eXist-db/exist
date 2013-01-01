@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -129,16 +130,16 @@ public class Collations {
                 }
                 return (Collator) collatorClass.newInstance();
             } catch (Exception e) {
-                logger.error("err:XQST0038: The specified collator class " + uri
-                        + " could not be found");
-                throw new XPathException("err:XQST0038: The specified collator class " + uri
-                        + " could not be found", e);
+                logger.error("The specified collator class " + uri + " could not be found");
+                throw new XPathException(
+                        ErrorCodes.FOCH0002, 
+                        "The specified collator class " + uri + " could not be found", e);
             }
         } else if (CODEPOINT.equals(uri)) {
         	return null;
         } else {
-            logger.error("err:XQST0038: Unknown collation : '" + uri + "'");
-            throw new XPathException("err:XQST0038: Unknown collation : '" + uri + "'");
+            logger.error("Unknown collation : '" + uri + "'");
+            throw new XPathException(ErrorCodes.FOCH0002, "Unknown collation : '" + uri + "'");
         }
     }
 

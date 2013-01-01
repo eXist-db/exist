@@ -147,6 +147,11 @@ public class XMLDBSetMimeType extends BasicFunction {
             } else {
                 // set new mime-type
                 doc.getMetadata().setMimeType(newMimeType.getName());
+                
+                // store meta data into database
+                broker.storeMetadata(txn, doc);
+                
+                // commit changes
                 txnManager.commit(txn);
             }
 

@@ -1,13 +1,13 @@
-<installation version="5.0">
+<installation version="1.0">
     <info>
         <appname>@name@</appname>
         <appversion>@version@</appversion>
         <url>http://exist-db.org</url>
         <javaversion>1.6</javaversion>
 		<requiresjdk>no</requiresjdk>
-        <run-privileged condition="izpack.windowsinstall.vista"/>
+        <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
-        <pack200/>
+        <!--pack200/-->
     </info>
 
     <guiprefs height="450" resizable="yes" width="680">
@@ -32,6 +32,7 @@
         <res id="HTMLInfoPanel.start" src="installer/start.html"/>
         <res id="CustomLangpack.xml_eng" src="installer/custom.eng.xml"/>
         <res id="logo" src="webapp/logo.jpg"/>
+        <res id="TargetPanel.dir.windows" src="installer/target-win.txt"/>
         <!--res id="customicons.xml" src="installer/custom.icons.xml"/-->
         <!--res id="pkgicon" src="installer/apps/icon.png"/-->
     </resources>
@@ -39,10 +40,8 @@
     <!--jar src="tools/izpack/clinstaller.jar" stage="install"/-->
     <!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
-    <natives>
-        <native type="izpack" name="ShellLink.dll"/>
-        <native type="izpack" name="ShellLink_x64.dll"/>
-    </natives>
+    <native type="izpack" name="ShellLink.dll"/>
+    <native type="izpack" name="ShellLink_x64.dll"/>
 
     <variables>
         <variable name="JETTY_HOME" value="$EXIST_HOME/tools/jetty"/>
@@ -52,6 +51,11 @@
         <variable name="ShowCreateDirectoryMessage" value="false"/>
     </variables>
     
+    <!-- Determine suggested data directory -->
+    <dynamicvariables>
+        <variable name="DATA_DIR" value="$INSTALL_PATH/webapp/WEB-INF/data"/>
+    </dynamicvariables>
+
     <conditions>
         <!-- not until IzPack 5.0 -->
         <!-- condition type="exists" id="apps.exist">
@@ -86,6 +90,7 @@
                 <include name="conf.xml.tmpl"/>
                 <include name="descriptor.xml.tmpl"/>
                 <include name="descriptor.xml"/>
+                <include name="collection.xconf.init"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="log4j.dtd"/>
@@ -106,7 +111,6 @@
                 <include name="lib/"/>
                 <include name="samples/**"/>
                 <include name="schema/"/>
-                <include name="thirdparty/"/>
                 <exclude name="**/CVS/"/>
                 <exclude name="**/*~"/>
                 <exclude name="**/*.log*"/>
@@ -124,6 +128,10 @@
                 <exclude name="indexes/**/lib/g*.jar"/>
                 <exclude name="indexes/**/lib/j*.jar"/>
                 <exclude name="indexes/**/lib/v*.jar"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/extensions/betterform/main/webapp/WEB-INF"
+                dir="extensions/betterform/main/webapp/WEB-INF">
+                <include name="classes/**"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/build/scripts" dir="build/scripts">
                 <exclude name="**/.*"/>
@@ -159,10 +167,12 @@
                 <exclude name="WEB-INF/data/fs.journal/**"/>
                 <exclude name="WEB-INF/data/lucene/**"/>
                 <exclude name="WEB-INF/expathrepo/**"/>
+                <exclude name="WEB-INF/data/expathrepo/**"/>
             </fileset>
             <file src="installer/conf.xml" targetdir="$INSTALL_PATH"/>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
+            <file src="installer/icon.png" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.ico" targetdir="$INSTALL_PATH"/>
             <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
             <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
@@ -376,7 +386,7 @@
         </pack-->
         
         <pack name="Apps" required="no" installGroups="Group2">
-            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later.</description>
+            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later. The "shared" package is required for several of the other applications, including the package manager, and should be selected as well.</description>
         </pack>
     </packs>
 </installation>

@@ -23,10 +23,8 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
-
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
-
 import org.exist.dom.QName;
 import org.exist.util.hashtable.ObjectHashSet;
 
@@ -88,7 +86,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     	inlineTags.add("var");
     }
     
-    private static boolean isEmptyTag(String tag) {
+    private static boolean isEmptyTag(final String tag) {
         return emptyTags.contains(tag);
     }
     
@@ -104,14 +102,14 @@ public class XHTMLWriter extends IndentingXMLWriter {
     /**
      * @param writer
      */
-    public XHTMLWriter(Writer writer) {
+    public XHTMLWriter(final Writer writer) {
         super(writer);
     }
     
     boolean haveCollapsedXhtmlPrefix = false;
 
     @Override
-    public void startElement(QName qname) throws TransformerException {
+    public void startElement(final QName qname) throws TransformerException {
         
         final QName xhtmlQName = removeXhtmlPrefix(qname);
         
@@ -120,7 +118,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
     
     @Override
-    public void endElement(QName qname) throws TransformerException {
+    public void endElement(final QName qname) throws TransformerException {
         final QName xhtmlQName = removeXhtmlPrefix(qname);
         
         super.endElement(xhtmlQName);
@@ -128,9 +126,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
         haveCollapsedXhtmlPrefix = false;
     }
     
-    private QName removeXhtmlPrefix(QName qname) {
-        String prefix = qname.getPrefix();
-        String namespaceURI = qname.getNamespaceURI();
+    private QName removeXhtmlPrefix(final QName qname) {
+        final String prefix = qname.getPrefix();
+        final String namespaceURI = qname.getNamespaceURI();
         if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
             haveCollapsedXhtmlPrefix = true;
             return new QName(qname.getLocalName(), namespaceURI);   
@@ -140,7 +138,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     @Override
-    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
+    public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
         
@@ -149,7 +147,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
     
     @Override
-    public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
+    public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
         
@@ -158,9 +156,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
         haveCollapsedXhtmlPrefix = false;
     }
     
-    private String removeXhtmlPrefix(String namespaceURI, String qname) {
+    private String removeXhtmlPrefix(final String namespaceURI, final String qname) {
         
-        int pos = qname.indexOf(':');
+        final int pos = qname.indexOf(':');
         if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
             haveCollapsedXhtmlPrefix = true;
             return qname.substring(pos+1);
@@ -171,7 +169,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     @Override
-    public void namespace(String prefix, String nsURI) throws TransformerException {
+    public void namespace(final String prefix, final String nsURI) throws TransformerException {
         if(haveCollapsedXhtmlPrefix && prefix != null && prefix.length() > 0 && nsURI.equals(Namespaces.XHTML_NS)) {
             return; //dont output the xmlns:prefix for the collapsed nodes prefix
         }
@@ -181,29 +179,30 @@ public class XHTMLWriter extends IndentingXMLWriter {
     
     
     @Override
-    protected void closeStartTag(boolean isEmpty) throws TransformerException {
+    protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
                 if (isEmpty) {
-                    if (isEmptyTag(currentTag))
-                        writer.write(" />");
-                    else {
-                        writer.write('>');
-                        writer.write("</");
-                        writer.write(currentTag);
-                        writer.write('>');
+                    if (isEmptyTag(currentTag)) {
+                        getWriter().write(" />");
+                    } else {
+                        getWriter().write('>');
+                        getWriter().write("</");
+                        getWriter().write(currentTag);
+                        getWriter().write('>');
                     }
-                } else
-                    writer.write('>');
+                } else {
+                    getWriter().write('>');
+                }
                 tagIsOpen = false;
             }
-        } catch (IOException e) {
-            throw new TransformerException(e.getMessage(), e);
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
     
     @Override
-    protected boolean isInlineTag(String namespaceURI, String localName) {
+    protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return (namespaceURI == null || "".equals(namespaceURI) || Namespaces.XHTML_NS.equals(namespaceURI))
     			&& inlineTags.contains(localName);
     }

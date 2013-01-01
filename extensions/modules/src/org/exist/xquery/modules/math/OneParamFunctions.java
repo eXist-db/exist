@@ -57,19 +57,22 @@ public class OneParamFunctions extends BasicFunction {
                 new QName("acos", MathModule.NAMESPACE_URI),
                 "Returns the arc cosine of an angle, in the range of 0.0 through pi.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#acos"
                 ),
         new FunctionSignature(
                 new QName("asin", MathModule.NAMESPACE_URI),
                 "Returns the arc sine of an angle, in the range of -pi/2 through pi/2.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#asin"
                 ),
         new FunctionSignature(
                 new QName("atan", MathModule.NAMESPACE_URI),
                 "Returns the arc tangent of an angle, in the range of -pi/2 through pi/2.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#atan"
                 ),
         new FunctionSignature(
                 new QName("ceil", MathModule.NAMESPACE_URI),
@@ -81,13 +84,15 @@ public class OneParamFunctions extends BasicFunction {
                 new QName("cos", MathModule.NAMESPACE_URI),
                 "Returns the trigonometric cosine of an angle.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the cosine")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the cosine"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#cos"
                 ),
         new FunctionSignature(
                 new QName("exp", MathModule.NAMESPACE_URI),
                 "Calculates e (the Euler Constant) raised to the power of a value or expression",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#exp"
                 ),
         new FunctionSignature(
                 new QName("floor", MathModule.NAMESPACE_URI),
@@ -99,7 +104,8 @@ public class OneParamFunctions extends BasicFunction {
                 new QName("log", MathModule.NAMESPACE_URI),
                 "Returns the natural logarithm (base e) of a number.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#log"
                 ),
         new FunctionSignature(
                 new QName("round", MathModule.NAMESPACE_URI),
@@ -111,19 +117,22 @@ public class OneParamFunctions extends BasicFunction {
                 new QName("sin", MathModule.NAMESPACE_URI),
                 "Returns the trigonometric sine of an angle.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the sine")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the sine"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#sin"
                 ),
         new FunctionSignature(
                 new QName("sqrt", MathModule.NAMESPACE_URI),
                 "Returns the correctly rounded positive square root of a number.",
                 new SequenceType[] { new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the square root of $x")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the square root of $x"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#sqrt"
                 ),
         new FunctionSignature(
                 new QName("tan", MathModule.NAMESPACE_URI),
                 "Returns the tangent of the number passed as an argument in radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The radians") },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the tangent")
+                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the tangent"),
+                "Replaced by http://www.w3.org/2005/xpath-functions/math/#tan"
                 ),
         new FunctionSignature(
                 new QName("degrees", MathModule.NAMESPACE_URI),

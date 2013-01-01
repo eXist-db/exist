@@ -780,7 +780,10 @@ public class Configuration implements ErrorHandler
             File df = ConfigurationHelper.lookup( dataFiles, dbHome );
 
             if( !df.canRead() ) {
-                throw( new DatabaseConfigurationException( "cannot read data directory: " + df.getAbsolutePath() ) );
+                boolean mkdirs = df.mkdirs();
+                if (!(mkdirs && df.canRead())) {
+                    throw( new DatabaseConfigurationException( "cannot read data directory: " + df.getAbsolutePath() ) );
+                }
             }
             config.put( BrokerPool.PROPERTY_DATA_DIR, df.getAbsolutePath() );
             LOG.debug( BrokerPool.PROPERTY_DATA_DIR + ": " + config.get( BrokerPool.PROPERTY_DATA_DIR ) );

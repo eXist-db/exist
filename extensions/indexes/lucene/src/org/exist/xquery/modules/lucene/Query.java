@@ -97,16 +97,17 @@ public class Query extends Function implements Optimizable {
     }
 
     public void setArguments(List<Expression> arguments) throws XPathException {
+        steps.clear();
         Expression path = arguments.get(0);
         steps.add(path);
 
-        Expression arg = arguments.get(1);
+        Expression arg = arguments.get(1).simplify();
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
-        steps.add(arg);
+        add(arg);
 
         if (arguments.size() == 3) {
-            arg = arguments.get(2);
+            arg = arguments.get(2).simplify();
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
             arg = new DynamicTypeCheck(context, Type.ELEMENT, arg);

@@ -63,6 +63,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -90,6 +91,8 @@ public class Configurator {
 
     public final static Logger LOG = Logger.getLogger(Configurator.class);
 
+    private final static String EOL = System.getProperty("line.separator", "\n");
+    
     protected static ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<FullXmldbURI, Configuration>();
 
     //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
@@ -275,9 +278,9 @@ public class Configurator {
                         field.set(instance, value);
                 }
             } catch (IllegalArgumentException e) {
-                LOG.error("Configuration error: \n" +
-                    " config: " + configuration.getName()+"\n" +
-                    " property: " + property+"\n" +
+                LOG.error("Configuration error: " + EOL +
+                    " config: " + configuration.getName()+ EOL +
+                    " property: " + property + EOL +
                     " message: " + e.getMessage());
                 return null; //XXX: throw configuration error
             } catch (IllegalAccessException e) {
@@ -558,7 +561,7 @@ public class Configurator {
         if(value == null) {
             String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
             char[] ch = comment.toCharArray();
-            serializer.characters(new char[] {'\n'}, 0, 1);
+            serializer.characters(EOL.toCharArray(), 0, EOL.length());
             serializer.comment(ch, 0, ch.length);
         } else {
             serializer.startElement(qnConfig, null);
@@ -606,8 +609,8 @@ public class Configurator {
         if(value == null) {
             String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
             char[] ch = comment.toCharArray();
-            serializer.characters(new char[] {'\n'}, 0, 1);
-        	serializer.comment(ch, 0, ch.length);
+            serializer.characters(EOL.toCharArray(), 0, EOL.length());
+            serializer.comment(ch, 0, ch.length);
         } else {
             serializer.startElement(qnConfig, null);
             serializer.attribute(new QName(referenceBy, null), value);
@@ -649,41 +652,40 @@ public class Configurator {
         return null;
     }
 
-    protected static void serialize(Configurable instance, SAXSerializer serializer) throws ConfigurationException {
-        Class<?> clazz = instance.getClass();
+    protected static void serialize(final Configurable instance, final SAXSerializer serializer) throws ConfigurationException {
+        final Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return; //UNDERSTAND: throw exception
         }
-        String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+        final String configName = clazz.getAnnotation(ConfigurationClass.class).value();
         try {
             //open tag
-            QName qnConfig = new QName(configName, Configuration.NS);
+            final QName qnConfig = new QName(configName, Configuration.NS);
             serializer.startElement(qnConfig, null);
             boolean simple = true;
             //store field's values as attributes or elements depends on annotation
-            AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+            final AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
             try {
                 //pass one - extract just attributes
-                for (AField<ConfigurationFieldAsAttribute> attr : annotatedFields.getAttributes()) {
+                for(final AField<ConfigurationFieldAsAttribute> attr : annotatedFields.getAttributes()) {
                     final Field field = attr.getField();
                     field.setAccessible(true);
                     //XXX: artifact? remove?
                     //skip elements
-                    if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
+                    if(field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
                         continue;
                     }
                     //skip null values
-                    if (field.get(instance) == null) {
+                    if(field.get(instance) == null) {
                         continue;
                     }
                     //now we just have attributes
-                    String value = extractFieldValue(field, instance);
+                    final String value = extractFieldValue(field, instance);
                     serializer.attribute(new QName(attr.getAnnotation().value(), null), value);
                 }
                 //pass two - just elements or text nodes
-                for (AField<ConfigurationFieldAsElement> element :
-                        annotatedFields.getElements()) {
+                for(final AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                     simple = true;
                     final Field field = element.getField();
                     field.setAccessible(true);
@@ -697,45 +699,45 @@ public class Configurator {
                         continue;
                     }
                     String referenceBy = null;
-                    if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
+                    if(field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
                         referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
                     }
                     //skip null values
                     if(field.get(instance) == null) {
-                        String tagName = element.getAnnotation().value();
-                        String comment = "<"+tagName;
-                        if (referenceBy != null)
-                            comment += " "+referenceBy+"=\"\"/>";
-                        else
+                        final String tagName = element.getAnnotation().value();
+                        String comment = "<" + tagName;
+                        if (referenceBy != null) {
+                            comment += " " + referenceBy + "=\"\"/>";
+                        } else {
                             comment += "></"+tagName+">";
-                        char[] ch = comment.toCharArray();
-                        serializer.characters(new char[] {'\n'}, 0, 1);
+                        }
+                        serializer.characters(EOL.toCharArray(), 0, EOL.length());
+                        final char[] ch = comment.toCharArray();
                         serializer.comment(ch, 0, ch.length);
                         continue;
                     }
                     String value = null;
-                    String typeName = field.getType().getName();
+                    final String typeName = field.getType().getName();
                     if(typeName.equals("java.util.List")) {
-                        simple = false;
                         serializeList(instance, element, serializer);
+                        continue;
                     } else if(implementsInterface(field.getType(), Configurable.class)) {
-                        simple = false;
-                        Configurable subInstance = (Configurable) field.get(instance);
+                        final Configurable subInstance = (Configurable) field.get(instance);
                         serialize(subInstance, serializer);
+                        continue;
                     } else if(typeName.equals("java.util.Map")) {
-                        serializeMap(element.getAnnotation().value(),
-                            (Map<String, String>)field.get(instance), serializer);
+                        serializeMap(element.getAnnotation().value(), (Map<String, String>)field.get(instance), serializer);
+                        continue;
                     } else {
                         value = extractFieldValue(field, instance);
                         if(value == null) {
-                            LOG.error("field '" + field.getName() + 
-                                "' has unsupported type [" + typeName + "] - skiped");
+                            LOG.error("field '" + field.getName() + "' has unsupported type [" + typeName + "] - skiped");
                             //TODO : throw exception ? -pb
                         }
                     }
                     if (value != null && value.length() > 0){
-                        if (simple) {
-                            QName qnSimple = new QName(element.getAnnotation().value(), Configuration.NS);
+                        if(simple) {
+                            final QName qnSimple = new QName(element.getAnnotation().value(), Configuration.NS);
                             serializer.startElement(qnSimple, null);
                             serializer.characters(value);
                             serializer.endElement(new QName(element.getAnnotation().value(), null));
@@ -743,25 +745,26 @@ public class Configurator {
                             serializer.characters(value);
                         }
                     } else {
-                        String tagName = element.getAnnotation().value();
+                        final String tagName = element.getAnnotation().value();
                         String comment = "<" + tagName;
-                        if (referenceBy != null)
+                        if(referenceBy != null) {
                             comment += " " + referenceBy + "=\"\"/>";
-                        else
+                        } else {
                             comment += "></" + tagName + ">";
-                        char[] ch = comment.toCharArray();
-                        serializer.characters(new char[] {'\n'}, 0, 1);
+                        }
+                        serializer.characters(EOL.toCharArray(), 0, EOL.length());
+                        final char[] ch = comment.toCharArray();
                         serializer.comment(ch, 0, ch.length);
                     }
                 }
-            } catch (IllegalArgumentException e) {
+            } catch(final IllegalArgumentException e) {
                 throw new ConfigurationException(e.getMessage(), e);
-            } catch (IllegalAccessException e) {
+            } catch(final IllegalAccessException e) {
                 throw new ConfigurationException(e.getMessage(), e);
             }
             //close tag
             serializer.endElement(qnConfig);
-        } catch(SAXException saxe) {
+        } catch(final SAXException saxe) {
             throw new ConfigurationException(saxe.getMessage(), saxe);
         }
     }
@@ -979,7 +982,7 @@ public class Configurator {
             IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            doc.getPermissions().setMode(0770);
+            doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
             fullURI = getFullURI(broker.getBrokerPool(), doc.getURI()); 
             saving.add(fullURI);
             collection.store(txn, broker, info, data, false);

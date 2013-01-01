@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.DefaultSVNOptions;
 import org.exist.versioning.svn.wc.ISVNEventHandler;
 import org.exist.versioning.svn.wc.ISVNInfoHandler;

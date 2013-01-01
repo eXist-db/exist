@@ -102,7 +102,7 @@ wrapper.ignore_sequence_gaps=TRUE
 
 # Title to use when running as a console
 ##wrapper.console.title=@app.long.name@
-wrapper.console.title=eXist Server with Jetty
+wrapper.console.title=eXist-db Server with Jetty
 
 #********************************************************************
 # Wrapper JVM Checks
@@ -133,18 +133,18 @@ wrapper.disable_restarts.automatic=TRUE
 #  service can then be reinstalled.
 
 # Name of the service
-wrapper.ntservice.name=@app.name@
+wrapper.name=@app.name@
 
 # Display name of the service
-wrapper.ntservice.displayname=@app.long.name@
+wrapper.displayname=@app.long.name@
 
 # Description of the service
-wrapper.ntservice.description=@app.description@
+wrapper.description=@app.description@
 
 # Service dependencies.  Add dependencies as needed starting from 1
 wrapper.ntservice.dependency.1=
 
-# Mode in which the service is installed.  AUTO_START or DEMAND_START
+# Mode in which the service is installed.  AUTO_START, DELAY_START or DEMAND_START
 wrapper.ntservice.starttype=AUTO_START
 
 # Allow the service to interact with the desktop.

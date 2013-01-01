@@ -33,284 +33,282 @@ import org.w3c.dom.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E> implements DocumentAtExist {
-	
-	private E document;
-	
+public class ProxyDocument<E extends DocumentAtExist> extends ProxyNode<E>
+        implements DocumentAtExist {
+
+    private E document;
+
     public Database getDatabase() {
         return getProxyObject().getDatabase();
     }
 
-	/* (non-Javadoc)
-	 * @see org.exist.i.dom.DocumentAtExist#getFirstChildFor(int)
-	 */
-	public int getFirstChildFor(int nodeNumber) {
-		return getProxyObject().getFirstChildFor(nodeNumber);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.i.dom.DocumentAtExist#getFirstChildFor(int)
+     */
+    public int getFirstChildFor(int nodeNumber) {
+        return getProxyObject().getFirstChildFor(nodeNumber);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.i.dom.DocumentAtExist#getNextNodeNumber(int)
-	 */
-	public int getNextNodeNumber(int nodeNr) throws DOMException {
-		return getProxyObject().getNextNodeNumber(nodeNr);
-	}
+    /* (non-Javadoc)
+     * @see org.exist.i.dom.DocumentAtExist#getNextNodeNumber(int)
+     */
+    public int getNextNodeNumber(int nodeNr) throws DOMException {
+        return getProxyObject().getNextNodeNumber(nodeNr);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#adoptNode(org.w3c.dom.Node)
-	 */
-	public Node adoptNode(Node source) throws DOMException {
-		return getProxyObject().adoptNode(source);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#adoptNode(org.w3c.dom.Node)
+     */
+    public Node adoptNode(Node source) throws DOMException {
+        return getProxyObject().adoptNode(source);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createAttribute(java.lang.String)
-	 */
-	public Attr createAttribute(String name) throws DOMException {
-		return getProxyObject().createAttribute(name);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createAttribute(java.lang.String)
+     */
+    public Attr createAttribute(String name) throws DOMException {
+        return getProxyObject().createAttribute(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createAttributeNS(java.lang.String, java.lang.String)
-	 */
-	public Attr createAttributeNS(String namespaceURI, String qualifiedName)
-			throws DOMException {
-		return getProxyObject().createAttributeNS(namespaceURI, qualifiedName);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createAttributeNS(java.lang.String, java.lang.String)
+     */
+    public Attr createAttributeNS(String namespaceURI, String qualifiedName)
+            throws DOMException {
+        return getProxyObject().createAttributeNS(namespaceURI, qualifiedName);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createCDATASection(java.lang.String)
-	 */
-	public CDATASection createCDATASection(String data) throws DOMException {
-		return getProxyObject().createCDATASection(data);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createCDATASection(java.lang.String)
+     */
+    public CDATASection createCDATASection(String data) throws DOMException {
+        return getProxyObject().createCDATASection(data);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createComment(java.lang.String)
-	 */
-	public Comment createComment(String data) {
-		return getProxyObject().createComment(data);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createComment(java.lang.String)
+     */
+    public Comment createComment(String data) {
+        return getProxyObject().createComment(data);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createDocumentFragment()
-	 */
-	public DocumentFragment createDocumentFragment() {
-		return getProxyObject().createDocumentFragment();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createDocumentFragment()
+     */
+    public DocumentFragment createDocumentFragment() {
+        return getProxyObject().createDocumentFragment();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createElement(java.lang.String)
-	 */
-	public Element createElement(String tagName) throws DOMException {
-		return getProxyObject().createElement(tagName);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createElement(java.lang.String)
+     */
+    public Element createElement(String tagName) throws DOMException {
+        return getProxyObject().createElement(tagName);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createElementNS(java.lang.String, java.lang.String)
-	 */
-	public Element createElementNS(String namespaceURI, String qualifiedName)
-			throws DOMException {
-		return getProxyObject().createElementNS(namespaceURI, qualifiedName);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createElementNS(java.lang.String, java.lang.String)
+     */
+    public Element createElementNS(String namespaceURI, String qualifiedName)
+            throws DOMException {
+        return getProxyObject().createElementNS(namespaceURI, qualifiedName);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createEntityReference(java.lang.String)
-	 */
-	public EntityReference createEntityReference(String name)
-			throws DOMException {
-		return getProxyObject().createEntityReference(name);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createEntityReference(java.lang.String)
+     */
+    public EntityReference createEntityReference(String name)
+            throws DOMException {
+        return getProxyObject().createEntityReference(name);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createProcessingInstruction(java.lang.String, java.lang.String)
-	 */
-	public ProcessingInstruction createProcessingInstruction(String target,
-			String data) throws DOMException {
-		return getProxyObject().createProcessingInstruction(target, data);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createProcessingInstruction(java.lang.String, java.lang.String)
+     */
+    public ProcessingInstruction createProcessingInstruction(String target,
+            String data) throws DOMException {
+        return getProxyObject().createProcessingInstruction(target, data);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#createTextNode(java.lang.String)
-	 */
-	public Text createTextNode(String data) {
-		return getProxyObject().createTextNode(data);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#createTextNode(java.lang.String)
+     */
+    public Text createTextNode(String data) {
+        return getProxyObject().createTextNode(data);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getDoctype()
-	 */
-	public DocumentType getDoctype() {
-		return getProxyObject().getDoctype();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getDoctype()
+     */
+    public DocumentType getDoctype() {
+        return getProxyObject().getDoctype();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getDocumentElement()
-	 */
-	public Element getDocumentElement() {
-		return getProxyObject().getDocumentElement();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getDocumentElement()
+     */
+    public Element getDocumentElement() {
+        return getProxyObject().getDocumentElement();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getDocumentURI()
-	 */
-	public String getDocumentURI() {
-		return getProxyObject().getDocumentURI();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getDocumentURI()
+     */
+    public String getDocumentURI() {
+        return getProxyObject().getDocumentURI();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getDomConfig()
-	 */
-	public DOMConfiguration getDomConfig() {
-		return getProxyObject().getDomConfig();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getDomConfig()
+     */
+    public DOMConfiguration getDomConfig() {
+        return getProxyObject().getDomConfig();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getElementById(java.lang.String)
-	 */
-	public Element getElementById(String elementId) {
-		return getProxyObject().getElementById(elementId);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getElementById(java.lang.String)
+     */
+    public Element getElementById(String elementId) {
+        return getProxyObject().getElementById(elementId);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
-	 */
-	public NodeList getElementsByTagName(String tagname) {
-		return getProxyObject().getElementsByTagName(tagname);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
+     */
+    public NodeList getElementsByTagName(String tagname) {
+        return getProxyObject().getElementsByTagName(tagname);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String, java.lang.String)
-	 */
-	public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-		return getProxyObject().getElementsByTagNameNS(namespaceURI, localName);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String, java.lang.String)
+     */
+    public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
+        return getProxyObject().getElementsByTagNameNS(namespaceURI, localName);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getImplementation()
-	 */
-	public DOMImplementation getImplementation() {
-		return getProxyObject().getImplementation();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getImplementation()
+     */
+    public DOMImplementation getImplementation() {
+        return getProxyObject().getImplementation();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getInputEncoding()
-	 */
-	public String getInputEncoding() {
-		return getProxyObject().getInputEncoding();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getInputEncoding()
+     */
+    public String getInputEncoding() {
+        return getProxyObject().getInputEncoding();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getStrictErrorChecking()
-	 */
-	public boolean getStrictErrorChecking() {
-		return getProxyObject().getStrictErrorChecking();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getStrictErrorChecking()
+     */
+    public boolean getStrictErrorChecking() {
+        return getProxyObject().getStrictErrorChecking();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getXmlEncoding()
-	 */
-	public String getXmlEncoding() {
-		return getProxyObject().getXmlEncoding();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getXmlEncoding()
+     */
+    public String getXmlEncoding() {
+        return getProxyObject().getXmlEncoding();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getXmlStandalone()
-	 */
-	public boolean getXmlStandalone() {
-		return getProxyObject().getXmlStandalone();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getXmlStandalone()
+     */
+    public boolean getXmlStandalone() {
+        return getProxyObject().getXmlStandalone();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#getXmlVersion()
-	 */
-	public String getXmlVersion() {
-		return getProxyObject().getXmlVersion();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#getXmlVersion()
+     */
+    public String getXmlVersion() {
+        return getProxyObject().getXmlVersion();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#importNode(org.w3c.dom.Node, boolean)
-	 */
-	public Node importNode(Node importedNode, boolean deep) throws DOMException {
-		return getProxyObject().importNode(importedNode, deep);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#importNode(org.w3c.dom.Node, boolean)
+     */
+    public Node importNode(Node importedNode, boolean deep) throws DOMException {
+        return getProxyObject().importNode(importedNode, deep);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#normalizeDocument()
-	 */
-	public void normalizeDocument() {
-		getProxyObject().normalizeDocument();
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#normalizeDocument()
+     */
+    public void normalizeDocument() {
+        getProxyObject().normalizeDocument();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
-	 */
-	public Node renameNode(Node n, String namespaceURI, String qualifiedName)
-			throws DOMException {
-		return getProxyObject().renameNode(n, namespaceURI, qualifiedName);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
+     */
+    public Node renameNode(Node n, String namespaceURI, String qualifiedName)
+            throws DOMException {
+        return getProxyObject().renameNode(n, namespaceURI, qualifiedName);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
-	 */
-	public void setDocumentURI(String documentURI) {
-		getProxyObject().setDocumentURI(documentURI);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
+     */
+    public void setDocumentURI(String documentURI) {
+        getProxyObject().setDocumentURI(documentURI);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#setStrictErrorChecking(boolean)
-	 */
-	public void setStrictErrorChecking(boolean strictErrorChecking) {
-		getProxyObject().setStrictErrorChecking(strictErrorChecking);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#setStrictErrorChecking(boolean)
+     */
+    public void setStrictErrorChecking(boolean strictErrorChecking) {
+        getProxyObject().setStrictErrorChecking(strictErrorChecking);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#setXmlStandalone(boolean)
-	 */
-	public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
-		getProxyObject().setXmlStandalone(xmlStandalone);
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#setXmlStandalone(boolean)
+     */
+    public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
+        getProxyObject().setXmlStandalone(xmlStandalone);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
-	 */
-	public void setXmlVersion(String xmlVersion) throws DOMException {
-		getProxyObject().setXmlVersion(xmlVersion);
-	}
-	
-	@Override
-	public E getProxyObject() {
-		return document;
-	}
+    /* (non-Javadoc)
+     * @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
+     */
+    public void setXmlVersion(String xmlVersion) throws DOMException {
+        getProxyObject().setXmlVersion(xmlVersion);
+    }
 
-	@Override
-	public void setProxyObject(E object) {
-		//if (object instanceof DocumentAtExist) {
-			document = (E) object;
-			super.setProxyObject(document);
-		//} else
-			//throw new IllegalArgumentException("Only DocumentAtExist allowed");
-	}
+    @Override
+    public E getProxyObject() {
+        return document;
+    }
 
-	public NodeAtExist getNode(int nodeNr) throws DOMException {
-		return getProxyObject().getNode(nodeNr);
-	}
+    @Override
+    public void setProxyObject(E object) {
+        document = (E) object;
+        super.setProxyObject(document);
+    }
 
-	public boolean hasReferenceNodes() {
-		return getProxyObject().hasReferenceNodes();
-	}
+    public NodeAtExist getNode(int nodeNr) throws DOMException {
+        return getProxyObject().getNode(nodeNr);
+    }
 
-	@Override
-	public XmldbURI getURI() {
-		return getProxyObject().getURI();
-	}
+    public boolean hasReferenceNodes() {
+        return getProxyObject().hasReferenceNodes();
+    }
 
-	@Override
-	public int getDocId() {
-		return getProxyObject().getDocId();
-	}
+    @Override
+    public XmldbURI getURI() {
+        return getProxyObject().getURI();
+    }
 
-	@Override
-	public Object getUUID() {
-		return getProxyObject().getUUID();
-	}
+    @Override
+    public int getDocId() {
+        return getProxyObject().getDocId();
+    }
+
+    @Override
+    public Object getUUID() {
+        return getProxyObject().getUUID();
+    }
 }

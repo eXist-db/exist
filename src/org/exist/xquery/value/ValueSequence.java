@@ -393,7 +393,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private void ensureCapacity() {
 		if(size == values.length) {
-			int newSize = (size * 3) / 2;
+			int newSize = (int)Math.round((size == 0 ? 1 : size * 3) / (double) 2);
 			Item newValues[] = new Item[newSize];
 			System.arraycopy(values, 0, newValues, 0, size);
 			values = newValues;

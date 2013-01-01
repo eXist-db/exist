@@ -49,7 +49,7 @@ public class Timestamp extends BasicFunction {
 			new QName("timestamp", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
 			"The current time as UTC milliseconds since the Epoch. ",
 			null,
-			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "milliseconds")
+			new FunctionReturnSequenceType(Type.UNSIGNED_LONG, Cardinality.EXACTLY_ONE, "milliseconds")
 		),
 		new FunctionSignature(
 			new QName("timestamp", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),
@@ -57,7 +57,7 @@ public class Timestamp extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.EXACTLY_ONE, "The dateTime to be converted."),
 			},
-			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "milliseconds")
+			new FunctionReturnSequenceType(Type.UNSIGNED_LONG, Cardinality.EXACTLY_ONE, "milliseconds")
 		)
 	};
 			

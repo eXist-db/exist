@@ -104,7 +104,7 @@
         <classpath refid="classpath.core"/>
     </taskdef>
 
-    <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.6.12.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
+    <taskdef classpath="${tools.aspectj}/lib/aspectjtools-1.7.1.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
     <path id="classpath.aspectj">
         <fileset dir="${tools.aspectj}/lib">
             <include name="*.jar"/>
@@ -640,6 +640,7 @@
                 excludes=".DO_NOT_DELETE"/>
         </delete>
         <delete dir="${src.webapp}/WEB-INF/expathrepo"/>
+        <delete dir="${src.webapp}/WEB-INF/data/expathrepo"/>
     </target>
 
     <target name="clean-all" depends="clean-default-data-dir" description="Cleanup deeper, data is removed">
@@ -675,14 +676,6 @@
         </delete> 
         <mkdir dir="${jetty.dir}/tmp"/>
 		<ant antfile="build.xml" dir="extensions/modules" target="clean-all" inheritall="false"/>
-    </target>
-
-    <!-- ============================================================================ -->
-    <!-- Build thirdparty modules (JBoss integration)                                 -->
-    <!--                                                                              -->
-    <!-- ============================================================================ -->
-    <target name="thirdparty" depends="jar">
-        <ant antfile="build.xml" dir="thirdparty/jboss"/>
     </target>
 
     <target name="wrapper" depends="jar">

@@ -78,7 +78,7 @@
     </target>
     
     <!-- Add an AspectJ build target -->
-    <taskdef classpath="tools/aspectj/lib/aspectjtools-1.6.12.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
+    <taskdef classpath="tools/aspectj/lib/aspectjtools-1.7.1.jar" resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties"/>
     <target name="aspectj">
         <echo level="info">--- aspectj (start) ---</echo>
         <iajc

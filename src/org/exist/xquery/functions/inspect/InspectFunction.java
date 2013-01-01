@@ -70,8 +70,7 @@ public class InspectFunction extends BasicFunction {
             builder.startElement(RETURN_QNAME, attribs);
             if (returnType instanceof FunctionReturnSequenceType) {
                 FunctionReturnSequenceType type = (FunctionReturnSequenceType) returnType;
-                String returnDesc = type.getDescription();
-                type.setDescription(returnDesc);
+                builder.characters(type.getDescription());
             }
             builder.endElement();
         }

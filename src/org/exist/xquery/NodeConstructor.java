@@ -62,7 +62,14 @@ public abstract class NodeConstructor extends AbstractExpression {
 
     @Override
     public int getDependencies() {
-        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+        // if this is a top-level node constructor, it must depend on the context item, so
+        // an expression like //foo/<x/> will generate one <x> for every foo. However, if the
+        // constructor appears inside another constructor, we don't want it to be called once
+        // for every context item, so we just return a dependency on context set:
+        if (newDocumentContext)
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+        else
+            return Dependency.CONTEXT_SET;
     }
 
     /* (non-Javadoc)

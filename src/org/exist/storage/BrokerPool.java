@@ -978,7 +978,7 @@ public class BrokerPool extends Observable implements Database {
 
             try {
                 // initialize expath repository so startup triggers can access it
-                expathRepo = ExistRepository.getRepository(this.conf.getExistHome());
+                expathRepo = ExistRepository.getRepository(this.conf);
             } catch (PackageException e) {
                 LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
                     "the package manager may not work.");
@@ -1072,6 +1072,9 @@ public class BrokerPool extends Observable implements Database {
                 LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
             }
         }
+        // trigger a checkpoint after processing all startup triggers
+        checkpoint = true;
+        triggerSync(Sync.MAJOR_SYNC);
     }    
         
      /**

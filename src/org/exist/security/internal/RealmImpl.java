@@ -32,11 +32,13 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.security.AXSchemaType;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.Account;
+import org.exist.security.EXistSchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
@@ -92,6 +94,7 @@ public class RealmImpl extends AbstractRealm {
         
         //DBA group
         GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
+        GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
     	sm.addGroup(GROUP_DBA.getId(), GROUP_DBA);
         registerGroup(GROUP_DBA);
         //sm.groupsById.put(GROUP_DBA.getId(), GROUP_DBA);
@@ -99,6 +102,8 @@ public class RealmImpl extends AbstractRealm {
         
         //System account
     	ACCOUNT_SYSTEM = new AccountImpl(this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
+        ACCOUNT_SYSTEM.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.SYSTEM);
+        ACCOUNT_SYSTEM.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Internals");
         sm.addUser(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
         registerAccount(ACCOUNT_SYSTEM);
     	//sm.usersById.put(ACCOUNT_SYSTEM.getId(), ACCOUNT_SYSTEM);
@@ -106,6 +111,7 @@ public class RealmImpl extends AbstractRealm {
         
         //guest group
         GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
+        GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.addGroup(GROUP_GUEST.getId(), GROUP_GUEST);
         registerGroup(GROUP_GUEST);
     	//sm.groupsById.put(GROUP_GUEST.getId(), GROUP_GUEST);
@@ -120,24 +126,27 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public void start(DBBroker broker) throws EXistException {
+    public void start(final DBBroker broker) throws EXistException {
         super.start(broker);
         try {
             createAdminAndGuestIfNotExist(broker);
         } catch(PermissionDeniedException pde) {
             final boolean exportOnly =  (Boolean) broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
-            if (!exportOnly)
+            if(!exportOnly) {
             	throw new EXistException(pde.getMessage(), pde);
+            }
         }
     }
     
-    private void createAdminAndGuestIfNotExist(DBBroker broker) throws EXistException, PermissionDeniedException {
+    private void createAdminAndGuestIfNotExist(final DBBroker broker) throws EXistException, PermissionDeniedException {
     	
         //Admin account
         if(getSecurityManager().getAccount(ADMIN_ACCOUNT_ID) == null) {
             //AccountImpl actAdmin = new AccountImpl(broker, this, ADMIN_ACCOUNT_ID, SecurityManager.DBA_USER, "", GROUP_DBA, true);
-            UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
+            final UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
             actAdmin.setPassword(DEFAULT_ADMIN_PASSWORD);
+            actAdmin.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.DBA_USER);
+            actAdmin.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Administrator");
             actAdmin.addGroup(SecurityManager.DBA_GROUP);
             getSecurityManager().addAccount(broker, actAdmin);
         }
@@ -145,7 +154,9 @@ public class RealmImpl extends AbstractRealm {
         //Guest account
         if(getSecurityManager().getAccount(GUEST_ACCOUNT_ID) == null) {
             //AccountImpl actGuest = new AccountImpl(broker, this, GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, SecurityManager.GUEST_USER, GROUP_GUEST, false);
-            UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
+            final UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
+            actGuest.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.GUEST_USER);
+            actGuest.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous User");
             actGuest.setPassword(DEFAULT_GUEST_PASSWORD);
             actGuest.addGroup(SecurityManager.GUEST_GROUP);
             getSecurityManager().addAccount(broker, actGuest);
@@ -329,6 +340,16 @@ public class RealmImpl extends AbstractRealm {
         return groupsByName.read(new PrincipalDbRead<Group, List<String>>(){
             @Override
             public List<String> execute(Map<String, Group> principalDb) {
+                return new ArrayList<String>(principalDb.keySet());
+            }
+        });
+    }
+    
+    @Override
+    public List<String> findAllUserNames() {
+        return usersByName.read(new PrincipalDbRead<Account, List<String>>(){
+            @Override
+            public List<String> execute(Map<String, Account> principalDb) {
                 return new ArrayList<String>(principalDb.keySet());
             }
         });

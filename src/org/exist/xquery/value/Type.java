@@ -388,15 +388,18 @@ public class Type {
 	 * 
 	 * @param subtype
 	 */
-	public static int getSuperType(int subtype) {
-		if (subtype == ITEM || subtype == NODE)
-			return ITEM;
-        int supertype = superTypes[subtype];
-		if(supertype == 0) {
-			LOG.warn("no supertype for " + getTypeName(subtype), new Throwable());
-			return ITEM;
-		}
-		return supertype;
+	public static int getSuperType(final int subtype) {
+            if(subtype == ITEM || subtype == NODE) {
+                return ITEM;
+            }
+            
+            final int supertype = superTypes[subtype];
+            if(supertype == 0) {
+                LOG.warn("eXist does not define a super-type for the sub-type " + getTypeName(subtype), new Throwable());
+                return ITEM;
+            }
+            
+            return supertype;
 	}
 
 	/**
@@ -412,6 +415,13 @@ public class Type {
 		//Super shortcut
 		if(type1 == type2)
 			return type1;
+        // if one of the types is empty(), return the other type: optimizer is free to choose
+        // an optimization based on the more specific type.
+        if (type1 == Type.EMPTY)
+            return type2;
+        else if (type2 == Type.EMPTY)
+            return type1;
+
 		//TODO : optimize by swapping the arguments based on their numeric values ?
 		//Processing lower value first *should* reduce the size of the Set
 		//Collect type1's super-types

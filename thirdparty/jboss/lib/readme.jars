@@ -1,5 +1,0 @@
-copy the following files from your Jboss distribution tree to this directory:
-jboss-system.jar
-jboss.jar
-jboss-jmx.jar
-jboss-common.jar

@@ -135,6 +135,11 @@ public interface SecurityManager extends Configurable {
     * Find all groups visible to the invokingUser
     */
    public List<String> findAllGroupNames();
+   
+   /**
+    * Find all users visible to the invokingUser
+    */
+   public List<String> findAllUserNames();
 
    /**
     * Find groups by their group name

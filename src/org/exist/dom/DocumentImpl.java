@@ -119,26 +119,6 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @param pool a <code>BrokerPool</code> instance representing the db
      * @param collection a <code>Collection</code> value
-     */
-    public DocumentImpl(BrokerPool pool, Collection collection) {
-        this(pool, collection, null);
-    }
-
-    /**
-     * Creates a new <code>DocumentImpl</code> instance.
-     *
-     * @param pool a <code>BrokerPool</code> instance representing the db
-     * @param fileURI a <code>XmldbURI</code> value
-     */
-    public DocumentImpl(BrokerPool pool, XmldbURI fileURI) {
-        this(pool, null, fileURI);
-    }
-
-    /**
-     * Creates a new <code>DocumentImpl</code> instance.
-     *
-     * @param pool a <code>BrokerPool</code> instance representing the db
-     * @param collection a <code>Collection</code> value
      * @param fileURI a <code>XmldbURI</code> value
      */
     public DocumentImpl(BrokerPool pool, Collection collection, XmldbURI fileURI) {

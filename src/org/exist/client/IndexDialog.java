@@ -91,7 +91,7 @@ class IndexDialog extends JFrame {
 	{
 		super(title);
 		this.client = client;
-		
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());		
 		//capture the frame's close event
 		WindowListener windowListener = new WindowAdapter()
 		{

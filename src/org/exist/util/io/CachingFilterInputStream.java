@@ -61,7 +61,7 @@ public class CachingFilterInputStream extends FilterInputStream {
      * @param cache The cache implementation
      * @param src The source InputStream to cache reads for
      */
-    public CachingFilterInputStream(FilterInputStreamCache cache, InputStream src) {
+    public CachingFilterInputStream(final FilterInputStreamCache cache, final InputStream src) {
         super(src);
         this.src = src;
         this.cache = cache;
@@ -73,7 +73,7 @@ public class CachingFilterInputStream extends FilterInputStream {
      *
      * The position in the stream and any mark is reset to zero
      */
-    public CachingFilterInputStream(CachingFilterInputStream cfis) {
+    public CachingFilterInputStream(final CachingFilterInputStream cfis) {
         this(cfis.getCache(), cfis);
         this.srcClosed = cfis.srcClosed;
         this.srcOffset = 0;
@@ -109,7 +109,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
 
     @Override
-    public synchronized void mark(int readLimit) {
+    public synchronized void mark(final int readLimit) {
         mark = srcOffset;
     }
 
@@ -159,12 +159,12 @@ public class CachingFilterInputStream extends FilterInputStream {
     }
 
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(final byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
 
         if(srcClosed) {
             throw new IOException(INPUTSTREAM_CLOSED);
@@ -238,7 +238,7 @@ public class CachingFilterInputStream extends FilterInputStream {
      * and Memory, the end result is the same
      */
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(final long n) throws IOException {
 
         if(srcClosed) {
             throw new IOException(INPUTSTREAM_CLOSED);

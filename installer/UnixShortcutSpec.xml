@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shortcuts>
-	<programGroup defaultName="eXist XML Database" location="applications"/>
+	<programGroup defaultName="eXist-db XML Database" location="applications"/>
 	
 	<shortcut 
-		name="eXist Database"
+		name="org-exist-start-Main"
+		genericName="eXist-db"
 		type="Application"
 		encoding="UTF-8"
 		target="$JAVA_HOME/bin/java"
 		commandLine="-jar start.jar"
 		workingDirectory="$INSTALL_PATH"
-		description="eXist Database Launcher" 
+		description="eXist-db XML Database Launcher" 
 		programGroup="yes"
-        desktop="yes"
+		desktop="yes"
 		terminal="false"
-		iconFile="$INSTALL_PATH/icon.bmp"/>
+		startupNotify="true"
+		iconFile="$INSTALL_PATH/icon.png"/>
 	<shortcut name="Uninstall eXist-db"
 		encoding="UTF-8"
-        target="$JAVA_HOME/bin/java"
-        workingDirectory="$INSTALL_PATH"
+		target="$JAVA_HOME/bin/java"
+		workingDirectory="$INSTALL_PATH"
 		commandLine="-jar &quot;$INSTALL_PATH/uninstall.jar&quot;"
 		iconFile="trashcan_full"
 		description="Uninstall eXist-db" 

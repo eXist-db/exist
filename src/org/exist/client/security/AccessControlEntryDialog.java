@@ -21,6 +21,9 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
+import org.exist.client.DialogWithResponse;
+import org.exist.client.InteractiveClient;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +59,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
      */
     public AccessControlEntryDialog(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
-        
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
         allUsernames = new HashSet<String>();
         for(final Account account : userManagementService.getAccounts()) {
             allUsernames.add(account.getName());
@@ -176,6 +179,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
 
         cmbGroupName.setEditable(true);
         cmbGroupName.setModel(getGroupNameModel());
+        cmbGroupName.setEnabled(false);
         cmbGroupName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbGroupNameActionPerformed(evt);

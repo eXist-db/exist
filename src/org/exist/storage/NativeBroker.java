@@ -757,8 +757,12 @@ public class NativeBroker extends DBBroker {
                             throw new PermissionDeniedException("Account '"+ getSubject().getName() + "' not allowed to execute to collection '" + current.getURI() + "'");
                         }
                         
-                        LOG.debug("Creating collection '" + path + "'...");
+                        if (current.hasDocument(this, path.lastSegment())) {
+                            LOG.error("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'");
+                            throw new PermissionDeniedException("Collection '" + current.getURI() + "' have document '" + path.lastSegment() + "'.");
+                        }
                         
+                        LOG.debug("Creating collection '" + path + "'...");
                         
                         CollectionConfiguration colConf = current.getConfiguration(this);
                         
@@ -2260,6 +2264,11 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
+    public File getBinaryFile(final BinaryDocument blob) throws IOException {
+        return getCollectionFile(fsDir, blob.getURI(), false);
+    }
+
+    @Override
     public InputStream getBinaryResource(final BinaryDocument blob) 
             throws IOException {
         File binFile = getCollectionFile(fsDir,blob.getURI(),false);
@@ -2414,11 +2423,11 @@ public class NativeBroker extends DBBroker {
         Collection collection = doc.getCollection();
         
         if(!collection.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + " have insufficient privileges to copy resource " + doc.getFileURI());
+            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");
         }
         
         if(!doc.getPermissions().validate(getSubject(), Permission.READ)) {
-            throw new PermissionDeniedException("Account " + getSubject().getName() + "have insufficient privileges to copy resource " + doc.getFileURI());   
+            throw new PermissionDeniedException("Account '" + getSubject().getName() + "' has insufficient privileges to copy the resource '" + doc.getFileURI() + "'.");   
         }
         
         if(newName == null) {
@@ -2433,25 +2442,31 @@ public class NativeBroker extends DBBroker {
                 DocumentImpl oldDoc = destination.getDocument(this, newName);
                 
                 if(!destination.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
-                        throw new PermissionDeniedException("Account " + getSubject().getName() + " have no execute access on the destination collection '"+destination.getURI()+"'.");
+                    throw new PermissionDeniedException("Account '" + getSubject().getName() + "' does not have execute access on the destination collection '" + destination.getURI() + "'.");
                 }
              
+                if(destination.hasChildCollection(this, newName.lastSegment())) {
+                    throw new EXistException(
+                        "The collection '" + destination.getURI() + "' already has a sub-collection named '" + newName.lastSegment() + "', you cannot create a Document with the same name as an existing collection."
+                    );
+                }
+
                 final XmldbURI newURI = destination.getURI().append(newName);
                 final XmldbURI oldUri = doc.getURI();
                 
                 if(oldDoc == null) {
                     if(!destination.getPermissions().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Account " + getSubject().getName() + " have no write access on the destination collection '"+destination.getURI()+"'.");
+                        throw new PermissionDeniedException("Account '" + getSubject().getName() + "' does not have write access on the destination collection '" + destination.getURI() + "'.");
                     }
                 } else {
                     //overwrite existing document
                     
                     if(doc.getDocId() == oldDoc.getDocId()){
-                        throw new PermissionDeniedException("Cannot copy resource to itself '"+doc.getURI()+"'.");
+                        throw new EXistException("Cannot copy resource to itself '" +doc.getURI() + "'.");
                     }
                     
                     if(!oldDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Resource with same name exists in target collection '"+oldDoc.getURI()+"' and write is denied.");
+                        throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + oldDoc.getURI() + "', and you do not have write access on that resource.");
                     }
                     
                     getDatabase().getDocumentTrigger().beforeDeleteDocument(this, transaction, oldDoc);
@@ -2570,6 +2585,13 @@ public class NativeBroker extends DBBroker {
         }
         
         try {
+            if(destination.hasChildCollection(this, newName.lastSegment())) {
+                throw new PermissionDeniedException(
+                    "The collection '" + destination.getURI() + "' have collection '" + newName.lastSegment() + "'. " +
+            		"Document with same name can't be created."
+                );
+            }
+
             // check if the move would overwrite a collection
             //TODO : resolve URIs : destination.getURI().resolve(newName)
             final DocumentImpl oldDoc = destination.getDocument(this, newName);

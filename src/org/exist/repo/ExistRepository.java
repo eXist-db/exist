@@ -10,18 +10,20 @@
 package org.exist.repo;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.NativeBroker;
+import org.exist.util.Configuration;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -37,9 +39,10 @@ import org.expath.pkg.repo.URISpace;
  * A repository as viewed by eXist.
  *
  * @author Florent Georges
+ * @author Wolfgang Meier
  * @since  2010-09-22
  */
-public class ExistRepository {
+public class ExistRepository extends Observable {
 
     public final static String EXPATH_REPO_DIR = "expathrepo";
 
@@ -177,31 +180,73 @@ public class ExistRepository {
         return modules;
     }
 
-    public static ExistRepository getRepository(File home) throws PackageException {
+    public static ExistRepository getRepository(Configuration config) throws PackageException {
+        String dataDirPath = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        if (dataDirPath == null)
+            dataDirPath = NativeBroker.DEFAULT_DATA_DIR;
+        File dataDir = new File(dataDirPath);
+        File expathDir = new File(dataDir, EXPATH_REPO_DIR);
+        if (!expathDir.exists()) {
+            moveOldRepo(config.getExistHome(), expathDir);
+        }
+        expathDir.mkdir();
+
+        LOG.info("Using directory " + expathDir.getAbsolutePath() + " for expath package repository");
+        FileSystemStorage storage = new FileSystemStorage(expathDir);
+        return new ExistRepository(storage);
+    }
+
+    private static void moveOldRepo(File home, File newRepo) {
+        File repo_dir = null;
         if (home != null){
-            File repo_dir;
             if (home.getName().equals("WEB-INF"))
                 repo_dir = new File(home, EXPATH_REPO_DIR);
             else
                 repo_dir = new File(home, EXPATH_REPO_DEFAULT);
-            LOG.info("EXPath repository dir: " + repo_dir.getAbsolutePath());
-            // ensure the dir exists
-            repo_dir.mkdir();
-            FileSystemStorage storage = new FileSystemStorage(repo_dir);
-            return new ExistRepository(storage);
         } else {
-            File repo_dir = new File(System.getProperty("java.io.tmpdir"), EXPATH_REPO_DIR);
-            // ensure the dir exists
-            repo_dir.mkdir();
-            FileSystemStorage storage = new FileSystemStorage(repo_dir);
-            return new ExistRepository(storage);
+            repo_dir = new File(System.getProperty("java.io.tmpdir"), EXPATH_REPO_DIR);
         }
+        if (repo_dir.exists() && repo_dir.canRead()) {
+            LOG.info("Found old expathrepo directory. Moving to new default location: " + newRepo.getAbsolutePath());
+            try {
+                FileUtils.moveDirectory(repo_dir, newRepo);
+            } catch (IOException e) {
+                LOG.error("Failed to move old expathrepo directory to new default location. Keeping it.", e);
+            }
+        }
+    }
+
+    public void reportAction(Action action, String packageURI) {
+        notifyObservers(new Notification(action, packageURI));
+        setChanged();
     }
 
     /** The wrapped EXPath repository. */
     private Repository myParent;
     /** An empty map for constructors expecting a parameter map. */
     private static final Map<String, List<Object>> EMPTY_MAP = new HashMap<String, List<Object>>();
+
+    public enum Action {
+        INSTALL, UNINSTALL
+    }
+
+    public final static class Notification {
+        private Action action;
+        private String packageURI;
+
+        public Notification(Action action, String packageURI) {
+            this.action = action;
+            this.packageURI = packageURI;
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public String getPackageURI() {
+            return packageURI;
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------ */

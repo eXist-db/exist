@@ -98,6 +98,7 @@ public class UntypedAtomicValue extends AtomicValue {
         case Type.DECIMAL :
             return new DecimalValue(value);
         case Type.INTEGER :
+        case Type.POSITIVE_INTEGER :
         case Type.NON_POSITIVE_INTEGER :
         case Type.NEGATIVE_INTEGER :
         case Type.LONG :

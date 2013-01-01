@@ -1,6 +1,6 @@
 /*
  *  eXist-db SecurityManager Module Extension
- *  Copyright (C) 2011 Adam Retter <adam@existsolutions.com>
+ *  Copyright (C) 2012 Adam Retter <adam@existsolutions.com>
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -38,30 +38,42 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/securitymanager";
     public final static String PREFIX = "sm";
-    private final static String RELEASED_IN_VERSION = "eXist-1.5";
+    private final static String RELEASED_IN_VERSION = "eXist-2.0";
     private final static String DESCRIPTION = "Module for interacting with the Security Manager";
 
     private final static FunctionDef[] functions = {
-        new FunctionDef(FindUserFunction.signatures[0], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[1], FindUserFunction.class),
-        new FunctionDef(FindUserFunction.signatures[2], FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_USERNAME, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME_PART, FindUserFunction.class),
+        new FunctionDef(FindUserFunction.FNS_LIST_USERS, FindUserFunction.class),
 
-        new FunctionDef(UMaskFunction.signatures[0], UMaskFunction.class),
-        new FunctionDef(UMaskFunction.signatures[1], UMaskFunction.class),
+        new FunctionDef(UMaskFunction.FNS_GET_UMASK, UMaskFunction.class),
+        new FunctionDef(UMaskFunction.FNS_SET_UMASK, UMaskFunction.class),
         
-        new FunctionDef(GetAccountMetadataFunction.signatures[0], GetAccountMetadataFunction.class),
-        new FunctionDef(GetAccountMetadataFunction.signatures[1], GetAccountMetadataFunction.class),
-        new FunctionDef(SetAccountMetadataFunction.signatures[0], SetAccountMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ALL_ACCOUNT_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_ALL_GROUP_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_GROUP_METADATA_KEYS, GetPrincipalMetadataFunction.class),
+        new FunctionDef(GetPrincipalMetadataFunction.FNS_GET_GROUP_METADATA, GetPrincipalMetadataFunction.class),
+        
+        new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_ACCOUNT_METADATA, SetPrincipalMetadataFunction.class),
+        new FunctionDef(SetPrincipalMetadataFunction.FNS_SET_GROUP_METADATA, SetPrincipalMetadataFunction.class),
 
+        new FunctionDef(AccountStatusFunction.FNS_IS_ACCOUNT_ENABLED, AccountStatusFunction.class),
+        new FunctionDef(AccountStatusFunction.FNS_SET_ACCOUNT_ENABLED, AccountStatusFunction.class),
+        
         new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
         new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
 
-        new FunctionDef(GroupMembershipFunctions.signatures[0], GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.signatures[1], GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MANAGERS, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS, GroupMembershipFunctions.class),
 
-        new FunctionDef(FindGroupFunction.signatures[0], FindGroupFunction.class),
-        new FunctionDef(FindGroupFunction.signatures[1], FindGroupFunction.class),
-        new FunctionDef(FindGroupFunction.signatures[2], FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_LIST_GROUPS, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_GET_USER_GROUPS, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_GET_GROUPS, FindGroupFunction.class),
 
         new FunctionDef(PermissionsFunctions.signatures[0], PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.signatures[1], PermissionsFunctions.class),

@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.client.DialogCompleteWithResponse;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
@@ -40,7 +41,7 @@ public class GroupDialog extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 2291775874309563932L;
 
-    private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._]{3,}");
+    private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
     
     private final UserManagementService userManagementService;
     private final String currentUser;

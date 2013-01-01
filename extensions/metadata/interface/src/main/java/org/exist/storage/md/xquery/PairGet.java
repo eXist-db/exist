@@ -112,6 +112,9 @@ public class PairGet extends BasicFunction {
 
 		if (meta == null)
 			meta = metas.get(args[1].getStringValue());
+		
+		if (meta == null)
+		    return Sequence.EMPTY_SEQUENCE;
 
 		ValueSequence returnSeq = new ValueSequence();
 		

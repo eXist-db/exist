@@ -61,7 +61,9 @@ import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
+import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.LocalXPathQueryService;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -104,6 +106,7 @@ public class QueryDialog extends JFrame {
             this.collection= collection;
             this.properties= properties;
             this.client = client;
+            this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
             setupComponents(loadedFromDb);
             pack();
 	}
@@ -384,18 +387,25 @@ public class QueryDialog extends JFrame {
 		return tabs;
 	}
 
-	private List<String> getCollections(Collection root, Collection collection, List<String> collectionsList)
-			throws XMLDBException {
-		if(!collection.getName().equals(root.getName())) {
-			collectionsList.add(root.getName());
+	private List<String> getCollections(final Collection root, final Collection collection, final List<String> collectionsList) throws XMLDBException {
+            if(!collection.getName().equals(root.getName())) {
+                collectionsList.add(root.getName());
+            }
+            final String[] childCollections = root.listChildCollections();
+            Collection child = null;
+            for(int i = 0; i < childCollections.length; i++) {
+                try {
+                    child = root.getChildCollection(childCollections[i]);
+                } catch(final XMLDBException xmldbe) {
+                    if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                        continue;
+                    } else {
+                        throw xmldbe;
+                    }
                 }
-		String[] childCollections= root.listChildCollections();
-		Collection child;
-		for (int i= 0; i < childCollections.length; i++) {
-			child= root.getChildCollection(childCollections[i]);
-			getCollections(child, collection, collectionsList);
-		}
-		return collectionsList;
+                getCollections(child, collection, collectionsList);
+            }
+            return collectionsList;
 	}
 
 	private void open() {
@@ -572,6 +582,12 @@ public class QueryDialog extends JFrame {
 				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
 				long t0 = System.currentTimeMillis();
+				
+				if (service instanceof LocalXPathQueryService && resource != null) {
+                    ((LocalXPathQueryService) service).setModuleLoadPath(
+                            XmldbURI.EMBEDDED_SERVER_URI_PREFIX + resource.getParentCollection().getName());
+                }
+				
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
 				// Check could also be collection instanceof LocalCollection

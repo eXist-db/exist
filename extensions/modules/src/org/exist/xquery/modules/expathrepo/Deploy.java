@@ -143,11 +143,11 @@ public class Deploy extends BasicFunction {
             Deployment deployment = new Deployment(context.getBroker());
             return deployment.installAndDeploy(file, null);
         } catch (PackageException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } catch (IOException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } catch (PermissionDeniedException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } finally {
             if (doc != null)
                 doc.getUpdateLock().release(Lock.READ_LOCK);

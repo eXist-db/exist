@@ -56,6 +56,7 @@ public interface Realm extends AuthenticatingRealm, AuthorizingRealm, AccountsMa
     public List<String> findUsernamesWhereUsernameStarts(String startsWith);
     public List<String> findAllGroupNames();
     public List<String> findAllGroupMembers(final String groupName);
+    public List<String> findAllUserNames();
 
     public SecurityManager getSecurityManager();
 

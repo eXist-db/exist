@@ -113,12 +113,12 @@ import org.exist.backup.Restore;
 import org.exist.backup.restore.listener.GuiRestoreListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.client.security.DialogCompleteWithResponse;
 import org.exist.client.xacml.XACMLEditor;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.PermissionAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -189,6 +189,8 @@ public class ClientFrame extends JFrame
         this.path = path;
         this.properties = properties;
         this.client = client;
+        
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         
         setupComponents();
         addWindowListener(new WindowAdapter() {
@@ -357,7 +359,7 @@ public class ClientFrame extends JFrame
         
         split.setRightComponent(scroll);
         
-        statusbar = new JLabel(Messages.getString("ClientFrame.27") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        statusbar = new JLabel(Messages.getString("ClientFrame.27") + properties.getProperty(InteractiveClient.USER) + "@" + properties.getProperty(InteractiveClient.URI)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         statusbar.setMinimumSize(new Dimension(400, 15));
         statusbar.setBorder(BorderFactory
                 .createBevelBorder(BevelBorder.LOWERED));
@@ -615,9 +617,10 @@ public class ClientFrame extends JFrame
         item = new JMenuItem(Messages.getString("ClientFrame.69"), KeyEvent.VK_U); //$NON-NLS-1$
         item.setToolTipText(Messages.getString("ClientFrame.70")); //$NON-NLS-1$
         item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
                 // load properties modified by the login panel
-                Properties loginData=getLoginData(properties);
+                final Properties loginData = getLoginData(properties);
                 reconnectClient(loginData);
             }
         });
@@ -677,25 +680,25 @@ public class ClientFrame extends JFrame
     }
     
     public void reconnectClient(final Properties loginData) {
-        if(loginData == null) {
+        if(loginData == null || loginData.isEmpty()) {
             return;
         }
         
         final Properties oldProps=properties;
         properties.putAll(loginData);
-        statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty("user") + "@" + properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty(InteractiveClient.USER) + "@" + properties.getProperty(InteractiveClient.URI)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 
         try {
             client.shutdown(false);
             client.connect();
             client.reloadCollection();
         } catch (Exception u) {
-            showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty("uri") + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty(InteractiveClient.URI) + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             properties=oldProps;
             try { 
                 client.connect();
             } catch(final Exception uu) {
-                showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty("uri") , uu); //$NON-NLS-1$ //$NON-NLS-2$
+                showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty(InteractiveClient.URI) , uu); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
     }
@@ -923,42 +926,42 @@ public class ClientFrame extends JFrame
         }
     }
     
-    private void moveAction(ActionEvent ev) {
+    private void moveAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
     	PrettyXmldbURI[] collections = null;
         
     	//get an array of collection paths
-        try
-		{    
-        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+        try {    
+            final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
-        } 
-        catch (XMLDBException e)
-		{
+        } catch(final XMLDBException e) {
             showErrorMessage(e.getMessage(), e);
             return;
         }
         
         //prompt the user for a destination collection from the list
-        Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.111"), Messages.getString("ClientFrame.112"), JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]); //$NON-NLS-1$ //$NON-NLS-2$
-        if(val == null)
+        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.111"), Messages.getString("ClientFrame.112"), JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]); //$NON-NLS-1$ //$NON-NLS-2$
+        if(val == null) {
             return;
+        }
 	    
         final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
-        Runnable moveTask = new Runnable() {
+        final Runnable moveTask = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
                     client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                     for(int i = 0; i < res.length; i++) {
                         setStatus(Messages.getString("ClientFrame.115") + res[i].getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.move(res[i].getName(), destinationPath, null);
-                        else
+                        } else {
                             service.moveResource(res[i].getName(), destinationPath, null);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -970,32 +973,36 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private void renameAction(ActionEvent ev) {
+    private void renameAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
-        Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 		
-        if(val == null)
+        if(val == null) {
             return;
+        }
+        
         XmldbURI parseIt;
         try {
-        	parseIt = URIUtils.encodeXmldbUriFor((String)val);
+            parseIt = URIUtils.encodeXmldbUriFor((String)val);
         } catch (URISyntaxException e) {
-        	showErrorMessage(Messages.getString("ClientFrame.121")+e.getMessage(),e); //$NON-NLS-1$
-        	return;
+            showErrorMessage(Messages.getString("ClientFrame.121")+e.getMessage(),e); //$NON-NLS-1$
+            return;
         }
         final XmldbURI destinationFilename = parseIt;
-        Runnable renameTask = new Runnable() {
+        final Runnable renameTask = new Runnable() {
+            @Override
             public void run() {
                 try {
-                    CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+                    final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
                     client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                     for(int i = 0; i < res.length; i++) {
                         setStatus(Messages.getString("ClientFrame.124") + res[i].getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.move(res[i].getName(), null, destinationFilename);
-                        else
+                        } else {
                             service.moveResource(res[i].getName(), null, destinationFilename);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -1013,10 +1020,9 @@ public class ClientFrame extends JFrame
     	PrettyXmldbURI[] collections = null;
         
     	//get an array of collection paths
-        try
-		{    
-        	Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            ArrayList<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+        try {    
+            final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } 
@@ -1050,10 +1056,11 @@ public class ClientFrame extends JFrame
                     	//Its too late and brain hurts - deliriumsky
                     	
                         setStatus(Messages.getString("ClientFrame.132") + res[i].getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if(res[i].isCollection())
+                        if(res[i].isCollection()) {
                             service.copy(res[i].getName(), destinationPath, null);
-                        else
+                        } else {
                             service.copyResource(res[i].getName(), destinationPath, null);
+                        }
                     }
                     client.reloadCollection();
                 } catch (XMLDBException e) {
@@ -1065,14 +1072,20 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private ArrayList<PrettyXmldbURI> getCollections(Collection root, ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException
-    {
+    private ArrayList<PrettyXmldbURI> getCollections(final Collection root, final ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
-        String[] childCollections= root.listChildCollections();
-        Collection child;
-        for(int i = 0; i < childCollections.length; i++)
-        {
-            child = root.getChildCollection(childCollections[i]);
+        final String[] childCollections = root.listChildCollections();
+        Collection child = null;
+        for(int i = 0; i < childCollections.length; i++) {
+            try {
+                child = root.getChildCollection(childCollections[i]);
+            } catch(final XMLDBException xmldbe) {
+                if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                    continue;
+                } else {
+                    throw xmldbe;
+                }
+            }
             getCollections(child, collectionsList);
         }
         return collectionsList;
@@ -1172,23 +1185,40 @@ public class ClientFrame extends JFrame
         return target.delete();
     }
     
-    private void backupAction(ActionEvent ev) {
-        CreateBackupDialog dialog = new CreateBackupDialog(
-                properties.getProperty("uri", "xmldb:exist://"),  
-                properties.getProperty("user", "admin"),  
-                properties.getProperty("password", null), 
-                new File(preferences.get("directory.backup", System.getProperty("user.home")))); 
-        if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), 
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, null, null) == JOptionPane.YES_OPTION) {
+    private void backupAction(final ActionEvent ev) {
+        
+        //get the collection to highlight in the backup dialog
+        final String defaultSelectedCollection;
+        final ResourceDescriptor selResources[] = getSelectedResources();
+        if(selResources != null) {
+            if(selResources.length == 1 && selResources[0].isCollection()) {
+                //use the selected collection
+                defaultSelectedCollection = path.toString() + "/" + selResources[0].getName().toString();
+            } else {
+                //use the current collection
+                defaultSelectedCollection = path.toString();
+            }
+        } else {
+            defaultSelectedCollection = path.toString();
+        }
+        
+        final CreateBackupDialog dialog = new CreateBackupDialog(
+            properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),  
+            properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),  
+            properties.getProperty(InteractiveClient.PASSWORD, null), 
+            new File(preferences.get("directory.backup", System.getProperty("user.home"))),
+            defaultSelectedCollection
+        ); 
+        
+        if(JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
             
-            String collection = dialog.getCollection();
-            String backuptarget = dialog.getBackupTarget();
+            final String collection = dialog.getCollection();
+            final String backuptarget = dialog.getBackupTarget();
             
             // DWES add check here?
-            File target=new File(backuptarget);
+            final File target = new File(backuptarget);
             if(target.exists()){
-                if (JOptionPane.showConfirmDialog( this,
+                if(JOptionPane.showConfirmDialog( this,
                         Messages.getString("CreateBackupDialog.6a") + " "
                         + backuptarget + " "
                         + Messages.getString("CreateBackupDialog.6b"),
@@ -1203,11 +1233,12 @@ public class ClientFrame extends JFrame
         
             
             try {
-            Backup backup = new Backup(
-                    properties.getProperty("user", "admin"), 
-                    properties.getProperty("password", null), backuptarget, 
-                    XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") 
-                    + collection));
+                final Backup backup = new Backup(
+                    properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), 
+                    properties.getProperty(InteractiveClient.PASSWORD, null), backuptarget, 
+                    XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") 
+                    + collection)
+                );
                 backup.backup(true, this);
             } catch (XMLDBException e) {
                 showErrorMessage("XMLDBException: " + e.getMessage(), e); //$NON-NLS-1$
@@ -1244,7 +1275,7 @@ public class ClientFrame extends JFrame
 	            String restoreFile = f.getAbsolutePath();
 	            
                     final GuiRestoreListener listener = new GuiRestoreListener(this);    
-                    doRestore(listener, properties.getProperty("user", "admin"), properties.getProperty("password", null), newDbaPass, new File(restoreFile), properties.getProperty("uri", "xmldb:exist://"));
+                    doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, new File(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
                         
         	}
         }
@@ -1264,8 +1295,8 @@ public class ClientFrame extends JFrame
 
                     listener.hideDialog();
 
-                    if (properties.getProperty("user", "admin").equals("admin") && dbaPassword != null) {
-                        properties.setProperty("password", dbaPassword);
+                    if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
+                        properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
                     }
                     
                     SwingUtilities.invokeAndWait(new Runnable() {
@@ -1461,21 +1492,9 @@ public class ClientFrame extends JFrame
                 
             } else {
                 name = XmldbURI.create(".."); //$NON-NLS-1$
-                Account account = service.getAccount(properties.getProperty("user"));
+                Account account = service.getAccount(properties.getProperty(InteractiveClient.USER));
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            
-            final DialogCompleteWithResponse<Void> callback = new DialogCompleteWithResponse<Void>() {
-                @Override
-                public void complete(final Void v) {
-                    try {
-                        client.reloadCollection();
-                    } catch (final XMLDBException e) {
-                        showErrorMessage(Messages.getString("ClientFrame.197") + e.getMessage(), e); //$NON-NLS-1$
-                        e.printStackTrace();
-                    }
-                }
-            };
             
             final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
             final int rows[] = fileman.getSelectedRows();
@@ -1484,7 +1503,17 @@ public class ClientFrame extends JFrame
             }
             
             final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, permAider, selected);
-            editPropertiesDialog.addDialogCompleteWithResponseCallback(callback);
+            editPropertiesDialog.addWindowListener(new WindowAdapter(){           
+                @Override
+                public void windowClosed(final WindowEvent e) {
+                    try {
+                        client.reloadCollection();
+                    } catch (final XMLDBException xmldbe) {
+                        showErrorMessage(Messages.getString("ClientFrame.197") + xmldbe.getMessage(), xmldbe); //$NON-NLS-1$
+                        xmldbe.printStackTrace();
+                    }
+                }
+            });
             editPropertiesDialog.setVisible(true);
             
         } catch (XMLDBException e) {
@@ -1736,20 +1765,55 @@ public class ClientFrame extends JFrame
     
     /**
      * @param   properties pass properties to the login panel
-     * @return  the modiefied properties
+     * @return  the modified properties
      */
-    
-    protected static Properties getLoginData(Properties properties) {
+    protected static Properties getLoginData(final Properties props) {
 
-        LoginPanel login = new LoginPanel(properties);
-        if (JOptionPane.showOptionDialog(null, login, 
-                SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " "
-                + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login" ,
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, null, null) == JOptionPane.OK_OPTION) {
-            return login.getProperties();
+        final Properties properties = new Properties();
+        
+        final String serverUri;
+        if(props.getProperty(InteractiveClient.URI) == null || props.getProperty(InteractiveClient.URI).isEmpty()) {
+            serverUri = InteractiveClient.URI_DEFAULT;
+        } else {
+            if(Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, "FALSE"))) {
+                serverUri = InteractiveClient.URI_DEFAULT;
+            } else {
+                serverUri = props.getProperty(InteractiveClient.URI);
+            }
         }
-        return null;
+        
+        final DefaultConnectionSettings defaultConnectionSettings = new DefaultConnectionSettings(
+            props.getProperty(InteractiveClient.USER, InteractiveClient.USER_DEFAULT),
+            props.getProperty(InteractiveClient.PASSWORD, ""),
+            serverUri,
+            Boolean.parseBoolean(props.getProperty(InteractiveClient.SSL_ENABLE, InteractiveClient.SSL_ENABLE_DEFAULT))
+        );
+        defaultConnectionSettings.setConfiguration(props.getProperty(InteractiveClient.CONFIGURATION,""));
+                
+        final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings, Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, InteractiveClient.LOCAL_MODE_DEFAULT)), Boolean.parseBoolean(props.getProperty(InteractiveClient.NO_EMBED_MODE, InteractiveClient.NO_EMBED_MODE_DEFAULT)));
+        
+        connectionDialog.setTitle(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login");
+        
+        connectionDialog.addDialogCompleteWithResponseCallback(new DialogCompleteWithResponse<Connection>(){
+            @Override
+            public void complete(final Connection connection) {
+                properties.setProperty(InteractiveClient.USER, connection.getUsername());
+                properties.setProperty(InteractiveClient.PASSWORD, connection.getPassword());
+                
+                if(!connection.getUri().isEmpty()) {
+                    properties.setProperty(InteractiveClient.URI, connection.getUri());
+                    properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
+                    properties.setProperty(InteractiveClient.LOCAL_MODE, "FALSE");
+                } else {
+                    properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());
+                    properties.setProperty(InteractiveClient.URI, XmldbURI.EMBEDDED_SERVER_URI.toString());
+                }
+            }
+        });
+        
+        connectionDialog.setVisible(true);
+        
+        return properties;
     }
     
     public static void showErrorMessage(String message, Throwable t) {

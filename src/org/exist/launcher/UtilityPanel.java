@@ -1,19 +1,55 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2012 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.launcher;
 
+import org.exist.repo.ExistRepository;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
 public class UtilityPanel extends JFrame implements Observer {
 
     private TextArea messages;
-    JLabel statusLabel;
+    private JLabel statusLabel;
+    private JButton dashboardButton;
+    private JButton eXideButton;
 
-    public UtilityPanel(final Launcher launcher) {
+    public UtilityPanel(final Launcher launcher, boolean hideOnStart) {
+        this.setAlwaysOnTop(true);
+
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(getClass().getResource("icon32.png"));
+        } catch (IOException e) {
+        }
+        this.setIconImage(image);
 
         if (!launcher.isSystemTraySupported())
             setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -33,23 +69,25 @@ public class UtilityPanel extends JFrame implements Observer {
             final Desktop desktop = Desktop.getDesktop();
 
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                button = createButton(toolbar, "dashboard.png", "Dashboard");
-                button.addActionListener(new ActionListener() {
+                dashboardButton = createButton(toolbar, "dashboard.png", "Dashboard");
+                dashboardButton.setEnabled(false);
+                dashboardButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         launcher.dashboard(desktop);
                     }
                 });
-                toolbar.add(button);
+                toolbar.add(dashboardButton);
 
-                button = createButton(toolbar, "exide.png", "eXide");
-                button.addActionListener(new ActionListener() {
+                eXideButton = createButton(toolbar, "exide.png", "eXide");
+                eXideButton.setEnabled(false);
+                eXideButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         launcher.eXide(desktop);
                     }
                 });
-                toolbar.add(button);
+                toolbar.add(eXideButton);
             }
         }
 
@@ -116,6 +154,9 @@ public class UtilityPanel extends JFrame implements Observer {
         this.setLocation(d.width - this.getWidth() - 40, 60);
 
         launcher.addObserver(this);
+
+        if (!hideOnStart)
+            setVisible(true);
     }
 
     private JButton createButton(JToolBar toolbar, String image, String title) {
@@ -145,11 +186,20 @@ public class UtilityPanel extends JFrame implements Observer {
 
     @Override
     public void update(Observable observable, final Object o) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                messages.append(o.toString());
+        if (o instanceof ExistRepository.Notification) {
+            ExistRepository.Notification notification = (ExistRepository.Notification) o;
+            if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD)) {
+                dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+            } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE)) {
+                eXideButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             }
-        });
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    messages.append(o.toString());
+                }
+            });
+        }
     }
 }

@@ -29,6 +29,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
+import org.exist.source.DBSource;
+import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -194,7 +196,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 					variableDecls.remove(Debuggee.PREFIX+":session");
 				}
 
-				setupContext(context);
+				setupContext(source, context);
 				
 				if(compiled == null)
 				    compiled = xquery.compile(context, source);
@@ -238,7 +240,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
             broker = brokerPool.get(user);
             XQuery xquery = broker.getXQueryService();
             XQueryContext context = xquery.newContext(accessCtx);
-            setupContext(context);
+            setupContext(null, context);
             CompiledXQuery expr = xquery.compile(context, query);
 //            checkPragmas(context);
             LOG.debug("compilation took "  +  (System.currentTimeMillis() - start));
@@ -266,7 +268,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	return doQuery(query, docs, null, null);
     }
 	
-	protected void setupContext(XQueryContext context) throws XMLDBException, XPathException {
+	protected void setupContext(Source source, XQueryContext context) throws XMLDBException, XPathException {
 	    try {
 	    	context.setBaseURI(new AnyURIValue(properties.getProperty("base-uri", collection.getPath())));
 	    } catch(XPathException e) {
@@ -274,6 +276,22 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	    }
 		if(moduleLoadPath != null)
 			context.setModuleLoadPath(moduleLoadPath);
+		else if (source != null) {
+//	        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + collection.getPath());
+
+	        String modulePath = null;
+		    if (source instanceof DBSource) {
+		        modulePath = ((DBSource) source).getDocumentPath().removeLastSegment().toString();
+            
+		    } else if (source instanceof FileSource) {
+                modulePath = ((FileSource) source).getFile().getParent();
+                
+            }
+		    
+		    if (modulePath != null)
+		        context.setModuleLoadPath(modulePath);
+		}
+		    
 
 		// declare namespace/prefix mappings
 		for (Map.Entry<String, String> entry : namespaceDecls.entrySet()) {
@@ -399,7 +417,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     		context.setStaticallyKnownDocuments(docs);
             if (lockedDocuments != null)
                 context.setProtectedDocs(lockedDocuments);
-            setupContext(context);
+            setupContext(null, context);
 //    		checkPragmas(context);
     		    
     		XQuery xquery = broker.getXQueryService();

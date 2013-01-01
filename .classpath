@@ -134,8 +134,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/user/xmlgraphics-commons-1.4.jar"/>
 	<classpathentry kind="lib" path="tools/ant/lib/ant-antunit-1.1.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjtools-1.6.12.jar"/>
-	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjweaver-1.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/user/exificient-0.8.jar"/>
 	<classpathentry kind="lib" path="lib/user/icu4j-4_8_1_1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/httpclient-4.1.jar"/>
@@ -150,9 +148,9 @@
 	<classpathentry kind="lib" path="lib/core/gnu-crypto-2.0.1-min.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-net-2.2.jar"/>
 	<classpathentry kind="lib" path="extensions/contentextraction/lib/metadata-extractor-2.4.0-beta-1.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-3.6.0.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-3.6.0.jar"/>
-	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-3.6.0.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-analyzers-3.6.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-core-3.6.1.jar"/>
+	<classpathentry kind="lib" path="extensions/indexes/lucene/lib/lucene-queries-3.6.1.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/existdb-favicon.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-continuation-8.1.8.v20121106.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/jetty-http-8.1.8.v20121106.jar"/>
@@ -178,5 +176,6 @@
 	<classpathentry kind="lib" path="extensions/security/openid/lib/openid4java-0.9.6.jar"/>
 	<classpathentry kind="lib" path="extensions/debuggee/lib/mina-core-2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.7.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>

@@ -12,6 +12,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -78,7 +79,7 @@ public class FunAnalyzeString extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        MemTreeBuilder builder = new MemTreeBuilder(context);
+        final MemTreeBuilder builder = new MemTreeBuilder(context);
         builder.startDocument();
         builder.startElement(new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS), null);
         String input = "";
@@ -95,7 +96,7 @@ public class FunAnalyzeString extends BasicFunction {
         }
         builder.endElement();
         builder.endDocument();
-        return builder.getDocument();
+        return (NodeValue)builder.getDocument().getDocumentElement();
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {

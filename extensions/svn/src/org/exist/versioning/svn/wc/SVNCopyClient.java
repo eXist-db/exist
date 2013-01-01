@@ -14,7 +14,7 @@ package org.exist.versioning.svn.wc;
 import java.io.File;
 import java.util.Collection;
 
-import org.exist.versioning.svn.Resource;
+import org.exist.util.io.Resource;
 import org.exist.versioning.svn.internal.wc.SVNCopyDriver;
 import org.exist.versioning.svn.internal.wc.SVNErrorManager;
 import org.exist.versioning.svn.internal.wc.SVNPath;

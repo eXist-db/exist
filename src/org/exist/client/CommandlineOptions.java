@@ -60,6 +60,7 @@ public class CommandlineOptions {
     final static int REINDEX_OPT = 'i';
     final static int QUERY_GUI_OPT = 'Q';
     final static int NO_EMBED_OPT = 'N';
+    final static int USE_SSL_OPT = 'S';
     
     final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[]{
         new CLOptionDescriptor("help",
@@ -150,7 +151,8 @@ public class CommandlineOptions {
                 new CLOptionDescriptor("query", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUERY_GUI_OPT,
                 "directly open the query gui"),
                 new CLOptionDescriptor("no-embedded-mode", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_EMBED_OPT,
-                "do not make embedded mode available")
+                "do not make embedded mode available"),
+		new CLOptionDescriptor("use-ssl", CLOptionDescriptor.ARGUMENT_DISALLOWED, USE_SSL_OPT, "Use SSL by default for remote connections")
     };
     
     boolean needPasswd = false;

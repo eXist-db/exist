@@ -27,9 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.net.URI;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.storage.DBBroker;
@@ -46,8 +47,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     private final static RestXqServiceCompiledXQueryCacheImpl instance = new RestXqServiceCompiledXQueryCacheImpl();
     
     //TODO could introduce a MAX stack size, i.e. you can only have N compiled main.xqy's in the cache
-    
-    private final Map<URI, Stack<CompiledXQuery>> cache = new HashMap<URI, Stack<CompiledXQuery>>();
+    private final Map<URI, Deque<CompiledXQuery>> cache = new HashMap<URI, Deque<CompiledXQuery>>();
     private final ReentrantReadWriteLock cacheLock = new ReentrantReadWriteLock();
     
     public static RestXqServiceCompiledXQueryCacheImpl getInstance() {
@@ -58,15 +58,15 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     public CompiledXQuery getCompiledQuery(final DBBroker broker, final URI xqueryLocation) throws RestXqServiceException {
         
         CompiledXQuery xquery = null;
-        cacheLock.readLock().lock();
+        cacheLock.writeLock().lock();
         try {
-            final Stack<CompiledXQuery> queries = cache.get(xqueryLocation);
+            final Deque<CompiledXQuery> queries = cache.get(xqueryLocation);
             
-            if(queries != null && !queries.isEmpty()) { 
+            if(queries != null && !queries.isEmpty()) {
                 xquery = queries.pop();
             }
         } finally {
-            cacheLock.readLock().unlock();
+            cacheLock.writeLock().unlock();
         }
         
         if(xquery == null) {
@@ -85,9 +85,9 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     public void returnCompiledQuery(final URI xqueryLocation, final CompiledXQuery xquery) {
         cacheLock.writeLock().lock();
         try {
-            Stack<CompiledXQuery> queries = cache.get(xqueryLocation);
+            Deque<CompiledXQuery> queries = cache.get(xqueryLocation);
             if(queries == null) {
-                queries = new Stack<CompiledXQuery>();
+                queries = new ArrayDeque<CompiledXQuery>();
             }
             
             //reset the query and context
@@ -107,7 +107,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     public void removeService(final RestXqService service) {
         cacheLock.writeLock().lock();
         try {        
-            cache.remove(service);
+            cache.remove(service.getResourceFunction().getXQueryLocation());
         } finally {
             cacheLock.writeLock().unlock();
         }
@@ -117,8 +117,8 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     public void removeServices(final Iterable<RestXqService> services) {
         cacheLock.writeLock().lock();
         try {
-            for(RestXqService service : services) {
-                cache.remove(service);
+            for(final RestXqService service : services) {
+                cache.remove(service.getResourceFunction().getXQueryLocation());
             }
         } finally {
             cacheLock.writeLock().unlock();

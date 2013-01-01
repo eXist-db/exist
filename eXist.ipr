@@ -81,7 +81,11 @@
       <entry name="?*.tld" />
       <entry name="?*.config" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
@@ -417,7 +421,6 @@
     </library>
     <library name="tools">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/tomcat5/server/lib/catalina-5.0.28.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/ircbot/lib/pircbot.jar!/" />
         <root url="file://$PROJECT_DIR$/tools/ant/lib" />
         <root url="file://$PROJECT_DIR$/tools/wrapper/lib" />

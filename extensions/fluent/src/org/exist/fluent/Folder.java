@@ -455,7 +455,9 @@ public class Folder extends NamedResource implements Cloneable {
 					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
 				} catch (TriggerException e) {
 					throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
-				} finally {
+				} catch (EXistException e) {
+                                        throw new DatabaseException("failed to create document '" + name + "' from source " + source, e);
+                                } finally {
 					inputStream.close();
 				}
 				commit();

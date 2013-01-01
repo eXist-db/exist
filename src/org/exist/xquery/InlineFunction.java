@@ -42,14 +42,18 @@ public class InlineFunction extends AbstractExpression {
 	
 	private UserDefinedFunction function;
 	
-	public InlineFunction(XQueryContext context, UserDefinedFunction function) {
+    private AnalyzeContextInfo cachedContextInfo;
+
+    public InlineFunction(XQueryContext context, UserDefinedFunction function) {
 		super(context);
 		this.function = function;
 	}
 
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
+        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+
+        AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
 		info.addFlag(SINGLE_STEP_EXECUTION);
 		
 		// local variable context is known within inline function:
@@ -79,6 +83,7 @@ public class InlineFunction extends AbstractExpression {
 		FunctionCall call = new FunctionCall(context, function);
 		call.setLocation(function.getLine(), function.getColumn());
 		function.setCaller(call);
+		function.analyze(cachedContextInfo);
 		return new FunctionReference(call);
 	}
 

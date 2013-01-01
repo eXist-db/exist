@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
@@ -105,26 +107,48 @@ public class XMLDBChangeUser extends BasicFunction {
 		
 	try {
 	    collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-	    UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+	    final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 	    
-	    Account oldUser = ums.getAccount(userName);
-	    if (oldUser == null) {
+	    final Account oldUser = ums.getAccount(userName);
+	    if(oldUser == null) {
                 logger.error("User " + userName + " not found");
                 throw new XPathException(this, "User " + userName + " not found");
 	    }
 
-	    UserAider user = new UserAider(oldUser.getName());
-	    if (!args[1].isEmpty()) {
-            // set password
-            user.setPassword(args[1].getStringValue());
+            final Group oldPrimaryGroup = oldUser.getDefaultGroup();
+            final UserAider user;
+            if(oldPrimaryGroup != null) {
+                //dont forget to set the primary group
+                user = new UserAider(oldUser.getName(), oldPrimaryGroup); 
+            } else {
+                user = new UserAider(oldUser.getName()); 
+            }
+	    
+            //copy the umask
+            user.setUserMask(oldUser.getUserMask());
+            
+            //copy the metadata
+            for(final SchemaType key : oldUser.getMetadataKeys()) {
+                user.setMetadataValue(key, oldUser.getMetadataValue(key));
+            }
+            
+            //copy the status
+            user.setEnabled(oldUser.isEnabled());
+            
+            //change the password?
+            if(!args[1].isEmpty()) {
+                // set password
+                user.setPassword(args[1].getStringValue());
 	    } else {
-            //use the old password
-            user.setEncodedPassword(oldUser.getPassword());
-            user.setPasswordDigest(oldUser.getDigestPassword());
+                //use the old password
+                user.setEncodedPassword(oldUser.getPassword());
+                user.setPasswordDigest(oldUser.getDigestPassword());
 	    }
-	    if (!args[2].isEmpty()) {
+	    
+            //change the groups?
+            if(!args[2].isEmpty()) {
                 // set groups
-                for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
+                for(final SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
                     user.addGroup(i.nextItem().getStringValue());
                 }
 	    } else {
@@ -132,12 +156,16 @@ public class XMLDBChangeUser extends BasicFunction {
             }
 
 	    ums.updateAccount(user);
-	} catch (XMLDBException xe) {
+	} catch(final XMLDBException xe) {
 	    logger.error("Failed to update user " + userName, xe);
 	    throw new XPathException(this, "Failed to update user " + userName, xe);
         } finally {
             if (null != collection) {
-                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+                try {
+                    collection.close();
+                } catch(final XMLDBException xmldbe) {
+                    logger.warn(xmldbe);
+                }
             }
 	}
 	

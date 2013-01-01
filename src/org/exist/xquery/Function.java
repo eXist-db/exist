@@ -234,6 +234,7 @@ public abstract class Function extends PathExpr {
                 if(expr.getCardinality() == Cardinality.ZERO
                         && (type.getCardinality() & Cardinality.ZERO) == 0)
                     throw new XPathException(this,
+                        ErrorCodes.XPTY0004,
                         Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
                         Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
             }

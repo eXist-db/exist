@@ -74,7 +74,6 @@ public class STXTemplatesCache {
         }
         LOG.debug("Retrieved STX Template '" + stylesheetUri.toString() + "' from cache.");
         return cachedTemplate.getTemplate();
-
     }
 
     private CachedTemplate storeInCache(DBBroker broker, XmldbURI stylesheetUri, DocumentImpl stylesheet, long lastModified) throws TransformerConfigurationException, SAXException {
@@ -94,6 +93,7 @@ public class STXTemplatesCache {
     }
 
     private class CachedTemplate {
+
         private final Templates templates;
         private final long lastUpdated;
 

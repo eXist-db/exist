@@ -62,6 +62,7 @@ import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.interpreter.Context;
 import org.exist.memtree.InMemoryXMLStreamReader;
@@ -69,6 +70,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.repo.ExistRepository;
+import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -84,13 +86,12 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.value.*;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.FileSystemStorage;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -134,7 +135,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private static final String                        TEMP_STORE_ERROR                                 = "Error occurred while storing temporary data";
     public static final String                         XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR            = "_eXist_xquery_update_error";
-    public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
+    public static final String                         HTTP_SESSIONVAR_XMLDB_USER                       = "_eXist_xmldb_user";
+    public static final String                         HTTP_REQ_ATTR_USER                               = "xquery.user";
+    public static final String                         HTTP_REQ_ATTR_PASS                               = "xquery.password";
 
     // Static namespace/prefix mappings
     protected HashMap<String, String>                  staticNamespaces                                 = new HashMap<String, String>();
@@ -2140,7 +2143,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Subject getUserFromHttpSession()
     {
-        SessionModule myModule = (SessionModule)getModule( SessionModule.NAMESPACE_URI );
+        RequestModule myModule = (RequestModule)getModule( RequestModule.NAMESPACE_URI );
 
         //Sanity check : one may *not* want to bind the module !
         if( myModule == null ) {
@@ -2150,7 +2153,7 @@ public class XQueryContext implements BinaryValueManager, Context
         Variable var = null;
 
         try {
-            var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+            var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
         }
         catch( XPathException xpe ) {
             return( null );
@@ -2159,17 +2162,21 @@ public class XQueryContext implements BinaryValueManager, Context
         if( ( var != null ) && ( var.getValue() != null ) ) {
 
             if( var.getValue().getItemType() == Type.JAVA_OBJECT ) {
-                JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+                JavaObjectValue reqValue = (JavaObjectValue)var.getValue().itemAt( 0 );
 
-                if( session.getObject() instanceof SessionWrapper ) {
-
-                    try {
-                        return( (Subject)( (SessionWrapper)session.getObject() ).getAttribute( HTTP_SESSIONVAR_XMLDB_USER ) );
-                    }
-                    catch( IllegalStateException e ) {
-
-                        // session is invalid
-                        return( null );
+                if( reqValue.getObject() instanceof RequestWrapper) {
+                    RequestWrapper req = (RequestWrapper) reqValue.getObject();
+                    Object user = req.getAttribute(HTTP_REQ_ATTR_USER);
+                    Object passAttr = req.getAttribute(HTTP_REQ_ATTR_PASS);
+                    if (user != null) {
+                        String password = passAttr == null ? null : passAttr.toString();
+                        try {
+                            return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
+                        } catch (AuthenticationException e) {
+                            LOG.error("User can not be authenticated: " + user.toString());
+                        }
+                    } else {
+                        return (Subject) req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
                     }
                 }
             }
@@ -3460,7 +3467,7 @@ public class XQueryContext implements BinaryValueManager, Context
     private List<BinaryValue> binaryValueInstances;
     
     @Override
-    public void registerBinaryValueInstance(BinaryValue binaryValue) {
+    public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
              binaryValueInstances = new ArrayList<BinaryValue>();
         }
@@ -3475,7 +3482,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @Override
     public void cleanupBinaryValueInstances() {
         if(binaryValueInstances != null) {
-            for(BinaryValue bv : binaryValueInstances) {
+            for(final BinaryValue bv : binaryValueInstances) {
                 try {
                     bv.close();
                 } catch (IOException ioe) {

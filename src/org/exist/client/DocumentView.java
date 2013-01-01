@@ -100,6 +100,7 @@ class DocumentView extends JFrame {
 		this.resourceName = resourceName;
 		this.resource = resource;
 		this.client = client;
+        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
 		this.collection = client.getCollection();
 		this.properties = properties;
 		getContentPane().setLayout(new BorderLayout());
