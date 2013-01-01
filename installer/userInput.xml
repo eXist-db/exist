@@ -4,7 +4,7 @@
         <field size="1.33" bold="false" txt="Set Data Directory" align="left"
             type="title"/>
         <field
-            txt="Please select a directory where eXist will keep its data files. On Vista and Windows 7, this should be outside the usual 'Program Files' directory:"
+            txt="Please select a directory where eXist-db will keep its data files. On Windows Vista and Windows 7, this should be outside the usual 'Program Files' directory:"
             align="left" type="staticText"/>
         <field variable="dataDir" align="center" type="dir">
             <spec create="false" mustExist="false" set="$DATA_DIR" size="20"
@@ -26,12 +26,14 @@
         </field>
         <field align="bottom" type="divider"/>
         <field type="space"/>
+        <field size="1.33" bold="false" txt="Configure Memory" align="left"
+            type="title"/>
         <field type="text" variable="MAX_MEMORY">
-          <description align="left" txt="Configure the max amount of memory to be used by eXist-db. The minimum memory setting is 512m, but 1024m is recommended. If your machine has enough memory, using 2048m should be sufficient even for most data sets. Note: 1200m is usually the limit on 32 bit systems.."/>
+          <description align="left" txt="Configure the maximum amount of memory to be used by eXist-db. The minimum memory setting is 512m, but 1024m is recommended. If your machine has enough memory, using 2048m should be sufficient for most data sets. Note: 1200m is usually the limit on 32 bit systems."/>
           <spec txt="Max memory in mb:" size="5" set="1024"/>
         </field>
         <field type="text" variable="cacheSize">
-          <description align="left" txt="Configure the amount of memory to be reserved for internal caches. If max memory above is set to 1024m, 128m is a good value; for 2048m use 256m; for 512m not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
+            <description align="left" txt="Configure the amount of memory to be reserved for internal caches. If the maximum memory is set above to 1024m, 128m is a good value; for 2048m use 256m; for 512m not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
           <spec txt="Cache memory in mb:" size="5" set="128"/>
         </field>
     </panel>

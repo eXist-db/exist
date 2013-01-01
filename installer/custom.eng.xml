@@ -75,12 +75,12 @@
     <str id="PathInputPanel.required" txt="The chosen directory should exist."/>
     <str id="PathInputPanel.required.forModificationInstallation" txt="The chosen directory should exist."/>
     <str id="PathInputPanel.notValid" txt="The chosen directory does not contain the required product."/>
-    <str id="PathInputPanel.extendedIntro" txt="On Windows Vista, please do not install eXist-db into the 'Program Files' directory unless you deactivated UAC or plan to always run eXist-db in privileged mode."/>
+    <str id="PathInputPanel.extendedIntro" txt="On Windows Vista, please do not install eXist-db into the 'Program Files' directory unless you have deactivated UAC or plan to always run eXist-db in privileged mode."/>
 
 		<!-- TargetPanel strings -->
     <str id="TargetPanel.info" txt="Select the installation path: "/>
     <str id="TargetPanel.browse" txt="Browse..."/>
-    <str id="TargetPanel.warn" txt="The directory already exists! Are you sure you want to install here and possibly overwrite existing files?"/>
+    <str id="TargetPanel.warn" txt="The directory already exists! Are you sure you want to install there and possibly overwrite existing files?"/>
     <str id="TargetPanel.empty_target" txt="You have not specified a target location! Is this correct?"/>
     <str id="TargetPanel.createdir" txt="Confirm selected directory: "/>
     <str id="TargetPanel.nodir" txt="This file is not a directory! Please choose a directory!"/>
@@ -88,7 +88,7 @@
 
     <!-- JDKPathPanel strings -->
     <str id="JDKPathPanel.extendedIntro" txt="The installed application needs a JDK between version ${JDKPathPanel.minVersion} and ${JDKPathPanel.maxVersion}. A java runtime environment (JRE) will be not sufficient."/>
-    <str id="JDKPathPanel.intro" txt="The installed application needs a JDK. A java runtime environment (JRE) will be not sufficient."/>
+    <str id="JDKPathPanel.intro" txt="The installed application needs a JDK. A java runtime environment (JRE) will not be sufficient."/>
     <str id="JDKPathPanel.info" txt="Select the JDK path:"/>
     <str id="JDKPathPanel.badVersion1" txt="The chosen JDK has the wrong version (available: "/>
     <str id="JDKPathPanel.badVersion2" txt=" required: "/>
@@ -96,9 +96,9 @@
     <str id="JDKPathPanel.nonValidPathInReg" txt="The Windows registry contains a non-valid path for this JDK. Should this JDK be used anyway?"/>
 
 		<!-- PacksPanel strings -->
-		<str id="PacksPanel.info" txt="Select the packs you want to install:"/>
-    <str id="PacksPanel.tip" txt="Note: Grayed packs are required."/>
-    <str id="PacksPanel.space" txt="Total space Required: "/>
+		<str id="PacksPanel.info" txt="Select the packages you want to install:"/>
+    <str id="PacksPanel.tip" txt="Note: Grayed packages are required."/>
+    <str id="PacksPanel.space" txt="Total space required: "/>
     <str id="PacksPanel.freespace" txt="Available space: "/>
     <str id="PacksPanel.description" txt="Description"/>
     <str id="PacksPanel.dependencyList" txt="The selected package has the following dependencies and/or excludes"/>
@@ -110,7 +110,7 @@
 		<!-- InstallPanel strings -->
 		<str id="InstallPanel.info" txt="Click 'Install!' to begin the installation process"/>
     <str id="InstallPanel.install" txt="Install!"/>
-    <str id="InstallPanel.tip" txt="Pack installation progress:"/>
+    <str id="InstallPanel.tip" txt="Package installation progress:"/>
     <str id="InstallPanel.begin" txt=" "/>
     <str id="InstallPanel.finished" txt="[Finished]"/>
     <str id="InstallPanel.progress" txt="Overall installation progress:"/>
@@ -138,19 +138,19 @@
 
 		<!-- ImgPacksPanel strings -->
 		<str id="ImgPacksPanel.dependencyList" txt="Dependencies and/or excludes"/>
-    <str id="ImgPacksPanel.packs" txt="The following packs are available:"/>
+    <str id="ImgPacksPanel.packs" txt="The following packages are available:"/>
     <str id="ImgPacksPanel.snap" txt="Package snapshot:"/>
-    <str id="ImgPacksPanel.checkbox" txt=" Install this pack"/>
+    <str id="ImgPacksPanel.checkbox" txt=" Install this package"/>
 
     <!-- ShortcutPanel strings -->
-    <str id="ShortcutPanel.regular.list" txt="Select a Program Group for the Shortcuts:"/>
+    <str id="ShortcutPanel.regular.list" txt="Select a Program Group for the shortcuts:"/>
     <str id="ShortcutPanel.regular.default" txt="Default"/>
     <str id="ShortcutPanel.regular.desktop" txt="Create additional shortcuts on the desktop"/>
-    <str id="ShortcutPanel.regular.create" txt="Create shortcuts in the StartMenu"/>
+    <str id="ShortcutPanel.regular.create" txt="Create shortcuts in the Start Menu"/>
     <str id="ShortcutPanel.regular.userIntro" txt="Create shortcut for:"/>
     <str id="ShortcutPanel.regular.currentUser" txt="Current user"/>
     <str id="ShortcutPanel.regular.allUsers" txt="All users"/>
-    <str id="ShortcutPanel.alternate.apology" txt="We are sorry but IzPack does not support the creation of shortcuts on this operating system. To create the shortcuts, please refer to your operating system manual."/>
+    <str id="ShortcutPanel.alternate.apology" txt="We are sorry, but IzPack does not support the creation of shortcuts on this operating system. To create the shortcuts, please refer to your operating system manual."/>
     <str id="ShortcutPanel.alternate.targetsLabel" txt="The following is a list of targets that the manufacturer of this software product wanted you to have access to."/>
     <str id="ShortcutPanel.alternate.textFileExplanation" txt="You can save detailed information about the application targets in a text file for later reference."/>
     <str id="ShortcutPanel.alternate.saveButton" txt="Save Text File"/>
@@ -229,9 +229,9 @@
     <str id="SummaryPanel.info" txt="Installation will proceed with the following settings. Press Next to continue."/>
     <str id="TargetPanel.summaryCaption" txt="Installation Path"/>
     <str id="JDKPathPanel.summaryCaption" txt="JDK Path"/>
-    <str id="PacksPanel.summaryCaption" txt="Chosen Installation Packs"/>
-    <str id="ImgPacksPanel.summaryCaption" txt="Chosen Installation Packs"/>
-    <str id="TreePacksPanel.summaryCaption" txt="Chosen Installation Packs"/>
+    <str id="PacksPanel.summaryCaption" txt="Chosen Installation Packages"/>
+    <str id="ImgPacksPanel.summaryCaption" txt="Chosen Installation Packages"/>
+    <str id="TreePacksPanel.summaryCaption" txt="Chosen Installation Packages"/>
     <str id="UserPathPanel.summaryCaption" txt="Selected Path"/>
     <str id="DefaultTargetPanel.summaryCaption" txt="Installation Path"/>
     
@@ -250,7 +250,7 @@
     <str id="nextmedia.okbtn" txt="Apply"/>
     <str id="nextmedia.cancelbtn" txt="Cancel"/>
     <str id="nextmedia.choosertitle" txt="Choose install media"/>
-    <str id="nextmedia.filedesc" txt="install packs (.pak*)"/>
+    <str id="nextmedia.filedesc" txt="install packages (.pak*)"/>
 
 		<!-- This string defines the time stamp format in the installation report.
          The format details are documented in java.text.SimpleDateFormat -->
