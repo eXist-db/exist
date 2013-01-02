@@ -338,8 +338,7 @@
         </pack>
         
         <pack name="Sources" required="no" installGroups="Group1">
-            <description>Java source files and build scripts. Install this package if you want to
-            customize the build, create extensions or contribute to eXist-db.</description>
+            <description>Java source files and build scripts. Install this package if you want to customize the build, create extensions or contribute to eXist-db.</description>
             <fileset targetdir="$INSTALL_PATH/src" dir="src">
                 <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
@@ -386,7 +385,7 @@
         </pack-->
         
         <pack name="Apps" required="no" installGroups="Group2">
-            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard to be able to add more applications later. The "shared" package is required for several of the other applications, including the package manager, and should be selected as well.</description>
+            <description>Application Packages: additional applications for XQuery development, database management, documentation, examples and more. You should at least install the dashboard and the "shared" package to be able to add more applications later.</description>
         </pack>
     </packs>
 </installation>
