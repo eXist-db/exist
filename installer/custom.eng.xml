@@ -75,7 +75,7 @@
     <str id="PathInputPanel.required" txt="The chosen directory should exist."/>
     <str id="PathInputPanel.required.forModificationInstallation" txt="The chosen directory should exist."/>
     <str id="PathInputPanel.notValid" txt="The chosen directory does not contain the required product."/>
-    <str id="PathInputPanel.extendedIntro" txt="On Windows Vista, please do not install eXist-db into the 'Program Files' directory unless you have deactivated UAC or plan to always run eXist-db in privileged mode."/>
+    <str id="PathInputPanel.extendedIntro" txt="On Windows Vista and Windows 7, please do not install eXist-db into the 'Program Files' directory unless you have deactivated UAC or plan to always run eXist-db in privileged mode."/>
 
 		<!-- TargetPanel strings -->
     <str id="TargetPanel.info" txt="Select the installation path: "/>
