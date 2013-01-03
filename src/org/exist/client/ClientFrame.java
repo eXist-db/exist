@@ -1795,7 +1795,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
          * @see javax.swing.table.TableModel#getValueAt(int, int)
          */
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
+        public Object getValueAt(final int rowIndex, final int columnIndex) {
             final ResourceDescriptor row = getRow(rowIndex);
 
             switch (columnIndex) {
