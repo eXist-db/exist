@@ -419,7 +419,7 @@ public class InteractiveClient {
                         XmldbURI.create(childCollections[i]),
                         getOwnerName(perm),
                         getGroupName(perm),
-                        (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
+                        "c" + ((perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
                         created ) );
             }
             completitions.add(childCollections[i]);
@@ -447,7 +447,7 @@ public class InteractiveClient {
                         XmldbURI.create(childResources[j]),
                         getOwnerName(perm),
                         getGroupName(perm),
-                        (perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString(),
+                        "-" + ((perm instanceof ACLPermission && ((ACLPermission)perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
                         lastModificationTime ) );
             }
             completitions.add(childResources[j]);
