@@ -135,7 +135,7 @@ public class RecoveryManager {
                             LOG.debug("Last readable log entry lsn: " + Lsn.dump(lastLsn));
                         }
                     }
-	                
+
 	    			// if the last checkpoint record is not the last record in the file
 	    			// we need a recovery.
 	    			if ((lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) &&
@@ -162,14 +162,17 @@ public class RecoveryManager {
                     } else if (LOG.isDebugEnabled())
 	    				LOG.debug("Database is in clean state.");
     			}
-    			cleanDirectory(files);
             } finally {
                 reader.close();
+                // remove .log files from directory even if recovery failed.
+                // Re-applying them on a second start up attempt would definitely damage the db, so we better
+                // delete them before user tries to launch again.
+                cleanDirectory(files);
             }
 		}
         logManager.setCurrentFileNum(lastNum);
 		logManager.switchFiles();
-                logManager.clearBackupFiles();
+        logManager.clearBackupFiles();
         return recoveryRun;
 	}
 
@@ -218,10 +221,11 @@ public class RecoveryManager {
                         break; // last readable entry reached. Stop here.
                 }
             } catch (Exception e) {
-                LOG.warn("Exception caught while redoing transactions. Aborting recovery.", e);
+                LOG.warn("Exception caught while redoing transactions. Aborting recovery to avoid possible damage. " +
+                    "Before starting again, make sure to run a check via the emergency export tool.", e);
                 if (next != null)
                     LOG.warn("Log entry that caused the exception: " + next.dump());
-                throw new LogException("Recovery aborted");
+                throw new LogException("Recovery aborted. ");
             } finally {
                 LOG.info("Redo processed " + redoCnt + " out of " + txnCount + " transactions.");
             }
@@ -257,7 +261,8 @@ public class RecoveryManager {
                     }
                 } catch (Exception e) {
                     LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
-                            "to be undone: " + runningTxns.size(), e);
+                            "to be undone: " + runningTxns.size() + ". Aborting recovery to avoid possible damage. " +
+                            "Before starting again, make sure to run a check via the emergency export tool.", e);
                     if (next != null)
                         LOG.warn("Log entry that caused the exception: " + next.dump());
                     throw new LogException("Recovery aborted");
