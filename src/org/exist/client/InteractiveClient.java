@@ -149,7 +149,7 @@ public class InteractiveClient {
     
     // values
     protected static final String EDIT_CMD = "emacsclient -t $file";
-    protected static final String ENCODING = "ISO-8859-1";            //TODO this should probably be UTF-8?
+    protected static final String ENCODING = "UTF-8";
     protected static final String PASS = null;
     protected static final String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
     protected static final String SSL_ENABLE_DEFAULT = "FALSE";
