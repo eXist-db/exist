@@ -135,6 +135,8 @@ public class InteractiveClient {
     private final static String ANSI_CYAN = "\033[0;36m";
     private final static String ANSI_WHITE = "\033[0;37m";
     
+    private final static String EOL = System.getProperty("line.separator");
+    
     // properties
 
     // keys
@@ -249,10 +251,10 @@ public class InteractiveClient {
         messageln("validate [document]  validate xml document with system xml catalog.");
         messageln("validate [document] [grammar]  validate xml document with ");
         messageln("                     specified grammar document.");
-        messageln("\n--- search commands ---");
+        messageln(EOL + "--- search commands ---");
         messageln("find xpath-expr      execute the given XPath expression.");
         messageln("show [position]      display query result value at position.");
-        messageln("\n--- user management (may require dba rights) ---");
+        messageln(EOL + "--- user management (may require dba rights) ---");
         messageln("users                list existing users.");
         messageln("adduser username     create a new user.");
         messageln("passwd username      change password for user. ");
@@ -672,7 +674,7 @@ public class InteractiveClient {
                     String nextLine;
                     while ((nextLine = reader.readLine()) != null) {
                         buf.append(nextLine);
-                        buf.append('\n');
+                        buf.append(EOL);
                     }
                     args[1] = buf.toString();
                     final long start = System.currentTimeMillis();
@@ -856,7 +858,7 @@ public class InteractiveClient {
                         if (p1.equals(p2)) {
                             break;
                         }
-                        System.out.println("\nentered passwords differ. Try again...");
+                        System.out.println(EOL + "entered passwords differ. Try again...");
                         
                     }
                     final UserAider user = new UserAider(args[1]);
@@ -918,7 +920,7 @@ public class InteractiveClient {
                         if (p1.equals(p2)) {
                             break;
                         }
-                        System.out.println("\nentered passwords differ. Try again...");
+                        System.out.println(EOL + "entered passwords differ. Try again...");
                     }
                     user.setPassword(p1);
                     mgtService.updateAccount(user);
@@ -937,7 +939,7 @@ public class InteractiveClient {
                     System.out.println("trying collection: " + args[1]);
                     temp = current.getChildCollection(args[1]);
                     if (temp == null) {
-                        System.out.println("\ntrying resource: " + args[1]);
+                        System.out.println(EOL + "trying resource: " + args[1]);
                         final Resource r = current.getResource(args[1]);
                         if (r != null) {
                             final UserManagementService mgtService = (UserManagementService) current
@@ -1168,14 +1170,15 @@ public class InteractiveClient {
     }
         
     private ResourceSet find(String xpath) throws XMLDBException {
-        if (xpath.charAt(xpath.length() - 1) == '\n') {
-            xpath = xpath.substring(0, xpath.length() - 1);
+        if (xpath.substring(xpath.length() - EOL.length()).equals(EOL)) {
+            xpath = xpath.substring(0, xpath.length() - EOL.length());
         }
         if (traceWriter != null) {
             try {
                 traceWriter.write("<query>");
                 traceWriter.write(xpath);
-                traceWriter.write("</query>\r\n");
+                traceWriter.write("</query>");
+                traceWriter.write(EOL);
             } catch (final IOException e) {
                 //TODO report error?
             }
@@ -1463,7 +1466,7 @@ public class InteractiveClient {
             ((EXistResource)document).setMimeType(mimeType.getName());
             current.storeResource(document);
             messageln("done.");
-            messageln("parsing " + files[i].length() + " bytes took " + (System.currentTimeMillis() - start) + "ms.\n");
+            messageln("parsing " + files[i].length() + " bytes took " + (System.currentTimeMillis() - start) + "ms." + EOL);
             bytes += files[i].length();
         }
         messageln("parsed " + bytes + " bytes in " + (System.currentTimeMillis() - start0) + "ms.");
@@ -1600,7 +1603,7 @@ public class InteractiveClient {
             current.storeResource(document);
             messageln("done.");
             messageln("parsing " + files[i].length() + (isCompressed?" compressed":"") + " bytes took "
-                    + (System.currentTimeMillis() - start) + "ms.\n");
+                    + (System.currentTimeMillis() - start) + "ms." + EOL);
             bytes += files[i].length();
         }
         messageln("parsed " + bytes + " compressed bytes in "
@@ -1673,7 +1676,7 @@ public class InteractiveClient {
                     base.storeResource(document);
                     messageln("done.");
                     messageln("parsing " + ze.getSize() + " bytes took "
-                                    + (System.currentTimeMillis() - start) + "ms.\n");
+                                    + (System.currentTimeMillis() - start) + "ms." + EOL);
                     bytes += ze.getSize();
                 }
             }
@@ -2095,8 +2098,8 @@ public class InteractiveClient {
                     final File f = new File(traceFile);
                     try {
                         traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), "UTF-8");
-                        traceWriter.write("<?xml version=\"1.0\"?>\r\n");
-                        traceWriter.write("<query-log>\r\n");
+                        traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
+                        traceWriter.write("<query-log>" + EOL);
                     } catch (final UnsupportedEncodingException e1) {
                     	LOG.warn(e1);
                     } catch (final FileNotFoundException e1) {
@@ -2229,7 +2232,7 @@ public class InteractiveClient {
                     String line;
                     while ((line = reader.readLine()) != null) {
                             buf.append(line);
-                            buf.append('\n');
+                            buf.append(EOL);
                     }
                     cOpt.optionXpath = buf.toString();
                 } finally {
@@ -2244,7 +2247,7 @@ public class InteractiveClient {
                     String line;
                     while ((line = stdin.readLine()) != null) {
                         buf.append(line);
-                        buf.append('\n');
+                        buf.append(EOL);
                     }
                     cOpt.optionXpath = buf.toString();
                 } catch (final IOException e) {
@@ -2506,7 +2509,7 @@ public class InteractiveClient {
                 }
             }
             
-            messageln("\ntype help or ? for help.");
+            messageln(EOL + "type help or ? for help.");
             
             if (cOpt.openQueryGui) {
                 final QueryDialog qd = new QueryDialog(this, current, properties);
@@ -2666,13 +2669,18 @@ public class InteractiveClient {
     }
 
     public String getNotice() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
         builder.append(" version ");
         builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-        builder.append(", Copyright (C) 2001-2013 The eXist-db Project\n");
-        builder.append("eXist-db comes with ABSOLUTELY NO WARRANTY.\n");
-        builder.append("This is free software, and you are welcome to redistribute it\nunder certain conditions; for details read the license file.\n");
+        builder.append(", Copyright (C) 2001-2013 The eXist-db Project");
+        builder.append(EOL);
+        builder.append("eXist-db comes with ABSOLUTELY NO WARRANTY.");
+        builder.append(EOL);
+        builder.append("This is free software, and you are welcome to redistribute it");
+        builder.append(EOL);
+        builder.append("under certain conditions; for details read the license file.");
+        builder.append(EOL);
         return builder.toString();
     }
     
@@ -2689,7 +2697,7 @@ public class InteractiveClient {
     private void messageln(final String msg) {
         if (!quiet) {
             if (startGUI && frame != null) {
-                frame.display(msg + '\n');
+                frame.display(msg + EOL);
             } else {
                 System.out.println(msg);
             }
@@ -2698,7 +2706,7 @@ public class InteractiveClient {
     
     private void errorln(final String msg) {
         if (startGUI && frame != null) {
-            frame.display(msg + '\n');
+            frame.display(msg + EOL);
         } else {
             System.err.println(msg);
         }
