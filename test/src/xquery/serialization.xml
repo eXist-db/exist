@@ -1,0 +1,73 @@
+<TestSet>
+    <testName>Serialization tests</testName>
+    <description>
+        <p></p>
+        <author></author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="mycollection"/>
+        <store collection="/db/mycollection" name="sample.xml">
+<test>
+<!-- this is a test comment -->
+<test1>
+some value
+</test1>
+</test>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/mycollection"/>
+    </tearDown>
+    <test output="xml">
+        <task>comments and xsl</task>
+        <code><![CDATA[
+xquery version "1.0" encoding "UTF-8";
+
+let $doc as document-node() := document {
+  <Root>
+    <!-- Comment 1 -->
+    <Child/>
+    <!-- Comment 2 -->
+  </Root>    
+}
+
+let $xsl as document-node() := document {
+  <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions"
+    exclude-result-prefixes="#all">
+    <xsl:template match="/">
+      <CommentsInXslt>
+        <xsl:value-of select="count(.//comment())"/>
+      </CommentsInXslt>
+    </xsl:template>
+  </xsl:stylesheet>
+}
+
+return
+  <Results>
+    <CommentsInXQuery>{ count($doc//comment()) }</CommentsInXQuery>
+    { transform:transform($doc, $xsl, ()) }
+  </Results>  
+        ]]></code>
+        <expected><Results><CommentsInXQuery>2</CommentsInXQuery><CommentsInXslt>2</CommentsInXslt></Results></expected>
+    </test>
+    <test output="xml">
+        <task>comments and xmldb:store</task>
+        <code><![CDATA[
+xquery version "1.0";
+
+declare boundary-space preserve;
+
+let $doc := doc('/db/mycollection/sample.xml')
+let $uri := xmldb:store('/db/mycollection', 'tample.xml', $doc, "text/xml")
+return doc($uri)
+        ]]></code>
+        <expected>
+<test>
+<test1>
+some value
+</test1>
+</test>
+        </expected>
+    </test>
+</TestSet>
