@@ -53,6 +53,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -780,7 +781,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         if (properties != null)
             serializer.setProperties(properties);
-        serializer.setSAXHandlers(handler, null);
+        
+        if (handler instanceof LexicalHandler) {
+            serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+        } else {
+            serializer.setSAXHandlers(handler, null);
+        }
         serializer.toSAX(this);
     }
 
