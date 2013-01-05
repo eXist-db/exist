@@ -90,7 +90,7 @@ public abstract class TestRunner {
                 for (int i = 0; i < tests.getLength(); i++) {
                     Element test = (Element) tests.item(i);
                     String passed = test.getAttribute("pass");
-                    if (passed.equals("false")) {
+                    if (passed == null || passed.equals("false")) {
                         fails.append("Test '" + test.getAttribute("n") + "' in file '" + file.getName() + "' failed.\n");
                     }
                 }
