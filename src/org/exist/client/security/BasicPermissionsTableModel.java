@@ -34,12 +34,12 @@ public class BasicPermissionsTableModel extends DefaultTableModel {
         
         super(
             new Object [][] {
-                new Object[] {"Read", (permission.getOwnerMode() & Permission.READ) == Permission.READ, (permission.getGroupMode() & Permission.READ) == Permission.READ, (permission.getOtherMode() & Permission.READ) == Permission.READ},
-                new Object[] {"Write", (permission.getOwnerMode() & Permission.WRITE) == Permission.WRITE, (permission.getGroupMode() & Permission.WRITE) == Permission.WRITE, (permission.getOtherMode() & Permission.WRITE) == Permission.WRITE},
-                new Object[] {"Execute", (permission.getOwnerMode() & Permission.EXECUTE) == Permission.EXECUTE, (permission.getGroupMode() & Permission.EXECUTE) == Permission.EXECUTE, (permission.getOtherMode() & Permission.EXECUTE) == Permission.EXECUTE}
+                new Object[] {"User", (permission.getOwnerMode() & Permission.READ) == Permission.READ, (permission.getOwnerMode() & Permission.WRITE) == Permission.WRITE, (permission.getOwnerMode() & Permission.EXECUTE) == Permission.EXECUTE},
+                new Object[] {"Group", (permission.getGroupMode() & Permission.READ) == Permission.READ, (permission.getGroupMode() & Permission.WRITE) == Permission.WRITE, (permission.getGroupMode() & Permission.EXECUTE) == Permission.EXECUTE},
+                new Object[] {"Other", (permission.getOtherMode() & Permission.READ) == Permission.READ, (permission.getOtherMode() & Permission.WRITE) == Permission.WRITE, (permission.getOtherMode() & Permission.EXECUTE) == Permission.EXECUTE}
             },
             new String [] {
-                "Permission", "User", "Group", "Other"
+                "Permission", "Read", "Write", "Execute"
             }
         );
     }
@@ -60,5 +60,29 @@ public class BasicPermissionsTableModel extends DefaultTableModel {
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return canEdit [columnIndex];
+    }
+    
+    /**
+     * Get the Mode described by the table model
+     */
+    public int getMode() {
+        int mode = 0;
+        for(int i = 0; i < getRowCount(); i++) {
+            if((Boolean)getValueAt(i, 1)) {
+                mode |= Permission.READ;
+            }
+            if((Boolean)getValueAt(i, 2)) {
+                mode |= Permission.WRITE;
+            }
+            if((Boolean)getValueAt(i, 3)) {
+                mode |= Permission.EXECUTE;
+            }
+            
+            if(i != getRowCount() - 1) {
+                mode <<= 3;
+            }
+        }
+        
+        return mode;
     }
 }
