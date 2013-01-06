@@ -21,9 +21,6 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
-import org.exist.client.DialogWithResponse;
-import org.exist.client.InteractiveClient;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +28,9 @@ import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
+import org.exist.client.DialogCompleteWithResponse;
+import org.exist.client.DialogWithResponse;
+import org.exist.client.InteractiveClient;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Account;
@@ -57,7 +57,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
     /**
      * Creates new form AccessControlEntryDialog
      */
-    public AccessControlEntryDialog(final UserManagementService userManagementService) throws XMLDBException {
+    public AccessControlEntryDialog(final UserManagementService userManagementService, final String title) throws XMLDBException {
         this.userManagementService = userManagementService;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
         allUsernames = new HashSet<String>();
@@ -71,6 +71,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         }
         
         initComponents();
+        setTitle(title);
     }
     
     private DefaultTableModel getPermissionTableModel() {
