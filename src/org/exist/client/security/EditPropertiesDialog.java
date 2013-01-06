@@ -533,7 +533,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Create Access Control Entry");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
@@ -558,7 +558,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (before...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
@@ -583,7 +583,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (after...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
