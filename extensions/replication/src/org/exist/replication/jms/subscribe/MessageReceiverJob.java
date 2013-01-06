@@ -116,6 +116,9 @@ public class MessageReceiverJob extends UserJavaJob {
 
             // Setup connection
             connection = cf.createConnection();
+            
+            // Register for exceptions
+            connection.setExceptionListener(exceptionListener);
 
             // Set clientId
             connection.setClientID(parameters.getClientId());
@@ -146,7 +149,6 @@ public class MessageReceiverJob extends UserJavaJob {
                 // Register listeners
                 messageConsumer.setMessageListener(jmsListener);
             }
-            connection.setExceptionListener(exceptionListener);
 
             // Start it all
             connection.start();
