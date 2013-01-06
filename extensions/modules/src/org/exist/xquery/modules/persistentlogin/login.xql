@@ -60,7 +60,7 @@ declare function login:set-user($domain as xs:string, $path as xs:string?, $maxA
             login:clear-credentials($cookie, $domain, $path)
         else if ($user) then
             login:create-login-session($domain, $path, $user, $password, $duration, $asDba)
-        else if (exists($cookie)) then
+        else if (exists($cookie) and $cookie != "deleted") then
             login:get-credentials($domain, $path, $cookie, $asDba)
         else
             login:get-credentials-from-session($domain)
@@ -94,16 +94,17 @@ declare %private function login:get-credentials($domain as xs:string, $path as x
 
 declare %private function login:create-login-session($domain as xs:string, $path as xs:string?, $user as xs:string, $password as xs:string,
     $maxAge as xs:dayTimeDuration?, $asDba as xs:boolean) as empty() {
-    if (exists($maxAge)) then
-        plogin:register($user, $password, $maxAge, login:callback(?, ?, ?, ?, $domain, $path, $asDba))
-    else
+    if (exists($maxAge)) then (
+        plogin:register($user, $password, $maxAge, login:callback(?, ?, ?, ?, $domain, $path, $asDba)),
+        session:invalidate()
+    ) else
         login:fallback-to-session($domain, $user, $password, $asDba)
 };
 
 declare %private function login:clear-credentials($token as xs:string?, $domain as xs:string, $path as xs:string?) as empty() {
     response:set-cookie($domain, "deleted", xs:dayTimeDuration("-P1D"), false(), (), 
         if (exists($path)) then $path else request:get-context-path()),
-    if ($token) then
+    if ($token and $token != "deleted") then
         plogin:invalidate($token)
     else
         session:invalidate()
