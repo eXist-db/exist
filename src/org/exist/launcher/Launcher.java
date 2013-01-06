@@ -428,7 +428,7 @@ public class Launcher extends Observable implements Observer {
             panel.add(displayLogs, BorderLayout.SOUTH);
         }
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
-        //System.exit(1);
+        System.exit(1);
     }
 
     /**
