@@ -108,6 +108,8 @@ public class BrokerPool extends Observable implements Database {
     public final static String SIGNAL_STARTED = "started";
     /*** running shutdown sequence */
     public final static String SIGNAL_SHUTDOWN = "shutdown";
+    /*** recovery aborted, db stopped */
+    public final static String SIGNAL_ABORTED = "aborted";
 
     /**
      * The name of a default database instance for those who are too lazy to provide parameters ;-). 

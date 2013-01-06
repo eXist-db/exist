@@ -107,6 +107,7 @@ public class RecoveryManager {
                 }
     			if (!checkpointFound) {
                     LOG.info("Scanning journal...");
+                    broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
     				reader.position(1);
     				Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<Loggable>();
 	    			Checkpoint lastCheckpoint = null;
@@ -150,10 +151,12 @@ public class RecoveryManager {
 						}
 	                    recoveryRun = true;
                         try {
+                            broker.getBrokerPool().reportStatus("Running recovery...");
                             doRecovery(txnsStarted.size(), last, reader, lastLsn);
                         } catch (LogException e) {
                             // if restartOnError == true, we try to bring up the database even if there
                             // are errors. Otherwise, an exception is thrown, which will stop the db initialization
+                            broker.getBrokerPool().reportStatus(BrokerPool.SIGNAL_ABORTED);
                             if (restartOnError)
                                 LOG.error("Errors during recovery. Database will start up, but corruptions are likely.");
                             else

@@ -91,10 +91,18 @@ public class SplashScreen extends JFrame implements Observer {
             setVisible(false);
         } else if (BrokerPool.SIGNAL_STARTUP.equals(arg)) {
             setStatus("Starting eXist-db ...");
+        } else if (BrokerPool.SIGNAL_ABORTED.equals(arg)) {
+            setVisible(false);
+            launcher.showMessageAndExit("Startup aborted",
+                "eXist-db detected an error during recovery. This may not be fatal, " +
+                "but to avoid possible damage, the db will now stop. Please consider " +
+                "running a consistency check via the export tool and create " +
+                "a backup if problems are reported. The db should come up again if you restart " +
+                "it.", true);
         } else if (BrokerPool.SIGNAL_WRITABLE.equals(arg)) {
             setStatus("eXist-db is up. Waiting for web server ...");
         } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
-            setStatus("An error occurred! Please check the logs.");
+            setVisible(false);
             launcher.showMessageAndExit("Error Occurred",
                     "An error occurred during startup. Please check the logs.", true);
         } else if (BrokerPool.SIGNAL_SHUTDOWN.equals(arg)) {
