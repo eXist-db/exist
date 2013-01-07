@@ -51,7 +51,7 @@ public class LdapContextFactory implements Configurable {
 	@ConfigurationFieldAsElement("authentication")
 	protected String authentication = "simple";
 
-	@ConfigurationFieldAsElement("principalPattern")
+	@ConfigurationFieldAsElement("principal-pattern")
 	protected String principalPattern = null;
 	protected MessageFormat principalPatternFormat;
 
