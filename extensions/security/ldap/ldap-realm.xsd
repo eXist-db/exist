@@ -73,6 +73,7 @@
     <xs:complexType name="contextType">
         <xs:sequence>
             <xs:element ref="cnf:authentication"/>
+            <xs:element ref="cnf:use-ssl" minOccurs="0"/>
             <xs:element ref="cnf:principal-pattern" minOccurs="0"/>
             <xs:element ref="cnf:url"/>
             <xs:element ref="cnf:domain"/>
@@ -98,6 +99,17 @@
                 <xs:enumeration value="strong"/>
             </xs:restriction>
         </xs:simpleType>
+    </xs:element>
+    
+    <xs:element name="use-ssl" type="xs:boolean" default="false">
+        <xs:annotation>
+            <xs:documentation>
+                <db:section>
+                    <db:title>Use SSL for Connection?</db:title>
+                    <db:para>Set to true if you want the connection to be secured with SSL, false otherwise (default).</db:para>
+                </db:section>
+            </xs:documentation>
+        </xs:annotation>
     </xs:element>
     
     <xs:element name="principal-pattern" type="xs:string">

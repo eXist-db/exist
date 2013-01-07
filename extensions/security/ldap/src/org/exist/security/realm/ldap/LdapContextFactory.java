@@ -49,6 +49,8 @@ public class LdapContextFactory implements Configurable {
     @ConfigurationFieldAsElement("authentication")
     protected String authentication = "simple";
 
+    @ConfigurationFieldAsElement("use-ssl")
+    private final boolean ssl;
 
     @ConfigurationFieldAsElement("principal-pattern")
     protected String principalPattern = null;
@@ -103,12 +105,16 @@ public class LdapContextFactory implements Configurable {
         final Hashtable<String, Object> env = new Hashtable<String, Object>();
 
         env.put(Context.SECURITY_AUTHENTICATION, authentication);
+        if(ssl) {
+            env.put(Context.SECURITY_PROTOCOL, "ssl");
+        }
+        
         if (username != null) {
-                env.put(Context.SECURITY_PRINCIPAL, username);
+            env.put(Context.SECURITY_PRINCIPAL, username);
         }
         
         if (password != null) {
-                env.put(Context.SECURITY_CREDENTIALS, password);
+            env.put(Context.SECURITY_CREDENTIALS, password);
         }
         
         env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
