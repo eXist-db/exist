@@ -50,7 +50,7 @@ public class LdapContextFactory implements Configurable {
     protected String authentication = "simple";
 
     @ConfigurationFieldAsElement("use-ssl")
-    private final boolean ssl;
+    private final boolean ssl = false;
 
     @ConfigurationFieldAsElement("principal-pattern")
     protected String principalPattern = null;
