@@ -302,7 +302,7 @@
         <xs:sequence>
             <xs:element ref="cnf:search-filter-prefix"/>
             <xs:element name="search-attribute" type="cnf:searchAttributeType_group" maxOccurs="unbounded"/>
-            <xs:element ref="cnf:metadata-search-attribute" maxOccurs="unbounded"/>
+            <xs:element ref="cnf:metadata-search-attribute" minOccurs="0" maxOccurs="unbounded"/>
             <xs:group ref="cnf:white-black-list"/>
         </xs:sequence>
     </xs:complexType>
