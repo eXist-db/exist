@@ -72,6 +72,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             cmbConnectionType.setSelectedItem(ConnectionType.Embedded);
             toggleRemoteEmbeddedDisplayTab(false);
         }
+        txtPassword.addKeyListener(new EnterKeyAdapter(btnConnect));
         txtPassword.requestFocusInWindow(); //set focus to password field
     }
 
@@ -383,6 +384,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         });
 
         btnConnect.setText("Connect");
+        btnConnect.addKeyListener(new EnterKeyAdapter());
         btnConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnConnectActionPerformed(evt);
