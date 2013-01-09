@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.xquery.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -47,10 +48,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
@@ -805,7 +802,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         return( null );
     }
 
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // nothing to do
     }
 

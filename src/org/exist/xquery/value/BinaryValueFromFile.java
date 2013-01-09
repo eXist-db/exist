@@ -12,6 +12,7 @@ import java.nio.channels.FileChannel.MapMode;
 import org.exist.util.io.ByteBufferAccessor;
 import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -101,7 +102,7 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
                 (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
@@ -111,5 +112,6 @@ public class BinaryValueFromFile extends BinaryValue {
         } catch (IOException e) {
             // ignore at this point
         }
+        context.destroyBinaryValue(this);
     }
 }

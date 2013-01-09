@@ -2573,7 +2573,7 @@ public class XQueryContext implements BinaryValueManager, Context
             }
             // reset variable unless it is a closure variable (inherited from context)
             if (!old.isClosureVar())
-                old.destroy(resultSeq);
+                old.destroy(this, resultSeq);
         }
         if( var != null ) {
             var.after = null;
@@ -3490,6 +3490,18 @@ public class XQueryContext implements BinaryValueManager, Context
                 }
             }
             binaryValueInstances.clear();
+        }
+    }
+
+    public void destroyBinaryValue(BinaryValue value) {
+        if (binaryValueInstances != null) {
+            for (int i = binaryValueInstances.size() - 1; i > -1; i--) {
+                BinaryValue bv = binaryValueInstances.get(i);
+                if (bv == value) {
+                    binaryValueInstances.remove(i);
+                    return;
+                }
+            }
         }
     }
     
