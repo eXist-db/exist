@@ -320,7 +320,7 @@ public class ForExpr extends BindingExpression {
                     }
                 }
                 // free resources
-                var.destroy(resultSequence);
+                var.destroy(context, resultSequence);
             }
         } finally {
             // restore the local variable stack 

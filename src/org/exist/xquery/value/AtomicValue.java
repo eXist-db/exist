@@ -34,6 +34,7 @@ import org.exist.storage.ValueIndexFactory;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -403,7 +404,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // nothing to be done by default
     }
 

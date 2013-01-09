@@ -34,10 +34,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
@@ -1138,7 +1135,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // Nothing to do
     }
 

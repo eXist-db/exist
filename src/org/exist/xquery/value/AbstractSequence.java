@@ -28,6 +28,7 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -287,7 +288,7 @@ public abstract class AbstractSequence implements Sequence {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // do nothing by default
     }
 }

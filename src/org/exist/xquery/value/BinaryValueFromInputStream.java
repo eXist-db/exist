@@ -9,6 +9,7 @@ import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
@@ -94,7 +95,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     @Override
-    public void destroy(final Sequence contextSequence) {
+    public void destroy(XQueryContext context, final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
             (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
@@ -105,5 +106,6 @@ public class BinaryValueFromInputStream extends BinaryValue {
         } catch (IOException e) {
             LOG.warn("Error during cleanup of binary value: " + e.getMessage(), e);
         }
+        context.destroyBinaryValue(this);
     }
 }

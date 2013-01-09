@@ -413,7 +413,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                         } finally {
                             // free resources
                             if (binary != null)
-                                binary.destroy(null);
+                                binary.destroy(context, null);
                         }
                     }
                 }

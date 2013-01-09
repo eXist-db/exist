@@ -26,6 +26,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 import java.util.Iterator;
 
@@ -276,5 +277,5 @@ public interface Sequence {
     /**
      * Clean up any resources used by the items in this sequence.
      */
-    void destroy(Sequence contextSequence);
+    void destroy(XQueryContext context, Sequence contextSequence);
 }
