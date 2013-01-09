@@ -208,6 +208,11 @@ public class Eval extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
+        final boolean isEvalDisabled = ((UtilModule)getParentModule()).isEvalDisabled();
+        if(isEvalDisabled) {
+            throw new XPathException("util:eval has been disabled by the eXist administrator in conf.xml");
+        }
+        
         if(isCalledAs("eval-async")) {
 
             String uuid = UUIDGenerator.getUUID();
