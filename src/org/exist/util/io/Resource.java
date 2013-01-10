@@ -141,6 +141,12 @@ public class Resource extends File {
     	return this; //UNDERSTAND: is it correct?
     }
 
+    public File getCanonicalFile() throws IOException {
+    	return this;
+//        String canonPath = getCanonicalPath();
+//        return new File(canonPath, fs.prefixLength(canonPath));
+    }
+    
     public String getName() {
     	return uri.lastSegment().toString();
     }
