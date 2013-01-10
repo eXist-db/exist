@@ -151,6 +151,7 @@ public class ModuleUtils {
                 MemTreeBuilder builder = context.getDocumentBuilder();
                 DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
                 reader.setContentHandler(receiver);
+                reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
                 reader.parse(inputSource);
                 Document doc = receiver.getDocument();
                 // return (NodeValue)doc.getDocumentElement();
