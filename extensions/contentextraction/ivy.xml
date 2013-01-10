@@ -1,18 +1,28 @@
 <!--
     Ivy module to retrieve the tika jar, including dependancies, excluding duplicate jars
-
+    
     $Id$
 -->
 <ivy-module version="2.0">
     <info organisation="org.exist" module="tika"/>
     <dependencies>
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.1" conf="*->*,!sources,!javadoc">
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.2" conf="*->*,!sources,!javadoc">
             <exclude module="jdom"/>
             <exclude module="slf4j-api"/>
             <exclude module="commons-codec"/>
             <exclude module="commons-compress"/>
             <exclude module="commons-logging"/>
-            <exclude module="commons-httpclient"/>           
+            <exclude module="commons-httpclient"/>      
+            <exclude module="poi"/>    
+            <exclude module="poi-scratchpad"/>  
+            <exclude module="poi-ooxml"/>
         </dependency>
+        <dependency org="org.apache.poi" name="poi" rev="3.9" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.poi" name="poi-scratchpad" rev="3.9" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.poi" name="poi-ooxml" rev="3.9" conf="*->*,!sources,!javadoc">
+            <exclude module="xml-apis"/>
+            <exclude module="stax"/>
+        </dependency>
+        <dependency org="org.tukaani" name="xz" rev="1.1" conf="*->*,!sources,!javadoc"/>
     </dependencies>
 </ivy-module>
