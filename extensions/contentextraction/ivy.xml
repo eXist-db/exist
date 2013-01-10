@@ -17,7 +17,11 @@
             <exclude module="poi-scratchpad"/>  
             <exclude module="poi-ooxml"/>
         </dependency>
-        <dependency org="org.apache.poi" name="poi" rev="3.9" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.poi" name="poi" rev="3.9" conf="*->*,!sources,!javadoc">
+            <exclude module="commons-io"/>
+            <exclude module="commons-logging"/>
+            <exclude module="servlet-api"/>
+        </dependency>
         <dependency org="org.apache.poi" name="poi-scratchpad" rev="3.9" conf="*->*,!sources,!javadoc"/>
         <dependency org="org.apache.poi" name="poi-ooxml" rev="3.9" conf="*->*,!sources,!javadoc">
             <exclude module="xml-apis"/>
