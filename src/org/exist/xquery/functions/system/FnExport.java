@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -78,7 +78,7 @@ public class FnExport extends BasicFunction {
 		new FunctionSignature(
 			new QName("export-silently", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			DESCRIPTION +
-			"Messagers from exporter reroute to logs.",
+			" Messagers from exporter reroute to logs.",
 			new SequenceType[] {
 				DIRorFILE,
 				INCREMENTAL,
@@ -145,9 +145,9 @@ public class FnExport extends BasicFunction {
     	
 		@Override
 		public void startCollection(String path) throws TerminatedException {
-			if (builder == null)
+			if (builder == null) {
 				SystemExport.LOG.info("Collection "+path);
-			else {
+			} else {
 	            builder.startElement(COLLECTION_ELEMENT, null);
 	            builder.characters(path);
 	            builder.endElement();
@@ -156,9 +156,9 @@ public class FnExport extends BasicFunction {
 
 		@Override
 		public void startDocument(String name, int current, int count) throws TerminatedException {
-			if (builder == null)
+			if (builder == null) {
 				SystemExport.LOG.info("Document "+name);
-			else {
+			} else {
 	            builder.startElement(RESOURCE_ELEMENT, null);
 	            builder.characters(name);
 	            builder.endElement();
@@ -167,9 +167,9 @@ public class FnExport extends BasicFunction {
 
 		@Override
 		public void error(String message, Throwable exception) {
-			if (builder == null)
+			if (builder == null) {
 				SystemExport.LOG.error(message, exception);
-			else {
+			} else {
 	            builder.startElement(ERROR_ELEMENT, null);
 	            builder.characters(message);
 	            builder.endElement();
