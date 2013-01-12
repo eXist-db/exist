@@ -36,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -279,6 +280,40 @@ public class Resource extends File {
 		} catch (IOException e) {
 			return false;
 		}
+    }
+    
+    public String[] list() {
+    	
+    	if (isDirectory()) {
+    		
+        	DBBroker broker = null; 
+    		BrokerPool db = null;
+
+    		try {
+    			try {
+    				db = BrokerPool.getInstance();
+    				broker = db.get(null);
+    			} catch (EXistException e) {
+                	return new String[0];
+    			}
+
+    	    	List<String> list = new ArrayList<String>();
+    			for (CollectionEntry entry : collection.getEntries(broker)) {
+    				list.add(entry.getUri().lastSegment().toString());
+    			}
+    	    
+    			return list.toArray(new String[list.size()]);
+
+    		} catch (PermissionDeniedException e) {
+            	return new String[0];
+
+			} finally {
+            	if (db != null)
+            		db.release( broker );
+            }
+    	}
+    	
+    	return new String[0];
     }
     
     public boolean _renameTo(File dest) {
