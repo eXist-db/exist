@@ -292,7 +292,10 @@ public class XQueryContext implements BinaryValueManager, Context
 
     //For holding XQuery Context variables for general storage in the XQuery Context
     HashMap<String, Object>                            XQueryContextVars             = new HashMap<String, Object>();
-
+    
+    //For holding the environment variables
+    Map<String,String> envs;
+    
     private AccessContext                              accessCtx;
 
     private ContextUpdateListener                      updateListener                = null;
@@ -2985,6 +2988,19 @@ public class XQueryContext implements BinaryValueManager, Context
             }
             call.resolveForwardReference( func );
         }
+    }
+    
+    /**
+     * Get environment variables. The variables shall not change 
+     * during execution of query.
+     * 
+     * @return Map of environment variables
+     */
+    public Map<String, String> getEnvironmentVariables(){
+        if(envs==null){
+            envs = System.getenv();
+        }
+        return envs;
     }
 
     /* ----------------- Save state ------------------------ */
