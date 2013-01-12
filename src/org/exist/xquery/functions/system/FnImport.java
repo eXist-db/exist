@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -47,23 +47,55 @@ public class FnImport extends BasicFunction {
 
 	protected final static Logger logger = Logger.getLogger(FnImport.class);
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Restore the database or a section of the database (admin user only).",
+	protected final static QName NAME = 
+			new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+
+	protected final static String DESCRIPTION = 
+		"Restore the database or a section of the database (admin user only).";
+	
+	protected final static FunctionParameterSequenceType DIRorFILE =
+		new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
+				"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
+			
+	protected final static FunctionParameterSequenceType ADMIN_PASS =
+		new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
+			"The password for the admin user");
+
+	protected final static FunctionParameterSequenceType NEW_ADMIN_PASS =
+		new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
+				"Set the admin password to this new password.");
+
+	protected final static FunctionReturnSequenceType RETURN =
+		new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the import results");
+
+	public final static FunctionSignature signatures[] = {
+		new FunctionSignature(
+			NAME,
+			DESCRIPTION,
 			new SequenceType[] {
-					new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-							"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file."),
-					new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-							"The password for the admin user"),
-					new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-							"Set the admin password to this new password.") 
+				DIRorFILE,
+				ADMIN_PASS,
+				NEW_ADMIN_PASS
 			}, 
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the import results"));
+			RETURN
+		),
+		new FunctionSignature(
+			new QName("import-silently", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+			DESCRIPTION +
+			" Messagers from exporter reroute to logs.",
+			new SequenceType[] {
+				DIRorFILE,
+				ADMIN_PASS,
+				NEW_ADMIN_PASS
+			}, 
+			RETURN
+		)
+	};
 
 	public final static QName IMPORT_ELEMENT = new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
 
-	public FnImport(XQueryContext context) {
+	public FnImport(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -80,9 +112,12 @@ public class FnImport extends BasicFunction {
         if (args[2].hasOne())
                 adminPassAfter = args[2].getStringValue();
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        builder.startDocument();
-        builder.startElement(IMPORT_ELEMENT, null);
+        MemTreeBuilder builder = null;
+        if (NAME.equals( mySignature.getName() )) {
+            builder = context.getDocumentBuilder();
+	        builder.startDocument();
+	        builder.startElement(IMPORT_ELEMENT, null);
+        }
         
         try {
         	SystemImport restore = new SystemImport(context.getDatabase());
@@ -92,9 +127,13 @@ public class FnImport extends BasicFunction {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
         
-        builder.endElement();
-        builder.endDocument();
-        return (NodeValue) builder.getDocument().getDocumentElement();
+        if (builder == null) {
+        	return Sequence.EMPTY_SEQUENCE;
+        } else {
+	        builder.endElement();
+	        builder.endDocument();
+	        return (NodeValue) builder.getDocument().getDocumentElement();
+        }
     }
 
     private static class XMLRestoreListener extends AbstractRestoreListener {
@@ -113,41 +152,61 @@ public class FnImport extends BasicFunction {
 
         @Override
         public void createCollection(String collection) {
-            builder.startElement(COLLECTION_ELEMENT, null);
-            builder.characters(collection);
-            builder.endElement();
+			if (builder == null) {
+				SystemImport.LOG.info("Create collection "+collection);
+			} else {
+	            builder.startElement(COLLECTION_ELEMENT, null);
+	            builder.characters(collection);
+	            builder.endElement();
+			}
         }
 
         @Override
         public void restored(String resource) {
-            builder.startElement(RESOURCE_ELEMENT, null);
-            builder.characters(resource);
-            builder.endElement();
+			if (builder == null) {
+				SystemImport.LOG.info("Restore resource "+resource);
+			} else {
+	            builder.startElement(RESOURCE_ELEMENT, null);
+	            builder.characters(resource);
+	            builder.endElement();
+			}
         }
 
         @Override
         public void info(String message) {
-            builder.startElement(INFO_ELEMENT, null);
-            builder.characters(message);
-            builder.endElement();
+			if (builder == null) {
+				SystemImport.LOG.info(message);
+			} else {
+	            builder.startElement(INFO_ELEMENT, null);
+	            builder.characters(message);
+	            builder.endElement();
+			}
         }
 
         @Override
         public void warn(String message) {
             super.warn(message);
             
-            builder.startElement(WARN_ELEMENT, null);
-            builder.characters(message);
-            builder.endElement();
+			if (builder == null) {
+				SystemImport.LOG.warn(message);
+			} else {
+	            builder.startElement(WARN_ELEMENT, null);
+	            builder.characters(message);
+	            builder.endElement();
+			}
         }
 
         @Override
         public void error(String message) {
             super.error(message);
             
-            builder.startElement(ERROR_ELEMENT, null);
-            builder.characters(message);
-            builder.endElement();
+			if (builder == null) {
+				SystemImport.LOG.error(message);
+			} else {
+	            builder.startElement(ERROR_ELEMENT, null);
+	            builder.characters(message);
+	            builder.endElement();
+			}
         }
     }
 }
