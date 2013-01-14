@@ -23,6 +23,7 @@ package org.exist.util.io;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -36,5 +37,13 @@ public class ResourceOutputStream extends FileOutputStream {
 	
 	public ResourceOutputStream(Resource file, boolean append) throws FileNotFoundException {
 		super(file.getFile(), append);
+	}
+	
+	public void close() throws IOException {
+		super.close();
+		
+		//XXX: xml upload back to db
+		
+		//XXX: locking?
 	}
 }
