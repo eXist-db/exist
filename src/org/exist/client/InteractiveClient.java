@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -1417,7 +1417,7 @@ public class InteractiveClient {
      * @throws XMLDBException
      */
     protected synchronized boolean parse(String fileName) throws XMLDBException {
-        //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
+        //TODO : why is this test for ? File should make it, shouldn't it ? -pb
         fileName = fileName.replace('/', File.separatorChar).replace('\\',File.separatorChar);
         final File file = new File(fileName);
         Resource document;
@@ -1699,12 +1699,13 @@ public class InteractiveClient {
      * @throws XMLDBException
      */
     protected synchronized boolean parse(final File[] files, final UploadDialog upload) throws XMLDBException {
+        final Collection uploadRootCollection = current;
         if (!upload.isVisible()) {
             upload.setVisible(true);
         }
         
-        if (current instanceof Observable) {
-            ((Observable) current).addObserver(upload.getObserver());
+        if (uploadRootCollection instanceof Observable) {
+            ((Observable) uploadRootCollection).addObserver(upload.getObserver());
         }
         upload.setTotalSize(calculateFileSizes(files));
         for (int i = 0; i < files.length; i++) {
@@ -1712,10 +1713,10 @@ public class InteractiveClient {
                 break;
             }
             // should replace the lines above
-            store(current, files[i], upload);
+            store(uploadRootCollection, files[i], upload);
         }
-        if (current instanceof Observable) {
-            ((Observable) current).deleteObservers();
+        if (uploadRootCollection instanceof Observable) {
+            ((Observable) uploadRootCollection).deleteObservers();
         }
         upload.uploadCompleted();
         return true;
