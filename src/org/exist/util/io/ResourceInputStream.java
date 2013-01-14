@@ -23,6 +23,7 @@ package org.exist.util.io;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -30,7 +31,21 @@ import java.io.FileNotFoundException;
  */
 public class ResourceInputStream extends FileInputStream {
 
+	Resource resource;
+	
 	public ResourceInputStream(Resource file) throws FileNotFoundException {
 		super(file.getFile());
+		
+		resource = file;
+	}
+	
+	public void close() throws IOException {
+		super.close();
+		
+		if (resource.isXML()) {
+			//XXX: cleanup tmp file
+		}
+		
+		//XXX: locking?
 	}
 }

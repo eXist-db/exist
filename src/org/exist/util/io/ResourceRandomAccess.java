@@ -22,6 +22,7 @@
 package org.exist.util.io;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
@@ -34,4 +35,11 @@ public class ResourceRandomAccess extends RandomAccessFile {
 		super(resource.getFile(), mode);
 	}
 
+	public void close() throws IOException {
+		super.close();
+		
+		//XXX: xml upload back to db
+		
+		//XXX: locking?
+	}
 }
