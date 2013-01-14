@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2012 The eXist Project
+ * Copyright (C) 2001-2013 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -902,7 +902,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private void removeAction(final ActionEvent ev) {
         
         final ResourceDescriptor[] res = getSelectedResources();
-        
+        final Collection removeRootCollection = client.current;
         // String cmd;
         if (JOptionPane.showConfirmDialog(this,
                 Messages.getString("ClientFrame.104") + Messages.getString("ClientFrame.105"), //$NON-NLS-1$ //$NON-NLS-2$
@@ -917,7 +917,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                         final ResourceDescriptor resource = res[i];
                         if (resource.isCollection()) {
                             try {
-                                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) client.current
+                                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) removeRootCollection
                                         .getService(
                                         "CollectionManagementService", //$NON-NLS-1$
                                         "1.0"); //$NON-NLS-1$
@@ -928,9 +928,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                             }
                         } else {
                             try {
-                                final Resource res = client.current
+                                final Resource res = removeRootCollection
                                         .getResource(resource.getName().toString());
-                                client.current.removeResource(res);
+                                removeRootCollection.removeResource(res);
                             } catch (final XMLDBException e) {
                                 showErrorMessage(e.getMessage(), e);
                             }
@@ -953,7 +953,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     
     private void moveAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
-        
+
     	PrettyXmldbURI[] collections;
         
     	//get an array of collection paths
