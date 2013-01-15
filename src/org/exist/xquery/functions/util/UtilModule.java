@@ -161,7 +161,7 @@ public class UtilModule extends AbstractInternalModule {
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
         
         final List<String> evalDisabledParamList = (List<String>)getParameter("evalDisabled");
-        if(!evalDisabledParamList.isEmpty()) {
+        if(evalDisabledParamList != null && !evalDisabledParamList.isEmpty()) {
             final String strEvalDisabled = evalDisabledParamList.get(0);
             if(strEvalDisabled != null) {
                 this.evalDisabled = Boolean.parseBoolean(strEvalDisabled);
