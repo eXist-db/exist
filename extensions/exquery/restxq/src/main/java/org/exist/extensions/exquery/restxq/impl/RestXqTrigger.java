@@ -421,9 +421,11 @@ public class RestXqTrigger extends FilteringTrigger {
     private void removeDependency(final String dependant, final String dependency) {
         synchronized(dependenciesTree) {
             final Set<String> dependencies = dependenciesTree.get(dependant);
-            dependencies.remove(dependency);
-            if(dependencies.isEmpty()) {
-                dependenciesTree.remove(dependant);
+            if(dependencies != null) {
+                dependencies.remove(dependency);
+                if(dependencies.isEmpty()) {
+                    dependenciesTree.remove(dependant);
+                }
             }
         }
     }
