@@ -50,7 +50,7 @@ declare function login:set-user($domain as xs:string, $path as xs:string?, $maxA
     let $duration :=
         if ($durationParam) then
             xs:dayTimeDuration($durationParam)
-        else if ($maxAge) then
+        else if (exists($maxAge)) then
             $maxAge
         else
             ()
