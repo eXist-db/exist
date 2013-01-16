@@ -107,7 +107,8 @@ declare %private function login:clear-credentials($token as xs:string?, $domain 
     if ($token and $token != "deleted") then
         plogin:invalidate($token)
     else
-        session:invalidate()
+        (),
+    session:invalidate()
 };
 
 (:~
