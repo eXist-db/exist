@@ -27,11 +27,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.storage.BrokerPool;
@@ -39,13 +42,15 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xquery.value.Item;
+import org.exist.xquery.value.BinaryValue;
 import org.exquery.http.HttpResponse;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.impl.serialization.AbstractRestXqServiceSerializer;
 import org.exquery.restxq.impl.serialization.SerializationProperty;
 import org.exquery.serialization.annotation.MethodAnnotation.SupportedMethod;
 import org.exquery.xquery.Sequence;
+import org.exquery.xquery.Type;
+import org.exquery.xquery.TypedValue;
 import org.xml.sax.SAXException;
 
 /**
@@ -54,6 +59,8 @@ import org.xml.sax.SAXException;
  */
 public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
 
+    private final static Logger LOG = Logger.getLogger(RestXqServiceSerializerImpl.class);
+    
     final BrokerPool brokerPool;
     
     public RestXqServiceSerializerImpl(final BrokerPool brokerPool) {
@@ -66,7 +73,33 @@ public class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer
     
     @Override
     protected void serializeBinaryBody(final Sequence result, final HttpResponse response) throws RestXqServiceException {
-        throw new UnsupportedOperationException("TODO adam needs to implement this yet!");
+        final Iterator<TypedValue> itResult = result.iterator();
+        while(itResult.hasNext()) {
+            final TypedValue typedValue = itResult.next();
+            if(typedValue.getType() == Type.BASE64_BINARY || typedValue.getType() == Type.HEX_BINARY) {
+                
+                final BinaryValue binaryValue = (BinaryValue)typedValue.getValue();
+                OutputStream os = null; 
+                try {
+                    os = response.getOutputStream();
+                    binaryValue.streamBinaryTo(os);
+                } catch(final IOException ioe) {
+                    throw new RestXqServiceException("Error while serializing binary: " + ioe.toString(), ioe);
+                } finally {
+                    if(os != null) {
+                        try { 
+                            os.close();
+                        } catch (final IOException ioe) {
+                            LOG.warn(ioe);
+                        }
+                    }
+                }
+                
+                return; //TODO support more than one binary result -- multipart?
+            } else {
+                throw new RestXqServiceException("Expected binary value, but found: " + typedValue.getType().name());
+            }
+        }
     }
 
     @Override
