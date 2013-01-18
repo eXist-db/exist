@@ -34,7 +34,8 @@ public interface PackageLoader {
      * Locate the expath package identified by name.
      *
      * @param name unique name of the package
+     * @param version the version to install
      * @return a file containing the package or null if not found
      */
-    public File load(String name) throws IOException;
+    public File load(String name, String version) throws IOException;
 }
