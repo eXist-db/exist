@@ -54,6 +54,8 @@ public class ExpathPackageModule extends AbstractInternalModule {
         new FunctionDef(Deploy.signatures[2], Deploy.class),
         new FunctionDef(Deploy.signatures[3], Deploy.class),
         new FunctionDef(Deploy.signatures[4], Deploy.class),
+        new FunctionDef(Deploy.signatures[5], Deploy.class),
+        new FunctionDef(Deploy.signatures[6], Deploy.class),
         new FunctionDef(ListFunction.signature, ListFunction.class),
         new FunctionDef(InstallFunction.signatureInstall, InstallFunction.class),
         new FunctionDef(InstallFunction.signatureInstallFromDB, InstallFunction.class),

@@ -144,10 +144,11 @@ public class Deployment {
         DocumentImpl document = getDescriptor(xar);
         ElementImpl root = (ElementImpl) document.getDocumentElement();
         String name = root.getAttribute("name");
+        String version = root.getAttribute("version");
 
         ExistRepository repo = broker.getBrokerPool().getExpathRepo();
         Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null) {
+        if (packages != null && version.equals(packages.latest().getVersion())) {
             LOG.info("Application package " + name + " already installed. Skipping.");
             return null;
         }
@@ -158,12 +159,13 @@ public class Deployment {
             for (SequenceIterator i = deps.iterate(); i.hasNext(); ) {
                 Element dependency = (Element) i.nextItem();
                 String pkgName = dependency.getAttribute("package");
+                String pkgVersion = dependency.getAttribute("version");
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
                     } else if (loader != null) {
-                        File depFile = loader.load(pkgName);
+                        File depFile = loader.load(pkgName, pkgVersion);
                         if (depFile != null)
                             installAndDeploy(depFile, loader);
                         else
@@ -190,13 +192,6 @@ public class Deployment {
 
         LOG.info("Deploying package " + pkgName);
         return deploy(pkgName, repo, null);
-    }
-
-    public String installAndDeploy(String name, PackageLoader loader) throws IOException, PackageException {
-        File xar = loader.load(name);
-        if (xar != null)
-            return installAndDeploy(xar, loader);
-        return null;
     }
 
     public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
@@ -231,6 +226,8 @@ public class Deployment {
         if (packageDir == null)
             throw new PackageException("Package not found: " + pkgName);
         DocumentImpl repoXML = getRepoXML(packageDir);
+        if (repoXML == null)
+            return null;
         try {
             // if there's a <setup> element, run the query it points to
             ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
