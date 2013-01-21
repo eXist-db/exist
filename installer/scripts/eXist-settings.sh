@@ -74,7 +74,14 @@ set_client_java_options() {
     if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
 	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx%{MAX_MEMORY}m -Dfile.encoding=UTF-8";
     fi
-    JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+
+    OS=`uname`
+    if [ "${OS}" == "Darwin" ]; then
+	CLIENT_NAME="Client"
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS} -Xdock:icon=${EXIST_HOME}/icon.png -Xdock:name=${CLIENT_NAME}";
+    else
+        JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
+    fi    
 }
 
 set_java_options() {
@@ -83,6 +90,29 @@ set_java_options() {
     fi
     JAVA_OPTIONS="${JAVA_OPTIONS} -Djava.endorsed.dirs=${JAVA_ENDORSED_DIRS}";
 }
+
+check_java_home() {
+    JAVA_RUN="java"
+    if [ -z "${JAVA_HOME}" ]; then
+	if [ -z "${JRE_HOME}" ]; then
+	    echo -e "WARNING: JAVA_HOME not found in your environment.\n\nPlease, set the JAVA_HOME variable in your enviroment to match the\nlocation of the Java Virtual Machine you want to use in case of run\nfail."
+#	    exit 1;
+	else
+	    JAVA_HOME=${JRE_HOME};
+	fi
+        # find it?
+#	if [ -z "${JAVA_HOME}" ]; then
+#	    exit 1;
+#	fi
+    fi
+#    JAVA_HOME="${JAVA_HOME}";
+    if [ -z "${JAVA_HOME}" ]; then
+	JAVA_RUN="java"
+    else
+	JAVA_RUN="${JAVA_HOME}/bin/java";
+    fi
+}
+
 set_exist_options() {
     OPTIONS="-Dexist.home=$EXIST_HOME"
 }
