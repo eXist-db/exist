@@ -30,6 +30,36 @@ import java.io.IOException;
  */
 public interface PackageLoader {
 
+    public static class Version {
+
+        String min = null;
+        String max = null;
+        String version = null;
+
+        public String getMin() {
+            return min;
+        }
+
+        public String getMax() {
+            return max;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public Version(String version) {
+            this.version = version;
+        }
+
+        public Version(String min, String max) {
+            this.min = min;
+            this.max = max;
+        }
+
+
+    }
+
     /**
      * Locate the expath package identified by name.
      *
@@ -37,5 +67,5 @@ public interface PackageLoader {
      * @param version the version to install
      * @return a file containing the package or null if not found
      */
-    public File load(String name, String version) throws IOException;
+    public File load(String name, Version version) throws IOException;
 }
