@@ -165,11 +165,11 @@ public class Deployment {
                 String semVerMax = dependency.getAttribute("semver-max");
                 PackageLoader.Version version = null;
                 if (semVer != null) {
-                    version = new PackageLoader.Version(semVer);
+                    version = new PackageLoader.Version(semVer, true);
                 } else if (semVerMax != null || semVerMin != null) {
                     version = new PackageLoader.Version(semVerMin, semVerMax);
                 } else if (pkgVersion != null) {
-                    version = new PackageLoader.Version(versionStr);
+                    version = new PackageLoader.Version(versionStr, false);
                 }
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
