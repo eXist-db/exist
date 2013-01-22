@@ -156,7 +156,7 @@ public class Deploy extends BasicFunction {
         try {
             RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
-            File xar = loader.load(pkgName, version);
+            File xar = loader.load(pkgName, new PackageLoader.Version(version));
             if (xar != null)
                 return deployment.installAndDeploy(xar, loader);
             return null;
@@ -226,11 +226,19 @@ public class Deploy extends BasicFunction {
             this.repoURL = repoURL;
         }
 
-        @Override
-        public File load(String name, String version) throws IOException {
+        public File load(String name, Version version) throws IOException {
             String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8");
-            if (version != null && version.length() > 0)
-                pkgURL += "&version=" + URLEncoder.encode(version, "UTF-8");
+            if (version != null) {
+                if (version.getMin() != null) {
+                    pkgURL += "&semver-min=" + version.getMin();
+                }
+                if (version.getMax() != null) {
+                    pkgURL += "&semver-max=" + version.getMax();
+                }
+                if (version.getVersion() != null) {
+                    pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), "UTF-8");
+                }
+            }
             LOG.info("Retrieving package from " + pkgURL);
             HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
             connection.setConnectTimeout(15 * 1000);

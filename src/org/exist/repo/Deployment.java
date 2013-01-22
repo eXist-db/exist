@@ -144,11 +144,11 @@ public class Deployment {
         DocumentImpl document = getDescriptor(xar);
         ElementImpl root = (ElementImpl) document.getDocumentElement();
         String name = root.getAttribute("name");
-        String version = root.getAttribute("version");
+        String pkgVersion = root.getAttribute("version");
 
         ExistRepository repo = broker.getBrokerPool().getExpathRepo();
         Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null && version.equals(packages.latest().getVersion())) {
+        if (packages != null && pkgVersion.equals(packages.latest().getVersion())) {
             LOG.info("Application package " + name + " already installed. Skipping.");
             return null;
         }
@@ -159,13 +159,24 @@ public class Deployment {
             for (SequenceIterator i = deps.iterate(); i.hasNext(); ) {
                 Element dependency = (Element) i.nextItem();
                 String pkgName = dependency.getAttribute("package");
-                String pkgVersion = dependency.getAttribute("version");
+                String versionStr = dependency.getAttribute("version");
+                String semVer = dependency.getAttribute("semver");
+                String semVerMin = dependency.getAttribute("semver-min");
+                String semVerMax = dependency.getAttribute("semver-max");
+                PackageLoader.Version version = null;
+                if (semVer != null) {
+                    version = new PackageLoader.Version(semVer);
+                } else if (semVerMax != null || semVerMin != null) {
+                    version = new PackageLoader.Version(semVerMin, semVerMax);
+                } else if (pkgVersion != null) {
+                    version = new PackageLoader.Version(versionStr);
+                }
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
                     } else if (loader != null) {
-                        File depFile = loader.load(pkgName, pkgVersion);
+                        File depFile = loader.load(pkgName, version);
                         if (depFile != null)
                             installAndDeploy(depFile, loader);
                         else

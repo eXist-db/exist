@@ -70,7 +70,8 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
         PackageLoader loader = new PackageLoader() {
             @Override
-            public File load(String name, String version) {
+            public File load(String name, PackageLoader.Version version) {
+                // TODO: enforce version check
                 return packages.get(name);
             }
         };
