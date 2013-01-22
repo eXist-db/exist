@@ -21,12 +21,12 @@
  */
 package org.exist.scheduler;
 
+import org.exist.storage.BrokerPool;
+import org.exist.storage.SystemTask;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import org.exist.storage.BrokerPool;
-import org.exist.storage.SystemTask;
+import org.quartz.StatefulJob;
 
 
 /**
@@ -34,20 +34,19 @@ import org.exist.storage.SystemTask;
  *
  * <p>SystemTaskJobs may only have a Single Instance running in the scheduler at once, intersecting schedules will be queued.</p>
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam.retter@googlemail.com>
  */
-public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
-{
+public class SystemTaskJob implements JobDescription, StatefulJob {
+    
     private final static String JOB_GROUP = "eXist.System";
-    private String              JOB_NAME  = "SystemTask";
+    private String name  = "SystemTask";
 
-    private SystemTask          task      = null;
+    private SystemTask task = null;
 
     /**
      * Default Constructor for Quartz.
      */
-    public SystemTaskJob()
-    {
+    public SystemTaskJob() {
     }
 
 
@@ -57,32 +56,32 @@ public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
      * @param  jobName  DOCUMENT ME!
      * @param  task     DOCUMENT ME!
      */
-    public SystemTaskJob( String jobName, SystemTask task )
-    {
+    public SystemTaskJob(final String jobName, final SystemTask task) {
         this.task = task;
 
-        if( jobName == null ) {
-            this.JOB_NAME += ": " + task.getClass().getName();
+        if(jobName == null) {
+            this.name += ": " + task.getClass().getName();
         } else {
-            this.JOB_NAME = jobName;
+            this.name = jobName;
         }
     }
 
-    public final String getName()
-    {
-        return( JOB_NAME );
+    @Override
+    public final String getName() {
+        return name;
     }
 
 
-    public final void setName( String jobName )
+    @Override
+    public final void setName(final String name)
     {
-        this.JOB_NAME = jobName;
+        this.name = name;
     }
 
 
-    public final String getGroup()
-    {
-        return( JOB_GROUP );
+    @Override
+    public final String getGroup() {
+        return JOB_GROUP;
     }
 
 
@@ -91,28 +90,27 @@ public class SystemTaskJob implements JobDescription, org.quartz.StatefulJob
      *
      * @return  The SystemTask for this Job
      */
-    protected SystemTask getSystemTask()
-    {
-        return( task );
+    protected SystemTask getSystemTask() {
+        return task;
     }
 
 
-    public final void execute( JobExecutionContext jec ) throws JobExecutionException
-    {
-        JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
-        BrokerPool pool       = ( BrokerPool )jobDataMap.get( "brokerpool" );
-        SystemTask task       = ( SystemTask )jobDataMap.get( "systemtask" );
+    @Override
+    public final void execute(final JobExecutionContext jec) throws JobExecutionException {
+        final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
+        final SystemTask task = ( SystemTask )jobDataMap.get("systemtask");
 
         //if invalid arguments then abort
-        if( ( pool == null ) || ( task == null ) ) {
+        if((pool == null) || (task == null)) {
 
             //abort all triggers for this job
-            JobExecutionException jaa = new JobExecutionException( "SystemTaskJob Failed: BrokerPool or SystemTask was null! Unscheduling SystemTask", false );
+            final JobExecutionException jaa = new JobExecutionException("SystemTaskJob Failed: BrokerPool or SystemTask was null! Unscheduling SystemTask", false);
             jaa.setUnscheduleAllTriggers( true );
-            throw( jaa );
+            throw jaa;
         }
 
         //trigger the system task
-        pool.triggerSystemTask( task );
+        pool.triggerSystemTask(task);
     }
 }

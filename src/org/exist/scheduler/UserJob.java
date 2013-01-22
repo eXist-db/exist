@@ -26,14 +26,14 @@ package org.exist.scheduler;
  *
  * <p>Classes extending UserJob may have multiple instances executing within the scheduler at once</p>
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam.retter@googlemail.com>
  */
-public abstract class UserJob implements JobDescription, org.quartz.Job
-{
+public abstract class UserJob implements JobDescription, org.quartz.Job {
+    
     public static String JOB_GROUP = "eXist.User";
 
-    public final String getGroup()
-    {
-        return( JOB_GROUP );
+    @Override
+    public final String getGroup() {
+        return JOB_GROUP;
     }
 }
