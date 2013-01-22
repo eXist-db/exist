@@ -24,7 +24,7 @@ package org.exist.scheduler;
 /**
  * Interface defined requirements for a Scheduleable job.
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam.retter@googlemail.com>
  */
 public interface JobDescription {
 
@@ -40,7 +40,7 @@ public interface JobDescription {
      *
      * @param  name  The job's new name
      */
-    void setName( String name );
+    void setName(final String name );
 
     /**
      * Get the name group for the job.
