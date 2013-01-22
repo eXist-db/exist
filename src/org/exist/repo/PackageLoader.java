@@ -30,10 +30,15 @@ import java.io.IOException;
  */
 public interface PackageLoader {
 
+    /**
+     * Wrapper for the different version schemes supported by
+     * the expath spec.
+     */
     public static class Version {
 
         String min = null;
         String max = null;
+        String semVer = null;
         String version = null;
 
         public String getMin() {
@@ -44,20 +49,25 @@ public interface PackageLoader {
             return max;
         }
 
+        public String getSemVer() {
+            return semVer;
+        }
+
         public String getVersion() {
             return version;
         }
 
-        public Version(String version) {
-            this.version = version;
+        public Version(String version, boolean semver) {
+            if (semver)
+                this.semVer = version;
+            else
+                this.version = version;
         }
 
         public Version(String min, String max) {
             this.min = min;
             this.max = max;
         }
-
-
     }
 
     /**
