@@ -156,7 +156,7 @@ public class Deploy extends BasicFunction {
         try {
             RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
-            File xar = loader.load(pkgName, new PackageLoader.Version(version));
+            File xar = loader.load(pkgName, new PackageLoader.Version(version, false));
             if (xar != null)
                 return deployment.installAndDeploy(xar, loader);
             return null;
@@ -234,6 +234,9 @@ public class Deploy extends BasicFunction {
                 }
                 if (version.getMax() != null) {
                     pkgURL += "&semver-max=" + version.getMax();
+                }
+                if (version.getSemVer() != null) {
+                    pkgURL += "&semver=" + version.getSemVer();
                 }
                 if (version.getVersion() != null) {
                     pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), "UTF-8");
