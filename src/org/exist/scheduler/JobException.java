@@ -35,28 +35,30 @@ public class JobException extends Exception {
     
     private static final long serialVersionUID = 1567438994821964637L;
 
-    public final static int   JOB_ABORT        = 0; //Abort this job, but continue scheduling
-    public final static int   JOB_ABORT_THIS   = 1; //Abort this job and cancel this trigger
-    public final static int   JOB_ABORT_ALL    = 2; //Abort this job and cancel all triggers
-    public final static int   JOB_REFIRE       = 3; //Refire this job now
+    public enum JobExceptionAction {
+        JOB_ABORT, //Abort this job, but continue scheduling
+        JOB_ABORT_THIS, //Abort this job and cancel this trigger
+        JOB_ABORT_ALL, //Abort this job and cancel all triggers
+        JOB_REFIRE //Refire this job now
+    }
+    
+    private final JobExceptionAction jobExceptionAction;
 
-    private final int action;
-
-    public JobException(final int action, final String message ) {
+    public JobException(final JobExceptionAction jobExceptionAction, final String message ) {
         super(message);
 
-        this.action  = action;
+        this.jobExceptionAction = jobExceptionAction;
     }
 
     /**
      * Should be called after this exception is caught it cleans up the job, with regards to the scheduler.
      *
-     * <p>Jobs may be removed, refired immediately or left for their next execution</p>
+     * <p>Jobs may be removed, re-fired immediately or left for their next execution</p>
      *
      * @throws  JobExecutionException  DOCUMENT ME!
      */
     public void cleanupJob() throws JobExecutionException {
-        switch(action) {
+        switch(jobExceptionAction) {
 
             case JOB_REFIRE:
                 throw new JobExecutionException(getMessage(), true);

@@ -53,7 +53,8 @@ import org.exist.plugin.PluginsManagerImpl;
 import org.exist.repo.ClasspathHelper;
 import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.SystemTaskJob;
+import org.exist.scheduler.impl.QuartzSchedulerImpl;
+import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -709,7 +710,7 @@ public class BrokerPool extends Observable implements Database {
 /* TODO: end -adam- remove OLD SystemTask initialization */		
 		
 		//TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
-		scheduler = new Scheduler(this, conf);
+		scheduler = new QuartzSchedulerImpl(this, conf);
 		
 		//TODO : since we need one :-( (see above)	
 		this.isReadOnly = !canReadDataDir(conf);
@@ -740,7 +741,7 @@ public class BrokerPool extends Observable implements Database {
 //            scheduler.createPeriodicJob(2500, new Sync(), 2500);
             SyncTask syncTask = new SyncTask();
             syncTask.configure(conf, null);
-            scheduler.createPeriodicJob(2500, new SystemTaskJob(SyncTask.getJobName(), syncTask), 2500);
+            scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
         }
         
         if (System.getProperty("trace.brokers", "no").equals("yes"))
@@ -1043,11 +1044,11 @@ public class BrokerPool extends Observable implements Database {
             if (config.getCronExpr() == null) {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
                         config.getPeriod() + " ms");
-                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJob(task), config.getPeriod());
+                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJobImpl(task), config.getPeriod());
             } else {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() +
                         " with cron expression: " + config.getCronExpr());
-                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJob(task));
+                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJobImpl(task));
             }
         } catch (Exception e) {
 			LOG.warn(e.getMessage(), e);

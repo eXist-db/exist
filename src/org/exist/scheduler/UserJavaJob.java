@@ -35,8 +35,7 @@ import org.quartz.JobExecutionException;
  *
  * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
-public abstract class UserJavaJob extends UserJob
-{
+public abstract class UserJavaJob extends UserJob {
     /**
      * The execute method as called by the Quartz Scheduler.
      *
@@ -45,7 +44,7 @@ public abstract class UserJavaJob extends UserJob
      * @throws  JobExecutionException  if there was a problem with the job, this also describes to Quartz how to cleanup the job
      */
     @Override
-    public final void execute(final JobExecutionContext jec ) throws JobExecutionException {
+    public final void execute(final JobExecutionContext jec) throws JobExecutionException {
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
         //get the brokerpool from the data map

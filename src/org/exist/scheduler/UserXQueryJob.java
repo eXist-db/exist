@@ -21,12 +21,11 @@
  */
 package org.exist.scheduler;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Map.Entry;
+import java.util.Properties;
 import org.apache.log4j.Logger;
-
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -46,13 +45,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.StringValue;
-
-import java.io.IOException;
-
-import java.net.MalformedURLException;
-
-import java.util.Map.Entry;
-import java.util.Properties;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 
 /**
@@ -113,7 +108,7 @@ public class UserXQueryJob extends UserJob {
      *
      * @return  The XQuery Resource for this Job
      */
-    protected String getXQueryResource() {
+    public String getXQueryResource() {
         return xqueryResource;
     }
 
@@ -122,7 +117,7 @@ public class UserXQueryJob extends UserJob {
      *
      * @return  The User for this Job
      */
-    protected Subject getUser() {
+    public Subject getUser() {
         return user;
     }
 

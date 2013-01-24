@@ -24,11 +24,12 @@ package org.exist.xquery.functions.system;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.scheduler.ScheduledJobInfo;
+import org.exist.scheduler.ScheduledJobInfo.TriggerState;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -62,6 +63,7 @@ public class GetScheduledJobs extends BasicFunction {
         super( context, signature );
     }
 
+    @Override
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
         if( !context.getSubject().hasDbaRole() ) {
@@ -82,12 +84,12 @@ public class GetScheduledJobs extends BasicFunction {
             org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
             
             if( existScheduler != null ) {
-                ScheduledJobInfo[] scheduledJobsInfo = existScheduler.getScheduledJobs();
+                List<ScheduledJobInfo> scheduledJobsInfo = existScheduler.getScheduledJobs();
                 ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
                 
                 if( scheduledJobsInfo != null ) {
-                    for( int i = 0; i < scheduledJobsInfo.length; i++ ) {
-                    	addRow( scheduledJobsInfo[i], builder, false );
+                    for(final ScheduledJobInfo scheduledJobInfo : scheduledJobsInfo) {
+                    	addRow(scheduledJobInfo, builder, false );
                     }
                 }
                 if( executingJobsInfo != null ) {
@@ -104,59 +106,32 @@ public class GetScheduledJobs extends BasicFunction {
         return( (NodeValue)builder.getDocument().getDocumentElement() );
     }
     
-    private void addRow( ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning )
-	{
+    private void addRow(ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning) {
     	logger.trace("Entring addRow");
-    	String 	name 				= scheduledJobInfo.getName();
-    	String 	group 				= scheduledJobInfo.getGroup();
-    	String 	triggerName			= scheduledJobInfo.getTriggerName();
-    	Date 	startTime 			= scheduledJobInfo.getStartTime();
-    	Date 	endTime 			= scheduledJobInfo.getEndTime();
-    	Date 	fireTime 			= scheduledJobInfo.getPreviousFireTime();
-    	Date 	nextFireTime 		= scheduledJobInfo.getNextFireTime();
-    	Date 	finalFireTime 		= scheduledJobInfo.getFinalFireTime();
-    	String 	triggerExpression 	= scheduledJobInfo.getTriggerExpression();
-    	int 	triggerState 		= scheduledJobInfo.getTriggerState();
-    	String 	triggerStateName 	= "ERROR";
     	
-    	switch( triggerState ) {
-    		case ScheduledJobInfo.TRIGGER_STATE_ERROR:
-    			triggerStateName = "ERROR";
-    			break;
-    			
-    		case ScheduledJobInfo.TRIGGER_STATE_NONE:
-    			triggerStateName = "NONE";
-    			break;
-    			
-    		case ScheduledJobInfo.TRIGGER_STATE_NORMAL:
-    			triggerStateName = "NORMAL";
-    			break;
-    			
-    		case ScheduledJobInfo.TRIGGER_STATE_PAUSED:
-    			triggerStateName = "PAUSED";
-    			break;
-    			
-    		case ScheduledJobInfo.TRIGGER_STATE_BLOCKED:
-    			triggerStateName = "BLOCKED";
-    			break;
-    			
-    		case ScheduledJobInfo.TRIGGER_STATE_COMPLETE:
-    			triggerStateName = "COMPLETE";
-    			break;
-    	}
+        String name = scheduledJobInfo.getName();
+    	String group = scheduledJobInfo.getGroup();
+    	String triggerName = scheduledJobInfo.getTriggerName();
+    	Date startTime = scheduledJobInfo.getStartTime();
+    	Date endTime = scheduledJobInfo.getEndTime();
+    	Date fireTime = scheduledJobInfo.getPreviousFireTime();
+    	Date nextFireTime = scheduledJobInfo.getNextFireTime();
+    	Date finalFireTime = scheduledJobInfo.getFinalFireTime();
+    	String triggerExpression = scheduledJobInfo.getTriggerExpression();
+    	TriggerState triggerState = scheduledJobInfo.getTriggerState();
 		
-        builder.startElement( new QName( "job", NAMESPACE_URI, PREFIX ), null );
-        builder.addAttribute( new QName( "name", null, null), name );
-        builder.addAttribute( new QName( "group", null, null), group );
-        builder.addAttribute( new QName( "triggerName", null, null ), triggerName ) ;
-        builder.addAttribute( new QName( "startTime", null, null ), dateText( startTime ) );
-        builder.addAttribute( new QName( "endTime", null, null ), dateText( endTime ) );
-        builder.addAttribute( new QName( "fireTime", null, null ), dateText( fireTime ) );
-        builder.addAttribute( new QName( "nextFireTime", null, null ), dateText( nextFireTime ) );
-        builder.addAttribute( new QName( "finalFireTime", null, null ), dateText( finalFireTime ) );
-        builder.addAttribute( new QName( "triggerExpression", null, null ), triggerExpression );
-        builder.addAttribute( new QName( "triggerState", null, null ), triggerStateName );
-        builder.addAttribute( new QName( "running", null, null ), (isRunning) ? "RUNNING" : "SCHEDULED" );
+        builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
+        builder.addAttribute(new QName("name", null, null), name);
+        builder.addAttribute(new QName("group", null, null), group);
+        builder.addAttribute(new QName("triggerName", null, null), triggerName) ;
+        builder.addAttribute(new QName("startTime", null, null), dateText(startTime));
+        builder.addAttribute(new QName("endTime", null, null), dateText(endTime));
+        builder.addAttribute(new QName("fireTime", null, null), dateText(fireTime));
+        builder.addAttribute(new QName("nextFireTime", null, null), dateText(nextFireTime));
+        builder.addAttribute(new QName("finalFireTime", null, null), dateText(finalFireTime));
+        builder.addAttribute(new QName("triggerExpression", null, null), triggerExpression);
+        builder.addAttribute(new QName("triggerState", null, null), triggerState.name());
+        builder.addAttribute(new QName("running", null, null), (isRunning) ? "RUNNING" : "SCHEDULED");
         builder.endElement();
         logger.trace("Exiting addRow");
     }

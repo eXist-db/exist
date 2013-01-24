@@ -324,8 +324,8 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        <copy file="${src}/org/exist/scheduler/quartz.properties"
-            todir="${build.classes}/org/exist/scheduler"/>
+        <copy file="${src}/org/exist/scheduler/impl/quartz.properties"
+            todir="${build.classes}/org/exist/scheduler/impl"/>
         <copy todir="${build.classes}/org/exist/launcher">
             <fileset dir="${src}/org/exist/launcher">
                 <include name="**.png"/>

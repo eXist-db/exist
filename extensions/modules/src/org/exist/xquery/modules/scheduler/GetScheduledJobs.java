@@ -22,7 +22,8 @@
 package org.exist.xquery.modules.scheduler;
 
 import java.io.IOException;
-import org.xml.sax.SAXException;
+import java.util.Date;
+import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.scheduler.ScheduledJobInfo;
@@ -39,8 +40,7 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-
-import java.util.Date;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -108,6 +108,7 @@ public class GetScheduledJobs extends BasicFunction
      *
      * @see     org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
+    @Override
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
         Subject               user           = context.getUser();
@@ -117,31 +118,31 @@ public class GetScheduledJobs extends BasicFunction
         StringBuilder      xmlBuf         = new StringBuilder();
 
         int                iJobs          = 0;
-        String[]           groups         = scheduler.getJobGroupNames();
-        ScheduledJobInfo[] scheduledJobs  = scheduler.getScheduledJobs();
+        List<String>           groups         = scheduler.getJobGroupNames();
+        List<ScheduledJobInfo> scheduledJobs  = scheduler.getScheduledJobs();
 
-        for( int g = 0; g < groups.length; g++ ) {
+        for( int g = 0; g < groups.size(); g++ ) {
 
-            if( userhasDBARole || groups[g].equals( UserJob.JOB_GROUP ) ) {
-                xmlBuf.append( "<" + SchedulerModule.PREFIX + ":group name=\"" + groups[g] + "\">" );
+            if( userhasDBARole || groups.get(g).equals( UserJob.JOB_GROUP ) ) {
+                xmlBuf.append( "<" + SchedulerModule.PREFIX + ":group name=\"" + groups.get(g) + "\">" );
 
-                for( int j = 0; j < scheduledJobs.length; j++ ) {
+                for( int j = 0; j < scheduledJobs.size(); j++ ) {
 
-                    if( scheduledJobs[j].getGroup().equals( groups[g] ) ) {
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJobs[j].getName() + "\">" );
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJobs[j].getTriggerName() + "\">" );
+                    if( scheduledJobs.get(j).getGroup().equals( groups.get(g) ) ) {
+                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJobs.get(j).getName() + "\">" );
+                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJobs.get(j).getTriggerName() + "\">" );
                         xmlBuf.append( "<expression>" );
-                        xmlBuf.append( scheduledJobs[j].getTriggerExpression() );
+                        xmlBuf.append( scheduledJobs.get(j).getTriggerExpression() );
                         xmlBuf.append( "</expression>" );
                         xmlBuf.append( "<state>" );
-                        xmlBuf.append( scheduledJobs[j].getTriggerState() );
+                        xmlBuf.append( scheduledJobs.get(j).getTriggerState() );
                         xmlBuf.append( "</state>" );
                         xmlBuf.append( "<start>" );
-                        xmlBuf.append( new DateTimeValue( scheduledJobs[j].getStartTime() ) );
+                        xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getStartTime() ) );
                         xmlBuf.append( "</start>" );
                         xmlBuf.append( "<end>" );
 
-                        Date endTime = scheduledJobs[j].getEndTime();
+                        Date endTime = scheduledJobs.get(j).getEndTime();
 
                         if( endTime != null ) {
                             xmlBuf.append( new DateTimeValue( endTime ) );
@@ -150,16 +151,16 @@ public class GetScheduledJobs extends BasicFunction
                         xmlBuf.append( "</end>" );
                         xmlBuf.append( "<previous>" );
 
-                        Date previousTime = scheduledJobs[j].getPreviousFireTime();
+                        Date previousTime = scheduledJobs.get(j).getPreviousFireTime();
 
                         if( previousTime != null ) {
-                            xmlBuf.append( new DateTimeValue( scheduledJobs[j].getPreviousFireTime() ) );
+                            xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getPreviousFireTime() ) );
                         }
 
                         xmlBuf.append( "</previous>" );
                         xmlBuf.append( "<next>" );
 
-                        Date nextTime = scheduledJobs[j].getNextFireTime();
+                        Date nextTime = scheduledJobs.get(j).getNextFireTime();
 
                         if( nextTime != null ) {
                             xmlBuf.append( new DateTimeValue() );
@@ -168,7 +169,7 @@ public class GetScheduledJobs extends BasicFunction
                         xmlBuf.append( "</next>" );
                         xmlBuf.append( "<final>" );
 
-                        Date finalTime = scheduledJobs[j].getFinalFireTime();
+                        Date finalTime = scheduledJobs.get(j).getFinalFireTime();
 
                         if( ( endTime != null ) && ( finalTime != null ) ) {
                             xmlBuf.append( new DateTimeValue() );

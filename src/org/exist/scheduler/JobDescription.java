@@ -33,19 +33,19 @@ public interface JobDescription {
      *
      * @return  The job's name
      */
-    String getName();
+    public String getName();
 
     /**
      * Set the name of the job.
      *
      * @param  name  The job's new name
      */
-    void setName(final String name );
+    public void setName(final String name );
 
     /**
      * Get the name group for the job.
      *
      * @return  The job's group name
      */
-    String getGroup();
+    public String getGroup();
 }

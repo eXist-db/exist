@@ -21,6 +21,7 @@
  */
 package org.exist.management.impl;
 
+import java.util.List;
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
@@ -88,10 +89,10 @@ public class ProcessReport implements ProcessReportMBean {
                     pItemNames, pItemDescriptions, itemTypes);
             TabularType tabularType = new TabularType("jobList", "List of currently scheduled jobs", infoType, pIndexNames);
             TabularDataSupport data = new TabularDataSupport(tabularType);
-            ScheduledJobInfo[] jobs = scheduler.getScheduledJobs();
-            for (int i = 0; i < jobs.length; i++) {
-                Object[] itemValues = { jobs[i].getName(), jobs[i].getGroup(),
-                        jobs[i].getTriggerExpression() };
+            List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
+            for (final ScheduledJobInfo job : jobs) {
+                Object[] itemValues = { job.getName(), job.getGroup(),
+                        job.getTriggerExpression() };
                 data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
             }
             return data;

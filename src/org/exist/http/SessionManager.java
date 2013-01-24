@@ -23,6 +23,7 @@ package org.exist.http;
 
 import org.apache.log4j.Logger;
 import org.exist.scheduler.JobException;
+import org.exist.scheduler.JobException.JobExceptionAction;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.value.Sequence;
@@ -70,10 +71,11 @@ public class SessionManager {
         public void setName(String name) {
         }
 
-        public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
-            SessionManager manager = (SessionManager) params.get("session-manager");
-            if (manager == null)
-                throw new JobException(JobException.JOB_ABORT, "parameter 'session-manager' is not set");
+        public void execute(final BrokerPool brokerpool, final Map<String, ?> params) throws JobException {
+            final SessionManager manager = (SessionManager)params.get("session-manager");
+            if (manager == null) {
+                throw new JobException(JobExceptionAction.JOB_ABORT, "parameter 'session-manager' is not set");
+            }
             manager.timeoutCheck();
         }
     }

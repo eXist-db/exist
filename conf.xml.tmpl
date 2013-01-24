@@ -459,13 +459,9 @@
             Job definitions:
             
             - type:
-            The type of the job to schedule. Must be either "startup", "system" 
+            The type of the job to schedule. Must be either "system" 
             or "user".
             
-                startup - Startup jobs are executed once during the
-                database startup but before the database becomes available,
-                these jobs are synchronous.
-                
                 system - System jobs require the database to be in a consistent state.
                 All database operations will be stopped until the method returns or 
                 throws an exception. Any exception will be caught and a warning written to
@@ -477,7 +473,6 @@
             - class:
             If the job is written in Java then this should be the name of the
             class that extends either -
-                org.exist.scheduler.StartupJob
                 org.exist.storage.SystemTask
                 org.exist.scheduler.UserJavaJob
             
