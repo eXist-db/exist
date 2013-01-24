@@ -54,11 +54,16 @@ public class ModuleFunctions extends BasicFunction {
             XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
-            Module module;
+            Module module = null;
+
+            try {
             if (isCalledAs("module-functions-by-uri"))
                 module = tempContext.importModule(args[0].getStringValue(), null, null);
             else
                 module = tempContext.importModule(null, null, args[0].getStringValue());
+            } catch (Exception e) {
+                LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
+            }
             if (module == null)
                 return Sequence.EMPTY_SEQUENCE;
             addFunctionRefsFromModule(tempContext, list, module);
