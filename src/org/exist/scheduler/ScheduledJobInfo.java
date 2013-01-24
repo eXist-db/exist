@@ -36,12 +36,14 @@ import org.quartz.Trigger;
  */
 public class ScheduledJobInfo {
     
-    public final static int TRIGGER_STATE_ERROR    = -1;
-    public final static int TRIGGER_STATE_NONE     = 0;
-    public final static int TRIGGER_STATE_NORMAL   = 1;
-    public final static int TRIGGER_STATE_PAUSED   = 2;
-    public final static int TRIGGER_STATE_BLOCKED  = 3;
-    public final static int TRIGGER_STATE_COMPLETE = 4;
+    public enum TriggerState {
+        ERROR,
+        NONE,
+        NORMAL,
+        PAUSED,
+        BLOCKED,
+        COMPLETE;
+    }
     
     private final Scheduler scheduler;
     private final Trigger trigger;
@@ -57,7 +59,7 @@ public class ScheduledJobInfo {
      * @return  the Job's Name
      */
     public String getName() {
-        return trigger.getJobName();
+        return trigger.getJobKey().getName();
     }
 
 
@@ -67,7 +69,7 @@ public class ScheduledJobInfo {
      * @return  the Job's Group
      */
     public String getGroup() {
-        return trigger.getJobGroup();
+        return trigger.getJobKey().getGroup();
     }
 
 
@@ -77,7 +79,7 @@ public class ScheduledJobInfo {
      * @return  the Name of the Job's Trigger
      */
     public String getTriggerName() {
-        return trigger.getName();
+        return trigger.getKey().getName();
     }
 
 
@@ -152,32 +154,34 @@ public class ScheduledJobInfo {
      *
      * @return  the TRIGGER_STATE_*
      */
-    public int getTriggerState() {
+    public TriggerState getTriggerState() {
         try {
-            switch(scheduler.getTriggerState(trigger.getName(), trigger.getGroup())) {
-                case Trigger.STATE_ERROR:
-                    return TRIGGER_STATE_ERROR;
+            switch(scheduler.getTriggerState(trigger.getKey())) {
+                
+                
+                case ERROR:
+                    return TriggerState.ERROR;
 
-                case Trigger.STATE_NONE:
-                    return TRIGGER_STATE_NONE;
+                case NONE:
+                    return TriggerState.NONE;
 
-                case Trigger.STATE_NORMAL:
-                    return TRIGGER_STATE_NORMAL;
+                case NORMAL:
+                    return TriggerState.NORMAL;
 
-                case Trigger.STATE_PAUSED:
-                    return TRIGGER_STATE_PAUSED;
+                case PAUSED:
+                    return TriggerState.PAUSED;
 
-                case Trigger.STATE_BLOCKED:
-                    return TRIGGER_STATE_BLOCKED;
+                case BLOCKED:
+                    return TriggerState.BLOCKED;
 
-                case Trigger.STATE_COMPLETE:
-                    return TRIGGER_STATE_COMPLETE;
+                case COMPLETE:
+                    return TriggerState.COMPLETE;
 
                 default:
-                    return TRIGGER_STATE_ERROR;
+                    return TriggerState.ERROR;
             }
         } catch(final SchedulerException se) {
-            return TRIGGER_STATE_ERROR;
+            return TriggerState.ERROR;
         }
     }
 }

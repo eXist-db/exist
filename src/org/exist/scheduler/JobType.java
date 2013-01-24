@@ -17,15 +17,15 @@
  *  along with this program; if not, write to the Free Software Foundation
  *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *  $Id$
+ *  $Id: UserXQueryJob.java 18087 2013-01-22 22:54:40Z deliriumsky $
  */
 package org.exist.scheduler;
 
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-
-
-public interface SystemTaskJob extends JobDescription {
-
-    public void execute(final JobExecutionContext jec) throws JobExecutionException;    
+/**
+ *
+ * @author Adam Retter <adam.retter@googlemail.com>
+ */
+public enum JobType {
+    USER,
+    SYSTEM
 }
