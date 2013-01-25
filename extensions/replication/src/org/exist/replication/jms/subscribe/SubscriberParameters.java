@@ -94,7 +94,7 @@ public class SubscriberParameters extends ClientParameters {
         if (value == null || value.equals("")) {
             String errorText = "'" + CLIENT_ID + "' is not set.";
             LOG.error(errorText);
-            throw new JobException(JobException.JOB_ABORT_THIS, errorText);
+            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
         }
         clientId = value;
 
@@ -104,7 +104,7 @@ public class SubscriberParameters extends ClientParameters {
         if (value == null || value.equals("")) {
             String errorText = "'" + SUBSCRIBER_NAME + "' is not set.";
             LOG.error(errorText);
-            throw new JobException(JobException.JOB_ABORT_THIS, errorText);
+            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
         }
         subscriberName=value;
 
@@ -128,7 +128,7 @@ public class SubscriberParameters extends ClientParameters {
             } else {
                 String errorText = "'" + NO_LOCAL + "' contains wrong value '" + value + "'";
                 LOG.error(errorText);
-                throw new JobException(JobException.JOB_ABORT_THIS, errorText);
+                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
             }
 
         }
@@ -146,7 +146,7 @@ public class SubscriberParameters extends ClientParameters {
             } else {
                 String errorText = "'" + DURABLE + "' contains wrong value '" + value + "'";
                 LOG.error(errorText);
-                throw new JobException(JobException.JOB_ABORT_THIS, errorText);
+                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
             }
 
         }
