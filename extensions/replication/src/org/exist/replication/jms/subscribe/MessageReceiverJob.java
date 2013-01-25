@@ -108,7 +108,7 @@ public class MessageReceiverJob extends UserJavaJob {
             if (!(destination instanceof Topic)) {
                 String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
                 LOG.error(errorText);
-                throw new JobException(JobException.JOB_ABORT_THIS, errorText);
+                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
             }
 
             // Lookup connection factory            
@@ -160,7 +160,7 @@ public class MessageReceiverJob extends UserJavaJob {
             closeSilent(context, connection, session);
             
             LOG.error("Unable to start subscription: " + t.getMessage() + ";  " + parameters.getReport(), t);
-            throw new JobException(JobException.JOB_ABORT_THIS, t.getMessage());
+            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, t.getMessage());
         }
     }
 
