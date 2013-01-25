@@ -21,9 +21,6 @@
  */
 package org.exist.scheduler;
 
-import java.text.ParseException;
-
-import org.exist.Database;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
@@ -35,12 +32,6 @@ import org.exist.security.AbstractAccount;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-
-//import static org.quartz.JobBuilder.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -49,92 +40,90 @@ import org.quartz.Trigger;
 @ConfigurationClass("job")
 public class Job implements Configurable {
 	
-	protected static final String DETAILS = "DETAILs";
+    protected static final String DETAILS = "DETAILs";
 
-	@ConfigurationFieldAsAttribute("id")
-	private String id;
+    @ConfigurationFieldAsAttribute("id")
+    private String id;
 
-	@ConfigurationFieldAsElement("name")
-	private String name;
+    @ConfigurationFieldAsElement("name")
+    private String name;
 
-	@ConfigurationFieldAsElement("group")
-	private String group;
+    @ConfigurationFieldAsElement("group")
+    private String group;
 
-	@ConfigurationFieldAsElement("class")
-	private String clazz;
-	
-	@ConfigurationFieldAsElement("run-as-account")
-	private String account;
+    @ConfigurationFieldAsElement("class")
+    private String clazz;
 
-	@ConfigurationFieldAsElement("script-uri")
-	protected String scriptURI;
+    @ConfigurationFieldAsElement("run-as-account")
+    private String account;
 
-	@ConfigurationFieldAsElement("cron-expression")
-	private String cronExpression;
-	
-	private Configuration configuration = null;
-	private SchedulerManager manager;
+    @ConfigurationFieldAsElement("script-uri")
+    protected String scriptURI;
 
-	public Job(SchedulerManager manager, Configuration config) throws ConfigurationException {
+    @ConfigurationFieldAsElement("cron-expression")
+    private String cronExpression;
 
-		this.manager = manager;
-		
-        configuration = Configurator.configure(this, config);
+    private Configuration configuration;
+    private SchedulerManager manager;
 
-		try {
-			manager.scheduler.scheduleJob(getJobDetail(), getTrigger());
-		} catch (SchedulerException e) {
-			throw new ConfigurationException(e);
-		}
-	}
-	
-	private JobDetail getJobDetail() throws ConfigurationException {
-		JobDetail details = new JobDetail(name, group, getJobClass());
-		
-		details.getJobDataMap().put(DETAILS, this);
-		return details;
-	}
-	
-	private Trigger getTrigger() throws ConfigurationException {
-        try {
-			return new CronTrigger(name + " Trigger", group, cronExpression);
-		} catch (ParseException e) {
-			throw new ConfigurationException(e);
-		}
-	}
-	
-	private Class<?> getJobClass() throws ConfigurationException {
-		try {
-			if (scriptURI != null)
-				return Class.forName("org.exist.scheduler.XQueryJob");
+    public Job(final SchedulerManager manager, final Configuration config) throws ConfigurationException {
 
-			return Class.forName(clazz);
-		} catch (ClassNotFoundException e) {
-			throw new ConfigurationException(e);
-		}
-	}
+        this.manager = manager;	
+        this.configuration = Configurator.configure(this, config);
 
-	protected Subject getSubject() {
-    	SecurityManager sm = getDatabase().getSecurityManager();
-    	AbstractAccount acc = (AbstractAccount) sm.getAccount(account);
-    	if (acc == null)
-    		//UNDERSTAND: error better here?
-    		return sm.getGuestSubject();
-    	
-        return new SubjectAccreditedImpl(acc, this);
+        final JobDescription jobDescription;
+        if(scriptURI != null && !scriptURI.isEmpty()) {
+            jobDescription = new UserXQueryJob(name, scriptURI, getSubject());
+        } else {
+            //TODO implement support for Java Jobs
+            try {
+                final Class<?> jobClass = Class.forName(clazz);
+                final Object jobObject = jobClass.newInstance();
+                if(jobObject instanceof UserJavaJob) {
+                   jobDescription = (JobDescription)jobClass.newInstance();
+                    if(jobDescription.getName() == null) {
+                        jobDescription.setName(name);
+                    }
+                } else {
+                     throw new ConfigurationException("Java Jobs must extend org.exist.scheduler.UserJavaJob");
+                }
+            } catch(final ClassNotFoundException cnfe) {
+                throw new ConfigurationException("No such class: " + clazz, cnfe);
+            } catch(final InstantiationException ie) {
+                throw new ConfigurationException("Cannot instantiate class: " + clazz, ie);
+            } catch(final IllegalAccessException ie) {
+                throw new ConfigurationException("Cannot instantiate class: " + clazz, ie);
+            }
+        }
+        
+        manager.getScheduler().createCronJob(cronExpression, jobDescription, null, true);
     }
-	
-	protected Database getDatabase() {
-		return manager.db;
-	}
 
-	@Override
-	public boolean isConfigured() {
-		return configuration != null;
-	}
+    private Subject getSubject() {
+        final Subject subject;
+        final SecurityManager sm = manager.getDatabase().getSecurityManager();
+        if(account == null || account.isEmpty()) {
+            subject = manager.getDatabase().getSecurityManager().getGuestSubject();
+        } else {
+            final AbstractAccount acc = (AbstractAccount) sm.getAccount(account);
+            if(acc == null) {
+                //UNDERSTAND: error better here?
+                subject = sm.getGuestSubject();
+            } else {
+                subject = new SubjectAccreditedImpl(acc, this);
+            }
+        }
+        return subject;
+        
+    }
+    
+    @Override
+    public boolean isConfigured() {
+        return configuration != null;
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }

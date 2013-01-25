@@ -23,7 +23,6 @@ package org.exist.scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
@@ -45,9 +44,9 @@ import org.exist.xmldb.XmldbURI;
 @ConfigurationClass("scheduler")
 public class SchedulerManager implements Plug {
 
-	/* /db/system/scheduler */
-	private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
-	private final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("scheduler.xml");
+    /* /db/system/scheduler */
+    private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
+    private final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("scheduler.xml");
 
     private final static Logger LOG = Logger.getLogger(SchedulerManager.class);
     
@@ -58,31 +57,32 @@ public class SchedulerManager implements Plug {
 
     private Collection collection = null;
 
-	private Configuration configuration = null;
-	
-	protected final org.quartz.Scheduler scheduler;
-	protected Database db;
-	
-	public SchedulerManager(PluginsManager pm) {
-		db = pm.getDatabase();
-		scheduler = db.getScheduler().getScheduler();
-	}
+    private Configuration configuration = null;
 
-	@Override
-	public void start(DBBroker broker) throws EXistException {
+    private final Scheduler scheduler;
+    private final Database db;
 
-        TransactionManager transaction = broker.getDatabase().getTransactionManager();
+    public SchedulerManager(final PluginsManager pm) {
+        db = pm.getDatabase();
+        scheduler = db.getScheduler();
+    }
+
+    @Override
+    public void start(final DBBroker broker) throws EXistException {
+
+        final Collection systemCollection;
+        try {
+            systemCollection = broker.getCollection(XmldbURI.SYSTEM);
+            if(systemCollection == null) {
+                throw new EXistException("/db/system collecton does not exist!");
+            }
+        } catch(final PermissionDeniedException e) {
+            throw new EXistException(e);
+        }
+
+        final TransactionManager transaction = broker.getDatabase().getTransactionManager();
         Txn txn = null;
-		
-        Collection systemCollection = null;
-		try {
-			systemCollection = broker.getCollection(XmldbURI.SYSTEM);
-	        if(systemCollection == null)
-	        	throw new EXistException("/db/system collecton does not exist!");
-		} catch (PermissionDeniedException e) {
-			throw new EXistException(e);
-		}
-
+        
         try {
             collection = broker.getCollection(COLLECTION_URI);
             if (collection == null) {
@@ -99,36 +99,44 @@ public class SchedulerManager implements Plug {
 
                 transaction.commit(txn);
             } 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage(), e);
         }
 
-        Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+        final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
         configuration = Configurator.configure(this, _config_);
-	}
+    }
 
-	@Override
-	public void sync(DBBroker broker) throws EXistException {
-	}
+    @Override
+    public void sync(final DBBroker broker) throws EXistException {
+    }
 
-	@Override
-	public void stop(DBBroker broker) throws EXistException {
-//		scheduler.shutdown();
-	}
+    @Override
+    public void stop(final DBBroker broker) throws EXistException {
+        //scheduler.shutdown();
+    }
 
-	public void addJob(Configuration config) throws ConfigurationException {
-		jobs.add( new Job(this, config) );
-	}
+    public void addJob(final Configuration config) throws ConfigurationException {
+        jobs.add(new Job(this, config));
+    }
 
-	@Override
-	public boolean isConfigured() {
-		return configuration != null;
-	}
+    @Override
+    public boolean isConfigured() {
+        return configuration != null;
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public Scheduler getScheduler() {
+        return scheduler;
+    }
+    
+    public Database getDatabase() {
+        return db;
+    }
 }
