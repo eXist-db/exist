@@ -1,14 +1,17 @@
 package org.exist.security;
 
-import org.junit.Before;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.After;
-import org.junit.Test;
+import java.util.LinkedList;
 import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
@@ -16,10 +19,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import java.util.LinkedList;
-
-import static org.junit.Assert.*;
 
 @RunWith (Parameterized.class)
 public class XMLDBSecurityTest {
@@ -39,7 +38,7 @@ public class XMLDBSecurityTest {
         LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
 	// jetty.port.standalone
-        params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
+        //params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
         return params;
     }
 
@@ -182,7 +181,7 @@ public class XMLDBSecurityTest {
         ums.chmod(resource, 0777);
     }
 
-    @Test (expected=XMLDBException.class)
+    @Test(expected=XMLDBException.class)
     // only the owner or admin can chown a collection or resource
     public void groupChownCollection() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
@@ -195,7 +194,7 @@ public class XMLDBSecurityTest {
         assertEquals("test2", perms.getOwner().getName());
     }
 
-    @Test (expected=XMLDBException.class)
+    @Test(expected=XMLDBException.class)
     // only the owner or admin can chown a collection or resource
     public void groupChownResource() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
@@ -206,7 +205,158 @@ public class XMLDBSecurityTest {
         Account test2 = ums.getAccount("test2");
         ums.chown(resource, test2, "users");
     }
+    
+    @Test
+    public void onlyExecuteRequiredToOpenCollectionContent() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotOpenCollectionWithoutExecute() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("rw-rw-rw-");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+    }
+    
+    @Test
+    public void onlyReadAndExecuteRequiredToListCollectionResources() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("r-x------");
+        
+        test.listResources();
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotListCollectionResourcesWithoutRead() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("-wx-wx-wx");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        test.listResources();
+    }
+    
+    @Test
+    public void onlyReadAndExecuteRequiredToListCollectionSubCollections() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("r-x------");
+        
+        test.listChildCollections();
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotListCollectionSubCollectionsWithoutRead() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("-wx-wx-wx");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        test.listChildCollections();
+    }
 
+    @Test
+    public void canReadResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.getResource("test.xml");
+        assertEquals("<test/>", resource.getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotReadResourceWithoutExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("rw-------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.getResource("test.xml");
+        assertEquals("<test/>", resource.getContent());
+    }
+    
+    @Test
+    public void canCreateResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("-wx------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.createResource("other.xml", "XMLResource");
+        resource.setContent("<other/>");
+        test.storeResource(resource);
+    }
+    
+    @Test
+    public void canUpdateResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.getResource("test.xml");
+        assertEquals("<test/>", resource.getContent());
+        
+        //update the resource
+        resource.setContent("<testing/>");
+        test.storeResource(resource);
+    }
+    
+    //TODO - how to execute stored XQuery over XMLDB?
+    @Ignore
+    @Test
+    public void canExecuteXQueryWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        Resource xquery = test.createResource("test.xquery", "BinaryResource");
+        xquery.setContent("<xquery>{ 1 + 1 }</xquery>");
+        test.storeResource(xquery);
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        xquery = test.getResource("test.xquery");
+        assertEquals("<xquery>2</xquery>", xquery.getContent());
+        
+        //execute the XQuery
+    }
+            
     @Before
     public void setup() {
         try {
@@ -228,7 +378,7 @@ public class XMLDBSecurityTest {
                 ums.removeGroup(group);
             }
 
-            group = new GroupAider("exist","users");
+            group = new GroupAider("exist", "users");
             ums.addGroup(group);
 
             UserAider user = new UserAider("test1", group);
