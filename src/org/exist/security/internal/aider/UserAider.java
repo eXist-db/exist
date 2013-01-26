@@ -310,8 +310,9 @@ public class UserAider implements Account {
 
     @Override
     public void assertCanModifyAccount(final Account user) throws PermissionDeniedException {
-         //do nothing
-        //TODO do we need to check any permissions?
+        if (user.getId() != getId() && !user.hasDbaRole()) {
+            throw new PermissionDeniedException("Permission denied to modify user");
+        }
     }
 
     @Override
