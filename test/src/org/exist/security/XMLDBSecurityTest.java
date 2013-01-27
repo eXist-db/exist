@@ -11,7 +11,6 @@ import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,8 +19,9 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XMLResource;
 
 @RunWith (Parameterized.class)
 public class XMLDBSecurityTest {
@@ -59,7 +59,7 @@ public class XMLDBSecurityTest {
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldAddResource() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        Resource resource = test.createResource("createdByGuest", "XMLResource");
+        Resource resource = test.createResource("createdByGuest", XMLResource.RESOURCE_TYPE);
         resource.setContent("<testMe/>");
         test.storeResource(resource);
     }
@@ -124,7 +124,7 @@ public class XMLDBSecurityTest {
     @Test
     public void groupCreateResource() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        Resource resource = test.createResource("createdByTest2.xml", "XMLResource");
+        Resource resource = test.createResource("createdByTest2.xml", XMLResource.RESOURCE_TYPE);
         resource.setContent("<testMe/>");
         test.storeResource(resource);
 
@@ -281,7 +281,7 @@ public class XMLDBSecurityTest {
     }
 
     @Test
-    public void canReadResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+    public void canReadXmlResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -295,7 +295,7 @@ public class XMLDBSecurityTest {
     }
     
     @Test(expected=XMLDBException.class)
-    public void cannotReadResourceWithoutExecutePermissionOnParentCollection() throws XMLDBException{
+    public void cannotReadXmlResourceWithoutExecutePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -309,7 +309,35 @@ public class XMLDBSecurityTest {
     }
     
     @Test
-    public void canReadResourceWithOnlyReadPermission() throws XMLDBException{
+    public void canReadBinaryResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.getResource("test.bin");
+        assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotReadBinaryResourceWithoutExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("rw-------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.getResource("test.bin");
+        assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
+    }
+    
+    @Test
+    public void canReadXmlResourceWithOnlyReadPermission() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -324,7 +352,7 @@ public class XMLDBSecurityTest {
     }
     
     @Test(expected=XMLDBException.class)
-    public void cannotReadResourceWithoutReadPermission() throws XMLDBException{
+    public void cannotReadXmlResourceWithoutReadPermission() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -339,7 +367,37 @@ public class XMLDBSecurityTest {
     }
     
     @Test
-    public void canCreateResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
+    public void canReadBinaryResourceWithOnlyReadPermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        Resource resource = test.getResource("test.bin");
+        ums.chmod(resource, "r--------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        resource = test.getResource("test.bin");
+        assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotReadBinaryResourceWithoutReadPermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        Resource resource = test.getResource("test.bin");
+        ums.chmod(resource, "-wx------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        resource = test.getResource("test.bin");
+        assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
+    }
+    
+    @Test
+    public void canCreateXmlResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -348,13 +406,28 @@ public class XMLDBSecurityTest {
         
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         
-        final Resource resource = test.createResource("other.xml", "XMLResource");
+        final Resource resource = test.createResource("other.xml", XMLResource.RESOURCE_TYPE);
         resource.setContent("<other/>");
         test.storeResource(resource);
     }
     
     @Test
-    public void canUpdateResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+    public void canCreateBinaryResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("-wx------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        final Resource resource = test.createResource("other.bin", BinaryResource.RESOURCE_TYPE);
+        resource.setContent("binary".getBytes());
+        test.storeResource(resource);
+    }
+    
+    @Test
+    public void canUpdateXmlResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -363,12 +436,36 @@ public class XMLDBSecurityTest {
         
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         
-        final Resource resource = test.getResource("test.xml");
+        Resource resource = test.getResource("test.xml");
         assertEquals("<test/>", resource.getContent());
         
         //update the resource
         resource.setContent("<testing/>");
         test.storeResource(resource);
+        
+        resource = test.getResource("test.xml");
+        assertEquals("<testing/>", resource.getContent());
+    }
+    
+    @Test
+    public void canUpdateBinaryResourceWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        Resource resource = test.getResource("test.bin");
+        assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
+        
+        //update the resource
+        resource.setContent("testing".getBytes());
+        test.storeResource(resource);
+        
+        resource = test.getResource("test.bin");
+        assertArrayEquals("testing".getBytes(), (byte[])resource.getContent());
     }
     
     @Test
@@ -396,8 +493,15 @@ public class XMLDBSecurityTest {
         assertEquals("<xquery>2</xquery>", result.getResource(0).getContent());
     }
     
+    /**
+     * Note the eventual goal is for XQuery to be executeable in eXist
+     * with just the EXECUTE flag set, this however will require some
+     * serious refactoring. See my (Adam) posts to exist-open thread entitled
+     * '[HEADS-UP] Merge in of Security Branch', most significant
+     * messages from 08/02/2012
+     */
     @Test
-    public void canExecuteXQueryWithOnlyExecutePermission() throws XMLDBException{
+    public void canExecuteXQueryWithOnlyExecuteAndReadPermission() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
@@ -406,7 +510,7 @@ public class XMLDBSecurityTest {
         xqueryResource.setContent(xquery);
         test.storeResource(xqueryResource);
         
-        ums.chmod(xqueryResource, "--x------"); //execute only on xquery
+        ums.chmod(xqueryResource, "r-x------"); //execute only on xquery
         test.close();
         
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
@@ -487,8 +591,14 @@ public class XMLDBSecurityTest {
             ums.chmod(0770);
 
             test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
-            Resource resource = test.createResource("test.xml", "XMLResource");
+            
+            Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
             resource.setContent("<test/>");
+            test.storeResource(resource);
+            ums.chmod(resource, 0770);
+            
+            resource = test.createResource("test.bin", BinaryResource.RESOURCE_TYPE);
+            resource.setContent("binary-test".getBytes());
             test.storeResource(resource);
             ums.chmod(resource, 0770);
 

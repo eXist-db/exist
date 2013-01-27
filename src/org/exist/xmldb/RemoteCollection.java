@@ -37,7 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.ACLPermission;
@@ -65,6 +65,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class RemoteCollection implements CollectionImpl {
 
+    protected final static Logger LOG = Logger.getLogger(RemoteCollection.class);
+    
     // Max size of a resource to be send to the server.
     // If the resource exceeds this limit, the data is split into
     // junks and uploaded to the server via the update() call
@@ -273,32 +275,35 @@ public class RemoteCollection implements CollectionImpl {
      *@return                     Description of the Return Value
      *@exception  XMLDBException  Description of the Exception
      */
+    @Override
     public String[] listChildCollections() throws XMLDBException {
         // Always refresh cache for latest set - if (childCollections == null)
         readCollection();
-        String coll[] = new String[childCollections.size()];
+        final String coll[] = new String[childCollections.size()];
         int j = 0;
         XmldbURI uri;
-        for (Iterator<XmldbURI> i = childCollections.keySet().iterator(); i.hasNext(); j++) {
+        for(final Iterator<XmldbURI> i = childCollections.keySet().iterator(); i.hasNext(); j++) {
             uri = i.next();
             coll[j] = uri.lastSegment().toString();
         }
         return coll;
     }
 
+    @Override
     public String[] getChildCollections() throws XMLDBException {
         return listChildCollections();
     }
 
-	public String[] listResources() throws XMLDBException {
-        List<String> params = new ArrayList<String>(1);
+    @Override
+    public String[] listResources() throws XMLDBException {
+        final List<String> params = new ArrayList<String>(1);
         params.add(getPath());
         try {
-            Object[] r = (Object[]) rpcClient.execute("getDocumentListing", params);
-            String[] resources = new String[r.length];
+            final Object[] r = (Object[]) rpcClient.execute("getDocumentListing", params);
+            final String[] resources = new String[r.length];
             System.arraycopy(r, 0, resources, 0, r.length);
             return resources;
-        } catch (XmlRpcException xre) {
+        } catch(final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
     }
@@ -466,12 +471,13 @@ public class RemoteCollection implements CollectionImpl {
         final int mode = ((Integer)collection.get("permissions")).intValue();
         final Object[] acl = (Object[])collection.get("acl");
         List aces = null; 
-        if (acl != null)
+        if (acl != null) {
             aces = Arrays.asList(acl);
+        }
         final Permission perm;
         try {
             perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for collection '" + getPath() + "': " + pde.getMessage(), pde);
         }
         String childName;
@@ -479,10 +485,11 @@ public class RemoteCollection implements CollectionImpl {
             childName = (String) collections[i];
             try {
                 //TODO: Should this use the checked version instead?
-                RemoteCollection child = new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
+                final RemoteCollection child = new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
                 addChildCollection(child);
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 //TODO log?
+                LOG.warn("Ignoring error when retrieving child collection: " + childName);
             }
         }
     }

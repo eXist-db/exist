@@ -2169,9 +2169,9 @@ public class NativeBroker extends DBBroker {
             return null;
         }
         
-        if(!collection.getPermissions().validate(getSubject(), Permission.READ)) {
-            throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
-        }
+        //if(!collection.getPermissions().validate(getSubject(), Permission.READ)) {
+        //throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
+        //}
         
         DocumentImpl doc = collection.getDocument(this, docUri);
         if (doc == null) {
@@ -2209,9 +2209,9 @@ public class NativeBroker extends DBBroker {
             return null;
         }
         try {
-           if (!collection.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
-               throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
-           }
+            //if (!collection.getPermissions().validate(getSubject(), Permission.EXECUTE)) {
+            //    throw new PermissionDeniedException("Permission denied to read collection '" + collUri + "' by " + getSubject().getName());
+            //}
             DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
             if (doc == null) {
                 //LOG.debug("document '" + fileName + "' not found!");
@@ -2351,12 +2351,14 @@ public class NativeBroker extends DBBroker {
         for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
             DocumentImpl doc = i.next();
             DocumentType doctype = doc.getDoctype();
-            if (doctype == null)
+            if (doctype == null) {
                 continue;
+            }
             if (doctypeName.equals(doctype.getName())
-                && doc.getCollection().getPermissions().validate(getSubject(), Permission.READ)
-                && doc.getPermissions().validate(getSubject(), Permission.READ))
+                    && doc.getCollection().getPermissions().validate(getSubject(), Permission.READ)
+                    && doc.getPermissions().validate(getSubject(), Permission.READ)) {
                 result.add(doc);
+            }
         }
         return result;
     }
@@ -2384,8 +2386,9 @@ public class NativeBroker extends DBBroker {
             }
             return docs;
         } finally {
-            if (rootCollection != null)
+            if (rootCollection != null) {
                 rootCollection.release(Lock.READ_LOCK);
+            }
         }
     }
 

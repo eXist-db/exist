@@ -1342,26 +1342,28 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private Vector<String> getDocumentListing(XmldbURI collUri)
+    private Vector<String> getDocumentListing(final XmldbURI collUri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         Collection collection = null;
         try {
             broker = factory.getBrokerPool().get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            Vector<String> vec = new Vector<String>();
+            final Vector<String> vec = new Vector<String>();
             if (collection == null) {
-            	if (LOG.isDebugEnabled())
+            	if (LOG.isDebugEnabled()) {
             		LOG.debug("collection " + collUri + " not found.");
+                }
                 return vec;
             }
-             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+            for(final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 vec.addElement(i.next().getFileURI().toString());
             }
             return vec;
         } finally {
-            if(collection != null)
+            if(collection != null) {
                 collection.release(Lock.READ_LOCK);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
