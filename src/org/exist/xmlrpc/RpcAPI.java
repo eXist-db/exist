@@ -610,7 +610,7 @@ public interface RpcAPI {
 	int executeQuery(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
 
 	int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
-
+        
 	/**
 	 *  Execute XPath/Xquery from path file (stored inside eXist)
 	 *  returned reference may be used later to get a summary of results or

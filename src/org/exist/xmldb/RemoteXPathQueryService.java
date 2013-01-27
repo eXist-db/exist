@@ -21,6 +21,13 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.source.Source;
 import org.exist.xmlrpc.RpcAPI;
@@ -32,14 +39,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
 
 public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
@@ -204,6 +203,33 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             return query(xq, null);
         } catch (IOException e) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
+        }
+    }
+    
+    @Override
+    public ResourceSet executeStoredQuery(final String uri) throws XMLDBException {
+        
+        final List params = new ArrayList();
+        params.add(uri);
+        params.add(new HashMap<String, Object>());
+        
+        try {
+            final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("execute", params);
+
+            if(result.get(RpcAPI.ERROR) != null) {
+                throwException(result);
+            }
+
+            final Object[] resources = (Object[]) result.get("results");
+            int handle = -1;
+            int hash = -1;
+            if(resources != null && resources.length > 0) {
+                handle = ((Integer)result.get("id")).intValue();
+                hash = ((Integer)result.get("hash")).intValue();
+            }
+            return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
+        } catch(final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
     }
     
