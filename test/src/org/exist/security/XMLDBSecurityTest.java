@@ -5,6 +5,7 @@ import org.exist.jetty.JettyStart;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XPathQueryServiceImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -17,8 +18,10 @@ import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XPathQueryService;
 
 @RunWith (Parameterized.class)
 public class XMLDBSecurityTest {
@@ -38,7 +41,10 @@ public class XMLDBSecurityTest {
         LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
 	// jetty.port.standalone
+        
+        //TODO re-enable remote tests!!!
         //params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
+        
         return params;
     }
 
@@ -303,6 +309,36 @@ public class XMLDBSecurityTest {
     }
     
     @Test
+    public void canReadResourceWithOnlyReadPermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        Resource resource = test.getResource("test.xml");
+        ums.chmod(resource, "r--------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        resource = test.getResource("test.xml");
+        assertEquals("<test/>", resource.getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotReadResourceWithoutReadPermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        Resource resource = test.getResource("test.xml");
+        ums.chmod(resource, "-wx------");
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        resource = test.getResource("test.xml");
+        assertEquals("<test/>", resource.getContent());
+    }
+    
+    @Test
     public void canCreateResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
@@ -335,26 +371,77 @@ public class XMLDBSecurityTest {
         test.storeResource(resource);
     }
     
-    //TODO - how to execute stored XQuery over XMLDB?
-    @Ignore
     @Test
     public void canExecuteXQueryWithOnlyExecutePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
-        Resource xquery = test.createResource("test.xquery", "BinaryResource");
-        xquery.setContent("<xquery>{ 1 + 1 }</xquery>");
-        test.storeResource(xquery);
+        final String xquery = "<xquery>{ 1 + 1 }</xquery>";
+        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
         
         ums.chmod("--x------");
+        ums.chmod(xqueryResource, "rwx------"); //set execute bit on xquery (its off by default!)
         test.close();
         
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         
-        xquery = test.getResource("test.xquery");
-        assertEquals("<xquery>2</xquery>", xquery.getContent());
+        xqueryResource = test.getResource("test.xquery");
+        assertEquals(xquery, new String((byte[])xqueryResource.getContent()));
         
-        //execute the XQuery
+        //execute the stored XQuery
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
+        assertEquals("<xquery>2</xquery>", result.getResource(0).getContent());
+    }
+    
+    @Test
+    public void canExecuteXQueryWithOnlyExecutePermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        final String xquery = "<xquery>{ 1 + 2 }</xquery>";
+        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+        
+        ums.chmod(xqueryResource, "--x------"); //execute only on xquery
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        xqueryResource = test.getResource("test.xquery");
+        assertEquals(xquery, new String((byte[])xqueryResource.getContent()));
+        
+        //execute the stored XQuery
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
+        assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotExecuteXQueryWithoutExecutePermission() throws XMLDBException{
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        final String xquery = "<xquery>{ 1 + 2 }</xquery>";
+        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+        
+        ums.chmod(xqueryResource, "rw-------"); //execute only on xquery
+        test.close();
+        
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        
+        xqueryResource = test.getResource("test.xquery");
+        assertEquals(xquery, new String((byte[])xqueryResource.getContent()));
+        
+        //execute the stored XQuery
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
+        assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
     }
             
     @Before
