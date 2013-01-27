@@ -453,12 +453,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(path, Lock.READ_LOCK);
-            if(collection == null)
+            if(collection == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION,
                     "Collection " + path + " not found");
-            if (!checkPermissions(collection, Permission.READ))
+            }
+
+            //you only need execute access on the collection, this is enforced in broker.openCollection above!
+            /*if (!checkPermissions(collection, Permission.READ)) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
                     "Not allowed to read collection");
+            }*/
+            
             DocumentImpl document = collection.getDocument(broker, idURI);
             if (document == null) {
                 LOG.warn("Resource " + idURI + " not found");
