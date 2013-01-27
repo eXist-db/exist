@@ -61,7 +61,7 @@ public class OpOr extends LogicalOp {
         Expression right = getRight();
         Sequence ls = left.eval(contextSequence, null);
         // first check if left operand is a persistent set
-        doOptimize = doOptimize && ls.isPersistentSet();
+        doOptimize = doOptimize && (ls.isPersistentSet() || ls.isEmpty());
         if (doOptimize) {
             // yes: try to optimize by looking at right operand
             Sequence rs = right.eval(contextSequence, null);
