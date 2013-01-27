@@ -562,8 +562,6 @@ public class LocalCollection extends Observable implements CollectionImpl {
         try {
             collection = getCollectionWithLock(Lock.READ_LOCK);
             broker = brokerPool.get(user);
-            if (!checkPermissions(collection, Permission.READ))
-                return new String[0];
             String[] collections = new String[collection.getChildCollectionCount(broker)];
             int j = 0;
             for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); j++) {
@@ -592,6 +590,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
         return listChildCollections();
     }
 
+    /**
+     * Retrieve the list of resources in the collection
+     * 
+     * @throws XMLDBException if and invalid collection was specified, or if permission is denied
+     */
+    @Override
     public String[] listResources() throws XMLDBException {
     	Subject subject = brokerPool.getSubject();
         Collection collection = null;
@@ -599,11 +603,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(path, Lock.READ_LOCK);
-            if (collection == null)
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION,
-                    "Collection " + path + " not found");
-            if (!checkPermissions(collection, Permission.READ))
-                return new String[0];
+            if (collection == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+            }
+            
             List<XmldbURI> allresources = new ArrayList<XmldbURI>();
             DocumentImpl doc;
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
