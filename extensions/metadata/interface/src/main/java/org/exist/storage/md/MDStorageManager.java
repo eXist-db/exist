@@ -143,26 +143,38 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	}
 
 	@Override
-	public void backup(Collection colection, AttributesImpl attrs) {
-		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(colection.getURI()), attrs);
+	public void backup(Collection collection, AttributesImpl attrs) {
+	    if (collection == null)
+	        return;
+	    
+//		System.out.println("backup collection "+colection.getURI());
+		backup(md.getMetas(collection.getURI()), attrs);
 	}
 
 	@Override
-	public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
-		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(colection.getURI()), serializer);
+	public void backup(Collection collection, SAXSerializer serializer) throws SAXException {
+	    if (collection == null)
+	        return;
+	    
+//		System.out.println("backup collection "+colection.getURI());
+		backup(md.getMetas(collection.getURI()), serializer);
 	}
 
 	@Override
 	public void backup(DocumentAtExist document, AttributesImpl attrs) {
-		System.out.println("backup document "+document.getURI());
+	    if (document == null)
+	        return;
+	    
+//		System.out.println("backup document "+document.getURI());
 		backup(md.getMetas(document), attrs);
 	}
 
 	@Override
 	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
-		System.out.println("backup document "+document.getURI());
+	    if (document == null)
+	        return;
+	    
+//		System.out.println("backup document "+document.getURI());
 		backup(md.getMetas(document), serializer);
 	}
 
@@ -222,23 +234,29 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public void skippedEntity(String name) throws SAXException {}
 
 	@Override
-	public void startCollectionRestore(Collection colection, Attributes atts) {
-		System.out.println("startCollectionRestore "+colection.getURI());
+	public void startCollectionRestore(Collection collection, Attributes atts) {
+	    if (collection == null)
+	        return;
+	    
+//		System.out.println("startCollectionRestore "+colection.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
-			collectionMetas = md.replaceMetas(colection.getURI(), uuid);
+			collectionMetas = md.replaceMetas(collection.getURI(), uuid);
 		else
-			collectionMetas = md.addMetas(colection); 
+			collectionMetas = md.addMetas(collection); 
 	}
 
 	@Override
-	public void endCollectionRestore(Collection colection) {
+	public void endCollectionRestore(Collection collection) {
 //		System.out.println("endCollectionRestore "+colection.getURI());
 	}
 
 	@Override
 	public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
-		System.out.println("startDocument "+document.getURI());
+	    if (document == null)
+	        return;
+	    
+//		System.out.println("startDocument "+document.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
 			currentMetas = md.replaceMetas(document.getURI(), uuid);
