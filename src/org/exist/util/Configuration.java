@@ -665,7 +665,7 @@ public class Configuration implements ErrorHandler
             if(strJobType == null) {
                 jobType = JobType.USER; //default to user if unspecified
             } else {
-                jobType = JobType.valueOf(strJobType);
+                jobType = JobType.valueOf(strJobType.toUpperCase());
             }
 
             final String jobName = getConfigAttributeValue(job, JobConfig.JOB_NAME_ATTRIBUTE);
