@@ -21,6 +21,7 @@
  */
 package org.exist.replication.jms.subscribe;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.jms.*;
@@ -29,21 +30,18 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.exist.replication.shared.JmsConnectionExceptionListener;
-import org.exist.scheduler.JobException;
-import org.exist.scheduler.UserJavaJob;
-import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.StartupTrigger;
 
 /**
- * Startup 'job' to fire-up a message receiver. Typically this job is started by
+ * Startup Trigger to fire-up a message receiver. Typically this trigger is started by
  * configuration in conf.xml
  *
  * @author Dannes Wessels
  */
-public class MessageReceiverJob extends UserJavaJob {
+public class MessageReceiverStartupTrigger implements StartupTrigger {
 
-    private final static Logger LOG = Logger.getLogger(MessageReceiverJob.class);
-    private final static String JOB_NAME = "MessageReceiverJob";
-    private String jobName = JOB_NAME;
+    private final static Logger LOG = Logger.getLogger(MessageReceiverStartupTrigger.class);
     
     /**
      * Helper method to give resources back
@@ -75,30 +73,30 @@ public class MessageReceiverJob extends UserJavaJob {
     }
 
     @Override
-    public void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException {
+    public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
         
         // Get from .xconf file, fill defaults when needed
         SubscriberParameters parameters = new SubscriberParameters();
         parameters.setSingleValueParameters(params);
-        parameters.processParameters();
-        parameters.fillActiveMQbrokerDefaults();
-        
-        LOG.info("Starting subscription of '" + parameters.getSubscriberName() 
-                    + "' to '" + parameters.getTopic() + "'");
-
-        if(LOG.isDebugEnabled()){
-            LOG.debug(parameters.getReport());
-        }
-
-        // Setup listeners
-        JMSMessageListener jmsListener = new JMSMessageListener(brokerpool);
-        ExceptionListener exceptionListener = new JmsConnectionExceptionListener();
         
         Context context = null;
         Connection connection = null;
         Session session = null;
-
         try {
+            parameters.processParameters();
+            parameters.fillActiveMQbrokerDefaults();
+
+            LOG.info("Starting subscription of '" + parameters.getSubscriberName() 
+                        + "' to '" + parameters.getTopic() + "'");
+
+            if(LOG.isDebugEnabled()){
+                LOG.debug(parameters.getReport());
+            }
+
+            // Setup listeners
+            JMSMessageListener jmsListener = new JMSMessageListener(broker.getBrokerPool());
+            ExceptionListener exceptionListener = new JmsConnectionExceptionListener();
+        
             // Setup context
             Properties contextProps = parameters.getInitialContextProps();
             context = new InitialContext(contextProps);
@@ -108,7 +106,7 @@ public class MessageReceiverJob extends UserJavaJob {
             if (!(destination instanceof Topic)) {
                 String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
                 LOG.error(errorText);
-                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
+                throw new Exception(errorText);
             }
 
             // Lookup connection factory            
@@ -155,22 +153,11 @@ public class MessageReceiverJob extends UserJavaJob {
 
             LOG.info("Subscription was successful.");
 
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             // Close all that has been opened. Always.
             closeSilent(context, connection, session);
             
             LOG.error("Unable to start subscription: " + t.getMessage() + ";  " + parameters.getReport(), t);
-            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, t.getMessage());
         }
-    }
-
-    @Override
-    public String getName() {
-        return jobName;
-    }
-
-    @Override
-    public void setName(String name) {
-        jobName = name;
     }
 }

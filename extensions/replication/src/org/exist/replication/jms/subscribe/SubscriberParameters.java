@@ -22,8 +22,8 @@
 package org.exist.replication.jms.subscribe;
 
 import javax.naming.Context;
+import org.exist.replication.shared.ClientParameterException;
 import org.exist.replication.shared.ClientParameters;
-import org.exist.scheduler.JobException;
 
 /**
  * Subscriber  specific properties.
@@ -60,7 +60,7 @@ public class SubscriberParameters extends ClientParameters {
     }
 
     @Override
-    public void processParameters() throws JobException {
+    public void processParameters() throws ClientParameterException {
         
         // java.naming.factory.initial
         String value = props.getProperty( Context.INITIAL_CONTEXT_FACTORY );
@@ -94,7 +94,7 @@ public class SubscriberParameters extends ClientParameters {
         if (value == null || value.equals("")) {
             String errorText = "'" + CLIENT_ID + "' is not set.";
             LOG.error(errorText);
-            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
+            throw new ClientParameterException(errorText);
         }
         clientId = value;
 
@@ -104,7 +104,7 @@ public class SubscriberParameters extends ClientParameters {
         if (value == null || value.equals("")) {
             String errorText = "'" + SUBSCRIBER_NAME + "' is not set.";
             LOG.error(errorText);
-            throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
+            throw new ClientParameterException(errorText);
         }
         subscriberName=value;
 
@@ -128,7 +128,7 @@ public class SubscriberParameters extends ClientParameters {
             } else {
                 String errorText = "'" + NO_LOCAL + "' contains wrong value '" + value + "'";
                 LOG.error(errorText);
-                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
+                throw new ClientParameterException(errorText);
             }
 
         }
@@ -146,7 +146,7 @@ public class SubscriberParameters extends ClientParameters {
             } else {
                 String errorText = "'" + DURABLE + "' contains wrong value '" + value + "'";
                 LOG.error(errorText);
-                throw new JobException(JobException.JobExceptionAction.JOB_ABORT_THIS, errorText);
+                throw new ClientParameterException(errorText);
             }
 
         }
