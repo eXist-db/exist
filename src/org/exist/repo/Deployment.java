@@ -135,12 +135,16 @@ public class Deployment {
         }
     }
 
+    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+        return installAndDeploy(xar, loader, true);
+    }
+
     /**
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
      */
-    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+    public String installAndDeploy(File xar, PackageLoader loader, boolean checkVersion) throws PackageException, IOException {
         DocumentImpl document = getDescriptor(xar);
         ElementImpl root = (ElementImpl) document.getDocumentElement();
         String name = root.getAttribute("name");
@@ -148,7 +152,7 @@ public class Deployment {
 
         ExistRepository repo = broker.getBrokerPool().getExpathRepo();
         Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null && pkgVersion.equals(packages.latest().getVersion())) {
+        if (packages != null && (!checkVersion || pkgVersion.equals(packages.latest().getVersion()))) {
             LOG.info("Application package " + name + " already installed. Skipping.");
             return null;
         }
