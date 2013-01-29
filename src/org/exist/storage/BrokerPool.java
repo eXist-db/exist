@@ -72,6 +72,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.Configuration.StartupTriggerConfig;
 import org.exist.util.hashtable.MapRWLock;
 import org.exist.util.hashtable.MapRWLock.LongOperation;
 import org.exist.xmldb.ShutdownListener;
@@ -987,7 +988,7 @@ public class BrokerPool extends Observable implements Database {
                     "the package manager may not work.");
             }
 
-            callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
+            callStartupTriggers((List<StartupTriggerConfig>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
         } finally {
             release(broker);
         }
@@ -1056,21 +1057,22 @@ public class BrokerPool extends Observable implements Database {
         }
     }*/
 
-    private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker sysBroker) {
-        if (startupTriggerClasses == null)
+    private void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker sysBroker) {
+        if(startupTriggerConfigs == null) {
         	return;
+        }
     	
-        for(final String startupTriggerClass : startupTriggerClasses) {
+        for(final StartupTriggerConfig startupTriggerConfig : startupTriggerConfigs) {
             try {
-                final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerClass);
+                final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerConfig.getClazz());
                 final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(sysBroker);
+                startupTrigger.execute(sysBroker, startupTriggerConfig.getParams());
             } catch(ClassNotFoundException cnfe) {
-                LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + cnfe.getMessage(), cnfe);
+                LOG.error("Could not find StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + cnfe.getMessage(), cnfe);
             } catch(InstantiationException ie) {
-                LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + ie.getMessage(), ie);
+                LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + ie.getMessage(), ie);
             } catch(IllegalAccessException iae) {
-                LOG.error("Could not access StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + iae.getMessage(), iae);
+                LOG.error("Could not access StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + iae.getMessage(), iae);
             } catch(RuntimeException re) {
                 LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
             }
