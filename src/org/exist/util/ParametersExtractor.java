@@ -27,7 +27,7 @@ public class ParametersExtractor {
     /**
      * @param parameters A "parameters" element, which may contain "parameter" child elements
      */
-    public static Map<String, List<? extends Object>> extract(Element parameters) {
+    public static Map<String, List<? extends Object>> extract(final Element parameters) {
 
         final Map<String, List<? extends Object>> result;
 
@@ -35,8 +35,8 @@ public class ParametersExtractor {
             result = new HashMap<String, List<? extends Object>>(0);
         } else {
 
-            String namespace = parameters.getNamespaceURI();
-            NodeList nlParameter = parameters.getElementsByTagNameNS(namespace, PARAMETER_ELEMENT_NAME);
+            final String namespace = parameters.getNamespaceURI();
+            final NodeList nlParameter = parameters.getElementsByTagNameNS(namespace, PARAMETER_ELEMENT_NAME);
 
             result = extract(nlParameter);
         }
@@ -47,7 +47,7 @@ public class ParametersExtractor {
     /**
      * @param nlParameter A NodeList of "parameter" elements
      */
-    public static Map<String, List<? extends Object>> extract(NodeList nlParameter) {
+    public static Map<String, List<? extends Object>> extract(final NodeList nlParameter) {
 
         final Map<String, List<? extends Object>> result;
 
@@ -61,21 +61,21 @@ public class ParametersExtractor {
         return result;
     }
 
-    private static Map<String, List<? extends Object>> extractParameters(NodeList nlParameter) {
+    private static Map<String, List<? extends Object>> extractParameters(final NodeList nlParameter) {
 
         final Map<String, List<?>> parameters = new HashMap<String, List<?>>(nlParameter.getLength());
 
         for (int i = 0 ; i < nlParameter.getLength();  i++) {
-            Element param = (Element)nlParameter.item(i);
+            final Element param = (Element)nlParameter.item(i);
             //TODO : rely on schema-driven validation -pb
-            String name = param.getAttribute(PARAMETER_NAME_ATTRIBUTE);
+            final String name = param.getAttribute(PARAMETER_NAME_ATTRIBUTE);
             /*if(name == null) {
                 throwOrLog("Expected attribute '" + PARAMETER_NAME_ATTRIBUTE + "' for element '" + PARAMETER_ELEMENT_NAME + "' in trigger's configuration.", testOnly);
             }*/
 
             List values = parameters.get(name);
 
-            String value = param.getAttribute(PARAMETER_VALUE_ATTRIBUTE);
+            final String value = param.getAttribute(PARAMETER_VALUE_ATTRIBUTE);
             if(value != null && value.length() > 0) {
                 if(values == null) {
                     values = new ArrayList<String>();
@@ -85,7 +85,7 @@ public class ParametersExtractor {
                 //are there child nodes?
                 if(param.getChildNodes().getLength() > 0) {
 
-                    if(values  == null) {
+                    if(values == null) {
                         values = new ArrayList<Map<String, List>>();
                     }
 
@@ -99,16 +99,16 @@ public class ParametersExtractor {
         return parameters;
     }
 
-    private static Map<String, List> getParameterChildParameters(Element parameter) {
+    private static Map<String, List> getParameterChildParameters(final Element parameter) {
 
         final Map<String, List> results = new HashMap<String, List>();
 
-        NodeList childParameters = parameter.getChildNodes();
+        final NodeList childParameters = parameter.getChildNodes();
         for(int i = 0; i < childParameters.getLength(); i++) {
-            Node nChildParameter = childParameters.item(i);
+            final Node nChildParameter = childParameters.item(i);
             if(nChildParameter instanceof Element) {
-                Element childParameter = (Element)nChildParameter;
-                String name = childParameter.getLocalName();
+                final Element childParameter = (Element)nChildParameter;
+                final String name = childParameter.getLocalName();
 
                 if(childParameter.getAttributes().getLength() > 0){
                     List<Properties> childParameterProperties = (List<Properties>)results.get(name);
@@ -116,10 +116,10 @@ public class ParametersExtractor {
                         childParameterProperties = new ArrayList<Properties>();
                     }
 
-                    NamedNodeMap attrs = childParameter.getAttributes();
-                    Properties props = new Properties();
+                    final NamedNodeMap attrs = childParameter.getAttributes();
+                    final Properties props = new Properties();
                     for(int a = 0; a < attrs.getLength(); a++) {
-                        Node attr = attrs.item(a);
+                        final Node attr = attrs.item(a);
                         props.put(attr.getLocalName(), attr.getNodeValue());
                     }
                     childParameterProperties.add(props);

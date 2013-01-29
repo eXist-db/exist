@@ -41,7 +41,6 @@ public final class JobConfig {
     public static final String JOB_PERIOD_ATTRIBUTE = "period";
     public static final String JOB_DELAY_ATTRIBUTE = "delay";
     public static final String JOB_REPEAT_ATTRIBUTE = "repeat";
-    public static final String CONFIGURATION_JOB_PARAMETER_ELEMENT_NAME = "parameter";
     public static final String JOB_NAME_ATTRIBUTE = "name";
     public static final String JOB_UNSCHEDULE_ON_EXCEPTION = "unschedule-on-exception";
     public static final String PROPERTY_SCHEDULER_JOBS = "scheduler.jobs";

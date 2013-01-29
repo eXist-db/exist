@@ -81,6 +81,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -104,7 +105,7 @@ public class Configuration implements ErrorHandler
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
-
+    
     public final static String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
     
     public Configuration() throws DatabaseConfigurationException
@@ -702,17 +703,17 @@ public class Configuration implements ErrorHandler
                     jobConfig.setRepeat(Integer.parseInt(jobRepeat));
                 }
 
-                final NodeList params = job.getElementsByTagName(JobConfig.CONFIGURATION_JOB_PARAMETER_ELEMENT_NAME);
-
-                for(int p = 0; p < params.getLength(); p++) {
-                    final Element param = (Element)params.item(p);
-                    final String name = param.getAttribute("name");
-                    final String value = param.getAttribute("value");
-
-                    if((name == null) || (name.length() == 0)) {
-                        LOG.warn("Discarded invalid parameter for '" + jobType + "' job '" + jobResource + "'");
-                    } else {
-                        jobConfig.addParameter(name, value);
+                final NodeList nlParam = job.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME);
+                final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
+                
+                for(final Entry<String, List<? extends Object>> param : params.entrySet()) {
+                    final List<? extends Object> values = param.getValue();
+                    if(values != null && values.size() > 0) {
+                        jobConfig.addParameter(param.getKey(), values.get(0).toString());
+                        
+                        if(values.size() > 1) {
+                            LOG.warn("Parameter '" + param.getKey() + "' for job '" + jobName + "' has more than one value, ignoring further values.");
+                        }
                     }
                 }
 
@@ -734,7 +735,7 @@ public class Configuration implements ErrorHandler
             config.put(JobConfig.PROPERTY_SCHEDULER_JOBS, configs);
         }
     }
-
+    
 
     /**
      * DOCUMENT ME!
@@ -996,7 +997,7 @@ public class Configuration implements ErrorHandler
             configureStartup((Element)startupConf.item(0));
         } else {
             // Prevent NPE
-            List<String> startupTriggers = new ArrayList<String>();
+            final List<StartupTriggerConfig> startupTriggers = new ArrayList<StartupTriggerConfig>();
             config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
         
@@ -1185,6 +1186,24 @@ public class Configuration implements ErrorHandler
             }
         }
     }
+    
+    public class StartupTriggerConfig {
+        private final String clazz;
+        private final Map<String, List<? extends Object>> params;
+
+        public StartupTriggerConfig(final String clazz, final Map<String, List<? extends Object>> params) {
+            this.clazz = clazz;
+            this.params = params;
+        }
+
+        public String getClazz() {
+            return clazz;
+        }
+
+        public Map<String, List<? extends Object>> getParams() {
+            return params;
+        }
+    }
 
     private void configureStartup(final Element startup) {
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
@@ -1194,9 +1213,9 @@ public class Configuration implements ErrorHandler
             if(nlTrigger != null && nlTrigger.getLength() > 0) {
                 for(int i = 0; i < nlTrigger.getLength(); i++) {
                     final Element trigger = (Element)nlTrigger.item(i);
-                    List<String> startupTriggers = (List<String>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
+                    List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
                     if(startupTriggers == null) {
-                        startupTriggers = new ArrayList<String>();
+                        startupTriggers = new ArrayList<StartupTriggerConfig>();
                         config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
                     }
                     
@@ -1204,7 +1223,7 @@ public class Configuration implements ErrorHandler
                     
                     boolean isStartupTrigger = false;
                     try {
-                        for(Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                        for(final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
                             if(iface.getName().equals("org.exist.storage.StartupTrigger")) {
                                 isStartupTrigger = true;
                                 break;
@@ -1212,12 +1231,13 @@ public class Configuration implements ErrorHandler
                         }
 
                         if(isStartupTrigger) {
-                            startupTriggers.add(startupTriggerClass);
+                            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
+                            startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
                             LOG.debug("Registered StartupTrigger: " + startupTriggerClass);
                         } else {
                             LOG.warn("StartupTrigger: " + startupTriggerClass + " does not implement org.exist.storage.StartupTrigger. IGNORING!");
                         }
-                    } catch(ClassNotFoundException cnfe) {
+                    } catch(final ClassNotFoundException cnfe) {
                         LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". " + cnfe.getMessage(), cnfe);
                     }
                 }
