@@ -40,10 +40,7 @@ public class XMLDBSecurityTest {
     public static LinkedList<String[]> instances() {
         LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
-	// jetty.port.standalone
-        
-        //TODO re-enable remote tests!!!
-        //params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" });
+	params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
         
         return params;
     }
