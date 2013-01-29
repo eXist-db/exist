@@ -57,18 +57,20 @@ public class SplashScreen extends JFrame implements Observer {
         // add the image label
         JLabel imageLabel = new JLabel();
         imageLabel.setIcon(icon);
+        EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
+        imageLabel.setBorder(border);
         getContentPane().add(imageLabel, BorderLayout.CENTER);
 
         // message label
         statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
-        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 14));
+        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 16));
         statusLabel.setForeground(Color.black);
         statusLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
         statusLabel.setSize(new Dimension(icon.getIconWidth(), 60));
 
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it
-        setSize(new Dimension(icon.getIconWidth(), icon.getIconHeight() + 20));
+        setSize(new Dimension(icon.getIconWidth() + 40, icon.getIconHeight() + 50));
         //pack();
         this.setLocationRelativeTo(null);
         setVisible(true);
