@@ -613,7 +613,9 @@ public class XMLDBSecurityTest {
         try {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             CollectionManagementService cms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            if (root.getChildCollection("securityTest1") != null) {
+            Collection secTest1 = root.getChildCollection("securityTest1");
+            if (secTest1 != null) {
+                secTest1.close();
                 cms.removeCollection("securityTest1");
             }
 
