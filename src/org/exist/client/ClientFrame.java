@@ -1370,68 +1370,67 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (fileman.getSelectedRowCount() == 0) {
             return;
         }
-        final int row = fileman.getSelectedRow();
-        final ResourceDescriptor desc = resources.getRow(row);
-        if(desc.isCollection()) {
-            return;
-        }
-
-        final JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setSelectedFile(new File(desc.getName().getCollectionPath()));
-        if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
-            preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
-            final File file = chooser.getSelectedFile();
-            if (file.exists()
-                    && JOptionPane.showConfirmDialog(this,
-                    "File exists. Overwrite?", "Overwrite?",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+        final int[] rows = fileman.getSelectedRows();
+        for (int row : rows) {
+            final ResourceDescriptor desc = resources.getRow(row);
+            if(desc.isCollection()) {
                 return;
             }
-            final Resource resource;
-            final FileOutputStream os;
-            final BufferedWriter writer;
-            final SAXSerializer contentSerializer;
-            try {
-                final Collection collection = client.getCollection();
 
+            final JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
+            chooser.setMultiSelectionEnabled(false);
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            chooser.setSelectedFile(new File(desc.getName().getCollectionPath()));
+            if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
+                preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
+                final File file = chooser.getSelectedFile();
+                if (file.exists()
+                    && JOptionPane.showConfirmDialog(this,
+                                                     "File exists. Overwrite?", "Overwrite?",
+                                                     JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                final Resource resource;
+                final FileOutputStream os;
+                final BufferedWriter writer;
+                final SAXSerializer contentSerializer;
                 try {
-                    resource = collection
-                            .getResource(desc.getName().toString());
-                    os = new FileOutputStream(file);
-                    if (resource instanceof ExtendedResource) {
-                        ((ExtendedResource) resource).getContentIntoAStream(os);
-                    } else {
+                    final Collection collection = client.getCollection();
 
-                        writer = new BufferedWriter(new OutputStreamWriter(os,
-                                "UTF-8"));
-                        // write resource to contentSerializer
-                        contentSerializer = (SAXSerializer) SerializerPool
+                    try {
+                        resource = collection
+                            .getResource(desc.getName().toString());
+                        os = new FileOutputStream(file);
+                        if (resource instanceof ExtendedResource) {
+                            ((ExtendedResource) resource).getContentIntoAStream(os);
+                        } else {
+
+                            writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                            // write resource to contentSerializer
+                            contentSerializer = (SAXSerializer) SerializerPool
                                 .getInstance()
                                 .borrowObject(SAXSerializer.class);
-                        contentSerializer.setOutput(writer, properties);
-                        ((EXistResource) resource)
-                                .setLexicalHandler(contentSerializer);
-                        ((XMLResource) resource)
-                                .getContentAsSAX(contentSerializer);
-                        SerializerPool.getInstance().returnObject(
-                                contentSerializer);
-                        writer.close();
-                    }
-                } catch (final Exception e) {
-                    System.err
+                            contentSerializer.setOutput(writer, properties);
+                            ((EXistResource) resource)
+                            .setLexicalHandler(contentSerializer);
+                            ((XMLResource) resource)
+                            .getContentAsSAX(contentSerializer);
+                            SerializerPool.getInstance().returnObject(contentSerializer);
+                            writer.close();
+                        }
+                    } catch (final Exception e) {
+                        System.err
                             .println("An exception occurred while writing the resource: "
-                                    + e.getMessage());
+                                     + e.getMessage());
+                        e.printStackTrace();
+
+                    }
+                    //TODO finally close os
+                } catch (final Exception e) {
+                    System.err.println("An exception occurred" + e.getMessage());
                     e.printStackTrace();
-
                 }
-                //TODO finally close os
-            } catch (final Exception e) {
-                System.err.println("An exception occurred" + e.getMessage());
-                e.printStackTrace();
             }
-
         }
     }
     
