@@ -78,7 +78,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
         for (File xar : packages.values()) {
             try {
-                deployment.installAndDeploy(xar, loader);
+                deployment.installAndDeploy(xar, loader, false);
             } catch (PackageException e) {
                 LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
                 broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
