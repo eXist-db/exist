@@ -60,6 +60,8 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -99,6 +101,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
@@ -335,6 +338,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         // create table for resources and collections
         fileman = new JTable();
         fileman.setModel(resources);
+        fileman.setRowSorter(new TableRowSorter(resources));
         fileman.addMouseListener(new TableMouseListener());
         //fileman.setTransferHandler(new TransferHandler(){  
         //});
@@ -891,9 +895,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private ResourceDescriptor[] getSelectedResources() {
         final int[] selectedRows = fileman.getSelectedRows();
         final ResourceDescriptor[] res = new ResourceDescriptor[selectedRows.length];
-        
+
         for(int i = 0; i < selectedRows.length; i++) {
-            res[i] = resources.getRow(selectedRows[i]);
+            res[i] = resources.getRow(fileman.convertRowIndexToModel(selectedRows[i]));
         }
         
         return res;
@@ -1124,8 +1128,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             res[0] = new ResourceDescriptor.Collection(client.path);
         } else {
             res = new ResourceDescriptor[selRows.length];
+
             for (int i = 0; i < selRows.length; i++) {
-                res[i] = resources.getRow(selRows[i]);
+                res[i] = resources.getRow(fileman.convertRowIndexToModel(selRows[i]));
                 if(!(res[i].isCollection())) {
                     JOptionPane.showMessageDialog(this, Messages.getString("ClientFrame.136"), Messages.getString("ClientFrame.137"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
@@ -1372,9 +1377,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
         final int[] rows = fileman.getSelectedRows();
         for (int row : rows) {
-            final ResourceDescriptor desc = resources.getRow(row);
+            final ResourceDescriptor desc = resources.getRow(fileman.convertRowIndexToModel(row));
             if(desc.isCollection()) {
-                return;
+                continue;
             }
 
             final JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
@@ -1488,7 +1493,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             String mimeType = null;
             
             if (fileman.getSelectedRowCount() == 1) {
-                final int row = fileman.getSelectedRow();
+                final int row = fileman.convertRowIndexToModel(fileman.getSelectedRow());
                 ResourceDescriptor desc = resources.getRow(row);
                 name = desc.getName();
                 
@@ -1527,7 +1532,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
             final int rows[] = fileman.getSelectedRows();
             for(int i = 0; i < rows.length; i++) {
-                selected.add(resources.getRow(rows[i]));
+                selected.add(resources.getRow(fileman.convertRowIndexToModel(rows[i])));
             }
             
             final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, permAider, selected);
@@ -1620,7 +1625,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         @Override
         public void mouseClicked(final MouseEvent e) {
             if (e.getClickCount() == 2) {
-                final int row = fileman.getSelectedRow();
+                final int row = fileman.convertRowIndexToModel(fileman.getSelectedRow());
                 final ResourceDescriptor resource = resources.getRow(row);
                 if (resource.isCollection()) {
                     // cd into collection
@@ -1748,6 +1753,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 
         private List<ResourceDescriptor> rows = null;
 
+        private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
         public void setData(final List<ResourceDescriptor> rows) {
             Collections.sort(rows, new ResourceComparator());
             this.rows = rows;
@@ -1755,7 +1762,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
 
         public ResourceDescriptor getRow(final int index) {
-            return rows.get(index);
+            return getRowCount() > 0 ? rows.get(index) : null;
         }
                 
         /*
@@ -1795,16 +1802,28 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
          */
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
-            final ResourceDescriptor row = getRow(rowIndex);
-
-            switch (columnIndex) {
-                case 0: return row.getName();
-                case 1: return row.getDate();
-                case 2: return row.getOwner();
-                case 3: return row.getGroup();
-                case 4: return row.getPermissions();
-                default: throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
+            if (getRowCount() > 0) {
+                final ResourceDescriptor row = getRow(rowIndex);
+                switch (columnIndex) {
+                    case 0: return row.getName();
+                    case 1: return dateFormat.format(row.getDate());
+                    case 2: return row.getOwner();
+                    case 3: return row.getGroup();
+                    case 4: return row.getPermissions();
+                    default: throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
+                }
             }
+            return "";
+        }
+        
+        /*
+         * (non-Javadoc)
+         *
+         * @see javax.swing.table.TableModel#getColumnClass(int)
+         */
+        @Override
+        public Class getColumnClass(final int column) {
+            return getValueAt(0, column).getClass();
         }
     }
     
