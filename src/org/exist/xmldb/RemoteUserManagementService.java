@@ -467,42 +467,37 @@ public class RemoteUserManagementService implements UserManagementService {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
         }
 
-        Permission perm = ((RemoteCollection)coll).getPermissions();
+        try {
+            final List<Object> params = new ArrayList<Object>(1);
+            params.add(((RemoteCollection) coll).getPath());
 
-        if(perm == null) {
-            try {
-                List<Object> params = new ArrayList<Object>(1);
-                params.add(((RemoteCollection) coll).getPath());
+            final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
 
-                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
-
-                final String owner = (String)result.get("owner");
-                final String group = (String)result.get("group");
-                final int mode = ((Integer)result.get("permissions")).intValue();
-                final Object[] acl = (Object[])result.get("acl");
-                List aces = null;
-                if (acl != null)
-                	aces = Arrays.asList(acl);
-
-                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
-                
-            } catch(XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-            } catch(PermissionDeniedException pde) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+            final String owner = (String)result.get("owner");
+            final String group = (String)result.get("group");
+            final int mode = ((Integer)result.get("permissions")).intValue();
+            final Object[] acl = (Object[])result.get("acl");
+            List aces = null;
+            if(acl != null) {
+                    aces = Arrays.asList(acl);
             }
-        }
 
-        return perm;
+            return getPermission(owner, group, mode, (List<ACEAider>)aces);
+
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+        }
     }
 
-    private Permission getPermission(String owner, String group, int mode, List listOfAces) throws PermissionDeniedException {
-        Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
+    private Permission getPermission(final String owner, final String group, final int mode, final List listOfAces) throws PermissionDeniedException {
+        final Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
         if(perm instanceof ACLPermission && listOfAces != null && !listOfAces.isEmpty()) {
-            ACLPermission aclPermission = (ACLPermission)perm;
-            for(Object listOfAcesItem : listOfAces) {
+            final ACLPermission aclPermission = (ACLPermission)perm;
+            for(final Object listOfAcesItem : listOfAces) {
                 if(listOfAcesItem instanceof ACEAider) {
-                    ACEAider ace = (ACEAider)listOfAcesItem;
+                    final ACEAider ace = (ACEAider)listOfAcesItem;
                     aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
                 }
             }
