@@ -1753,7 +1753,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 
         private List<ResourceDescriptor> rows = null;
 
-        private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         public void setData(final List<ResourceDescriptor> rows) {
             Collections.sort(rows, new ResourceComparator());
