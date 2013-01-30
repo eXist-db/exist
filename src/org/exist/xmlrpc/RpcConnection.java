@@ -383,6 +383,9 @@ public class RpcConnection implements RpcAPI {
     	String base = (String) parameters.get(RpcAPI.BASE_URI);
     	if(base!=null)
     		context.setBaseURI(new AnyURIValue(base));
+        String moduleLoadPath = (String) parameters.get(RpcAPI.MODULE_LOAD_PATH);
+        if (moduleLoadPath != null)
+            context.setModuleLoadPath(moduleLoadPath);
         HashMap<String, String> namespaces = (HashMap<String, String>)parameters.get(RpcAPI.NAMESPACES);
         if(namespaces != null && namespaces.size() > 0) {
             context.declareNamespaces(namespaces);

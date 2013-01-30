@@ -46,6 +46,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	protected HashMap<String, String> namespaceMappings = new HashMap<String, String>(5);
 	protected HashMap<String, Object> variableDecls = new HashMap<String, Object>();
 	protected Properties outputProperties = null;
+    protected String moduleLoadPath = null;
 	protected boolean protectedMode = false;
     
     /**
@@ -90,6 +91,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
             if (protectedMode)
                 optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
             List<Object> params = new ArrayList<Object>(2);
@@ -145,6 +148,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                 optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             if(variableDecls.size() > 0)
                 optParams.put(RpcAPI.VARIABLES, variableDecls);
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             List<Object> params = new ArrayList<Object>(2);
@@ -266,6 +271,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
         	if(sortExpr != null)
         		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
 			optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (protectedMode)
@@ -458,7 +465,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 * 
 	 * @see org.exist.xmldb.XQueryService#setModuleLoadPath(java.lang.String)
 	 */
-	public void setModuleLoadPath(String path) {		
+	public void setModuleLoadPath(String path) {
+        this.moduleLoadPath = path;
 	}
 
     /* (non-Javadoc)
