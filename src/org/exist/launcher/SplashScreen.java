@@ -50,6 +50,8 @@ public class SplashScreen extends JFrame implements Observer {
         setAlwaysOnTop(true);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
+        getContentPane().setBackground(new Color(255, 255, 255, 255));
+
         URL imageURL = SplashScreen.class.getResource("logo.png");
         ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
         getContentPane().setLayout(new BorderLayout());
