@@ -231,12 +231,34 @@ public class XMLDBSecurityTest {
         DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
     }
     
+    @Test
+    public void canOpenCollectionWithExecute() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x--x--x");
+        test.close();
+        
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+    }
+    
     @Test(expected=XMLDBException.class)
     public void cannotOpenRootCollectionWithoutExecute() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         ums.chmod("rw-rw-rw-");
+        test.close();
+        
+        DatabaseManager.getCollection(baseUri + "/db", "test1", "test1");
+    }
+    
+    @Test
+    public void canOpenRootCollectionWithExecute() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("--x--x--x");
         test.close();
         
         DatabaseManager.getCollection(baseUri + "/db", "test1", "test1");
