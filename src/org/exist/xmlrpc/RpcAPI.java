@@ -193,6 +193,9 @@ public interface RpcAPI {
 	 */
 	boolean hasCollection(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
+        Vector<String> getCollectionListing(final String collection)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
+        
 	/**
 	 *  Get a list of all documents contained in the database.
 	 *

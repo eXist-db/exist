@@ -73,7 +73,6 @@ public class RemoteCollection implements CollectionImpl {
     private static final int MAX_CHUNK_LENGTH = 512 * 1024;
     private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
 
-    protected Permission permission = null;
     protected Map<XmldbURI, Collection> childCollections = null;
     
     protected XmldbURI path;
@@ -300,15 +299,16 @@ public class RemoteCollection implements CollectionImpl {
      */
     @Override
     public String[] listChildCollections() throws XMLDBException {
-        // Always refresh cache for latest set - if (childCollections == null)
-        readCollection();
-        final String coll[] = new String[childCollections.size()];
-        int j = 0;
-        for(final Iterator<XmldbURI> i = childCollections.keySet().iterator(); i.hasNext(); j++) {
-            final XmldbURI uri = i.next();
-            coll[j] = uri.lastSegment().toString();
+        final List<String> params = new ArrayList<String>(1);
+        params.add(getPath());
+        try {
+            final Object[] r = (Object[]) rpcClient.execute("getCollectionListing", params);
+            final String[] collections = new String[r.length];
+            System.arraycopy(r, 0, collections, 0, r.length);
+            return collections;
+        } catch(final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
-        return coll;
     }
 
     @Override
@@ -506,7 +506,7 @@ public class RemoteCollection implements CollectionImpl {
         } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for collection '" + getPath() + "': " + pde.getMessage(), pde);
         }
-        this.permission = perm;
+        //this.permission = perm;
         
         
         String childName;

@@ -721,26 +721,41 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * The method <code>describeCollection</code>
+     * 
+     * Returns details of a collection
+     *  - collections (list of sub-collections)
+     *  - name
+     *  - created
+     *  - owner
+     *  - group
+     *  - permissions
+     *  - acl
+     * 
+     *  If you do not have read access on the collection,
+     *  the list of sub-collections will be empty, an exception
+     *  will not be thrown!
      *
      * @param collUri a <code>XmldbURI</code> value
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    private HashMap<String, Object> describeCollection(XmldbURI collUri)
+    private HashMap<String, Object> describeCollection(final XmldbURI collUri)
     throws Exception {
-        DBBroker broker = factory.getBrokerPool().get(user);
+        final DBBroker broker = factory.getBrokerPool().get(user);
         Collection collection = null;
         try {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            if (collection == null)
+            if (collection == null) {
                 throw new EXistException("collection " + collUri + " not found!");
-            HashMap<String, Object> desc = new HashMap<String, Object>();
-            List<String> collections = new ArrayList<String>();
-            if (collection.getPermissions().validate(user, Permission.READ)) {
-                for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); )
-                    collections.add(i.next().toString());
             }
-            Permission perms = collection.getPermissions();
+            final HashMap<String, Object> desc = new HashMap<String, Object>();
+            final List<String> collections = new ArrayList<String>();
+            if (collection.getPermissions().validate(user, Permission.READ)) {
+                for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
+                    collections.add(i.next().toString());
+                }
+            }
+            final Permission perms = collection.getPermissions();
             desc.put("collections", collections);
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
@@ -752,8 +767,9 @@ public class RpcConnection implements RpcAPI {
             }
             return desc;
         } finally {
-            if(collection != null)
+            if(collection != null) {
                 collection.release(Lock.READ_LOCK);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
@@ -1318,6 +1334,53 @@ public class RpcConnection implements RpcAPI {
             
             return vec;
         } finally {
+            factory.getBrokerPool().release(broker);
+        }
+    }
+    
+    /**
+     * The method <code>getCollectionListing</code>
+     *
+     * @param collName a <code>String</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     * @exception URISyntaxException if an error occurs
+     */
+    @Override
+    public Vector<String> getCollectionListing(final String collName) throws EXistException, PermissionDeniedException, URISyntaxException {
+    	return getCollectionListing(XmldbURI.xmldbUriFor(collName));
+    }
+
+    /**
+     * The method <code>getCollectionListing</code>
+     *
+     * @param collUri a <code>XmldbURI</code> value
+     * @return a <code>Vector</code> value
+     * @exception EXistException if an error occurs
+     * @exception PermissionDeniedException if an error occurs
+     */
+    private Vector<String> getCollectionListing(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
+        DBBroker broker = null;
+        Collection collection = null;
+        try {
+            broker = factory.getBrokerPool().get(user);
+            collection = broker.openCollection(collUri, Lock.READ_LOCK);
+            final Vector<String> vec = new Vector<String>();
+            if (collection == null) {
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("collection " + collUri + " not found.");
+                }
+                return vec;
+            }
+            for(final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
+                vec.addElement(i.next().toString());
+            }
+            return vec;
+        } finally {
+            if(collection != null) {
+                collection.release(Lock.READ_LOCK);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
