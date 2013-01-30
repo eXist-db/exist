@@ -53,8 +53,9 @@ public interface RpcAPI {
     public static final String ERROR = "error";
 	public static final String LINE = "line";
 	public static final String COLUMN = "column";
-	
-	/**
+    public static final String MODULE_LOAD_PATH = "module-load-path";
+
+    /**
 	 * Return the database version.
 	 * 
 	 * @return database version

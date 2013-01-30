@@ -583,9 +583,8 @@ public class QueryDialog extends JFrame {
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
 				long t0 = System.currentTimeMillis();
 				
-				if (service instanceof LocalXPathQueryService && resource != null) {
-                    ((LocalXPathQueryService) service).setModuleLoadPath(
-                            XmldbURI.EMBEDDED_SERVER_URI_PREFIX + resource.getParentCollection().getName());
+				if (resource != null) {
+                    service.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + resource.getParentCollection().getName());
                 }
 				
 				CompiledExpression compiled = service.compile(xpath);
