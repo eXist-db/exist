@@ -99,6 +99,8 @@ public abstract class AbstractApiSecurityTest {
     @Before
     public void setup() throws ApiException {
         
+        chmodCol("/db", "rwxr-xr-x", ADMIN_UID, ADMIN_PWD); //ensure /db is always 755
+        
         removeAccount(TEST_USER1_UID, ADMIN_UID, ADMIN_PWD);
         removeAccount(TEST_USER2_UID, ADMIN_UID, ADMIN_PWD);
         removeGroup(TEST_GROUP_GID, ADMIN_UID, ADMIN_PWD);
