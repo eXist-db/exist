@@ -211,24 +211,35 @@ public class XMLDBSecurityTest {
     
     @Test
     public void onlyExecuteRequiredToOpenCollectionContent() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         ums.chmod("--x------");
         test.close();
         
-        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
     }
     
     @Test(expected=XMLDBException.class)
     public void cannotOpenCollectionWithoutExecute() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         ums.chmod("rw-rw-rw-");
         test.close();
         
-        test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotOpenRootCollectionWithoutExecute() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        
+        ums.chmod("rw-rw-rw-");
+        test.close();
+        
+        DatabaseManager.getCollection(baseUri + "/db", "test1", "test1");
     }
     
     @Test
@@ -550,6 +561,8 @@ public class XMLDBSecurityTest {
         try {
             Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
+            
+            ums.chmod("rwxr-xr-x"); //ensure /db is always 755
 
             Account test1 = ums.getAccount("test1");
             if (test1 != null){
