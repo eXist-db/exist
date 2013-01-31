@@ -1557,7 +1557,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
             oldDoc = documents.get(docUri.getRawCollectionPath());
             checkPermissionsForAddDocument(broker, oldDoc);
-            checkCollectionConflict(broker, docUri);
+            checkCollectionConflict(docUri);
             manageDocumentInformation(broker, oldDoc, document );
             Indexer indexer = new Indexer(broker, transaction);
             
@@ -1779,8 +1779,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
     
-    private void checkCollectionConflict(final DBBroker broker, final XmldbURI docUri) throws EXistException, PermissionDeniedException {
-        if(hasChildCollection(broker, docUri.lastSegment())) {
+    private void checkCollectionConflict(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
+        if(subCollections.contains(docUri.lastSegment())) {
             throw new EXistException(
                 "The collection '" + getURI() + "' already has a sub-collection named '" + docUri.lastSegment() + "', you cannot create a Document with the same name as an existing collection."
             );
@@ -1828,7 +1828,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
             getLock().acquire(Lock.WRITE_LOCK);
             checkPermissionsForAddDocument(broker, oldDoc);
-            checkCollectionConflict(broker, docUri);
+            checkCollectionConflict(docUri);
             manageDocumentInformation(broker, oldDoc, blob );
             final DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
