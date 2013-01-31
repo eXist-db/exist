@@ -1558,7 +1558,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             oldDoc = documents.get(docUri.getRawCollectionPath());
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
-            manageDocumentInformation(broker, oldDoc, document );
+            manageDocumentInformation(oldDoc, document);
             Indexer indexer = new Indexer(broker, transaction);
             
             final IndexInfo info = new IndexInfo(indexer, config);
@@ -1707,7 +1707,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param broker
      * @param document
      */
-    private void manageDocumentInformation(final DBBroker broker, final DocumentImpl oldDoc, final DocumentImpl document) {
+    private void manageDocumentInformation(final DocumentImpl oldDoc, final DocumentImpl document) {
         DocumentMetadata metadata = new DocumentMetadata();
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
@@ -1829,7 +1829,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             getLock().acquire(Lock.WRITE_LOCK);
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
-            manageDocumentInformation(broker, oldDoc, blob );
+            manageDocumentInformation(oldDoc, blob);
             final DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
             if (created != null) {
