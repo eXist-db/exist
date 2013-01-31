@@ -1883,7 +1883,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         this.collectionId = id;
     }
 
-    public void setPermissions(int mode) throws LockException, PermissionDeniedException {
+    public void setPermissions(final int mode) throws LockException, PermissionDeniedException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setMode(mode);
@@ -1893,8 +1893,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
 
     @Deprecated
-    public void setPermissions(String mode) throws SyntaxException,
-            LockException, PermissionDeniedException {
+    public void setPermissions(final String mode) throws SyntaxException, LockException, PermissionDeniedException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setMode(mode);
@@ -1908,7 +1907,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param permissions
      */
-    public void setPermissions(Permission permissions) throws LockException {
+    public void setPermissions(final Permission permissions) throws LockException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             this.permissions = permissions;
@@ -1917,13 +1916,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
-    public CollectionConfiguration getConfiguration(DBBroker broker) {
-        if (!isCollectionConfigEnabled()) {
+    public CollectionConfiguration getConfiguration(final DBBroker broker) {
+        if(!isCollectionConfigEnabled()) {
             return null;
         }
-        CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-        if (manager == null)
+        
+        final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+        if(manager == null) {
             return null;
+        }
         //Attempt to get configuration
         CollectionConfiguration configuration = null;
         try {
@@ -1932,7 +1933,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             //configuration (indexes etc.) ignored even though they might be fine?
             configuration = manager.getConfiguration(broker, this);
             setCollectionConfigEnabled(true);
-        } catch (CollectionConfigurationException e) {
+        } catch(final CollectionConfigurationException e) {
             setCollectionConfigEnabled(false);
             LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
         }
@@ -1946,7 +1947,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param collectionConfigEnabled
      */
-    public void setCollectionConfigEnabled(boolean collectionConfigEnabled) {
+    public void setCollectionConfigEnabled(final boolean collectionConfigEnabled) {
         this.collectionConfigEnabled = collectionConfigEnabled;
     }
 
@@ -1959,7 +1960,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param addr
      */
-    public void setAddress(long addr) {
+    public void setAddress(final long addr) {
         this.address = addr;
     }
 
@@ -1967,7 +1968,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         return this.address;
     }
 
-    public void setCreationTime(long ms) {
+    public void setCreationTime(final long ms) {
         created = ms;
     }
 
@@ -1978,11 +1979,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     /*** TODO why do we need this? is it just for the versioning trigger?
      * If so we need to enable/disable specific triggers!
      ***/
-    public void setTriggersEnabled(boolean enabled) {
+    public void setTriggersEnabled(final boolean enabled) {
         try {
             getLock().acquire(Lock.WRITE_LOCK);
             this.triggersEnabled = enabled;
-        } catch (LockException e) {
+        } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             //Ouch ! -pb
             this.triggersEnabled = enabled;
@@ -1992,28 +1993,26 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
 
     /** set user-defined Reader */
-    public void setReader(XMLReader reader){
+    public void setReader(final XMLReader reader){
         userReader = reader;
     }
 
     /** 
      * Get xml reader from readerpool and setup validation when needed.
      */
-    private XMLReader getReader(DBBroker broker, boolean validation,
-            CollectionConfiguration colconfig) {
+    private XMLReader getReader(final DBBroker broker, final boolean validation, final CollectionConfiguration colconfig) {
         // If user-defined Reader is set, return it;
         if (userReader != null) {
             return userReader;
         }
         // Get reader from readerpool.
-        XMLReader reader= broker.getBrokerPool().getParserPool().borrowXMLReader();
+        final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
-        if (!validation)
-            XMLReaderObjectFactory.setReaderValidationMode(
-                    XMLReaderObjectFactory.VALIDATION_DISABLED, reader);
-        else if( colconfig!=null ) {
-            int mode=colconfig.getValidationMode();
+        if (!validation) {
+            XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_DISABLED, reader);
+        } else if( colconfig!=null ) {
+            final int mode = colconfig.getValidationMode();
             XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
         }
         // Return configured reader.
@@ -2023,16 +2022,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     /**
      * Reset validation mode of reader and return reader to reader pool.
      */    
-    private void releaseReader(DBBroker broker, IndexInfo info, XMLReader reader) {
+    private void releaseReader(final DBBroker broker, final IndexInfo info, final XMLReader reader) {
         if(userReader != null){
             return;
         }
-        if (info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD)
+        if(info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD) {
             return;
+        }
         // Get validation mode from static configuration
-        Configuration config = broker.getConfiguration();
-        String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
-        int validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
+        final Configuration config = broker.getConfiguration();
+        final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
+        final int validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
         // Restore default validation mode
         XMLReaderObjectFactory.setReaderValidationMode(validationMode, reader);
         // Return reader
@@ -2043,26 +2043,29 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @see java.util.Observable#addObserver(java.util.Observer)
      */
     @Override
-    public synchronized void addObserver(Observer o) {
-        if (hasObserver(o))
+    public synchronized void addObserver(final Observer o) {
+        if(hasObserver(o)) {
             return;
-        if (observers == null) {
+        }
+        if(observers == null) {
             observers = new Observer[1];
             observers[0] = o;
         } else {
-            Observer n[] = new Observer[observers.length + 1];
+            final Observer n[] = new Observer[observers.length + 1];
             System.arraycopy(observers, 0, n, 0, observers.length);
             n[observers.length] = o;
             observers = n;
         }
     }
 
-    private boolean hasObserver(Observer o) {
-        if (observers == null)
+    private boolean hasObserver(final Observer o) {
+        if(observers == null) {
             return false;
-        for (int i = 0; i < observers.length; i++) {
-            if (observers[i] == o)
+        }
+        for(int i = 0; i < observers.length; i++) {
+            if(observers[i] == o) {
                 return true;
+            }
         }
         return false;
     }
@@ -2072,8 +2075,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     @Override
     public synchronized void deleteObservers() {
-        if (observers != null)
+        if(observers != null) {
             observers = null;
+        }
     }
 
     /* (non-Javadoc)
@@ -2112,7 +2116,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @see org.exist.storage.cache.Cacheable#setReferenceCount(int)
      */
     @Override
-    public void setReferenceCount(int count) {
+    public void setReferenceCount(final int count) {
         refCount = count;
     }
 
@@ -2120,7 +2124,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @see org.exist.storage.cache.Cacheable#setTimestamp(int)
      */
     @Override
-    public void setTimestamp(int timestamp) {
+    public void setTimestamp(final int timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -2136,7 +2140,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @see org.exist.storage.cache.Cacheable#release()
      */
     @Override
-    public boolean sync(boolean syncJournal) {
+    public boolean sync(final boolean syncJournal) {
         return false;
     }
 
@@ -2150,13 +2154,14 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
         buf.append("[");
-        for(Iterator<String> i = documents.keySet().iterator(); i.hasNext(); ) {
+        for(final Iterator<String> i = documents.keySet().iterator(); i.hasNext(); ) {
             buf.append(i.next());
-            if(i.hasNext())
+            if(i.hasNext()) {
                 buf.append(", ");
+            }
         }
         buf.append("]");
         return buf.toString();
@@ -2166,27 +2171,28 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * (Make private?)
      * @param broker
      */
-    public IndexSpec getIndexConfiguration(DBBroker broker) {
-        CollectionConfiguration conf = getConfiguration(broker);
+    public IndexSpec getIndexConfiguration(final DBBroker broker) {
+        final CollectionConfiguration conf = getConfiguration(broker);
         //If the collection has its own config...
-        if (conf == null)
+        if (conf == null) {
             return broker.getIndexConfiguration();
+        }
         //... otherwise return the general config (the broker's one)
         return conf.getIndexConfiguration();
     }
 
-    public GeneralRangeIndexSpec getIndexByPathConfiguration(DBBroker broker, NodePath path) {
-        IndexSpec idxSpec = getIndexConfiguration(broker);
+    public GeneralRangeIndexSpec getIndexByPathConfiguration(final DBBroker broker, final NodePath path) {
+        final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getIndexByPath(path);
     }
 
-    public QNameRangeIndexSpec getIndexByQNameConfiguration(DBBroker broker, QName qname) {
-        IndexSpec idxSpec = getIndexConfiguration(broker);
+    public QNameRangeIndexSpec getIndexByQNameConfiguration(final DBBroker broker, final QName qname) {
+        final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
     }
 
-    public FulltextIndexSpec getFulltextIndexConfiguration(DBBroker broker) {
-        IndexSpec idxSpec = getIndexConfiguration(broker);
+    public FulltextIndexSpec getFulltextIndexConfiguration(final DBBroker broker) {
+        final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
     }
 
