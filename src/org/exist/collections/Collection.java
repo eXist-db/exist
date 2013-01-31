@@ -1458,7 +1458,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     }
     
     //stops streams on the input source from being closed
-    private InputSource closeShieldInputSource(InputSource source) {
+    private InputSource closeShieldInputSource(final InputSource source) {
         
         final InputSource protectedInputSource = new InputSource();
         protectedInputSource.setEncoding(source.getEncoding());
@@ -1467,13 +1467,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         
         if(source.getByteStream() != null) {
             //TODO consider AutoCloseInputStream
-            InputStream closeShieldByteStream = new CloseShieldInputStream(source.getByteStream());
+            final InputStream closeShieldByteStream = new CloseShieldInputStream(source.getByteStream());
             protectedInputSource.setByteStream(closeShieldByteStream);
         }
         
         if(source.getCharacterStream() != null) {
             //TODO consider AutoCloseReader
-            Reader closeShieldReader = new CloseShieldReader(source.getCharacterStream());
+            final Reader closeShieldReader = new CloseShieldReader(source.getCharacterStream());
             protectedInputSource.setCharacterStream(closeShieldReader);
         }
         
@@ -1482,12 +1482,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     
     private class CloseShieldReader extends Reader {
         private final Reader reader;
-        public CloseShieldReader(Reader reader) {
+        public CloseShieldReader(final Reader reader) {
             this.reader = reader;
         }
 
         @Override
-        public int read(char[] cbuf, int off, int len) throws IOException {
+        public int read(final char[] cbuf, final int off, final int len) throws IOException {
             return reader.read(cbuf, off, len);
         }
 
@@ -1514,14 +1514,14 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */    
-    public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
     	if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
         }
     	
         return validateXMLResourceInternal(transaction, broker, docUri, getConfiguration(broker), new ValidateBlock() {
             @Override
-            public void run(IndexInfo info) throws SAXException {
+            public void run(final IndexInfo info) throws SAXException {
                 info.setDOMStreamer(new DOMStreamer());
                 info.getDOMStreamer().serialize(node, true);
             }
@@ -1545,18 +1545,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */
-    private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, CollectionConfiguration config, ValidateBlock doValidate) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+    private IndexInfo validateXMLResourceInternal(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final CollectionConfiguration config, final ValidateBlock doValidate) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         //Make the necessary operations if we process a collection configuration document
         checkConfigurationDocument(transaction, broker, docUri);
         
-        Database db = broker.getBrokerPool();
+        final Database db = broker.getBrokerPool();
         
-        if (db.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
+        if (db.isReadOnly()) {
+            throw new PermissionDeniedException("Database is read-only");
+        }
         
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
-        	db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_VALIDATE_DOC, docUri); 
             getLock().acquire(Lock.WRITE_LOCK);   
             
             DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docUri);
@@ -1566,7 +1568,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             manageDocumentInformation(broker, oldDoc, document );
             Indexer indexer = new Indexer(broker, transaction);
             
-            IndexInfo info = new IndexInfo(indexer, config);
+            final IndexInfo info = new IndexInfo(indexer, config);
             info.setCreating(oldDoc == null);
             indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
@@ -1602,13 +1604,15 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 info.setTriggersVisitor(triggersVisitor);
             }
             
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Scanning document " + getURI().append(docUri));
+            }
             doValidate.run(info);
             // new document is valid: remove old document
             if (oldDoc != null) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("removing old document " + oldDoc.getFileURI());
+                }
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1620,7 +1624,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 //                    if (transaction != null)
 //                    	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
 //                	else
-                		document.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     
                     document.setDocId(broker.getNextResourceId(transaction, this));
                     addDocument(transaction, broker, document);
@@ -1633,15 +1637,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     document = oldDoc;
                     oldDocLocked = false;		
                 }
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("removed old document " + oldDoc.getFileURI());
+                }
             } else {
                 //This lock is released in storeXMLInternal()
                 //TODO : check that we go until there to ensure the lock is released
 //            	if (transaction != null)
 //                	transaction.acquireLock(document.getUpdateLock(), Lock.WRITE_LOCK);
 //            	else
-            		document.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                document.getUpdateLock().acquire(Lock.WRITE_LOCK);
             	
                 document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
@@ -1652,26 +1657,29 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
             return info;
         } finally {
-            if (oldDoc != null && oldDocLocked) 
+            if (oldDoc != null && oldDocLocked) {
                 oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
             getLock().release(Lock.WRITE_LOCK);
             
             db.getProcessMonitor().endJob();
         }
     }
 
-    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException, LockException {
+    private void checkConfigurationDocument(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws EXistException, PermissionDeniedException, LockException {
         //Is it a collection configuration file ?
         //TODO : use XmldbURI.resolve() !
-        if (!getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI))
-        	return;
-        if (!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI))
+        if (!getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)) {
             return;
+        }
+        if(!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
+            return;
+        }
         //Allow just one configuration document per collection
         //TODO : do not throw the exception if a system property allows several ones -pb
-        for(Iterator<DocumentImpl> i = iterator(broker); i.hasNext(); ) {
-            DocumentImpl confDoc = i.next();
-            XmldbURI currentConfDocName = confDoc.getFileURI();
+        for(final Iterator<DocumentImpl> i = iterator(broker); i.hasNext(); ) {
+            final DocumentImpl confDoc = i.next();
+            final XmldbURI currentConfDocName = confDoc.getFileURI();
             if(currentConfDocName != null && !currentConfDocName.equals(docUri)) {
                 throw new EXistException("Could not store configuration '" + docUri + "': A configuration document with a different name ("
                     + currentConfDocName + ") already exists in this collection (" + getURI() + ")");
@@ -1691,21 +1699,22 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @param broker
      * @param indexer
      */
-    private void addObserversToIndexer(DBBroker broker, Indexer indexer) {
+    private void addObserversToIndexer(final DBBroker broker, final Indexer indexer) {
         broker.deleteObservers();
-        if (observers != null) {
-            for (int i = 0; i < observers.length; i++) {
+        if(observers != null) {
+            for(int i = 0; i < observers.length; i++) {
                 indexer.addObserver(observers[i]);
                 broker.addObserver(observers[i]);
             }
         }
     }
 
+
     /** If an old document exists, keep information  about  the document.
      * @param broker
      * @param document
      */
-    private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc, DocumentImpl document) {
+    private void manageDocumentInformation(final DBBroker broker, final DocumentImpl oldDoc, final DocumentImpl document) {
         DocumentMetadata metadata = new DocumentMetadata();
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
@@ -1745,12 +1754,20 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws PermissionDeniedException
      */
     private void checkPermissionsForAddDocument(final DBBroker broker, final DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
-        if (oldDoc != null) {
+        
+        // do we have execute permission on the collection?
+        if(!getPermissions().validate(broker.getSubject(), Permission.EXECUTE)) {
+            throw new PermissionDeniedException("Execute permission is not granted on the Collection.");
+        }
+            
+        if(oldDoc != null) {   
+            
+            /* update document */
             
             LOG.debug("Found old doc " + oldDoc.getDocId());
             
             // check if the document is locked by another user
-            Account lockUser = oldDoc.getUserLock();
+            final Account lockUser = oldDoc.getUserLock();
             if(lockUser != null && !lockUser.equals(broker.getSubject())) {
                 throw new PermissionDeniedException("The document is locked by user '" + lockUser.getName() + "'.");
             }
@@ -1759,19 +1776,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             if(!((oldDoc.getPermissions().getOwner().getId() != broker.getSubject().getId()) | (oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE)))) {
                 throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + path + "', and you do not have write access on that resource.");
             }
-            
-            // do we have execute permission on the collection?
-            if(!(getPermissions().validate(broker.getSubject(), Permission.EXECUTE))) {
-                throw new PermissionDeniedException("Document exists, but execute permission is not granted for the Collection.");
-            }
-            
         } else {
+            
+            /* create document */
+            
             if(!getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                 throw new PermissionDeniedException("Write permission is not granted on the Collection.");
-            }
-            
-            if(!getPermissions().validate(broker.getSubject(), Permission.EXECUTE)) {
-                throw new PermissionDeniedException("Execute permission is not granted on the Collection.");
             }
         }
     }
@@ -1786,39 +1796,39 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     // Blob
     @Deprecated
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final byte[] data, final String mimeType) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, data, mimeType, null, null);
     }
 
     // Blob
     @Deprecated
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final byte[] data, final String mimeType, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, new ByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final InputStream is, final String mimeType, final long size) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final BinaryDocument blob = new BinaryDocument(broker.getBrokerPool(), this, docUri);
         
         return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
     }
 
-    public BinaryDocument validateBinaryResource(Txn transaction, DBBroker broker, XmldbURI docUri, InputStream is, String mimeType, long size, Date created, Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
+    public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws PermissionDeniedException, LockException, TriggerException, IOException {
         return new BinaryDocument(broker.getBrokerPool(), this, docUri);
     }
 
     // Streaming
-    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is, String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
-        Database db = broker.getBrokerPool();
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+        final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
             throw new PermissionDeniedException("Database is read-only");
         }
-        XmldbURI docUri = blob.getFileURI();
+        final XmldbURI docUri = blob.getFileURI();
         //TODO : move later, i.e. after the collection lock is acquired ?
         final DocumentImpl oldDoc = getDocument(broker, docUri);
         try {
@@ -1827,16 +1837,17 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(broker, docUri);
             manageDocumentInformation(broker, oldDoc, blob );
-            DocumentMetadata metadata = blob.getMetadata();
+            final DocumentMetadata metadata = blob.getMetadata();
             metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
-            if (created != null)
+            if (created != null) {
                 metadata.setCreated(created.getTime());
-            if (modified != null)
+            }
+            if (modified != null) {
                 metadata.setLastModified(modified.getTime());
+            }
             blob.setContentLength(size);
             if (oldDoc == null) {
-                db.getDocumentTrigger().beforeCreateDocument(broker, transaction,
-                        blob.getURI());
+                db.getDocumentTrigger().beforeCreateDocument(broker, transaction, blob.getURI());
             } else {
                 db.getDocumentTrigger().beforeUpdateDocument(broker, transaction, oldDoc);
             }
@@ -1851,10 +1862,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
             if (oldDoc != null) {
                 LOG.debug("removing old document " + oldDoc.getFileURI());
-                if (oldDoc instanceof BinaryDocument)
+                if (oldDoc instanceof BinaryDocument) {
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                else
+                } else {
                     broker.removeXMLResource(transaction, oldDoc);
+                }
             }
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob);
