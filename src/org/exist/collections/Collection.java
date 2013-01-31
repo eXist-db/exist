@@ -1423,17 +1423,13 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */    
-    public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
-        
-        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Permission denied to write collection: " + path);
-        }
         
         return validateXMLResourceInternal(transaction, broker, docUri, colconf, new ValidateBlock() {
             @Override
-            public void run(IndexInfo info) throws SAXException, EXistException {
-                XMLReader reader = getReader(broker, true, colconf);
+            public void run(final IndexInfo info) throws SAXException, EXistException {
+                final XMLReader reader = getReader(broker, true, colconf);
                 info.setReader(reader, null);
                 try {
                     
@@ -1443,12 +1439,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                      * when we try and read it in storeXmlInternal we will get
                      * an exception.
                      */
-                    InputSource closeShieldedInputSource = closeShieldInputSource(source);
+                    final InputSource closeShieldedInputSource = closeShieldInputSource(source);
                     
                     reader.parse(closeShieldedInputSource);
-                } catch (SAXException e) {
+                } catch(final SAXException e) {
                     throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
-                } catch (IOException e) {
+                } catch(final IOException e) {
                     throw new EXistException(e);
                 } finally {
                     releaseReader(broker, info, reader);
@@ -1515,9 +1511,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      */    
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-    	if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Permission denied to write collection: " + path);
-        }
     	
         return validateXMLResourceInternal(transaction, broker, docUri, getConfiguration(broker), new ValidateBlock() {
             @Override
