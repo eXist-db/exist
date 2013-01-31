@@ -32,68 +32,65 @@ public class XMLDBSecurityTest {
 
     private static JettyStart server;
 
-    public XMLDBSecurityTest(String baseUri) {
+    public XMLDBSecurityTest(final String baseUri) {
         this.baseUri = baseUri;
     }
 
     @Parameterized.Parameters
     public static LinkedList<String[]> instances() {
-        LinkedList<String[]> params = new LinkedList<String[]>();
+        final LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
-	params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
+	//params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
+        
+        //TODO re-enable remote tests!!!
         
         return params;
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldCreateCollection() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        CollectionManagementService cms = (CollectionManagementService)
-            test.getService("CollectionManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
         cms.createCollection("createdByGuest");
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldAddResource() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        Resource resource = test.createResource("createdByGuest", XMLResource.RESOURCE_TYPE);
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.createResource("createdByGuest", XMLResource.RESOURCE_TYPE);
         resource.setContent("<testMe/>");
         test.storeResource(resource);
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldRemoveCollection() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(baseUri + "/db", "guest", "guest");
-        CollectionManagementService cms = (CollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+        final Collection root = DatabaseManager.getCollection(baseUri + "/db", "guest", "guest");
+        final CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection("securityTest1");
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChmodCollection() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        UserManagementService ums = (UserManagementService)
-            test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
         ums.chmod(0777);
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChmodResource() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        Resource resource = test.getResource("test.xml");
-        UserManagementService ums = (UserManagementService)
-            test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
         ums.chmod(resource, 0777);
     }
 
     @Test (expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChownCollection() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        UserManagementService ums = (UserManagementService)
-            test.getService("UserManagementService", "1.0");
-        Account guest = ums.getAccount("guest");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        final Account guest = ums.getAccount("guest");
         // make myself the owner ;-)
         ums.chown(guest, "guest");
     }
@@ -101,26 +98,25 @@ public class XMLDBSecurityTest {
     @Test (expected=XMLDBException.class)
     // only the owner or dba can chown a collection or resource
     public void worldChownResource() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
-        Resource resource = test.getResource("test.xml");
-        UserManagementService ums = (UserManagementService)
-                test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getAccount("guest");
+        final Account test2 = ums.getAccount("guest");
         ums.chown(resource, test2, "guest");
     }
 
     @Test
     public void groupCreateSubColl() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
-        Collection newCol = cms.createCollection("createdByTest2");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection newCol = cms.createCollection("createdByTest2");
         assertNotNull(newCol);
     }
 
     @Test
     public void groupCreateResource() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
         Resource resource = test.createResource("createdByTest2.xml", XMLResource.RESOURCE_TYPE);
         resource.setContent("<testMe/>");
         test.storeResource(resource);
@@ -132,25 +128,23 @@ public class XMLDBSecurityTest {
 
     @Test(expected=XMLDBException.class)
     public void groupRemoveCollection_canNotWriteParent() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(baseUri + "/db", "test2", "test2");
-        CollectionManagementService cms = (CollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+        final Collection root = DatabaseManager.getCollection(baseUri + "/db", "test2", "test2");
+        final CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection("securityTest1");
     }
 
     @Test
     public void groupRemoveCollection_canWriteParent() throws XMLDBException {
-        Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
-        CollectionManagementService cms = (CollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+        final Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+        final CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection("securityTest1");
     }
 
     @Test(expected=XMLDBException.class)
     public void groupChmodCollection_asNotOwnerAndNotDBA() throws XMLDBException {
     
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
         // grant myself all rights ;-)
         ums.chmod(07777);
@@ -158,8 +152,8 @@ public class XMLDBSecurityTest {
 
     @Test
     public void groupChmodCollection_asOwner() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
-        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
         ums.chmod(07777);
 
@@ -168,18 +162,18 @@ public class XMLDBSecurityTest {
 
     @Test(expected=XMLDBException.class)
     public void groupChmodResource_asNotOwnerAndNotDBA() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        Resource resource = test.getResource("test.xml");
-        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
         ums.chmod(resource, 0777);
     }
 
     @Test
     public void groupChmodResource_asOwner() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
-        Resource resource = test.getResource("test.xml");
-        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
         ums.chmod(resource, 0777);
     }
@@ -187,25 +181,23 @@ public class XMLDBSecurityTest {
     @Test(expected=XMLDBException.class)
     // only the owner or admin can chown a collection or resource
     public void groupChownCollection() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        UserManagementService ums = (UserManagementService)
-                test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getAccount("test2");
+        final Account test2 = ums.getAccount("test2");
         ums.chown(test2, "users");
-        Permission perms = ums.getPermissions(test);
+        final Permission perms = ums.getPermissions(test);
         assertEquals("test2", perms.getOwner().getName());
     }
 
     @Test(expected=XMLDBException.class)
     // only the owner or admin can chown a collection or resource
     public void groupChownResource() throws XMLDBException {
-        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
-        Resource resource = test.getResource("test.xml");
-        UserManagementService ums = (UserManagementService)
-                test.getService("UserManagementService", "1.0");
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final Resource resource = test.getResource("test.xml");
+        final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         // grant myself all rights ;-)
-        Account test2 = ums.getAccount("test2");
+        final Account test2 = ums.getAccount("test2");
         ums.chown(resource, test2, "users");
     }
     
@@ -581,23 +573,23 @@ public class XMLDBSecurityTest {
     @Before
     public void setup() {
         try {
-            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+            final Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
             UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
-            
+
             ums.chmod("rwxr-xr-x"); //ensure /db is always 755
 
             Account test1 = ums.getAccount("test1");
-            if (test1 != null){
+            if(test1 != null){
                 ums.removeAccount(test1);
             }
 
-            Account test2 = ums.getAccount("test2");
-            if (test2 != null){
+            final Account test2 = ums.getAccount("test2");
+            if(test2 != null){
                 ums.removeAccount(test2);
             }
 
             Group group = ums.getGroup("users");
-            if (group != null){
+            if(group != null){
                 ums.removeGroup(group);
             }
 
@@ -623,53 +615,50 @@ public class XMLDBSecurityTest {
             ums.chmod(0770);
 
             test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
-            
+
             Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
             resource.setContent("<test/>");
             test.storeResource(resource);
             ums.chmod(resource, 0770);
-            
+
             resource = test.createResource("test.bin", BinaryResource.RESOURCE_TYPE);
             resource.setContent("binary-test".getBytes());
             test.storeResource(resource);
             ums.chmod(resource, 0770);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        } catch(final XMLDBException xmldbe) {
+            fail(xmldbe.getMessage());
         }
     }
 
     @After
-    public void cleanup() {
+    public void cleanup() throws XMLDBException {
         try {
-            Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
-            CollectionManagementService cms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-            Collection secTest1 = root.getChildCollection("securityTest1");
-            if (secTest1 != null) {
+            final Collection root = DatabaseManager.getCollection(baseUri + "/db", "admin", "");
+            final CollectionManagementService cms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+            final Collection secTest1 = root.getChildCollection("securityTest1");
+            if(secTest1 != null) {
                 secTest1.close();
                 cms.removeCollection("securityTest1");
             }
 
-            UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
+            final UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
 
-            Account test1 = ums.getAccount("test1");
-            if (test1 != null) {
+            final Account test1 = ums.getAccount("test1");
+            if(test1 != null) {
                 ums.removeAccount(test1);
             }
 
-            Account test2 = ums.getAccount("test2");
-            if (test2 != null) {
+            final Account test2 = ums.getAccount("test2");
+            if(test2 != null) {
                 ums.removeAccount(test2);
             }
 
-            Group group = ums.getGroup("users");
-            if (group != null) {
+            final Group group = ums.getGroup("users");
+            if(group != null) {
                 ums.removeGroup(group);
             }
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
+        } catch(final XMLDBException xmldbe) {
+            fail(xmldbe.getMessage());
         }
     }
 
