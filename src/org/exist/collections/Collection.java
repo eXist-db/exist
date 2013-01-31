@@ -1186,7 +1186,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */
-    public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
         if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1197,22 +1197,23 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             public void run() throws EXistException, SAXException {
                 try {
                     final InputStream is = source.getByteStream();
-                    if (is != null && is.markSupported())
+                    if(is != null && is.markSupported()) {
                         is.reset();
-                    else {
+                    } else {
                         final Reader cs = source.getCharacterStream();
-                        if (cs != null && cs.markSupported())
+                        if(cs != null && cs.markSupported()) {
                             cs.reset();
+                        }
                     }
-                } catch (IOException e) {
+                } catch(final IOException e) {
                     // mark is not supported: exception is expected, do nothing
                     LOG.debug("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
                 }
-                XMLReader reader = getReader(broker, false, info.getCollectionConfig());
+                final XMLReader reader = getReader(broker, false, info.getCollectionConfig());
                 info.setReader(reader, null);
                 try {
                     reader.parse(source);
-                } catch (IOException e) {
+                } catch(final IOException e) {
                     throw new EXistException(e);
                 } finally {
                     releaseReader(broker, info, reader);
@@ -1238,7 +1239,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */
-    public void store(Txn transaction, final DBBroker broker, final IndexInfo info, final String data, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final String data, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
         if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1247,13 +1248,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             @Override
             public void run() throws SAXException, EXistException {
-                CollectionConfiguration colconf 
-                        = info.getDocument().getCollection().getConfiguration(broker);
-                XMLReader reader = getReader(broker, false, colconf);
+                final CollectionConfiguration colconf = info.getDocument().getCollection().getConfiguration(broker);
+                final XMLReader reader = getReader(broker, false, colconf);
                 info.setReader(reader, null);
                 try {
                     reader.parse(new InputSource(new StringReader(data)));
-                } catch (IOException e) {
+                } catch(final IOException e) {
                     throw new EXistException(e);
                 } finally {
                     releaseReader(broker, info, reader);
@@ -1279,7 +1279,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */  
-    public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final Node node, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
         if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1311,18 +1311,19 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws EXistException
      * @throws SAXException
      */
-    private void storeXMLInternal(Txn transaction, DBBroker broker, IndexInfo info, boolean privileged, StoreBlock doParse) throws EXistException, SAXException {
-        DocumentImpl document = info.getIndexer().getDocument();
+    private void storeXMLInternal(final Txn transaction, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException {
+        final DocumentImpl document = info.getIndexer().getDocument();
         
-        if (LOG.isDebugEnabled())
-        	LOG.debug("storing document " + document.getDocId() + " ...");
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("storing document " + document.getDocId() + " ...");
+        }
 
         //Sanity check
-        if (!document.getUpdateLock().isLockedForWrite()) {
+        if(!document.getUpdateLock().isLockedForWrite()) {
             LOG.warn("document is not locked for write !");
         }
         
-        Database db = broker.getBrokerPool();
+        final Database db = broker.getBrokerPool();
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
             doParse.run();
@@ -1333,16 +1334,16 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             LOG.debug("document stored.");
         } finally {
             //This lock has been acquired in validateXMLResourceInternal()
-    		document.getUpdateLock().release(Lock.WRITE_LOCK);
+            document.getUpdateLock().release(Lock.WRITE_LOCK);
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
         setCollectionConfigEnabled(true);
         broker.deleteObservers();
         
         if(info.isCreating()) {
-        	db.getDocumentTrigger().afterCreateDocument(broker, transaction, document);
+            db.getDocumentTrigger().afterCreateDocument(broker, transaction, document);
         } else {
-        	db.getDocumentTrigger().afterUpdateDocument(broker, transaction, document);
+            db.getDocumentTrigger().afterUpdateDocument(broker, transaction, document);
         }
         
         if(isTriggersEnabled() && isCollectionConfigEnabled() && info.getTriggersVisitor() != null) {
@@ -1353,25 +1354,24 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
         }
         
-        
         db.getNotificationService().notifyUpdate(document, (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
         //Is it a collection configuration file ?
-        XmldbURI docName = document.getFileURI();
+        final XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
         //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
         if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
                 && docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
             broker.sync(Sync.MAJOR_SYNC);
             CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
-            if (manager != null) {
+            if(manager != null) {
                 try {
                     manager.invalidateAll(getURI());
                     manager.loadConfiguration(broker, this);
-                } catch (PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     throw new EXistException(pde.getMessage(), pde);
-                } catch (LockException le) {
+                } catch(final LockException le) {
                     throw new EXistException(le.getMessage(), le);
-                } catch (CollectionConfigurationException e) { 
+                } catch(final CollectionConfigurationException e) { 
                     // DIZ: should this exception really been thrown? bugid=1807744
                     throw new EXistException("Error while reading new collection configuration: " + e.getMessage(), e);
                 }
@@ -1402,7 +1402,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws SAXException
      * @throws LockException
      */    
-    public IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri, String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return validateXMLResource(transaction, broker, docUri, new InputSource(new StringReader(data)));
     }
 
