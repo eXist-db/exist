@@ -23,7 +23,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-@RunWith (Parameterized.class)
+@RunWith(Parameterized.class)
 public class XMLDBSecurityTest {
 
     private static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
@@ -40,9 +40,7 @@ public class XMLDBSecurityTest {
     public static LinkedList<String[]> instances() {
         final LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
-	//params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
-        
-        //TODO re-enable remote tests!!!
+	params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
         
         return params;
     }
