@@ -200,6 +200,7 @@ public class Deployment {
         ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
         if (info != null && !info.getJars().isEmpty())
             ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
+        broker.getBrokerPool().getXQueryPool().clear();
         String pkgName = pkg.getName();
         // signal status
         broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());

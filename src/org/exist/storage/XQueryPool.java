@@ -301,6 +301,13 @@ public class XQueryPool extends Object2ObjectHashMap {
 		}
 	}
 
+    public synchronized void clear() {
+        for (Iterator i = iterator(); i.hasNext();) {
+            Source next = (Source) i.next();
+            remove(next);
+        }
+    }
+
 	private void timeoutCheck() {
 		final long currentTime = System.currentTimeMillis();
 
