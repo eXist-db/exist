@@ -195,8 +195,8 @@
                 <include name="backup.bat"/>
             </fileset>
 
-            <fileset dir="installer/scripts" targetdir="$INSTALL_PATH">
-                <include name="eXist-db.app/**"/>
+            <fileset dir="installer/scripts/eXist-db.mac" targetdir="$INSTALL_PATH/eXist-db.app">
+                <exclude name="**/.svn/"/>
             </fileset>
             <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaApplicationStub"
                 stage="never" os="unix"/>
