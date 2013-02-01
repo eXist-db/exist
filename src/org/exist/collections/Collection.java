@@ -328,15 +328,33 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      *
      * @param  doc
      */
-    public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) throws PermissionDeniedException {
-        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Permission to write to Collection denied for " +
-                this.getURI());
+    public void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException {
+        addDocument(transaction, broker, doc, null);
+    }
+    
+    /**
+     * @param oldDoc if not null, then this document is replacing another and so WRITE access on the collection is not required,
+     * just WRITE access on the old document
+     */
+    private void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc, final DocumentImpl oldDoc) throws PermissionDeniedException {
+        if(oldDoc == null) {
+            
+            /* create */
+            if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("Permission to write to Collection denied for " + this.getURI());
+            }
+        } else {
+            
+            /* update-replace */
+            if(!oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
+                throw new PermissionDeniedException("Permission to write to overwrite document: " +  oldDoc.getURI());
+            }
         }
+        
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
             try {
                 doc.setDocId(broker.getNextResourceId(transaction, this));
-            } catch (EXistException e) {
+            } catch(final EXistException e) {
                 LOG.error("Collection error " + e.getMessage(), e);
                 // TODO : re-raise the exception ? -pb
                 return;
@@ -1871,7 +1889,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 }
             }
             broker.storeBinaryResource(transaction, blob, is);
-            addDocument(transaction, broker, blob);
+            addDocument(transaction, broker, blob, oldDoc);
             broker.storeXMLResource(transaction, blob);
             if (oldDoc == null) {
                 db.getDocumentTrigger().afterCreateDocument(broker, transaction, blob);
