@@ -1340,10 +1340,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
              * The downside of disabling these checks here is that: this collection is not locked
              * between the call to validateXmlInternal and storeXMLInternal, which means that if
              * UserA in ThreadA calls validateXmlInternal and is permitted access to store a resource,
-             * and then UserB in ThreadB modified the collections of this collection to prevent UserA
+             * and then UserB in ThreadB modifies the permissions of this collection to prevent UserA
              * from storing the document, when UserA reaches here (storeXMLInternal) they will still
              * be allowed to store their document. However the next document that UserA attempts to store
-             * will be forbidden by validateXmlInternal and so the security transgression whilst not idea
+             * will be forbidden by validateXmlInternal and so the security transgression whilst not ideal
              * is short-lived.
              * 
              * To fix the issue we need to refactor validateXMLInternal and move any document/database/collection
