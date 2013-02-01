@@ -1188,10 +1188,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         
-        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Permission denied to write collection: " + path);
-        }
-        
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             @Override
             public void run() throws EXistException, SAXException {
@@ -1240,10 +1236,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws LockException
      */
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final String data, boolean privileged) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-        
-        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
-            throw new PermissionDeniedException("Permission denied to write collection: " + path);
-        }
         
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
             @Override
@@ -1311,20 +1303,36 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws EXistException
      * @throws SAXException
      */
-    private void storeXMLInternal(final Txn transaction, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException {
+    private void storeXMLInternal(final Txn transaction, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException, PermissionDeniedException {
+        
         final DocumentImpl document = info.getIndexer().getDocument();
         
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("storing document " + document.getDocId() + " ...");
-        }
-
-        //Sanity check
-        if(!document.getUpdateLock().isLockedForWrite()) {
-            LOG.warn("document is not locked for write !");
-        }
-        
         final Database db = broker.getBrokerPool();
+        
         try {
+            if(info.isCreating()) {
+                /* create */
+                if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+                    throw new PermissionDeniedException("Permission denied to write collection: " + path);
+                }
+            } else {
+                /* update */
+
+                final Permission oldDocPermissions = info.getOldDocPermissions();
+                if(!((oldDocPermissions.getOwner().getId() != broker.getSubject().getId()) | (oldDocPermissions.validate(broker.getSubject(), Permission.WRITE)))) {
+                    throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + path + "', and you do not have write access on that resource.");
+                }
+            }
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("storing document " + document.getDocId() + " ...");
+            }
+
+            //Sanity check
+            if(!document.getUpdateLock().isLockedForWrite()) {
+                LOG.warn("document is not locked for write !");
+            }
+            
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
             doParse.run();
             broker.storeXMLResource(transaction, document);
@@ -1563,6 +1571,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             final IndexInfo info = new IndexInfo(indexer, config);
             info.setCreating(oldDoc == null);
+            info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
             indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
             indexer.setValidating(true);
