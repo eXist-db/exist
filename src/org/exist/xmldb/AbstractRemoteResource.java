@@ -272,107 +272,120 @@ public abstract class AbstractRemoteResource
 		}
 	}
 	
-	protected void getRemoteContentIntoLocalFile(OutputStream os, boolean isRetrieve, int handle, int pos)
-		throws XMLDBException
-	{
-		Properties properties = getProperties();
-		String command = null;
-		List<Object> params = new ArrayList<Object>();
-		if(isRetrieve) {
-			command = "retrieveFirstChunk";
-			params.add(new Integer(handle));
-			params.add(new Integer(pos));
-		} else {
-			command = "getDocumentData";
-			params.add(path.toString());
-		}
-        if (properties == null)
+    protected void getRemoteContentIntoLocalFile(final OutputStream os, final boolean isRetrieve, final int handle, final int pos) throws XMLDBException {
+        Properties properties = getProperties();
+        if(properties == null) {
             properties = new Properties();
-		params.add(properties);
-		try {
-			VirtualTempFile vtmpfile = new VirtualTempFile();
-			vtmpfile.setTempPrefix("eXistARR");
-			vtmpfile.setTempPostfix(getResourceType().equals("XMLResource")?".xml":".bin");
-			
-			Map<?,?> table = (Map<?,?>) parent.getClient().execute(command, params);
-			String method;
-			boolean useLongOffset;
-			if(table.containsKey("supports-long-offset") && (Boolean)(table.get("supports-long-offset"))) {
-				useLongOffset=true;
-				method="getNextExtendedChunk";
-			} else {
-				useLongOffset=false;
-				method="getNextChunk";
-			}
-			long offset = ((Integer)table.get("offset")).intValue();
-			byte[] data = (byte[])table.get("data");
-			boolean isCompressed=properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes");
-			// One for the local cached file
-			Inflater dec = null;
-			byte[] decResult = null;
-			int decLength = 0;
-			if(isCompressed) {
-				dec = new Inflater();
-				decResult = new byte[65536];
-				dec.setInput(data);
-				do {
-					decLength = dec.inflate(decResult);
-					vtmpfile.write(decResult,0,decLength);
-					// And other for the stream where we want to save it!
-					if(os!=null)
-						os.write(decResult,0,decLength);
-				} while(decLength==decResult.length || !dec.needsInput());
-			} else {
-				vtmpfile.write(data);
-				// And other for the stream where we want to save it!
-				if(os!=null)
-					os.write(data);
-			}
-			while(offset > 0) {
-				params.clear();
-				params.add(table.get("handle"));
-				params.add(useLongOffset?Long.toString(offset):new Integer((int)offset));
-				table = (Map<?,?>) parent.getClient().execute(method, params);
-				offset = useLongOffset?new Long((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
-				data = (byte[])table.get("data");
-				// One for the local cached file
-				if(isCompressed) {
-					dec.setInput(data);
-					do {
-						decLength = dec.inflate(decResult);
-						vtmpfile.write(decResult,0,decLength);
-						// And other for the stream where we want to save it!
-						if(os!=null)
-							os.write(decResult,0,decLength);
-					} while(decLength==decResult.length || !dec.needsInput());
-				} else {
-					vtmpfile.write(data);
-					// And other for the stream where we want to save it!
-					if(os!=null)
-						os.write(data);
-				}
-			}
-			if(dec!=null)
-				dec.end();
-			
-			isLocal=false;
-			contentVFile=vtmpfile;
-		} catch (XmlRpcException xre) {
-			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-		} catch (IOException ioe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-		} catch (DataFormatException dfe) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
-		} finally {
-			if(contentVFile!=null) {
-				try {
-					contentVFile.close();
-				} catch(IOException ioe) {
-					//IgnoreIT(R)
-				}
-			}
-		}
-	}
+        }
+        
+        final String command;
+        final List<Object> params = new ArrayList<Object>();
+        if(isRetrieve) {
+            command = "retrieveFirstChunk";
+            params.add(new Integer(handle));
+            params.add(new Integer(pos));
+        } else {
+            command = "getDocumentData";
+            params.add(path.toString());
+        }
+        params.add(properties);
+        
+        try {
+            final VirtualTempFile vtmpfile = new VirtualTempFile();
+            vtmpfile.setTempPrefix("eXistARR");
+            vtmpfile.setTempPostfix(getResourceType().equals("XMLResource")?".xml":".bin");
+
+            Map<?,?> table = (Map<?,?>) parent.getClient().execute(command, params);
+            
+            final String method;
+            final boolean useLongOffset;
+            if(table.containsKey("supports-long-offset") && (Boolean)(table.get("supports-long-offset"))) {
+                useLongOffset = true;
+                method = "getNextExtendedChunk";
+            } else {
+                useLongOffset = false;
+                method = "getNextChunk";
+            }
+            
+            long offset = ((Integer)table.get("offset")).intValue();
+            byte[] data = (byte[])table.get("data");
+            final boolean isCompressed = properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes");
+                
+            // One for the local cached file
+            Inflater dec = null;
+            byte[] decResult = null;
+            int decLength;
+            if(isCompressed) {
+                dec = new Inflater();
+                decResult = new byte[65536];
+                dec.setInput(data);
+                do {
+                    decLength = dec.inflate(decResult);
+                    vtmpfile.write(decResult,0,decLength);
+                    // And other for the stream where we want to save it!
+                    if(os != null) {
+                        os.write(decResult, 0, decLength);
+                    }
+                } while(decLength == decResult.length || !dec.needsInput());
+                
+            } else {
+                vtmpfile.write(data);
+                // And other for the stream where we want to save it!
+                if(os != null) {
+                    os.write(data);
+                }
+            }
+                
+            while(offset > 0) {
+                params.clear();
+                params.add(table.get("handle"));
+                params.add(useLongOffset?Long.toString(offset):new Integer((int)offset));
+                table = (Map<?,?>) parent.getClient().execute(method, params);
+                offset = useLongOffset?new Long((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
+                data = (byte[])table.get("data");
+
+                // One for the local cached file
+                if(isCompressed) {
+                    dec.setInput(data);
+                    do {
+                        decLength = dec.inflate(decResult);
+                        vtmpfile.write(decResult,0,decLength);
+                        // And other for the stream where we want to save it!
+                        if(os != null) {
+                            os.write(decResult, 0, decLength);
+                        }
+                    } while(decLength == decResult.length || !dec.needsInput());
+                } else {
+                    vtmpfile.write(data);
+                    // And other for the stream where we want to save it!
+                     if(os != null) {
+                        os.write(data);
+                    }
+                }
+            }
+            
+            if(dec != null) {
+                dec.end();
+            }
+
+            isLocal = false;
+            contentVFile = vtmpfile;
+        } catch(final XmlRpcException xre) {
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+        } catch(final IOException ioe) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
+        } catch(final DataFormatException dfe) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
+        } finally {
+            if(contentVFile!=null) {
+                try {
+                    contentVFile.close();
+                } catch(final IOException ioe) {
+                    //IgnoreIT(R)
+                }
+            }
+        }
+    }
 
 	protected static InputStream getAnyStream(Object obj)
 		throws XMLDBException
