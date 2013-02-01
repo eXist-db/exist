@@ -53,6 +53,7 @@ public class RemoveFunction extends BasicFunction {
                 Repository parent_repo = repo.getParentRepo();
                 parent_repo.removePackage(pkg, force, interact);
                 repo.reportAction(ExistRepository.Action.UNINSTALL, pkg);
+                context.getBroker().getBrokerPool().getXQueryPool().clear();
             }
         } catch (PackageException ex ) {
             return removed;
