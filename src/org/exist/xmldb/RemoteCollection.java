@@ -33,9 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
@@ -72,33 +70,39 @@ public class RemoteCollection implements CollectionImpl {
     // junks and uploaded to the server via the update() call
     private static final int MAX_CHUNK_LENGTH = 512 * 1024;
     private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
-
-    protected Map<XmldbURI, Collection> childCollections = null;
     
     protected XmldbURI path;
     protected RemoteCollection parent = null;
     protected XmlRpcClient rpcClient = null;
     protected Properties properties = null;
 
-    public RemoteCollection(final XmlRpcClient client, final XmldbURI path) throws XMLDBException {
-        this(client, null, path);
+    public static RemoteCollection instance(final XmlRpcClient xmlRpcClient, final XmldbURI path) throws XMLDBException {
+        return instance(xmlRpcClient, null, path);
+    }
+    
+    public static RemoteCollection instance(final XmlRpcClient xmlRpcClient, final RemoteCollection parent, final XmldbURI path) throws XMLDBException {
+        final List<String> params = new ArrayList<String>(1);
+        params.add(path.toString());
+        
+        try {
+            //check we can open the collection i.e. that we have permission!
+            final boolean existsAndCanOpen = (Boolean) xmlRpcClient.execute("existsAndCanOpenCollection", params);
+            
+            if(existsAndCanOpen) {
+                return new RemoteCollection(xmlRpcClient, parent, path);
+            } else {
+                return null;
+            }
+            
+        } catch (final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        }
     }
 
-    public RemoteCollection(final XmlRpcClient client, final RemoteCollection parent, final XmldbURI path) throws XMLDBException {
+    private RemoteCollection(final XmlRpcClient client, final RemoteCollection parent, final XmldbURI path) throws XMLDBException {
         this.parent = parent;
         this.path = path.toCollectionPathURI();
         this.rpcClient = client;
-    }
-
-    protected void addChildCollection(final Collection child) throws XMLDBException {
-        if (childCollections == null) {
-            readCollection();
-        }
-        try {
-            childCollections.put(XmldbURI.xmldbUriFor(child.getName()), child);
-        } catch(final URISyntaxException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-        }
     }
 
     @Override
@@ -154,30 +158,12 @@ public class RemoteCollection implements CollectionImpl {
     
     // AF: NEW METHOD
     protected Collection getChildCollection(final XmldbURI name, boolean refreshCacheIfNotFound) throws XMLDBException {
-        if (childCollections == null) {
-            readCollection();
-            refreshCacheIfNotFound = false;
-        }
-        // stores reference to the collection found
-        final Collection foundCollection;
-        if (name.numSegments()>1) {
-            foundCollection = childCollections.get(name);
-        } else {
-            foundCollection = childCollections.get(getPathURI().append(name));
-        }
-        // if we did not find collection in cache set cache back to null to force full refresh
-        if (foundCollection == null && refreshCacheIfNotFound) {
-            childCollections = null;
-            return getChildCollection(name,false);
-        }
-        return foundCollection;
+        return instance(rpcClient, this, name.numSegments() > 1 ? name : getPathURI().append(name));
     }
 
     @Override
     public int getChildCollectionCount() throws XMLDBException {
-        //AF: always refresh cache for latest set - if (childCollections == null)
-        readCollection();
-        return childCollections.size();
+        return listChildCollections().length;
     }
 
     protected XmlRpcClient getClient() {
@@ -275,13 +261,12 @@ public class RemoteCollection implements CollectionImpl {
     }
 
     protected boolean hasChildCollection(final String name) throws XMLDBException {
-        //  AF Always refresh cache for latest set - if (childCollections == null)
-        readCollection();
-        try {
-            return childCollections.containsKey(XmldbURI.xmldbUriFor(name));
-        } catch(URISyntaxException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+        for(final String child : listChildCollections()) {
+            if(child.equals(name)) {
+                return true;
+            }
         }
+        return false;
     }
 
     @Override
@@ -480,66 +465,8 @@ public class RemoteCollection implements CollectionImpl {
         }
     }
 
-    private void readCollection() throws XMLDBException {
-        childCollections = new HashMap<XmldbURI, Collection>();
-        final List<String> params = new ArrayList<String>(1);
-        params.add(getPath());
-        final HashMap<?,?> collection;
-        try {
-            collection = (HashMap<?,?>) rpcClient.execute("describeCollection", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        }
-        final Object[] collections = (Object[]) collection.get("collections");
-        final String owner = (String)collection.get("owner");
-        final String group = (String)collection.get("group");
-        final int mode = ((Integer)collection.get("permissions")).intValue();
-        final Object[] acl = (Object[])collection.get("acl");
-        List aces = null; 
-        if (acl != null) {
-            aces = Arrays.asList(acl);
-        }
-        
-        final Permission perm;
-        try {
-            perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
-        } catch(final PermissionDeniedException pde) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for collection '" + getPath() + "': " + pde.getMessage(), pde);
-        }
-        //this.permission = perm;
-        
-        
-        String childName;
-        for(int i = 0; i < collections.length; i++) {
-            childName = (String) collections[i];
-            try {
-                //TODO: Should this use the checked version instead?
-                final RemoteCollection child = new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
-                addChildCollection(child);
-            } catch (final XMLDBException e) {
-                //TODO log?
-                LOG.warn("Ignoring error when retrieving child collection: " + childName);
-            }
-        }
-    }
-
     public void registerService(final Service serv) throws XMLDBException {
         throw new XMLDBException(ErrorCodes.NOT_IMPLEMENTED);
-    }
-
-    public void removeChildCollection(final String name) throws XMLDBException {
-        try {
-            removeChildCollection(XmldbURI.xmldbUriFor(name));
-        } catch(URISyntaxException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_URI, e);
-        }
-    }
-
-    public void removeChildCollection(final XmldbURI name) throws XMLDBException {
-        if (childCollections == null) {
-            readCollection();
-        }
-        childCollections.remove(name);
     }
 
     @Override

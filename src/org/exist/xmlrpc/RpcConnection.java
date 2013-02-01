@@ -562,6 +562,27 @@ public class RpcConnection implements RpcAPI {
         return buf.toString();
     }
     
+    @Override
+    public boolean existsAndCanOpenCollection(final String collectionUri) throws EXistException, PermissionDeniedException {
+        final DBBroker broker = factory.getBrokerPool().get(user);
+        Collection collection = null;
+        try {           
+            collection = broker.openCollection(XmldbURI.xmldbUriFor(collectionUri), Lock.READ_LOCK);
+            if(collection == null) {
+                return false;
+            }
+            
+            return true;
+        } catch(final URISyntaxException use) {
+            throw new EXistException("Collection '" + collectionUri + "' does not indicate a valid collection URI: " + use.getMessage(), use);
+        } finally {
+            if(collection != null) {
+                collection.release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
+        }
+    }
+    
     /**
      * The method <code>getCollectionDesc</code>
      *
@@ -587,36 +608,36 @@ public class RpcConnection implements RpcAPI {
      * @return a <code>HashMap</code> value
      * @exception Exception if an error occurs
      */
-    private HashMap<String, Object> getCollectionDesc(XmldbURI rootUri)
-    throws Exception {
-        DBBroker broker = factory.getBrokerPool().get(user);
+    private HashMap<String, Object> getCollectionDesc(final XmldbURI rootUri) throws Exception {
+        final DBBroker broker = factory.getBrokerPool().get(user);
         Collection collection = null;
         try {           
             collection = broker.openCollection(rootUri, Lock.READ_LOCK);
-            if (collection == null)
+            if (collection == null) {
                 throw new EXistException("collection " + rootUri + " not found!");
-            HashMap<String, Object> desc = new HashMap<String, Object>();
-            Vector<Map<String, Object>> docs = new Vector<Map<String, Object>>();
-            Vector<String> collections = new Vector<String>();
+            }
+            final HashMap<String, Object> desc = new HashMap<String, Object>();
+            final Vector<Map<String, Object>> docs = new Vector<Map<String, Object>>();
+            final Vector<String> collections = new Vector<String>();
             if (collection.getPermissions().validate(user, Permission.READ)) {
-                for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-                	DocumentImpl doc = i.next();
-                	Permission perms = doc.getPermissions();
-                	HashMap<String, Object> hash = new HashMap<String, Object>(4);
+                for(final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                    final DocumentImpl doc = i.next();
+                    final Permission perms = doc.getPermissions();
+                    
+                    final HashMap<String, Object> hash = new HashMap<String, Object>(4);
                     hash.put("name", doc.getFileURI().toString());
                     hash.put("owner", perms.getOwner().getName());
                     hash.put("group", perms.getGroup().getName());
                     hash.put("permissions", new Integer(perms.getMode()));
-                    hash.put("type",
-                            doc.getResourceType() == DocumentImpl.BINARY_FILE
-                            ? "BinaryResource"
-                            : "XMLResource");
+                    hash.put("type", doc.getResourceType() == DocumentImpl.BINARY_FILE ? "BinaryResource" : "XMLResource");
                     docs.addElement(hash);
                 }
-                for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); )
+                for(final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                     collections.addElement(i.next().toString());
+                }
             }
-            Permission perms = collection.getPermissions();
+            
+            final Permission perms = collection.getPermissions();
             desc.put("collections", collections);
             desc.put("documents", docs);
             desc.put("name", collection.getURI().toString());
@@ -624,10 +645,12 @@ public class RpcConnection implements RpcAPI {
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
             desc.put("permissions", Integer.valueOf(perms.getMode()));
+            
             return desc;
         } finally {
-            if(collection != null)
+            if(collection != null) {
                 collection.release(Lock.READ_LOCK);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
@@ -660,25 +683,23 @@ public class RpcConnection implements RpcAPI {
      * @exception EXistException if an error occurs
      * @exception PermissionDeniedException if an error occurs
      */
-    private HashMap<String, Object> describeResource(XmldbURI resourceUri)
+    private HashMap<String, Object> describeResource(final XmldbURI resourceUri)
     throws EXistException, PermissionDeniedException {
-        DBBroker broker = factory.getBrokerPool().get(user);
+        final DBBroker broker = factory.getBrokerPool().get(user);
         DocumentImpl doc = null;
-        HashMap<String, Object> hash = new HashMap<String, Object>(5);
+        final HashMap<String, Object> hash = new HashMap<String, Object>(5);
         try {
             doc = broker.getXMLResource(resourceUri, Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + resourceUri + " not found!");
                 return hash;
             }
-            if (!doc.getCollection().getPermissions().validate(user, Permission.READ)) {
-                throw new PermissionDeniedException("Not allowed to read collection");
-            }
-            Permission perms = doc.getPermissions();
+            final Permission perms = doc.getPermissions();
             hash.put("name", resourceUri.toString());
             hash.put("owner", perms.getOwner().getName());
             hash.put("group", perms.getGroup().getName());
             hash.put("permissions", new Integer(perms.getMode()));
+            
             if(perms instanceof ACLPermission) {
                 hash.put("acl", getACEs(perms));
             }
@@ -687,7 +708,7 @@ public class RpcConnection implements RpcAPI {
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
                     : "XMLResource");
-            long resourceLength = doc.getContentLength();
+            final long resourceLength = doc.getContentLength();
             hash.put("content-length", new Integer((resourceLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)resourceLength));
             hash.put("content-length-64bit", new Long(resourceLength).toString());
             hash.put("mime-type", doc.getMetadata().getMimeType());
@@ -695,8 +716,9 @@ public class RpcConnection implements RpcAPI {
             hash.put("modified", new Date(doc.getMetadata().getLastModified()));
             return hash;
         } finally {
-            if(doc != null)
+            if(doc != null) {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
             factory.getBrokerPool().release(broker);
         }
     }
@@ -897,81 +919,93 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     @Override
-    public HashMap<String, Object> getDocumentData(String docName, HashMap<String, Object> parameters)
-    	throws EXistException, PermissionDeniedException
+    public HashMap<String, Object> getDocumentData(final String docName, final HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException
     {
     	Collection collection = null;
     	DocumentImpl doc = null;
     	DBBroker broker = null;
     	try {
-    		broker = factory.getBrokerPool().get(user);
-    		XmldbURI docURI = XmldbURI.xmldbUriFor(docName);  
-    		collection = broker.openCollection(docURI.removeLastSegment(), Lock.READ_LOCK);
-    		if (collection == null) {
-    			LOG.debug("collection " + docURI.removeLastSegment() + " not found!");
-    			throw new EXistException("Collection " + docURI.removeLastSegment() + " not found!");
-    		}
-    		if(!collection.getPermissions().validate(user, Permission.READ)) {
-    			throw new PermissionDeniedException("Insufficient privileges to read resource");
-    		}
-    		doc = collection.getDocumentWithLock(broker, docURI.lastSegment(), Lock.READ_LOCK);
-    		if (doc == null) {
-    			LOG.debug("document " + docURI + " not found!");
-    			throw new EXistException("document "+docURI+" not found");
-    		}
+            broker = factory.getBrokerPool().get(user);
+            final XmldbURI docURI = XmldbURI.xmldbUriFor(docName);  
+            collection = broker.openCollection(docURI.removeLastSegment(), Lock.READ_LOCK);
+            if (collection == null) {
+                LOG.debug("collection " + docURI.removeLastSegment() + " not found!");
+                throw new EXistException("Collection " + docURI.removeLastSegment() + " not found!");
+            }
+            //if(!collection.getPermissions().validate(user, Permission.READ)) {
+            //	throw new PermissionDeniedException("Insufficient privileges to read resource");
+            //}
+            doc = collection.getDocumentWithLock(broker, docURI.lastSegment(), Lock.READ_LOCK);
+            if (doc == null) {
+                LOG.debug("document " + docURI + " not found!");
+                throw new EXistException("document "+docURI+" not found");
+            }
 
-    		if(!doc.getPermissions().validate(user, Permission.READ))
-    			throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
-    		String encoding = (String)parameters.get(OutputKeys.ENCODING);
-    		if(encoding == null)
-    			encoding = DEFAULT_ENCODING;
+            //if(!doc.getPermissions().validate(user, Permission.READ)) {
+            //  throw new PermissionDeniedException("Insufficient privileges to read resource " + docName);
+            //}
+            String encoding = (String)parameters.get(OutputKeys.ENCODING);
+            if(encoding == null) {
+                encoding = DEFAULT_ENCODING;
+            }
 
-    		// A tweak for very large resources, VirtualTempFile
-    		HashMap<String, Object> result = new HashMap<String, Object>();
-    		VirtualTempFile vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
-    		vtempFile.setTempPrefix("eXistRPCC");
+            // A tweak for very large resources, VirtualTempFile
+            final HashMap<String, Object> result = new HashMap<String, Object>();
+            VirtualTempFile vtempFile = null;
+            try {
+                vtempFile = new VirtualTempFile(MAX_DOWNLOAD_CHUNK_SIZE,MAX_DOWNLOAD_CHUNK_SIZE);
+                vtempFile.setTempPrefix("eXistRPCC");
 
-    		// binary check TODO dwes
-    		if(doc.getResourceType() == DocumentImpl.XML_FILE) {
-        		vtempFile.setTempPostfix(".xml");
-    			Serializer serializer = broker.getSerializer();
-    			serializer.setProperties(parameters);
+                // binary check TODO dwes
+                if(doc.getResourceType() == DocumentImpl.XML_FILE) {
+                    vtempFile.setTempPostfix(".xml");
+                    final Serializer serializer = broker.getSerializer();
+                    serializer.setProperties(parameters);
 
-    			Writer writer = new OutputStreamWriter(vtempFile, encoding);
-    			serializer.serialize(doc, writer);
-    			writer.close();
-    		} else {
-        		vtempFile.setTempPostfix(".bin");
-    			broker.readBinaryResource((BinaryDocument)doc, vtempFile);
-    		}
+                    Writer writer = null;
+                    try {
+                        writer = new OutputStreamWriter(vtempFile, encoding);
+                        serializer.serialize(doc, writer);
+                    } finally {
+                        if(writer != null) {
+                            writer.close();
+                        }
+                    }
+                } else {
+                    vtempFile.setTempPostfix(".bin");
+                    broker.readBinaryResource((BinaryDocument)doc, vtempFile);
+                }
+            } finally {
+                if(vtempFile != null) {
+                    vtempFile.close();
+                }
+            }
 
-    		vtempFile.close();
-    		byte[] firstChunk = vtempFile.getChunk(0);
-    		result.put("data", firstChunk);
-    		int offset = 0;
-    		if(vtempFile.length()>MAX_DOWNLOAD_CHUNK_SIZE) {
-    			offset = firstChunk.length;
+            final byte[] firstChunk = vtempFile.getChunk(0);
+            result.put("data", firstChunk);
+            int offset = 0;
+            if(vtempFile.length()>MAX_DOWNLOAD_CHUNK_SIZE) {
+                offset = firstChunk.length;
 
-    			int handle = factory.resultSets.add(new SerializedResult(vtempFile));
-    			result.put("handle", Integer.toString(handle));
-    			result.put("supports-long-offset", Boolean.TRUE);
-    		} else {
-    			vtempFile.delete();
-    		}
-    		result.put("offset", Integer.valueOf(offset));
+                final int handle = factory.resultSets.add(new SerializedResult(vtempFile));
+                result.put("handle", Integer.toString(handle));
+                result.put("supports-long-offset", Boolean.TRUE);
+            } else {
+                vtempFile.delete();
+            }
+            result.put("offset", Integer.valueOf(offset));
 
-    		return result;
+            return result;
 
-    	} catch (Throwable e) {
-    		handleException(e);
-    		return null;
-
+    	} catch(final Throwable e) {
+            handleException(e);
+            return null;
     	} finally {
-    		if(collection != null) {
-    			collection.releaseDocument(doc, Lock.READ_LOCK);
-    			collection.getLock().release(Lock.READ_LOCK);
-    		}
-    		factory.getBrokerPool().release(broker);
+            if(collection != null) {
+                collection.releaseDocument(doc, Lock.READ_LOCK);
+                collection.getLock().release(Lock.READ_LOCK);
+            }
+            factory.getBrokerPool().release(broker);
     	}
     }
     
@@ -2972,6 +3006,7 @@ public class RpcConnection implements RpcAPI {
         queryResult.queryTime = (System.currentTimeMillis() - startTime);
         final int id = factory.resultSets.add(queryResult);
         ret.put("id", Integer.valueOf(id));
+        ret.put("hash", Integer.valueOf(queryResult.hashCode()));
         ret.put("results", result);
         return ret;
     }

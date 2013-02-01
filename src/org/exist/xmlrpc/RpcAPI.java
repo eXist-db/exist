@@ -222,6 +222,17 @@ public interface RpcAPI {
 	HashMap<XmldbURI, List<Object>> listCollectionPermissions(String name)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
+        /**
+         * Determines whether a Collection exists in the database
+         * and whether the user may open the collection
+         * 
+         * @param collectionUri The URI of the collection of interest
+         * 
+         * @return true if the collection exists and the user can open it, false if the collection does not exist
+         * @throws PermissionDeniedException If the user does not have permission to open the collection
+         */
+        boolean existsAndCanOpenCollection(final String collectionUri) throws EXistException, PermissionDeniedException;
+        
 	/**
 	 *  Describe a collection: returns a struct with the  following fields:
 	 *  

@@ -201,13 +201,14 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	/* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
      */
-    public ResourceSet execute(Source source)
+    @Override
+    public ResourceSet execute(final Source source)
         throws XMLDBException {
         try {
-            String xq = source.getContent();
+            final String xq = source.getContent();
             return query(xq, null);
-        } catch (IOException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
+        } catch(final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
     

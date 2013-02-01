@@ -22,17 +22,16 @@
 
 package org.exist.xmldb;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
-
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 public class RemoteCollectionManagementService implements CollectionManagementServiceImpl {
@@ -67,28 +66,27 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     	}
     }
     
-    public Collection createCollection( XmldbURI collName, Date created ) throws XMLDBException {
-        if (parent != null)
-        	collName = parent.getPathURI().resolveCollectionPath(collName);
+    public Collection createCollection(XmldbURI collName, final Date created) throws XMLDBException {
+        if (parent != null) {
+            collName = parent.getPathURI().resolveCollectionPath(collName);
+        }
 
-        List<Object> params = new ArrayList<Object>(2);
-        params.add( collName.toString() );
-        
-        if (created != null) {
-    		params.add( created );
-    		}
+        final List<Object> params = new ArrayList<Object>(2);
+        params.add(collName.toString() );
+        if(created != null) {
+            params.add(created);
+        }
         
         try {
-            client.execute( "createCollection", params );
-        } catch ( XmlRpcException xre ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                xre.getMessage(),
-                xre );
+            client.execute("createCollection", params);
+        } catch (final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
-        RemoteCollection collection =
-            new RemoteCollection( client, (RemoteCollection) parent, collName );
-        parent.addChildCollection( collection );
-        return collection;
+        
+        return parent.getChildCollection(collName);
+        //final RemoteCollection collection = new RemoteCollection(client, (RemoteCollection) parent, collName);
+        //parent.addChildCollection(collection);
+        //return collection;
     }
     
     /**
@@ -143,7 +141,6 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                 xre.getMessage(),
                 xre );
         }
-        parent.removeChildCollection( collName );
     }
 
     public void setCollection( Collection parent ) throws XMLDBException {
