@@ -1328,19 +1328,46 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final Database db = broker.getBrokerPool();
         
         try {
+            /* TODO
+             * 
+             * These security checks are temporarily disabled because throwing an exception
+             * here may cause the database to corrupt.
+             * Why would the database corrupt? Because validateXMLInternal that is typically
+             * called before this method actually modifies the database and this collection,
+             * so throwing an exception here leaves the database in an inconsistent state
+             * with data 1/2 added/updated.
+             * 
+             * The downside of disabling these checks here is that: this collection is not locked
+             * between the call to validateXmlInternal and storeXMLInternal, which means that if
+             * UserA in ThreadA calls validateXmlInternal and is permitted access to store a resource,
+             * and then UserB in ThreadB modified the collections of this collection to prevent UserA
+             * from storing the document, when UserA reaches here (storeXMLInternal) they will still
+             * be allowed to store their document. However the next document that UserA attempts to store
+             * will be forbidden by validateXmlInternal and so the security transgression whilst not idea
+             * is short-lived.
+             * 
+             * To fix the issue we need to refactor validateXMLInternal and move any document/database/collection
+             * modification code into storeXMLInternal after the commented out permissions checks below.
+             * 
+             * Noted by Adam Retter 2012-02-01T19:18
+             */
+            
+            /*
             if(info.isCreating()) {
-                /* create */
+                // create
+                * 
                 if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
                     throw new PermissionDeniedException("Permission denied to write collection: " + path);
                 }
             } else {
-                /* update */
+                // update
 
                 final Permission oldDocPermissions = info.getOldDocPermissions();
                 if(!((oldDocPermissions.getOwner().getId() != broker.getSubject().getId()) | (oldDocPermissions.validate(broker.getSubject(), Permission.WRITE)))) {
                     throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + path + "', and you do not have write access on that resource.");
                 }
             }
+            */
 
             if(LOG.isDebugEnabled()) {
                 LOG.debug("storing document " + document.getDocId() + " ...");
