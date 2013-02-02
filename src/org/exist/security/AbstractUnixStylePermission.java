@@ -46,19 +46,19 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * op           ::= + | - | =
      * perm         ::= r | s | t | w | x
      */
-    private void setUnixSymbolicMode(String symbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setUnixSymbolicMode(final String symbolicMode) throws SyntaxException, PermissionDeniedException {
 
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
         String clauses[] = symbolicMode.split(",");
-        for(String clause : clauses) {
-            String whoPerm[] = clause.split("[+-=]");
+        for(final String clause : clauses) {
+            final String whoPerm[] = clause.split("[+-=]");
 
             int perm = 0;
             boolean uidgid = false;
             boolean sticky = false;
             //process the op first
-            for(char c : whoPerm[1].toCharArray()) {
+            for(final char c : whoPerm[1].toCharArray()) {
                 switch(c) {
                     case READ_CHAR:
                         perm |= READ;
@@ -85,10 +85,10 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 }
             }
 
-            for(char c: whoPerm[0].toCharArray()) {
+            for(final char c: whoPerm[0].toCharArray()) {
                 switch(c) {
                     case ALL_CHAR:
-                        int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
+                        final int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
                         if(clause.indexOf("+") > -1) {
                             setMode(getMode() | newMode);
                         } else if(clause.indexOf("-") > -1) {
@@ -167,7 +167,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     }
 
     /**
-     *  Set mode using a string. The string has the
+     * Set mode using a string. The string has the
      * following syntax:
      *
      * [user|group|other]=[+|-][read|write|execute]
@@ -185,13 +185,13 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * @deprecated setUnixSymbolicMode should be used instead
      */
     @Deprecated
-    private void setExistSymbolicMode(String existSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setExistSymbolicMode(final String existSymbolicMode) throws SyntaxException, PermissionDeniedException {
 
         LOG.warn("Permission modes should not be set using this format '" + existSymbolicMode + "', consider using the UNIX symbolic mode instead");
 
         int shift = 0;
         int mode = getMode();
-        for(String s : existSymbolicMode.toLowerCase().split("=|,")){
+        for(final String s : existSymbolicMode.toLowerCase().split("=|,")){
             if(s.equalsIgnoreCase(USER_STRING)) {
                 shift = 6;
             } else if(s.equalsIgnoreCase(GROUP_STRING)) {
@@ -226,15 +226,52 @@ public abstract class AbstractUnixStylePermission implements Permission {
     /**
      * Simple symbolic mode is [rwxs-]{3}[rwxs-]{3}[rwxt-]{3}
      */
-    private void setSimpleSymbolicMode(String simpleSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setSimpleSymbolicMode(final String simpleSymbolicMode) throws SyntaxException, PermissionDeniedException {
+        setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
+    }
 
+    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
+    private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
+
+    private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
+    private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
+
+    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
+    private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
+
+    /**
+     * Note we dont need @PermissionRequired(user = IS_DBA | IS_OWNER) here
+     * because all of these methods delegate to the subclass implementation.
+     */
+    @Override
+    public final void setMode(final String modeStr) throws SyntaxException, PermissionDeniedException {
+        simpleSymbolicModeMatcher.reset(modeStr);
+
+        if(simpleSymbolicModeMatcher.matches()) {
+            setSimpleSymbolicMode(modeStr);
+        } else {
+            unixSymbolicModeMatcher.reset(modeStr);
+            if(unixSymbolicModeMatcher.matches()){
+                setUnixSymbolicMode(modeStr);
+            } else {
+                existSymbolicModeMatcher.reset(modeStr);
+                if(existSymbolicModeMatcher.matches()) {
+                    setExistSymbolicMode(modeStr);
+                } else {
+                    throw new SyntaxException("Unknown mode String: " + modeStr);
+                }
+            }
+        }
+    }
+    
+    public static int simpleSymbolicModeToInt(final String simpleModeStr) throws SyntaxException {
         int mode = 0;
 
-        char modeArray[] = simpleSymbolicMode.toCharArray();
+        final char modeArray[] = simpleModeStr.toCharArray();
         for(int i = 0; i < modeArray.length; i++) {
 
-            char c = modeArray[i];
-            int shift = (i < 3 ? 6 : (i < 6 ? 3 : 0));
+            final char c = modeArray[i];
+            final int shift = (i < 3 ? 6 : (i < 6 ? 3 : 0));
 
             switch(c) {
                 case READ_CHAR:
@@ -264,41 +301,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
                     throw new SyntaxException("Unrecognised mode char '" + c + "'");
             }
         }
-        setMode(mode);
-    }
-
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
-    private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
-
-    private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
-    private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
-
-    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
-    private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
-
-    /**
-     * Note we dont need @PermissionRequired(user = IS_DBA | IS_OWNER) here
-     * because all of these methods delegate to the subclass implementation.
-     */
-    @Override
-    public final void setMode(String modeStr) throws SyntaxException, PermissionDeniedException {
-        simpleSymbolicModeMatcher.reset(modeStr);
-
-        if(simpleSymbolicModeMatcher.matches()) {
-            setSimpleSymbolicMode(modeStr);
-        } else {
-            unixSymbolicModeMatcher.reset(modeStr);
-            if(unixSymbolicModeMatcher.matches()){
-                setUnixSymbolicMode(modeStr);
-            } else {
-                existSymbolicModeMatcher.reset(modeStr);
-                if(existSymbolicModeMatcher.matches()) {
-                    setExistSymbolicMode(modeStr);
-                } else {
-                    throw new SyntaxException("Unknown mode String: " + modeStr);
-                }
-            }
-        }
+        
+        return mode;
     }
     
     /**
