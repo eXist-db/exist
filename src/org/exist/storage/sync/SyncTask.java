@@ -23,7 +23,7 @@ public class SyncTask implements SystemTask {
     }
 
     private File partition;
-    private long diskSpaceMin = 64 * 1024 * 1024;
+    private long diskSpaceMin = 64 * 1024L * 1024L;
 
     @Override
     public boolean afterCheckpoint() {
@@ -36,7 +36,7 @@ public class SyncTask implements SystemTask {
             throws EXistException {
         Integer min = (Integer) config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY);
         if (min != null)
-            diskSpaceMin = min * 1024 * 1024;
+            diskSpaceMin = min * 1024L * 1024L;
 
         File homeDir = config.getExistHome();
         partition = homeDir;
