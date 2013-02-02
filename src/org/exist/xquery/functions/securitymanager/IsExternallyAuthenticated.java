@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2010 The eXist Project
+ * Copyright (C) 2013 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,11 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id: XMLDBIsAuthenticated.java 13941 2011-03-08 17:25:09Z shabanovd $
+ *  $Id$
  */
 package org.exist.xquery.functions.securitymanager;
-
-import org.apache.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -38,23 +36,21 @@ import org.exist.xquery.value.Type;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class IsExternallyAuthenticated extends BasicFunction
-{
-	protected static final Logger logger = Logger.getLogger(IsExternallyAuthenticated.class);
-	
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("is-externally-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
-			"Returns the true() if current account is authenticated by external user, false() otherwise.",
-			null,
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
-		);
-	
-	public IsExternallyAuthenticated(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
-	
-	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
-		return new BooleanValue(context.getSubject().isExternallyAuthenticated());
-	}
+public class IsExternallyAuthenticated extends BasicFunction {
+
+    public final static FunctionSignature FNS_IS_EXTERNALLY_AUTHENTICATED = new FunctionSignature(
+        new QName("is-externally-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
+        "Returns the true() if current account is authenticated by an external realm, false() otherwise.",
+        null,
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
+    );
+
+    public IsExternallyAuthenticated(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
+        return new BooleanValue(context.getSubject().isExternallyAuthenticated());
+    }
 }

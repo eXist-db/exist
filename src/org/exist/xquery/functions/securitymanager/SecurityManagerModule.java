@@ -1,21 +1,22 @@
 /*
- *  eXist-db SecurityManager Module Extension
- *  Copyright (C) 2012 Adam Retter <adam@existsolutions.com>
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2013 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery.functions.securitymanager;
@@ -63,8 +64,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(AccountStatusFunction.FNS_IS_ACCOUNT_ENABLED, AccountStatusFunction.class),
         new FunctionDef(AccountStatusFunction.FNS_SET_ACCOUNT_ENABLED, AccountStatusFunction.class),
         
-        new FunctionDef(DeleteGroupFunction.signatures[0], DeleteGroupFunction.class),
-        new FunctionDef(DeleteGroupFunction.signatures[1], DeleteGroupFunction.class),
+        new FunctionDef(DeleteGroupFunction.FNS_DELETE_GROUP, DeleteGroupFunction.class),
 
         new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MANAGERS, GroupMembershipFunctions.class),
         new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS, GroupMembershipFunctions.class),
@@ -75,20 +75,20 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(FindGroupFunction.FNS_GET_USER_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_GROUPS, FindGroupFunction.class),
 
-        new FunctionDef(PermissionsFunctions.signatures[0], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[1], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[2], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[3], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[4], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[5], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[6], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[7], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[8], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[9], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[10], PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.signatures[11], PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_GET_PERMISSIONS, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_ADD_USER_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_ADD_GROUP_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_INSERT_USER_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_INSERT_GROUP_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_MODIFY_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_REMOVE_ACE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_CLEAR_ACL, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_CHMOD, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_CHOWN, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_CHGRP, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunctions.FNS_HAS_ACCESS, PermissionsFunctions.class),
 
-        new FunctionDef(IsExternallyAuthenticated.signature, IsExternallyAuthenticated.class)
+        new FunctionDef(IsExternallyAuthenticated.FNS_IS_EXTERNALLY_AUTHENTICATED, IsExternallyAuthenticated.class)
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
