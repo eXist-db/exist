@@ -260,7 +260,8 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public Object toJavaObject(Class<?> target) throws XPathException {
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
         realize();
         return sequence.toJavaObject(target);
     }

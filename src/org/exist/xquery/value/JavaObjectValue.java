@@ -112,16 +112,14 @@ public class JavaObjectValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if (target.isAssignableFrom(object.getClass()))
-			return object;
-		else if (target == Object.class)
-			return object;
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
+            if(target.isAssignableFrom(object.getClass())) {
+                return (T)object;
+            } else if (target == Object.class) {
+                return (T)object;
+            }
 
-		throw new XPathException(
-			"cannot convert value of type "
-				+ Type.getTypeName(getType())
-				+ " to Java object of type "
-				+ target.getName());
+            throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
 }

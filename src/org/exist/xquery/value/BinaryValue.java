@@ -130,17 +130,17 @@ public abstract class BinaryValue extends AtomicValue {
     }
 
     @Override
-    public Object toJavaObject(Class<?> target) throws XPathException {
+    public <T> T toJavaObject(Class<T> target) throws XPathException {
         if(target.isAssignableFrom(getClass())) {
-            return this;
+            return (T)this;
         }
 
         if(target == byte[].class) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
                 streamBinaryTo(baos);
-                return baos.toByteArray();
-            } catch(IOException ioe) {
+                return (T)baos.toByteArray();
+            } catch(final IOException ioe) {
                 LOG.error("Unable to Stream BinaryValue to byte[]: " + ioe.getMessage(), ioe);
             }
 
@@ -152,8 +152,8 @@ public abstract class BinaryValue extends AtomicValue {
     /**
      * Return the underlying Java object for this binary value. Might be a File or byte[].
      */
-    public Object toJavaObject() throws XPathException {
-    	return toJavaObject(byte[].class);
+    public <T> T toJavaObject() throws XPathException {
+    	return (T)toJavaObject(byte[].class);
     }
 
     @Override

@@ -343,10 +343,14 @@ public class DurationValue extends ComputableValue {
 		return Integer.MAX_VALUE;
 	}
 
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if (target.isAssignableFrom(getClass())) return this;
-		if (target.isAssignableFrom(Duration.class)) return duration;
-		throw new XPathException(ErrorCodes.XPTY0004, "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+        @Override
+	public <T> T toJavaObject(Class<T> target) throws XPathException {
+            if (target.isAssignableFrom(getClass())){
+                return (T)this;
+            } else if (target.isAssignableFrom(Duration.class)) {
+                return (T)duration;
+            }
+            throw new XPathException(ErrorCodes.XPTY0004, "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
     
     public boolean effectiveBooleanValue() throws XPathException {

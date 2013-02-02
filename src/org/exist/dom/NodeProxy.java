@@ -837,16 +837,17 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject(Class target) throws XPathException {
-        if (target.isAssignableFrom(NodeProxy.class))
-            return this;
-        else if (target.isAssignableFrom(Node.class))
-            return getNode();
-        else if (target == Object.class)
-            return getNode();
-        else {
-            StringValue v = new StringValue(getStringValue());
-            return v.toJavaObject(target);
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
+        if (target.isAssignableFrom(NodeProxy.class)) {
+            return (T)this;
+        } else if (target.isAssignableFrom(Node.class)) {
+            return (T)getNode();
+        } else if (target == Object.class) {
+            return (T)getNode();
+        } else {
+            final StringValue v = new StringValue(getStringValue());
+            return (T)v.toJavaObject(target);
         }
     }
 

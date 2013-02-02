@@ -495,35 +495,36 @@ public class IntegerValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if(target.isAssignableFrom(IntegerValue.class)) 
-			return this;
-		else if(target == Long.class || target == long.class)
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
+		if(target.isAssignableFrom(IntegerValue.class)) {
+			return (T)this;
+                } else if(target == Long.class || target == long.class) {
 			// ?? jmv: return new Long(value);
-			return Long.valueOf(value.longValue());
-		else if(target == Integer.class || target == int.class) {
-			IntegerValue v = (IntegerValue)convertTo(Type.INT);
-			return Integer.valueOf((int)v.value.intValue());
+			return (T)Long.valueOf(value.longValue());
+                } else if(target == Integer.class || target == int.class) {
+			final IntegerValue v = (IntegerValue)convertTo(Type.INT);
+			return (T)Integer.valueOf((int)v.value.intValue());
 		} else if(target == Short.class || target == short.class) {
-			IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
-			return Short.valueOf((short)v.value.shortValue());
+			final IntegerValue v = (IntegerValue)convertTo(Type.SHORT);
+			return (T)Short.valueOf((short)v.value.shortValue());
 		} else if(target == Byte.class || target == byte.class) {
-			IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
-			return Byte.valueOf((byte)v.value.byteValue());
+			final IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
+			return (T)Byte.valueOf((byte)v.value.byteValue());
 		} else if(target == Double.class || target == double.class) {
-			DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
-			return new Double(v.getValue());
+			final DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
+			return (T)new Double(v.getValue());
 		} else if(target == Float.class || target == float.class) {
-			FloatValue v = (FloatValue)convertTo(Type.FLOAT);
-			return new Float(v.value);
+			final FloatValue v = (FloatValue)convertTo(Type.FLOAT);
+			return (T)new Float(v.value);
 		} else if(target == Boolean.class || target == boolean.class) {
-			return new BooleanValue(effectiveBooleanValue());
+			return (T)new BooleanValue(effectiveBooleanValue());
                 } else if(target == String.class) {
-			return value.toString();
+			return (T)value.toString();
                 } else if(target == BigInteger.class) {
-                    return new BigInteger(value.toByteArray());
+                    return (T)new BigInteger(value.toByteArray());
                 } else if(target == Object.class) {
-			return value; // Long(value);
+			return (T)value; // Long(value);
                 }
 		
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +

@@ -491,30 +491,31 @@ public class DecimalValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if (target.isAssignableFrom(DecimalValue.class))
-			return this;
-		else if(target == BigDecimal.class)
-			return value;
-		else if (target == Double.class || target == double.class)
-			return new Double(value.doubleValue());
-		else if (target == Float.class || target == float.class)
-			return new Float(value.floatValue());
-		else if (target == Long.class || target == long.class) {
-			return Long.valueOf( ((IntegerValue) convertTo(Type.LONG)).getValue() );
-		} else if (target == Integer.class || target == int.class) {
-			IntegerValue v = (IntegerValue) convertTo(Type.INT);
-			return Integer.valueOf((int) v.getValue());
-		} else if (target == Short.class || target == short.class) {
-			IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
-			return Short.valueOf((short) v.getValue());
-		} else if (target == Byte.class || target == byte.class) {
-			IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
-			return Byte.valueOf((byte) v.getValue());
-		} else if (target == String.class)
-			return getStringValue();
-		else if (target == Boolean.class)
-			return Boolean.valueOf(effectiveBooleanValue());
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
+		if(target.isAssignableFrom(DecimalValue.class)) {
+			return (T)this;
+                } else if(target == BigDecimal.class) {
+			return (T)value;
+                } else if(target == Double.class || target == double.class) {
+			return (T)new Double(value.doubleValue());
+                } else if(target == Float.class || target == float.class) {
+			return (T)new Float(value.floatValue());
+                } else if(target == Long.class || target == long.class) {
+			return (T)Long.valueOf( ((IntegerValue) convertTo(Type.LONG)).getValue() );
+		} else if(target == Integer.class || target == int.class) {
+			final IntegerValue v = (IntegerValue) convertTo(Type.INT);
+			return (T)Integer.valueOf((int) v.getValue());
+		} else if(target == Short.class || target == short.class) {
+			final IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
+			return (T)Short.valueOf((short) v.getValue());
+		} else if(target == Byte.class || target == byte.class) {
+			final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
+			return (T)Byte.valueOf((byte) v.getValue());
+		} else if(target == String.class)
+			return (T)getStringValue();
+		else if(target == Boolean.class)
+			return (T)Boolean.valueOf(effectiveBooleanValue());
 
 		throw new XPathException(
 			"cannot convert value of type "

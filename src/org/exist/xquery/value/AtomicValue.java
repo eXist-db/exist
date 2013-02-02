@@ -300,7 +300,8 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
 		throw new XPathException(
 			"cannot convert value of type "
 				+ Type.getTypeName(getType())
@@ -567,7 +568,8 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 		 */
-		public Object toJavaObject(Class<?> target) throws XPathException {
+		@Override
+                public <T> T toJavaObject(final Class<T> target) throws XPathException {
 			throw new XPathException(
 				"cannot convert value of type "
 					+ Type.getTypeName(getType())
