@@ -1,7 +1,6 @@
-package org.exist.security;
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist-db Project
+ *  Copyright (C) 2001-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -20,6 +19,8 @@ package org.exist.security;
  *
  *  $Id: UnixStylePermission.java 14571 2011-05-29 12:34:48Z deliriumsky $
  */
+package org.exist.security;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
@@ -303,6 +304,23 @@ public abstract class AbstractUnixStylePermission implements Permission {
         }
         
         return mode;
+    }
+    
+    public static String modeToSimpleSymbolicMode(final int mode) {
+        final char ch[] = new char[] {
+            (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
+            (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
+            
+            (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
+            (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
+
+            (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
+            (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
+            (mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR
+        };
+        return String.valueOf(ch);
     }
     
     /**

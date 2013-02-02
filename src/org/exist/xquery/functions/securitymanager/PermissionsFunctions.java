@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $$
+ *  $Id$
  */
 package org.exist.xquery.functions.securitymanager;
 
@@ -27,6 +27,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.security.AbstractUnixStylePermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
@@ -46,6 +47,7 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -68,6 +70,9 @@ public class PermissionsFunctions extends BasicFunction {
     private final static QName qnChGrp = new QName("chgrp", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     private final static QName qnHasAccess = new QName("has-access", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    
+    private final static QName qnModeToOctal = new QName("mode-to-octal", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnOctalToMode = new QName("octal-to-mode", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     public final static FunctionSignature FNS_GET_PERMISSIONS = new FunctionSignature(
         qnGetPermissions,
@@ -198,10 +203,28 @@ public class PermissionsFunctions extends BasicFunction {
         },
         new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
      );
+    
+    public final static FunctionSignature FNS_MODE_TO_OCTAL = new FunctionSignature(
+        qnModeToOctal,
+        "Converts a mode string e.g. 'rwxrwxrwx' to an octal number e.g. 0777.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to convert to an octal string.")
+        },
+        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+    );
+    
+    public final static FunctionSignature FNS_OCTAL_TO_MODE = new FunctionSignature(
+        qnOctalToMode,
+        "Converts an octal string e.g. '0777' to a mode string e.g. 'rwxrwxrwx'.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("octal", Type.STRING, Cardinality.EXACTLY_ONE, "The octal string to convert to a mode.")
+        },
+        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+    );
 
     final static char OWNER_GROUP_SEPARATOR = ':';
 
-    public PermissionsFunctions(XQueryContext context, FunctionSignature signature) {
+    public PermissionsFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -211,49 +234,59 @@ public class PermissionsFunctions extends BasicFunction {
 
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
-        final XmldbURI pathUri = ((AnyURIValue)args[0].itemAt(0)).toXmldbURI();
+        if(isCalledAs(qnModeToOctal.getLocalName())) {
+            final String mode = args[0].itemAt(0).getStringValue();
+            result = functionModeToOctal(mode);
+        } else if(isCalledAs(qnOctalToMode.getLocalName())) {
+            final String octal = args[0].itemAt(0).getStringValue();
+            result = functionOctalToMode(octal);
+        } else {
+        
+            //all functions below take a path as the first arg
+            final XmldbURI pathUri = ((AnyURIValue)args[0].itemAt(0)).toXmldbURI();
 
-        try {
-            if(isCalledAs(qnGetPermissions.getLocalName())) {
-                result = functionGetPermissions(pathUri);
-            } else if(isCalledAs(qnAddUserACE.getLocalName()) || isCalledAs(qnAddGroupACE.getLocalName())) {
-                ACE_TARGET target = isCalledAs(qnAddUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
-                String name = args[1].getStringValue();
-                ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
-                String mode = args[3].itemAt(0).getStringValue();
-                result = functionAddACE(pathUri, target, name, access_type, mode);
-            } else if(isCalledAs(qnInsertUserACE.getLocalName()) || isCalledAs(qnInsertGroupACE.getLocalName())) {
-                ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
-                int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
-                String name = args[2].getStringValue();
-                ACE_ACCESS_TYPE access_type = args[3].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
-                String mode = args[4].itemAt(0).getStringValue();
-                result = functionInsertACE(pathUri, index, target, name, access_type, mode);
-            } else if(isCalledAs(qnModifyACE.getLocalName())) {
-                int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
-                ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
-                String mode = args[3].itemAt(0).getStringValue();
-                result = functionModifyACE(pathUri, index, access_type, mode);
-            } else if(isCalledAs(qnRemoveACE.getLocalName())) {
-                int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
-                result = functionRemoveACE(pathUri, index);
-            } else if(isCalledAs(qnClearACL.getLocalName())) {
-                result = functionClearACL(pathUri);
-            } else if(isCalledAs(qnChMod.getLocalName())) {
-                String mode = args[1].itemAt(0).getStringValue();
-                result = functionChMod(pathUri, mode);
-            } else if(isCalledAs(qnChOwn.getLocalName())) {
-                String username = args[1].itemAt(0).getStringValue();
-                result = functionChOwn(pathUri, username);
-            }  else if(isCalledAs(qnChGrp.getLocalName())) {
-                String groupname = args[1].itemAt(0).getStringValue();
-                result = functionChGrp(pathUri, groupname);
-            } else if(isCalledAs(qnHasAccess.getLocalName())) {
-                String mode = args[1].itemAt(0).getStringValue();
-                result = functionHasAccess(pathUri, mode);
+            try {
+                if(isCalledAs(qnGetPermissions.getLocalName())) {
+                    result = functionGetPermissions(pathUri);
+                } else if(isCalledAs(qnAddUserACE.getLocalName()) || isCalledAs(qnAddGroupACE.getLocalName())) {
+                    final ACE_TARGET target = isCalledAs(qnAddUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
+                    final String name = args[1].getStringValue();
+                    final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
+                    final String mode = args[3].itemAt(0).getStringValue();
+                    result = functionAddACE(pathUri, target, name, access_type, mode);
+                } else if(isCalledAs(qnInsertUserACE.getLocalName()) || isCalledAs(qnInsertGroupACE.getLocalName())) {
+                    final ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
+                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    final String name = args[2].getStringValue();
+                    final ACE_ACCESS_TYPE access_type = args[3].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
+                    final String mode = args[4].itemAt(0).getStringValue();
+                    result = functionInsertACE(pathUri, index, target, name, access_type, mode);
+                } else if(isCalledAs(qnModifyACE.getLocalName())) {
+                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
+                    final String mode = args[3].itemAt(0).getStringValue();
+                    result = functionModifyACE(pathUri, index, access_type, mode);
+                } else if(isCalledAs(qnRemoveACE.getLocalName())) {
+                    final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
+                    result = functionRemoveACE(pathUri, index);
+                } else if(isCalledAs(qnClearACL.getLocalName())) {
+                    result = functionClearACL(pathUri);
+                } else if(isCalledAs(qnChMod.getLocalName())) {
+                    final String mode = args[1].itemAt(0).getStringValue();
+                    result = functionChMod(pathUri, mode);
+                } else if(isCalledAs(qnChOwn.getLocalName())) {
+                    final String username = args[1].itemAt(0).getStringValue();
+                    result = functionChOwn(pathUri, username);
+                }  else if(isCalledAs(qnChGrp.getLocalName())) {
+                    final String groupname = args[1].itemAt(0).getStringValue();
+                    result = functionChGrp(pathUri, groupname);
+                } else if(isCalledAs(qnHasAccess.getLocalName())) {
+                    final String mode = args[1].itemAt(0).getStringValue();
+                    result = functionHasAccess(pathUri, mode);
+                }
+            } catch(final PermissionDeniedException pde) {
+              throw new XPathException(this, pde);
             }
-        } catch(final PermissionDeniedException pde) {
-          throw new XPathException(this, pde);
         }
 
         return result;
@@ -413,6 +446,21 @@ public class PermissionsFunctions extends BasicFunction {
         } catch(final PermissionDeniedException pde) {
             return BooleanValue.FALSE;
         }
+    }
+    
+    private Sequence functionModeToOctal(final String modeStr) throws XPathException {
+        try {
+            final int mode = AbstractUnixStylePermission.simpleSymbolicModeToInt(modeStr);
+            final String octal = mode == 0 ? "0" : "0" + Integer.toOctalString(mode);
+            return new StringValue(octal);
+        } catch(final SyntaxException se) {
+            throw new XPathException(se.getMessage(), se);
+        }
+    }
+    
+    private Sequence functionOctalToMode(final String octal) {
+        final int mode = Integer.parseInt(octal, 8);
+        return new StringValue(AbstractUnixStylePermission.modeToSimpleSymbolicMode(mode));
     }
     
     private Permission getPermissions(final XmldbURI pathUri) throws XPathException, PermissionDeniedException {
