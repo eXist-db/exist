@@ -203,9 +203,10 @@ public abstract class AbstractSequence implements Sequence {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject(Class<?> target) throws XPathException {
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if(Sequence.class.isAssignableFrom(target)) {
-            return this;
+            return (T)this;
         } else if(target.isArray()) {
             Class<?> componentType = target.getComponentType();
             // assume single-dimensional, then double-check that instance really matches desired type
@@ -218,16 +219,17 @@ public abstract class AbstractSequence implements Sequence {
                 Object obj = item.toJavaObject(componentType);
                 Array.set(array, index, obj);
             }
-            return array;
+            return (T)array;
         } else if (target.isAssignableFrom(List.class)) {
             List<Item> l = new ArrayList<Item>(getItemCount());
             for(SequenceIterator i = iterate(); i.hasNext(); ) {
                 l.add(i.nextItem());
             }
-            return l;
+            return (T)l;
         }
-        if(!isEmpty())
-            return itemAt(0).toJavaObject(target);
+        if(!isEmpty()) {
+            return (T)itemAt(0).toJavaObject(target);
+        }
         return null;
     }
 

@@ -228,7 +228,7 @@ public interface Sequence {
 	 * @param target
 	 * @throws XPathException
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException;
+	public <T> T toJavaObject(Class<T> target) throws XPathException;
 	
 	/**
 	 * Returns true if the sequence is the result of a previous operation

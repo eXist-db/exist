@@ -755,16 +755,17 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject( Class<?> target ) throws XPathException {
-        if( target.isAssignableFrom( NodeImpl.class ) ) {
-            return( this );
-        } else if( target.isAssignableFrom( Node.class ) ) {
-            return( this );
-        } else if( target == Object.class ) {
-            return( this );
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
+        if(target.isAssignableFrom(NodeImpl.class)) {
+            return (T)this;
+        } else if(target.isAssignableFrom(Node.class)) {
+            return (T)this;
+        } else if(target == Object.class) {
+            return (T)this;
         } else {
-            StringValue v = new StringValue( getStringValue() );
-            return( v.toJavaObject( target ) );
+            final StringValue v = new StringValue( getStringValue() );
+            return v.toJavaObject(target);
         }
     }
 

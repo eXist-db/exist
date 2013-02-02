@@ -77,7 +77,7 @@ public interface Item {
 	
 	public int conversionPreference(Class<?> javaClass);
 	
-	public Object toJavaObject(Class<?> target) throws XPathException;
+	public <T> T toJavaObject(Class<T> target) throws XPathException;
 
     /**
      * Nodes may implement this method to be informed of storage address
