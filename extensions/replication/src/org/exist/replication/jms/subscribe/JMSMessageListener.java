@@ -401,7 +401,13 @@ public class JMSMessageListener implements MessageListener {
             txnManager.commit(txn);
 
         } catch (Throwable ex) {
-            LOG.error(ex.getMessage(), ex);
+            
+            if(LOG.isDebugEnabled()){
+                LOG.error(ex.getMessage(), ex);
+            } else {
+                LOG.error(ex.getMessage());
+            }
+            
             txnManager.abort(txn);
             throw new MessageReceiveException("Unable to write document into database: " + ex.getMessage());
 
@@ -534,10 +540,16 @@ public class JMSMessageListener implements MessageListener {
             // Commit change
             txnManager.commit(txn);
 
-        } catch (Throwable e) {
-            LOG.error(e);
+        } catch (Throwable t ){
+            
+            if(LOG.isDebugEnabled()){
+                LOG.error(t.getMessage(), t);
+            } else {
+                LOG.error(t.getMessage());
+            }
+                        
             txnManager.abort(txn);
-            throw new MessageReceiveException(e.getMessage(), e);
+            throw new MessageReceiveException(t.getMessage(), t);
 
         } finally {
 
@@ -587,10 +599,16 @@ public class JMSMessageListener implements MessageListener {
             txnManager.commit(txn);
 
 
-        } catch (Throwable e) {
-            LOG.error(e);
+        } catch (Throwable t) {
+            
+            if(LOG.isDebugEnabled()){
+                LOG.error(t.getMessage(), t);
+            } else {
+                LOG.error(t.getMessage());
+            }
+            
             txnManager.abort(txn);
-            throw new MessageReceiveException(e.getMessage());
+            throw new MessageReceiveException(t.getMessage());
 
         } finally {
 
@@ -686,10 +704,16 @@ public class JMSMessageListener implements MessageListener {
             // Commit change
             txnManager.commit(txn);
 
-        } catch (Throwable e) {
-            LOG.error(e);
+        } catch (Throwable t) {
+            
+            if(LOG.isDebugEnabled()){
+                LOG.error(t.getMessage(), t);
+            } else {
+                LOG.error(t.getMessage());
+            }
+            
             txnManager.abort(txn);
-            throw new MessageReceiveException(e.getMessage(), e);
+            throw new MessageReceiveException(t.getMessage(), t);
 
         } finally {
 
