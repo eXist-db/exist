@@ -208,20 +208,21 @@ public abstract class AbstractSequence implements Sequence {
         if(Sequence.class.isAssignableFrom(target)) {
             return (T)this;
         } else if(target.isArray()) {
-            Class<?> componentType = target.getComponentType();
+            final Class<?> componentType = target.getComponentType();
             // assume single-dimensional, then double-check that instance really matches desired type
-            Object array = Array.newInstance(componentType, getItemCount());
-            if (!target.isInstance(array))
+            final Object array = Array.newInstance(componentType, getItemCount());
+            if(!target.isInstance(array)) {
                 return null;
+            }
             int index = 0;
-            for (SequenceIterator i = iterate(); i.hasNext(); index++) {
-                Item item = i.nextItem();
-                Object obj = item.toJavaObject(componentType);
+            for(final SequenceIterator i = iterate(); i.hasNext(); index++) {
+                final Item item = i.nextItem();
+                final Object obj = item.toJavaObject(componentType);
                 Array.set(array, index, obj);
             }
             return (T)array;
-        } else if (target.isAssignableFrom(List.class)) {
-            List<Item> l = new ArrayList<Item>(getItemCount());
+        } else if(target.isAssignableFrom(List.class)) {
+            final List<Item> l = new ArrayList<Item>(getItemCount());
             for(SequenceIterator i = iterate(); i.hasNext(); ) {
                 l.add(i.nextItem());
             }
