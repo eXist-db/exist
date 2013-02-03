@@ -26,6 +26,7 @@ import java.util.*;
 
 import org.apache.log4j.Logger;
 
+import org.exist.repo.RepoBackup;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -209,6 +210,17 @@ public class SystemExport
                 output = new FileSystemWriter( backupFile );
             }
             output.setProperties( properties );
+
+//            File repoBackup = RepoBackup.backup(broker);
+//            output.addToRoot(RepoBackup.REPO_ARCHIVE, repoBackup);
+//
+//            try {
+//                boolean deleted = repoBackup.delete();
+//                if (!deleted)
+//                    repoBackup.deleteOnExit();
+//            } catch (Exception e) {
+//                // do not abort if delete fails
+//            }
 
             Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
             CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );

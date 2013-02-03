@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
 
@@ -153,5 +154,13 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
     public String getName()
     {
         return( descriptor.getParentFile().getParentFile().getName() );
+    }
+
+    @Override
+    public File getRepoBackup() throws IOException {
+        File archive = new File(getParentDir(), RepoBackup.REPO_ARCHIVE);
+        if (archive.exists())
+            return archive;
+        return null;
     }
 }
