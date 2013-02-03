@@ -23,12 +23,12 @@
 package org.exist.security;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
@@ -42,6 +42,8 @@ import org.exist.security.internal.GroupImpl;
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
+    private final static Logger LOG = Logger.getLogger(AbstractGroup.class);
+    
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")
     private List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
@@ -186,6 +188,8 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
                 final Account acc = ref.resolve();
                 if(acc != null) {
                     set.add(acc);
+                } else {
+                    LOG.warn("Unable to resolve reference to group manager '" + ref.getName() + "' for group '" + getName() + "'");
                 }
             }
         }
@@ -209,7 +213,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
     
     //this method used only at tests, don't use it other places
-    protected void setManagers(final List<Reference<SecurityManager, Account>> managers) {
+    public void setManagers(final List<Reference<SecurityManager, Account>> managers) {
         this.managers = managers;
     }
     

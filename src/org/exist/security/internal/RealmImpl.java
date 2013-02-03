@@ -21,28 +21,29 @@
  */
 package org.exist.security.internal;
 
-import java.util.Map;
-import org.exist.security.AbstractRealm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.exist.security.AbstractAccount;
-import org.exist.security.AbstractPrincipal;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Reference;
+import org.exist.config.ReferenceImpl;
 import org.exist.security.AXSchemaType;
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractPrincipal;
+import org.exist.security.AbstractRealm;
+import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
+import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.Subject;
-import org.exist.security.Account;
-import org.exist.security.EXistSchemaType;
 import org.exist.security.SecurityManager;
+import org.exist.security.Subject;
 import org.exist.security.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -57,7 +58,7 @@ public class RealmImpl extends AbstractRealm {
 	
     public static String ID = "exist"; //TODO: final "eXist-db";
 
-    private final static Logger LOG = Logger.getLogger(Realm.class);
+    private final static Logger LOG = Logger.getLogger(RealmImpl.class);
 
     static public void setPasswordRealm(String value) {
         ID = value;
@@ -85,7 +86,7 @@ public class RealmImpl extends AbstractRealm {
     //@ConfigurationFieldAsElement("allow-guest-authentication")
     public boolean allowGuestAuthentication = true;
 
-    protected RealmImpl(SecurityManagerImpl sm, Configuration config) throws ConfigurationException { //, Configuration conf
+    protected RealmImpl(final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException { //, Configuration conf
 
     	super(sm, config);
 
@@ -94,6 +95,9 @@ public class RealmImpl extends AbstractRealm {
         
         //DBA group
         GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
+        GROUP_DBA.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
+            { add(new ReferenceImpl<SecurityManager, Account>(sm, "getAccount", SecurityManager.DBA_USER)); }
+        });
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
     	sm.addGroup(GROUP_DBA.getId(), GROUP_DBA);
         registerGroup(GROUP_DBA);
@@ -111,6 +115,9 @@ public class RealmImpl extends AbstractRealm {
         
         //guest group
         GROUP_GUEST = new GroupImpl(this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
+        GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
+            { add(new ReferenceImpl<SecurityManager, Account>(sm, "getAccount", SecurityManager.DBA_USER)); }
+        });
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.addGroup(GROUP_GUEST.getId(), GROUP_GUEST);
         registerGroup(GROUP_GUEST);
