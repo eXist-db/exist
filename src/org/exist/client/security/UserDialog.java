@@ -336,6 +336,7 @@ public class UserDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCreateActionPerformed
 
     protected void createUser() {
+        
         //1 - create personal group
         GroupAider groupAider = null;
         if(cbPersonalGroup.isSelected()) {
