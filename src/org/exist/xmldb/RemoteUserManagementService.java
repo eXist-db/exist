@@ -26,7 +26,7 @@ import org.exist.security.internal.aider.PermissionAiderFactory;
  * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
 **************************************/
 
-public class RemoteUserManagementService implements UserManagementService {
+public class RemoteUserManagementService implements EXistUserManagementService {
 
 	private RemoteCollection parent;
 
@@ -66,7 +66,7 @@ public class RemoteUserManagementService implements UserManagementService {
     @Override
     public void addGroup(final Group role) throws XMLDBException {
         try {
-            final List<Object> params = new ArrayList<Object>(12);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(role.getName());
             
             //TODO what about group managers?
@@ -83,6 +83,19 @@ public class RemoteUserManagementService implements UserManagementService {
         }
     }
 
+    @Override
+    public void setUserPrimaryGroup(final String username, final String groupName) throws XMLDBException {
+        final List<Object> params = new ArrayList<Object>(2);
+        params.add(username);
+        params.add(groupName);
+        
+        try {
+            parent.getClient().execute("setUserPrimaryGroup", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
     private List<ACEAider> getACEs(Permission perm) {
         final List<ACEAider> aces = new ArrayList<ACEAider>();
         final ACLPermission aclPermission = (ACLPermission)perm;
