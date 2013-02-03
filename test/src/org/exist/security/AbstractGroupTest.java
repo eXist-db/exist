@@ -30,7 +30,7 @@ public class AbstractGroupTest {
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
         
         final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount));
+        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
         
         
@@ -48,7 +48,7 @@ public class AbstractGroupTest {
         TestableGroupImpl group = new TestableGroupImpl(mockRealm);
 
         final List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
-        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount));
+        managers.add(new ReferenceImpl<SecurityManager, Account>(mockSecurityManager, mockAccount, "mockAccount"));
         group.setManagers(managers);
 
         final Account otherAccount = EasyMock.createMock(Account.class);

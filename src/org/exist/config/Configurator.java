@@ -419,6 +419,7 @@ public class Configurator {
                                             continue;
                                             
                                         } catch (Exception e) {
+                                            LOG.warn("Could not execute method on class " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' referenceBy '" + referenceBy + "' for value '" + value + "'", e);
                                             method = null;
                                         }
                                     }
