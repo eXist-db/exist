@@ -1571,6 +1571,8 @@ public class NativeBroker extends DBBroker {
                    fsTargetDir.getParentFile().mkdirs();
                    
                    //XXX: log first, rename second ??? -shabanovd
+                   // DW: not sure a Fatal is required here. Copy and delete
+                   // maybe?
                    if(fsSourceDir.renameTo(fsTargetDir)) {
                      final Loggable loggable = new RenameBinaryLoggable(this,transaction,fsSourceDir,fsTargetDir);
                      try {
