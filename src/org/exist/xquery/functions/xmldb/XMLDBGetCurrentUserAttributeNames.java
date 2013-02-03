@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.securitymanager.GetPrincipalMetadataFunction;
 import org.exist.xquery.value.*;
 
 import java.util.Set;
@@ -42,10 +43,10 @@ public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("get-current-user-attribute-names", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Returns the names of the attributes of the current user from the xquery context.",
+            "Returns the names of the attributes of the current user.",
             null,
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the attribute names of the current user"),
-            "Use securitymanager:get-account-metadata-keys() instead!"
+            GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA_KEYS
         );
 
     public XMLDBGetCurrentUserAttributeNames(XQueryContext context, FunctionSignature signature)

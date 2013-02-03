@@ -30,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.GetPrincipalMetadataFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -48,13 +49,13 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-current-user-attribute", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the user-id of the current user from the xquery context.",
+			"Returns the attribute of the current user account.",
 			new SequenceType[] {
-				    new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user attribute")
-				},
+                new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user attribute")
+            },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the attribute value of the current user"),
-                        "Use securitymanager:get-account-metadata() instead!"
-		);
+            GetPrincipalMetadataFunction.FNS_GET_ACCOUNT_METADATA
+        );
 	
 	public XMLDBGetCurrentUserAttribute(XQueryContext context, FunctionSignature signature)
 	{

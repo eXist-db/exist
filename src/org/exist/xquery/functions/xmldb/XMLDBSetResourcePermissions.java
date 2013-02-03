@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2004-2009 The eXist Project
+ * Copyright (C) 2004-2013 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -49,24 +49,25 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = Logger.getLogger(XMLDBSetResourcePermissions.class);
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-resource-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+	
+        public final static FunctionSignature signature = new FunctionSignature(
+            new QName("set-resource-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Sets the permissions of the resource $resource in collection $collection-uri. " +
             XMLDBModule.COLLECTION_URI +
             " $user-id specifies the user which " + 
             "will become the owner of the resource, $group-id the group, and " +
             " $permissions the permissions as an xs:integer value. " +
             XMLDBModule.REMEMBER_OCTAL_CALC,
-			new SequenceType[] {
+            new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
                 new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
                 new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id"),
                 new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions"),
-			},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY));
-
+            },
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            "You should use sm:chown and sm:chmod from the SecurityManager Module instead."
+        );
 	
 	public XMLDBSetResourcePermissions(XQueryContext context) {
 		super(context, signature);

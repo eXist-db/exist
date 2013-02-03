@@ -70,7 +70,7 @@ public class XMLDBChangeUser extends BasicFunction {
                 new FunctionParameterSequenceType("home-collection", Type.STRING, Cardinality.ZERO_OR_ONE, "The user's home collection")
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
-            "$home-collection has no effect since 2.0. User the simplified version."
+            "$home-collection has no effect since 2.0. Use either sm:passwd for changing a password or sm:add-group-member to add a user to a group or sm:remove-group-member to remove a user from a group."
         ),
         new FunctionSignature(
             new QName("change-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -87,7 +87,8 @@ public class XMLDBChangeUser extends BasicFunction {
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password"),
                 new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "The groups the user is member of")
             },
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            "Use either sm:passwd for changing a password or sm:add-group-member to add a user to a group or sm:remove-group-member to remove a user from a group."
         )
     };
 	

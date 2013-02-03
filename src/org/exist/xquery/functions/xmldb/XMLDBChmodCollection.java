@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -54,7 +55,8 @@ public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
 			    new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection path"),
 			    new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
 			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY)
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            PermissionsFunctions.FNS_CHMOD
 	);
 
 	
