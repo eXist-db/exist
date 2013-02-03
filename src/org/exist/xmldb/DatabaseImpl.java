@@ -244,8 +244,17 @@ public class DatabaseImpl implements Database {
             //Should never happen
             throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
         } catch(final XMLDBException e) {
-            throw e;
-            //return null;
+            switch (e.errorCode) {
+              case ErrorCodes.NO_SUCH_RESOURCE:
+              case ErrorCodes.NO_SUCH_COLLECTION:
+              case ErrorCodes.INVALID_COLLECTION:
+              case ErrorCodes.INVALID_RESOURCE:
+                LOG.info(e.getMessage());
+                return null;
+              default:
+                LOG.error(e.getMessage(), e);
+                throw e;
+            }
         }
     }
 
