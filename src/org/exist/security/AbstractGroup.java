@@ -109,24 +109,30 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
 
     @Override
-    public boolean isManager(Account account) {
+    public boolean isManager(final Account account) {
     	for (Reference<SecurityManager, Account> manager : managers) {
-    		Account acc = manager.resolve();
+    		final Account acc = manager.resolve();
     		if (acc != null && acc.equals(account))
     			return true;
     	}
     	return false;
     }
 
-    protected void _addManager(Account account) {
-        if(!managers.contains(account.getName())) {
-            managers.add(
-        		new ReferenceImpl<SecurityManager, Account>(
-    				getRealm().getSecurityManager(),
-    				account
-        		)
-        	);
+    protected void _addManager(final Account account) {
+        //check the manager is not already present
+        for(final Reference<SecurityManager, Account> manager : managers) {
+            if(manager.resolve().getName().equals(account.getName())) {
+                return;
+            }
         }
+
+        //add the manager
+        managers.add(
+            new ReferenceImpl<SecurityManager, Account>(
+                getRealm().getSecurityManager(),
+                account
+            )
+        );
     }
 
     @Override
