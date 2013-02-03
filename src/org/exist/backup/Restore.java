@@ -24,6 +24,7 @@ package org.exist.backup;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Stack;
@@ -35,6 +36,7 @@ import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
+import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
@@ -43,6 +45,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 
 /**
  * Restore.java.
@@ -83,6 +86,13 @@ public class Restore {
                 reader.setContentHandler(handler);
                 reader.parse(is);
             }
+
+//            BackupDescriptor rootDesc = getBackupDescriptor(f);
+//            File repoBackup = rootDesc.getRepoBackup();
+//            // repoBackup should be null unless we're doing a full restore
+//            if (repoBackup != null) {
+//                restorePkgRepo(listener, repoBackup, uri, username, password);
+//            }
         } finally {
             listener.restoreFinished();
         }
@@ -163,5 +173,23 @@ public class Restore {
         mgmt.updateAccount(dba);
 
         return adminPassword;
+    }
+
+    private void restorePkgRepo(RestoreListener listener, File archive, String uri, String username, String password) throws XMLDBException, URISyntaxException {
+        final XmldbURI dbUri;
+
+        if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+            dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
+        } else {
+            dbUri = XmldbURI.xmldbUriFor(uri);
+        }
+
+        final Collection root = DatabaseManager.getCollection(dbUri.toString(), username, password);
+        BinaryResource res = (BinaryResource) root.createResource("expathrepo.zip", "BinaryResource");
+        res.setContent(archive);
+        root.storeResource(res);
+
+        DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        mgr.restorePkgRepo();
     }
 }

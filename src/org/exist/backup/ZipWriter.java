@@ -21,12 +21,7 @@
  */
 package org.exist.backup;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -124,6 +119,25 @@ public class ZipWriter implements BackupWriter
         out.closeEntry();
     }
 
+    public void addToRoot(String name, File file) throws IOException {
+        if (dataWritten) {
+            throw new IOException("Additional files have to be added before backup data is written");
+        }
+        ZipEntry entry = new ZipEntry(name);
+        out.putNextEntry(entry);
+
+        byte[] buf = new byte[4096];
+        int len;
+        FileInputStream is = new FileInputStream(file);
+        try {
+            while ((len = is.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        } finally {
+            is.close();
+        }
+        out.closeEntry();
+    }
 
     private String mkRelative( String path )
     {

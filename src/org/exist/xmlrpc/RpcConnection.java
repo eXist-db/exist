@@ -42,6 +42,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.repo.RepoBackup;
 import org.exist.security.ACLPermission;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
@@ -5644,6 +5645,18 @@ public class RpcConnection implements RpcAPI {
     public void exitServiceMode() throws PermissionDeniedException, EXistException {
         BrokerPool brokerPool = factory.getBrokerPool();
         brokerPool.exitServiceMode(user);
+    }
+
+    public void restorePkgRepo() throws EXistException, IOException, PermissionDeniedException {
+        DBBroker broker = null;
+        try {
+            broker = factory.getBrokerPool().get(user);
+
+            RepoBackup.restore(broker);
+
+        } finally {
+            factory.getBrokerPool().release(broker);
+        }
     }
 
 	@Override

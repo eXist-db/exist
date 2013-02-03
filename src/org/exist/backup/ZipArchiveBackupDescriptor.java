@@ -21,12 +21,11 @@
  */
 package org.exist.backup;
 
+import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.ZipEntryInputSource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -170,6 +169,24 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             properties.load(archive.getInputStream( ze ));
         }
         return properties;
+    }
+
+    @Override
+    public File getRepoBackup() throws IOException {
+        ZipEntry ze = archive.getEntry(RepoBackup.REPO_ARCHIVE);
+
+        if (ze == null)
+            return null;
+        File temp = File.createTempFile("expathrepo", "zip");
+        FileOutputStream os = new FileOutputStream(temp);
+        InputStream is = archive.getInputStream(ze);
+        byte[] buf = new byte[4096];
+        int count;
+        while ((count = is.read(buf)) > 0) {
+            os.write(buf, 0, count);
+        }
+        os.close();
+        return temp;
     }
 
     @Override
