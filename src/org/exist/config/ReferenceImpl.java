@@ -42,12 +42,29 @@ public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>
 		this.name = name;
 	}
 	
-	public ReferenceImpl(R resolver, O cached) {
+     
+        /**
+         * @deprecated Use ReferenceImpl(R, O, String) instead
+         */
+        @Deprecated
+        public ReferenceImpl(R resolver, O cached) {
 		this.resolver = resolver;
 		this.methodName = null;
 		this.name = null;
 		this.cached = cached;
 	}
+        
+	public ReferenceImpl(R resolver, O cached, String name) {
+		this.resolver = resolver;
+		this.methodName = null;
+		this.name = name;
+		this.cached = cached;
+	}
+        
+        @Override
+        public String getName() {
+            return name;
+        }
 
 	@SuppressWarnings("unchecked")
 	@Override
