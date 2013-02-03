@@ -19,13 +19,13 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
           </AuxValues>
         </MenuItem>
-        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="miCbGroupMemberManager">
+        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="micbGroupMemberManager">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Group Manager"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miCbGroupMemberManagerActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="micbGroupMemberManagerActionPerformed"/>
           </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="miRemoveGroupMember">
