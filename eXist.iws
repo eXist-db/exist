@@ -105,26 +105,78 @@
   <component name="ChangeListManager">
     <list readonly="true" id="9c94c8a9-f5ba-4ada-96fc-bdc14754ba2b" name="Default" comment="" />
     <list id="c2cbb0af-73e4-419e-a2b6-663e0bbfd989" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
-    <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[repo]  added status field to public repo">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/spatial/src/org/exist/indexing/spatial/GMLHSQLIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/counter/Counters.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/counter/Counters.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/dom/SymbolTable.java" afterPath="$PROJECT_DIR$/src/org/exist/dom/SymbolTable.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java" afterPath="$PROJECT_DIR$/src/org/exist/fulltext/FTIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/DBBroker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/DataBackup.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/DataBackup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/btree/Paged.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/btree/Paged.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/statistics/IndexStatistics.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/statistics/IndexStatistics.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndex.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndex.java" />
-    </list>
+    <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[repo]  added status field to public repo" />
     <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
     <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="Revert: [ignore]  update idea project">
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/DeleteGroupFunction.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupManagementFunction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/AbstractAccount.java" afterPath="$PROJECT_DIR$/src/org/exist/security/AbstractAccount.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java" afterPath="$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/value/AbstractSequence.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/value/AbstractSequence.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/AbstractSubject.java" afterPath="$PROJECT_DIR$/src/org/exist/security/AbstractSubject.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/Account.java" afterPath="$PROJECT_DIR$/src/org/exist/security/Account.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/FindGroupFunction.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/FindGroupFunction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/FindUserFunction.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/FindUserFunction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/internal/aider/UserAider.java" afterPath="$PROJECT_DIR$/src/org/exist/security/internal/aider/UserAider.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBAddUserToGroup.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBAddUserToGroup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChangeUser.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChangeUser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChmodCollection.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChmodCollection.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChmodResource.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBChmodResource.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBCreateGroup.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBCreateGroup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBCreateUser.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBCreateUser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBDeleteUser.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBDeleteUser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttribute.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttribute.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttributeNames.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttributeNames.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUserOrGroup.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUserOrGroup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUsers.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUsers.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGroupExists.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGroupExists.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAdmin.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAdmin.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAuthenticated.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAuthenticated.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBModule.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBPermissions.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBPermissions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBPermissionsToString.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBPermissionsToString.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBRemoveUserFromGroup.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBRemoveUserFromGroup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBSetResourcePermissions.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBSetResourcePermissions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBUserAccess.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBUserAccess.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/build.properties" afterPath="$PROJECT_DIR$/extensions/build.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/private/config.properties" afterPath="$PROJECT_DIR$/nbproject/private/config.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/private/private.xml" afterPath="$PROJECT_DIR$/nbproject/private/private.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/project.properties" afterPath="$PROJECT_DIR$/nbproject/project.properties" />
     </list>
     <ignored path="$USER_HOME$/.grails/" />
     <ignored path="$USER_HOME$/.griffon/" />
+    <file path="/AccountManagementFunction.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359905626485" ignored="false" />
+    <file path="/FindUserFunction.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359891760538" ignored="false" />
+    <file path="/SecurityManagerModule.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359905681897" ignored="false" />
+    <file path="/XMLDBCreateUser.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359893357291" ignored="false" />
+    <file path="/fragment.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359894332124" ignored="false" />
+    <file path="/XMLDBDeleteUser.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359895970968" ignored="false" />
+    <file path="/XMLDBChangeUser.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359896759307" ignored="false" />
+    <file path="/GroupManagementFunction.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359898488245" ignored="false" />
+    <file path="/XMLDBCreateGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359898620435" ignored="false" />
+    <file path="/GroupMembershipFunctions.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359906279662" ignored="false" />
+    <file path="/XMLDBAddUserToGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359900593871" ignored="false" />
+    <file path="/XMLDBRemoveUserFromGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359900644845" ignored="false" />
+    <file path="/FindGroupFunction.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359901082558" ignored="false" />
+    <file path="/XMLDBGroupExists.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359901126726" ignored="false" />
+    <file path="/XMLDBChmodCollection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359901168128" ignored="false" />
+    <file path="/XMLDBPermissions.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359901264088" ignored="false" />
+    <file path="/XMLDBPermissionsToString.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359901361094" ignored="false" />
+    <file path="/XMLDBIsAdmin.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359903810649" ignored="false" />
+    <file path="/XMLDBGetUsers.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359903887907" ignored="false" />
+    <file path="/XMLDBGetUserOrGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359903933778" ignored="false" />
+    <file path="/XMLDBGetCurrentUserAttribute.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359904038832" ignored="false" />
+    <file path="/XMLDBGetCurrentUserAttributeNames.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359904103411" ignored="false" />
+    <file path="/XMLDBModule.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359904233041" ignored="false" />
+    <file path="/Account.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359906387770" ignored="false" />
+    <file path="/AbstractAccount.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359907219505" ignored="false" />
+    <file path="/UserAider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908008200" ignored="false" />
+    <file path="/AbstractSubject.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908145543" ignored="false" />
+    <file path="/AbstractGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359909202582" ignored="false" />
+    <file path="/Dummy.txt" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359909223228" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,7 +189,6 @@
     <rightPanel url="file://$PROJECT_DIR$" />
     <splitter proportion="0.5" />
   </component>
-  <component name="CoverageDataManager" choice="3" />
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
@@ -145,7 +196,7 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
-    <breakpoint_any>
+    <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
         <option name="NOTIFY_UNCAUGHT" value="true" />
@@ -153,6 +204,7 @@
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
         <option name="COUNT_FILTER_ENABLED" value="false" />
         <option name="COUNT_FILTER" value="0" />
         <option name="CONDITION_ENABLED" value="false" />
@@ -168,6 +220,7 @@
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
         <option name="COUNT_FILTER_ENABLED" value="false" />
         <option name="COUNT_FILTER" value="0" />
         <option name="CONDITION_ENABLED" value="false" />
@@ -177,31 +230,32 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
+    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <line_breakpoints>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" line="260" class="org.exist.xquery.functions.securitymanager.GroupMembershipFunctions" package="org.exist.xquery.functions.securitymanager">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_rules />
-    <ui_properties>
-      <property name="line_breakpoints_groupByMethods" value="false" />
-      <property name="line_breakpoints_viewId" value="TABLE" />
-      <property name="exception_breakpoints_flattenPackages" value="true" />
-      <property name="method_breakpoints_flattenPackages" value="true" />
-      <property name="field_breakpoints_flattenPackages" value="true" />
-      <property name="exception_breakpoints_groupByMethods" value="false" />
-      <property name="line_breakpoints_groupByClasses" value="true" />
-      <property name="field_breakpoints_groupByMethods" value="false" />
-      <property name="method_breakpoints_viewId" value="TABLE" />
-      <property name="line_breakpoints_flattenPackages" value="true" />
-      <property name="field_breakpoints_groupByClasses" value="true" />
-      <property name="method_breakpoints_groupByClasses" value="true" />
-      <property name="exception_breakpoints_viewId" value="TABLE" />
-      <property name="exception_breakpoints_groupByClasses" value="true" />
-      <property name="field_breakpoints_viewId" value="TABLE" />
-      <property name="method_breakpoints_groupByMethods" value="false" />
-    </ui_properties>
+    <ui_properties />
   </component>
   <component name="ErrorOptionsConfigurable.UI">
     <option name="proportions">
       <SplitterProportionsDataImpl />
     </option>
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="eXist">
       <favorite_root url="file://$PROJECT_DIR$/extensions" module="eXist" type="directory" klass="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
@@ -232,11 +286,74 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="NativeBroker.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+      <file leaf-file-name="SecurityManagerModule.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="134" column="52" selection-start="5302" selection-end="5302" vertical-scroll-proportion="0.31556803">
+            <state line="104" column="69" selection-start="6840" selection-end="6840" vertical-scroll-proportion="-13.8">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SecurityManagerImpl.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/security/internal/SecurityManagerImpl.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="578" column="0" selection-start="19252" selection-end="19252" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="XMLDBGetCurrentUserAttribute.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttribute.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="43" column="93" selection-start="1675" selection-end="1675" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GroupMembershipFunctions.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="260" column="0" selection-start="13719" selection-end="13719" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#14304#14313#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractGroup.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="128" column="25" selection-start="4790" selection-end="4790" vertical-scroll-proportion="0.5394191">
+              <folding>
+                <element signature="e#1827#1864#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractPrincipal.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractPrincipal.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="168" column="0" selection-start="5441" selection-end="5441" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AccountManagementFunction.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/AccountManagementFunction.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="26" column="128" selection-start="1212" selection-end="1212" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -251,22 +368,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/functx-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/json-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/math-example/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/setup.xql" />
-        <option value="$PROJECT_DIR$/webapp/documentation.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/all.xqy" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/lib/util.xqm" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/test.xql" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/data/contact.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/index.html" />
-        <option value="$PROJECT_DIR$/webapp/repo/packages/app-example/myapp/test.xq" />
-        <option value="$PROJECT_DIR$/webapp/admin/repo.xqm" />
-        <option value="$PROJECT_DIR$/webapp/repo/repo.xml" />
-        <option value="$PROJECT_DIR$/webapp/repo/public/index.xqy" />
-        <option value="$PROJECT_DIR$/src/org/exist/start/Main.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBPermissionsToString.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAdmin.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBIsAuthenticated.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUsers.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetUserOrGroup.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttributeNames.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBModule.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/AccountManagementFunction.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/security/Account.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/security/AbstractAccount.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/security/internal/aider/UserAider.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/security/AbstractSubject.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttribute.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java" />
       </list>
     </option>
   </component>
@@ -296,32 +413,21 @@
     <option name="CLIENT" value="" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="24" />
-    <option name="width" value="1600" />
-    <option name="height" value="876" />
+    <option name="y" value="22" />
+    <option name="width" value="1920" />
+    <option name="height" value="1114" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
       <profile-state>
         <expanded-state>
           <State>
-            <id>Application Server Specific Inspections</id>
+            <id />
           </State>
           <State>
-            <id>Bean Validation issues</id>
-          </State>
-          <State>
-            <id>Inspections</id>
-          </State>
-          <State>
-            <id>Pages Navigation Model</id>
+            <id>Android Lint</id>
           </State>
         </expanded-state>
-        <selected-state>
-          <State>
-            <id>Web Beans issues</id>
-          </State>
-        </selected-state>
       </profile-state>
     </entry>
   </component>
@@ -505,18 +611,100 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
+              <option name="myItemId" value="eXist" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Project Files">
           <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="exist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="exist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="security" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="eXist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="exist" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="security" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="internal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -531,6 +719,16 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="eXist" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -751,19 +949,20 @@
     <property name="cvs_file_history_flatWidth2" value="292" />
     <property name="cvs_file_history_treeOrder0" value="0" />
     <property name="cvs_file_history_flatWidth3" value="292" />
+    <property name="FullScreen" value="false" />
     <property name="cvs_file_history_flatWidth0" value="292" />
     <property name="cvs_file_history_flatWidth1" value="291" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="RunManagerConfig.compileBeforeRunning" value="true" />
-    <property name="options.lastSelected" value="preferences.editor" />
+    <property name="options.lastSelected" value="Errors" />
     <property name="GenerateAntBuildDialog.forceTargetJdk" value="true" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web" value="/private/tmp/webExplodedDir6263tmp" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="296" />
-    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="255" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="33" />
     <property name="OverrideImplement.combined" value="true" />
@@ -775,6 +974,7 @@
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
     <property name="GenerateAntBuildDialog.generateSingleFile" value="false" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/extensions/exquery/restxq/lib" />
     <property name="GoToClass.includeJavaFiles" value="false" />
     <property name="GenerateAntBuildDialog.enableUiFormCompile" value="true" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
@@ -814,7 +1014,7 @@
       <recent name="$PROJECT_DIR$/webapp/repo/packages/functx-example" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Server">
+  <component name="RunManager" selected="Application.eXist Client">
     <configuration default="false" name="XMLCalabashTests" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" runner="emma">
         <pattern>
@@ -937,11 +1137,7 @@
       <option name="SHMEM_ADDRESS" value="javadebug" />
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
+      <method />
     </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
@@ -955,10 +1151,7 @@
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="XSLT" factoryName="XSLT">
@@ -976,10 +1169,7 @@
       <FileType name="XML" />
       <JdkChoice value="FROM_MODULE" />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -996,10 +1186,7 @@
       <module name="" />
       <envs />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
@@ -1023,11 +1210,7 @@
       <envs />
       <patterns />
       <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
         <option name="Make" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-        <option name="Run ant target" value="true" />
       </method>
     </configuration>
     <configuration default="false" name="RetrieveChunked" type="Application" factoryName="Application">
@@ -1068,9 +1251,7 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Run ant target" value="true" />
-      </method>
+      <method />
     </configuration>
     <configuration default="false" name="Server" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" runner="emma" />
@@ -1222,18 +1403,18 @@
       <method />
     </configuration>
     <list size="12">
-      <item index="0" class="java.lang.String" itemvalue="JUnit.XMLCalabashTests" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.DateTests" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.UtilTests" />
-      <item index="3" class="java.lang.String" itemvalue="JUnit.CoreTests" />
-      <item index="4" class="java.lang.String" itemvalue="Application.RetrieveChunked" />
-      <item index="5" class="java.lang.String" itemvalue="Application.eXist Client" />
-      <item index="6" class="java.lang.String" itemvalue="Application.Server" />
-      <item index="7" class="java.lang.String" itemvalue="JUnit.AllXmlRpcTests" />
-      <item index="8" class="java.lang.String" itemvalue="JUnit.EntitiesTest" />
-      <item index="9" class="java.lang.String" itemvalue="JUnit.DtdEntityTest" />
-      <item index="10" class="java.lang.String" itemvalue="JUnit.AntUnitTestRunner" />
-      <item index="11" class="java.lang.String" itemvalue="JUnit.ONVDLTest" />
+      <item index="0" class="java.lang.String" itemvalue="Application.RetrieveChunked" />
+      <item index="1" class="java.lang.String" itemvalue="Application.eXist Client" />
+      <item index="2" class="java.lang.String" itemvalue="Application.Server" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.AllXmlRpcTests" />
+      <item index="4" class="java.lang.String" itemvalue="JUnit.EntitiesTest" />
+      <item index="5" class="java.lang.String" itemvalue="JUnit.DtdEntityTest" />
+      <item index="6" class="java.lang.String" itemvalue="JUnit.AntUnitTestRunner" />
+      <item index="7" class="java.lang.String" itemvalue="JUnit.ONVDLTest" />
+      <item index="8" class="java.lang.String" itemvalue="JUnit.XMLCalabashTests" />
+      <item index="9" class="java.lang.String" itemvalue="JUnit.DateTests" />
+      <item index="10" class="java.lang.String" itemvalue="JUnit.UtilTests" />
+      <item index="11" class="java.lang.String" itemvalue="JUnit.CoreTests" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -1457,6 +1638,7 @@
   <component name="StructureViewFactory">
     <option name="AUTOSCROLL_MODE" value="false" />
     <option name="AUTOSCROLL_FROM_SOURCE" value="true" />
+    <option name="ACTIVE_ACTIONS" value="SHOW_INHERITED,ALPHA_COMPARATOR" />
   </component>
   <component name="Struts Assistant">
     <option name="showInputs" value="true" />
@@ -1561,28 +1743,31 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="24" width="1600" height="876" extended-state="6" />
-    <editor active="true" />
+    <frame x="0" y="22" width="1920" height="1114" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49469495" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19141914" sideWeight="0.6141141" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4347241" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2444668" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" x="4" y="2" width="968" height="391" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3443435" sideWeight="0.59375" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3753754" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42655936" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35135135" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23225807" sideWeight="0.50530505" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2318376" sideWeight="0.7555332" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24580646" sideWeight="0.571618" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3820513" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20352565" sideWeight="0.7555332" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38128772" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" x="4" y="2" width="968" height="391" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3443435" sideWeight="0.59375" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -1593,7 +1778,6 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33483484" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.53518516" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42838195" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -1634,7 +1818,6 @@
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
     <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
-    <option name="ENABLE_BACKGROUND_PROCESSES" value="false" />
     <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
     <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
@@ -1644,12 +1827,14 @@
     <option name="SOFT_WRAPS_IN_SHORT_DIFF" value="true" />
     <option name="INCLUDE_TEXT_INTO_PATCH" value="false" />
     <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
-    <option name="CREATE_PATCH_EXPAND_DETAILS_DEFAULT" value="true" />
     <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
+    <option name="SHOW_DIRTY_RECURSIVELY" value="false" />
+    <option name="LIMIT_HISTORY" value="true" />
+    <option name="MAXIMUM_HISTORY_ROWS" value="1000" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Revert: [ignore]  update idea project" />
+    <option name="LAST_COMMIT_MESSAGE" value="[bugfix] dont allow the same manager to be added to a group more than once" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1662,7 +1847,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="[repo] adding new example package, myApp, which eventually will be how" />
     <MESSAGE value="[fixed] introduced path bug in repo package manager, fixed" />
     <MESSAGE value="[fixed] introduced multiple math jar bug in example package, fixed" />
     <MESSAGE value="[fixed] decided to remove repo metadata from expath package for now" />
@@ -1687,6 +1871,7 @@
     <MESSAGE value="[repo]  added status field to public repo" />
     <MESSAGE value="[intellij] .iws had some additional vars defined unrelated to eXist" />
     <MESSAGE value="Revert: [ignore]  update idea project" />
+    <MESSAGE value="[bugfix] dont allow the same manager to be added to a group more than once" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1850,6 +2035,7 @@
       <treeView value="false" />
       <verbose value="true" />
       <viewClosedWhenNoErrors value="true" />
+      <expanded value="true" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/test/src/ant/build.xml">
       <antCommandLine value="" />
@@ -1863,6 +2049,7 @@
       <treeView value="true" />
       <verbose value="true" />
       <viewClosedWhenNoErrors value="false" />
+      <expanded value="true" />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq/main/build.xml">
       <antCommandLine value="" />
@@ -1876,6 +2063,7 @@
       <treeView value="true" />
       <verbose value="true" />
       <viewClosedWhenNoErrors value="false" />
+      <expanded value="true" />
     </buildFile>
   </component>
   <component name="com.intellij.ide.util.scopeChooser.ScopeChooserConfigurable" proportions="0.16666667" version="1">
@@ -1889,67 +2077,134 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/math-example/repo.xml">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBModule.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="2" selection-start="271" selection-end="271" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/documentation.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="119" column="76" selection-start="6340" selection-end="6340" vertical-scroll-proportion="0.7158556" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/public/all.xqy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="13" selection-start="0" selection-end="22" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/functx-example/functx/functx.xql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/admin/repo.xqm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="136" column="27" selection-start="5145" selection-end="5145" vertical-scroll-proportion="0.38263667" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/repo.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="238" column="19" selection-start="10281" selection-end="10281" vertical-scroll-proportion="0.073954985" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/public/index.xqy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="164" column="38" selection-start="6513" selection-end="6513" vertical-scroll-proportion="1.5819936" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webapp/repo/packages/functx-example/repo.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="0" selection-start="498" selection-end="498" vertical-scroll-proportion="0.19292605" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/start/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="278" column="39" selection-start="11241" selection-end="11241" vertical-scroll-proportion="2.1280992" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/eXist.ipr">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="30" selection-start="413" selection-end="413" vertical-scroll-proportion="0.23141655" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/eXist.iws">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="33" selection-start="947" selection-end="947" vertical-scroll-proportion="0.3997195">
+        <state line="91" column="136" selection-start="5707" selection-end="5707" vertical-scroll-proportion="0.2746479">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/FindUserFunction.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="134" column="52" selection-start="5302" selection-end="5302" vertical-scroll-proportion="0.31556803">
+        <state line="121" column="40" selection-start="5845" selection-end="5845" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/Account.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="59" column="71" selection-start="1974" selection-end="1974" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/AccountManagementFunction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="128" selection-start="1212" selection-end="1212" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractAccount.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="148" column="11" selection-start="4160" selection-end="4775" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#1646#1653#0" expanded="true" />
+            <element signature="e#4469#4767#0" expanded="true" />
+            <element signature="e#4756#4757#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/Subject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="17" selection-start="997" selection-end="997" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractSubject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="38" selection-start="1994" selection-end="1994" vertical-scroll-proportion="0.64315355">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/internal/aider/UserAider.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="94" column="71" selection-start="3128" selection-end="3128" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#4107#4133#0" expanded="true" />
+            <element signature="e#4187#4543#0" expanded="true" />
+            <element signature="e#4532#4533#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBGetCurrentUserAttribute.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="93" selection-start="1675" selection-end="1675" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/SecurityManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="81" column="9" selection-start="3276" selection-end="3276" vertical-scroll-proportion="0.33285713">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/internal/SecurityManagerImpl.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="578" column="0" selection-start="19252" selection-end="19252" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupManagementFunction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="35" selection-start="6966" selection-end="6966" vertical-scroll-proportion="2.3029046">
+          <folding>
+            <element signature="e#8729#8738#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/SecurityManagerModule.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="104" column="69" selection-start="6840" selection-end="6840" vertical-scroll-proportion="-13.8">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="260" column="0" selection-start="13719" selection-end="13719" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#14304#14313#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractPrincipal.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="168" column="0" selection-start="5441" selection-end="5441" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="128" column="25" selection-start="4790" selection-end="4790" vertical-scroll-proportion="0.5394191">
+          <folding>
+            <element signature="e#1827#1864#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1994,7 +2249,7 @@
       </state>
       <state key="JdkListConfigurable.UI">
         <settings>
-          <last-edited>1.7</last-edited>
+          <last-edited>1.6</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
