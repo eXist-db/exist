@@ -1853,7 +1853,10 @@ public class BrokerPool extends Observable implements Database {
                 // their job
                 lock.unlock();
 
-                notificationService.debug();
+                // DW: only in debug mode
+                if (LOG.isDebugEnabled()) {
+                    notificationService.debug();
+                }
 
                 //Notify all running tasks that we are shutting down
 
