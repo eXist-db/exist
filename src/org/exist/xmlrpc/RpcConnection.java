@@ -1981,6 +1981,8 @@ public class RpcConnection implements RpcAPI {
             
             tab.put("enabled", Boolean.toString(u.isEnabled()));
             
+            tab.put("umask", u.getUserMask());
+            
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : u.getMetadataKeys()) {
                 metadata.put(key.getNamespace(), u.getMetadataValue(key));
@@ -2020,6 +2022,7 @@ public class RpcConnection implements RpcAPI {
             tab.put("groups", groups);
             
             tab.put("enabled", Boolean.toString(user.isEnabled()));
+            tab.put("umask", user.getUserMask());
             
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : user.getMetadataKeys()) {
@@ -3898,19 +3901,19 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     @Override
-    public boolean addAccount(String name, String passwd, String passwdDigest, Vector<String> groups, boolean enabled, Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+    public boolean addAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final Boolean enabled, final Integer umask, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         
-    	if (passwd.length() == 0) {
+    	if(passwd.length() == 0) {
             passwd = null;
         }
         
     	final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
 
-    	if (manager.hasAccount(name)) {
+    	if(manager.hasAccount(name)) {
             throw new PermissionDeniedException("Account '"+name+"' exist");
         }
 
-        if (!manager.hasAdminPrivileges(user)) {
+        if(!manager.hasAdminPrivileges(user)) {
             throw new PermissionDeniedException("Account '"+user.getName()+"' not allowed to create new account");
         }
 
@@ -3918,13 +3921,19 @@ public class RpcConnection implements RpcAPI {
         u.setEncodedPassword(passwd);
         u.setPasswordDigest(passwdDigest);
 
-        for (String g : groups) {
-            if (!u.hasGroup(g)) {
+        for(final String g : groups) {
+            if(!u.hasGroup(g)) {
                 u.addGroup(g);
             }
         }
         
-        u.setEnabled(enabled);
+        if(enabled != null) {
+            u.setEnabled(enabled);
+        }
+        
+        if(umask != null) {
+            u.setUserMask(umask);
+        }
         
         if(metadata != null) {
             for(final String key : metadata.keySet()) {
@@ -3944,7 +3953,7 @@ public class RpcConnection implements RpcAPI {
                     return null;
                 }
             });
-        } catch (URISyntaxException use) {
+        } catch(final URISyntaxException use) {
             throw new EXistException(use.getMessage(), use);
         }
         
@@ -3953,11 +3962,11 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean updateAccount(final String name, final String passwd, final String passwdDigest, final Vector<String> groups) throws EXistException, PermissionDeniedException {
-    	return updateAccount(name, passwd, passwdDigest, groups, null, null);
+    	return updateAccount(name, passwd, passwdDigest, groups, null, null, null);
     }
 
     @Override
-    public boolean updateAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final Boolean enabled, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
+    public boolean updateAccount(final String name, String passwd, final String passwdDigest, final Vector<String> groups, final Boolean enabled, final Integer umask, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
         if(passwd.length() == 0) {
             passwd = null;
         }
@@ -3972,6 +3981,10 @@ public class RpcConnection implements RpcAPI {
         
         if(enabled != null) {
             account.setEnabled(enabled);
+        }
+        
+        if(umask != null) {
+            account.setUserMask(umask);
         }
         
         if(metadata != null) {

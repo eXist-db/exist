@@ -50,6 +50,7 @@ public class RemoteUserManagementService implements UserManagementService {
             final String[] gl = user.getGroups();
             params.add(gl);
             params.add(user.isEnabled());
+            params.add(user.getUserMask());
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : user.getMetadataKeys()) {
                 metadata.put(key.getNamespace(), user.getMetadataValue(key));
@@ -664,7 +665,8 @@ public class RemoteUserManagementService implements UserManagementService {
             }
             
             u.setEnabled(Boolean.valueOf((String)tab.get("enabled")));
-                
+            u.setUserMask((Integer)tab.get("umask"));
+            
             final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
             for(final String key : metadata.keySet()) {
                 if(AXSchemaType.valueOfNamespace(key) != null) {
@@ -710,6 +712,8 @@ public class RemoteUserManagementService implements UserManagementService {
                 }
                 
                 u[i].setEnabled(Boolean.valueOf((String)tab.get("enabled")));
+                u[i].setUserMask((Integer)tab.get("umask"));
+                
                 
                 final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
                 for(final String key : metadata.keySet()) {
@@ -832,6 +836,7 @@ public class RemoteUserManagementService implements UserManagementService {
                 final String[] gl = user.getGroups();
                 params.add(gl);
                 params.add(user.isEnabled());
+                params.add(user.getUserMask());
                 final Map<String, String> metadata = new HashMap<String, String>();
                 for(final SchemaType key : user.getMetadataKeys()) {
                     metadata.put(key.getNamespace(), user.getMetadataValue(key));
