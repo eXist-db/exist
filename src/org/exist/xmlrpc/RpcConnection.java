@@ -4018,7 +4018,7 @@ public class RpcConnection implements RpcAPI {
     	if(!manager.hasGroup(name)) {
             
             if(!manager.hasAdminPrivileges(user)) {
-                throw new PermissionDeniedException("not allowed to create group");
+                throw new PermissionDeniedException("Not allowed to create group");
             }
             
             final Group role = new GroupAider(name);
@@ -4047,6 +4047,34 @@ public class RpcConnection implements RpcAPI {
         }
         
     	return false;
+    }
+    
+    public boolean setUserPrimaryGroup(final String username, final String groupName) throws EXistException, PermissionDeniedException {
+        final SecurityManager manager = factory.getBrokerPool().getSecurityManager();
+
+    	if(!manager.hasGroup(groupName)) {
+            throw new EXistException("Group '" + groupName + "' does not exist!");
+        }
+        
+        if(!manager.hasAdminPrivileges(user)) {
+            throw new PermissionDeniedException("Not allowed to modify user");
+        }
+        
+        try {
+            executeWithBroker(new BrokerOperation<Void>() {
+                @Override
+                public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                    final Account account = manager.getAccount(username);
+                    final Group group = manager.getGroup(groupName);
+                    account.setPrimaryGroup(group);
+                    manager.updateAccount(account);
+                    return null;
+                }
+            });
+            return true;
+        } catch (final URISyntaxException use) {
+            throw new EXistException(use.getMessage(), use);
+        }
     }
     
     @Override

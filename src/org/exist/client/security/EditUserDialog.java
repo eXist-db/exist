@@ -33,6 +33,7 @@ import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.EXistUserManagementService;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -76,9 +77,16 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         
         cbPersonalGroup.setVisible(false);
         
+        boolean first = true;
         for(final String group : getAccount().getGroups()) {
             getMemberOfGroupsListModel().add(group);
             getAvailableGroupsListModel().removeElement(group);
+            
+            if(first) {
+                setPrimaryGroup(group);
+                getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
+                first = false;
+            }
         }
     }
 
@@ -145,6 +153,9 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
                 getUserManagementService().addAccountToGroup(getAccount().getName(), memberOfGroup);
             }
         }
+        
+        //set the primary group
+        ((EXistUserManagementService)getUserManagementService()).setUserPrimaryGroup(getAccount().getName(), getPrimaryGroup());
     }
     
     private void setAccountFromFormProperties() throws PermissionDeniedException {
