@@ -22,20 +22,22 @@
 package org.exist.backup.restore;
 
 import java.io.IOException;
-import org.w3c.dom.DocumentType;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Observable;
+import java.util.Stack;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.backup.BackupDescriptor;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.dom.DocumentTypeImpl;
+import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
+import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
 import org.exist.xmldb.CollectionImpl;
@@ -45,24 +47,16 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
-
-import java.net.URISyntaxException;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Observable;
-import java.util.Stack;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.apache.log4j.Logger;
-import org.exist.backup.BackupDescriptor;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
-import org.exist.security.ACLPermission.ACE_TARGET;
+import org.w3c.dom.DocumentType;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 
 
 /**
@@ -93,7 +87,7 @@ public class RestoreHandler extends DefaultHandler {
     private Stack<DeferredPermission> deferredPermissions = new Stack<DeferredPermission>();
     
     
-    public RestoreHandler(RestoreListener listener, String dbBaseUri, String dbUsername, String dbPassword, BackupDescriptor descriptor) {
+    public RestoreHandler(final RestoreListener listener, final String dbBaseUri, final String dbUsername, final String dbPassword, final BackupDescriptor descriptor) {
         this.listener = listener;
         this.dbBaseUri = dbBaseUri;
         this.dbUsername = dbUsername;
@@ -110,7 +104,7 @@ public class RestoreHandler extends DefaultHandler {
      * @see  org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
     @Override
-    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+    public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
 
         //only process entries in the exist namespace
         if(namespaceURI != null && !namespaceURI.equals(Namespaces.EXIST_NS)) {
@@ -139,7 +133,7 @@ public class RestoreHandler extends DefaultHandler {
     }
     
     @Override
-    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+    public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
 
         if(namespaceURI.equals(Namespaces.EXIST_NS) && (localName.equals("collection") || localName.equals("resource"))) {
             setDeferredPermissions();
@@ -148,14 +142,15 @@ public class RestoreHandler extends DefaultHandler {
         super.endElement(namespaceURI, localName, qName);
     }
 
-    private String getAttr(Attributes atts, String name, String fallback) {
+    private String getAttr(final Attributes atts, final String name, final String fallback) {
         String value = atts.getValue(name);
-        if (value == null)
+        if(value == null) {
             return fallback;
+        }
         return value;
     }
 
-    private DeferredPermission restoreCollectionEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreCollectionEntry(final Attributes atts) throws SAXException {
         
         final String name = atts.getValue("name");
         
@@ -172,7 +167,7 @@ public class RestoreHandler extends DefaultHandler {
         if(strVersion != null) {
             try {
                 this.version = Integer.parseInt(strVersion);
-            } catch(NumberFormatException nfe) {
+            } catch(final NumberFormatException nfe) {
                 final String msg = "Could not parse version number for Collection '" + name + "', defaulting to version 0";
                 listener.warn(msg);
                 LOG.warn(msg);
@@ -183,14 +178,14 @@ public class RestoreHandler extends DefaultHandler {
         
         try {
             listener.createCollection(name);
-            XmldbURI collUri;
+            final XmldbURI collUri;
 
             if(version >= STRICT_URI_VERSION) {
                 collUri = XmldbURI.create(name);
             } else {
                 try {
                     collUri = URIUtils.encodeXmldbUriFor(name);
-                } catch(URISyntaxException e) {
+                } catch(final URISyntaxException e) {
                     listener.warn("Could not parse document name into a URI: " + e.getMessage());
                     return new SkippedEntryDeferredPermission();
                 }
@@ -213,7 +208,7 @@ public class RestoreHandler extends DefaultHandler {
             }
             return deferredPermission;
             
-        } catch(Exception e) {
+        } catch(final Exception e) {
             final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!";
             LOG.error(msg, e);
             listener.warn(msg);
@@ -221,7 +216,7 @@ public class RestoreHandler extends DefaultHandler {
         }
     }
 
-    private void restoreSubCollectionEntry(Attributes atts) throws SAXException {
+    private void restoreSubCollectionEntry(final Attributes atts) throws SAXException {
         
         final String name;
         if(atts.getValue("filename") != null) {
@@ -236,7 +231,7 @@ public class RestoreHandler extends DefaultHandler {
             if((currentCollectionName.equals("/db") && name.equals("system")) || (currentCollectionName.equals("/db/system") && name.equals("security"))) {
                 return;
             }
-        } catch(XMLDBException xe) {
+        } catch(final XMLDBException xe) {
             throw new RuntimeException(xe.getMessage(), xe);
         }
         
@@ -257,9 +252,9 @@ public class RestoreHandler extends DefaultHandler {
 
                 reader.setContentHandler(handler);
                 reader.parse(is);
-            } catch(ParserConfigurationException pce) {
+            } catch(final ParserConfigurationException pce) {
                 listener.error("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false));
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 listener.error("Could not read sub-collection for processing: " + ioe.getMessage());
             }
         } else {
@@ -267,7 +262,7 @@ public class RestoreHandler extends DefaultHandler {
         }
     }
     
-    private DeferredPermission restoreResourceEntry(Attributes atts) throws SAXException {
+    private DeferredPermission restoreResourceEntry(final Attributes atts) throws SAXException {
         
         final String skip = atts.getValue( "skip" );
 
@@ -330,7 +325,7 @@ public class RestoreHandler extends DefaultHandler {
         } else {
             try {
                 docUri = URIUtils.encodeXmldbUriFor(name);
-            } catch(URISyntaxException e) {
+            } catch(final URISyntaxException e) {
                 final String msg = "Could not parse document name into a URI: " + e.getMessage();
                 listener.error(msg);
                 LOG.error(msg, e);
@@ -379,14 +374,14 @@ public class RestoreHandler extends DefaultHandler {
                 if(created != null) {
                     try {
                         date_created = (new DateTimeValue(created)).getDate();
-                    } catch(XPathException xpe) {
+                    } catch(final XPathException xpe) {
                         listener.warn("Illegal creation date. Ignoring date...");
                     }
                 }
                 if(modified != null) {
                     try {
                         date_modified = (Date) (new DateTimeValue(modified)).getDate();
-                    } catch(XPathException xpe) {
+                    } catch(final XPathException xpe) {
                         listener.warn("Illegal modification date. Ignoring date...");
                     }
                 }
@@ -398,7 +393,7 @@ public class RestoreHandler extends DefaultHandler {
 
                     try {
                         ((EXistResource) res).setDocType(doctype);
-                    } catch (XMLDBException e1) {
+                    } catch(final XMLDBException e1) {
                         LOG.error(e1.getMessage(), e1);
                     }
                 }
@@ -415,7 +410,7 @@ public class RestoreHandler extends DefaultHandler {
                 
                 return deferredPermission;
             }
-        } catch(Exception e) {
+        } catch(final Exception e) {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
             LOG.error(e.getMessage(), e);
             return new SkippedEntryDeferredPermission();
@@ -424,14 +419,14 @@ public class RestoreHandler extends DefaultHandler {
         }
     }
 
-    private void restoreDeletedEntry(Attributes atts) {
+    private void restoreDeletedEntry(final Attributes atts) {
         final String name = atts.getValue("name");
         final String type = atts.getValue("type");
 
         if(type.equals("collection")) {
 
             try {
-                Collection child = currentCollection.getChildCollection(name);
+                final Collection child = currentCollection.getChildCollection(name);
 
                 if(child != null) {
                     currentCollection.setTriggersEnabled(false);
@@ -439,26 +434,26 @@ public class RestoreHandler extends DefaultHandler {
                     cmgt.removeCollection(name);
                     currentCollection.setTriggersEnabled(true);
                 }
-            } catch(XMLDBException e) {
+            } catch(final XMLDBException e) {
                 listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
             }
         } else if(type.equals("resource")) {
 
             try {
-                Resource resource = currentCollection.getResource(name);
+                final Resource resource = currentCollection.getResource(name);
 
                 if(resource != null) {
                     currentCollection.setTriggersEnabled(false);
                     currentCollection.removeResource(resource);
                     currentCollection.setTriggersEnabled(true);
                 }
-            } catch(XMLDBException e) {
+            } catch(final XMLDBException e) {
                 listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
             }
         }
     }
 
-    private void addACEToDeferredPermissions(Attributes atts) {
+    private void addACEToDeferredPermissions(final Attributes atts) {
         final int index = Integer.parseInt(atts.getValue("index"));
         final ACE_TARGET target = ACE_TARGET.valueOf(atts.getValue("target"));
         final String who = atts.getValue("who");
@@ -470,17 +465,17 @@ public class RestoreHandler extends DefaultHandler {
 
     private void setDeferredPermissions() {
         
-        DeferredPermission deferredPermission = deferredPermissions.pop();
+        final DeferredPermission deferredPermission = deferredPermissions.pop();
         deferredPermission.apply();
     }
     
-    private Date getDateFromXSDateTimeStringForItem(String strXSDateTime, String itemName) {
+    private Date getDateFromXSDateTimeStringForItem(final String strXSDateTime, final String itemName) {
         Date date_created = null;
 
         if(strXSDateTime != null) {
             try {
                 date_created = new DateTimeValue(strXSDateTime).getDate();
-            } catch(XPathException e2) {
+            } catch(final XPathException e2) {
             }
         }
 
@@ -495,7 +490,7 @@ public class RestoreHandler extends DefaultHandler {
         return date_created;
     }
     
-    private CollectionImpl mkcol(XmldbURI collPath, Date created) throws XMLDBException, URISyntaxException {
+    private CollectionImpl mkcol(final XmldbURI collPath, final Date created) throws XMLDBException, URISyntaxException {
         final XmldbURI[] allSegments = collPath.getPathSegments();
         final XmldbURI[] segments = Arrays.copyOfRange(allSegments, 1, allSegments.length); //drop the first 'db' segment
         final XmldbURI dbUri;
@@ -509,7 +504,7 @@ public class RestoreHandler extends DefaultHandler {
         CollectionImpl current = (CollectionImpl)DatabaseManager.getCollection(dbUri.toString(), dbUsername, dbPassword);
         XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
         
-        for(XmldbURI segment : segments) {
+        for(final XmldbURI segment : segments) {
             p = p.append(segment);
             XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
             CollectionImpl c = (CollectionImpl)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
