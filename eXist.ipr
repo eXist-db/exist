@@ -81,7 +81,11 @@
       <entry name="?*.tld" />
       <entry name="?*.config" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
@@ -372,9 +376,25 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$PROJECT_DIR$/../../Applications/xerces-2_9_1/src" />
+        <root url="file://$USER_HOME$/Applications/xerces-2_9_1/src" />
       </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
+    </library>
+    <library name="exquery-core">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/extensions/exquery/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/exquery/lib" recursive="false" />
+    </library>
+    <library name="exquery-restxq">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/extensions/exquery/restxq/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/exquery/restxq/lib" recursive="false" />
     </library>
     <library name="extensions">
       <CLASSES>
