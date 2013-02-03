@@ -122,7 +122,7 @@ public class DefaultCacheManager implements CacheManager
 
         shrinkThreshold = pool.getConfiguration().getInteger( SHRINK_THRESHOLD_PROPERTY );
 
-        totalMem        = cacheSize * 1024 * 1024;
+        totalMem        = cacheSize * 1024L * 1024L;
         
         Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
         
@@ -134,7 +134,7 @@ public class DefaultCacheManager implements CacheManager
 				totalMem = maxCache;
 				
 				LOG.warn( "The cacheSize=\"" + cacheSize + 
-						  "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024 ) + "k " + 
+						  "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024L ) + "k " + 
 						  "to avoid memory issues which may lead to database corruptions." 
 				);
 			}
@@ -148,7 +148,7 @@ public class DefaultCacheManager implements CacheManager
         this.maxCacheSize   = (int)( totalPageCount * MAX_MEM_USE );
         NumberFormat nf     = NumberFormat.getNumberInstance();
         
-        LOG.info( "Cache settings: " + nf.format( totalMem / 1024 ) + "k; totalPages: " + nf.format( totalPageCount ) + 
+        LOG.info( "Cache settings: " + nf.format( totalMem / 1024L ) + "k; totalPages: " + nf.format( totalPageCount ) + 
         	      "; maxCacheSize: " + nf.format( maxCacheSize ) + 
         	      "; cacheShrinkThreshold: " + nf.format( shrinkThreshold ) 
         );
