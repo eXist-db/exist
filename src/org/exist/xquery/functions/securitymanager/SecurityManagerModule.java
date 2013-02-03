@@ -43,11 +43,20 @@ public class SecurityManagerModule extends AbstractInternalModule {
     private final static String DESCRIPTION = "Module for interacting with the Security Manager";
 
     private final static FunctionDef[] functions = {
+        
+        new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_METADATA, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_REMOVE_ACCOUNT, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_PASSWD, AccountManagementFunction.class),
+        
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_USERNAME, FindUserFunction.class),
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME, FindUserFunction.class),
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME_PART, FindUserFunction.class),
         new FunctionDef(FindUserFunction.FNS_LIST_USERS, FindUserFunction.class),
-
+        new FunctionDef(FindUserFunction.FNS_USER_EXISTS, FindUserFunction.class),
+        
         new FunctionDef(UMaskFunction.FNS_GET_UMASK, UMaskFunction.class),
         new FunctionDef(UMaskFunction.FNS_SET_UMASK, UMaskFunction.class),
         
@@ -63,17 +72,29 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
         new FunctionDef(AccountStatusFunction.FNS_IS_ACCOUNT_ENABLED, AccountStatusFunction.class),
         new FunctionDef(AccountStatusFunction.FNS_SET_ACCOUNT_ENABLED, AccountStatusFunction.class),
-        
-        new FunctionDef(DeleteGroupFunction.FNS_DELETE_GROUP, DeleteGroupFunction.class),
 
+        new FunctionDef(GroupManagementFunction.FNS_CREATE_GROUP, GroupManagementFunction.class),
+        new FunctionDef(GroupManagementFunction.FNS_CREATE_GROUP_WITH_METADATA, GroupManagementFunction.class),
+        new FunctionDef(GroupManagementFunction.FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA, GroupManagementFunction.class),
+        new FunctionDef(GroupManagementFunction.FNS_REMOVE_GROUP, GroupManagementFunction.class),
+        new FunctionDef(GroupManagementFunction.FNS_DELETE_GROUP, GroupManagementFunction.class),
+
+        new FunctionDef(GroupMembershipFunctions.FNS_ADD_GROUP_MEMBER, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_REMOVE_GROUP_MEMBER, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_ADD_GROUP_MANAGER, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_REMOVE_GROUP_MANAGER, GroupMembershipFunctions.class),
         new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MANAGERS, GroupMembershipFunctions.class),
         new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_IS_DBA, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunctions.FNS_SET_USER_PRIMARY_GROUP, GroupMembershipFunctions.class),
 
         new FunctionDef(FindGroupFunction.FNS_LIST_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_USER_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_GROUPS, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_GET_USER_PRIMARY_GROUP, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_GROUP_EXISTS, FindGroupFunction.class),
 
         new FunctionDef(PermissionsFunctions.FNS_GET_PERMISSIONS, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_ADD_USER_ACE, PermissionsFunctions.class),

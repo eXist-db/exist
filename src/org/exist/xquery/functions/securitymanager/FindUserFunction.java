@@ -32,6 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -51,6 +52,7 @@ public class FindUserFunction extends BasicFunction {
     private final static QName qnFindUsersByName = new QName("find-users-by-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindUsersByNamePart = new QName("find-users-by-name-part", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnListUsers = new QName("list-users", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnUserExists = new QName("user-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
     public final static FunctionSignature FNS_FIND_USERS_BY_USERNAME = new FunctionSignature(
@@ -85,6 +87,15 @@ public class FindUserFunction extends BasicFunction {
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of users.")
     );
+    
+    public final static FunctionSignature FNS_USER_EXISTS = new FunctionSignature(
+        qnUserExists,
+        "Determines whether a user exists.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "The username to check for existence.")
+        },
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the user account exists, false otherwise.")
+    );
 
 
     public FindUserFunction(XQueryContext context, FunctionSignature signature) {
@@ -99,10 +110,10 @@ public class FindUserFunction extends BasicFunction {
 
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
         
-        final Sequence result = new ValueSequence();
+        final Sequence result;
         
         if(isCalledAs(qnListUsers.getLocalName())) {
-            
+            result = new ValueSequence();
             if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
                 result.add(new StringValue(SecurityManager.GUEST_USER));
             } else {
@@ -114,20 +125,26 @@ public class FindUserFunction extends BasicFunction {
                 throw new XPathException("You must be an authenticated user");
             }
             
-            final String startsWith = args[0].getStringValue();
-       
-            final List<String> usernames;
-            if(isCalledAs(qnFindUsersByUsername.getLocalName())) {
-                usernames = securityManager.findUsernamesWhereUsernameStarts(startsWith);
-            } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
-                usernames = securityManager.findUsernamesWhereNameStarts(startsWith);
-            } else if(isCalledAs(qnFindUsersByNamePart.getLocalName())) {
-                usernames = securityManager.findUsernamesWhereNamePartStarts(startsWith);
+            if(isCalledAs(qnUserExists.getLocalName())) {
+                 final String username = args[0].getStringValue();
+                 result = BooleanValue.valueOf(securityManager.hasAccount(username));
             } else {
-                throw new XPathException("Unknown function");
-            }
+                result = new ValueSequence();
+                final String startsWith = args[0].getStringValue();
 
-            addUserNamesToSequence(usernames, result);
+                final List<String> usernames;
+                if(isCalledAs(qnFindUsersByUsername.getLocalName())) {
+                    usernames = securityManager.findUsernamesWhereUsernameStarts(startsWith);
+                } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
+                    usernames = securityManager.findUsernamesWhereNameStarts(startsWith);
+                } else if(isCalledAs(qnFindUsersByNamePart.getLocalName())) {
+                    usernames = securityManager.findUsernamesWhereNamePartStarts(startsWith);
+                } else {
+                    throw new XPathException("Unknown function");
+                }
+
+                addUserNamesToSequence(usernames, result);
+            }
         }
         
         return result;

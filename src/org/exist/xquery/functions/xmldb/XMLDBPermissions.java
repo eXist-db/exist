@@ -30,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -55,15 +56,17 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 			"Returns the permissions assigned to the collection $collection-uri. " +
             XMLDBModule.COLLECTION_URI,
 			new SequenceType[] { ARG_COLLECTION },
-			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the collection permissions")
-		),
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the collection permissions"),
+            PermissionsFunctions.FNS_GET_PERMISSIONS
+        ),
 		new FunctionSignature(
 			new QName("get-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the permissions assigned to the resource $resource " +
 			"in collection $collection-uri. " +
             XMLDBModule.COLLECTION_URI,
 			new SequenceType[] { ARG_COLLECTION, ARG_RESOURCE },
-			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the resource permissions")
+			new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the resource permissions"),
+            PermissionsFunctions.FNS_GET_PERMISSIONS
 		)
 	};
 	

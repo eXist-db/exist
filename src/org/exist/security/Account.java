@@ -50,6 +50,15 @@ public interface Account extends Principal, User {
     @Override
 	public Group addGroup(Group group) throws PermissionDeniedException;
 
+    /**
+     * Set the primary group of the user
+     * If the user is not already in the group
+     * they will also be added
+     *
+     * @throws PermissionDeniedException
+     */
+    void setPrimaryGroup(Group group) throws PermissionDeniedException;
+
 	/**
 	 *  Remove the user to a group
 	 *  Added by {Marco.Tampucci and Massimo.Martinelli}@isti.cnr.it  
@@ -172,4 +181,5 @@ public interface Account extends Principal, User {
      * Set the umask of the user
      */
     public void setUserMask(final int umask);
+
 }

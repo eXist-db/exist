@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -50,15 +51,17 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = Logger.getLogger(XMLDBChmodResource.class);
     public final static FunctionSignature signature =
 	new FunctionSignature(
-			      new QName("chmod-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			      "Sets the mode of the resource $resource in collection $collection, $mode is the mode as xs:integer. " +
-			      XMLDBModule.REMEMBER_OCTAL_CALC,
-			      new SequenceType[] {
-				  new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection"),
-				  new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
-				  new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
-			      },
-			      new SequenceType(Type.ITEM, Cardinality.EMPTY));
+        new QName("chmod-resource", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Sets the mode of the resource $resource in collection $collection, $mode is the mode as xs:integer. " +
+        XMLDBModule.REMEMBER_OCTAL_CALC,
+        new SequenceType[] {
+            new FunctionParameterSequenceType("collection", Type.STRING, Cardinality.EXACTLY_ONE, "The collection"),
+            new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
+            new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
+        },
+        new SequenceType(Type.ITEM, Cardinality.EMPTY),
+        PermissionsFunctions.FNS_CHMOD
+    );
 
 	
     public XMLDBChmodResource(XQueryContext context) {

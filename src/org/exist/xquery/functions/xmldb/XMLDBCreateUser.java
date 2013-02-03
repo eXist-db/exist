@@ -32,6 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.AccountManagementFunction;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -66,7 +67,7 @@ public class XMLDBCreateUser extends BasicFunction {
                 new FunctionParameterSequenceType("home-collection-uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The home collection URI") 
             }, 
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
-            "$home-collection-uri has no effect since 2.0. User the simplified version."
+            "$home-collection-uri has no effect since 2.0. You should use the sm:create-account function from the SecurityManager module instead."
         ),
         new FunctionSignature(
             new QName("create-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -81,7 +82,8 @@ public class XMLDBCreateUser extends BasicFunction {
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The password"),
                 new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ONE_OR_MORE, "The group memberships")
             }, 
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA
         )
     };
 
