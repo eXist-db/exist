@@ -41,6 +41,7 @@ import javax.xml.transform.OutputKeys;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import org.exist.security.Permission;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -448,6 +449,7 @@ public class XmlRpcTest {
 			params.add(digest);
 			params.add(new String[] { "guest" });
 			params.add(true);
+                        params.add(Permission.DEFAULT_UMASK);
 			params.add(new HashMap<String, String>());
             
 			XmlRpcClient xmlrpc = getClient();
