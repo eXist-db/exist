@@ -47,6 +47,9 @@ public class MessageReceiverStartupTrigger implements StartupTrigger {
      * Helper method to give resources back
      */
     private void closeSilent(Context context, Connection connection, Session session) {
+        
+        LOG.info("Closing JMS session, connection and context");
+        
         if (session != null) {
             try {
                 session.close();
