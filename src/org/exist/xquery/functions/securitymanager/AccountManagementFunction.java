@@ -1,7 +1,6 @@
 
 package org.exist.xquery.functions.securitymanager;
 
-import org.aspectj.org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.QName;
