@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2011-2013 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 package org.exist.storage.sync;
 
 import java.io.File;
@@ -22,7 +43,7 @@ public class SyncTask implements SystemTask {
         return JOB_GROUP;
     }
 
-    private File partition;
+    private File dataDir;
     private long diskSpaceMin = 64 * 1024L * 1024L;
 
     @Override
@@ -38,22 +59,20 @@ public class SyncTask implements SystemTask {
         if (min != null)
             diskSpaceMin = min * 1024L * 1024L;
 
-        File homeDir = config.getExistHome();
-        partition = homeDir;
-        File parent = homeDir.getParentFile();
-        while (parent != null) {
-            partition = parent;
-            parent = parent.getParentFile();
-        }
-        LOG.info("Using Partition: " + partition.getAbsolutePath() + ". Minimal disk space required for database " +
-            "to continue operations: " + diskSpaceMin);
+        // fixme! - Shouldn't it be data dir AND journal dir we check
+        // rather than EXIST_HOME? /ljo
+        dataDir = new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR));
+        LOG.info("Using DATA_DIR: " + dataDir.getAbsolutePath() + ". Minimal disk space required for database " +
+                 "to continue operations: " + (diskSpaceMin / 1024 / 1024) + "mb");
+        long space = dataDir.getUsableSpace();
+        LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
     }
 
     @Override
     public void execute(DBBroker broker) throws EXistException {
         BrokerPool pool = broker.getBrokerPool();
         if (!checkDiskSpace(pool)) {
-            LOG.fatal("Partition " + partition.getAbsolutePath() + " is running out of disk space. " +
+            LOG.fatal("Partition containing DATA_DIR: " + dataDir.getAbsolutePath() + " is running out of disk space. " +
                 "Switching eXist-db to read only to prevent data loss!");
             pool.setReadOnly();
         }
@@ -66,8 +85,8 @@ public class SyncTask implements SystemTask {
     }
 
     private boolean checkDiskSpace(BrokerPool pool) {
-        long space = partition.getUsableSpace();
-        //LOG.info("Usable space on partition " + partition.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
+        long space = dataDir.getUsableSpace();
+        //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
         return space > diskSpaceMin;
     }
 }
