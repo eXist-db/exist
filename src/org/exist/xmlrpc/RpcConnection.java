@@ -5648,19 +5648,6 @@ public class RpcConnection implements RpcAPI {
         brokerPool.exitServiceMode(user);
     }
 
-    public void restorePkgRepo() throws EXistException, IOException, PermissionDeniedException, PackageException {
-        DBBroker broker = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
-
-            RepoBackup.restore(broker);
-
-            factory.getBrokerPool().reloadExpathRepo();
-        } finally {
-            factory.getBrokerPool().release(broker);
-        }
-    }
-
 	@Override
 	public void runCommand(XmldbURI collectionURI, Vector<String> params) throws EXistException, PermissionDeniedException {
 
