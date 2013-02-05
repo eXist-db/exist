@@ -88,12 +88,6 @@ public class Restore {
                 reader.parse(is);
             }
 
-//            BackupDescriptor rootDesc = getBackupDescriptor(f);
-//            File repoBackup = rootDesc.getRepoBackup();
-//            // repoBackup should be null unless we're doing a full restore
-//            if (repoBackup != null) {
-//                restorePkgRepo(listener, repoBackup, uri, username, password);
-//            }
         } finally {
             listener.restoreFinished();
         }
@@ -174,25 +168,5 @@ public class Restore {
         mgmt.updateAccount(dba);
 
         return adminPassword;
-    }
-
-    private void restorePkgRepo(RestoreListener listener, File archive, String uri, String username, String password) throws XMLDBException, URISyntaxException {
-        final XmldbURI dbUri;
-
-        if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
-            dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
-        } else {
-            dbUri = XmldbURI.xmldbUriFor(uri);
-        }
-
-        final Collection root = DatabaseManager.getCollection(dbUri.toString(), username, password);
-        BinaryResource res = (BinaryResource) root.createResource(RepoBackup.REPO_ARCHIVE, "BinaryResource");
-        res.setContent(archive);
-        root.storeResource(res);
-
-        DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        mgr.restorePkgRepo();
-
-        root.removeResource(res);
     }
 }
