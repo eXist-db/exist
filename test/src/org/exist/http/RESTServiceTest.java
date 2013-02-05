@@ -63,9 +63,9 @@ public class RESTServiceTest {
 
     private static JettyStart server = null;
     // jetty.port.standalone
-    private final static String SERVER_URI = "http://localhost:" + System.getProperty("jetty.port") + "/rest";
+    private final static String SERVER_URI = "http://localhost:" + System.getProperty("jetty.port", "8088") + "/rest";
 
-    private final static String SERVER_URI_REDIRECTED = "http://localhost:" + System.getProperty("jetty.port");
+    private final static String SERVER_URI_REDIRECTED = "http://localhost:" + System.getProperty("jetty.port", "8088");
 
     private final static String COLLECTION_URI = SERVER_URI + XmldbURI.ROOT_COLLECTION + "/test";
 
@@ -113,9 +113,9 @@ public class RESTServiceTest {
     private final static String TEST_XQUERY =
     	"xquery version \"1.0\";\n" +
         "declare option exist:serialize \"method=text media-type=text/text\";\n" +
-        "import module namespace req=\"http://exist-db.org/xquery/request\";\n" +
+        "import module namespace request=\"http://exist-db.org/xquery/request\";\n" +
     	"import module namespace t=\"http://test.foo\" at \"module.xq\";\n" +
-    	"let $param := req:get-parameter('p', ())\n" +
+    	"let $param := request:get-parameter('p', ())\n" +
     	"return\n" +
     	"	($param, ' ', $t:VAR)";
 

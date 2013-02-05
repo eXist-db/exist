@@ -74,6 +74,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exquery.http.HttpRequest;
 import org.exquery.restxq.Namespace;
 import org.exquery.restxq.ResourceFunction;
 import org.exquery.restxq.ResourceFunctionExecuter;
@@ -94,9 +95,13 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     public final static QName XQ_VAR_BASE_URI = new QName("base-uri", Namespace.ANNOTATION_NS);
     public final static QName XQ_VAR_URI = new QName("uri", Namespace.ANNOTATION_NS);
     
+    //TODO generalise with RequestModule
+    private final static String EXQ_REQUEST_ATTR = "exquery-request";
+    
     private final BrokerPool brokerPool;
     private final String uri;
     private final String baseUri;
+    
 
     public ResourceFunctionExecutorImpl(final BrokerPool brokerPool, final String baseUri, final String uri) {
         this.brokerPool = brokerPool;
@@ -109,7 +114,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     }
     
     @Override
-    public Sequence execute(final ResourceFunction resourceFunction, final Iterable<TypedArgumentValue> arguments) throws RestXqServiceException {
+    public Sequence execute(final ResourceFunction resourceFunction, final Iterable<TypedArgumentValue> arguments, final HttpRequest request) throws RestXqServiceException {
         
         final RestXqServiceCompiledXQueryCache cache = RestXqServiceCompiledXQueryCacheImpl.getInstance();
         
@@ -131,6 +136,9 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             final UserDefinedFunction fn = findFunction(xquery, resourceFunction.getFunctionSignature());
             
             final XQueryContext xqueryContext = xquery.getContext();
+            
+            //set the request object - can later be used by the EXQuery Request Module
+            xqueryContext.setAttribute(EXQ_REQUEST_ATTR, request);
             
             //TODO this is a workaround?
             declareVariables(xqueryContext);

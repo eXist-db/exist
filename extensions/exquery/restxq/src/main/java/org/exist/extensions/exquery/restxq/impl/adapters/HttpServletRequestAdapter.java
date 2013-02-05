@@ -31,12 +31,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
-import org.exquery.http.HttpHeaderName;
 import org.exquery.http.HttpMethod;
 import org.exquery.http.HttpRequest;
 
@@ -63,10 +63,55 @@ public class HttpServletRequestAdapter implements HttpRequest {
     }
     
     @Override
+    public String getScheme() {
+        return request.getScheme();
+    }
+    
+    @Override
+    public String getHostname() {
+        return request.getServerName();
+    }
+    
+    @Override
+    public int getPort() {
+        return request.getServerPort();
+    }
+    
+    @Override
+    public String getQuery() {
+        return request.getQueryString();
+    }
+    
+    @Override
     public String getPath() {
         return request.getPathInfo();
     }
-
+    
+    @Override
+    public String getURI() {
+        return request.getRequestURI();
+    }
+    
+    @Override
+    public String getAddress() {
+        return request.getLocalAddr();
+    }
+    
+    @Override
+    public String getRemoteHostname() {
+        return request.getRemoteHost();
+    }
+    
+    @Override
+    public String getRemoteAddress() {
+        return request.getRemoteAddr();
+    }
+    
+    @Override
+    public int getRemotePort() {
+        return request.getRemotePort();
+    }
+    
     @Override
     public InputStream getInputStream() throws IOException {
         
@@ -90,10 +135,33 @@ public class HttpServletRequestAdapter implements HttpRequest {
     public int getContentLength() {
         return request.getContentLength();
     }
+    
+    @Override
+    public List<String> getHeaderNames() {
+        final List<String> names = new ArrayList<String>();
+        for(final Enumeration<String> enumNames = request.getHeaderNames(); enumNames.hasMoreElements();) {
+            names.add(enumNames.nextElement());
+        }
+        return names;
+    }
 
     @Override
     public String getHeader(final String httpHeaderName) {
         return request.getHeader(httpHeaderName);
+    }
+    
+    @Override
+    public String getCookieValue(final String cookieName) {
+        final Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for(final Cookie cookie : cookies) {
+                if(cookie.getName().equals(cookieName)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        
+        return null;
     }
     
     @Override
@@ -152,6 +220,15 @@ public class HttpServletRequestAdapter implements HttpRequest {
             }
         }
         return null;
+    }
+    
+    @Override
+    public List<String> getParameterNames() {
+        final List<String> names = new ArrayList<String>();
+        for(final Enumeration<String> enumNames = request.getParameterNames(); enumNames.hasMoreElements();) {
+            names.add(enumNames.nextElement());
+        }
+        return names;
     }
     
     private Map<String, List<String>> extractFormFields(InputStream in) throws IOException {
