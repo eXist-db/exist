@@ -30,6 +30,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -37,7 +39,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
@@ -47,9 +48,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
@@ -87,11 +86,13 @@ import org.exist.storage.serializers.Serializer.HttpContext;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.VirtualTempFile;
 import org.exist.util.VirtualTempFileInputSource;
+import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.json.*;
@@ -169,6 +170,10 @@ public class RESTServer {
     private boolean safeMode = false;
     private SessionManager sessionManager;
 
+    //EXQuery Request Module details
+    private String xqueryContextExqueryRequestAttribute = null;
+    private Constructor cstrHttpServletRequestAdapter = null;
+    
     // Constructor
     public RESTServer(BrokerPool pool, String formEncoding,
             String containerEncoding, boolean useDynamicContentType, boolean safeMode) {
@@ -177,7 +182,31 @@ public class RESTServer {
         this.useDynamicContentType = useDynamicContentType;
         this.safeMode = safeMode;
         this.sessionManager = new SessionManager(pool);
+        
+        //get (optiona) EXQuery Request Module details
+        try {
+            Class clazz = Class.forName("org.exist.extensions.exquery.modules.request.RequestModule");
+            if(clazz != null) {
+                final Field fldExqRequestAttr = clazz.getDeclaredField("EXQ_REQUEST_ATTR");
+                if(fldExqRequestAttr != null) {
+                    this.xqueryContextExqueryRequestAttribute = (String)fldExqRequestAttr.get(null);
+                    
+                    if(this.xqueryContextExqueryRequestAttribute != null) {
+                        clazz = Class.forName("org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter");
+                        if(clazz != null) {
+                            this.cstrHttpServletRequestAdapter = clazz.getConstructor(HttpServletRequest.class, FilterInputStreamCacheConfiguration.class);
+                        }
+                    }
+                    
+                }
+            }
+        } catch(final Exception e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+            }
+        }
     }
+    
 
     /**
      * Handle GET request. In the simplest case just returns the document or
@@ -1341,7 +1370,7 @@ public class RESTServer {
      * @param response
      * @throws XPathException
      */
-    private HttpRequestWrapper declareVariables(XQueryContext context, ElementImpl variables,
+    private HttpRequestWrapper declareVariables(final XQueryContext context, ElementImpl variables,
             HttpServletRequest request, HttpServletResponse response)
             throws XPathException {
 
@@ -1354,13 +1383,33 @@ public class RESTServer {
         context.declareVariable(ResponseModule.PREFIX + ":response", respw);
         context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession(false));
 
+        //enable EXQuery Request Module (if present)
+        try { 
+            if(xqueryContextExqueryRequestAttribute != null && cstrHttpServletRequestAdapter != null) {
+                final Object exqueryRequestAdapter = cstrHttpServletRequestAdapter.newInstance(request, new FilterInputStreamCacheConfiguration(){
+                    @Override
+                    public String getCacheClass() {
+                        return (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
+                    }
+                });
+
+                if(exqueryRequestAdapter != null) {
+                    context.setAttribute(xqueryContextExqueryRequestAttribute, exqueryRequestAdapter);
+                }
+            }     
+        } catch(final Exception e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+            }
+        }
+        
         if (variables != null) {
             declareExternalAndXQJVariables(context, variables);
         }
 
         return reqw;
     }
-
+    
     private void declareExternalAndXQJVariables(XQueryContext context, ElementImpl variables) throws XPathException {
 
         ValueSequence varSeq = new ValueSequence();
