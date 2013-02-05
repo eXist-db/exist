@@ -175,10 +175,22 @@ public class RestXqTrigger extends FilteringTrigger {
         //find and remove services from modules that depend on this one
         for(final String dependant : getDependants(xqueryLocation)) {
             try {
-                getRegistry(broker).deregister(new URI(dependant));
                 
-                //record the now missing dependency
-                recordMissingDependency(xqueryLocation.toString(), XmldbURI.create(dependant));
+                //TODO This null check is a temporary workaround
+                //as a NPE in the URI class was reported by Wolf
+                //where dependant was null. I can only imagine
+                //that another thread interrupted and removed it
+                //from the hashmap that it comes from.
+                //its quite possible the use of synchronized around
+                //the various maps in this class is not sufficient in scope
+                //and we should move to some locks and operating over closures
+                //on the maps.
+                if(dependant != null) {
+                    getRegistry(broker).deregister(new URI(dependant));
+
+                    //record the now missing dependency
+                    recordMissingDependency(xqueryLocation.toString(), XmldbURI.create(dependant));
+                }
             } catch(final URISyntaxException urise) {
                 LOG.error(urise.getMessage(), urise);
             }
