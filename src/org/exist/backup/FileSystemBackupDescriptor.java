@@ -144,7 +144,6 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
         return( null );
     }
 
-
     public File getParentDir()
     {
         return( descriptor.getParentFile().getParentFile().getParentFile() );
@@ -158,7 +157,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 
     @Override
     public File getRepoBackup() throws IOException {
-        File archive = new File(getParentDir(), RepoBackup.REPO_ARCHIVE);
+        File archive = new File(descriptor.getParentFile().getParentFile(), RepoBackup.REPO_ARCHIVE);
         if (archive.exists())
             return archive;
         return null;

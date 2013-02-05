@@ -33,6 +33,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.repo.RepoBackup;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
 import org.exist.util.EXistInputSource;
@@ -185,11 +186,13 @@ public class Restore {
         }
 
         final Collection root = DatabaseManager.getCollection(dbUri.toString(), username, password);
-        BinaryResource res = (BinaryResource) root.createResource("expathrepo.zip", "BinaryResource");
+        BinaryResource res = (BinaryResource) root.createResource(RepoBackup.REPO_ARCHIVE, "BinaryResource");
         res.setContent(archive);
         root.storeResource(res);
 
         DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         mgr.restorePkgRepo();
+
+        root.removeResource(res);
     }
 }
