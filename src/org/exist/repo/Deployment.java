@@ -223,6 +223,7 @@ public class Deployment {
             // fails silently if package dir is not found?
             return null;
         DocumentImpl repoXML = getRepoXML(packageDir);
+        Package pkg = getPackage(pkgName, repo);
         if (repoXML != null) {
             ElementImpl target = null;
             try {
@@ -231,15 +232,17 @@ public class Deployment {
                 if (cleanup != null) {
                     runQuery(null, packageDir, cleanup.getStringValue(), false);
                 }
-                if (target != null) {
-                    uninstall(target);
-                }
+
+                uninstall(pkg, target);
                 return target == null ? null : target.getStringValue();
             } catch (XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             } catch (IOException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             }
+        } else {
+            // we still may need to remove the copy of the package from /db/system/repo
+            uninstall(pkg, null);
         }
         return null;
     }
@@ -390,14 +393,27 @@ public class Deployment {
         }
     }
 
-    private void uninstall(ElementImpl target)
+    /**
+     * Delete the target collection of the package. If there's no repo.xml descriptor,
+     * target will be null.
+     *
+     * @param pkg
+     * @param target
+     * @throws PackageException
+     */
+    private void uninstall(Package pkg, ElementImpl target)
             throws PackageException {
         // determine target collection
         XmldbURI targetCollection;
-        try {
-            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
-        } catch (Exception e) {
-            throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+        if (target == null) {
+            String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+            targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
+        } else {
+            try {
+                targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+            } catch (Exception e) {
+                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+            }
         }
         TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Txn txn = mgr.beginTransaction();
@@ -405,13 +421,15 @@ public class Deployment {
             Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             if (collection != null)
                 broker.removeCollection(txn, collection);
-
-            XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
-            collection = broker.getOrCreateCollection(txn, configCollection);
-            if (collection != null)
-                broker.removeCollection(txn, collection);
+            if (target != null) {
+                XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
+                collection = broker.getOrCreateCollection(txn, configCollection);
+                if (collection != null)
+                    broker.removeCollection(txn, collection);
+            }
             mgr.commit(txn);
         } catch (Exception e) {
+            LOG.error("Exception occurred while removing package.", e);
             mgr.abort(txn);
         }
     }

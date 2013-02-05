@@ -113,6 +113,11 @@
         <echo message="Downloading libraries required by the expath package module"/>
         <echo message="------------------------------------------------------"/>
 
+        <copy todir="${classes}/org/exist/xquery/modules/expathrepo">
+            <fileset dir="${src}/org/exist/xquery/modules/expathrepo">
+                <include name="*.xql"/>
+            </fileset>
+        </copy>
         <!-- disabled because teamcity doesn't like it -->
           <!--get src="${include.module.expathrepo.url}"
                 dest="${top.dir}/${lib.core}"/-->
