@@ -83,6 +83,7 @@ import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
+import org.expath.pkg.repo.PackageException;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -5647,13 +5648,14 @@ public class RpcConnection implements RpcAPI {
         brokerPool.exitServiceMode(user);
     }
 
-    public void restorePkgRepo() throws EXistException, IOException, PermissionDeniedException {
+    public void restorePkgRepo() throws EXistException, IOException, PermissionDeniedException, PackageException {
         DBBroker broker = null;
         try {
             broker = factory.getBrokerPool().get(user);
 
             RepoBackup.restore(broker);
 
+            factory.getBrokerPool().reloadExpathRepo();
         } finally {
             factory.getBrokerPool().release(broker);
         }
