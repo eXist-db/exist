@@ -24,7 +24,6 @@ package org.exist.xquery.functions.xmldb;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -49,9 +48,7 @@ public class XMLDBModule extends AbstractInternalModule {
     public final static String COLLECTION_URI = "Collection URIs can be specified either as a simple collection path or an XMLDB URI.";
     public final static String ANY_URI = "Resource URIs can be specified either as a simple collection path, an XMLDB URI or any URI.";
 
-    public final static FunctionDef[] functions = {
-        new FunctionDef(XMLDBAddUserToGroup.signature, XMLDBAddUserToGroup.class),
-        new FunctionDef(XMLDBRemoveUserFromGroup.signature, XMLDBRemoveUserFromGroup.class),
+    public final static FunctionDef[] functions = {        
         new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
         new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
         new FunctionDef(XMLDBStore.signatures[0], XMLDBStore.class),
@@ -60,12 +57,6 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBLoadFromPattern.signatures[1], XMLDBLoadFromPattern.class),
         new FunctionDef(XMLDBLoadFromPattern.signatures[2], XMLDBLoadFromPattern.class),
         new FunctionDef(XMLDBLoadFromPattern.signatures[3], XMLDBLoadFromPattern.class),
-        new FunctionDef(XMLDBAuthenticate.authenticateSignature, XMLDBAuthenticate.class),
-        new FunctionDef(XMLDBAuthenticate.loginSignatures[0], XMLDBAuthenticate.class),
-        new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class),
-        new FunctionDef(XMLDBGetCurrentUser.signature, XMLDBGetCurrentUser.class),
-        new FunctionDef(XMLDBGetCurrentUserAttribute.signature, XMLDBGetCurrentUserAttribute.class),
-        new FunctionDef(XMLDBGetCurrentUserAttributeNames.signature, XMLDBGetCurrentUserAttributeNames.class),
         new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
         new FunctionDef(XMLDBCopy.signatures[0], XMLDBCopy.class),
         new FunctionDef(XMLDBCopy.signatures[1], XMLDBCopy.class),
@@ -80,36 +71,10 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBCreated.lastModifiedSignature, XMLDBCreated.class),
         new FunctionDef(XMLDBCreated.createdSignatures[0], XMLDBCreated.class),
         new FunctionDef(XMLDBCreated.createdSignatures[1], XMLDBCreated.class),
-        new FunctionDef(XMLDBPermissions.signatures[0], XMLDBPermissions.class),
-        new FunctionDef(XMLDBPermissions.signatures[1], XMLDBPermissions.class),
         new FunctionDef(XMLDBSize.signature, XMLDBSize.class),
-        new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[0], XMLDBGetUserOrGroup.class),
-        new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[1], XMLDBGetUserOrGroup.class),
-        new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[0], XMLDBGetUserOrGroup.class),
-        new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[1], XMLDBGetUserOrGroup.class),
         new FunctionDef(XMLDBGetChildCollections.signature, XMLDBGetChildCollections.class),
         new FunctionDef(XMLDBGetChildResources.signature, XMLDBGetChildResources.class),
-        new FunctionDef(XMLDBSetCollectionPermissions.signature, XMLDBSetCollectionPermissions.class),
-        new FunctionDef(XMLDBSetResourcePermissions.signature, XMLDBSetResourcePermissions.class),
-        new FunctionDef(XMLDBUserAccess.fnExistsUser, XMLDBUserAccess.class),
-        new FunctionDef(XMLDBUserAccess.fnUserGroups, XMLDBUserAccess.class),
-        new FunctionDef(XMLDBUserAccess.fnUserPrimaryGroup, XMLDBUserAccess.class),
-        new FunctionDef(XMLDBUserAccess.fnUserHome, XMLDBUserAccess.class),
-        new FunctionDef(XMLDBCreateUser.signatures[0], XMLDBCreateUser.class),
-        new FunctionDef(XMLDBCreateUser.signatures[1], XMLDBCreateUser.class),
-        new FunctionDef(XMLDBChangeUser.signatures[0], XMLDBChangeUser.class),
-        new FunctionDef(XMLDBChangeUser.signatures[1], XMLDBChangeUser.class),
-        new FunctionDef(XMLDBDeleteUser.signature, XMLDBDeleteUser.class),
-        new FunctionDef(XMLDBCreateGroup.signatures[0], XMLDBCreateGroup.class),
-        new FunctionDef(XMLDBCreateGroup.signatures[1], XMLDBCreateGroup.class),
-        new FunctionDef(XMLDBGroupExists.signatures[0], XMLDBGroupExists.class),
-        new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
-        new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
         new FunctionDef(XMLDBCollectionAvailable.signatures[0], XMLDBCollectionAvailable.class),
-        new FunctionDef(XMLDBPermissionsToString.signatures[0], XMLDBPermissionsToString.class),
-        new FunctionDef(XMLDBPermissionsToString.signatures[1], XMLDBPermissionsToString.class),
-        new FunctionDef(XMLDBIsAdmin.signature, XMLDBIsAdmin.class),
-        new FunctionDef(XMLDBIsAuthenticated.signature, XMLDBIsAuthenticated.class),
         new FunctionDef(XMLDBURIFunctions.signatures[0], XMLDBURIFunctions.class),
         new FunctionDef(XMLDBURIFunctions.signatures[1], XMLDBURIFunctions.class),
         new FunctionDef(XMLDBURIFunctions.signatures[2], XMLDBURIFunctions.class),
@@ -121,9 +86,47 @@ public class XMLDBModule extends AbstractInternalModule {
         new FunctionDef(XMLDBReindex.signature, XMLDBReindex.class),
         new FunctionDef(XMLDBDefragment.signatures[0], XMLDBDefragment.class),
         new FunctionDef(XMLDBDefragment.signatures[1], XMLDBDefragment.class),
-        new FunctionDef(XMLDBGetUsers.signature, XMLDBGetUsers.class),
         new FunctionDef(FindLastModifiedSince.signature, FindLastModifiedSince.class),
-        new FunctionDef(XMLDBMatchCollection.signature, XMLDBMatchCollection.class)
+        new FunctionDef(XMLDBMatchCollection.signature, XMLDBMatchCollection.class),
+
+        /* TODO these functions for login/logout etc need to be re-engineered and added to the SecurityManagerModule (deprecating these) */
+        new FunctionDef(XMLDBAuthenticate.authenticateSignature, XMLDBAuthenticate.class),
+        new FunctionDef(XMLDBAuthenticate.loginSignatures[0], XMLDBAuthenticate.class),
+        new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class),
+        new FunctionDef(XMLDBGetCurrentUser.signature, XMLDBGetCurrentUser.class),
+        
+        /** security functions, deprecated by those in SecurityManagerModule **/
+        new FunctionDef(XMLDBSetCollectionPermissions.signature, XMLDBSetCollectionPermissions.class),
+        new FunctionDef(XMLDBSetResourcePermissions.signature, XMLDBSetResourcePermissions.class),
+        new FunctionDef(XMLDBUserAccess.fnExistsUser, XMLDBUserAccess.class),
+        new FunctionDef(XMLDBUserAccess.fnUserGroups, XMLDBUserAccess.class),
+        new FunctionDef(XMLDBUserAccess.fnUserPrimaryGroup, XMLDBUserAccess.class),
+        new FunctionDef(XMLDBUserAccess.fnUserHome, XMLDBUserAccess.class),
+        new FunctionDef(XMLDBCreateUser.signatures[0], XMLDBCreateUser.class),
+        new FunctionDef(XMLDBCreateUser.signatures[1], XMLDBCreateUser.class),
+        new FunctionDef(XMLDBDeleteUser.signature, XMLDBDeleteUser.class),
+        new FunctionDef(XMLDBChangeUser.signatures[0], XMLDBChangeUser.class),
+        new FunctionDef(XMLDBChangeUser.signatures[1], XMLDBChangeUser.class),
+        new FunctionDef(XMLDBCreateGroup.signatures[0], XMLDBCreateGroup.class),
+        new FunctionDef(XMLDBCreateGroup.signatures[1], XMLDBCreateGroup.class),
+        new FunctionDef(XMLDBAddUserToGroup.signature, XMLDBAddUserToGroup.class),
+        new FunctionDef(XMLDBRemoveUserFromGroup.signature, XMLDBRemoveUserFromGroup.class),
+        new FunctionDef(XMLDBGroupExists.signatures[0], XMLDBGroupExists.class),
+        new FunctionDef(XMLDBChmodCollection.signature, XMLDBChmodCollection.class),
+        new FunctionDef(XMLDBChmodResource.signature, XMLDBChmodResource.class),
+        new FunctionDef(XMLDBPermissions.signatures[0], XMLDBPermissions.class),
+        new FunctionDef(XMLDBPermissions.signatures[1], XMLDBPermissions.class),
+        new FunctionDef(XMLDBPermissionsToString.signatures[0], XMLDBPermissionsToString.class),
+        new FunctionDef(XMLDBPermissionsToString.signatures[1], XMLDBPermissionsToString.class),
+        new FunctionDef(XMLDBIsAdmin.signature, XMLDBIsAdmin.class),
+        new FunctionDef(XMLDBIsAuthenticated.signature, XMLDBIsAuthenticated.class),
+        new FunctionDef(XMLDBGetUsers.signature, XMLDBGetUsers.class),
+        new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[0], XMLDBGetUserOrGroup.class),
+        new FunctionDef(XMLDBGetUserOrGroup.getGroupSignatures[1], XMLDBGetUserOrGroup.class),
+        new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[0], XMLDBGetUserOrGroup.class),
+        new FunctionDef(XMLDBGetUserOrGroup.getOwnerSignatures[1], XMLDBGetUserOrGroup.class),
+        new FunctionDef(XMLDBGetCurrentUserAttribute.signature, XMLDBGetCurrentUserAttribute.class),
+        new FunctionDef(XMLDBGetCurrentUserAttributeNames.signature, XMLDBGetCurrentUserAttributeNames.class)
     };
 
     static {

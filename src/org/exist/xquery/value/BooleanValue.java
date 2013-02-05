@@ -175,14 +175,15 @@ public class BooleanValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if(target.isAssignableFrom(BooleanValue.class))
-			return this;
-		else if(target == Boolean.class || target == boolean.class || target == Object.class)
-			return Boolean.valueOf(value);
-		else if(target == String.class || target == CharSequence.class) {
-			StringValue v = (StringValue)convertTo(Type.STRING);
-			return v.value;
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
+		if(target.isAssignableFrom(BooleanValue.class)) {
+			return (T)this;
+                } else if(target == Boolean.class || target == boolean.class || target == Object.class) {
+			return (T)Boolean.valueOf(value);
+                } else if(target == String.class || target == CharSequence.class) {
+			final StringValue v = (StringValue)convertTo(Type.STRING);
+			return (T)v.value;
 		}
 		
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +

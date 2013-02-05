@@ -95,6 +95,8 @@ public class InstallFunction extends BasicFunction {
             ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
             if (info != null && !info.getJars().isEmpty())
                 ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
+            // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
+            context.getBroker().getBrokerPool().getXQueryPool().clear();
             removed = BooleanValue.TRUE;
         } catch (PackageException ex ) {
         	logger.debug(ex.getMessage(), ex);

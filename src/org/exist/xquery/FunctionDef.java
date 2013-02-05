@@ -36,7 +36,7 @@ public class FunctionDef {
     protected final FunctionSignature signature;
     protected final Class<? extends Function> implementingClass;
 
-    public FunctionDef(FunctionSignature signature, Class<? extends Function> implementingClass) {
+    public FunctionDef(final FunctionSignature signature, final Class<? extends Function> implementingClass) {
         this.signature = signature;
         this.implementingClass = implementingClass;
     }

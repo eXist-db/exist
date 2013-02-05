@@ -195,13 +195,15 @@ public class QNameValue extends AtomicValue {
 	/**
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if (target.isAssignableFrom(QNameValue.class))
-			return this;
-		else if (target == String.class)
-			return getStringValue();
-		else if (target == Object.class)
-			return qname;
+        @Override
+	public <T> T toJavaObject(final Class<T> target) throws XPathException {
+		if (target.isAssignableFrom(QNameValue.class)) {
+			return (T)this;
+                } else if (target == String.class) {
+			return (T)getStringValue();
+                } else if (target == Object.class) {
+			return (T)qname;
+                }
 
 		throw new XPathException(
 			"cannot convert value of type "

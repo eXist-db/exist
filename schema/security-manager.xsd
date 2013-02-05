@@ -3,8 +3,9 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
     targetNamespace="http://exist-db.org/Configuration"
-    xmlns:sec="http://exist-db.org/Configuration"
-    xmlns:db="http://docbook.org/ns/docbook">
+    xmlns:cnf="http://exist-db.org/Configuration"
+    xmlns:db="http://docbook.org/ns/docbook"
+    version="2.0">
     
     <xs:annotation>
         <xs:documentation>
@@ -22,25 +23,45 @@
         </xs:documentation>
     </xs:annotation>
     
-    <xs:element name="security-manager">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="Authentication-Entry-Point" type="xs:anyURI"/>
-                <xs:element ref="sec:realm"/>
-            </xs:sequence>
-            <xs:attribute name="last-account-id" type="xs:int"/>
-            <xs:attribute name="last-group-id" type="xs:int"/>
-            <xs:attribute name="version" type="xs:decimal" fixed="2.0"/>
-        </xs:complexType>
-    </xs:element>
+    <xs:element name="security-manager" type="cnf:securityManagerType"/>
     
-    <xs:element name="realm">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:any/>
-            </xs:sequence>
-            <xs:attribute name="id" type="xs:string"/>
-            <xs:anyAttribute/>
-        </xs:complexType>
-    </xs:element>
+    <xs:complexType name="securityManagerType">
+        <xs:sequence>
+            <xs:element ref="cnf:authentication-entry-point"/>
+            <xs:element ref="cnf:events" minOccurs="0"/>
+            <xs:element ref="cnf:realm" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="last-account-id" type="xs:int"/>
+        <xs:attribute name="last-group-id" type="xs:int"/>
+        <xs:attribute name="version" type="xs:decimal" fixed="2.0"/>
+    </xs:complexType>
+    
+    <xs:element name="authentication-entry-point" type="cnf:authenticationEntryPointType"/>
+    
+    <xs:simpleType name="authenticationEntryPointType">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="events" type="cnf:eventsType"/>
+    
+    <xs:complexType name="eventsType">
+        <xs:attribute name="script-uri" type="xs:anyURI"/>
+    </xs:complexType>
+    
+    <xs:element name="realm" type="cnf:realmType"/>
+
+    <xs:complexType name="realmType">
+        <xs:sequence>
+            <xs:any namespace="http://exist-db.org/Configuration" processContents="lax"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="cnf:realmTypeId"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="realmTypeId">
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+    
 </xs:schema>

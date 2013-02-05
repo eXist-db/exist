@@ -160,9 +160,9 @@ public class VariableImpl implements Variable {
         this.initialized = initialized;
     }
 
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         if (value != null)
-            value.destroy(contextSequence);
+            value.destroy(context, contextSequence);
     }
 
 	public String toString() {

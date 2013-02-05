@@ -21,12 +21,8 @@
  */
 package org.exist.security;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
@@ -128,6 +124,28 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         }
 
         return group;
+    }
+
+    @Override
+    public void setPrimaryGroup(final Group group) throws PermissionDeniedException {
+
+        final Account user = getDatabase().getSubject();
+        group.assertCanModifyGroup(user);
+
+        if(!groups.contains(group)) {
+            addGroup(group);
+        }
+
+        Collections.sort(groups, new Comparator<Group>(){
+            @Override
+            public int compare(final Group o1, final Group o2) {
+                if(o1.getName().equals(group.getName())) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
     }
 	
     @Override

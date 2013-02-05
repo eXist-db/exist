@@ -10,11 +10,12 @@
         exist
             db-connection
                 startup
-                    trigger
+                    triggers
                 pool
                 recovery
                 security
                 watchdog
+            repository
             binary-manager
             indexer
             scheduler
@@ -458,13 +459,9 @@
             Job definitions:
             
             - type:
-            The type of the job to schedule. Must be either "startup", "system" 
+            The type of the job to schedule. Must be either "system" 
             or "user".
             
-                startup - Startup jobs are executed once during the
-                database startup but before the database becomes available,
-                these jobs are synchronous.
-                
                 system - System jobs require the database to be in a consistent state.
                 All database operations will be stopped until the method returns or 
                 throws an exception. Any exception will be caught and a warning written to
@@ -476,7 +473,6 @@
             - class:
             If the job is written in Java then this should be the name of the
             class that extends either -
-                org.exist.scheduler.StartupJob
                 org.exist.storage.SystemTask
                 org.exist.scheduler.UserJavaJob
             
@@ -746,7 +742,12 @@
             <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
             <module uri="http://exist-db.org/xquery/text"       class="org.exist.xquery.functions.text.TextModule" />
             <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
-            <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule" />
+            
+            <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
+                <!-- set to true to disable the util:eval functions -->
+                <parameter name="evalDisabled" value="false"/>
+            </module>
+            
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
 
@@ -775,14 +776,13 @@
             <!-- EXPathrepo module: required for managing external dependencies -->
             <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
 
-            <!-- EXPath Cryptographic Module -->
-            <!--
-            <module uri="http://expath.org/ns/crypto" class="org.expath.exist.crypto.ExistExpathCryptoModule" />
-            -->
-            
             <!-- EXQuery Modules -->
             <!-- RESTXQ -->
             <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
+            
+            <!-- Request Module -->           
+            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
+            
             
             <!-- 
                 Modules written in XQuery
@@ -854,7 +854,6 @@
             <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
             <module uri="http://exist-db.org/xquery/simple-ql"          class="org.exist.xquery.modules.simpleql.SimpleQLModule" />
             <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
-            <module uri="http://exist-db.org/xquery/svn"                class="org.exist.xquery.modules.svn.SVNModule" />
             <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
             <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
             <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />

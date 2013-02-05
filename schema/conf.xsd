@@ -102,6 +102,7 @@
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
+                        <xs:attribute name="cacheShrinkThreshold" type="xs:integer" default="10000"/>
                         <xs:attribute name="cacheSize" type="xs:string" default="48M"/>
                         <xs:attribute name="checkMaxCacheSize" type="xs:string" default="true"/>
                         <xs:attribute name="collectionCache" type="xs:string" default="24M"/>
@@ -109,9 +110,14 @@
                         <xs:attribute name="doc-ids" type="xs:string" default="default"/>
                         <xs:attribute name="files" type="xs:string" default="webapp/WEB-INF/data"/>
                         <xs:attribute name="free_mem_min" type="xs:integer" default="5"/>
-                        <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
+                        <xs:attribute name="minDiskSpace" type="xs:string" default="128M"/>
                         <xs:attribute name="nodesBuffer" type="xs:integer" default="-1"/>
-                        <xs:attribute name="cacheShrinkThreshold" type="xs:integer" default="10000"/>
+                        <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="repository">
+                    <xs:complexType>
+                        <xs:attribute name="root" type="xs:string" default="/db/apps"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="binary-manager">

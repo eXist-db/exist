@@ -8,17 +8,16 @@ xquery version "3.0";
     ------------------------------------------------------- :)
 
 declare namespace c="http://exist-db.org/xquery/controller";
+declare namespace expath="http://expath.org/ns/pkg";
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
 declare function local:get-dashboard() {
-	(: TODO: is there an easier way to determine the location of an app? :)
-	let $meta := repo:get-resource("http://exist-db.org/apps/dashboard", "repo.xml")
-	let $data := if (exists($meta)) then util:binary-to-string($meta) else ()
-	return
-    	if (exists($data)) then
-            util:parse($data)//repo:target/string()
+	let $path := collection(repo:get-root())//expath:package[@name = "http://exist-db.org/apps/dashboard"]
+    return
+        if ($path) then
+            substring-after(util:collection-name($path), repo:get-root())
         else
             ()
 };

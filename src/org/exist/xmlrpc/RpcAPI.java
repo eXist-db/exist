@@ -53,8 +53,9 @@ public interface RpcAPI {
     public static final String ERROR = "error";
 	public static final String LINE = "line";
 	public static final String COLUMN = "column";
-	
-	/**
+    public static final String MODULE_LOAD_PATH = "module-load-path";
+
+    /**
 	 * Return the database version.
 	 * 
 	 * @return database version
@@ -192,6 +193,9 @@ public interface RpcAPI {
 	 */
 	boolean hasCollection(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
+        Vector<String> getCollectionListing(final String collection)
+		throws EXistException, PermissionDeniedException, URISyntaxException;
+        
 	/**
 	 *  Get a list of all documents contained in the database.
 	 *
@@ -218,6 +222,17 @@ public interface RpcAPI {
 	HashMap<XmldbURI, List<Object>> listCollectionPermissions(String name)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
+        /**
+         * Determines whether a Collection exists in the database
+         * and whether the user may open the collection
+         * 
+         * @param collectionUri The URI of the collection of interest
+         * 
+         * @return true if the collection exists and the user can open it, false if the collection does not exist
+         * @throws PermissionDeniedException If the user does not have permission to open the collection
+         */
+        boolean existsAndCanOpenCollection(final String collectionUri) throws EXistException, PermissionDeniedException;
+        
 	/**
 	 *  Describe a collection: returns a struct with the  following fields:
 	 *  
@@ -610,7 +625,7 @@ public interface RpcAPI {
 	int executeQuery(byte[] xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
 
 	int executeQuery(String xpath, HashMap<String, Object> parameters) throws EXistException, PermissionDeniedException;
-
+        
 	/**
 	 *  Execute XPath/Xquery from path file (stored inside eXist)
 	 *  returned reference may be used later to get a summary of results or
@@ -730,13 +745,13 @@ public interface RpcAPI {
 	HashMap<String, Object> retrieveFirstChunk(int resultId, int num, HashMap<String, Object> parameters)
 		throws EXistException, PermissionDeniedException;
 
-	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, boolean isEnabled, Map<String, String> metadata)
+	boolean addAccount(String name, String passwd, String digestPassword,Vector<String> groups, Boolean isEnabled, Integer umask, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
         
 	boolean updateAccount(String name, String passwd, String digestPassword,Vector<String> groups)
 		throws EXistException, PermissionDeniedException;
 
-	boolean updateAccount(String name, String passwd, String digestPassword, Vector<String> groups, Boolean isEnabled, Map<String, String> metadata)
+	boolean updateAccount(String name, String passwd, String digestPassword, Vector<String> groups, Boolean isEnabled, Integer umask, Map<String, String> metadata)
 		throws EXistException, PermissionDeniedException;
 
 	boolean addGroup(String name, Map<String, String> metadata) throws EXistException, PermissionDeniedException;

@@ -30,6 +30,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 
@@ -131,5 +133,10 @@ public class FileSystemWriter implements BackupWriter
         OutputStream os       = new FileOutputStream( propFile );
         properties.store( os, "Backup properties" );
         os.close();
+    }
+
+    @Override
+    public void addToRoot(String name, File file) throws IOException {
+        FileUtils.copyFile(file, new File(rootDir, name));
     }
 }

@@ -50,11 +50,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.security.Permission;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -224,6 +227,31 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				return null;
 		}
 	
+    @Override
+    public ResourceSet executeStoredQuery(final String uri) throws XMLDBException {
+        final Subject preserveSubject = brokerPool.getSubject();
+        DBBroker broker = null;
+        Sequence result;
+        try {
+            broker = brokerPool.get(user);
+            final DocumentImpl resource = broker.getResource(new XmldbURI(uri), Permission.READ | Permission.EXECUTE);
+            if(resource == null) {
+                throw new XMLDBException(ErrorCodes.INVALID_URI, "No stored XQuery exists at: " + uri);
+            }
+            final Source xquerySource = new DBSource(broker, (BinaryDocument)resource, false);
+            return execute(xquerySource);
+        } catch(final EXistException ee) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ee.getMessage(), ee);
+        } catch(final PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pde.getMessage(), pde);
+        } finally {
+            if(broker != null) {
+                brokerPool.release(broker);
+            }
+            brokerPool.setSubject(preserveSubject);
+        }
+    }
+        
 	public CompiledExpression compile(String query) throws XMLDBException {
 		try {
 			return compileAndCheck(query);

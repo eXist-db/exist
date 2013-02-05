@@ -25,6 +25,7 @@ import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.collections.triggers.DocumentTriggersVisitor;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
@@ -49,6 +50,7 @@ public class IndexInfo {
     private DOMStreamer streamer;
     private DocumentTriggersVisitor triggersVisitor;
     private boolean creating = false;
+    private Permission oldDocPermissions = null;
     private CollectionConfiguration collectionConfig;
 
     IndexInfo(Indexer indexer, CollectionConfiguration collectionConfig) {
@@ -74,6 +76,14 @@ public class IndexInfo {
 
     public boolean isCreating() {
         return creating;
+    }
+    
+    public void setOldDocPermissions(final Permission oldDocPermissions) {
+        this.oldDocPermissions = oldDocPermissions;
+    }
+    
+    public Permission getOldDocPermissions() {
+        return oldDocPermissions;
     }
 
     void setReader(XMLReader reader, EntityResolver entityResolver) throws SAXException {

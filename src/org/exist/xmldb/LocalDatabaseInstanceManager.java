@@ -1,11 +1,16 @@
 package org.exist.xmldb;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.exist.EXistException;
+import org.exist.repo.RepoBackup;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.expath.pkg.repo.PackageException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -106,5 +111,26 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 	public boolean isXACMLEnabled() throws XMLDBException {
 		return pool.getSecurityManager().isXACMLEnabled();
 	}
+
+    public void restorePkgRepo() throws XMLDBException {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(user);
+
+            RepoBackup.restore(broker);
+
+            pool.reloadExpathRepo();
+        } catch (EXistException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+        } catch (IOException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
+        } catch (PackageException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } finally {
+            pool.release(broker);
+        }
+    }
 
 }

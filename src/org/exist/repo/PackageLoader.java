@@ -31,10 +31,51 @@ import java.io.IOException;
 public interface PackageLoader {
 
     /**
+     * Wrapper for the different version schemes supported by
+     * the expath spec.
+     */
+    public static class Version {
+
+        String min = null;
+        String max = null;
+        String semVer = null;
+        String version = null;
+
+        public String getMin() {
+            return min;
+        }
+
+        public String getMax() {
+            return max;
+        }
+
+        public String getSemVer() {
+            return semVer;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public Version(String version, boolean semver) {
+            if (semver)
+                this.semVer = version;
+            else
+                this.version = version;
+        }
+
+        public Version(String min, String max) {
+            this.min = min;
+            this.max = max;
+        }
+    }
+
+    /**
      * Locate the expath package identified by name.
      *
      * @param name unique name of the package
+     * @param version the version to install
      * @return a file containing the package or null if not found
      */
-    public File load(String name) throws IOException;
+    public File load(String name, Version version) throws IOException;
 }

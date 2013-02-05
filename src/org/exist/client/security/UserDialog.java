@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -48,6 +48,9 @@ public class UserDialog extends javax.swing.JFrame {
     private final UserManagementService userManagementService;
     private SortedListModel<String> availableGroupsModel = null;
     private SortedListModel<String> memberOfGroupsModel = null;
+    private String primaryGroup = null;
+    
+    private MemberOfGroupsListCellRenderer memberOfGroupsListCellRenderer = null;
     
     /**
      * Creates new form UserDialog
@@ -67,6 +70,8 @@ public class UserDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        pmMemberOfGroups = new javax.swing.JPopupMenu();
+        cbmiPrimaryGroup = new javax.swing.JCheckBoxMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
         lblUsername = new javax.swing.JLabel();
         txtUsername = new javax.swing.JTextField();
@@ -95,6 +100,15 @@ public class UserDialog extends javax.swing.JFrame {
         btnAddGroup = new javax.swing.JButton();
         btnRemoveGroup = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
+
+        cbmiPrimaryGroup.setSelected(true);
+        cbmiPrimaryGroup.setText("Primary Group");
+        cbmiPrimaryGroup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbmiPrimaryGroupActionPerformed(evt);
+            }
+        });
+        pmMemberOfGroups.add(cbmiPrimaryGroup);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New User");
@@ -141,6 +155,13 @@ public class UserDialog extends javax.swing.JFrame {
         cbPersonalGroup.setText("Create personal user group");
 
         lstMemberOfGroups.setModel(getMemberOfGroupsListModel());
+        lstMemberOfGroups.setCellRenderer(getMemberOfGroupsListCellRenderer());
+        lstMemberOfGroups.setComponentPopupMenu(pmMemberOfGroups);
+        lstMemberOfGroups.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstMemberOfGroupsMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(lstMemberOfGroups);
 
         lblMemberOfGroups.setText("Member of Groups:");
@@ -336,6 +357,7 @@ public class UserDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCreateActionPerformed
 
     protected void createUser() {
+        
         //1 - create personal group
         GroupAider groupAider = null;
         if(cbPersonalGroup.isSelected()) {
@@ -369,9 +391,17 @@ public class UserDialog extends javax.swing.JFrame {
             userAider.addGroup(memberOfGroup);
         }
         
+        //set the primary group
+        try {
+            userAider.setPrimaryGroup(new GroupAider(getPrimaryGroup()));
+        } catch(final PermissionDeniedException pde) {
+            JOptionPane.showMessageDialog(this, "Could not set primary group '" + getPrimaryGroup() + "' of user '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         try {
             getUserManagementService().addAccount(userAider);
-        } catch(XMLDBException xmldbe) {
+        } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not create user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -381,10 +411,10 @@ public class UserDialog extends javax.swing.JFrame {
             try {
                 groupAider.addManager(userAider);
                 getUserManagementService().updateGroup(groupAider);
-            } catch(XMLDBException xmldbe) {
+            } catch(final XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
                 return;
-            } catch(PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException pde) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -392,18 +422,48 @@ public class UserDialog extends javax.swing.JFrame {
     }
     
     private void btnAddGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddGroupActionPerformed
+        
         for(final Object value: lstAvailableGroups.getSelectedValues()) {
             memberOfGroupsModel.add(value.toString());
             availableGroupsModel.removeElement(value.toString());
+            
+            //is this the first group added to the user?
+            if(getMemberOfGroupsListModel().getSize() == 1) { 
+                final String firstGroup = (String)getMemberOfGroupsListModel().getElementAt(0);
+                setPrimaryGroup(firstGroup);
+                getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
+            }
         }
     }//GEN-LAST:event_btnAddGroupActionPerformed
 
     private void btnRemoveGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveGroupActionPerformed
         for(final Object value: lstMemberOfGroups.getSelectedValues()) {
-            availableGroupsModel.add(value.toString());
-            memberOfGroupsModel.removeElement(value.toString());
+            final String group = value.toString();
+            availableGroupsModel.add(group);
+            memberOfGroupsModel.removeElement(group);
+            
+            //are we removing the users primary group?
+            if(getPrimaryGroup().equals(group)) {
+                if(getMemberOfGroupsListModel().getSize() == 0) { 
+                    setPrimaryGroup(null);
+                } else {
+                    //default to the first group
+                    final String firstGroup = (String)getMemberOfGroupsListModel().getElementAt(0);
+                    setPrimaryGroup(firstGroup);
+                }
+                getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
+            }
         }
     }//GEN-LAST:event_btnRemoveGroupActionPerformed
+
+    private void cbmiPrimaryGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbmiPrimaryGroupActionPerformed
+        this.primaryGroup = (String)getMemberOfGroupsListModel().getElementAt(lstMemberOfGroups.getSelectedIndex());
+        getMemberOfGroupsListCellRenderer().setCellOfInterest(primaryGroup);
+    }//GEN-LAST:event_cbmiPrimaryGroupActionPerformed
+
+    private void lstMemberOfGroupsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstMemberOfGroupsMouseClicked
+        cbmiPrimaryGroup.setState(((String)getMemberOfGroupsListModel().getElementAt(lstMemberOfGroups.getSelectedIndex())).equals(primaryGroup));
+    }//GEN-LAST:event_lstMemberOfGroupsMouseClicked
 
     private boolean isValidUserDetails() {
         return isValidUsername() && isValidPassword() && isValidGroups();
@@ -472,6 +532,14 @@ public class UserDialog extends javax.swing.JFrame {
         return userManagementService;
     }
     
+    protected void setPrimaryGroup(final String primaryGroup) {
+        this.primaryGroup = primaryGroup;
+    }
+    
+    protected String getPrimaryGroup() {
+        return primaryGroup;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGroup;
     private javax.swing.JButton btnClose;
@@ -479,6 +547,7 @@ public class UserDialog extends javax.swing.JFrame {
     private javax.swing.JButton btnRemoveGroup;
     protected javax.swing.JCheckBox cbDisabled;
     protected javax.swing.JCheckBox cbPersonalGroup;
+    private javax.swing.JCheckBoxMenuItem cbmiPrimaryGroup;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
@@ -495,6 +564,7 @@ public class UserDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblUsername;
     private javax.swing.JList lstAvailableGroups;
     private javax.swing.JList lstMemberOfGroups;
+    private javax.swing.JPopupMenu pmMemberOfGroups;
     protected javax.swing.JSpinner spnUmask;
     protected javax.swing.JTextField txtDescription;
     protected javax.swing.JTextField txtFullName;
@@ -502,4 +572,11 @@ public class UserDialog extends javax.swing.JFrame {
     protected javax.swing.JPasswordField txtPasswordConfirm;
     protected javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
+
+    protected MemberOfGroupsListCellRenderer getMemberOfGroupsListCellRenderer() {
+        if(memberOfGroupsListCellRenderer == null) {
+            memberOfGroupsListCellRenderer = new MemberOfGroupsListCellRenderer();
+        }
+        return memberOfGroupsListCellRenderer;
+    }
 }

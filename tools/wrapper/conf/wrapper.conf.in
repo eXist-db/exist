@@ -53,6 +53,9 @@ wrapper.java.additional.5=-Dlog4j.configuration=file:../conf/log4j.xml
 #wrapper.java.additional.10=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean=TRUE
 #wrapper.java.additional.11=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean.testing=false
 
+# HTTP proxy
+#wrapper.java.additional.12=-Dhttp.configfile=../../../build.properties
+
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=256
 

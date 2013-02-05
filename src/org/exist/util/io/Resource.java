@@ -36,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -141,6 +142,12 @@ public class Resource extends File {
     	return this; //UNDERSTAND: is it correct?
     }
 
+    public File getCanonicalFile() throws IOException {
+    	return this;
+//        String canonPath = getCanonicalPath();
+//        return new File(canonPath, fs.prefixLength(canonPath));
+    }
+    
     public String getName() {
     	return uri.lastSegment().toString();
     }
@@ -275,6 +282,40 @@ public class Resource extends File {
 		}
     }
     
+    public String[] list() {
+    	
+    	if (isDirectory()) {
+    		
+        	DBBroker broker = null; 
+    		BrokerPool db = null;
+
+    		try {
+    			try {
+    				db = BrokerPool.getInstance();
+    				broker = db.get(null);
+    			} catch (EXistException e) {
+                	return new String[0];
+    			}
+
+    	    	List<String> list = new ArrayList<String>();
+    			for (CollectionEntry entry : collection.getEntries(broker)) {
+    				list.add(entry.getUri().lastSegment().toString());
+    			}
+    	    
+    			return list.toArray(new String[list.size()]);
+
+    		} catch (PermissionDeniedException e) {
+            	return new String[0];
+
+			} finally {
+            	if (db != null)
+            		db.release( broker );
+            }
+    	}
+    	
+    	return new String[0];
+    }
+    
     public boolean _renameTo(File dest) {
     	XmldbURI destinationPath = ((Resource)dest).uri;
 
@@ -395,6 +436,28 @@ public class Resource extends File {
                 db.release( broker );
         }
     }
+    
+    private File serialize(final DBBroker broker, final DocumentImpl doc) throws IOException {
+    	try {
+			Serializer serializer = broker.getSerializer();
+			serializer.setUser(broker.getSubject());
+			serializer.setProperties(XML_OUTPUT_PROPERTIES);
+			
+            File file = File.createTempFile("eXist", ".xml");
+            file.deleteOnExit();
+
+            Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+			
+			serializer.serialize(doc, w);
+			w.flush();
+			w.close();
+			
+			return file;
+			
+    	} catch (Exception e) {
+    		throw new IOException(e);
+    	}
+    }
 
     private void moveResource(DBBroker broker, Txn txn, DocumentImpl doc, Collection source, Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, SAXException, EXistException {
         
@@ -453,7 +516,6 @@ public class Resource extends File {
                     tempFile.deleteOnExit();
                     
                     Writer w = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
-//                    tempFile.delete();
 
                     serializer.serialize(doc, w);
                     w.flush();
@@ -896,6 +958,20 @@ public class Resource extends File {
     public String getAbsolutePath() {
     	return uri.toString();
     }
+    
+    public boolean isXML() throws IOException {
+		init();
+
+    	if (resource != null) {
+    		if (resource instanceof BinaryDocument) {
+        		return false;
+			} else {
+				return true;
+			}
+    	}
+    	
+    	return false;
+    }
 
 	protected File getFile() throws FileNotFoundException {
 		if (isDirectory())
@@ -911,29 +987,31 @@ public class Resource extends File {
 			throw new FileNotFoundException(e.getMessage());
 		}
 		
-		if (doc instanceof BinaryDocument) {
-	    	DBBroker broker = null; 
-			BrokerPool db = null;
+    	DBBroker broker = null; 
+		BrokerPool db = null;
 
+		try {
 			try {
-				try {
-					db = BrokerPool.getInstance();
-					broker = db.get(null);
-				} catch (EXistException e) {
-					throw new FileNotFoundException(e.getMessage());
-				}
-				
-				return broker.getBinaryFile(((BinaryDocument)doc));
-			
-			} catch (Exception e) {
+				db = BrokerPool.getInstance();
+				broker = db.get(null);
+			} catch (EXistException e) {
 				throw new FileNotFoundException(e.getMessage());
+			}
+	
+			if (doc instanceof BinaryDocument) {
+				return broker.getBinaryFile(((BinaryDocument)doc));
 				
-			} finally {
-		    	if (db != null)
-		    		db.release(broker);
-		    }
-		}
+			} else {
+				return serialize(broker, doc);
+			}
 
-		throw new FileNotFoundException("unsupported operation for XML document.");
+		} catch (Exception e) {
+			throw new FileNotFoundException(e.getMessage());
+			
+		} finally {
+	    	if (db != null)
+	    		db.release(broker);
+	    }
+//		throw new FileNotFoundException("unsupported operation for "+doc.getClass()+".");
 	}
 }

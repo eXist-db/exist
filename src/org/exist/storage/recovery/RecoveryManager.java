@@ -1,22 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2005-2013 The eXist-db Project
+ * http://exist-db.org
  *
- *  http://exist-db.org
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
@@ -106,7 +105,8 @@ public class RecoveryManager {
                     checkpointFound = false;
                 }
     			if (!checkpointFound) {
-                    LOG.info("Scanning journal...");
+                    LOG.info("Unclean shutdown detected. Scanning journal...");
+                    broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
     				reader.position(1);
     				Long2ObjectHashMap<Loggable> txnsStarted = new Long2ObjectHashMap<Loggable>();
 	    			Checkpoint lastCheckpoint = null;
@@ -132,10 +132,10 @@ public class RecoveryManager {
 	                } catch (LogException e) {
 	                    if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
-                            LOG.debug("Last readable log entry lsn: " + Lsn.dump(lastLsn));
                         }
+                        LOG.info("Last readable journal log entry lsn: " + Lsn.dump(lastLsn));
                     }
-	                
+
 	    			// if the last checkpoint record is not the last record in the file
 	    			// we need a recovery.
 	    			if ((lastCheckpoint == null || lastCheckpoint.getLsn() != lastLsn) &&
@@ -150,26 +150,34 @@ public class RecoveryManager {
 						}
 	                    recoveryRun = true;
                         try {
+                            LOG.info("Running recovery...");
+                            broker.getBrokerPool().reportStatus("Running recovery...");
                             doRecovery(txnsStarted.size(), last, reader, lastLsn);
                         } catch (LogException e) {
                             // if restartOnError == true, we try to bring up the database even if there
                             // are errors. Otherwise, an exception is thrown, which will stop the db initialization
-                            if (restartOnError)
-                                LOG.error("Errors during recovery. Database will start up, but corruptions are likely.");
-                            else
+                            broker.getBrokerPool().reportStatus(BrokerPool.SIGNAL_ABORTED);
+                            if (restartOnError) {
+                                LOG.error("Aborting recovery. eXist-db detected an error during recovery. This may not be fatal. Database will start up, but corruptions are likely.");
+                            } else {
+                                LOG.error("Aborting recovery. eXist-db detected an error during recovery. This may not be fatal. Please consider running a consistency check via the export tool and create a backup if problems are reported. The db should come up again if you restart it.");
                                 throw e;
+                            }
                         }
-                    } else if (LOG.isDebugEnabled())
-	    				LOG.debug("Database is in clean state.");
+                    } else
+	    				LOG.info("Database is in clean state. Nothing to recover from the journal.");
     			}
-    			cleanDirectory(files);
             } finally {
                 reader.close();
+                // remove .log files from directory even if recovery failed.
+                // Re-applying them on a second start up attempt would definitely damage the db, so we better
+                // delete them before user tries to launch again.
+                cleanDirectory(files);
             }
 		}
         logManager.setCurrentFileNum(lastNum);
 		logManager.switchFiles();
-                logManager.clearBackupFiles();
+        logManager.clearBackupFiles();
         return recoveryRun;
 	}
 
@@ -210,6 +218,7 @@ public class RecoveryManager {
                         // transaction aborted: remove it from the transactions table
                         runningTxns.remove(next.getTransactionId());
                     }
+                    LOG.info("Redoing journal transaction");
         //            LOG.debug("Redo: " + next.dump());
                     // redo the log entry
                     next.redo();
@@ -218,10 +227,11 @@ public class RecoveryManager {
                         break; // last readable entry reached. Stop here.
                 }
             } catch (Exception e) {
-                LOG.warn("Exception caught while redoing transactions. Aborting recovery.", e);
+                LOG.error("Exception caught while redoing transactions. Aborting recovery to avoid possible damage. " +
+                    "Before starting again, make sure to run a check via the emergency export tool.", e);
                 if (next != null)
-                    LOG.warn("Log entry that caused the exception: " + next.dump());
-                throw new LogException("Recovery aborted");
+                    LOG.info("Log entry that caused the exception: " + next.dump());
+                throw new LogException("Recovery aborted. ");
             } finally {
                 LOG.info("Redo processed " + redoCnt + " out of " + txnCount + " transactions.");
             }
@@ -257,7 +267,8 @@ public class RecoveryManager {
                     }
                 } catch (Exception e) {
                     LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
-                            "to be undone: " + runningTxns.size(), e);
+                            "to be undone: " + runningTxns.size() + ". Aborting recovery to avoid possible damage. " +
+                            "Before starting again, make sure to run a check via the emergency export tool.", e);
                     if (next != null)
                         LOG.warn("Log entry that caused the exception: " + next.dump());
                     throw new LogException("Recovery aborted");

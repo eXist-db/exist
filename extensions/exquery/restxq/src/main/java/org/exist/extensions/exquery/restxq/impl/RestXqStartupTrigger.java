@@ -26,6 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import java.util.List;
+import java.util.Map;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
 
@@ -39,7 +41,7 @@ import org.exist.storage.StartupTrigger;
 public class RestXqStartupTrigger implements StartupTrigger {
     
     @Override
-    public void execute(final DBBroker broker) {
+    public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
         RestXqServiceRegistryManager.getRegistry(broker.getBrokerPool());
     }
 }

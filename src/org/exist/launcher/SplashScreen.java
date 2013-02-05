@@ -50,6 +50,8 @@ public class SplashScreen extends JFrame implements Observer {
         setAlwaysOnTop(true);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
+        getContentPane().setBackground(new Color(255, 255, 255, 255));
+
         URL imageURL = SplashScreen.class.getResource("logo.png");
         ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
         getContentPane().setLayout(new BorderLayout());
@@ -57,18 +59,20 @@ public class SplashScreen extends JFrame implements Observer {
         // add the image label
         JLabel imageLabel = new JLabel();
         imageLabel.setIcon(icon);
+        EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
+        imageLabel.setBorder(border);
         getContentPane().add(imageLabel, BorderLayout.CENTER);
 
         // message label
         statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
-        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 14));
+        statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 16));
         statusLabel.setForeground(Color.black);
         statusLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
         statusLabel.setSize(new Dimension(icon.getIconWidth(), 60));
 
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it
-        setSize(new Dimension(icon.getIconWidth(), icon.getIconHeight() + 20));
+        setSize(new Dimension(icon.getIconWidth() + 40, icon.getIconHeight() + 50));
         //pack();
         this.setLocationRelativeTo(null);
         setVisible(true);
@@ -91,10 +95,18 @@ public class SplashScreen extends JFrame implements Observer {
             setVisible(false);
         } else if (BrokerPool.SIGNAL_STARTUP.equals(arg)) {
             setStatus("Starting eXist-db ...");
+        } else if (BrokerPool.SIGNAL_ABORTED.equals(arg)) {
+            setVisible(false);
+            launcher.showMessageAndExit("Startup aborted",
+                "eXist-db detected an error during recovery. This may not be fatal, " +
+                "but to avoid possible damage, the db will now stop. Please consider " +
+                "running a consistency check via the export tool and create " +
+                "a backup if problems are reported. The db should come up again if you restart " +
+                "it.", true);
         } else if (BrokerPool.SIGNAL_WRITABLE.equals(arg)) {
             setStatus("eXist-db is up. Waiting for web server ...");
         } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
-            setStatus("An error occurred! Please check the logs.");
+            setVisible(false);
             launcher.showMessageAndExit("Error Occurred",
                     "An error occurred during startup. Please check the logs.", true);
         } else if (BrokerPool.SIGNAL_SHUTDOWN.equals(arg)) {

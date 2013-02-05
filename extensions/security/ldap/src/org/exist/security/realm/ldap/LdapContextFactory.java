@@ -24,12 +24,10 @@ package org.exist.security.realm.ldap;
 import java.text.MessageFormat;
 import java.util.Hashtable;
 import java.util.Map;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-
 import org.apache.log4j.Logger;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
@@ -44,94 +42,103 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 @ConfigurationClass("context")
 public class LdapContextFactory implements Configurable {
 
-	protected final static Logger LOG = Logger.getLogger(LdapContextFactory.class);
+    protected final static Logger LOG = Logger.getLogger(LdapContextFactory.class);
 
-	protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
+    protected static final String SUN_CONNECTION_POOLING_PROPERTY = "com.sun.jndi.ldap.connect.pool";
 
-	@ConfigurationFieldAsElement("authentication")
-	protected String authentication = "simple";
+    @ConfigurationFieldAsElement("authentication")
+    protected String authentication = "simple";
 
-	@ConfigurationFieldAsElement("principalPattern")
-	protected String principalPattern = null;
-	protected MessageFormat principalPatternFormat;
+    @ConfigurationFieldAsElement("use-ssl")
+    private final boolean ssl = false;
 
-	@ConfigurationFieldAsElement("url")
-	protected String url = null;
+    @ConfigurationFieldAsElement("principal-pattern")
+    protected String principalPattern = null;
+    protected MessageFormat principalPatternFormat;
+
+    @ConfigurationFieldAsElement("url")
+    protected String url = null;
 
     @ConfigurationFieldAsElement("domain")
-	protected String domain = null;
+    protected String domain = null;
 
-	protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
+    protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
 
-	protected String systemUsername = null;
+    protected String systemUsername = null;
 
-	protected String systemPassword = null;
+    protected String systemPassword = null;
 
-	private boolean usePooling = true;
+    private boolean usePooling = true;
 
-	private Configuration configuration = null;
-        
+    private Configuration configuration = null;
+
     @ConfigurationFieldAsElement("search")
     private LDAPSearchContext search;
 
     @ConfigurationFieldAsElement("transformation")
     private LDAPTransformationContext realmTransformation;
 
-	public LdapContextFactory(Configuration config) {
+    public LdapContextFactory(final Configuration config) {
         configuration = Configurator.configure(this, config);
         if (principalPattern != null) {
             principalPatternFormat = new MessageFormat(principalPattern);
         }
-	}
+    }
 
-	public LdapContext getSystemLdapContext() throws NamingException {
-		return getLdapContext(systemUsername, systemPassword);
-	}
-        
-    public LdapContext getLdapContext(String username, String password) throws NamingException {
+    public LdapContext getSystemLdapContext() throws NamingException {
+            return getLdapContext(systemUsername, systemPassword);
+    }
+
+    public LdapContext getLdapContext(final String username, final String password) throws NamingException {
         return getLdapContext(username, password, null);
     }
         
-	public LdapContext getLdapContext(String username, String password, Map<String, Object>additionalEnv) throws NamingException {
-		if (url == null)
-			throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
+    public LdapContext getLdapContext(String username, final String password, final Map<String, Object>additionalEnv) throws NamingException {
+        if (url == null) {
+            throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
+        }
 
-		if (username != null && principalPattern != null) {
-			username = principalPatternFormat.format(new String[] { username });
-		}
+        if (username != null && principalPattern != null) {
+            username = principalPatternFormat.format(new String[] { username });
+        }
 
-		Hashtable<String, Object> env = new Hashtable<String, Object>();
+        final Hashtable<String, Object> env = new Hashtable<String, Object>();
 
-		env.put(Context.SECURITY_AUTHENTICATION, authentication);
-		if (username != null) {
-			env.put(Context.SECURITY_PRINCIPAL, username);
-		}
-		if (password != null) {
-			env.put(Context.SECURITY_CREDENTIALS, password);
-		}
-		env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
-		env.put(Context.PROVIDER_URL, url);
-		
-		// the following is helpful in debugging errors
-		//env.put("com.sun.jndi.ldap.trace.ber", System.err);
+        env.put(Context.SECURITY_AUTHENTICATION, authentication);
+        if(ssl) {
+            env.put(Context.SECURITY_PROTOCOL, "ssl");
+        }
+        
+        if (username != null) {
+            env.put(Context.SECURITY_PRINCIPAL, username);
+        }
+        
+        if (password != null) {
+            env.put(Context.SECURITY_CREDENTIALS, password);
+        }
+        
+        env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
+        env.put(Context.PROVIDER_URL, url);
 
-		// Only pool connections for system contexts
-		if (usePooling && username != null && username.equals(systemUsername)) {
-			// Enable connection pooling
-			env.put(SUN_CONNECTION_POOLING_PROPERTY, "true");
-		}
+        // the following is helpful in debugging errors
+        //env.put("com.sun.jndi.ldap.trace.ber", System.err);
 
-		if(additionalEnv != null) {
-                    env.putAll(additionalEnv);
-		}
+        // Only pool connections for system contexts
+        if (usePooling && username != null && username.equals(systemUsername)) {
+            // Enable connection pooling
+            env.put(SUN_CONNECTION_POOLING_PROPERTY, "true");
+        }
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Initializing LDAP context using URL [" + url + "] and username [" + username + "] " + "with pooling ["
-					+ (usePooling ? "enabled" : "disabled") + "]");
-		}
+        if(additionalEnv != null) {
+            env.putAll(additionalEnv);
+        }
 
-		return new InitialLdapContext(env, null);
-	}
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Initializing LDAP context using URL [" + url + "] and username [" + username + "] " + "with pooling [" + (usePooling ? "enabled" : "disabled") + "]");
+        }
+
+        return new InitialLdapContext(env, null);
+    }
 
     public LDAPSearchContext getSearch() {
         return search;
@@ -145,14 +152,14 @@ public class LdapContextFactory implements Configurable {
         return domain;
     }
 
-	// configurable methods
-	@Override
-	public boolean isConfigured() {
-		return (configuration != null);
-	}
+    // configurable methods
+    @Override
+    public boolean isConfigured() {
+        return (configuration != null);
+    }
 
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }

@@ -34,13 +34,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 
 /**
@@ -53,6 +47,8 @@ public class FindGroupFunction extends BasicFunction {
     private final static QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnGetUserPrimaryGroup = new QName("get-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private final static QName qnGroupExists = new QName("group-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     // deprecated sm:get-groups
     private final static QName qnGetGroups = new QName("get-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
@@ -65,11 +61,11 @@ public class FindGroupFunction extends BasicFunction {
     );
 
     public final static FunctionSignature FNS_GET_GROUPS = new FunctionSignature(
-            qnGetGroups,
-            "List all groups",
-            null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups"),
-            FNS_LIST_GROUPS
+        qnGetGroups,
+        "List all groups",
+        null,
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups"),
+        FNS_LIST_GROUPS
     );
 
     public final static FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
@@ -98,8 +94,26 @@ public class FindGroupFunction extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The users group memberships")
     );
+    
+    public final static FunctionSignature FNS_GET_USER_PRIMARY_GROUP = new FunctionSignature(
+        qnGetUserPrimaryGroup,            
+        "Returns the primary group of the user $user. You must be a DBA or logged in as the user for which you are trying to retrieve group details for.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "The username to retrieve the primary group of.")
+        },
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The users primary group")
+    );
 
-    public FindGroupFunction(XQueryContext context, FunctionSignature signature) {
+    public final static FunctionSignature FNS_GROUP_EXISTS = new FunctionSignature(
+        qnGroupExists,
+        "Determines whether a user group exists.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user group to check for existence.")
+        },
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the user group exists, false otherwise.")
+    );
+
+    public FindGroupFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -116,34 +130,44 @@ public class FindGroupFunction extends BasicFunction {
         
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
-        final List<String> groupNames;
-        if(isCalledAs(qnListGroups.getLocalName()) || isCalledAs(qnGetGroups.getLocalName())) {
-            groupNames = securityManager.findAllGroupNames();
-        } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
-            final String startsWith = args[0].getStringValue();
-            groupNames = securityManager.findGroupnamesWhereGroupnameStarts(startsWith);
-        } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
-            final String fragment = args[0].getStringValue();
-            groupNames = securityManager.findGroupnamesWhereGroupnameContains(fragment);
-        } else if(isCalledAs(qnGetUserGroups.getLocalName())) {
+        final Sequence result;
+        
+        if(isCalledAs(qnGetUserPrimaryGroup.getLocalName())) {
             final String username = args[0].getStringValue();
-            
-            if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
-                throw new XPathException("You must be a DBA or enquiring about your own user account!");
-            }
-            
-            final Account user = securityManager.getAccount(username);
-            groupNames = Arrays.asList(user.getGroups());
+            result = new StringValue(securityManager.getAccount(username).getPrimaryGroup());
+        } else if(isCalledAs(qnGroupExists.getLocalName())) {
+            final String groupName = args[0].getStringValue();
+            result = BooleanValue.valueOf(securityManager.hasGroup(groupName));
         } else {
-            throw new XPathException("Unknown function");
-        }
+            final List<String> groupNames;
+            if(isCalledAs(qnListGroups.getLocalName()) || isCalledAs(qnGetGroups.getLocalName())) {
+                groupNames = securityManager.findAllGroupNames();
+            } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
+                final String startsWith = args[0].getStringValue();
+                groupNames = securityManager.findGroupnamesWhereGroupnameStarts(startsWith);
+            } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
+                final String fragment = args[0].getStringValue();
+                groupNames = securityManager.findGroupnamesWhereGroupnameContains(fragment);
+            } else if(isCalledAs(qnGetUserGroups.getLocalName())) {
+                final String username = args[0].getStringValue();
 
-        //order a-z
-        Collections.sort(groupNames);
+                if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
+                    throw new XPathException("You must be a DBA or enquiring about your own user account!");
+                }
 
-        final Sequence result = new ValueSequence();
-        for(final String groupName : groupNames) {
-            result.add(new StringValue(groupName));
+                final Account user = securityManager.getAccount(username);
+                groupNames = Arrays.asList(user.getGroups());
+            } else {
+                throw new XPathException("Unknown function");
+            }
+
+            //order a-z
+            Collections.sort(groupNames);
+
+            result = new ValueSequence();
+            for(final String groupName : groupNames) {
+                result.add(new StringValue(groupName));
+            }
         }
         return result;
     }

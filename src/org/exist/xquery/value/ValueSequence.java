@@ -33,10 +33,7 @@ import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.*;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
@@ -355,9 +352,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         for (int i = 0; i <= size; i++) {
-            ((Sequence)values[i]).destroy(contextSequence);
+            ((Sequence)values[i]).destroy(context, contextSequence);
         }
     }
 

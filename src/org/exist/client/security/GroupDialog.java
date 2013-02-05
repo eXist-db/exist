@@ -21,11 +21,11 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
@@ -102,7 +102,7 @@ public class GroupDialog extends javax.swing.JFrame {
 
         pmGroupMembers = new javax.swing.JPopupMenu();
         miAddGroupMember = new javax.swing.JMenuItem();
-        miCbGroupMemberManager = new javax.swing.JCheckBoxMenuItem();
+        micbGroupMemberManager = new javax.swing.JCheckBoxMenuItem();
         miRemoveGroupMember = new javax.swing.JMenuItem();
         lblGroupName = new javax.swing.JLabel();
         txtGroupName = new javax.swing.JTextField();
@@ -125,14 +125,14 @@ public class GroupDialog extends javax.swing.JFrame {
         });
         pmGroupMembers.add(miAddGroupMember);
 
-        miCbGroupMemberManager.setSelected(true);
-        miCbGroupMemberManager.setText("Group Manager");
-        miCbGroupMemberManager.addActionListener(new java.awt.event.ActionListener() {
+        micbGroupMemberManager.setSelected(true);
+        micbGroupMemberManager.setText("Group Manager");
+        micbGroupMemberManager.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miCbGroupMemberManagerActionPerformed(evt);
+                micbGroupMemberManagerActionPerformed(evt);
             }
         });
-        pmGroupMembers.add(miCbGroupMemberManager);
+        pmGroupMembers.add(micbGroupMemberManager);
 
         miRemoveGroupMember.setText("Remove Group Member");
         miRemoveGroupMember.addActionListener(new java.awt.event.ActionListener() {
@@ -339,15 +339,15 @@ public class GroupDialog extends javax.swing.JFrame {
     
     private void tblGroupMembersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblGroupMembersMouseClicked
                 
-        miCbGroupMemberManager.setEnabled(canModifySelectedGroupMember());
-        miCbGroupMemberManager.setSelected(isSelectedMemberManager());
+        micbGroupMemberManager.setEnabled(canModifySelectedGroupMember());
+        micbGroupMemberManager.setState(isSelectedMemberManager());
         
         miRemoveGroupMember.setEnabled(canModifySelectedGroupMember());
     }//GEN-LAST:event_tblGroupMembersMouseClicked
 
-    private void miCbGroupMemberManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCbGroupMemberManagerActionPerformed
+    private void micbGroupMemberManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micbGroupMemberManagerActionPerformed
         getGroupMembersTableModel().setValueAt(!isSelectedMemberManager(), tblGroupMembers.getSelectedRow(), 1);
-    }//GEN-LAST:event_miCbGroupMemberManagerActionPerformed
+    }//GEN-LAST:event_micbGroupMemberManagerActionPerformed
 
     private void miRemoveGroupMemberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRemoveGroupMemberActionPerformed
         final int row = tblGroupMembers.getSelectedRow();
@@ -421,8 +421,8 @@ public class GroupDialog extends javax.swing.JFrame {
     private javax.swing.JLabel lblGroupMembers;
     private javax.swing.JLabel lblGroupName;
     protected javax.swing.JMenuItem miAddGroupMember;
-    private javax.swing.JCheckBoxMenuItem miCbGroupMemberManager;
     private javax.swing.JMenuItem miRemoveGroupMember;
+    private javax.swing.JCheckBoxMenuItem micbGroupMemberManager;
     private javax.swing.JPopupMenu pmGroupMembers;
     protected javax.swing.JTable tblGroupMembers;
     protected javax.swing.JTextField txtDescription;

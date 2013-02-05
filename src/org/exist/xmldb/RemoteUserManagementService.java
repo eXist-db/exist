@@ -26,7 +26,7 @@ import org.exist.security.internal.aider.PermissionAiderFactory;
  * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
 **************************************/
 
-public class RemoteUserManagementService implements UserManagementService {
+public class RemoteUserManagementService implements EXistUserManagementService {
 
 	private RemoteCollection parent;
 
@@ -50,6 +50,7 @@ public class RemoteUserManagementService implements UserManagementService {
             final String[] gl = user.getGroups();
             params.add(gl);
             params.add(user.isEnabled());
+            params.add(user.getUserMask());
             final Map<String, String> metadata = new HashMap<String, String>();
             for(final SchemaType key : user.getMetadataKeys()) {
                 metadata.put(key.getNamespace(), user.getMetadataValue(key));
@@ -65,7 +66,7 @@ public class RemoteUserManagementService implements UserManagementService {
     @Override
     public void addGroup(final Group role) throws XMLDBException {
         try {
-            final List<Object> params = new ArrayList<Object>(12);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(role.getName());
             
             //TODO what about group managers?
@@ -82,6 +83,19 @@ public class RemoteUserManagementService implements UserManagementService {
         }
     }
 
+    @Override
+    public void setUserPrimaryGroup(final String username, final String groupName) throws XMLDBException {
+        final List<Object> params = new ArrayList<Object>(2);
+        params.add(username);
+        params.add(groupName);
+        
+        try {
+            parent.getClient().execute("setUserPrimaryGroup", params);
+        } catch(final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
     private List<ACEAider> getACEs(Permission perm) {
         final List<ACEAider> aces = new ArrayList<ACEAider>();
         final ACLPermission aclPermission = (ACLPermission)perm;
@@ -467,42 +481,37 @@ public class RemoteUserManagementService implements UserManagementService {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "collection is null");
         }
 
-        Permission perm = ((RemoteCollection)coll).getPermissions();
+        try {
+            final List<Object> params = new ArrayList<Object>(1);
+            params.add(((RemoteCollection) coll).getPath());
 
-        if(perm == null) {
-            try {
-                List<Object> params = new ArrayList<Object>(1);
-                params.add(((RemoteCollection) coll).getPath());
+            final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
 
-                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
-
-                final String owner = (String)result.get("owner");
-                final String group = (String)result.get("group");
-                final int mode = ((Integer)result.get("permissions")).intValue();
-                final Object[] acl = (Object[])result.get("acl");
-                List aces = null;
-                if (acl != null)
-                	aces = Arrays.asList(acl);
-
-                perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
-                
-            } catch(XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-            } catch(PermissionDeniedException pde) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+            final String owner = (String)result.get("owner");
+            final String group = (String)result.get("group");
+            final int mode = ((Integer)result.get("permissions")).intValue();
+            final Object[] acl = (Object[])result.get("acl");
+            List aces = null;
+            if(acl != null) {
+                    aces = Arrays.asList(acl);
             }
-        }
 
-        return perm;
+            return getPermission(owner, group, mode, (List<ACEAider>)aces);
+
+        } catch(XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        } catch(PermissionDeniedException pde) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
+        }
     }
 
-    private Permission getPermission(String owner, String group, int mode, List listOfAces) throws PermissionDeniedException {
-        Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
+    private Permission getPermission(final String owner, final String group, final int mode, final List listOfAces) throws PermissionDeniedException {
+        final Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
         if(perm instanceof ACLPermission && listOfAces != null && !listOfAces.isEmpty()) {
-            ACLPermission aclPermission = (ACLPermission)perm;
-            for(Object listOfAcesItem : listOfAces) {
+            final ACLPermission aclPermission = (ACLPermission)perm;
+            for(final Object listOfAcesItem : listOfAces) {
                 if(listOfAcesItem instanceof ACEAider) {
-                    ACEAider ace = (ACEAider)listOfAcesItem;
+                    final ACEAider ace = (ACEAider)listOfAcesItem;
                     aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
                 }
             }
@@ -669,7 +678,8 @@ public class RemoteUserManagementService implements UserManagementService {
             }
             
             u.setEnabled(Boolean.valueOf((String)tab.get("enabled")));
-                
+            u.setUserMask((Integer)tab.get("umask"));
+            
             final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
             for(final String key : metadata.keySet()) {
                 if(AXSchemaType.valueOfNamespace(key) != null) {
@@ -715,6 +725,8 @@ public class RemoteUserManagementService implements UserManagementService {
                 }
                 
                 u[i].setEnabled(Boolean.valueOf((String)tab.get("enabled")));
+                u[i].setUserMask((Integer)tab.get("umask"));
+                
                 
                 final Map<String, String> metadata = (Map<String, String>)tab.get("metadata");
                 for(final String key : metadata.keySet()) {
@@ -837,6 +849,7 @@ public class RemoteUserManagementService implements UserManagementService {
                 final String[] gl = user.getGroups();
                 params.add(gl);
                 params.add(user.isEnabled());
+                params.add(user.getUserMask());
                 final Map<String, String> metadata = new HashMap<String, String>();
                 for(final SchemaType key : user.getMetadataKeys()) {
                     metadata.put(key.getNamespace(), user.getMetadataValue(key));

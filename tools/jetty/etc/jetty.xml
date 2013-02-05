@@ -26,9 +26,10 @@
     </New>
   </Set>
 
-  <!-- =========================================================== -->
-  <!-- Set connectors                                              -->
-  <!-- =========================================================== -->
+  <!-- ============================================================ -->
+  <!-- Set connectors                                               -->
+  <!-- See http://wiki.eclipse.org/Jetty/Howto/Configure_Connectors -->
+  <!-- ============================================================ -->
 
   <Call name="addConnector">
     <Arg>
@@ -57,7 +58,8 @@
               <!-- can either be '/exist' or '/' -->
               <Set name="contextPath">/exist</Set>
               <Set name="war"><SystemProperty name="jetty.home" default="."/>/../../webapp/</Set>
-              <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+              <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
+                />/etc/webdefault.xml</Set>
               <Set name="tempDirectory"><SystemProperty name="jetty.home" default="."/>/tmp</Set>
             </New>
           </Item>
@@ -68,8 +70,8 @@
             <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
           </Item>
           <Item>
-          <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
-        </Item>
+            <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+          </Item>
         </Array>
       </Set>
     </New>
@@ -144,7 +146,8 @@
     <Call name="addAppProvider">
       <Arg>
         <New class="org.eclipse.jetty.deploy.providers.ContextProvider">
-          <Set name="monitoredDirName"><SystemProperty name="jetty.home" default="."/>/contexts</Set>
+          <Set name="monitoredDirName"><SystemProperty name="jetty.home" default="."
+            />/contexts</Set>
           <Set name="scanInterval">10</Set>
         </New>
       </Arg>
@@ -166,7 +169,8 @@
       <Arg>
         <New class="org.eclipse.jetty.deploy.providers.WebAppProvider">
           <Set name="monitoredDirName"><SystemProperty name="jetty.home" default="."/>/webapps</Set>
-          <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+          <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."
+            />/etc/webdefault.xml</Set>
           <Set name="scanInterval">10</Set>
           <Set name="contextXmlDir"><SystemProperty name="jetty.home" default="."/>/contexts</Set>
           <Set name="extractWars">true</Set>
@@ -174,7 +178,7 @@
       </Arg>
     </Call>
   </Ref>
-  
+
 
 
   <!-- =========================================================== -->
@@ -203,42 +207,45 @@
   <!--  alternately, add to the start.ini for easier usage             -->
   <!-- =============================================================== -->
 
-  <!-- if NIO is not available, use org.eclipse.jetty.server.ssl.SslSocketConnector -->
-
-  <New id="sslContextFactory" class="org.eclipse.jetty.http.ssl.SslContextFactory">
-    <Set name="KeyStore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
-    <Set name="KeyStorePassword">secret</Set>
-    <Set name="KeyManagerPassword">secret</Set>
-    <Set name="TrustStore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
-    <Set name="TrustStorePassword">secret</Set>
-  </New>
-
   <Call name="addConnector">
     <Arg>
       <New class="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-        <Arg><Ref id="sslContextFactory"/></Arg>
+        <Arg>
+          <New class="org.eclipse.jetty.http.ssl.SslContextFactory">
+            <Set name="keyStore"><SystemProperty name="jetty.home" default="."/>/etc/keystore</Set>
+            <Set name="keyStorePassword">secret</Set>
+            <Set name="keyManagerPassword">secret</Set>
+            <Set name="trustStore"><SystemProperty name="jetty.home" default="."
+              />/etc/keystore</Set>
+            <Set name="trustStorePassword">secret</Set>
+          </New>
+        </Arg>
         <Set name="Port"><SystemProperty name="jetty.port.ssl" default="8443"/></Set>
         <Set name="maxIdleTime">30000</Set>
-        <Set name="Acceptors">2</Set>
-        <Set name="AcceptQueueSize">100</Set>
+        <!-- 
+           <Set name="Acceptors">2</Set>
+           <Set name="AcceptQueueSize">100</Set> 
+           -->
       </New>
     </Arg>
   </Call>
-  
-   <!-- =============================================================== -->
-   <!-- Configure request log handler       			        -->
-   <!-- =============================================================== -->  
+
+
+  <!-- =============================================================== -->
+  <!-- Configure request log handler       			                -->
+  <!-- http://wiki.eclipse.org/Jetty/Howto/Configure_Request_Logs      -->
+  <!-- =============================================================== -->
   <Ref id="RequestLog">
-  <Set name="requestLog">
-    <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
-      <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
-      <Set name="retainDays">90</Set>
-      <Set name="append">true</Set>
-      <Set name="extended">false</Set>
-      <Set name="LogTimeZone">GMT</Set>
-    </New>
-  </Set>
-</Ref>
+    <Set name="requestLog">
+      <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+        <Arg><SystemProperty name="jetty.home" default="."/>/logs/yyyy_mm_dd.request.log</Arg>
+        <Set name="retainDays">90</Set>
+        <Set name="append">true</Set>
+        <Set name="extended">false</Set>
+        <Set name="LogTimeZone">GMT</Set>
+      </New>
+    </Set>
+  </Ref>
 
   <!-- =============================================================== -->
   <!-- Configure stderr and stdout to a Jetty rollover log file        -->

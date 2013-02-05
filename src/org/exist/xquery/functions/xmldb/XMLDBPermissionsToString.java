@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -53,24 +54,26 @@ public class XMLDBPermissionsToString extends BasicFunction {
             "Formats the resource or collection permissions, $permissions, passed as an integer " +
             "value into a string. The returned string shows the permissions following " +
             "the Unix conventions, i.e. all permissions set is returned as " +
-            "rwurwurwu, where the first three chars are for user permissions, " +
+            "rwxrwxrwx, where the first three chars are for user permissions, " +
             "followed by group and other users. 'r' denotes read, 'w' write and 'u' update " +
             "permissions.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions in xs:integer format")
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the permissions as string 'rwu' for, user, group and other")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the permissions as string 'rwu' for, user, group and other"),
+            PermissionsFunctions.FNS_OCTAL_TO_MODE
         ),
 
         new FunctionSignature(
             new QName("string-to-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Converts the resource or collection permissions, $permissions-string, " +
             "into an integer representation suitable for use with set-permissions functions. " +
-            "The permissions string should be in the format 'rwurwurwu' where r is read, w is write and u is update.",
+            "The permissions string should be in the format 'rwxrwxrwx' where r is read, w is write and u is update.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("permissions-string", Type.STRING, Cardinality.EXACTLY_ONE, "The permissions string")
             },
-            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions integer")
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions integer"),
+            PermissionsFunctions.FNS_MODE_TO_OCTAL
         )
     };
 	

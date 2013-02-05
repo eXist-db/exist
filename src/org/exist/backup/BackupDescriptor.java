@@ -87,4 +87,6 @@ public interface BackupDescriptor
 
 
     void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException;
+
+    File getRepoBackup() throws IOException;
 }

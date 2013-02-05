@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.log4j.Logger;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
@@ -41,6 +42,8 @@ import org.exist.security.internal.GroupImpl;
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
+    private final static Logger LOG = Logger.getLogger(AbstractGroup.class);
+    
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")
     private List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
@@ -48,21 +51,21 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @ConfigurationFieldAsElement("metadata")
     private Map<String, String> metadata = new HashMap<String, String>();
 
-    public AbstractGroup(AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
+    public AbstractGroup(final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
         super(realm, realm.collectionGroups, id, name);
         
         if(managers != null) {
-            for(Account manager : managers) {
+            for(final Account manager : managers) {
                 _addManager(manager);
             }
         }
     }
 
-    public AbstractGroup(AbstractRealm realm, String name) throws ConfigurationException {
+    public AbstractGroup(final AbstractRealm realm, final String name) throws ConfigurationException {
         super(realm, realm.collectionGroups, UNDEFINED_ID, name);
     }
 
-    public AbstractGroup(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
+    public AbstractGroup(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
 
         //it require, because class's fields initializing after super constructor
@@ -72,7 +75,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
 
     @Override
-    public int compareTo(Object other) {
+    public int compareTo(final Object other) {
         if(!(other instanceof GroupImpl)) {
             throw new IllegalArgumentException("wrong type");
         }
@@ -81,26 +84,27 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("<group name=\"");
         buf.append(name);
         buf.append("\" id=\"");
         buf.append(Integer.toString(id));
         buf.append("\">");
         try {
-	        for(Account manager : getManagers()) {
-	            buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
-	        }
-        } catch (Throwable e) {
+            for(final Account manager : getManagers()) {
+                buf.append("<manager name=\"" + manager.getUsername() + "\"/>");
+            }
+        } catch(final Throwable e) {
             e.printStackTrace();
             buf.append("<manager error=\"" + e.getMessage() + "\"/>");
-		}
+        }
         buf.append("</group>");
+        
         return buf.toString();
     }
 
     @Override
-    public void assertCanModifyGroup(Account user) throws PermissionDeniedException {
+    public void assertCanModifyGroup(final Account user) throws PermissionDeniedException {
         if(user == null) {
             throw new PermissionDeniedException("Unspecified Account is not allowed to modify group '" + getName() + "'");
         } else if(!user.hasDbaRole() && !isManager(user)) {
@@ -109,88 +113,98 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
 
     @Override
-    public boolean isManager(Account account) {
-    	for (Reference<SecurityManager, Account> manager : managers) {
-    		Account acc = manager.resolve();
-    		if (acc != null && acc.equals(account))
-    			return true;
+    public boolean isManager(final Account account) {
+    	for(final Reference<SecurityManager, Account> manager : managers) {
+            final Account acc = manager.resolve();
+            if(acc != null && acc.equals(account)) {
+                return true;
+            }
     	}
     	return false;
     }
 
-    protected void _addManager(Account account) {
-        if(!managers.contains(account.getName())) {
-            managers.add(
-        		new ReferenceImpl<SecurityManager, Account>(
-    				getRealm().getSecurityManager(),
-    				account
-        		)
-        	);
+    protected void _addManager(final Account account) {
+        //check the manager is not already present
+        for(final Reference<SecurityManager, Account> manager : managers) {
+            final String refName = manager.getName();
+            if(refName != null && refName.equals(account.getName())) {
+                return;
+            }
         }
+
+        //add the manager
+        managers.add(
+            new ReferenceImpl<SecurityManager, Account>(
+                getRealm().getSecurityManager(),
+                account,
+                account.getName()
+            )
+        );
     }
 
     @Override
-    public void addManager(Account manager) throws PermissionDeniedException {
-    	Subject subject = getDatabase().getSubject();
-
+    public void addManager(final Account manager) throws PermissionDeniedException {
+    	final Subject subject = getDatabase().getSubject();
         assertCanModifyGroup(subject);
         
         _addManager(manager);
     }
 
     @Override
-    public void addManagers(List<Account> managers) throws PermissionDeniedException {
-    	if (managers != null)
-	    	for (Account manager : managers) {
-	    		addManager(manager);
-	    	}
+    public void addManagers(final List<Account> managers) throws PermissionDeniedException {
+    	if(managers != null) {
+            for(final Account manager : managers) {
+                addManager(manager);
+            }
+        }
     }
     
-    public void addManager(String name) throws PermissionDeniedException {
-    	Subject subject = getDatabase().getSubject();
-
+    public void addManager(final String name) throws PermissionDeniedException {
+    	final Subject subject = getDatabase().getSubject();
         assertCanModifyGroup(subject);
         
-        for(Reference<SecurityManager, Account> ref : managers) {
-            if(ref.resolve().getName().equals(name)) {
+        //check the manager is not already present`
+        for(final Reference<SecurityManager, Account> ref : managers) {
+            final String refName = ref.getName();
+            if(refName != null && refName.equals(name)) {
                 return;
             }
         }
 
-        managers.add(
-    		new ReferenceImpl<SecurityManager, Account>(
-				getRealm().getSecurityManager(),
-				"getAccount",
-				name
-    		)
-    	);
+        managers.add(new ReferenceImpl<SecurityManager, Account>(getRealm().getSecurityManager(), "getAccount", name));
     }
 
     @Override
     public List<Account> getManagers() {
     	
-    	final List<Account> list = new ArrayList<Account>();
+        //we use a HashSet to ensure a unique set of managers
+        //under some cases it is possible for the same manager to
+        //appear twice in a group config file, but we only want
+        //to know about them once!
+    	final Set<Account> set = new HashSet<Account>();
     	
         if(managers != null) {
             for(final Reference<SecurityManager, Account> ref : managers) {
                 final Account acc = ref.resolve();
                 if(acc != null) {
-                    list.add(acc);
+                    set.add(acc);
+                } else {
+                    LOG.warn("Unable to resolve reference to group manager '" + ref.getName() + "' for group '" + getName() + "'");
                 }
             }
         }
-    	return list;
+    	
+        return new ArrayList<Account>(set);
     }
 
     @Override
-    public void removeManager(Account account) throws PermissionDeniedException {
+    public void removeManager(final Account account) throws PermissionDeniedException {
 
-        Account subject = getDatabase().getSubject();
-
+        final Account subject = getDatabase().getSubject();
         assertCanModifyGroup(subject);
 
-        for(Reference<SecurityManager, Account> ref : managers) {
-        	Account acc = ref.resolve();
+        for(final Reference<SecurityManager, Account> ref : managers) {
+            final Account acc = ref.resolve();
             if(acc.getName().equals(account.getName())) {
                 managers.remove(ref);
                 break;
@@ -199,7 +213,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     }
     
     //this method used only at tests, don't use it other places
-    protected void setManagers(List<Reference<SecurityManager, Account>> managers) {
+    public void setManagers(final List<Reference<SecurityManager, Account>> managers) {
         this.managers = managers;
     }
     
@@ -228,6 +242,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         return metadataKeys;
     }
     
+    @Override
     public void clearMetadata() {
     	metadata.clear();
     }

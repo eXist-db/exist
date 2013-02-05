@@ -21,32 +21,19 @@
  */
 package org.exist.backup;
 
-import java.io.*;
-import java.util.*;
-
 import org.apache.log4j.Logger;
-
-import org.exist.security.ACLPermission;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.NamespaceSupport;
-
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.AccountImpl;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
+import org.exist.storage.DataBackup;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.btree.BTreeCallback;
@@ -64,12 +51,20 @@ import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
-
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
-import org.exist.storage.DataBackup;
+import java.io.*;
+import java.util.*;
 
 
 /**
@@ -209,6 +204,12 @@ public class SystemExport
                 output = new FileSystemWriter( backupFile );
             }
             output.setProperties( properties );
+
+//            File repoBackup = RepoBackup.backup(broker);
+//            output.addToRoot(RepoBackup.REPO_ARCHIVE, repoBackup);
+//
+//
+//            FileUtils.forceDelete(repoBackup);
 
             Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
             CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );

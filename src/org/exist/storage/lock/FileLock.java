@@ -107,14 +107,17 @@ public class FileLock {
     public boolean tryLock() throws ReadOnlyException {
         int attempt = 0;
         while (lockFile.exists()) {
-            if (++attempt > 2)
+            if (++attempt > 2) {
                 return false;
+            }
+            
             try {
                 read();
             } catch (IOException e) {
                 message("Failed to read lock file", null);
                 e.printStackTrace();
             }
+            
             //Check if there's a heart-beat. If not, remove the stale .lck file and try again
             if (checkHeartbeat()) {
                 //There seems to be a heart-beat...
@@ -130,32 +133,41 @@ public class FileLock {
                         //Nothing to do
                     }
                 }
+                
                 try {
                     //Close the open channel, so it can be read again
-                    if (channel.isOpen())
+                    if (channel.isOpen()) {
                         channel.close();
+                    }
                     channel = null;
                 } catch (IOException e) {
                     //Nothing to do
                 }
             }
         }
+        
         try {
-            if (!lockFile.createNewFile())
+            if (!lockFile.createNewFile()) {
                 return false;
+            }
+            
         } catch (IOException e) {
             throw new ReadOnlyException(message("Could not create lock file", e));
         }
+        
         try {
             save();
+            
         } catch (IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
         }
+        
         //Schedule the heart-beat for the file lock
         Properties params = new Properties();
         params.put(FileLock.class.getName(), this);
         pool.getScheduler().createPeriodicJob(HEARTBEAT,
                 new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
+        
         return true;
     }
 
@@ -165,12 +177,15 @@ public class FileLock {
      */
     public void release() {
         try {
-            if (channel.isOpen())
+            if (channel.isOpen()) {
                 channel.close();
+            }
             channel = null;
+            
         } catch (Exception e) {
             message("Failed to close lock file", e);
         }
+        
         LOG.info("Deleting lock file: " + lockFile.getAbsolutePath());
         lockFile.delete();
     }
@@ -211,6 +226,7 @@ public class FileLock {
             release();
             return false;
         }
+        
         return true;
     }
 
@@ -221,8 +237,10 @@ public class FileLock {
 
     protected void save() throws IOException {
         try {
-            if (channel == null)
+            if (channel == null) {
                 open();
+            }
+            
             long now = System.currentTimeMillis();
             buf.clear();
             buf.put(MAGIC);
@@ -232,6 +250,7 @@ public class FileLock {
             channel.write(buf);
             channel.force(true);
             lastHeartbeat = now;
+            
         } catch(NullPointerException npe) {
             if(pool.isShuttingDown()) {
                 LOG.info("No need to save FileLock, database is shutting down");
@@ -242,20 +261,26 @@ public class FileLock {
     }
 
     private void read() throws IOException {
-        if (channel == null)
+        if (channel == null) {
             open();
+        }
+        
         channel.read(buf);
         buf.flip();
         if (buf.limit() < 16) {
             buf.clear();
             throw new IOException(message("Could not read file lock.", null));
         }
+        
         byte[] magic = new byte[8];
         buf.get(magic);
-        if (!Arrays.equals(magic, MAGIC))
+        if (!Arrays.equals(magic, MAGIC)) {
             throw new IOException(message("Bad signature in lock file. It does not seem to be an eXist lock file", null));
+        }
+        
         lastHeartbeat = buf.getLong();
         buf.clear();
+        
         DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
@@ -263,11 +288,15 @@ public class FileLock {
     protected String message(String message, Exception e) {
         StringBuilder str = new StringBuilder(message);
         str.append(' ').append(lockFile.getAbsolutePath());
-        if (e != null)
+        if (e != null) {
             str.append(": ").append(e.getMessage());
+        }
+        
         message = str.toString();
-        if (LOG.isInfoEnabled())
+        if (LOG.isInfoEnabled()) {
             LOG.info(message);
+        }
+        
         System.err.println(message);
         return message;
     }

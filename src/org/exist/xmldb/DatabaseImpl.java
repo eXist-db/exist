@@ -141,134 +141,150 @@ public class DatabaseImpl implements Database {
      * @deprecated  Although part of the xmldb API, the design is somewhat inconsistent.
      * @see org.exist.xmldb.DatabaseImpl#getCollection(org.exist.xmldb.XmldbURI, java.lang.String, java.lang.String)
      * @see org.xmldb.api.base.Database#getCollection(java.lang.String, java.lang.String, java.lang.String)
-   */
-  public Collection getCollection(String uri, String user, String password) throws XMLDBException {
-    XmldbURI xmldbURI = null;
-    try {
-    		//Ugly workaround for non-URI compliant collection names (most likely IRIs)
-      String newURIString = XmldbURI.recoverPseudoURIs(uri);
+     */
+    @Override
+    public Collection getCollection(final String uri, final String user, final String password) throws XMLDBException {
+        try {
+            //Ugly workaround for non-URI compliant collection names (most likely IRIs)
+            final String newURIString = XmldbURI.recoverPseudoURIs(uri);
             //Remember that DatabaseManager (provided in xmldb.jar) trims the leading "xmldb:" !!!
             //... prepend it to have a real xmldb URI again...
-      xmldbURI = XmldbURI.xmldbUriFor(XmldbURI.XMLDB_URI_PREFIX + newURIString);
-    } catch (URISyntaxException e) {
+            final XmldbURI xmldbURI = XmldbURI.xmldbUriFor(XmldbURI.XMLDB_URI_PREFIX + newURIString);
+            return getCollection(xmldbURI, user, password);
+        } catch(final URISyntaxException e) {
             //... even in the error message
-    		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed: " +
-                    XmldbURI.XMLDB_URI_PREFIX + uri);
+            throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed: " + XmldbURI.XMLDB_URI_PREFIX + uri);
+        }
     }
-    return getCollection(xmldbURI, user, password);
-  }
 
-  public Collection getCollection(XmldbURI xmldbURI, String user, String password) throws XMLDBException {
-    if (XmldbURI.API_LOCAL.equals(xmldbURI.getApiName()))
-      return getLocalCollection(xmldbURI, user, password);
-    else if (XmldbURI.API_XMLRPC.equals(xmldbURI.getApiName()))
-      return getRemoteCollection(xmldbURI, user, password);
-    else
-      throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "Unknown or unparsable API for: " + xmldbURI);
-  }
+    public Collection getCollection(final XmldbURI xmldbURI, final String user, final String password) throws XMLDBException {
+        if(XmldbURI.API_LOCAL.equals(xmldbURI.getApiName())) {
+            return getLocalCollection(xmldbURI, user, password);
+        } else if (XmldbURI.API_XMLRPC.equals(xmldbURI.getApiName())) {
+            return getRemoteCollection(xmldbURI, user, password);
+        } else {
+            throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "Unknown or unparsable API for: " + xmldbURI);
+        }
+    }
 
-  /**
-   * @param xmldbURI
-   * @param user
-   * @param password
-   * @return The collection
-   * @throws XMLDBException
-   */
-    private Collection getLocalCollection(XmldbURI xmldbURI, String user, String password)
-    		throws XMLDBException {
-    mode = LOCAL_CONNECTION;
-    // use local database instance
-    if (!BrokerPool.isConfigured(xmldbURI.getInstanceName())) {
-      if (autoCreate)
-        configure(xmldbURI.getInstanceName());
-      else
-        throw new XMLDBException(ErrorCodes.COLLECTION_CLOSED, "Local database server is not running");
-    }
-    BrokerPool pool;
-    try {
-      pool = BrokerPool.getInstance(xmldbURI.getInstanceName());
-    } catch (EXistException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
-    }
-    Subject u = getUser(user, password, pool);
-    try {
-      Collection current = new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
-      return (current != null) ? current : null;
-    } catch (XMLDBException e) {
-      switch (e.errorCode) {
-        case ErrorCodes.NO_SUCH_RESOURCE:
-        case ErrorCodes.NO_SUCH_COLLECTION:
-        case ErrorCodes.INVALID_COLLECTION:
-        case ErrorCodes.INVALID_RESOURCE:
-          LOG.info(e.getMessage());
-          return null;
-        default:
-          LOG.error(e.getMessage(), e);
-          throw e;
-      }
-    }
-  }
-
-  /**
-   * @param xmldbURI
-   * @param user
-   * @param password
-   * @return The collection
-   * @throws XMLDBException
-   */
-    private Collection getRemoteCollection(XmldbURI xmldbURI, String user, String password)
-            throws XMLDBException {
-    mode = REMOTE_CONNECTION;
-    if (user == null) {
-            //TODO : read this from configuration
-      user = SecurityManager.GUEST_USER;
-      password = SecurityManager.GUEST_USER;
-    }
-    
-    if(password == null)
-        password = "";
+    /**
+     * @param xmldbURI
+     * @param user
+     * @param password
+     * @return The collection
+     * @throws XMLDBException
+     */
+    private Collection getLocalCollection(final XmldbURI xmldbURI, final String user, final String password) throws XMLDBException {
+        mode = LOCAL_CONNECTION;
         
-    try {
-            String protocol = ssl_enable ? "https" : "http";
+        // use local database instance
+        if(!BrokerPool.isConfigured(xmldbURI.getInstanceName())) {
+            if(autoCreate) {
+                configure(xmldbURI.getInstanceName());
+            } else {
+                throw new XMLDBException(ErrorCodes.COLLECTION_CLOSED, "Local database server is not running");
+            }
+        }
+        
+        BrokerPool pool;
+        try {
+            pool = BrokerPool.getInstance(xmldbURI.getInstanceName());
+        } catch (final EXistException e) {
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
+        }
+        final Subject u = getUser(user, password, pool);
+        try {
+            return  new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
+        } catch(final XMLDBException e) {
+            switch (e.errorCode) {
+              case ErrorCodes.NO_SUCH_RESOURCE:
+              case ErrorCodes.NO_SUCH_COLLECTION:
+              case ErrorCodes.INVALID_COLLECTION:
+              case ErrorCodes.INVALID_RESOURCE:
+                LOG.info(e.getMessage());
+                return null;
+              default:
+                LOG.error(e.getMessage(), e);
+                throw e;
+            }
+        }
+    }
 
+    /**
+     * @param xmldbURI
+     * @param user
+     * @param password
+     * @return The collection
+     * @throws XMLDBException
+     */
+    private Collection getRemoteCollection(final XmldbURI xmldbURI, String user, String password) throws XMLDBException {
+        mode = REMOTE_CONNECTION;
+        if(user == null) {
+            //TODO : read this from configuration
+            user = SecurityManager.GUEST_USER;
+            password = SecurityManager.GUEST_USER;
+        }
+    
+        if(password == null) {
+            password = "";
+        }
+        
+        try {
+            final String protocol = ssl_enable ? "https" : "http";
             if(ssl_enable){
                 SSLHelper.initialize(ssl_allow_self_signed, ssl_verify_hostname);
             }
 
-            URL url = new URL(protocol, xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
+            final URL url = new URL(protocol, xmldbURI.getHost(), xmldbURI.getPort(), xmldbURI.getContext());
 
-            XmlRpcClient rpcClient = getRpcClient(user, password, url);
+            final XmlRpcClient rpcClient = getRpcClient(user, password, url);
             return readCollection(xmldbURI.getRawCollectionPath(), rpcClient);
 
-    } catch (MalformedURLException e) {
+        } catch(final MalformedURLException e) {
             //Should never happen
-      throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
-      
-    } catch (XMLDBException e) {
-            return null; }
+            throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
+        } catch(final XMLDBException e) {
+            switch (e.errorCode) {
+              case ErrorCodes.NO_SUCH_RESOURCE:
+              case ErrorCodes.NO_SUCH_COLLECTION:
+              case ErrorCodes.INVALID_COLLECTION:
+              case ErrorCodes.INVALID_RESOURCE:
+                LOG.info(e.getMessage());
+                return null;
+              default:
+                LOG.error(e.getMessage(), e);
+                throw e;
+            }
+        }
     }
 
-  public static Collection readCollection(String c, XmlRpcClient rpcClient) throws XMLDBException {
-    XmldbURI path;
-    try {
-      path = XmldbURI.xmldbUriFor(c);
-    } catch (URISyntaxException e) {
-    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-    }
-    XmldbURI[] components = path.getPathSegments();
-        if (components.length == 0)
-        	throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Could not find collection: " + path.toString());
-    XmldbURI rootName = components[0];
-        if (XmldbURI.RELATIVE_ROOT_COLLECTION_URI.equals(rootName))
+    public static Collection readCollection(final String c, final XmlRpcClient rpcClient) throws XMLDBException {
+        final XmldbURI path;
+        try {
+            path = XmldbURI.xmldbUriFor(c);
+        } catch (URISyntaxException e) {
+            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+        }
+        
+        final XmldbURI[] components = path.getPathSegments();
+        if(components.length == 0) {
+            throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Could not find collection: " + path.toString());
+        }
+        
+        XmldbURI rootName = components[0];
+        if(XmldbURI.RELATIVE_ROOT_COLLECTION_URI.equals(rootName)) {
             rootName = XmldbURI.ROOT_COLLECTION_URI;
-    Collection current = new RemoteCollection(rpcClient, null, rootName);
-        for (int i = 1 ; i < components.length ; i++) {
-      current = ((RemoteCollection)current).getChildCollection(components[i]);
-            if (current == null)
+        }
+        
+        Collection current = RemoteCollection.instance(rpcClient, rootName);
+        for(int i = 1 ; i < components.length ; i++) {
+            current = ((RemoteCollection)current).getChildCollection(components[i]);
+            if (current == null) {
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION , "Could not find collection: " + c);
+            }
+        }
+        return current;
     }
-    return current;
-  }
 
   /**
    * @param user

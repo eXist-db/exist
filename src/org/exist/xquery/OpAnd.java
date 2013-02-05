@@ -67,12 +67,15 @@ public class OpAnd extends LogicalOp {
             	contextSequence.setSelfAsContext(getContextId());
             
             Sequence ls = left.eval(contextSequence, null);
-            doOptimize = doOptimize && ls.isPersistentSet();
+            doOptimize = doOptimize && (ls.isPersistentSet() || ls.isEmpty());
             if (doOptimize) {
             	
             	if (inPredicate) {
                     NodeSet lr = ls.toNodeSet();
                     lr = lr.getContextNodes(getContextId()); 
+
+                    if (lr.isEmpty())
+                        return NodeSet.EMPTY_SET;
 
                     Sequence rs = right.eval(lr, null);
                     
@@ -84,7 +87,11 @@ public class OpAnd extends LogicalOp {
 
 	            	if (rs.isPersistentSet()) {
 	                    NodeSet rl = ls.toNodeSet();
-	                    rl = rl.getContextNodes(left.getContextId()); 
+	                    rl = rl.getContextNodes(left.getContextId());
+
+                        if (rl.isEmpty())
+                            return NodeSet.EMPTY_SET;
+
 	                    // TODO: optimize and return false if rl.isEmpty() ?
 	                    NodeSet rr = rs.toNodeSet();
 	                    rr = rr.getContextNodes(right.getContextId());

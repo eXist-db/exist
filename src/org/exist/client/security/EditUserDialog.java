@@ -21,18 +21,19 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
-import org.exist.client.DialogWithResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import org.exist.client.DialogCompleteWithResponse;
+import org.exist.client.DialogWithResponse;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.EXistUserManagementService;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -76,14 +77,27 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         
         cbPersonalGroup.setVisible(false);
         
+        boolean first = true;
         for(final String group : getAccount().getGroups()) {
             getMemberOfGroupsListModel().add(group);
             getAvailableGroupsListModel().removeElement(group);
+            
+            if(first) {
+                setPrimaryGroup(group);
+                getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
+                first = false;
+            }
         }
     }
 
     @Override
     protected void createUser() {
+        
+        if(getMemberOfGroupsListModel().getSize() == 0) {
+            JOptionPane.showMessageDialog(this, "A user must be a member of at least one user group", "Edit User Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         //dont create a user, update instead!
         updateUser();
         
@@ -101,6 +115,9 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         try {
             setAccountFromFormProperties();
             getUserManagementService().updateAccount(getAccount());
+            
+            //group membership has to be modified seperately
+            modifyAccountGroupMembership();
         } catch(PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + pde.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
         } catch(final XMLDBException xmldbe) {
@@ -111,6 +128,34 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     private boolean isPasswordChanged() {
         final String password = new String(txtPassword.getPassword());
         return !password.equals(HIDDEN_PASSWORD_CONST);
+    }
+    
+    private void modifyAccountGroupMembership() throws XMLDBException {
+        //get the current groups of the user
+        final Set<String> currentGroups = new HashSet<String>(Arrays.asList(getAccount().getGroups()));
+        
+        //get the new groups of the user to be set
+        final Set<String> memberOfGroups = new HashSet<String>();
+        for(int i = 0; i < getMemberOfGroupsListModel().getSize(); i++) {
+            memberOfGroups.add((String)getMemberOfGroupsListModel().getElementAt(i));
+        }
+        
+        //groups to remove
+        for(final String currentGroup : currentGroups) {
+            if(!memberOfGroups.contains(currentGroup)) {
+                getUserManagementService().removeGroupMember(currentGroup, getAccount().getName());
+            }
+        }
+        
+        //groups to add
+        for(final String memberOfGroup : memberOfGroups) {
+            if(!currentGroups.contains(memberOfGroup)) {
+                getUserManagementService().addAccountToGroup(getAccount().getName(), memberOfGroup);
+            }
+        }
+        
+        //set the primary group
+        ((EXistUserManagementService)getUserManagementService()).setUserPrimaryGroup(getAccount().getName(), getPrimaryGroup());
     }
     
     private void setAccountFromFormProperties() throws PermissionDeniedException {
@@ -125,30 +170,6 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         getAccount().setEnabled(!cbDisabled.isSelected());
         
         getAccount().setUserMask(UmaskSpinnerModel.octalUmaskToInt((String)spnUmask.getValue()));
-        
-        //get the current groups of the user
-        final Set<String> currentGroups = new HashSet<String>(Arrays.asList(getAccount().getGroups()));
-        
-        //get the new groups of the user to be set
-        final Set<String> memberOfGroups = new HashSet<String>();
-        for(int i = 0; i < getMemberOfGroupsListModel().getSize(); i++) {
-            memberOfGroups.add((String)getMemberOfGroupsListModel().getElementAt(i));
-        }
-        
-        //groups to remove
-        for(final String currentGroup : currentGroups) {
-            if(!memberOfGroups.contains(currentGroup)) {
-                account.remGroup(currentGroup);
-            }
-        }
-        
-        //groups to add
-        for(final String memberOfGroup : memberOfGroups) {
-            if(!currentGroups.contains(memberOfGroup)) {
-                account.addGroup(memberOfGroup);
-            }
-        }
-        
     }
     
     protected Account getAccount() {

@@ -34,6 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.securitymanager.FindGroupFunction;
+import org.exist.xquery.functions.securitymanager.FindUserFunction;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -61,7 +62,8 @@ public class XMLDBUserAccess extends BasicFunction {
         new QName("exists-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Returns true if the user $user-id exists.",
         new SequenceType[]{ARG_USER_ID},
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the user exists, false() otherwise")
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the user exists, false() otherwise"),
+        FindUserFunction.FNS_USER_EXISTS
     );
     
     public final static FunctionSignature fnUserGroups = new FunctionSignature(
@@ -76,7 +78,8 @@ public class XMLDBUserAccess extends BasicFunction {
         new QName("get-user-primary-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Returns the user's primary group.",
         new SequenceType[]{ARG_USER_ID},
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Primary Group of the User")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Primary Group of the User"),
+        FindGroupFunction.FNS_GET_USER_PRIMARY_GROUP
     );
     
     public final static FunctionSignature fnUserHome = new FunctionSignature(

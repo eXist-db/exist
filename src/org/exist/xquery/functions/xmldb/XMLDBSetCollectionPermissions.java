@@ -47,29 +47,28 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipulator {
 
-        protected static final Logger logger = Logger.getLogger(XMLDBSetCollectionPermissions.class);
-
-        public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-collection-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Sets the permissions of the collection $collection-uri. " +
-            XMLDBModule.COLLECTION_URI +
-            " $user-id specifies the user which " +
-            "will become the owner of the resource, $group-id the group, and " +
-            "$permissons the permissions as an xs:integer value. " +
-            XMLDBModule.REMEMBER_OCTAL_CALC,
-			new SequenceType[] {
-                new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
-                new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
-                new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id"),
-                new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions"),
-			},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signature = new FunctionSignature(
+        new QName("set-collection-permissions", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+        "Sets the permissions of the collection $collection-uri. " +
+        XMLDBModule.COLLECTION_URI +
+        " $user-id specifies the user which " +
+        "will become the owner of the resource, $group-id the group, and " +
+        "$permissons the permissions as an xs:integer value. " +
+        XMLDBModule.REMEMBER_OCTAL_CALC,
+        new SequenceType[] {
+            new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+            new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
+            new FunctionParameterSequenceType("group-id", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id"),
+            new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions"),
+        },
+        new SequenceType(Type.ITEM, Cardinality.EMPTY),
+        "You should use sm:chown and sm:chmod from the SecurityManager Module instead."
+    );
 
 	
-	public XMLDBSetCollectionPermissions(XQueryContext context) {
-		super(context, signature);
-	}
+    public XMLDBSetCollectionPermissions(XQueryContext context) {
+            super(context, signature);
+    }
 	
 /* (non-Javadoc)
  * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)

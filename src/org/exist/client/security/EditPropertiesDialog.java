@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.InteractiveClient;
 import org.exist.client.ResourceDescriptor;
 import org.exist.security.ACLPermission;
@@ -62,7 +62,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private final PermissionAider permission;
     private final List<ResourceDescriptor> applyTo;
     
-    private DefaultTableModel basicPermissionsTableModel = null;
+    private BasicPermissionsTableModel basicPermissionsTableModel = null;
     private DefaultTableModel aclTableModel = null;
 
     private final static String ERROR_TITLE = "Edit Properties Error";
@@ -126,7 +126,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         }
     }
     
-    private DefaultTableModel getBasicPermissionsTableModel() {
+    private BasicPermissionsTableModel getBasicPermissionsTableModel() {
         if(basicPermissionsTableModel == null) {
             basicPermissionsTableModel = new BasicPermissionsTableModel(permission);
         }
@@ -139,26 +139,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             aclTableModel = new AclTableModel(permission);
         }
         return aclTableModel;
-    }
-    
-    private int getBasicMode() {
-        int mode = 0;
-        
-        int right = Permission.READ;
-        for(int i = 0; i < getBasicPermissionsTableModel().getRowCount(); i++) {
-            if((Boolean)getBasicPermissionsTableModel().getValueAt(i, 1)) {
-                mode |= (right << 6);
-            }
-            if((Boolean)getBasicPermissionsTableModel().getValueAt(i, 2)) {
-                mode |= (right << 3);
-            }
-            if((Boolean)getBasicPermissionsTableModel().getValueAt(i, 3)) {
-                mode |= right;
-            }
-            right = right / 2;
-        }
-        
-        return mode;
     }
 
     private UserManagementService getUserManagementService() {
@@ -465,10 +445,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             for(final ResourceDescriptor desc : applyTo) {
                 if (desc.isCollection()) {
                     final Collection coll = parent.getChildCollection(desc.getName().toString());
-                    getUserManagementService().setPermissions(coll, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicMode(), dlgAces);
+                    getUserManagementService().setPermissions(coll, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicPermissionsTableModel().getMode(), dlgAces);
                 } else {
                     final Resource res = parent.getResource(desc.getName().toString());
-                    getUserManagementService().setPermissions(res, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicMode(), dlgAces);
+                    getUserManagementService().setPermissions(res, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicPermissionsTableModel().getMode(), dlgAces);
                 }
             }
 
@@ -553,7 +533,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Create Access Control Entry");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
@@ -578,7 +558,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (before...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {
@@ -603,7 +583,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         };
         
         try {
-            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService());
+            final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (after...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
         } catch(final XMLDBException xmldbe) {

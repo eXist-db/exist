@@ -57,9 +57,14 @@ public abstract class AbstractSubject implements Subject {
         return account.addGroup(group);
     }
 
+    @Override
+    public void setPrimaryGroup(final Group group) throws PermissionDeniedException {
+        account.setPrimaryGroup(group);
+    }
+
     /* (non-Javadoc)
-     * @see org.exist.security.User#remGroup(java.lang.String)
-     */
+         * @see org.exist.security.User#remGroup(java.lang.String)
+         */
     @Override
     public void remGroup(String group) throws PermissionDeniedException {
         account.remGroup(group);

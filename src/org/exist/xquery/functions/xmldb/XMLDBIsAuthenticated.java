@@ -49,7 +49,7 @@ public class XMLDBIsAuthenticated extends BasicFunction
 			"Returns the true() if current user from the xquery context is authenticated, false() otherwise.",
 			null,
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise"),
-			"Use sm.is-externally-authenticated() function."
+			"Use sm:is-externally-authenticated() function."
 		);
 	
 	public XMLDBIsAuthenticated(XQueryContext context, FunctionSignature signature) {

@@ -184,13 +184,16 @@ abstract class OrderedDurationValue extends DurationValue {
 	 */
 	protected BigDecimal numberToBigDecimal(ComputableValue x, String exceptionMessagePrefix) throws XPathException {
 		if (!Type.subTypeOf(x.getType(), Type.NUMBER)) {
-			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
+                    throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
 		}	
-		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN())
-			throw new XPathException(ErrorCodes.XPTY0004, "Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
-		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE)
-			return (BigDecimal) x.toJavaObject(BigDecimal.class);
-		else 
-			return new BigDecimal(((NumericValue) x).getDouble());		
+		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN()) {
+                    throw new XPathException(ErrorCodes.XPTY0004, "Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
+                }
+                
+		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE) {
+                    return x.toJavaObject(BigDecimal.class);
+                } else {
+                    return new BigDecimal(((NumericValue) x).getDouble());		
+                }
 	}
 }

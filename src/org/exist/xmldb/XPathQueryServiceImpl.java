@@ -54,6 +54,15 @@ public interface XPathQueryServiceImpl extends XPathQueryService {
     throws XMLDBException;
     
     /**
+     * Executes a query which is already stored in the database
+     * 
+     * @param uri The URI of the query in the database
+     * 
+     * @throws XMLDBException
+     */
+    public ResourceSet executeStoredQuery(String uri) throws XMLDBException;
+    
+    /**
      * Declare an external XPath variable and assign a value to it.
      * 
      * A variable can be referenced inside an XPath expression as

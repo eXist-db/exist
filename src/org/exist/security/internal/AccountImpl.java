@@ -198,6 +198,9 @@ public class AccountImpl extends AbstractAccount {
             final String metadataValue = from_user.getMetadataValue(metadataKey);
             setMetadataValue(metadataKey, metadataValue);
         }
+        
+        //copy umask
+        setUserMask(from_user.getUserMask());
 
         if(from_user instanceof AccountImpl) {
             AccountImpl user = (AccountImpl) from_user;

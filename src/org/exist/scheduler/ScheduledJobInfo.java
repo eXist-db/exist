@@ -21,35 +21,36 @@
  */
 package org.exist.scheduler;
 
+import java.util.Date;
 import org.quartz.CronTrigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 
-import java.util.Date;
-
 
 /**
  * Information about a Scheduled Job.
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author  Adam Retter <adam.retter@googlemail.com>
  */
-public class ScheduledJobInfo
-{
-    public final static int TRIGGER_STATE_ERROR    = -1;
-    public final static int TRIGGER_STATE_NONE     = 0;
-    public final static int TRIGGER_STATE_NORMAL   = 1;
-    public final static int TRIGGER_STATE_PAUSED   = 2;
-    public final static int TRIGGER_STATE_BLOCKED  = 3;
-    public final static int TRIGGER_STATE_COMPLETE = 4;
-    private Scheduler       scheduler              = null;
-    private Trigger         trigger                = null;
+public class ScheduledJobInfo {
+    
+    public enum TriggerState {
+        ERROR,
+        NONE,
+        NORMAL,
+        PAUSED,
+        BLOCKED,
+        COMPLETE;
+    }
+    
+    private final Scheduler scheduler;
+    private final Trigger trigger;
 
-    public ScheduledJobInfo( Scheduler scheduler, Trigger trigger )
-    {
+    public ScheduledJobInfo(final Scheduler scheduler, final Trigger trigger) {
         this.scheduler = scheduler;
-        this.trigger   = trigger;
+        this.trigger = trigger;
     }
 
     /**
@@ -57,9 +58,8 @@ public class ScheduledJobInfo
      *
      * @return  the Job's Name
      */
-    public String getName()
-    {
-        return( trigger.getJobName() );
+    public String getName() {
+        return trigger.getJobKey().getName();
     }
 
 
@@ -68,9 +68,8 @@ public class ScheduledJobInfo
      *
      * @return  the Job's Group
      */
-    public String getGroup()
-    {
-        return( trigger.getJobGroup() );
+    public String getGroup() {
+        return trigger.getJobKey().getGroup();
     }
 
 
@@ -79,9 +78,8 @@ public class ScheduledJobInfo
      *
      * @return  the Name of the Job's Trigger
      */
-    public String getTriggerName()
-    {
-        return( trigger.getName() );
+    public String getTriggerName() {
+        return trigger.getKey().getName();
     }
 
 
@@ -90,9 +88,8 @@ public class ScheduledJobInfo
      *
      * @return  the Start time of the Job
      */
-    public Date getStartTime()
-    {
-        return( trigger.getStartTime() );
+    public Date getStartTime() {
+        return trigger.getStartTime();
     }
 
 
@@ -101,9 +98,8 @@ public class ScheduledJobInfo
      *
      * @return  the End time of the Job, or null of the job is Scheduled forever
      */
-    public Date getEndTime()
-    {
-        return( trigger.getEndTime() );
+    public Date getEndTime() {
+        return trigger.getEndTime();
     }
 
 
@@ -112,9 +108,8 @@ public class ScheduledJobInfo
      *
      * @return  the time the Job was Previously Fired, or null if the job hasnt fired yet
      */
-    public Date getPreviousFireTime()
-    {
-        return( trigger.getPreviousFireTime() );
+    public Date getPreviousFireTime() {
+        return trigger.getPreviousFireTime();
     }
 
 
@@ -123,9 +118,8 @@ public class ScheduledJobInfo
      *
      * @return  the time the Job will Next be Fired, or null if the job wont fire again
      */
-    public Date getNextFireTime()
-    {
-        return( trigger.getNextFireTime() );
+    public Date getNextFireTime() {
+        return trigger.getNextFireTime();
     }
 
 
@@ -134,9 +128,8 @@ public class ScheduledJobInfo
      *
      * @return  the time the Job will be Fired for the Final time, or null if the job is Scheduled forever
      */
-    public Date getFinalFireTime()
-    {
-        return( trigger.getFinalFireTime() );
+    public Date getFinalFireTime() {
+        return trigger.getFinalFireTime();
     }
 
 
@@ -145,15 +138,14 @@ public class ScheduledJobInfo
      *
      * @return  The expression that was used to configure the Triggers firing pattern
      */
-    public String getTriggerExpression()
-    {
-        if( trigger instanceof CronTrigger ) {
-            return( ( ( CronTrigger )trigger ).getCronExpression() );
-        } else if( trigger instanceof SimpleTrigger ) {
-            return( String.valueOf( ( ( SimpleTrigger )trigger ).getRepeatInterval() ) );
+    public String getTriggerExpression(){
+        if(trigger instanceof CronTrigger) {
+            return ((CronTrigger)trigger).getCronExpression();
+        } else if(trigger instanceof SimpleTrigger) {
+            return String.valueOf(((SimpleTrigger)trigger).getRepeatInterval());
         }
 
-        return( null );
+        return null;
     }
 
 
@@ -162,43 +154,34 @@ public class ScheduledJobInfo
      *
      * @return  the TRIGGER_STATE_*
      */
-    public int getTriggerState()
-    {
+    public TriggerState getTriggerState() {
         try {
+            switch(scheduler.getTriggerState(trigger.getKey())) {
+                
+                
+                case ERROR:
+                    return TriggerState.ERROR;
 
-            switch( scheduler.getTriggerState( trigger.getName(), trigger.getGroup() ) ) {
+                case NONE:
+                    return TriggerState.NONE;
 
-                case Trigger.STATE_ERROR: {
-                    return( TRIGGER_STATE_ERROR );
-                }
+                case NORMAL:
+                    return TriggerState.NORMAL;
 
-                case Trigger.STATE_NONE: {
-                    return( TRIGGER_STATE_NONE );
-                }
+                case PAUSED:
+                    return TriggerState.PAUSED;
 
-                case Trigger.STATE_NORMAL: {
-                    return( TRIGGER_STATE_NORMAL );
-                }
+                case BLOCKED:
+                    return TriggerState.BLOCKED;
 
-                case Trigger.STATE_PAUSED: {
-                    return( TRIGGER_STATE_PAUSED );
-                }
+                case COMPLETE:
+                    return TriggerState.COMPLETE;
 
-                case Trigger.STATE_BLOCKED: {
-                    return( TRIGGER_STATE_BLOCKED );
-                }
-
-                case Trigger.STATE_COMPLETE: {
-                    return( TRIGGER_STATE_COMPLETE );
-                }
-
-                default: {
-                    return( TRIGGER_STATE_ERROR );
-                }
+                default:
+                    return TriggerState.ERROR;
             }
-        }
-        catch( SchedulerException se ) {
-            return( TRIGGER_STATE_ERROR );
+        } catch(final SchedulerException se) {
+            return TriggerState.ERROR;
         }
     }
 }

@@ -50,11 +50,26 @@ public class Deploy extends BasicFunction {
         new FunctionSignature(
             new QName("install-and-deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
             "Downloads, installs and deploys a package from the public repository at $publicRepoURL. Dependencies are resolved " +
-            "automatically. For downloading the package, the package URI is simply appended to the $publicRepoURL and the " +
-            "resulting URL is used for an HTTP GET request.",
+            "automatically. For downloading the package, the package name is appended to the repository URL as " +
+            "parameter 'name'.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE,
                             "Unique name of the package to install."),
+                    new FunctionParameterSequenceType("publicRepoURL", Type.STRING, Cardinality.EXACTLY_ONE,
+                            "The URL of the public repo.")
+            },
+            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                    "<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+        new FunctionSignature(
+            new QName("install-and-deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+            "Downloads, installs and deploys a package from the public repository at $publicRepoURL. Dependencies are resolved " +
+            "automatically. For downloading the package, the package name and version are appended to the repository URL as " +
+            "parameters 'name' and 'version'.",
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE,
+                            "Unique name of the package to install."),
+                    new FunctionParameterSequenceType("version", Type.STRING, Cardinality.ZERO_OR_ONE,
+                            "Version to install."),
                     new FunctionParameterSequenceType("publicRepoURL", Type.STRING, Cardinality.EXACTLY_ONE,
                             "The URL of the public repo.")
             },
@@ -70,11 +85,21 @@ public class Deploy extends BasicFunction {
                 },
                 new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
                         "<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
+        new FunctionSignature(
+            new QName("install-and-deploy-from-db", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
+            "Installs and deploys a package from a .xar archive file stored in the database. Dependencies will be downloaded " +
+            "from the public repo and installed automatically.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE,
+                        "Database path to the package archive (.xar file)"),
+                new FunctionParameterSequenceType("publicRepoURL", Type.STRING, Cardinality.EXACTLY_ONE,
+                        "The URL of the public repo.")
+            },
+            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                    "<status result=\"ok\"/> if deployment was ok. Throws an error otherwise.")),
 		new FunctionSignature(
 				new QName("undeploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
-				"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
-				"defined by the &lt;permissions&gt; element in repo.xml. Pre- and post-install XQuery scripts can be specified " +
-				"via the &lt;prepare&gt; and &lt;finish&gt; elements.",
+				"Uninstall the resources belonging to a package from the db. Calls cleanup scripts if defined.",
 				new SequenceType[] { new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
 				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
 						"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."))
@@ -103,10 +128,20 @@ public class Deploy extends BasicFunction {
                     userTarget = args[1].getStringValue();
                 target = deployment.deploy(pkgName, context.getRepository(), userTarget);
             } else if (isCalledAs("install-and-deploy")) {
-                String repoURI = args[1].getStringValue();
-                target = installAndDeploy(pkgName, repoURI);
+                String version = null;
+                String repoURI;
+                if (getArgumentCount() == 3) {
+                    version = args[1].getStringValue();
+                    repoURI = args[2].getStringValue();
+                } else {
+                    repoURI = args[1].getStringValue();
+                }
+                target = installAndDeploy(pkgName, version, repoURI);
             } else if (isCalledAs("install-and-deploy-from-db")) {
-                target = installAndDeployFromDb(pkgName);
+                String repoURI = null;
+                if (getArgumentCount() == 2)
+                    repoURI = args[1].getStringValue();
+                target = installAndDeployFromDb(pkgName, repoURI);
             } else
                 target = deployment.undeploy(pkgName, context.getRepository());
             return statusReport(target);
@@ -117,11 +152,14 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private String installAndDeploy(String pkgName, String repoURI) throws XPathException {
+    private String installAndDeploy(String pkgName, String version, String repoURI) throws XPathException {
         try {
             RepoPackageLoader loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
-            return deployment.installAndDeploy(pkgName, loader);
+            File xar = loader.load(pkgName, new PackageLoader.Version(version, false));
+            if (xar != null)
+                return deployment.installAndDeploy(xar, loader);
+            return null;
         } catch (MalformedURLException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
         } catch (PackageException e) {
@@ -131,7 +169,7 @@ public class Deploy extends BasicFunction {
         }
     }
 
-    private String installAndDeployFromDb(String path) throws XPathException {
+    private String installAndDeployFromDb(String path, String repoURI) throws XPathException {
         XmldbURI docPath = XmldbURI.createInternal(path);
         DocumentImpl doc = null;
         try {
@@ -140,8 +178,11 @@ public class Deploy extends BasicFunction {
                 throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
 
             File file = ((NativeBroker)context.getBroker()).getCollectionBinaryFileFsPath(doc.getURI());
+            RepoPackageLoader loader = null;
+            if (repoURI != null)
+                loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
-            return deployment.installAndDeploy(file, null);
+            return deployment.installAndDeploy(file, loader);
         } catch (PackageException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } catch (IOException e) {
@@ -185,9 +226,22 @@ public class Deploy extends BasicFunction {
             this.repoURL = repoURL;
         }
 
-        @Override
-        public File load(String name) throws IOException {
-            String pkgURL = repoURL + URLEncoder.encode(name, "UTF-8");
+        public File load(String name, Version version) throws IOException {
+            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8");
+            if (version != null) {
+                if (version.getMin() != null) {
+                    pkgURL += "&semver-min=" + version.getMin();
+                }
+                if (version.getMax() != null) {
+                    pkgURL += "&semver-max=" + version.getMax();
+                }
+                if (version.getSemVer() != null) {
+                    pkgURL += "&semver=" + version.getSemVer();
+                }
+                if (version.getVersion() != null) {
+                    pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), "UTF-8");
+                }
+            }
             LOG.info("Retrieving package from " + pkgURL);
             HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
             connection.setConnectTimeout(15 * 1000);

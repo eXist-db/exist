@@ -1,4 +1,3 @@
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2012 The eXist Project
@@ -27,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import javax.naming.Context;
 import org.apache.log4j.Logger;
-import org.exist.scheduler.JobException;
 
 /**
  *
@@ -57,8 +55,7 @@ public abstract class ClientParameters {
      */
     public void setMultiValueParameters(Map<String, List<?>> params) {
 
-
-        for (String key : params.keySet()) {
+        for(final String key : params.keySet()) {
 
             List<?> values = params.get(key);
             if (values != null && !values.isEmpty()) {
@@ -80,11 +77,11 @@ public abstract class ClientParameters {
      * 
      * @return  Values as properties.
      */
-    public void setSingleValueParameters(Map<String, ?> params) {
+    public void setSingleValueParameters(final Map<String, List<? extends Object>> params) {
 
-        for (String key : params.keySet()) {
-            String value = getConfigurationValue(params, key);
-            if(value!=null){
+        for(final String key : params.keySet()) {
+            final String value = getConfigurationValue(params, key);
+            if(value != null){
                 props.setProperty(key, value);
             }
         }
@@ -99,13 +96,15 @@ public abstract class ClientParameters {
      * @return Value of item, or NULL if not existent or existent and not a
      * String object
      */
-    private static String getConfigurationValue(Map<String, ?> params, String name) {
+    private static String getConfigurationValue(final Map<String, List<? extends Object>> params, String name) {
 
         String retVal = null;
 
-        Object value = params.get(name);
-        if (value != null) {
-            retVal = (String) value;
+        final List<? extends Object> value = params.get(name);
+        if(value != null) {
+            if(value.size() > 0) {
+                retVal = value.get(0).toString();
+            }
         }
 
         return retVal;
@@ -155,7 +154,7 @@ public abstract class ClientParameters {
         return contextProps;
     }
     
-    abstract public void processParameters() throws TransportException, JobException;
+    abstract public void processParameters() throws TransportException, ClientParameterException;
     
     abstract public String getReport();
     

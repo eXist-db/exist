@@ -75,13 +75,15 @@ public class ConsistencyCheckTask implements SystemTask {
         
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
         File dir = new File(exportDir);
-        if (!dir.isAbsolute())
+        if (!dir.isAbsolute()) {
             dir = new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR), exportDir);
+        }
         dir.mkdirs();
         exportDir = dir.getAbsolutePath();
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Using output directory " + exportDir);
+        }
 
         String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
@@ -103,6 +105,7 @@ public class ConsistencyCheckTask implements SystemTask {
         }
     }
 
+    @Override
     public void execute(DBBroker broker) throws EXistException {
         final Agent agentInstance = AgentFactory.getInstance();
         final BrokerPool brokerPool = broker.getBrokerPool();
@@ -111,60 +114,58 @@ public class ConsistencyCheckTask implements SystemTask {
         agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.INIT));
 
         if (paused) {
-            if (LOG.isInfoEnabled())
-                LOG.info("Consistency check is paused.");
+            LOG.info("Consistency check is paused.");
             agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.PAUSED));
             return;
         }
 
         brokerPool.getProcessMonitor().startJob(ProcessMonitor.ACTION_BACKUP, null, monitor);
-//        long start = System.currentTimeMillis();
+
         PrintWriter report = null;
         try {
             boolean doBackup = createBackup;
             // TODO: don't use the direct access feature for now. needs more testing
             List<ErrorReport> errors = null;
             if (!incremental || incrementalCheck) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Starting consistency check...");
-                }
+                
+                LOG.info("Starting consistency check...");
+                
                 report = openLog();
                 CheckCallback cb = new CheckCallback(report);
 
                 ConsistencyCheck check = new ConsistencyCheck(broker, false);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_CHECK));
                 errors = check.checkAll(cb);
+                
                 if (!errors.isEmpty()) {
                     endStatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
                     endStatus.setReason(errors);
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Errors found: " + errors.size());
-                    }
+                   
+                    LOG.error("Errors found: " + errors.size());
 
                     doBackup = true;
 
                     if (fatalErrorsFound(errors)) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Fatal errors were found: pausing the consistency check task.");
-                        }
+                        LOG.error("Fatal errors were found: pausing the consistency check task.");   
                         paused = true;
                     }
                 }
+                
+                LOG.info("Finished consistency check");
             }
 
             if (doBackup) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Starting backup...");
-                }
+                LOG.info("Starting backup...");
 
                 SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, createZip, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
-                if (LOG.isInfoEnabled() && lastExportedBackup != null) {
+                if (lastExportedBackup != null) {
                     LOG.info("Created backup to file: " + lastExportedBackup.getAbsolutePath());
                 }
+                
+                LOG.info("Finished backup");
             }
 
         } catch (TerminatedException e) {
@@ -173,9 +174,12 @@ public class ConsistencyCheckTask implements SystemTask {
         } catch (PermissionDeniedException e) {
             //TODO should maybe throw PermissionDeniedException instead!
             throw new EXistException(e.getMessage(), e);
+            
         } finally {
-            if (report != null)
+            if (report != null) {
                 report.close();
+            }
+            
             agentInstance.changeStatus(brokerPool, endStatus);
             brokerPool.getProcessMonitor().endJob();
         }
@@ -244,8 +248,9 @@ public class ConsistencyCheckTask implements SystemTask {
 //        }
 
         public void startDocument(String name, int current, int count) throws TerminatedException {
-            if (!monitor.proceed())
+            if (!monitor.proceed()) {
                 throw new TerminatedException("consistency check terminated");
+            }
             if ((current % 1000 == 0) || (current == count)) {
                 log.write("  DOCUMENT: ");
                 log.write(Integer.valueOf(current).toString());
@@ -257,10 +262,12 @@ public class ConsistencyCheckTask implements SystemTask {
         }
 
         public void startCollection(String path) throws TerminatedException {
-            if (!monitor.proceed())
+            if (!monitor.proceed()) {
                 throw new TerminatedException("consistency check terminated");
-            if (errorFound)
+            }
+            if (errorFound) {
                 log.write("----------------------------------------------\n");
+            }
             errorFound = false;
             log.write("COLLECTION: ");
             log.write(path);

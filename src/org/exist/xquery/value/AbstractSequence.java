@@ -28,6 +28,7 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -202,31 +203,34 @@ public abstract class AbstractSequence implements Sequence {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject(Class<?> target) throws XPathException {
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if(Sequence.class.isAssignableFrom(target)) {
-            return this;
+            return (T)this;
         } else if(target.isArray()) {
-            Class<?> componentType = target.getComponentType();
+            final Class<?> componentType = target.getComponentType();
             // assume single-dimensional, then double-check that instance really matches desired type
-            Object array = Array.newInstance(componentType, getItemCount());
-            if (!target.isInstance(array))
+            final Object array = Array.newInstance(componentType, getItemCount());
+            if(!target.isInstance(array)) {
                 return null;
+            }
             int index = 0;
-            for (SequenceIterator i = iterate(); i.hasNext(); index++) {
-                Item item = i.nextItem();
-                Object obj = item.toJavaObject(componentType);
+            for(final SequenceIterator i = iterate(); i.hasNext(); index++) {
+                final Item item = i.nextItem();
+                final Object obj = item.toJavaObject(componentType);
                 Array.set(array, index, obj);
             }
-            return array;
-        } else if (target.isAssignableFrom(List.class)) {
-            List<Item> l = new ArrayList<Item>(getItemCount());
+            return (T)array;
+        } else if(target.isAssignableFrom(List.class)) {
+            final List<Item> l = new ArrayList<Item>(getItemCount());
             for(SequenceIterator i = iterate(); i.hasNext(); ) {
                 l.add(i.nextItem());
             }
-            return l;
+            return (T)l;
         }
-        if(!isEmpty())
-            return itemAt(0).toJavaObject(target);
+        if(!isEmpty()) {
+            return (T)itemAt(0).toJavaObject(target);
+        }
         return null;
     }
 
@@ -287,7 +291,7 @@ public abstract class AbstractSequence implements Sequence {
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // do nothing by default
     }
 }

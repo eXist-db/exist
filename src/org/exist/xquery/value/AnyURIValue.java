@@ -343,25 +343,27 @@ public class AnyURIValue extends AtomicValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
-	public Object toJavaObject(Class<?> target) throws XPathException {
+	@Override
+        public <T> T toJavaObject(final Class<T> target) throws XPathException {
 		if (target.isAssignableFrom(AnyURIValue.class)) {
-			return this;
+			return (T)this;
 		} else if (target == XmldbURI.class) {
-			return toXmldbURI();
+			return (T)toXmldbURI();
 		} else if (target == URI.class) {
-			return toURI();
+			return (T)toURI();
 		} else if (target == URL.class) {
 			try {
-				return new URL(uri);
+				return (T)new URL(uri);
 			} catch (MalformedURLException e) {
 				throw new XPathException(ErrorCodes.FORG0001,
 					"failed to convert " + uri + " into a Java URL: " + e.getMessage(),
 					e);
 			}
 		} else if (target == String.class || target == CharSequence.class)
-			return uri;
-		else if (target == Object.class)
-			return uri;
+			return (T)uri;
+		else if (target == Object.class) {
+			return (T)uri;
+                }
 
 		throw new XPathException(
 			"cannot convert value of type "

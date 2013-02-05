@@ -111,7 +111,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @ConfigurationFieldAsAttribute("version")
     private String version = "2.0";
 
-    @ConfigurationFieldAsElement("Authentication-Entry-Point")
+    @ConfigurationFieldAsElement("authentication-entry-point")
     public final static String authenticationEntryPoint = "/authentication/login";
     
     //@ConfigurationField("enableXACML")
@@ -273,11 +273,13 @@ public class SecurityManagerImpl implements SecurityManager {
     public boolean deleteGroup(String name) throws PermissionDeniedException, EXistException {
 
         Group group = getGroup(name);
-        if (group == null)
+        if (group == null) {
             return false;
+        }
 
-        if (group.getRealmId() == null)
+        if (group.getRealmId() == null) {
             throw new ConfigurationException("Group must have realm id.");
+        }
         
         groupLocks.getWriteLock(group).lock();
         try {

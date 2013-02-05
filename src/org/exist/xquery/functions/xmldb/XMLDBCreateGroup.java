@@ -36,6 +36,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.GroupManagementFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -57,7 +58,7 @@ public class XMLDBCreateGroup extends BasicFunction {
 					"Create a new user group. $group is the group name. The current user will be the groups manager.",
 					new SequenceType[] { new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name") },
 					new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
-					"Use xmldb:create-group($group, $group-manager-username) instead."),
+                    GroupManagementFunction.FNS_CREATE_GROUP),
 
 			new FunctionSignature(
 					new QName("create-group", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -66,7 +67,8 @@ public class XMLDBCreateGroup extends BasicFunction {
 							new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name"),
 							new FunctionParameterSequenceType("group-manager-username", Type.STRING, Cardinality.ONE_OR_MORE,
 									"The name of the user(s) who will be the groups manager") }, new FunctionReturnSequenceType(Type.BOOLEAN,
-							Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation")), };
+							Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
+                    GroupManagementFunction.FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA), };
 
 	/**
 	 * @param context

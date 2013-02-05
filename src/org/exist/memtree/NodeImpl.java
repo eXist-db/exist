@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.xquery.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -47,10 +48,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
@@ -758,16 +755,17 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject( Class<?> target ) throws XPathException {
-        if( target.isAssignableFrom( NodeImpl.class ) ) {
-            return( this );
-        } else if( target.isAssignableFrom( Node.class ) ) {
-            return( this );
-        } else if( target == Object.class ) {
-            return( this );
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
+        if(target.isAssignableFrom(NodeImpl.class)) {
+            return (T)this;
+        } else if(target.isAssignableFrom(Node.class)) {
+            return (T)this;
+        } else if(target == Object.class) {
+            return (T)this;
         } else {
-            StringValue v = new StringValue( getStringValue() );
-            return( v.toJavaObject( target ) );
+            final StringValue v = new StringValue( getStringValue() );
+            return v.toJavaObject(target);
         }
     }
 
@@ -805,7 +803,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         return( null );
     }
 
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // nothing to do
     }
 

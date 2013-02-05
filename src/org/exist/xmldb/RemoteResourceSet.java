@@ -4,15 +4,13 @@ package org.exist.xmldb;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.Properties;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.Properties;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
-
 import javax.xml.transform.OutputKeys;
-
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -168,36 +166,44 @@ public class RemoteResourceSet implements ResourceSet {
 	}
     }
 
-    public Resource getResource( long pos ) throws XMLDBException {
-        if ( pos >= resources.size() )
+    @Override
+    public Resource getResource(final long pos) throws XMLDBException {
+        if(pos >= resources.size()) {
             return null;
+        }
+        
         // node or value?
-        if ( resources.get( (int) pos ) instanceof Object[] ) {
+        if(resources.get((int)pos) instanceof Object[]) {
             // node
-            Object[] v = (Object[]) resources.get( (int) pos );
-            String doc = (String) v[0];
-            String s_id = (String) v[1];
-            XmldbURI docUri;
+            final Object[] v = (Object[]) resources.get( (int) pos );
+            final String doc = (String) v[0];
+            final String s_id = (String) v[1];
+            final XmldbURI docUri;
             try {
             	docUri = XmldbURI.xmldbUriFor(doc);
-            } catch (URISyntaxException e) {
+            } catch(final URISyntaxException e) {
             	throw new XMLDBException(ErrorCodes.INVALID_URI,e.getMessage(),e);
             }
-			RemoteCollection parent = 
-				new RemoteCollection(collection.getClient(), null, docUri.removeLastSegment());
-			parent.properties = outputProperties;
-            RemoteXMLResource res =
-                new RemoteXMLResource( parent, handle,
-                	(int)pos, docUri, s_id );
+            
+            final RemoteCollection parent;
+            if(docUri.startsWith(XmldbURI.DB)) {
+                parent = RemoteCollection.instance(collection.getClient(), docUri.removeLastSegment());
+            } else {
+                //fake to provide a RemoteCollection for local files that have been transferred by xml-rpc
+                parent = collection;
+            }
+             
+            
+            parent.properties = outputProperties;
+            final RemoteXMLResource res = new RemoteXMLResource(parent, handle, (int)pos, docUri, s_id );
             res.setProperties(outputProperties);
             return res;
-        } else if ( resources.get( (int) pos ) instanceof Resource )
-            return (Resource) resources.get( (int) pos );
-        else {
+        } else if (resources.get((int)pos) instanceof Resource) {
+            return (Resource)resources.get((int)pos);
+        } else {
             // value
-            RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
-            	XmldbURI.create(Long.toString( pos )), null );
-            res.setContent( resources.get( (int) pos ) );
+            final RemoteXMLResource res = new RemoteXMLResource(collection, handle, (int)pos, XmldbURI.create(Long.toString(pos)), null);
+            res.setContent(resources.get((int)pos));
             res.setProperties(outputProperties);
             return res;
         }

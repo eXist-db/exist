@@ -21,24 +21,14 @@
  */
 package org.exist.repo;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Stack;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.BinaryDocument;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.memtree.*;
 import org.exist.security.Permission;
@@ -63,16 +53,19 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.FileSystemStorage;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Packages;
-import org.expath.pkg.repo.UserInteractionStrategy;
+import org.expath.pkg.repo.*;
+import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.util.Date;
+import java.util.Stack;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 /**
  * Deploy a .xar package into the database using the information provided
@@ -114,11 +107,25 @@ public class Deployment {
         for (Packages pp : repo.getParentRepo().listPackages()) {
             org.expath.pkg.repo.Package pkg = pp.latest();
             if (pkg.getName().equals(pkgName)) {
-                FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
-                packageDir = resolver.resolveResourceAsFile(".");
+                packageDir = getPackageDir(pkg);
             }
         }
         return packageDir;
+    }
+
+    protected File getPackageDir(Package pkg) {
+        FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
+        return resolver.resolveResourceAsFile(".");
+    }
+
+    protected org.expath.pkg.repo.Package getPackage(String pkgName, ExistRepository repo) throws PackageException {
+        for (Packages pp : repo.getParentRepo().listPackages()) {
+            org.expath.pkg.repo.Package pkg = pp.latest();
+            if (pkg.getName().equals(pkgName)) {
+                return pkg;
+            }
+        }
+        return null;
     }
 
     protected DocumentImpl getRepoXML(File packageDir) throws PackageException {
@@ -135,19 +142,24 @@ public class Deployment {
         }
     }
 
+    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+        return installAndDeploy(xar, loader, true);
+    }
+
     /**
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
      */
-    public String installAndDeploy(File xar, PackageLoader loader) throws PackageException, IOException {
+    public String installAndDeploy(File xar, PackageLoader loader, boolean checkVersion) throws PackageException, IOException {
         DocumentImpl document = getDescriptor(xar);
         ElementImpl root = (ElementImpl) document.getDocumentElement();
         String name = root.getAttribute("name");
+        String pkgVersion = root.getAttribute("version");
 
         ExistRepository repo = broker.getBrokerPool().getExpathRepo();
         Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null) {
+        if (packages != null && (!checkVersion || pkgVersion.equals(packages.latest().getVersion()))) {
             LOG.info("Application package " + name + " already installed. Skipping.");
             return null;
         }
@@ -158,12 +170,24 @@ public class Deployment {
             for (SequenceIterator i = deps.iterate(); i.hasNext(); ) {
                 Element dependency = (Element) i.nextItem();
                 String pkgName = dependency.getAttribute("package");
+                String versionStr = dependency.getAttribute("version");
+                String semVer = dependency.getAttribute("semver");
+                String semVerMin = dependency.getAttribute("semver-min");
+                String semVerMax = dependency.getAttribute("semver-max");
+                PackageLoader.Version version = null;
+                if (semVer != null) {
+                    version = new PackageLoader.Version(semVer, true);
+                } else if (semVerMax != null || semVerMin != null) {
+                    version = new PackageLoader.Version(semVerMin, semVerMax);
+                } else if (pkgVersion != null) {
+                    version = new PackageLoader.Version(versionStr, false);
+                }
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
                     } else if (loader != null) {
-                        File depFile = loader.load(pkgName);
+                        File depFile = loader.load(pkgName, version);
                         if (depFile != null)
                             installAndDeploy(depFile, loader);
                         else
@@ -183,6 +207,7 @@ public class Deployment {
         ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
         if (info != null && !info.getJars().isEmpty())
             ClasspathHelper.updateClasspath(broker.getBrokerPool(), pkg);
+        broker.getBrokerPool().getXQueryPool().clear();
         String pkgName = pkg.getName();
         // signal status
         broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
@@ -192,19 +217,13 @@ public class Deployment {
         return deploy(pkgName, repo, null);
     }
 
-    public String installAndDeploy(String name, PackageLoader loader) throws IOException, PackageException {
-        File xar = loader.load(name);
-        if (xar != null)
-            return installAndDeploy(xar, loader);
-        return null;
-    }
-
     public String undeploy(String pkgName, ExistRepository repo) throws PackageException {
         File packageDir = getPackageDir(pkgName, repo);
         if (packageDir == null)
             // fails silently if package dir is not found?
             return null;
         DocumentImpl repoXML = getRepoXML(packageDir);
+        Package pkg = getPackage(pkgName, repo);
         if (repoXML != null) {
             ElementImpl target = null;
             try {
@@ -213,15 +232,17 @@ public class Deployment {
                 if (cleanup != null) {
                     runQuery(null, packageDir, cleanup.getStringValue(), false);
                 }
-                if (target != null) {
-                    uninstall(target);
-                }
+
+                uninstall(pkg, target);
                 return target == null ? null : target.getStringValue();
             } catch (XPathException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             } catch (IOException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             }
+        } else {
+            // we still may need to remove the copy of the package from /db/system/repo
+            uninstall(pkg, null);
         }
         return null;
     }
@@ -231,6 +252,8 @@ public class Deployment {
         if (packageDir == null)
             throw new PackageException("Package not found: " + pkgName);
         DocumentImpl repoXML = getRepoXML(packageDir);
+        if (repoXML == null)
+            return null;
         try {
             // if there's a <setup> element, run the query it points to
             ElementImpl setup = findElement(repoXML, SETUP_ELEMENT);
@@ -260,7 +283,10 @@ public class Deployment {
                 }
                 if (targetCollection == null) {
                     // no target means: package does not need to be deployed into database
-                    return null;
+                    // however, we need to preserve a copy for backup purposes
+                    Package pkg = getPackage(pkgName, repo);
+                    String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+                    targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
                 ElementImpl permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
                 if (permissions != null) {
@@ -303,10 +329,52 @@ public class Deployment {
 
                 storeRepoXML(repoXML, targetCollection);
 
+                // TODO: it should be save to clean up the file system after a package
+                // has been deployed. Might be enabled after 2.0
+                //cleanup(pkgName, repo);
+
                 return targetCollection.getCollectionPath();
             }
         } catch (XPathException e) {
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * After deployment, clean up the package directory and remove all files which have been
+     * stored into the db. They are not needed anymore. Only preserve the descriptors and the
+     * contents directory.
+     *
+     * @param pkgName
+     * @param repo
+     * @throws PackageException
+     */
+    private void cleanup(String pkgName, ExistRepository repo) throws PackageException {
+        final Package pkg = getPackage(pkgName, repo);
+        final String abbrev = pkg.getAbbrev();
+        final File packageDir = getPackageDir(pkg);
+        if (packageDir == null) {
+            throw new PackageException("Cleanup: package dir for package " + pkgName + " not found");
+        }
+        File[] filesToDelete = packageDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                String name = file.getName();
+                if (file.isDirectory()) {
+                    return !(name.equals(abbrev) || name.equals("content"));
+                } else {
+                    return !(name.equals("expath-pkg.xml") || name.equals("repo.xml") ||
+                            name.equals("exist.xml") || name.startsWith("icon"));
+                }
+            }
+        });
+        for (File fileToDelete : filesToDelete) {
+            try {
+                FileUtils.forceDelete(fileToDelete);
+            } catch (IOException e) {
+                LOG.warn("Cleanup: failed to delete file " + fileToDelete.getAbsolutePath() + " in package " +
+                    pkgName);
+            }
         }
     }
 
@@ -325,14 +393,27 @@ public class Deployment {
         }
     }
 
-    private void uninstall(ElementImpl target)
+    /**
+     * Delete the target collection of the package. If there's no repo.xml descriptor,
+     * target will be null.
+     *
+     * @param pkg
+     * @param target
+     * @throws PackageException
+     */
+    private void uninstall(Package pkg, ElementImpl target)
             throws PackageException {
         // determine target collection
         XmldbURI targetCollection;
-        try {
-            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
-        } catch (Exception e) {
-            throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+        if (target == null) {
+            String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
+            targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
+        } else {
+            try {
+                targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+            } catch (Exception e) {
+                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+            }
         }
         TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
         Txn txn = mgr.beginTransaction();
@@ -340,13 +421,15 @@ public class Deployment {
             Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             if (collection != null)
                 broker.removeCollection(txn, collection);
-
-            XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
-            collection = broker.getOrCreateCollection(txn, configCollection);
-            if (collection != null)
-                broker.removeCollection(txn, collection);
+            if (target != null) {
+                XmldbURI configCollection = XmldbURI.CONFIG_COLLECTION_URI.append(targetCollection);
+                collection = broker.getOrCreateCollection(txn, configCollection);
+                if (collection != null)
+                    broker.removeCollection(txn, collection);
+            }
             mgr.commit(txn);
         } catch (Exception e) {
+            LOG.error("Exception occurred while removing package.", e);
             mgr.abort(txn);
         }
     }

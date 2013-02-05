@@ -16,9 +16,11 @@
                 <root id="src.src14.dir" name="Extensions Exiftool"/>
                 <root id="src.src15.dir" name="Extensions EXPath"/>
                 <root id="src.src17.dir" name="Extensions EXQuery - RESTXQ"/>
+                <root id="src.java2.dir" name="Extensions EXQuery - Request Module"/>
                 <root id="eXist-1.33.dir" name="Extensions Fluent"/>
                 <root id="src.src.dir" name="Extensions Modules"/>
                 <root id="src.src18.dir" name="Extensions Replication"/>
+                <root id="src.java.dir" name="Extensions Scheduler"/>
                 <root id="src.src10.dir" name="Extensions Security - ActiveDirectory"/>
                 <root id="src.src11.dir" name="Extensions Security - LDAP"/>
                 <root id="src.src5.dir" name="Extensions Versioning"/>

@@ -113,6 +113,11 @@
         <echo message="Downloading libraries required by the expath package module"/>
         <echo message="------------------------------------------------------"/>
 
+        <copy todir="${classes}/org/exist/xquery/modules/expathrepo">
+            <fileset dir="${src}/org/exist/xquery/modules/expathrepo">
+                <include name="*.xql"/>
+            </fileset>
+        </copy>
         <!-- disabled because teamcity doesn't like it -->
           <!--get src="${include.module.expathrepo.url}"
                 dest="${top.dir}/${lib.core}"/-->
@@ -230,7 +235,7 @@
     -->
     <target name="prepare-ivy">
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
-        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant"/>
+        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant" sync="true"/>
     </target>
 
     <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo,prepare-cqlparser">

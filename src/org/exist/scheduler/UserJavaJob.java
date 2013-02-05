@@ -21,13 +21,11 @@
  */
 package org.exist.scheduler;
 
+import java.util.Map;
+import org.exist.storage.BrokerPool;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-
-import org.exist.storage.BrokerPool;
-
-import java.util.Map;
 
 
 /**
@@ -37,8 +35,7 @@ import java.util.Map;
  *
  * @author  Adam Retter <adam.retter@devon.gov.uk>
  */
-public abstract class UserJavaJob extends UserJob
-{
+public abstract class UserJavaJob extends UserJob {
     /**
      * The execute method as called by the Quartz Scheduler.
      *
@@ -46,23 +43,20 @@ public abstract class UserJavaJob extends UserJob
      *
      * @throws  JobExecutionException  if there was a problem with the job, this also describes to Quartz how to cleanup the job
      */
-    public final void execute( JobExecutionContext jec ) throws JobExecutionException
-    {
-        JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+    @Override
+    public final void execute(final JobExecutionContext jec) throws JobExecutionException {
+        final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
         //get the brokerpool from the data map
-        BrokerPool pool       = ( BrokerPool )jobDataMap.get( "brokerpool" );
+        final BrokerPool pool = (BrokerPool)jobDataMap.get("brokerpool");
 
         //get any parameters from the data map
-        Map        params     = ( Map )jobDataMap.get( "params" );
+        final Map params = (Map)jobDataMap.get("params");
 
         try {
-
             //execute the job
-            execute( pool, params );
-        }
-        catch( JobException je ) {
-
+            execute(pool, params);
+        } catch(final JobException je ) {
             //cleanup the job
             je.cleanupJob();
         }
@@ -78,5 +72,5 @@ public abstract class UserJavaJob extends UserJob
      * @throws  JobException  if there is a problem with the job. cleanupJob() should then be called, which will adjust the jobs scheduling
      *                        appropriately
      */
-    public abstract void execute( BrokerPool brokerpool, Map<String, ?> params ) throws JobException;
+    public abstract void execute(BrokerPool brokerpool, Map<String, ?> params) throws JobException;
 }

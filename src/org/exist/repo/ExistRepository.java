@@ -181,6 +181,14 @@ public class ExistRepository extends Observable {
     }
 
     public static ExistRepository getRepository(Configuration config) throws PackageException {
+        File expathDir = getRepositoryDir(config);
+
+        LOG.info("Using directory " + expathDir.getAbsolutePath() + " for expath package repository");
+        FileSystemStorage storage = new FileSystemStorage(expathDir);
+        return new ExistRepository(storage);
+    }
+
+    public static File getRepositoryDir(Configuration config) {
         String dataDirPath = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         if (dataDirPath == null)
             dataDirPath = NativeBroker.DEFAULT_DATA_DIR;
@@ -190,10 +198,7 @@ public class ExistRepository extends Observable {
             moveOldRepo(config.getExistHome(), expathDir);
         }
         expathDir.mkdir();
-
-        LOG.info("Using directory " + expathDir.getAbsolutePath() + " for expath package repository");
-        FileSystemStorage storage = new FileSystemStorage(expathDir);
-        return new ExistRepository(storage);
+        return expathDir;
     }
 
     private static void moveOldRepo(File home, File newRepo) {

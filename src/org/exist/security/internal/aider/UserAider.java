@@ -21,10 +21,8 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.exist.config.Configuration;
 import org.exist.security.Account;
 import org.exist.security.Group;
@@ -125,6 +123,31 @@ public class UserAider implements Account {
             return null;
         }
         return addGroup(group.getName());
+    }
+
+    @Override
+    public void setPrimaryGroup(final Group group) throws PermissionDeniedException {
+
+        if(!roles.containsKey(group.getName())) {
+            addGroup(group);
+        }
+
+        final List<Map.Entry<String, Group>> entries = new ArrayList<Map.Entry<String, Group>>(roles.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<String, Group>>() {
+            @Override
+            public int compare(final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) {
+                if (o1.getKey().equals(group.getName())) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        roles = new LinkedHashMap<String, Group>();
+        for(final Map.Entry<String, Group> entry : entries) {
+            roles.put(entry.getKey(), entry.getValue());
+        }
     }
 
     /* (non-Javadoc)
@@ -310,8 +333,9 @@ public class UserAider implements Account {
 
     @Override
     public void assertCanModifyAccount(final Account user) throws PermissionDeniedException {
-         //do nothing
-        //TODO do we need to check any permissions?
+        if (user.getId() != getId() && !user.hasDbaRole()) {
+            throw new PermissionDeniedException("Permission denied to modify user");
+        }
     }
 
     @Override

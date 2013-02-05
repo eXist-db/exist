@@ -49,6 +49,10 @@ public class ReceiverToSAX implements Receiver {
 	public ReceiverToSAX(ContentHandler handler) {
 		super();
 		this.contentHandler = handler;
+		
+		if (handler instanceof LexicalHandler) {
+            lexicalHandler = (LexicalHandler) handler;
+        }
 	}
 
 	public void setLexicalHandler(LexicalHandler handler) {

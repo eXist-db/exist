@@ -34,10 +34,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
@@ -53,6 +50,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -780,7 +778,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         if (properties != null)
             serializer.setProperties(properties);
-        serializer.setSAXHandlers(handler, null);
+        
+        if (handler instanceof LexicalHandler) {
+            serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+        } else {
+            serializer.setSAXHandlers(handler, null);
+        }
         serializer.toSAX(this);
     }
 
@@ -834,16 +837,17 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
      */
-    public Object toJavaObject(Class target) throws XPathException {
-        if (target.isAssignableFrom(NodeProxy.class))
-            return this;
-        else if (target.isAssignableFrom(Node.class))
-            return getNode();
-        else if (target == Object.class)
-            return getNode();
-        else {
-            StringValue v = new StringValue(getStringValue());
-            return v.toJavaObject(target);
+    @Override
+    public <T> T toJavaObject(final Class<T> target) throws XPathException {
+        if (target.isAssignableFrom(NodeProxy.class)) {
+            return (T)this;
+        } else if (target.isAssignableFrom(Node.class)) {
+            return (T)getNode();
+        } else if (target == Object.class) {
+            return (T)getNode();
+        } else {
+            final StringValue v = new StringValue(getStringValue());
+            return (T)v.toJavaObject(target);
         }
     }
 
@@ -1132,7 +1136,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public void destroy(Sequence contextSequence) {
+    public void destroy(XQueryContext context, Sequence contextSequence) {
         // Nothing to do
     }
 

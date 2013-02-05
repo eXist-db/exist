@@ -312,17 +312,19 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return Integer.MAX_VALUE;
 	}
 
-	public Object toJavaObject(Class<?> target) throws XPathException {
-		if (target == Object.class || target.isAssignableFrom(DateValue.class))
-			return this;
-		else if (target.isAssignableFrom(XMLGregorianCalendar.class))
-			return calendar.clone();
-		else if (target.isAssignableFrom(GregorianCalendar.class))
-			return calendar.toGregorianCalendar();
-		else if (target == Date.class)
-			return calendar.toGregorianCalendar().getTime();
+        @Override
+	public <T> T toJavaObject(Class<T> target) throws XPathException {
+            if (target == Object.class || target.isAssignableFrom(DateValue.class)) {
+                return (T)this;
+            } else if (target.isAssignableFrom(XMLGregorianCalendar.class)) {
+                return (T)calendar.clone();
+            } else if (target.isAssignableFrom(GregorianCalendar.class)) {
+                return (T)calendar.toGregorianCalendar();
+            } else if (target == Date.class) {
+                return (T)calendar.toGregorianCalendar().getTime();
+            }
 
-		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+            throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
     
     /* (non-Javadoc)

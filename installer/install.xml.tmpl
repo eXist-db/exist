@@ -10,9 +10,11 @@
         <!--pack200/-->
     </info>
 
-    <guiprefs height="450" resizable="yes" width="680">
+    <guiprefs height="510" resizable="yes" width="680">
         <modifier key="headingPanelCounter" value="progressbar"/>
         <modifier key="headingPanelCounterPos" value="inNavigationPanel"/>
+        <modifier key="firstYGap" value="10"/>
+        <modifier key="labelToControlYGap" value="10"/>
         <laf name="looks">
             <os family="unix"/>
         </laf>
@@ -143,7 +145,8 @@
                 <include name="requestlog/**"/>
                 <include name="rulesets/**"/>
                 <include name="ant/**"/>
-                <include name="XFormsFilter/**"/>
+                <include name="Solaris/**"/>
+                <include name="SOAPServer/**"/>
                 <exclude name="ant/lib/javasvn*.jar"/>
                 <include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
@@ -195,8 +198,8 @@
                 <include name="backup.bat"/>
             </fileset>
 
-            <fileset dir="installer/scripts" targetdir="$INSTALL_PATH">
-                <include name="eXist-db.app/**"/>
+            <fileset dir="installer/scripts/eXist-db.mac" targetdir="$INSTALL_PATH/eXist-db.app">
+                <exclude name="**/.svn/"/>
             </fileset>
             <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaApplicationStub"
                 stage="never" os="unix"/>

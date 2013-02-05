@@ -21,12 +21,11 @@
  */
 package org.exist.scheduler;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Map.Entry;
+import java.util.Properties;
 import org.apache.log4j.Logger;
-
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-
 import org.exist.EXistException;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -46,13 +45,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.StringValue;
-
-import java.io.IOException;
-
-import java.net.MalformedURLException;
-
-import java.util.Map.Entry;
-import java.util.Properties;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 
 /**
@@ -67,7 +62,7 @@ public class UserXQueryJob extends UserJob {
 
     private final String DEFAULT_JOB_NAME_PREFIX = "XQuery";
 
-    private String jobName;
+    private String name;
     private final String xqueryResource;
     private final Subject user;
 
@@ -87,25 +82,25 @@ public class UserXQueryJob extends UserJob {
      * @param  xqueryResource  The XQuery itself
      * @param  user            The user under which the xquery should be executed
      */
-    public UserXQueryJob(String jobName, String xqueryResource, Subject user) {
+    public UserXQueryJob(final String jobName, final String xqueryResource, final Subject user) {
         this.xqueryResource = xqueryResource;
         this.user = user;
 
         if(jobName == null) {
-            this.jobName = DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource;
+            this.name = DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource;
         } else {
-            this.jobName = jobName;
+            this.name = jobName;
         }
     }
 
     @Override
     public final String getName() {
-        return jobName ;
+        return name ;
     }
 
     @Override
-    public void setName(String jobName) {
-        this.jobName = jobName;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     /**
@@ -113,7 +108,7 @@ public class UserXQueryJob extends UserJob {
      *
      * @return  The XQuery Resource for this Job
      */
-    protected String getXQueryResource() {
+    public String getXQueryResource() {
         return xqueryResource;
     }
 
@@ -122,12 +117,12 @@ public class UserXQueryJob extends UserJob {
      *
      * @return  The User for this Job
      */
-    protected Subject getUser() {
+    public Subject getUser() {
         return user;
     }
 
     @Override
-    public final void execute(JobExecutionContext jec) throws JobExecutionException {
+    public final void execute(final JobExecutionContext jec) throws JobExecutionException {
         
         final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
         
@@ -195,7 +190,7 @@ public class UserXQueryJob extends UserJob {
                     try {
                         compiled = xquery.compile(context, source);
                     }
-                    catch(IOException e) {
+                    catch(final IOException e) {
                         abort("Failed to read query from " + xqueryresource);
                     }
                 }
@@ -209,7 +204,7 @@ public class UserXQueryJob extends UserJob {
                     }
                     
 
-                    for (Entry param : params.entrySet()) {
+                    for(final Entry param : params.entrySet()) {
                         String key = (String)param.getKey();
                         String value = (String)param.getValue();
                         context.declareVariable( bindingPrefix + ":" + key, new StringValue(value));
@@ -221,19 +216,15 @@ public class UserXQueryJob extends UserJob {
             } else {
                 LOG.warn("XQuery User Job not found: " + xqueryresource + ", job not scheduled");
             }
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             abort("Could not get DBBroker!");
-        }
-        catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             abort("Permission denied for the scheduling user: " + user.getName() + "!");
-        }
-        catch(XPathException xpe) {
+        } catch(final XPathException xpe) {
             abort("XPathException in the Job: " + xpe.getMessage() + "!", unschedule);
-        }
-        catch(MalformedURLException e) {
+        } catch(final MalformedURLException e) {
             abort("Could not load XQuery: " + e.getMessage());
-        }
-        catch(IOException e) {
+        } catch(final IOException e) {
             abort("Could not load XQuery: " + e.getMessage());
         } finally {
 
@@ -259,13 +250,13 @@ public class UserXQueryJob extends UserJob {
 
     }
 
-    private void abort(String message) throws JobExecutionException {
+    private void abort(final String message) throws JobExecutionException {
         abort(message, true);
     }
 	
 
-    private void abort(String message, boolean unschedule) throws JobExecutionException {
-        JobExecutionException jaa = new JobExecutionException("UserXQueryJob Failed: " + message + (unschedule ? " Unscheduling UserXQueryJob." : ""), false);
+    private void abort(final String message, final boolean unschedule) throws JobExecutionException {
+        final JobExecutionException jaa = new JobExecutionException("UserXQueryJob Failed: " + message + (unschedule ? " Unscheduling UserXQueryJob." : ""), false);
 		
         //abort all triggers for this job if specified that we should unschedule the job
         jaa.setUnscheduleAllTriggers(unschedule);

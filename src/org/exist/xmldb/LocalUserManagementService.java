@@ -39,7 +39,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  * @author Adam Retter <adam@exist-db.org>
  */
-public class LocalUserManagementService implements UserManagementService {
+public class LocalUserManagementService implements EXistUserManagementService {
     
     private LocalCollection collection;
 
@@ -113,6 +113,34 @@ public class LocalUserManagementService implements UserManagementService {
         }
     }
 
+    @Override
+    public void setUserPrimaryGroup(final String username, final String groupName) throws XMLDBException {
+        final SecurityManager manager = pool.getSecurityManager();
+		
+        if(!manager.hasGroup(groupName)) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Group '" + groupName + "' does not exist!");
+        }
+        
+        if(!manager.hasAdminPrivileges(user)) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Not allowed to modify user");
+        }
+		
+        try {
+            executeWithBroker(new BrokerOperation<Void>(){
+                @Override
+                public Void withBroker(final DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException {
+                    final Account account = manager.getAccount(username);
+                    final Group group = manager.getGroup(groupName);
+                    account.setPrimaryGroup(group);
+                    manager.updateAccount(account);
+                    return null;
+                }
+            });
+        } catch(final Exception e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+        }
+    }
+    
     @Override
     public void setPermissions(final Resource resource, final Permission perm) throws XMLDBException {
         

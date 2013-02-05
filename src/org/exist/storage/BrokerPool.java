@@ -53,7 +53,8 @@ import org.exist.plugin.PluginsManagerImpl;
 import org.exist.repo.ClasspathHelper;
 import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.SystemTaskJob;
+import org.exist.scheduler.impl.QuartzSchedulerImpl;
+import org.exist.scheduler.impl.SystemTaskJobImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -71,6 +72,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.Configuration.StartupTriggerConfig;
 import org.exist.util.hashtable.MapRWLock;
 import org.exist.util.hashtable.MapRWLock.LongOperation;
 import org.exist.xmldb.ShutdownListener;
@@ -108,6 +110,8 @@ public class BrokerPool extends Observable implements Database {
     public final static String SIGNAL_STARTED = "started";
     /*** running shutdown sequence */
     public final static String SIGNAL_SHUTDOWN = "shutdown";
+    /*** recovery aborted, db stopped */
+    public final static String SIGNAL_ABORTED = "aborted";
 
     /**
      * The name of a default database instance for those who are too lazy to provide parameters ;-). 
@@ -707,7 +711,7 @@ public class BrokerPool extends Observable implements Database {
 /* TODO: end -adam- remove OLD SystemTask initialization */		
 		
 		//TODO : move this to initialize ? (cant as we need it for FileLockHeartBeat)
-		scheduler = new Scheduler(this, conf);
+		scheduler = new QuartzSchedulerImpl(this, conf);
 		
 		//TODO : since we need one :-( (see above)	
 		this.isReadOnly = !canReadDataDir(conf);
@@ -738,7 +742,7 @@ public class BrokerPool extends Observable implements Database {
 //            scheduler.createPeriodicJob(2500, new Sync(), 2500);
             SyncTask syncTask = new SyncTask();
             syncTask.configure(conf, null);
-            scheduler.createPeriodicJob(2500, new SystemTaskJob(SyncTask.getJobName(), syncTask), 2500);
+            scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
         }
         
         if (System.getProperty("trace.brokers", "no").equals("yes"))
@@ -984,7 +988,7 @@ public class BrokerPool extends Observable implements Database {
                     "the package manager may not work.");
             }
 
-            callStartupTriggers((List<String>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
+            callStartupTriggers((List<StartupTriggerConfig>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
         } finally {
             release(broker);
         }
@@ -1041,11 +1045,11 @@ public class BrokerPool extends Observable implements Database {
             if (config.getCronExpr() == null) {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
                         config.getPeriod() + " ms");
-                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJob(task), config.getPeriod());
+                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJobImpl(task), config.getPeriod());
             } else {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() +
                         " with cron expression: " + config.getCronExpr());
-                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJob(task));
+                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJobImpl(task));
             }
         } catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
@@ -1053,21 +1057,22 @@ public class BrokerPool extends Observable implements Database {
         }
     }*/
 
-    private void callStartupTriggers(final List<String> startupTriggerClasses, final DBBroker sysBroker) {
-        if (startupTriggerClasses == null)
+    private void callStartupTriggers(final List<StartupTriggerConfig> startupTriggerConfigs, final DBBroker sysBroker) {
+        if(startupTriggerConfigs == null) {
         	return;
+        }
     	
-        for(final String startupTriggerClass : startupTriggerClasses) {
+        for(final StartupTriggerConfig startupTriggerConfig : startupTriggerConfigs) {
             try {
-                final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerClass);
+                final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerConfig.getClazz());
                 final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(sysBroker);
+                startupTrigger.execute(sysBroker, startupTriggerConfig.getParams());
             } catch(ClassNotFoundException cnfe) {
-                LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + cnfe.getMessage(), cnfe);
+                LOG.error("Could not find StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + cnfe.getMessage(), cnfe);
             } catch(InstantiationException ie) {
-                LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + ie.getMessage(), ie);
+                LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + ie.getMessage(), ie);
             } catch(IllegalAccessException iae) {
-                LOG.error("Could not access StartupTrigger class: " + startupTriggerClass + ". SKIPPING! " + iae.getMessage(), iae);
+                LOG.error("Could not access StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + iae.getMessage(), iae);
             } catch(RuntimeException re) {
                 LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
             }
@@ -1848,7 +1853,10 @@ public class BrokerPool extends Observable implements Database {
                 // their job
                 lock.unlock();
 
-                notificationService.debug();
+                // DW: only in debug mode
+                if (LOG.isDebugEnabled()) {
+                    notificationService.debug();
+                }
 
                 //Notify all running tasks that we are shutting down
 

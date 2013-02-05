@@ -63,9 +63,9 @@ Get Started
   
 
 - For each 'Slave' (subscriber)
-  - Add a job to conf.xml:
+  - Add a startup trigger to conf.xml:
 
-    <job type="startup" name="replication" class="org.exist.replication.jms.subscribe.MessageReceiverJob">
+    <trigger class="org.exist.replication.jms.subscribe.MessageReceiverStartupTrigger">>
 
         <parameter name="java.naming.factory.initial" value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
         <parameter name="java.naming.provider.url" value="tcp://myserver.local:61616"/>
@@ -77,7 +77,7 @@ Get Started
         <parameter name="client-id" value="SetSubscriberId"/> 
         <parameter name="subscriber-name" value="SetSubscriptionId"/> 
 
-    </job>
+    </trigger>
 
   - Set the correct value for 'java.naming.provider.url' that matches your message broker
   - Set unique values for "client-id" and 'subscriber-name'

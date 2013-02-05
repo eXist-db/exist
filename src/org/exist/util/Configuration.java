@@ -41,6 +41,7 @@ import org.exist.Indexer;
 import org.exist.indexing.IndexManager;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
+import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.internal.RealmImpl;
@@ -80,6 +81,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -87,6 +89,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.Namespaces;
+import org.exist.scheduler.JobType;
 import org.exist.xquery.Module;
 
 
@@ -102,7 +105,7 @@ public class Configuration implements ErrorHandler
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
-
+    
     public final static String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
     
     public Configuration() throws DatabaseConfigurationException
@@ -117,13 +120,11 @@ public class Configuration implements ErrorHandler
     }
 
 
-    public Configuration( String configFilename, String existHomeDirname ) throws DatabaseConfigurationException
-    {
+    public Configuration(String configFilename, String existHomeDirname) throws DatabaseConfigurationException {
         try {
             InputStream is = null;
 
-            if( configFilename == null ) {
-
+            if(configFilename == null) {
                 // Default file name
                 configFilename = DatabaseImpl.CONF_XML;
             }
@@ -131,14 +132,12 @@ public class Configuration implements ErrorHandler
             // firstly, try to read the configuration from a file within the
             // classpath
             try {
-                is = Configuration.class.getClassLoader().getResourceAsStream( configFilename );
+                is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
 
-                if( is != null ) {
-                    LOG.info( "Reading configuration from classloader" );
+                if(is != null) {
+                    LOG.info("Reading configuration from classloader");
                 }
-            }
-            catch( Exception e ) {
-
+            } catch(Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
                 // file name for configFileName
                 LOG.debug( e );
@@ -146,148 +145,140 @@ public class Configuration implements ErrorHandler
 
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
-            if( is == null ) {
-                existHome = ( existHomeDirname != null ) ? new File( existHomeDirname ) : ConfigurationHelper.getExistHome( configFilename );
+            if(is == null) {
+                existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome(configFilename);
 
-                if( existHome == null ) {
+                if(existHome == null) {
 
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
-                    File absoluteConfigFile = new File( configFilename );
+                    final File absoluteConfigFile = new File(configFilename);
 
-                    if( absoluteConfigFile.isAbsolute() && absoluteConfigFile.exists() && absoluteConfigFile.canRead() ) {
-                        existHome      = absoluteConfigFile.getParentFile();
+                    if(absoluteConfigFile.isAbsolute() && absoluteConfigFile.exists() && absoluteConfigFile.canRead()) {
+                        existHome = absoluteConfigFile.getParentFile();
                         configFilename = absoluteConfigFile.getName();
                     }
                 }
-                File configFile = new File( configFilename );
+                File configFile = new File(configFilename);
 
-                if( !configFile.isAbsolute() && ( existHome != null ) ) {
+                if(!configFile.isAbsolute() && (existHome != null)) {
 
                     // try the passed or constructed existHome first
-                    configFile = new File( existHome, configFilename );
+                    configFile = new File(existHome, configFilename);
                 }
 
                 //if( configFile == null ) {
                 //    configFile = ConfigurationHelper.lookup( configFilename );
                 //}
 
-                if( !configFile.exists() || !configFile.canRead() ) {
+                if(!configFile.exists() || !configFile.canRead()) {
                     throw( new DatabaseConfigurationException( "Unable to read configuration file at " + configFile ) );
                 }
-                configFilePath   = configFile.getAbsolutePath();
-                is               = new FileInputStream( configFile );
+                
+                configFilePath = configFile.getAbsolutePath();
+                is = new FileInputStream(configFile);
 
                 // set dbHome to parent of the conf file found, to resolve relative
                 // path from conf file
                 existHomeDirname = configFile.getParentFile().getCanonicalPath();
-                LOG.info( "Reading configuration from file " + configFile );
+                LOG.info("Reading configuration from file " + configFile);
             }
 
 
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware( true );
 
 //            factory.setFeature("http://apache.org/xml/features/validation/schema", true);
 //            factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
-            InputSource src     = new InputSource( is );
-            SAXParser   parser  = factory.newSAXParser();
-            XMLReader   reader  = parser.getXMLReader();
-            SAXAdapter  adapter = new SAXAdapter();
-            reader.setContentHandler( adapter );
-            reader.parse( src );
+            final InputSource src = new InputSource(is);
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader reader = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+            reader.parse(src);
 
-            Document doc      = adapter.getDocument();
+            final Document doc = adapter.getDocument();
 
             //indexer settings
-            NodeList indexers = doc.getElementsByTagName( Indexer.CONFIGURATION_ELEMENT_NAME );
-
-            if( indexers.getLength() > 0 ) {
+            final NodeList indexers = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
+            if(indexers.getLength() > 0) {
                 configureIndexer( existHomeDirname, doc, (Element)indexers.item( 0 ) );
             }
 
             //scheduler settings
-            NodeList schedulers = doc.getElementsByTagName( Scheduler.CONFIGURATION_ELEMENT_NAME );
-
-            if( schedulers.getLength() > 0 ) {
-                configureScheduler( (Element)schedulers.item( 0 ) );
+            final NodeList schedulers = doc.getElementsByTagName(JobConfig.CONFIGURATION_ELEMENT_NAME);
+            if(schedulers.getLength() > 0) {
+                configureScheduler((Element)schedulers.item(0));
             }
 
             //db connection settings
-            NodeList dbcon = doc.getElementsByTagName( BrokerPool.CONFIGURATION_CONNECTION_ELEMENT_NAME );
-
-            if( dbcon.getLength() > 0 ) {
-                configureBackend( existHomeDirname, (Element)dbcon.item( 0 ) );
+            final NodeList dbcon = doc.getElementsByTagName(BrokerPool.CONFIGURATION_CONNECTION_ELEMENT_NAME);
+            if(dbcon.getLength() > 0) {
+                configureBackend(existHomeDirname, (Element)dbcon.item(0));
             }
 
-            NodeList repository = doc.getElementsByTagName("repository");
-            if (repository.getLength() > 0) {
+            final NodeList repository = doc.getElementsByTagName("repository");
+            if(repository.getLength() > 0) {
                 configureRepository((Element) repository.item(0));
             }
 
-            NodeList binaryManager = doc.getElementsByTagName("binary-manager");
+            final NodeList binaryManager = doc.getElementsByTagName("binary-manager");
             if(binaryManager.getLength() > 0) {
                 configureBinaryManager((Element)binaryManager.item(0));
             }
             
             //transformer settings
-            NodeList transformers = doc.getElementsByTagName( TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME );
-
+            final NodeList transformers = doc.getElementsByTagName(TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME);
             if( transformers.getLength() > 0 ) {
-                configureTransformer( (Element)transformers.item( 0 ) );
+                configureTransformer((Element)transformers.item(0));
             }
 
             //serializer settings
-            NodeList serializers = doc.getElementsByTagName( Serializer.CONFIGURATION_ELEMENT_NAME );
-
-            if( serializers.getLength() > 0 ) {
-                configureSerializer( (Element)serializers.item( 0 ) );
+            final NodeList serializers = doc.getElementsByTagName(Serializer.CONFIGURATION_ELEMENT_NAME);
+            if(serializers.getLength() > 0) {
+                configureSerializer((Element)serializers.item(0));
             }
 
             //XUpdate settings
-            NodeList xupdates = doc.getElementsByTagName( DBBroker.CONFIGURATION_ELEMENT_NAME );
-
-            if( xupdates.getLength() > 0 ) {
-                configureXUpdate( (Element)xupdates.item( 0 ) );
+            final NodeList xupdates = doc.getElementsByTagName(DBBroker.CONFIGURATION_ELEMENT_NAME);
+            if(xupdates.getLength() > 0) {
+                configureXUpdate((Element)xupdates.item(0));
             }
 
             //XQuery settings
-            NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME );
-
-            if( xquery.getLength() > 0 ) {
-                configureXQuery( (Element)xquery.item( 0 ) );
+            final NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME);
+            if(xquery.getLength() > 0) {
+                configureXQuery((Element)xquery.item(0));
             }
 
             //XACML settings
-            NodeList xacml = doc.getElementsByTagName( XACMLConstants.CONFIGURATION_ELEMENT_NAME );
-
+            final NodeList xacml = doc.getElementsByTagName(XACMLConstants.CONFIGURATION_ELEMENT_NAME);
             //TODO : check that we have only one element
-            if( xacml.getLength() > 0 ) {
-                configureXACML( (Element)xacml.item( 0 ) );
+            if(xacml.getLength() > 0) {
+                configureXACML((Element)xacml.item(0));
             }
 
             //Validation
-            NodeList validations = doc.getElementsByTagName( XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME );
-
-            if( validations.getLength() > 0 ) {
-                configureValidation( existHomeDirname, doc, (Element)validations.item( 0 ) );
+            final NodeList validations = doc.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME);
+            if(validations.getLength() > 0) {
+                configureValidation(existHomeDirname, doc, (Element)validations.item(0));
             }
 
         }
-        catch( SAXException e ) {
-            LOG.warn( "error while reading config file: " + configFilename, e );
-            throw( new DatabaseConfigurationException( e.getMessage() ) );
+        catch(final SAXException e) {
+            LOG.warn("error while reading config file: " + configFilename, e);
+            throw new DatabaseConfigurationException(e.getMessage());
         }
-        catch( ParserConfigurationException cfg ) {
-            LOG.warn( "error while reading config file: " + configFilename, cfg );
-            throw( new DatabaseConfigurationException( cfg.getMessage() ) );
+        catch(final ParserConfigurationException cfg) {
+            LOG.warn("error while reading config file: " + configFilename, cfg);
+            throw new DatabaseConfigurationException(cfg.getMessage());
         }
-        catch( IOException io ) {
-            LOG.warn( "error while reading config file: " + configFilename, io );
-            throw( new DatabaseConfigurationException( io.getMessage() ) );
+        catch(final IOException io) {
+            LOG.warn("error while reading config file: " + configFilename, io);
+            throw new DatabaseConfigurationException(io.getMessage());
         }
     }
 
@@ -655,106 +646,96 @@ public class Configuration implements ErrorHandler
      *
      * @param  scheduler  DOCUMENT ME!
      */
-    private void configureScheduler( Element scheduler )
+    private void configureScheduler(final Element scheduler)
     {
-        NodeList nlJobs = scheduler.getElementsByTagName( Scheduler.CONFIGURATION_JOB_ELEMENT_NAME );
+        final NodeList nlJobs = scheduler.getElementsByTagName(JobConfig.CONFIGURATION_JOB_ELEMENT_NAME);
 
-        if( nlJobs == null ) {
+        if(nlJobs == null) {
             return;
         }
 
-        ArrayList<JobConfig> jobList     = new ArrayList<JobConfig>();
+        final List<JobConfig> jobList = new ArrayList<JobConfig>();
 
-        String jobType       = null;
-        String jobName       = null;
-        String jobResource   = null;
-        String jobSchedule   = null;
-        String jobDelay      = null;
-        String jobRepeat     = null;
-        String jobUnschedule = null;
-
-        for( int i = 0; i < nlJobs.getLength(); i++ ) {
-            Element job = (Element)nlJobs.item( i );
+        for(int i = 0; i < nlJobs.getLength(); i++) {
+            final Element job = (Element)nlJobs.item( i );
 
             //get the job type
-            jobType = getConfigAttributeValue( job, Scheduler.JOB_TYPE_ATTRIBUTE );
+            final String strJobType = getConfigAttributeValue(job, JobConfig.JOB_TYPE_ATTRIBUTE);
 
-            if( jobType == null ) {
-                jobType = Scheduler.JOB_TYPE_USER; //default to user if unspecified
+            final JobType jobType;
+            if(strJobType == null) {
+                jobType = JobType.USER; //default to user if unspecified
+            } else {
+                jobType = JobType.valueOf(strJobType.toUpperCase());
             }
 
-            jobName = getConfigAttributeValue( job, Scheduler.JOB_NAME_ATTRIBUTE );
+            final String jobName = getConfigAttributeValue(job, JobConfig.JOB_NAME_ATTRIBUTE);
 
             //get the job resource
-            jobResource = getConfigAttributeValue( job, Scheduler.JOB_CLASS_ATTRIBUTE );
-
-            if( jobResource == null ) {
-                jobResource = getConfigAttributeValue( job, Scheduler.JOB_XQUERY_ATTRIBUTE );
+            String jobResource = getConfigAttributeValue(job, JobConfig.JOB_CLASS_ATTRIBUTE);
+            if(jobResource == null) {
+                jobResource = getConfigAttributeValue(job, JobConfig.JOB_XQUERY_ATTRIBUTE);
             }
 
             //get the job schedule
-            jobSchedule = getConfigAttributeValue( job, Scheduler.JOB_CRON_TRIGGER_ATTRIBUTE );
-
-            if( jobSchedule == null ) {
-                jobSchedule = getConfigAttributeValue( job, Scheduler.JOB_PERIOD_ATTRIBUTE );
+            String jobSchedule = getConfigAttributeValue(job, JobConfig.JOB_CRON_TRIGGER_ATTRIBUTE);
+            if(jobSchedule == null) {
+                jobSchedule = getConfigAttributeValue(job, JobConfig.JOB_PERIOD_ATTRIBUTE);
             }
 
-            if( jobUnschedule == null ) {
-            	jobUnschedule = getConfigAttributeValue( job, Scheduler.JOB_UNSCHEDULE_ON_EXCEPTION );
-            }
+            String jobUnschedule = getConfigAttributeValue(job, JobConfig.JOB_UNSCHEDULE_ON_EXCEPTION);
             
             //create the job config
             try {
-                JobConfig jobConfig = new JobConfig( jobType, jobName, jobResource, jobSchedule, jobUnschedule );
+                final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
 
                 //get and set the job delay
-                jobDelay = getConfigAttributeValue( job, Scheduler.JOB_DELAY_ATTRIBUTE );
+                final String jobDelay = getConfigAttributeValue(job, JobConfig.JOB_DELAY_ATTRIBUTE);
 
-                if( ( jobDelay != null ) && ( jobDelay.length() > 0 ) ) {
-                    jobConfig.setDelay( Long.parseLong( jobDelay ) );
+                if((jobDelay != null) && (jobDelay.length() > 0)) {
+                    jobConfig.setDelay(Long.parseLong(jobDelay));
                 }
 
                 //get and set the job repeat
-                jobRepeat = getConfigAttributeValue( job, Scheduler.JOB_REPEAT_ATTRIBUTE );
+                final String jobRepeat = getConfigAttributeValue(job, JobConfig.JOB_REPEAT_ATTRIBUTE);
 
-                if( ( jobRepeat != null ) && ( jobRepeat.length() > 0 ) ) {
-                    jobConfig.setRepeat( Integer.parseInt( jobRepeat ) );
+                if((jobRepeat != null) && (jobRepeat.length() > 0)) {
+                    jobConfig.setRepeat(Integer.parseInt(jobRepeat));
                 }
 
-                NodeList params = job.getElementsByTagName( Scheduler.CONFIGURATION_JOB_PARAMETER_ELEMENT_NAME );
-
-                for( int p = 0; p < params.getLength(); p++ ) {
-                    Element param = (Element)params.item( p );
-                    String  name  = param.getAttribute( "name" );
-                    String  value = param.getAttribute( "value" );
-
-                    if( ( name == null ) || ( name.length() == 0 ) ) {
-                        LOG.warn( "Discarded invalid parameter for '" + jobType + "' job '" + jobResource + "'" );
-                    } else {
-                        jobConfig.addParameter( name, value );
+                final NodeList nlParam = job.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME);
+                final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
+                
+                for(final Entry<String, List<? extends Object>> param : params.entrySet()) {
+                    final List<? extends Object> values = param.getValue();
+                    if(values != null && values.size() > 0) {
+                        jobConfig.addParameter(param.getKey(), values.get(0).toString());
+                        
+                        if(values.size() > 1) {
+                            LOG.warn("Parameter '" + param.getKey() + "' for job '" + jobName + "' has more than one value, ignoring further values.");
+                        }
                     }
                 }
 
-                jobList.add( jobConfig );
+                jobList.add(jobConfig);
 
-                LOG.debug( "Configured scheduled '" + jobType + "' job '" + jobResource + ( ( jobSchedule == null ) ? "" : ( "' with trigger '" + jobSchedule ) ) + ( ( jobDelay == null ) ? "" : ( "' with delay '" + jobDelay ) ) + ( ( jobRepeat == null ) ? "" : ( "' repetitions '" + jobRepeat ) ) + "'" );
-            }
-            catch( JobException je ) {
-                LOG.warn( je );
+                LOG.debug("Configured scheduled '" + jobType + "' job '" + jobResource + ((jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule)) + ((jobDelay == null) ? "" : ("' with delay '" + jobDelay)) + ((jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat)) + "'");
+            } catch(JobException je) {
+                LOG.warn(je);
             }
         }
 
-        if( jobList.size() > 0 ) {
-            JobConfig[] configs = new JobConfig[jobList.size()];
+        if(jobList.size() > 0 ) {
+            final JobConfig[] configs = new JobConfig[jobList.size()];
 
-            for( int i = 0; i < jobList.size(); i++ ) {
-                configs[i] = (JobConfig)jobList.get( i );
+            for(int i = 0; i < jobList.size(); i++) {
+                configs[i] = (JobConfig)jobList.get(i);
             }
 
-            config.put( Scheduler.PROPERTY_SCHEDULER_JOBS, configs );
+            config.put(JobConfig.PROPERTY_SCHEDULER_JOBS, configs);
         }
     }
-
+    
 
     /**
      * DOCUMENT ME!
@@ -1016,7 +997,7 @@ public class Configuration implements ErrorHandler
             configureStartup((Element)startupConf.item(0));
         } else {
             // Prevent NPE
-            List<String> startupTriggers = new ArrayList<String>();
+            final List<StartupTriggerConfig> startupTriggers = new ArrayList<StartupTriggerConfig>();
             config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
         
@@ -1205,6 +1186,24 @@ public class Configuration implements ErrorHandler
             }
         }
     }
+    
+    public class StartupTriggerConfig {
+        private final String clazz;
+        private final Map<String, List<? extends Object>> params;
+
+        public StartupTriggerConfig(final String clazz, final Map<String, List<? extends Object>> params) {
+            this.clazz = clazz;
+            this.params = params;
+        }
+
+        public String getClazz() {
+            return clazz;
+        }
+
+        public Map<String, List<? extends Object>> getParams() {
+            return params;
+        }
+    }
 
     private void configureStartup(final Element startup) {
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
@@ -1214,9 +1213,9 @@ public class Configuration implements ErrorHandler
             if(nlTrigger != null && nlTrigger.getLength() > 0) {
                 for(int i = 0; i < nlTrigger.getLength(); i++) {
                     final Element trigger = (Element)nlTrigger.item(i);
-                    List<String> startupTriggers = (List<String>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
+                    List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
                     if(startupTriggers == null) {
-                        startupTriggers = new ArrayList<String>();
+                        startupTriggers = new ArrayList<StartupTriggerConfig>();
                         config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
                     }
                     
@@ -1224,7 +1223,7 @@ public class Configuration implements ErrorHandler
                     
                     boolean isStartupTrigger = false;
                     try {
-                        for(Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                        for(final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
                             if(iface.getName().equals("org.exist.storage.StartupTrigger")) {
                                 isStartupTrigger = true;
                                 break;
@@ -1232,12 +1231,13 @@ public class Configuration implements ErrorHandler
                         }
 
                         if(isStartupTrigger) {
-                            startupTriggers.add(startupTriggerClass);
+                            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
+                            startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
                             LOG.debug("Registered StartupTrigger: " + startupTriggerClass);
                         } else {
                             LOG.warn("StartupTrigger: " + startupTriggerClass + " does not implement org.exist.storage.StartupTrigger. IGNORING!");
                         }
-                    } catch(ClassNotFoundException cnfe) {
+                    } catch(final ClassNotFoundException cnfe) {
                         LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". " + cnfe.getMessage(), cnfe);
                     }
                 }
@@ -1625,12 +1625,12 @@ public class Configuration implements ErrorHandler
      *
      * @return  The parsed <code>Boolean</code>
      */
-    public static Boolean parseBoolean( String value, boolean defaultValue )
+    public static Boolean parseBoolean(final String value, final boolean defaultValue)
     {
-        if( value == null ) {
-            return( Boolean.valueOf( defaultValue ) );
+        if(value == null) {
+            return Boolean.valueOf(defaultValue);
         }
-        return( Boolean.valueOf( "yes".equalsIgnoreCase( value ) || "true".equalsIgnoreCase( value ) ) );
+        return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
     }
 
 
@@ -1689,111 +1689,7 @@ public class Configuration implements ErrorHandler
     {
         System.err.println( "error occured while reading configuration file " + "[line: " + exception.getLineNumber() + "]:" + exception.getMessage() );
     }
-
-    public static final class JobConfig
-    {
-        private String     type         = null;
-        private String     jobName      = null;
-        private String     resourceName = null;
-        private String     schedule     = null;
-        private long       delay        = -1;
-        private int        repeat       = SimpleTrigger.REPEAT_INDEFINITELY;
-        private boolean unscheduleOnException = true;
-        private Properties parameters   = new Properties();
-
-        public JobConfig( String type, String jobName, String resourceName, String schedule, String unscheduleOnException ) throws JobException
-        {
-            if( type != null ) {
-                this.type = type;
-            } else {
-                this.type = Scheduler.JOB_TYPE_USER;
-            }
-
-            this.jobName = jobName;
-
-            if( resourceName != null ) {
-                this.resourceName = resourceName;
-            } else {
-                throw( new JobException( JobException.JOB_ABORT, "Job must have a resource for execution" ) );
-            }
-
-            if( ( schedule == null ) && !type.equals( Scheduler.JOB_TYPE_STARTUP ) ) {
-                throw( new JobException( JobException.JOB_ABORT, "Job must have a schedule" ) );
-            } else {
-                this.schedule = schedule;
-            }
-            
-            if (unscheduleOnException != null) {
-            	this.unscheduleOnException = parseBoolean( unscheduleOnException, true );
-            }
-        }
-
-        public String getType()
-        {
-            return( type );
-        }
-
-
-        public String getJobName()
-        {
-            return( jobName );
-        }
-
-
-        public String getResourceName()
-        {
-            return( resourceName );
-        }
-
-
-        public String getSchedule()
-        {
-            return( schedule );
-        }
-
-
-        public void setDelay( long delay )
-        {
-            this.delay = delay;
-        }
-
-
-        public void setRepeat( int repeat )
-        {
-            this.repeat = repeat;
-        }
-
-
-        public long getDelay()
-        {
-            return( delay );
-        }
-
-
-        public int getRepeat()
-        {
-            return( repeat );
-        }
-
-
-        public void addParameter( String name, String value )
-        {
-            parameters.put( name, value );
-        }
-
-
-        public Properties getParameters()
-        {
-            return( parameters );
-        }
-
-		public boolean unscheduleOnException() 
-		{
-			return unscheduleOnException;
-		}
-
-    }
-
+    
 
     public static final class IndexModuleConfig
     {

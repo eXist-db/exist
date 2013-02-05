@@ -21,6 +21,13 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.source.Source;
 import org.exist.xmlrpc.RpcAPI;
@@ -33,20 +40,13 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
     protected RemoteCollection collection;
 	protected HashMap<String, String> namespaceMappings = new HashMap<String, String>(5);
 	protected HashMap<String, Object> variableDecls = new HashMap<String, Object>();
 	protected Properties outputProperties = null;
+    protected String moduleLoadPath = null;
 	protected boolean protectedMode = false;
     
     /**
@@ -91,6 +91,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
             if (protectedMode)
                 optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
             List<Object> params = new ArrayList<Object>(2);
@@ -146,6 +148,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                 optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
             if(variableDecls.size() > 0)
                 optParams.put(RpcAPI.VARIABLES, variableDecls);
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             List<Object> params = new ArrayList<Object>(2);
@@ -197,13 +201,41 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	/* (non-Javadoc)
      * @see org.exist.xmldb.XQueryService#execute(org.exist.source.Source)
      */
-    public ResourceSet execute(Source source)
+    @Override
+    public ResourceSet execute(final Source source)
         throws XMLDBException {
         try {
-            String xq = source.getContent();
+            final String xq = source.getContent();
             return query(xq, null);
-        } catch (IOException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
+        } catch(final IOException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public ResourceSet executeStoredQuery(final String uri) throws XMLDBException {
+        
+        final List params = new ArrayList();
+        params.add(uri);
+        params.add(new HashMap<String, Object>());
+        
+        try {
+            final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("execute", params);
+
+            if(result.get(RpcAPI.ERROR) != null) {
+                throwException(result);
+            }
+
+            final Object[] resources = (Object[]) result.get("results");
+            int handle = -1;
+            int hash = -1;
+            if(resources != null && resources.length > 0) {
+                handle = ((Integer)result.get("id")).intValue();
+                hash = ((Integer)result.get("hash")).intValue();
+            }
+            return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
+        } catch(final XmlRpcException xre) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         }
     }
     
@@ -240,6 +272,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             	optParams.put(RpcAPI.VARIABLES, variableDecls);
         	if(sortExpr != null)
         		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
+            if (moduleLoadPath != null)
+                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
 			optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (protectedMode)
@@ -432,7 +466,8 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 	 * 
 	 * @see org.exist.xmldb.XQueryService#setModuleLoadPath(java.lang.String)
 	 */
-	public void setModuleLoadPath(String path) {		
+	public void setModuleLoadPath(String path) {
+        this.moduleLoadPath = path;
 	}
 
     /* (non-Javadoc)

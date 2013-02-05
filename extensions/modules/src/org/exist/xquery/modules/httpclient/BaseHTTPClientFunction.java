@@ -63,12 +63,19 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.NTCredentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 
@@ -174,15 +181,77 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
 	            }
 	        }
 			
-            //set the proxy server (if any)
-            String proxyHost = System.getProperty( "http.proxyHost" );
+            String configFile = System.getProperty("http.configfile");
+            if (configFile != null) {
 
+                if (logger.isDebugEnabled()) {
+                    logger.debug("http.configfile='" + configFile + "'");
+                }
+
+                Properties props = new Properties();       
+                try {
+                    File propsFile = new File(configFile);
+                    
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Loading proxy settings from " + propsFile.getAbsolutePath());
+                    }
+                    props.load(new FileInputStream(propsFile));
+                    
+                } catch (IOException ex) {
+                    logger.error("Failed to read proxy configuration from '" + configFile + "'");
+                }
+
+                // Hostname / port
+                String proxyHost = props.getProperty("proxy.host");
+                int proxyPort = Integer.valueOf(props.getProperty("proxy.port", "8080"));
+
+                // Username / password
+                String proxyUser = props.getProperty("proxy.user");
+                String proxyPassword = props.getProperty("proxy.password");
+
+                // NTLM specifics
+                String proxyDomain = props.getProperty("proxy.ntlm.domain");
+                if ("NONE".equalsIgnoreCase(proxyDomain)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Forcing removal NTLM");
+                    }
+                    proxyDomain = null;
+                }
+
+                // Set scope       
+                AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+
+                // Setup right credentials
+                Credentials credentials = null;
+                if (proxyDomain == null) {
+                    credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Using NTLM authentication for '" + proxyDomain + "'");
+                    }
+                    credentials = new NTCredentials(proxyUser, proxyPassword, proxyHost, proxyDomain);
+                }
+
+                // Set details
+                HttpState state = http.getState();
+                http.getHostConfiguration().setProxy(proxyHost, proxyPort);
+                state.setProxyCredentials(authScope, credentials);
+
+                if (logger.isDebugEnabled()) {
+                    logger.info("Set proxy: " + proxyUser + "@" + proxyHost + ":" 
+                            + proxyPort + (proxyDomain == null ? "" : " (NTLM:'" 
+                            + proxyDomain + "')"));
+                }
+            }
+            
+            // Legacy: set the proxy server (if any)
+            String proxyHost = System.getProperty( "http.proxyHost" );
             if( proxyHost != null ) {
                 //TODO: support for http.nonProxyHosts e.g. -Dhttp.nonProxyHosts="*.devonline.gov.uk|*.devon.gov.uk"
 
                 ProxyHost proxy = new ProxyHost( proxyHost, Integer.parseInt( System.getProperty( "http.proxyPort" ) ) );
                 http.getHostConfiguration().setProxyHost( proxy );
-            }
+            } 
 
             //perform the request
             statusCode      = http.executeMethod( method );
@@ -335,7 +404,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
             }
             outstream.close();
             byte[]   body             = outstream.toByteArray();
-
+            
             // determine the type of the response document
             Header responseContentType = method.getResponseHeader( "Content-Type" );
             MimeType responseMimeType = getResponseMimeType( responseContentType );
@@ -413,7 +482,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                         } finally {
                             // free resources
                             if (binary != null)
-                                binary.destroy(null);
+                                binary.destroy(context, null);
                         }
                     }
                 }

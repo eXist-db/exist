@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -55,4 +56,6 @@ public interface BackupWriter
 
 
     void setProperties( Properties properties ) throws IOException;
+
+    public void addToRoot(String name, File file) throws IOException;
 }
