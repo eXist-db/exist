@@ -123,14 +123,4 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 				e);
 		}
     }
-
-    @Override
-    public void restorePkgRepo() throws XMLDBException {
-        try {
-            client.execute("restorePkgRepo", new ArrayList<Object>(1));
-        } catch(XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    "Failed to restore package repository: " + e.getMessage(), e);
-        }
-    }
 }

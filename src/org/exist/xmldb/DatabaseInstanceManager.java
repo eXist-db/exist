@@ -50,6 +50,4 @@ public interface DatabaseInstanceManager extends Service {
 	 * @return True if XACML is enabled
 	 */
 	public boolean isXACMLEnabled() throws XMLDBException;
-
-    public void restorePkgRepo() throws XMLDBException;
 }
