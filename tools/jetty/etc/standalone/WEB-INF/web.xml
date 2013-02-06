@@ -192,6 +192,13 @@
         <servlet-class>org.exist.extensions.exquery.restxq.impl.RestXqServlet</servlet-class>
     </servlet>
 
+    <servlet>
+      <servlet-name>ResourceServlet</servlet-name>
+      <servlet-class>
+                de.betterform.agent.web.resources.ResourceServlet
+            </servlet-class>
+    </servlet>
+
     <!-- Enabled dynamic GZip of server responses
 
         Standard approach is to use org.eclipse.jetty.servlets.GZipFilter, the
@@ -218,7 +225,15 @@
 
     
     <!-- ====================== URL space mappings ======================= -->
-    
+    <servlet-mapping>
+      <servlet-name>ResourceServlet</servlet-name>
+      <url-pattern>/bfResources/*</url-pattern>
+      <init-param>
+         <param-name>caching</param-name>
+         <param-value>true</param-value>
+      </init-param>
+   </servlet-mapping>
+   
     <!-- IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
          entry point into the web application. All eXist-related URL
          mappings are handled by XQueryURLRewrite (see controller-config.xml). 
