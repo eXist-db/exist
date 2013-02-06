@@ -120,7 +120,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
 
-    	if (documentPath.startsWith(VERSIONS_COLLECTION))
+    	if (documentPath == null || documentPath.startsWith(VERSIONS_COLLECTION))
     		return;
 
     	Subject activeSubject = broker.getSubject();
@@ -313,7 +313,7 @@ public class VersioningTrigger extends FilteringTrigger {
     }
 
     private void after(DBBroker broker, Txn transaction, DocumentImpl document, boolean remove) {
-    	if (documentPath.startsWith(VERSIONS_COLLECTION))
+    	if (documentPath == null || documentPath.startsWith(VERSIONS_COLLECTION))
     		return;
 
     	Subject activeSubject = broker.getSubject();
