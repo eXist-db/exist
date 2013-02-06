@@ -1,11 +1,11 @@
-2009-09-16
-eXist Solaris 10/Open Solaris SMF (Service Management Framework)
+2013-02-06
+eXist Solaris 10/11/Open Solaris SMF (Service Management Framework)
 Adam Retter <adam@exist-db.org>
 
 
 About
 =====
-Two sets of SMF configuration and script files have been provided for Solaris 10 and OpenSolaris. These allow
+Two sets of SMF configuration and script files have been provided for Solaris 10, 11 and OpenSolaris. These allow
 eXist to be installed as a service and managed by SMF in either Jetty or Standalone startup
 configurations.
 
@@ -16,7 +16,7 @@ boot time and shutdown with the system.
 
 Notes for eXist SMF setup
 =========================
-By default the scripts expect eXist to be installed to /opt/eXist. If you wish
+By default the scripts expect eXist to be installed to /opt/eXist-db. If you wish
 to change this then change the EXIST_HOME variable in the appropriate svc-eXist-* file.
 The scripts also expect the admin password of eXist to be "admin" you need to change this
 to your password by setting the EXIST_ADMIN variable in the appropriate svc-eXist-* file.
@@ -33,7 +33,7 @@ The following commands must be run as the root user, or under OpenSolaris they m
 1) Create the user "exist" in the group "exist" -
 
 # groupadd exist
-# useradd -c "eXist Database" -d /home/exist -g exist -m -s /bin/bash exist
+# useradd -c "eXist Database" -g exist -m -s /bin/bash exist
 
 You must ensure that the users home directory exists otherwise the service
 will fail to start
@@ -41,7 +41,7 @@ will fail to start
 
 2) Make sure that eXist is owned by the exist user and exist group -
 
-# chown -R exist:exist /opt/eXist
+# chown -R exist:exist /opt/eXist-db
 
 
 3) Choose either the eXist Jetty or eXist Standalone configuration, only one may be used.
@@ -78,7 +78,13 @@ NOTE - This operation must be performed in the zone where you will be running eX
 
 8) Install the eXist Standalone Service into the Solaris SMF -
 
+If you are on Solaris 10 use -
+
 # svccfg import /var/svc/manifest/application/eXist-standalone.smf.xml
+
+If you are on Solaris 11 use - 
+
+# sudo svcadm restart svc:/system/manifest-import
 
 
 ########
@@ -95,7 +101,7 @@ Start up an interactive instance of the eXist server -
 
 $ su root
 # su - exist
-$ /opt/eXist/bin/startup.sh
+$ /opt/eXist-db/bin/startup.sh
 
 Terminal 2
 ----------
@@ -103,7 +109,7 @@ Connect to eXist with the admin client and set the admin password -
 
 $ su root
 # su - exist
-$ /opt/eXist/bin/client.sh -s
+$ /opt/eXist-db/bin/client.sh -s
 
 exist:/db>passwd admin
 password: admin
@@ -112,7 +118,7 @@ exist:/db>quit
 
 You can then check that shutting down eXist with the admin password now works, if successful you should then see the server in Terminal 1 shutdown -
 
-$ /opt/eXist/bin/shutdown.sh -p admin --uri=xmldb:exist://localhost:8080/exist/xmlrpc
+$ /opt/eXist-db/bin/shutdown.sh -p admin --uri=xmldb:exist://localhost:8080/exist/xmlrpc
 ########
 
 
