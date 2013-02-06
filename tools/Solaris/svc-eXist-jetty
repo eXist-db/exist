@@ -1,6 +1,6 @@
 #!/usr/bin/sh
 #
-#        2009-09-16
+#        2013-02-06
 #        Adam Retter <adam@exist-db.org>
 #        SMF Method file for eXist Jetty
 #
@@ -10,7 +10,7 @@
 . /lib/svc/share/smf_include.sh
 
 ### START SETTINGS ###
-EXIST_HOME=/opt/eXist	# Installed location of eXist
+EXIST_HOME=/opt/eXist-db	# Installed location of eXist
 EXIST_ADMIN_PWD=admin	# Password for eXist admin user
 EXIST_STANDALONE_URI=xmldb:exist://localhost:8080/exist/xmlrpc	# URI of eXist XMLRPC API
 ### END SETTINGS ###
