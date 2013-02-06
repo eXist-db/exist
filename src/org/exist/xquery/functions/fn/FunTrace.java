@@ -101,7 +101,7 @@ public class FunTrace extends BasicFunction {
                 Item next = i.nextItem();
 
                 // Only write if debug mode
-                if (LOG.isDebugEnabled()) {
+                if (true) {
                     
                     String value = null;
                     position++;
@@ -126,7 +126,7 @@ public class FunTrace extends BasicFunction {
                     }
                     
                     // Write to log
-                    LOG.debug(label + " [" + position + "]: " + Type.getTypeName(type) + ": " + value);
+                    LOG.info(label + " [" + position + "]: " + Type.getTypeName(type) + ": " + value);
                 }
 
                 // Add to result
