@@ -118,9 +118,9 @@ declare function admin:display-login-form() as element()
 {
     <div class="panel">
         <div class="panel-head">Login</div>
-        <p>This is a protected resource. Only registered database users can log
-        in. If you have not set up any users, login as "admin" and leave the
-        password field empty. Note that the "guest" user is not permitted access.</p>
+        <p>This is the old web admin client. We're in the processes of moving all its functionality
+        into the dashboard. Some panels have not been moved though, so they are still provided
+        via this old interface.</p>
 
         <form action="{session:encode-url(request:get-uri())}" method="post">
             <table class="login" cellpadding="5">
