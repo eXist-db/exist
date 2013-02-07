@@ -106,6 +106,7 @@ public class FilteredExpression extends AbstractExpression {
             result = Sequence.EMPTY_SEQUENCE;
         else {
             Predicate pred = predicates.get(0);
+            context.setContextSequencePosition(0, seq);
             // If the current step is an // abbreviated step, we have to treat the predicate
             // specially to get the context position right. //a[1] translates 
             //to /descendant-or-self::node()/a[1], so we need to return the
