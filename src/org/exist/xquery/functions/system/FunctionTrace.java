@@ -92,7 +92,7 @@ public class FunctionTrace extends BasicFunction {
             }
 
         } else if (isCalledAs("tracing-enabled")) {
-        	logger.info("Entering the " + SystemModule.PREFIX + ":tracing-enalbed XQuery function");
+        	logger.info("Entering the " + SystemModule.PREFIX + ":tracing-enabled XQuery function");
         	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
             return BooleanValue.valueOf(context.getBroker().getBrokerPool().getPerformanceStats().isEnabled());
             
