@@ -108,6 +108,8 @@ public class Resource extends File {
     
     private Collection collection = null;
     private DocumentImpl resource = null;
+    
+    File file = null;
 	
     public Resource(XmldbURI uri) {
 		super(uri.toString());
@@ -374,7 +376,7 @@ public class Resource extends File {
     
     public boolean renameTo(File dest) {
     	
-    	System.out.println("rename from "+uri+" to "+dest.getPath());
+//    	System.out.println("rename from "+uri+" to "+dest.getPath());
     	
         XmldbURI destinationPath = ((Resource)dest).uri;
 
@@ -437,13 +439,16 @@ public class Resource extends File {
         }
     }
     
-    private File serialize(final DBBroker broker, final DocumentImpl doc) throws IOException {
+    private synchronized File serialize(final DBBroker broker, final DocumentImpl doc) throws IOException {
+    	if (file != null)
+    		throw new IOException(doc.getFileURI().toString()+" locked.");
+    		
     	try {
 			Serializer serializer = broker.getSerializer();
 			serializer.setUser(broker.getSubject());
 			serializer.setProperties(XML_OUTPUT_PROPERTIES);
 			
-            File file = File.createTempFile("eXist", ".xml");
+            file = File.createTempFile("eXist-resource-", ".xml");
             file.deleteOnExit();
 
             Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
@@ -457,6 +462,57 @@ public class Resource extends File {
     	} catch (Exception e) {
     		throw new IOException(e);
     	}
+    }
+    
+    protected void freeFile() throws IOException {
+    	
+    	if (isXML()) {
+	    	if (file == null)
+	    		throw new IOException();
+	    	
+	    	file.delete();
+	    	
+	    	file = null;
+    	}
+    }
+    
+    protected synchronized void uploadTmpFile() throws IOException {
+    	if (file == null)
+    		throw new IOException();
+    	
+        DBBroker broker = null; 
+        BrokerPool db = null;
+        TransactionManager tm = null;
+        Txn txn = null;
+
+        try {
+            try {
+                db = BrokerPool.getInstance();
+                broker = db.get(null);
+            } catch (EXistException e) {
+                throw new IOException(e);
+            }
+    
+            tm = db.getTransactionManager();
+            txn = tm.beginTransaction();
+
+            FileInputSource is = new FileInputSource(file);
+	        
+            IndexInfo info = collection.validateXMLResource(txn, broker, uri.lastSegment(), is);
+//	        info.getDocument().getMetadata().setMimeType(mimeType.getName());
+	
+	        is = new FileInputSource(file);
+	        collection.store(txn, broker, info, is, false);
+
+            tm.commit(txn);
+            
+        } catch ( Exception e ) {
+            e.printStackTrace();
+            if (txn != null) tm.abort(txn);
+	    } finally {
+	        if (db != null)
+	            db.release( broker );
+	    }
     }
 
     private void moveResource(DBBroker broker, Txn txn, DocumentImpl doc, Collection source, Collection destination, XmldbURI newName) throws PermissionDeniedException, LockException, IOException, SAXException, EXistException {
@@ -512,7 +568,7 @@ public class Resource extends File {
                 File tempFile = null;
                 FileInputStream is = null;
 				try {
-                    tempFile = File.createTempFile("eXist", ".xml");
+                    tempFile = File.createTempFile("eXist-resource-", ".xml");
                     tempFile.deleteOnExit();
                     
                     Writer w = new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8");
