@@ -31,12 +31,18 @@ import java.io.RandomAccessFile;
  */
 public class ResourceRandomAccess extends RandomAccessFile {
 
+	private Resource resource;
+	
 	public ResourceRandomAccess(Resource resource, String mode) throws FileNotFoundException {
 		super(resource.getFile(), mode);
+		
+		this.resource = resource;
 	}
 
 	public void close() throws IOException {
 		super.close();
+		
+		resource.freeFile();
 		
 		//XXX: xml upload back to db
 		

@@ -42,6 +42,8 @@ public class ResourceInputStream extends FileInputStream {
 	public void close() throws IOException {
 		super.close();
 		
+		resource.freeFile();
+		
 		if (resource.isXML()) {
 			//XXX: cleanup tmp file
 		}
