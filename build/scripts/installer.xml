@@ -40,8 +40,11 @@
         <touch file="webapp/WEB-INF/logs/xmldb.log"/>
     </target>
 
-    <target name="download-xars" description="Download xars to include in installer">
+    <target name="clean-installer-xars-dir" description="Remove installer apps.dir directory">
         <delete dir="${apps.dir}"/>
+    </target>
+
+    <target name="download-xars" description="Download xars to include in installer"  depends="clean-installer-xars-dir">
         <mkdir dir="${apps.dir}"/>
         <echo message="Downloading xar packages to include in installer ..."/>
         <foreach list="${apps}" target="download-xar" param="xar"></foreach>
