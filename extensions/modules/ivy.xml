@@ -16,16 +16,14 @@
         </dependency> -->
         
         <!-- <dependency org="org.dspace" name="cql-java" rev="1.1"/> -->
-        
+	<!-- <dependency org="org.z3950.zing" name="cql-java" rev="1.10" conf="*->*,!sources,!javadoc" /> -->
+
         <!-- <dependency org="jivesoftware" name="smack" rev="3.1.0"/> -->
         
         <!-- <dependency org="org.apache.xmlgraphics" name="fop" rev="1.1" conf="*->*,!sources,!javadoc">
-                    <exclude module="batik-xml"/>
                     <exclude module="xalan"/>
                     <exclude module="xml-apis"/>
                     <exclude module="xml-apis-ext"/>
-                    <exclude module="avalon-framework-impl"/>
-                    <exclude module="avalon-framework-api"/>
                     <exclude module="servlet-api"/>
                     <exclude module="commons-io"/>
                     <exclude module="commons-logging"/>
